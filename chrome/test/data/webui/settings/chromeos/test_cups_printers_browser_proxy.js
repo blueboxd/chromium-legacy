@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {CupsPrintersBrowserProxy,PrinterSetupResult,PrintServerResult} from 'chrome://os-settings/chromeos/lazy_load.js';
+// clang-format on
+
 cr.define('printerBrowserProxy', function() {
   /** @implements {settings.CupsPrintersBrowserProxy} */
-  class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
+  /* #export */ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
     constructor() {
       super([
         'addCupsPrinter',
@@ -181,6 +186,7 @@ cr.define('printerBrowserProxy', function() {
       this.addDiscoveredFailedPrinter_ = printer;
     }
   }
+  // #cr_define_end
   return {
     TestCupsPrintersBrowserProxy: TestCupsPrintersBrowserProxy,
   };

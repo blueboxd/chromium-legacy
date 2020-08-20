@@ -67,7 +67,9 @@ bool WebTestBrowserCheckLayoutSystemDeps() {
   for (size_t i = 0; i < base::size(system_fonts); ++i) {
     if (system_fonts[i]->lfHeight != required_font_size ||
         wcscmp(required_font, system_fonts[i]->lfFaceName)) {
-      errors.push_back("Must use either the Aero or Basic theme.");
+      errors.push_back(
+          "Must use either the Aero or Basic theme. Or change display language "
+          "to English.");
       break;
     }
   }

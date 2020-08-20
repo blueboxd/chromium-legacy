@@ -451,6 +451,7 @@
 <translation id="4605958867780575332">Տարրը հեռացվեց՝ <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Բացել <ph name="WEBAPK_NAME" /> հավելվածը</translation>
 <translation id="4634124774493850572">Օգտագործել գաղտնաբառը</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 կոտրված գաղտնաբառ}one{# կոտրված գաղտնաբառ}other{# կոտրված գաղտնաբառ}}</translation>
 <translation id="4650364565596261010">Կանխադրված</translation>
 <translation id="465657074423018424">Անվտանգ դիտարկումը պաշտպանում է ձեզ կասկածելի կայքերից։ Եթե անջատեք այդ գործառույթը, զգո՛ւյշ եղեք կայքեր այցելելիս, հատկապես երբ գաղտնաբառեր եք մուտքագրում։</translation>
 <translation id="4662373422909645029">Չի կարող թվեր պարունակել</translation>

@@ -1079,7 +1079,6 @@ if (enable_java_templates) {
         # Putting the stamp file in the cache dir allows us to depend on ninja
         # to create the cache dir for us.
         _stamp_path = "$_cache_dir/build.lint.stamp"
-        args += [ "--silent" ]
       } else {
         _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
         deps += [

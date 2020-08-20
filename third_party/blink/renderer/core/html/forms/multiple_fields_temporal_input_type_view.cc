@@ -497,8 +497,7 @@ void MultipleFieldsTemporalInputTypeView::HandleKeydownEvent(
     return;
   if (picker_indicator_is_visible_ &&
       ((event.key() == "ArrowDown" && event.getModifierState("Alt")) ||
-       (LayoutTheme::GetTheme().ShouldOpenPickerWithF4Key() &&
-        event.key() == "F4") ||
+       (event.key() == "F4") ||
        (features::IsFormControlsRefreshEnabled() && event.key() == " "))) {
     if (PickerIndicatorElement* element = GetPickerIndicatorElement())
       element->OpenPopup();

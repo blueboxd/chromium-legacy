@@ -107,6 +107,13 @@ const base::FilePath::CharType kDevToolsActivePort[] =
 
 enum ChromeType { Remote, Desktop, Android, Replay };
 
+#if defined(OS_POSIX)
+// The values for kReadFD and kWriteFD come from
+// content/browser/devtools/devtools_pipe_handler.cc
+const int kReadFD = 3;
+const int kWriteFD = 4;
+#endif
+
 Status PrepareDesktopCommandLine(const Capabilities& capabilities,
                                  bool enable_chrome_logs,
                                  base::CommandLine* prepared_command,
@@ -158,7 +165,8 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
     switches.RemoveSwitch(excluded_switch);
   }
   switches.SetFromSwitches(capabilities.switches);
-  if (!switches.HasSwitch("remote-debugging-port")) {
+  if (!switches.HasSwitch("remote-debugging-port") &&
+      !switches.HasSwitch("remote-debugging-pipe")) {
     switches.SetSwitch("remote-debugging-port", "0");
   }
   if (capabilities.exclude_switches.count("user-data-dir") > 0) {
@@ -390,6 +398,28 @@ Status LaunchRemoteChromeSession(
   return Status(kOk);
 }
 
+#if defined(OS_POSIX)
+Status PipeSetUp(base::LaunchOptions* options, int* write_fd, int* read_fd) {
+  int chrome_to_driver_pipe_fds[2];
+  int driver_to_chrome_pipe_fds[2];
+
+  if (pipe(chrome_to_driver_pipe_fds) == -1 ||
+      pipe(driver_to_chrome_pipe_fds) == -1)
+    return Status(kUnknownError, "cannot set up pipe");
+
+  options->fds_to_remap.emplace_back(driver_to_chrome_pipe_fds[0], kReadFD);
+  options->fds_to_remap.emplace_back(chrome_to_driver_pipe_fds[1], kWriteFD);
+
+  close(driver_to_chrome_pipe_fds[0]);
+  close(chrome_to_driver_pipe_fds[1]);
+
+  *write_fd = driver_to_chrome_pipe_fds[1];
+  *read_fd = chrome_to_driver_pipe_fds[0];
+
+  return Status(kOk);
+}
+#endif
+
 Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
                            const SyncWebSocketFactory& socket_factory,
                            const Capabilities& capabilities,
@@ -468,6 +498,16 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 #endif
 
 #if defined(OS_POSIX)
+
+  bool uses_pipe = false;
+  int write_fd;
+  int read_fd;
+
+  if (capabilities.switches.HasSwitch("remote-debugging-pipe")) {
+    uses_pipe = true;
+    Status status = PipeSetUp(&options, &write_fd, &read_fd);
+  }
+
   base::ScopedFD devnull;
   if (!cmd_line->HasSwitch("verbose") && !enable_chrome_logs &&
       cmd_line->GetSwitchValueASCII("log-level") != "ALL") {
@@ -774,33 +814,6 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
 }
 
 }  // namespace
-
-Status PipeSetUp(base::LaunchOptions* options, int* write_fd, int* read_fd) {
-#if defined(OS_POSIX)
-
-  int chrome_to_driver_pipe_fds[2];
-  int driver_to_chrome_pipe_fds[2];
-
-  if (pipe(chrome_to_driver_pipe_fds) == -1 ||
-      pipe(driver_to_chrome_pipe_fds) == -1)
-    return Status(kUnknownError, "cannot set up pipe");
-
-  // Numbers 3 & 4 come from kReadDf and kWriteFD in
-  // content/browser/devtools/devtools_pipe_handler.cc
-  options->fds_to_remap.emplace_back(driver_to_chrome_pipe_fds[0], 3);
-  options->fds_to_remap.emplace_back(chrome_to_driver_pipe_fds[1], 4);
-
-  close(driver_to_chrome_pipe_fds[0]);
-  close(chrome_to_driver_pipe_fds[1]);
-
-  *write_fd = driver_to_chrome_pipe_fds[1];
-  *read_fd = chrome_to_driver_pipe_fds[0];
-
-  return Status(kOk);
-#endif
-
-  return Status(kUnknownError, "feature not supported");
-}
 
 Status LaunchChrome(network::mojom::URLLoaderFactory* factory,
                     const SyncWebSocketFactory& socket_factory,

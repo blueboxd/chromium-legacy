@@ -43,7 +43,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   bool GetCrashMetricsLocation(base::FilePath* metrics_dir) override;
 #endif
 
@@ -59,7 +59,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   int GetAndroidMinidumpDescriptor() override;
 #endif
 
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   bool ShouldMonitorCrashHandlerExpensively() override;
 #endif
 

@@ -81,6 +81,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // Returns overlay support flags for the given format.
   // Caller should check for DXGI_OVERLAY_SUPPORT_FLAG_DIRECT and
   // DXGI_OVERLAY_SUPPORT_FLAG_SCALING bits.
+  // This function is thread safe.
   static UINT GetOverlaySupportFlags(DXGI_FORMAT format);
 
   // Returns true if there is an HDR capable display connected.
@@ -97,6 +98,11 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   static void SetOverlayHDRGpuInfoUpdateCallback(
       OverlayHDRInfoUpdateCallback callback);
+
+  // On Intel GPUs where YUV overlays are supported, BGRA8 overlays are
+  // supported as well but IDXGIOutput3::CheckOverlaySupport() returns
+  // unsupported. So allow manually enabling BGRA8 overlay support.
+  static void EnableBGRA8OverlaysWithYUVOverlaySupport();
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;

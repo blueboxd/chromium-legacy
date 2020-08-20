@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">ବ୍ଲୁଟୁଥ୍‍ ସେଟିଂସ୍ ଦେଖାନ୍ତୁ। <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">ସର୍ବଦା ସେଲ୍ଫ ଦେଖାନ୍ତୁ</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> ସଂଯୋଗ କରାଯାଇଛି</translation>
 <translation id="1341651618736211726">ଓଭର୍‌ଫ୍ଲୋ</translation>
 <translation id="1346748346194534595">ଡାହାଣ</translation>
 <translation id="1351937230027495976">ମେନୁକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ</translation>
@@ -94,6 +95,7 @@
 <translation id="1962969542251276847">ଲକ୍ ସ୍କ୍ରିନ୍</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">ନମସ୍କାର, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">ବର୍ତ୍ତମାନର ଡାଉନଲୋଡଗୁଡ଼ିକ</translation>
 <translation id="1978498689038657292">ଟେକ୍ସଟ୍ ଇନ୍‌ପୁଟ୍</translation>
 <translation id="1993072747612765854">ନବୀନତମ <ph name="SYSTEM_APP_NAME" /> ଅପ୍‌ଡେଟ୍ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ</translation>
 <translation id="1995660704900986789">ପାୱାର୍ ଅଫ୍</translation>
@@ -258,6 +260,7 @@
 <translation id="3798670284305777884">ସ୍ପିକର୍ (ଇଣ୍ଟର୍ନଲ୍)</translation>
 <translation id="3799080171973636491">ପୂର୍ଣ୍ଣ-ସ୍କ୍ରିନ୍ ମାଗ୍ନିଫାୟର୍ ପାଇଁ ଆପଣ କୀବୋର୍ଡ ସର୍ଟକଟ୍ ଦାବିଛନ୍ତି। ଆପଣ ଏହାକୁ ଚାଲୁ କରିବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="380165613292957338">ନମସ୍କାର, ମୁଁ କିପରି ଭାବେ ସାହାଯ୍ୟ କରିପାରିବି?</translation>
+<translation id="3826099427150913765">ପାସୱାର୍ଡକୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="383629559565718788">କୀବୋର୍ଡ୍ ସେଟିଂ‌ସ୍ ଦେଖାନ୍ତୁ।</translation>
 <translation id="3846575436967432996">କୌଣସି ନେଟ୍‍ୱର୍କ ସୂଚନା ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="385051799172605136">ପଛକୁ</translation>
@@ -288,6 +291,7 @@
 <translation id="4181841719683918333">ଭାଷାସମୂହ</translation>
 <translation id="4195877955194704651">ସ୍ଵଚାଳିତ କ୍ଲିକ୍ ବଟନ୍</translation>
 <translation id="4197790712631116042">ବନ୍ଦ</translation>
+<translation id="4212472694152630271">PINକୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="4215497585250573029">VPN ସେଟିଂସ୍</translation>
 <translation id="4217571870635786043">ଶ୍ରୁତଲିଖନ</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -300,6 +304,7 @@
 <translation id="4321776623976362024">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ପାଇଁ ଆପଣ କୀବୋର୍ଡ ସର୍ଟକଟ୍‍ ଦବାଇଛନ୍ତି। ଆପଣ ଏହାକୁ ଚାଲୁ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">ମାଗ୍ନିଫାଇଂ ଗ୍ଲାସ୍</translation>
+<translation id="4350065043422286972">ପିନ୍ ହୋଇଛି</translation>
 <translation id="4351433414020964307">Assistant ଲୋଡ୍‌ ହେଉଛି...</translation>
 <translation id="4356930093361201197">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ମୋଡ୍</translation>
 <translation id="4368583494516669646">ଶୁଭ ରାତ୍ରି <ph name="GIVEN_NAME" /></translation>
@@ -362,6 +367,7 @@
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ଏକ ନୂଆ ଫୋନ୍ ସହ ସଂଯୁକ୍ତ ହୋଇଛି</translation>
 <translation id="5035389544768382859">ଡିସପ୍ଲେ କନଫିଗରେସନ୍ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="5083553833479578423">ଆହୁରି ଆସିଷ୍ଟାଣ୍ଟ ବୈଶିଷ୍ଟ୍ୟଗୁଡ଼ିକ ଅନ୍‌ଲକ୍‌ କରନ୍ତୁ</translation>
+<translation id="5114495209940374989">ସ୍କ୍ରିନସଟଗୁଡ଼ିକ</translation>
 <translation id="5136175204352732067">ଅଲଗା କୀବୋର୍ଡ ସଂଯୁକ୍ତ ହୋ‍ଇଛି</translation>
 <translation id="5168181903108465623">କାଷ୍ଟ ଡିଭାଇସ୍ ଉପଲବ୍ଧ</translation>
 <translation id="5170568018924773124">ଫୋଲ୍ଡରରେ ଦେଖାନ୍ତୁ</translation>
@@ -513,6 +519,7 @@
 <translation id="6972754398087986839">ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="6981982820502123353">ଆକ୍ସେସିବିଲିଟୀ</translation>
 <translation id="698231206551913481">ଥରେ ଏହି ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ କାଢ଼ିଦେବା ପରେ, ତାଙ୍କର ସମସ୍ତ ଫାଇଲ୍ ଓ ସ୍ଥାନୀୟ ଡାଟାକୁ ସ୍ଥାୟୀ ଭାବେ ଡିଲିଟ୍ କରିଦିଆଯିବ।</translation>
+<translation id="6990778048354947307">ଗାଢ଼ ଥିମ୍</translation>
 <translation id="7007983414944123363">ଆପଣଙ୍କ PIN କିମ୍ବା ପାସୱାର୍ଡକୁ ଯାଞ୍ଚ କରାଯାଇପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />ରେ ଆସନ୍ତୁ।</translation>
 <translation id="7025533177575372252">ଆପଣଙ୍କର <ph name="DEVICE_NAME" />କୁ ନିଜ ଫୋନ୍ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
@@ -607,6 +614,7 @@
 <translation id="8061464966246066292">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />ରେ ସ୍କ୍ରିନ୍‍ କାଷ୍ଟ କରିବା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8113423164597455979">ଚାଲୁ, ସବୁ ଆପ୍</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ସହ ସଂଯୋଗ ହେଲା</translation>
 <translation id="813913629614996137">ଆରମ୍ଭ କରୁଛି…</translation>

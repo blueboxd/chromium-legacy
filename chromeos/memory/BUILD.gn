@@ -13,6 +13,7 @@ config("chromeos_implementation") {
 }
 
 component("memory") {
+  defines = [ "IS_CHROMEOS_MEMORY_IMPL" ]
   configs += [
     ":chromeos_implementation",
     "//build/config/linux/nss:system_nss_no_ssl_config",
@@ -37,6 +38,8 @@ component("memory") {
     "memory.h",
     "pagemap.cc",
     "pagemap.h",
+    "pressure/system_memory_pressure_evaluator.cc",
+    "pressure/system_memory_pressure_evaluator.h",
     "swap_configuration.cc",
     "swap_configuration.h",
     "userspace_swap/region.h",
@@ -55,6 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":memory",
     "//base/test:test_support",
+    "//base/util/memory_pressure",
     "//chromeos:chromeos_buildflags",
     "//mojo/core/embedder",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
@@ -63,6 +67,7 @@ source_set("unit_tests") {
   ]
   sources = [
     "pagemap_unittest.cc",
+    "pressure/system_memory_pressure_evaluator_unittest.cc",
     "userspace_swap/swap_storage_unittest.cc",
     "userspace_swap/userfaultfd_unittest.cc",
     "userspace_swap/userspace_swap_unittest.cc",

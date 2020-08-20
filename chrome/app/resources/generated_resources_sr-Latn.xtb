@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Aktuelna verzija je Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Pristupaj bilo kom uređaju <ph name="DEVICE_NAME_AND_VENDOR" /> preko USB-a</translation>
 <translation id="1509960214886564027">Funkcije na mnogim sajtovima mogu da prestanu sa radom</translation>
-<translation id="1510030919967934016">Ovoj stranici je onemogućeno da prati lokaciju na kojoj se nalazite.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1510785804673676069">Ako koristite proksi server, proverite podešavanja proksija ili kontaktirajte administratora mreže da biste proverili da li proksi server funkcioniše. Ako ne smatrate da treba da koristite proksi server, prilagodite <ph name="LINK_START" />podešavanja proksija<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">Na ovom bezbednosnom ključu ne možete da čuvate podatke za prijavljivanje</translation>
@@ -599,7 +598,6 @@
 <translation id="1697686431566694143">Izmeni datoteku</translation>
 <translation id="1698122934742150150">Samo aktuelna sesija bez arhiviranja</translation>
 <translation id="1700079447639026019">Sajtovi koji nikada ne mogu da koriste kolačiće</translation>
-<translation id="1700845716982723710">Isključite ambijentalni režim</translation>
 <translation id="1701062906490865540">Ukloni ovu osobu</translation>
 <translation id="1703331064825191675">Nikada ne brinite o lozinkama</translation>
 <translation id="1704970325597567340">Bezbednosna provera je pokrenuta <ph name="DATE" /></translation>
@@ -728,7 +726,6 @@
 <translation id="184273675144259287">Zamenite Linux aplikacije i datoteke prethodnom rezervnom kopijom</translation>
 <translation id="1842766183094193446">Želite li stvarno da omogućite režim demonstracije?</translation>
 <translation id="1846308012215045257">Kliknite i zadržite taster Control da biste pokrenuli <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Omogućite ambijentalni režim</translation>
 <translation id="1849186935225320012">Ova stranica u potpunosti kontroliše MIDI uređaje.</translation>
 <translation id="1850508293116537636">Okreći &amp;u smeru kretanja kazaljke na satu</translation>
 <translation id="1852141627593563189">Pronađite štetan softver</translation>
@@ -1171,7 +1168,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2392163307141705938">Dostigao/la si vremensko ograničenje koje je roditelj podesio za <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktiviraj</translation>
 <translation id="2393136602862631930">Podesite aplikaciju <ph name="APP_NAME" /> na Chromebook-u</translation>
-<translation id="2394566832561516196">Podešavanja će biti obrisana pri sledećem ponovnom učitavanju.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> je registrovan za upravljanje preduzećem, ali nije poslao informacije o elementu i lokaciji. Unesite te informacije ručno na Admin console-u za ovaj uređaj.</translation>
 <translation id="2396387085693598316">Administrator je blokirao dodatak „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="2396783860772170191">Unesite 4-cifreni PIN (0000–9999)</translation>
@@ -1375,7 +1371,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2636625531157955190">Chrome ne može da pristupi slici.</translation>
 <translation id="2637400434494156704">Netačan PIN. Imate još jedan pokušaj.</translation>
 <translation id="2638662041295312666">Slika za prijavljivanje</translation>
-<translation id="2640549051766135490">Izabran je album <ph name="TITLE" /> (<ph name="DESC" />)</translation>
+<translation id="2640549051766135490">Izabran je album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="264083724974021997">Povežite sa telefonom – dijalog</translation>
 <translation id="2641065435954454414">Priprema se preuzimanje</translation>
 <translation id="2642111877055905627">Fudbalska lopta</translation>
@@ -1661,7 +1657,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2979639724566107830">Otvorite u novom prozoru</translation>
 <translation id="2981113813906970160">Prikaži veliki kursor</translation>
 <translation id="2985348301114641460">Želite li da pošaljete zahtev administratoru da instalira „<ph name="EXTENSION_NAME" />“?</translation>
-<translation id="2986010903908656993">Sprečeno je da ova stranica u potpunosti kontroliše MIDI uređaje.</translation>
 <translation id="2987620471460279764">Tekst koji se deli sa drugog uređaja</translation>
 <translation id="2988018669686457659">Rezervni prikazivač</translation>
 <translation id="2989123969927553766">Ubrzavanje pomeranja mišem</translation>
@@ -2085,7 +2080,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3524965460886318643">Izvezi aktivnosti</translation>
 <translation id="3526034519184079374">Čitanje ili menjanje podataka sajta nije uspelo</translation>
 <translation id="3527085408025491307">Direktorijum</translation>
-<translation id="3528033729920178817">Ova stranica prati lokaciju na kojoj se nalazite.</translation>
 <translation id="3528498924003805721">Ciljevi prečica</translation>
 <translation id="3532273508346491126">Upravljanje sinhronizacijom</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Zvuk je isključen</translation>
@@ -2561,7 +2555,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4061374428807229313">Da biste delili, kliknite desnim tasterom miša na direktorijum u aplikaciji Datoteke, pa izaberite Deli sa Parallels Desktop-om.</translation>
 <translation id="4065876735068446555">Mreža koju koristite (<ph name="NETWORK_ID" />) će možda zahtevati da posetite stranicu za prijavljivanje.</translation>
 <translation id="4066207411788646768">Proverite vezu da biste videli dostupne štampače na mreži</translation>
-<translation id="4068506536726151626">Ova stranica sadrži elemente sa sledećih sajtova koji prate lokaciju na kojoj se nalazite:</translation>
 <translation id="4068776064906523561">Sačuvani otisci prstiju</translation>
 <translation id="407173827865827707">Pri kliku</translation>
 <translation id="4074900173531346617">Sertifikat potpisnika e-pošte</translation>
@@ -2603,7 +2596,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4107048419833779140">identifikuje i izbacuje memorijske uređaje</translation>
 <translation id="4109135793348361820">Premesti prozor kod <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Preuzimanje je dovršeno: <ph name="FILE_NAME" />. Pritisnite Shift + F6 da biste prešli na oblast trake sa preuzimanjima.</translation>
-<translation id="4110686435123617899">Izaberite album <ph name="TITLE" /> (<ph name="DESC" />)</translation>
+<translation id="4110686435123617899">Izaberite album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4110895898888439383">Pregledajte veb u režimu visokog kontrasta</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (oflajn)</translation>
 <translation id="4115002065223188701">Mreža je van dometa</translation>
@@ -3204,7 +3197,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4918021164741308375"><ph name="ORIGIN" /> želi da komunicira sa dodatkom „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="4918221908152712722">Instalirajte aplikaciju <ph name="APP_NAME" /> (ne treba da je preuzimate)</translation>
-<translation id="4920887663447894854">Sledećim sajtovima je onemogućeno praćenje vaše lokacije na ovoj stranici:</translation>
 <translation id="4921290200821452703">Informacije o školskom nalogu za roditelje</translation>
 <translation id="4921348630401250116">Pretvaranje teksta u govor</translation>
 <translation id="49226369361073053">{0,plural, =0{Ažurirajte uređaj}=1{Ažurirajte uređaj u roku od 1 sekunde}one{Ažurirajte uređaj u roku od # sekunde}few{Ažurirajte uređaj u roku od # sekunde}other{Ažurirajte uređaj u roku od # sekundi}}</translation>
@@ -3282,7 +3274,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5027562294707732951">Dodaj dodatak</translation>
 <translation id="5029568752722684782">Obriši kopiju</translation>
 <translation id="5033266061063942743">Geometrijski oblici</translation>
-<translation id="5033370009438029887">Onemogućite ambijentalni režim</translation>
 <translation id="5036662165765606524">Ne dozvoli nijednom sajtu da automatski preuzima više datoteka</translation>
 <translation id="5037676449506322593">Izaberi sve</translation>
 <translation id="5038022729081036555">Sutra imaš <ph name="TIME_LIMIT" /> na raspolaganju.</translation>
@@ -3960,7 +3951,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> će se uskoro pauzirati</translation>
 <translation id="586567932979200359">Pokrećete <ph name="PRODUCT_NAME" /> sa diska. Instalacija na računar omogućava pokretanje bez diska i redovno ažuriranje.</translation>
 <translation id="5865733239029070421">Automatski šalje Google-u statistiku korišćenja i izveštaje o otkazivanju</translation>
-<translation id="5866557323934807206">Obriši ova podešavanja za kasnije posete</translation>
 <translation id="5866840822086176774">Veoma jak</translation>
 <translation id="5867841422488265304">Pretražite ili unesite veb-adresu</translation>
 <translation id="5869029295770560994">Važi</translation>
@@ -4245,7 +4235,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6225475702458870625">Veza za prenos podataka je dostupna na telefonu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Datoteka privatnog ključa (opcionalno)</translation>
 <translation id="6227280783235722609">dodatak</translation>
-<translation id="6228691855869374890">Ovaj sajt u potpunosti kontroliše MIDI uređaje.</translation>
 <translation id="6229849828796482487">Prekini vezu sa Wi-Fi mrežom</translation>
 <translation id="6229890768313448549">Uslovi korišćenja usluge Google Play ne mogu da se učitaju. Probajte ponovo.</translation>
 <translation id="6231881193380278751">Dodajte parametar upita u URL da biste automatski osvežili stranicu: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4399,7 +4388,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6412931879992742813">Novi prozor bez arhiviranja</translation>
 <translation id="641469293210305670">Instalirajte ažuriranja i aplikacije</translation>
 <translation id="6414888972213066896">Pitao/la si roditelja da li smeš da posetiš ovaj sajt</translation>
-<translation id="6415659939354280526">Odaberite izvor ambijentalnog režima</translation>
 <translation id="6415900369006735853">Povežite se na internet pomoću telefona</translation>
 <translation id="6416743254476733475">Dozvolite ili blokirajte na računaru.</translation>
 <translation id="6417265370957905582">Google pomoćnik</translation>
@@ -5343,7 +5331,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7616214729753637086">Uređaj se registruje...</translation>
 <translation id="7617263010641145920">Uključite Play prodavnicu</translation>
 <translation id="7617366389578322136">Povezuje se sa uređajem „<ph name="DEVICE_NAME" />“</translation>
-<translation id="761763866592998929">Ambijentalni režim</translation>
 <translation id="7621382409404463535">Sistem nije uspeo da sačuva konfiguraciju uređaja.</translation>
 <translation id="7622114377921274169">Puni se.</translation>
 <translation id="7622903810087708234">Detalji lozinke</translation>
@@ -5587,7 +5574,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Prikaži nalog</translation>
 <translation id="7882358943899516840">Tip dobavljača</translation>
-<translation id="78851824530736377">Uključite ambijentalni režim</translation>
 <translation id="7885253890047913815">Nedavna odredišta</translation>
 <translation id="7887334752153342268">Napravi duplikat</translation>
 <translation id="7887864092952184874">Bluetooth miš je uparen</translation>
@@ -6364,7 +6350,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="882854468542856424">Ne dozvoljavaj nijednom sajtu da otkriva Bluetooth uređaje u blizini</translation>
 <translation id="8828933418460119530">Ime DNS-a</translation>
 <translation id="883062543841130884">Zamene</translation>
-<translation id="8830779999439981481">Restartuje se da bi se primenila ažuriranja</translation>
+<translation id="8830779999439981481">Restartuje se da biste primenili ažuriranja</translation>
 <translation id="8830796635868321089">Provera ažuriranja nije uspela pomoću aktuelnih podešavanja proksija. Prilagodite <ph name="PROXY_SETTINGS_LINK_START" />podešavanja proksija<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> i Android telefon bolje rade zajedno. Povežite ih da biste mogli da šaljete SMS-ove pomoću računara, delite internet vezu i otključavate <ph name="DEVICE_TYPE" /> pomoću telefona.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Konfiguraciju mreže kontroliše <ph name="USER_EMAIL" />.</translation>

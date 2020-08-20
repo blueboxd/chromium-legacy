@@ -43,7 +43,7 @@
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="1377255359165588604">সিঙ্ক কাজ করা বন্ধ করে দিয়েছে।</translation>
 <translation id="1377321085342047638">কার্ড নম্বর</translation>
-<translation id="1383876407941801731">খুঁজুন</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1389974829397082527">এখানে কোনো বুকমার্ক নেই</translation>
 <translation id="1400642268715879018">গত ৪ সপ্তাহ</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
@@ -273,7 +273,7 @@
 <translation id="4082688844002261427">সার্চ, বিজ্ঞাপন এবং আরও অনেক কিছু নিজের মতো করে সাজিয়ে নেওয়ার জন্য আপনার ব্রাউজিং এর ইতিহাস কীভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
 <translation id="408404951701638773">সার্চ বারে কাজ করা এখন সহজ</translation>
 <translation id="411254640334432676">ডাউনলোড করা যায়নি।</translation>
-<translation id="4112644173421521737">সার্চ করুন</translation>
+<translation id="4112644173421521737">Search</translation>
 <translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, অনুগ্রহ করে সিস্টেম অ্যাপে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
 <translation id="4124987746317609294">সময় সীমা</translation>
 <translation id="4152011295694446843">আপনি নিজের বুকমার্ক এখানে খুঁজে পাবেন</translation>
@@ -443,6 +443,7 @@
 <translation id="6125339936101702016"><ph name="COMPANY" /> এটি ম্যানেজ করে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
+<translation id="6144589619057374135">'ছদ্মবেশী মোডে' ${url} খুলুন</translation>
 <translation id="616831107264507309">পরে পড়ুন</translation>
 <translation id="6177442314419606057">Chrome-এ সার্চ করুন</translation>
 <translation id="6184086493125982861">ট্যাব দেখান</translation>

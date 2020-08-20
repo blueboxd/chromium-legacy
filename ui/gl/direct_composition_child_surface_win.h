@@ -101,11 +101,6 @@ class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   // Number of frames per second.
   float frame_rate_ = 0.f;
 
-  // Number of frames whose damage < kLargeDamageThreshold.
-  // This is reset to 0 when a frame is encountered whose
-  // damage >= kLargeDamageThreshold
-  size_t small_damage_frame_count_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionChildSurfaceWin);
 };
 

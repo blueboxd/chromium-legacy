@@ -39,6 +39,10 @@ GL_EXPORT bool AreOverlaysSupportedWin();
 GL_EXPORT unsigned int FrameRateToPresentDuration(float frame_rate);
 
 GL_EXPORT UINT GetOverlaySupportFlags(DXGI_FORMAT format);
+
+// Whether to use full damage when direct compostion root surface presents.
+// This function is thread safe.
+GL_EXPORT bool ShouldForceDirectCompositionRootSurfaceFullDamage();
 #endif
 
 }  // namespace gl

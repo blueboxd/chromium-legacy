@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">ବନ୍ଦ ଅଛି</translation>
 <translation id="1021110881106174305">ସ୍ୱୀକାର କରାଯାଇଥିବା କାର୍ଡଗୁଡ଼ିକ</translation>
 <translation id="1021753677514347426">ଆପଣ କିମ୍ବା ଅନ୍ୟ କେହି ଜଣେ ଆପଣଙ୍କ ଡିଭାଇସ୍‌ରେ ଇନଷ୍ଟଲ୍ କରିଥିବା ଏକ ସାର୍ଟିଫିକେଟ୍ ଯୋଗୁଁ ଏହି ସମସ୍ୟାଟି ହୋଇଥାଏ। ସାର୍ଟିଫିକେଟ୍‍ଟି ନେଟ୍‍ୱାର୍କଗୁଡ଼ିକର ନିରୀକ୍ଷଣ ଏବଂ ଗତିରୋଧ ନିମନ୍ତେ ବ୍ୟବହାର କରାଯାଇଥାଏ ବୋଲି ଜଣାଯାଏ ଏବଂ Chromium ଏହାକୁ ବିଶ୍ୱାସ କରେ ନାହିଁ। ଯଦିଓ କୌଣସି ସ୍କୁଲ୍ କିମ୍ବା କମ୍ପାନୀ ନେଟ୍‍ୱାର୍କ ପରି ନିରୀକ୍ଷଣ ପାଇଁ କିଛି ବୈଧ ଉଦାହରଣ ବିଦ୍ୟମାନ ଅଛି, Chromium ଏହା ସୁନିଶ୍ଚିତ କରିବାକୁ ଚାହେଁ ଯେ, ଆପଣ ଏହାକୁ ବନ୍ଦ ନକରିପାରିଲେ ମଧ୍ୟ ଏହା ହେଉଥିବା ବିଷୟରେ ଅବଗତ ରୁହନ୍ତୁ। ୱେବ୍ ଆକ୍ସେସ୍ କରିପାରୁଥିବା ଯେ କୌଣସି ବ୍ରାଉଜର୍ କିମ୍ବା ଆପ୍ଲିକେସନ୍‍‍ରେ ନିରୀକ୍ଷଣ ହୋଇପାରେ।</translation>
+<translation id="1024111578869940408">ଆକ୍ରମଣକାରୀମାନେ ବେଳେବେଳେ ୱେବ୍ ଠିକଣାରେ ସହଜରେ-ଦେଖା-ଯାଉନଥିବା ପରିବର୍ତ୍ତନଗୁଡ଼ିକ କରି ସାଇଟଗୁଡ଼ିକର ନକଲ କରିଥାନ୍ତି।</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ସ୍ଥାୟୀରୂପେ ଆପଣଙ୍କର ଡିଭାଇସ୍‌ରେ ଅଧିକ ଡାଟା ଷ୍ଟୋର୍ କରିବାକୁ ଚାହୁଁଛି</translation>
 <translation id="1032854598605920125">ବାମରୁ ଡାହାଣକୁ ଘୂରାନ୍ତୁ</translation>
 <translation id="1036348656032585052">ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -198,6 +199,7 @@
 <translation id="1717494416764505390">ମେଲବକ୍ସ 3</translation>
 <translation id="1718029547804390981">ଅଂଶୀଦାର ହେବା ପାଇଁ ଡକ୍ୟୁମେଣ୍ଟ ବହୁତ ବଡ଼ ଅଟେ</translation>
 <translation id="1721424275792716183">* ଫିଲ୍ଡ ଆବଶ୍ୟକ ଅଟେ</translation>
+<translation id="1724638245199909652">ଲୋକାଲ୍ ଫଣ୍ଟ ଆକ୍ସେସ୍</translation>
 <translation id="1727741090716970331">ବୈଧ କାର୍ଡ ନମ୍ବର ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="1728677426644403582">ଆପଣ ଏକ ୱେବ୍ ପୃଷ୍ଠାର ଉତ୍ସ ଦେଖୁଛନ୍ତି</translation>
 <translation id="173080396488393970">ଏହି ପ୍ରକାର କାର୍ଡ ସମର୍ଥିତ ନୁହେଁ</translation>
@@ -415,6 +417,7 @@
 <translation id="2677748264148917807">ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ଉତ୍ତମ ଫିଟ୍</translation>
+<translation id="2688969097326701645">ହଁ, ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="2691924980723297736">ସୁରକ୍ଷା ଚେତାବନୀ</translation>
 <translation id="2699302886720511147">ସ୍ୱୀକାର କରାଯାଇଥିବା କାର୍ଡ</translation>
 <translation id="2701514975700770343">ଫେସ୍ ଡାଉନ୍</translation>
@@ -506,6 +509,7 @@
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />ସୁରକ୍ଷିତ DNS କନଫିଗରେସନ୍ ଯାଞ୍ଚ କରାଯାଉଛି<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">ଏହି ପୃଷ୍ଠାକୁ ଦେଖିବା ପାଇଁ ଆପଣଙ୍କ ପାଖରେ ଅଧିକାର ନାହିଁ।</translation>
 <translation id="3113284927548439113">ତୃତୀୟ ସିଫ୍ଟ</translation>
+<translation id="3115874930288085374">ଆପଣ ଆପଣଙ୍କ ଡାଟାର ବ୍ୟାକଅପ୍ ନେଇ ଏହି <ph name="DEVICE_TYPE" />କୁ ଫେରସ୍ତ କରନ୍ତୁ ବୋଲି <ph name="ENROLLMENT_DOMAIN" /> ଚାହେଁ।</translation>
 <translation id="3116158981186517402">ଲାମିନେଟ୍</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />ସଂଯୋଜିତ ଡାଏଗ୍ନୋଷ୍ଟିକ୍ସ ଚଲାଇବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ<ph name="END_LINK" />।</translation>
@@ -1473,6 +1477,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ସୁରକ୍ଷା ମାନାଙ୍କର ପାଳନ କରୁନାହିଁ।</translation>
 <translation id="7210993021468939304">କଣ୍ଟେନର୍ ମଧ୍ୟରେ Linux କାର୍ଯ୍ୟକଳାପ ଏବଂ କଣ୍ଟେନର୍ ମଧ୍ୟରେ Linux ଆପ୍ସ ଇନଷ୍ଟଲ୍ କରି ଚଲାଇପାରେ</translation>
 <translation id="721197778055552897">ଏହି ଅସୁବିଧା ସମ୍ଵନ୍ଧରେ <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /> ।</translation>
+<translation id="7214062855724067749">ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟରରେ ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଫଣ୍ଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ ଯାହା ଫଳରେ ଆପଣ ଉନ୍ନତ ଟାଇପୋଗ୍ରାଫି ତିଆରି କରିପାରିବେ</translation>
 <translation id="7217745192097460130">ଆପଣଙ୍କର କ୍ରୟକୁ ଯାଞ୍ଚ କରି ସମ୍ପୂର୍ଣ୍ଣ କରିବାକୁ Touch ID ବ୍ୟବହାର କରିବେ?</translation>
 <translation id="7219179957768738017">ସଂଯୋଗ <ph name="SSL_VERSION" />ର ବ୍ୟବହାର କରିଥାଏ।</translation>
 <translation id="7220786058474068424">ପ୍ରକ୍ରିୟାକରଣ ହେଉଛି</translation>
@@ -1804,6 +1809,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ବହୁତ ସମୟ ନେଉଛି।</translation>
 <translation id="8503559462189395349">Chrome ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="8503813439785031346">ଉପଯୋଗକର୍ତ୍ତାନାମ</translation>
+<translation id="8507227106804027148">କମାଣ୍ଡ ଲାଇନ୍</translation>
 <translation id="8508648098325802031">ଆଇକନ୍‌ ଖୋଜନ୍ତୁ</translation>
 <translation id="8522552481199248698">Chrome ଆପଣଙ୍କୁ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟକୁ ସୁରକ୍ଷିତ ରଖିବା ଏବଂ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ ବଦଳାଇବାରେ ସାହାଯ୍ୟ କରିପାରିବ।</translation>
 <translation id="8530813470445476232">Chrome ସେଟିଂସରେ ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଇତିହାସ, କୁକୀ, କ୍ୟାଶ୍ ଏବଂ ଆହୁରି ଅନେକ କିଛି ଖାଲି କରନ୍ତୁ</translation>

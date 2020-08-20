@@ -49,6 +49,7 @@ TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
   constexpr int required_b = 3;
   constexpr int nonsense = 4;
   OmniboxPedal test_pedal(
+      OmniboxPedalId::CLEAR_BROWSING_DATA,
       OmniboxPedal::LabelStrings(
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,

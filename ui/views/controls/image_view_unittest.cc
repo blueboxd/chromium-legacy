@@ -5,18 +5,22 @@
 #include "ui/views/controls/image_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/i18n/rtl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/test/test_ax_event_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -142,6 +146,21 @@ TEST_P(ImageViewTest, ImageOriginForCustomViewBounds) {
 
   EXPECT_EQ(gfx::Point(30, 30), image_view()->GetImageBounds().origin());
   EXPECT_EQ(image_view_bounds, image_view()->bounds());
+}
+
+// Verifies setting the accessible name will be call NotifyAccessibilityEvent.
+TEST_P(ImageViewTest, SetAccessibleNameNotifiesAccessibilityEvent) {
+  base::string16 test_tooltip_text = base::ASCIIToUTF16("Test Tooltip Text");
+  test::TestAXEventObserver observer;
+  EXPECT_EQ(0, observer.text_changed_event_count());
+  image_view()->SetAccessibleName(test_tooltip_text);
+  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(test_tooltip_text, image_view()->GetAccessibleName());
+  ui::AXNodeData data;
+  image_view()->GetAccessibleNodeData(&data);
+  const std::string& name =
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  EXPECT_EQ(test_tooltip_text, base::ASCIIToUTF16(name));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

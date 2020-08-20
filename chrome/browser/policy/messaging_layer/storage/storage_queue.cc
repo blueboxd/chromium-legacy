@@ -205,7 +205,7 @@ Status StorageQueue::ScanLastFile() {
   // and reopening it. If the file remains open for too long, it will auto-close
   // by timer.
   scoped_refptr<SingleFile> last_file = files_.rbegin()->second.get();
-  auto open_status = last_file->Open(/*read_only=*/true);
+  auto open_status = last_file->Open(/*read_only=*/false);
   if (!open_status.ok()) {
     LOG(ERROR) << "Error opening file " << last_file->name()
                << ", status=" << open_status;
@@ -328,17 +328,24 @@ Status StorageQueue::WriteHeaderAndBlock(
   // Write to the last file, update sequencing number.
   auto open_status = file->Open(/*read_only=*/false);
   if (!open_status.ok()) {
-    return Status(error::ALREADY_EXISTS, "Cannot open file");
+    return Status(error::ALREADY_EXISTS,
+                  base::StrCat({"Cannot open file=", file->name(),
+                                " status=", open_status.ToString()}));
   }
   auto write_status = file->Append(base::make_span(
       reinterpret_cast<const uint8_t*>(&header), sizeof(header)));
   if (!write_status.ok()) {
-    return Status(error::RESOURCE_EXHAUSTED, "Cannot write file");
+    return Status(error::RESOURCE_EXHAUSTED,
+                  base::StrCat({"Cannot write file=", file->name(),
+                                " status=", write_status.status().ToString()}));
   }
   if (data.size() > 0) {
     write_status = file->Append(data);
     if (!write_status.ok()) {
-      return Status(error::RESOURCE_EXHAUSTED, "Cannot write file");
+      return Status(
+          error::RESOURCE_EXHAUSTED,
+          base::StrCat({"Cannot write file=", file->name(),
+                        " status=", write_status.status().ToString()}));
     }
     // Pad to the whole frame, if necessary.
     const size_t pad_size =
@@ -350,7 +357,10 @@ Status StorageQueue::WriteHeaderAndBlock(
       crypto::RandBytes(pad_span);
       write_status = file->Append(pad_span);
       if (!write_status.ok()) {
-        return Status(error::RESOURCE_EXHAUSTED, "Cannot pad file");
+        return Status(
+            error::RESOURCE_EXHAUSTED,
+            base::StrCat({"Cannot pad file=", file->name(),
+                          " status=", write_status.status().ToString()}));
       }
     }
   }
@@ -799,9 +809,9 @@ Status StorageQueue::SingleFile::Open(bool read_only) {
     return Status::StatusOK();
   }
   handle_ = std::make_unique<base::File>(
-      filename_, read_only
-                     ? (base::File::FLAG_OPEN | base::File::FLAG_READ)
-                     : (base::File::FLAG_CREATE | base::File::FLAG_APPEND));
+      filename_, read_only ? (base::File::FLAG_OPEN | base::File::FLAG_READ)
+                           : (base::File::FLAG_OPEN_ALWAYS |
+                              base::File::FLAG_APPEND | base::File::FLAG_READ));
   if (!handle_ || !handle_->IsValid()) {
     return Status(error::DATA_LOSS,
                   base::StrCat({"Cannot open file=", name(), " for ",
@@ -842,7 +852,6 @@ Status StorageQueue::SingleFile::Delete() {
 StatusOr<base::span<const uint8_t>> StorageQueue::SingleFile::Read(
     uint32_t pos,
     uint32_t size) {
-  DCHECK(is_readonly());
   if (!handle_) {
     return Status(error::UNAVAILABLE, base::StrCat({"File not open ", name()}));
   }
@@ -917,8 +926,8 @@ StatusOr<uint32_t> StorageQueue::SingleFile::Append(
   }
   size_t actual_size = 0;
   while (data.size() > 0) {
-    const int32_t result = handle_->WriteAtCurrentPos(
-        reinterpret_cast<const char*>(data.data()), data.size());
+    const int32_t result = handle_->Write(
+        size_, reinterpret_cast<const char*>(data.data()), data.size());
     if (result < 0) {
       return Status(
           error::DATA_LOSS,

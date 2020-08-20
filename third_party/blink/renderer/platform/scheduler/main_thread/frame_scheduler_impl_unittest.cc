@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -215,6 +216,14 @@ class FrameSchedulerImplTest : public testing::Test {
     frame_scheduler_ = CreateFrameScheduler(
         page_scheduler_.get(), new_delegate_.get(), nullptr, frame_type);
     frame_scheduler_delegate_ = std::move(new_delegate_);
+  }
+
+  void StorePageInBackForwardCache() {
+    page_scheduler_->SetPageBackForwardCached(true);
+  }
+
+  void RestorePageFromBackForwardCache() {
+    page_scheduler_->SetPageBackForwardCached(false);
   }
 
   void TearDown() override {
@@ -1252,6 +1261,85 @@ TEST_F(FrameSchedulerImplTest, SubesourceLoadingPaused) {
   worker_observer->CheckObserverState(
       FROM_HERE, ++worker_not_throttled_count, worker_hidden_count,
       worker_throttled_count, worker_stopped_count);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       LogIpcsFromMultipleThreadsPostedToFramesInBackForwardCache) {
+  base::HistogramTester histogram_tester;
+
+  // Create the task queue explicitly to ensure it exists when the page enters
+  // the back-forward cache, and that the IPC handler is registerd as well.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame_scheduler_->GetTaskRunner(TaskType::kInternalTest);
+
+  StorePageInBackForwardCache();
+
+  // Run the tasks so that they are recorded in the histogram
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+            base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(1);
+            task_runner->PostTask(FROM_HERE, base::BindOnce([]() {}));
+          },
+          task_runner));
+  task_environment_.RunUntilIdle();
+
+  base::RepeatingClosure restore_from_cache_callback = base::BindRepeating(
+      &FrameSchedulerImplTest::RestorePageFromBackForwardCache,
+      base::Unretained(this));
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             base::RepeatingClosure restore_from_cache_callback) {
+            {
+              base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(2);
+              task_runner->PostTask(FROM_HERE, base::BindOnce([]() {}));
+            }
+            {
+              // Once the page is restored from the cache, ensure that the IPC
+              // restoring the page from the cache is not recorded as well.
+              base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(3);
+              task_runner->PostTask(FROM_HERE, restore_from_cache_callback);
+            }
+            {
+              base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(4);
+              task_runner->PostTask(FROM_HERE, base::BindOnce([]() {}));
+            }
+          },
+          task_runner, restore_from_cache_callback));
+  task_environment_.RunUntilIdle();
+
+  // Start posting tasks immediately - will not be recorded
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+            base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(5);
+            task_runner->PostTask(FROM_HERE, base::BindOnce([]() {}));
+          },
+          task_runner));
+  task_environment_.RunUntilIdle();
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+            base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(6);
+            task_runner->PostTask(FROM_HERE, base::BindOnce([]() {}));
+          },
+          task_runner));
+  task_environment_.RunUntilIdle();
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "BackForwardCache.Experimental."
+                  "UnexpectedIPCMessagePostedToCachedFrame.MethodHash"),
+              testing::UnorderedElementsAreArray(
+                  {base::Bucket(1, 1), base::Bucket(2, 1)}));
 }
 
 // TODO(farahcharab) Move priority testing to MainThreadTaskQueueTest after

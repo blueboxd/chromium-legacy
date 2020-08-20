@@ -2,6 +2,12 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script>
+if (window.internals)
+    internals.settings.setLangAttributeAwareFormControlUIEnabled(true);
+else
+    debug('Require testRunner.');
+</script>
 <style>
 :invalid {
   background-color: #ff0000;
@@ -12,6 +18,7 @@
 <div id=parent>
 <input type=number id=number>
 <input id=another>
+<input type="number" lang="ar-eg" id="number_ar">
 </div>
 <script>
 description('A number input fields with a bad input string should make validity.badInput true and have :invalid style.');
@@ -93,6 +100,26 @@ debug("' +1. ' is not a badInput.");
 document.execCommand('InsertText', false, ' ');
 shouldBeFalse('number.validity.badInput');
 shouldBeEqualToString('number.value', '1');
+
+var number_ar = document.getElementById('number_ar');
+number_ar.focus();
+debug("Arabic number is not a badInput.");
+var arabicNum = Number(1.1).toLocaleString('ar-eg');
+document.execCommand('InsertText', false, arabicNum);
+// Windows seems to have issues with Arabic decimal separator, so use dot.
+var isWindows = (number_ar.value == '11');
+if (isWindows)
+{
+  arabicNum = arabicNum.replace(arabicNum[1], '.');
+  number_ar.value = "";
+  document.execCommand('InsertText', false, arabicNum);
+}
+shouldBeFalse('number_ar.validity.badInput');
+shouldBeEqualToString('number_ar.value', '1.1');
+debug("Arabic number with two decimal separators is a badInput.");
+document.execCommand('InsertText', false, arabicNum[1]);
+shouldBeTrue('number_ar.validity.badInput');
+shouldBeEqualToString('number_ar.value', '');
 
 document.getElementById('parent').innerHTML = '';
 </script>

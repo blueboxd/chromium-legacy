@@ -589,6 +589,10 @@ void QuicConnectionLogger::OnTransportParametersResumed(
   event_logger_.OnTransportParametersResumed(transport_parameters);
 }
 
+void QuicConnectionLogger::OnZeroRttRejected() {
+  event_logger_.OnZeroRttRejected();
+}
+
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   // For short connections under 22 packets in length, we'll rely on the
   // Net.QuicSession.21CumulativePacketsReceived_* histogram to indicate packet

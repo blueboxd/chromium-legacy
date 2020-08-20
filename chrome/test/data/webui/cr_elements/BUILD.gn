@@ -61,6 +61,7 @@ js_type_check("closure_compile") {
     ":cr_expand_button_focus_tests.m",
     ":cr_expand_button_tests.m",
     ":cr_fingerprint_progress_arc_tests.m",
+    ":cr_grid_focus_test",
     ":cr_icon_button_focus_tests.m",
     ":cr_icon_button_tests.m",
     ":cr_input_test.m",
@@ -249,6 +250,17 @@ js_library("cr_input_test.m") {
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
   extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_grid_focus_test") {
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
+    "//ui/webui/resources/cr_elements/cr_grid",
+    "//ui/webui/resources/js:util.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("cr_lazy_render_tests.m") {

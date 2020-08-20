@@ -313,8 +313,6 @@ source_set("unit_tests") {
     "indexeddb/mock_web_idb_callbacks.h",
     "indexeddb/mock_web_idb_database.cc",
     "indexeddb/mock_web_idb_database.h",
-    "indexeddb/mock_web_idb_factory.cc",
-    "indexeddb/mock_web_idb_factory.h",
     "indexeddb/mock_web_idb_transaction.cc",
     "indexeddb/mock_web_idb_transaction.h",
     "indexeddb/web_idb_cursor_impl_unittest.cc",

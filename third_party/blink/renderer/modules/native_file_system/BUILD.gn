@@ -24,6 +24,8 @@ blink_modules_sources("native_file_system") {
     "native_file_system_underlying_sink.h",
     "native_file_system_writable_file_stream.cc",
     "native_file_system_writable_file_stream.h",
+    "storage_manager_native_file_system.cc",
+    "storage_manager_native_file_system.h",
   ]
 
   deps = [ "//third_party/blink/renderer/platform" ]

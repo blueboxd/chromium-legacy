@@ -22,13 +22,6 @@ namespace password_manager {
 
 namespace {
 
-bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
-  return sync_service && sync_service->IsSyncFeatureActive() &&
-         sync_service->GetUserSettings()->GetSelectedTypes().Has(
-             syncer::UserSelectableType::kPasswords) &&
-         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
-}
-
 void ActivateAffiliationBasedMatching(
     PasswordStore* password_store,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -115,6 +108,13 @@ void DeleteLoginDatabaseForAccountStorageFiles(
 base::FilePath GetLoginDatabaseForAccountStoragePathForTesting(
     const base::FilePath& profile_path) {
   return profile_path.Append(kLoginDataForAccountFileName);
+}
+
+bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
+  return sync_service && sync_service->IsSyncFeatureActive() &&
+         sync_service->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kPasswords) &&
+         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
 }
 
 }  // namespace password_manager

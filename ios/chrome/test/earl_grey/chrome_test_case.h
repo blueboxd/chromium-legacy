@@ -26,6 +26,17 @@ class EmbeddedTestServer;
 // Closes all tabs, and waits for the UI to synchronize.
 + (void)closeAllTabs;
 
+// Turns off mock authentication. It will automatically be re-enabled at the
+// end of the test.
++ (void)disableMockAuthentication;
+
+// Turns mock authentication back on.
++ (void)enableMockAuthentication;
+
+// Stops the HTTP server. It will be re-started at the end of the test. This
+// should only be called when the HTTP server is running.
++ (void)stopHTTPServer;
+
 // The EmbeddedTestServer instance that hosts HTTP requests for tests.
 @property(nonatomic, readonly) net::test_server::EmbeddedTestServer* testServer;
 
@@ -34,15 +45,14 @@ class EmbeddedTestServer;
 - (void)setTearDownHandler:(ProceduralBlock)tearDownHandler;
 
 // Turns off mock authentication. It will automatically be re-enabled at the
-// end of the test. This shall only be called once per test.
+// end of the test.
 - (void)disableMockAuthentication;
 
 // Turns mock authentication back on.
 - (void)enableMockAuthentication;
 
 // Stops the HTTP server. It will be re-started at the end of the test. This
-// should only be called when the HTTP server is running. This shall only be
-// called once per test.
+// should only be called when the HTTP server is running.
 - (void)stopHTTPServer;
 
 // Returns YES if the test method name extracted from |selector| matches the

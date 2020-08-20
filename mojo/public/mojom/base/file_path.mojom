@@ -4,6 +4,7 @@
 
 module mojo_base.mojom;
 
+[Stable]
 struct FilePath {
   [EnableIf=file_path_is_string]
   string path;

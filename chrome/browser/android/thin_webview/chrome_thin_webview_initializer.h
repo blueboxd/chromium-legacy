@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_THIN_WEBVIEW_CHROME_THIN_WEBVIEW_INITIALIZER_H_
 #define CHROME_BROWSER_ANDROID_THIN_WEBVIEW_CHROME_THIN_WEBVIEW_INITIALIZER_H_
 
-#include "chrome/browser/android/thin_webview/thin_webview_initializer.h"
+#include "components/thin_webview/thin_webview_initializer.h"
 
 namespace thin_webview {
 namespace android {

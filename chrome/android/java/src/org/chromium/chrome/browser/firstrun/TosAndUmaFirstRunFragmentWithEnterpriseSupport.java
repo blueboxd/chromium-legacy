@@ -8,11 +8,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.components.browser_ui.widget.LoadingView;
 import org.chromium.policy.PolicyService;
@@ -56,12 +56,20 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
      * should skip the rest of FRE. This can be null when this information is not ready yet.
      */
     private @Nullable Boolean mPolicyCctTosDialogEnabled;
-
-    private static boolean sBlockPolicyLoadingForTest;
+    /**
+     * Whether the current device is organization owned. This will start null before the check
+     * occurs. The FRE can only be skipped if the device is owned corporate owned.
+     */
+    private @Nullable Boolean mIsDeviceOwned;
 
     private TosAndUmaFirstRunFragmentWithEnterpriseSupport() {
         mCallbackController = new CallbackController();
         checkAppRestriction();
+        // It's possible for app restrictions to have its callback synchronously invoked and we can
+        // give up on the skip scenario.
+        if (shouldWaitForPolicyLoading()) {
+            checkIsDeviceOwned();
+        }
     }
 
     @Override
@@ -114,7 +122,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
 
     @Override
     public void onHideLoadingUIComplete() {
-        if (confirmedCctTosDialogDisabled()) {
+        if (confirmedCctTosDialogDisabled() && confirmedOwnedDevice()) {
             // TODO(crbug.com/1108564): Show the different UI that has the enterprise disclosure.
             exitCctFirstRun();
         } else {
@@ -130,7 +138,14 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
      *         and can update the UI immediately.
      */
     private boolean shouldWaitForPolicyLoading() {
-        return !confirmedNoAppRestriction() && mPolicyCctTosDialogEnabled == null;
+        // Note that someSignalOutstanding doesn't care about mHasRestriction. It's main purpose is
+        // to be a very quick signal mPolicyCctTosDialogEnabled is never going to turn false. But
+        // once mPolicyCctTosDialogEnabled has a non-null value, mHasRestriction is redundant. It
+        // never actually needs to return for us to know we can skip the ToS.
+        boolean someSignalOutstanding =
+                mPolicyCctTosDialogEnabled == null || mIsDeviceOwned == null;
+        boolean mightStillBeAllowedToSkip = !confirmedToShowUmaAndTos();
+        return someSignalOutstanding && mightStillBeAllowedToSkip;
     }
 
     /**
@@ -140,7 +155,8 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
      * @return Whether we should show TosAndUma components on the UI.
      */
     private boolean confirmedToShowUmaAndTos() {
-        return confirmedNoAppRestriction() || confirmedCctTosDialogEnabled();
+        return confirmedNoAppRestriction() || confirmedCctTosDialogEnabled()
+                || confirmedNotOwnedDevice();
     }
 
     private boolean confirmedNoAppRestriction() {
@@ -155,16 +171,32 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
         return mPolicyCctTosDialogEnabled != null && !mPolicyCctTosDialogEnabled;
     }
 
+    private boolean confirmedNotOwnedDevice() {
+        return mIsDeviceOwned != null && !mIsDeviceOwned;
+    }
+
+    private boolean confirmedOwnedDevice() {
+        return mIsDeviceOwned != null && mIsDeviceOwned;
+    }
+
     private void checkAppRestriction() {
         FirstRunAppRestrictionInfo.getInstance().getHasAppRestriction(
                 mCallbackController.makeCancelable(this::onAppRestrictionDetected));
     }
 
     private void onAppRestrictionDetected(boolean hasAppRestriction) {
+        // It's possible that we've already told the spinner to hide, and even signaled to our
+        // delegate to exit. If so, we can ignore the app restrictions value.
+        // TODO(https://crbug.com/1119449): Shouldn't need this check if we can cancel this callback
+        // when we no longer need it.
+        if (!shouldWaitForPolicyLoading()) {
+            return;
+        }
+
         mHasRestriction = hasAppRestriction;
 
         if (!shouldWaitForPolicyLoading() && mViewCreated) {
-            // TODO(crbug.com/1106812): Unregister policy listener.
+            // TODO(https://crbug.com/1119449): Cleanup various policy callbacks.
             mLoadingSpinner.hideLoadingUI();
         }
     }
@@ -185,14 +217,28 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
 
     private void updateCctTosPolicy() {
         mPolicyCctTosDialogEnabled = FirstRunUtils.isCctTosDialogEnabled();
-        if (mViewCreated) {
+        if (!shouldWaitForPolicyLoading() && mViewCreated) {
+            // TODO(https://crbug.com/1119449): Cleanup various policy callbacks.
             mLoadingSpinner.hideLoadingUI();
         }
     }
 
-    @VisibleForTesting
-    void exitCctFirstRun() {
+    private void checkIsDeviceOwned() {
+        EnterpriseInfo.getInstance().getDeviceEnterpriseInfo(
+                mCallbackController.makeCancelable(this::onIsDeviceOwnedDetected));
+    }
+
+    private void onIsDeviceOwnedDetected(EnterpriseInfo.OwnedState ownedState) {
+        mIsDeviceOwned = ownedState.mDeviceOwned;
+        if (!shouldWaitForPolicyLoading() && mViewCreated) {
+            // TODO(https://crbug.com/1119449): Cleanup various policy callbacks.
+            mLoadingSpinner.hideLoadingUI();
+        }
+    }
+
+    private void exitCctFirstRun() {
         assert confirmedCctTosDialogDisabled();
+        assert confirmedOwnedDevice();
         // TODO(crbug.com/1108564): Fire a signal to end this fragment when disclaimer is ready.
         // TODO(crbug.com/1108582): Save a shared pref indicating Enterprise CCT FRE is complete,
         //  and skip waiting for future cold starts.

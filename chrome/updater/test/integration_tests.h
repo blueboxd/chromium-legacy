@@ -28,14 +28,15 @@ void Install();
 // Expect that the updater is installed on the system and the launchd tasks
 // are updated correctly.
 void ExpectActive();
-//
-// Make the candidate updater version active.
-void PromoteCandidate();
 
 // Uninstall the updater. If the updater was installed during the test, it
 // should be uninstalled before the end of the test to avoid having an actual
 // live updater on the machine that ran the test.
 void Uninstall();
+
+// Run the wake client and wait for it to exit. Assert that it exits with
+// |exit_code|. The server should exit a few seconds after.
+void RunWake(int exit_code);
 
 }  // namespace test
 

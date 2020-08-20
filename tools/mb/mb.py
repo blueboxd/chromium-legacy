@@ -1149,25 +1149,19 @@ class MetaBuildWrapper(object):
 
     command, extra_files = self.GetIsolateCommand(target, vals)
 
-    # TODO(crbug.com/816629): Convert everything to wrapped_isolated_scripts
-    # and remove the else-branch of this.
-    if isolate_map[target]['type'] == 'wrapped_console_launcher':
-      runtime_deps = self.ReadFile(
-          self.PathJoin(build_dir, target + '.runtime_deps')).splitlines()
-    else:
-      # Any warning for an unused arg will get interleaved into the cmd's
-      # stdout. When that happens, the isolate step below will fail with an
-      # obscure error when it tries processing the lines of the warning. Fail
-      # quickly in that case to avoid confusion
-      cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps',
-                       '--fail-on-unused-args')
-      ret, out, _ = self.Call(cmd)
-      if ret:
-        if out:
-          self.Print(out)
-        return ret
+    # Any warning for an unused arg will get interleaved into the cmd's
+    # stdout. When that happens, the isolate step below will fail with an
+    # obscure error when it tries processing the lines of the warning. Fail
+    # quickly in that case to avoid confusion
+    cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps',
+                     '--fail-on-unused-args')
+    ret, out, _ = self.Call(cmd)
+    if ret:
+      if out:
+        self.Print(out)
+      return ret
 
-      runtime_deps = out.splitlines()
+    runtime_deps = out.splitlines()
 
     ret = self.WriteIsolateFiles(build_dir, command, target, runtime_deps, vals,
                                  extra_files)
@@ -1373,25 +1367,26 @@ class MetaBuildWrapper(object):
                or 'is_chromeos_device=true' in vals['gn_args'])
     is_cros_device = 'is_chromeos_device=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
-    is_linux = ('target_os="linux"' in vals['gn_args']
-                or (self.platform in ('linux', 'linux2') and not is_android
-                    and not is_fuchsia and not is_cros))
     is_mac = self.platform == 'darwin' and not is_ios
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     is_lacros = 'chromeos_is_browser_only=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
-    if test_type.startswith('wrapped_') or is_lacros:
-      if is_mac or is_linux or is_lacros:
-        cmdline = ['bin/run_{}'.format(target)]
-        return cmdline, []
-      elif is_win:
-        cmdline = ['bin/run_{}.bat'.format(target)]
-        return cmdline, []
-      else:
-        test_type = test_type[len('wrapped_'):]
 
-    # TODO(crbug.com/816629): Convert everything to wrapped_isolated_scripts
+    if self.use_luci_auth:
+      cmdline = ['luci-auth.exe' if is_win else 'luci-auth', 'context', '--']
+    else:
+      cmdline = []
+
+    if test_type == 'generated_script' or is_ios or is_lacros:
+      script = isolate_map[target].get('script', 'bin/run_{}'.format(target))
+      if is_win:
+        script += '.bat'
+      cmdline += [script]
+      return cmdline, []
+
+
+    # TODO(crbug.com/816629): Convert all targets to generated_scripts
     # and delete the rest of this function.
 
     # This should be true if tests with type='windowed_test_launcher' are
@@ -1412,49 +1407,16 @@ class MetaBuildWrapper(object):
     clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
     java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
 
-    use_python3 = isolate_map[target].get('use_python3', False)
-
     executable = isolate_map[target].get('executable', target)
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
-
-    # TODO(crbug.com/1060857): Remove this once swarming task templates
-    # support command prefixes.
-    if self.use_luci_auth:
-      cmdline = ['luci-auth.exe' if is_win else 'luci-auth', 'context', '--']
-    else:
-      cmdline = []
-
-    if use_python3:
-      cmdline += ['vpython3']
-      extra_files = ['../../.vpython3']
-    else:
-      cmdline += ['vpython']
-      extra_files = ['../../.vpython']
+    cmdline += ['vpython']
+    extra_files = ['../../.vpython']
     extra_files += [
       '../../testing/test_env.py',
     ]
 
-    if test_type == 'nontest':
-      self.WriteFailureAndRaise('We should not be isolating %s.' % target,
-                                output_path=None)
-
-    if test_type == 'generated_script':
-      script = isolate_map[target]['script']
-      if self.platform == 'win32':
-        script += '.bat'
-      cmdline += [
-          '../../testing/test_env.py',
-          script,
-      ]
-    elif is_ios and test_type != "raw":
-      # iOS commands are all wrapped with generate_wrapper. Some targets
-      # shared with iOS aren't defined with generated_script (ie/ basic_
-      # unittests) so we force those to follow iOS' execution process by
-      # mimicking what generated_script would do
-      script = 'bin/run_{}'.format(target)
-      cmdline += ['../../testing/test_env.py', script]
-    elif is_android and test_type != 'script':
+    if is_android and test_type != 'script':
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [

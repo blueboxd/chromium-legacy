@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "2020-08-19T17:48:46.031714546+00:00",
+  "time_generated": "2020-08-19T21:36:03.019733176+00:00",
   "primary_language_code": "en",
   "locales": [
     {
@@ -5352,6 +5352,240 @@
                 "instaliranje",
                 "nadogradnja",
                 "ažuriranje"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "hu",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "belül",
+          "hogyan",
+          "saját",
+          "lehet",
+          "tudom",
+          "hogy",
+          "egy",
+          "én",
+          "az",
+          "a"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngészési",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "eltávolítása",
+                "eltávolítani",
+                "tisztítása",
+                "törlése",
+                "törölni"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "gyorsítótár",
+                "információk",
+                "előzmények",
+                "adatok",
+                "cookie",
+                "adat"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "megjelenítése",
+                "szerkesztése",
+                "módosítása",
+                "megtekintése",
+                "frissítése",
+                "kezelése",
+                "mentése",
+                "kezelő"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "bejelentkezési adatok",
+                "jelszavak",
+                "jelszó"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "szerkesztése",
+                "módosítása",
+                "frissítése",
+                "kezelése",
+                "mentése"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "hitelkártya adatok",
+                "bankkártya adatok",
+                "fizetési módok",
+                "kártya adatai",
+                "kártyaadatok",
+                "hitelkártya",
+                "bankkártya",
+                "fizetések",
+                "kártyák",
+                "fizetés"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "létrehozása",
+                "megnyitása",
+                "indítása",
+                "kezdése",
+                "lépés"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "inkognitó ablak",
+                "inkognitó mód",
+                "inkognitó lap",
+                "privát ablak",
+                "privát mód",
+                "privát lap",
+                "inkognitó"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "nyelvének módosítása",
+                "lefordítása"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ezt az oldalt",
+                "nyelvváltás",
+                "fordítsd le",
+                "fordítása",
+                "oldal",
+                "ez"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "böngésző",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "frissítése",
+                "telepítése",
+                "frissítés",
+                "verzió"
               ]
             }
           ]

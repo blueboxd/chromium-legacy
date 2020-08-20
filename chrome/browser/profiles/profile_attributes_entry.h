@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -54,7 +53,9 @@ class ProfileAttributesEntry {
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   ProfileAttributesEntry();
-  virtual ~ProfileAttributesEntry() {}
+  ProfileAttributesEntry(const ProfileAttributesEntry&) = delete;
+  ProfileAttributesEntry& operator=(const ProfileAttributesEntry&) = delete;
+  virtual ~ProfileAttributesEntry() = default;
 
   // Returns whether the profile name is the concatenation of the Gaia name and
   // of the local profile name.
@@ -307,8 +308,8 @@ class ProfileAttributesEntry {
   // when this class holds the members required to fulfill its own contract.
   size_t profile_index() const;
 
-  ProfileInfoCache* profile_info_cache_;
-  PrefService* prefs_;
+  ProfileInfoCache* profile_info_cache_ = nullptr;
+  PrefService* prefs_ = nullptr;
   base::FilePath profile_path_;
   std::string storage_key_;
   base::string16 last_name_to_display_;
@@ -318,8 +319,6 @@ class ProfileAttributesEntry {
   // memory only and can be easily reset once the policy is turned off.
   bool is_force_signin_profile_locked_ = false;
   bool is_force_signin_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileAttributesEntry);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_ENTRY_H_

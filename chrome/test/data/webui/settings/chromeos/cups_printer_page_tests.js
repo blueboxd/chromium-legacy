@@ -2,6 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/lazy_load.js';
+
+// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {CupsPrintersBrowserProxyImpl,PrinterSetupResult,CupsPrintersEntryManager,PrintServerResult,PrinterType} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {TestCupsPrintersBrowserProxy} from './test_cups_printers_browser_proxy.m.js';
+// #import {createCupsPrinterInfo,createPrinterListEntry} from './cups_printer_test_utils.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import {flushTasks} from '../../test_util.m.js';
+// #import {MojoInterfaceProviderImpl, MojoInterfaceProvider} from '//resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+// #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// clang-format on
+
 /*
  * Helper function that waits for |getEulaUrl| to get called and then verifies
  * its arguments.
@@ -244,7 +259,8 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   /**
-   * Test that when getPrinterInfo fails for an unreachable printer, the printer
+   * Test that when getPrinterInfo fails for an unreachable printer, the
+   printer
    * address field is marked as invalid.
    */
   test('GetPrinterInfoFailsUnreachableError', function() {
@@ -476,7 +492,8 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   /**
-   * The following tests check that clicking Enter button on the keyboard from
+   * The following tests check that clicking Enter button on the keyboard
+   from
    * each input text field on the add-printer-manually-dialog will advance to
    * the next dialog.
    */
@@ -599,13 +616,8 @@ suite('EditPrinterDialog', function() {
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let mojoApi;
-
-  suiteSetup(function() {
-    mojoApi = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi;
-  });
+  /** @type {!chromeos.networkConfig.mojom.NetworkStateProperties|undefined} */
+  let wifi1;
 
   setup(function() {
     const mojom = chromeos.networkConfig.mojom;
@@ -616,11 +628,8 @@ suite('EditPrinterDialog', function() {
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
 
     // Simulate internet connection.
-    mojoApi.resetForTest();
-    const wifi1 =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
+    wifi1 = OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
     wifi1.connectionState = mojom.ConnectionStateType.kOnline;
-    mojoApi.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
@@ -628,11 +637,11 @@ suite('EditPrinterDialog', function() {
     page = document.createElement('settings-cups-printers');
     document.body.appendChild(page);
     assertTrue(!!page);
+    page.onActiveNetworksChanged([wifi1]);
     Polymer.dom.flush();
   });
 
   teardown(function() {
-    mojoApi.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     dialog = null;
@@ -738,7 +747,7 @@ suite('EditPrinterDialog', function() {
           assertTrue(saveButton.disabled);
 
           // Change printer name to something valid.
-          printerName = dialog.$.printerName;
+          const printerName = dialog.$.printerName;
           printerName.value = 'new printer name';
           printerName.fire('input');
           assertFalse(saveButton.disabled);
@@ -1011,7 +1020,7 @@ suite('EditPrinterDialog', function() {
           assertTrue(!!saveButton);
           assertTrue(saveButton.disabled);
 
-          makeDropDown = dialog.$$('#printerPPDManufacturer');
+          const makeDropDown = dialog.$$('#printerPPDManufacturer');
           makeDropDown.value = 'HP';
           makeDropDown.dispatchEvent(
               new CustomEvent('change'), {'bubbles': true});
@@ -1023,7 +1032,7 @@ suite('EditPrinterDialog', function() {
           // Saving is disabled until a model is selected.
           assertTrue(saveButton.disabled);
 
-          modelDropDown = dialog.$$('#printerPPDModel');
+          const modelDropDown = dialog.$$('#printerPPDModel');
           modelDropDown.value = 'HP 910';
           modelDropDown.dispatchEvent(
               new CustomEvent('change'), {'bubbles': true});
@@ -1099,9 +1108,10 @@ suite('EditPrinterDialog', function() {
    */
   test('OfflineEdit', function() {
     // Simulate connecting to a network with no internet connection.
-    mojoApi.setNetworkConnectionStateForTest(
-        'wifi1_guid',
-        chromeos.networkConfig.mojom.ConnectionStateType.kConnected);
+    wifi1.connectionState =
+        chromeos.networkConfig.mojom.ConnectionStateType.kConnected;
+    page.onActiveNetworksChanged([wifi1]);
+    Polymer.dom.flush();
     const expectedName = 'editedName';
     return initializeAndOpenEditDialog(
                /*name=*/ 'name', /*address=*/ 'address', /*id=*/ 'id',
@@ -1172,16 +1182,8 @@ suite('PrintServerTests', function() {
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let mojoApi_;
-
-  suiteSetup(function() {
-    mojoApi_ = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
-  });
 
   setup(function() {
-    const mojom = chromeos.networkConfig.mojom;
     entryManager = settings.printing.CupsPrintersEntryManager.getInstance();
     setEntryManagerPrinters(
         /*savedPrinters=*/[], /*automaticPrinters=*/[],
@@ -1191,13 +1193,6 @@ suite('PrintServerTests', function() {
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
 
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
-
-    // Simulate internet connection.
-    mojoApi_.resetForTest();
-    const wifi1 =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
-    wifi1.connectionState = mojom.ConnectionStateType.kOnline;
-    mojoApi_.addNetworksForTest([wifi1]);
 
     PolymerTest.clearBody();
     settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
@@ -1212,7 +1207,6 @@ suite('PrintServerTests', function() {
   });
 
   teardown(function() {
-    mojoApi_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     dialog = null;

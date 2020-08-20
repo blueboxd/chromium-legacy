@@ -238,6 +238,7 @@ class WebRequestProxyingURLLoaderFactory
   WebRequestProxyingURLLoaderFactory(
       content::BrowserContext* browser_context,
       int render_process_id,
+      int frame_id,
       WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       base::Optional<int64_t> navigation_id,
@@ -247,14 +248,14 @@ class WebRequestProxyingURLLoaderFactory
       mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
           header_client_receiver,
       WebRequestAPI::ProxySet* proxies,
-      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type,
-      ukm::SourceId ukm_source_id);
+      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type);
 
   ~WebRequestProxyingURLLoaderFactory() override;
 
   static void StartProxying(
       content::BrowserContext* browser_context,
       int render_process_id,
+      int frame_id,
       WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       base::Optional<int64_t> navigation_id,
@@ -264,8 +265,7 @@ class WebRequestProxyingURLLoaderFactory
       mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
           header_client_receiver,
       WebRequestAPI::ProxySet* proxies,
-      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type,
-      ukm::SourceId ukm_source_id);
+      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
@@ -313,6 +313,7 @@ class WebRequestProxyingURLLoaderFactory
 
   content::BrowserContext* const browser_context_;
   const int render_process_id_;
+  const int frame_id_;
   WebRequestAPI::RequestIDGenerator* const request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   base::Optional<int64_t> navigation_id_;
@@ -325,9 +326,13 @@ class WebRequestProxyingURLLoaderFactory
 
   const content::ContentBrowserClient::URLLoaderFactoryType
       loader_factory_type_;
-  // A UKM source ID associated with the content::WebContents of the initiator
-  // frame.
-  const ukm::SourceId ukm_source_id_;
+  // A UKM source ID associated with the initiator frame.
+  // This is non-const and optional, because at the construction timing the
+  // frame hasn't been fully committed yet. See
+  // https://groups.google.com/a/chromium.org/forum/#!msg/navigation-dev/zsEzPKm-COk/N7k58Fa8BgAJ.
+  // TODO(yhirano): Make this const non-optional when it is fixed.
+  // This is calculated correctly only for factories for subresource requests.
+  base::Optional<ukm::SourceId> ukm_source_id_;
 
   // Mapping from our own internally generated request ID to an
   // InProgressRequest instance.

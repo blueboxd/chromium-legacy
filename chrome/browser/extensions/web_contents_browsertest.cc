@@ -24,6 +24,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 namespace extensions {
 namespace {
@@ -96,6 +97,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetActiveWebContents(browser()), "testTabsAPI()", &result));
   EXPECT_TRUE(result);
+}
+
+// Ensure that platform app frames can't be loaded in a tab even on a redirect.
+// Regression test for crbug.com/1110551.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabNavigationToPlatformApp) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal"));
+  ASSERT_TRUE(extension);
+
+  const GURL test_cases[] = {extension->GetResourceURL("main.html"),
+                             BackgroundInfo::GetBackgroundURL(extension)};
+  for (const GURL& app_url : test_cases) {
+    GURL redirect_to_platform_app =
+        embedded_test_server()->GetURL("/server-redirect?" + app_url.spec());
+    content::WebContents* web_contents = GetActiveWebContents(browser());
+    content::TestNavigationObserver observer(web_contents,
+                                             net::ERR_BLOCKED_BY_CLIENT);
+    ui_test_utils::NavigateToURL(browser(), redirect_to_platform_app);
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
 }
 
 // Test that we correctly set up the ExtensionNavigationUIData for each

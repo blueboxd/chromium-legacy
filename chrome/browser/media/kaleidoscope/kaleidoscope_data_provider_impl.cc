@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -162,6 +163,35 @@ void KaleidoscopeDataProviderImpl::SetFirstRunExperienceCompleted() {
 
   prefs->SetInteger(kaleidoscope::prefs::kKaleidoscopeFirstRunCompleted,
                     kKaleidoscopeFirstRunLatestVersion);
+}
+
+void KaleidoscopeDataProviderImpl::GetAllMediaFeeds(
+    GetAllMediaFeedsCallback cb) {
+  GetMediaHistoryService()->GetMediaFeeds(
+      media_history::MediaHistoryKeyedService::GetMediaFeedsRequest(),
+      std::move(cb));
+}
+
+void KaleidoscopeDataProviderImpl::SetMediaFeedsConsent(
+    bool accepted_media_feeds,
+    bool accepted_auto_select_media_feeds,
+    const std::vector<int64_t>& enabled_feed_ids,
+    const std::vector<int64_t>& disabled_feed_ids) {
+  auto* prefs = profile_->GetPrefs();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kMediaFeedsBackgroundFetching, accepted_media_feeds);
+
+  // If the user declined to use Media Feeds at all, then there's nothing left
+  // to do.
+  if (!accepted_media_feeds)
+    return;
+
+  prefs->SetBoolean(kaleidoscope::prefs::kKaleidoscopeAutoSelectMediaFeeds,
+                    accepted_auto_select_media_feeds);
+
+  // TODO(b/154517281): Update the MediaFeeds service with the allowlisted
+  // feeds from |enabled_feed_ids| and |disabled_feed_ids|.
 }
 
 void KaleidoscopeDataProviderImpl::GetHighWatchTimeOrigins(

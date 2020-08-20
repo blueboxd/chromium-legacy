@@ -40,6 +40,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1302880136325416935">Afficher les paramètres Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Toujours afficher l'étagère</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> connecté</translation>
 <translation id="1341651618736211726">Dépassement</translation>
 <translation id="1346748346194534595">À droite</translation>
 <translation id="1351937230027495976">Réduire le menu</translation>
@@ -73,7 +74,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Vers la droite</translation>
-<translation id="1776485282219497802">Mode sombre activé.</translation>
+<translation id="1776485282219497802">Le mode sombre est activé.</translation>
 <translation id="1782199038061388045">traduction</translation>
 <translation id="181103072419391116">Force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
@@ -519,6 +520,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="6972754398087986839">Démarrer</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
+<translation id="6990778048354947307">Thème sombre</translation>
 <translation id="7007983414944123363">Impossible de valider votre code ou votre mot de passe. Réessayez.</translation>
 <translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Associer votre <ph name="DEVICE_NAME" /> à votre téléphone</translation>
@@ -697,7 +699,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="8936501819958976551">a désactivé</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="8958665219764428373">Mode sombre désactivé.</translation>
+<translation id="8958665219764428373">Le mode sombre est désactivé.</translation>
 <translation id="8983038754672563810">3G+</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> en cours d'utilisation</translation>
 <translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>

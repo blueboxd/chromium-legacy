@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Trenutna različica je Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Dostop do katere koli naprave <ph name="DEVICE_NAME_AND_VENDOR" /> prek USB-ja</translation>
 <translation id="1509960214886564027">Funkcije na številnih spletnih mestih morda ne bodo delovale</translation>
-<translation id="1510030919967934016">Tej strani je preprečeno spremljanje vaše lokacije.</translation>
 <translation id="1510238584712386396">Zaganjalnik</translation>
 <translation id="1510785804673676069">Če uporabljate strežnik proxy, preverite nastavitve proxyja ali
         se obrnite na omrežnega skrbnika in poskrbite, da strežnik
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Uredi datoteko</translation>
 <translation id="1698122934742150150">Samo za trenutno sejo brez beleženja zgodovine</translation>
 <translation id="1700079447639026019">Spletna mesta, ki nikoli ne morejo uporabiti piškotkov</translation>
-<translation id="1700845716982723710">Izklop ambientalnega načina</translation>
 <translation id="1701062906490865540">Odstrani to osebo</translation>
 <translation id="1703331064825191675">Naj vas nikoli ne skrbi glede gesel</translation>
 <translation id="1704970325597567340">Varnostno preverjanje je bilo izvedeno dne <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Nadomestite aplikacije in datoteke za Linux s prejšnjo varnostno kopijo</translation>
 <translation id="1842766183094193446">Ali ste prepričani, da želite omogočiti predstavitveni način?</translation>
 <translation id="1846308012215045257">Pridržite tipko »control« in kliknite za zagon vtičnika <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Omogočanje ambientalnega načina</translation>
 <translation id="1849186935225320012">To spletno mesto ima popolni nadzor nad napravami MIDI.</translation>
 <translation id="1850508293116537636">&amp;Zasukaj v smeri urinega kazalca</translation>
 <translation id="1852141627593563189">Iskanje škodljive programske opreme</translation>
@@ -1174,7 +1171,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2392163307141705938">Dosegel(-la) si časovno omejitev, ki jo je starš nastavil za izdelek <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktiviraj</translation>
 <translation id="2393136602862631930">Nastavitev aplikacije <ph name="APP_NAME" /> v Chromebooku</translation>
-<translation id="2394566832561516196">Nastavitve bodo izbrisane pri naslednjem vnovičnem nalaganju.</translation>
 <translation id="2395616325548404795">Naprava <ph name="DEVICE_TYPE" /> je bila uspešno prijavljena v upravljanje v podjetju, vendar ni poslala svojih podatkov o sredstvih in lokaciji. Te podatke ročno vnesite iz konzole Admin console za to napravo.</translation>
 <translation id="2396387085693598316">Skrbnik je blokiral razširitev »<ph name="EXTENSION_NAME" />«</translation>
 <translation id="2396783860772170191">Vnesite 4-mestno kodo PIN (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2979639724566107830">Odpri v novem oknu</translation>
 <translation id="2981113813906970160">Pokaži velik miškin kazalec</translation>
 <translation id="2985348301114641460">Želite skrbniku poslati zahtevo za namestitev razširitve »<ph name="EXTENSION_NAME" />«?</translation>
-<translation id="2986010903908656993">Tej spletni strani je preprečen popolni nadzor nad napravami MIDI.</translation>
 <translation id="2987620471460279764">Besedilo, deljeno iz druge naprave</translation>
 <translation id="2988018669686457659">Rezervni upodabljalnik</translation>
 <translation id="2989123969927553766">Pospeševanje pomikanja z miško</translation>
@@ -2088,7 +2083,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3524965460886318643">Izvoz dejavnosti</translation>
 <translation id="3526034519184079374">Podatkov spletnega mesta ni mogoče prebrati ali spremeniti</translation>
 <translation id="3527085408025491307">Mapa</translation>
-<translation id="3528033729920178817">Ta spletna stran sledi vaši lokaciji.</translation>
 <translation id="3528498924003805721">Cilji bližnjic</translation>
 <translation id="3532273508346491126">Upravljanje sinhronizacije</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – zvok utišan</translation>
@@ -2564,7 +2558,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4061374428807229313">Če želite deliti, z desno tipko miške kliknite mapo v aplikaciji Datoteke, nato izberite »Deljenje s programom Parallels Desktop«.</translation>
 <translation id="4065876735068446555">Omrežje, ki ga uporabljate (<ph name="NETWORK_ID" />), morda zahteva, da obiščete stran za prijavo.</translation>
 <translation id="4066207411788646768">Preverite povezavo, če si želite ogledati razpoložljive tiskalnike v omrežju</translation>
-<translation id="4068506536726151626">Na tej strani so elementi iz teh spletnih mest, ki sledijo vaši lokaciji:</translation>
 <translation id="4068776064906523561">Shranjeni prstni odtisi</translation>
 <translation id="407173827865827707">Ob kliku</translation>
 <translation id="4074900173531346617">Potrdilo podpisnika e-pošte</translation>
@@ -3207,7 +3200,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4918021164741308375"><ph name="ORIGIN" /> želi vzpostaviti povezavo z razširitvijo »<ph name="EXTENSION_NAME" />«</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4918221908152712722">Namestite <ph name="APP_NAME" /> (prenos ni potreben)</translation>
-<translation id="4920887663447894854">Zaradi blokade ta spletna mesta ne morejo slediti vaši lokaciji na tej strani:</translation>
 <translation id="4921290200821452703">Podatki o šolskem računu za starše</translation>
 <translation id="4921348630401250116">Pretvorba besedila v govor</translation>
 <translation id="49226369361073053">{0,plural, =0{Takoj posodobite napravo}=1{Napravo posodobite v 1 sekundi}one{Napravo posodobite v # sekundi}two{Napravo posodobite v # sekundah}few{Napravo posodobite v # sekundah}other{Napravo posodobite v # sekundah}}</translation>
@@ -3285,7 +3277,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5027562294707732951">Dodaj razširitev</translation>
 <translation id="5029568752722684782">Počisti kopijo</translation>
 <translation id="5033266061063942743">Geometrijske oblike</translation>
-<translation id="5033370009438029887">Onemogočanje ambientalnega načina</translation>
 <translation id="5036662165765606524">Nobenemu spletnemu mestu ne dovoli samodejnega prenosa več datotek</translation>
 <translation id="5037676449506322593">Izberi vse</translation>
 <translation id="5038022729081036555">Jutri jo lahko uporabljaš <ph name="TIME_LIMIT" />.</translation>
@@ -3964,7 +3955,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5865508026715185451">Aplikacija <ph name="APP_NAME" /> bo kmalu zaustavljena</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> izvajate s posnetka diska. Če ga namestite v računalnik, ga lahko izvajate brez posnetka diska in s tem zagotovite, da bo vedno posodobljen.</translation>
 <translation id="5865733239029070421">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
-<translation id="5866557323934807206">Počisti te nastavitve za prihodnje obiske</translation>
 <translation id="5866840822086176774">Zelo močan</translation>
 <translation id="5867841422488265304">Iščite ali vnesite spletni naslov</translation>
 <translation id="5869029295770560994">V redu, razumem</translation>
@@ -4249,7 +4239,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6225475702458870625">Podatkovna povezava je na voljo v napravi <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Datoteka z zasebnim ključem (izbirno)</translation>
 <translation id="6227280783235722609">razširitev</translation>
-<translation id="6228691855869374890">To stran ima popolni nadzor nad napravami MIDI.</translation>
 <translation id="6229849828796482487">Prekinitev povezave z omrežjem Wi-Fi</translation>
 <translation id="6229890768313448549">Pogojev storitve za Google Play ni mogoče naložiti. Poskusite znova.</translation>
 <translation id="6231881193380278751">Če želite, da se stran samodejno osveži, v URL-ju dodajte parameter iskalne poizvedbe: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4403,7 +4392,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6412931879992742813">Novo okno brez beleženja zgodovine</translation>
 <translation id="641469293210305670">Namestitev posodobitev in aplikacij</translation>
 <translation id="6414888972213066896">Starša si vprašal(-a), ali smeš obiskati to spletno mesto</translation>
-<translation id="6415659939354280526">Izbira vira za ambientalni način</translation>
 <translation id="6415900369006735853">Povezava z internetom prek telefona</translation>
 <translation id="6416743254476733475">Dovolite ali blokirajte v računalniku.</translation>
 <translation id="6417265370957905582">Pomočnik Google</translation>
@@ -5347,7 +5335,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7616214729753637086">Včlanjevanje naprave ...</translation>
 <translation id="7617263010641145920">Vklop Trgovine Play</translation>
 <translation id="7617366389578322136">Povezovanje z napravo »<ph name="DEVICE_NAME" />«</translation>
-<translation id="761763866592998929">Ambientalni način</translation>
 <translation id="7621382409404463535">Sistemu ni uspelo shraniti konfiguracije naprave.</translation>
 <translation id="7622114377921274169">Polnjenje.</translation>
 <translation id="7622903810087708234">Podrobnosti gesla</translation>
@@ -5591,7 +5578,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Prikaz računa</translation>
 <translation id="7882358943899516840">Vrsta ponudnika</translation>
-<translation id="78851824530736377">Vklop ambientalnega načina</translation>
 <translation id="7885253890047913815">Nedavni cilji</translation>
 <translation id="7887334752153342268">Podvoji</translation>
 <translation id="7887864092952184874">Miška Bluetooth je seznanjena</translation>

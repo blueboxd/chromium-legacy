@@ -235,21 +235,28 @@ class OAuth2MintTokenFlowTest : public testing::Test {
   const network::mojom::URLResponseHeadPtr head_200_;
 
   void CreateFlow(OAuth2MintTokenFlow::Mode mode) {
-    return CreateFlow(&delegate_, mode, "", "");
+    return CreateFlow(&delegate_, mode, false, "", "");
+  }
+
+  void CreateFlowWithEnableGranularPermissions(
+      const bool enable_granular_permissions) {
+    return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_ISSUE_ADVICE,
+                      enable_granular_permissions, "", "");
   }
 
   void CreateFlowWithDeviceId(const std::string& device_id) {
-    return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_ISSUE_ADVICE,
+    return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_ISSUE_ADVICE, false,
                       device_id, "");
   }
 
   void CreateFlowWithConsentResult(const std::string& consent_result) {
     return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE,
-                      "", consent_result);
+                      false, "", consent_result);
   }
 
   void CreateFlow(MockDelegate* delegate,
                   OAuth2MintTokenFlow::Mode mode,
+                  const bool enable_granular_permissions,
                   const std::string& device_id,
                   const std::string& consent_result) {
     std::string ext_id = "ext1";
@@ -258,9 +265,9 @@ class OAuth2MintTokenFlowTest : public testing::Test {
     std::string channel = "test_channel";
     std::vector<std::string> scopes(CreateTestScopes());
     flow_ = std::make_unique<MockMintTokenFlow>(
-        delegate, OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes,
-                                                  device_id, consent_result,
-                                                  version, channel, mode));
+        delegate, OAuth2MintTokenFlow::Parameters(
+                      ext_id, client_id, scopes, enable_granular_permissions,
+                      device_id, consent_result, version, channel, mode));
   }
 
   void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
@@ -295,6 +302,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=false"
         "&response_type=none"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -308,6 +316,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=true"
         "&response_type=none"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -321,6 +330,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=false"
         "&response_type=token"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -334,6 +344,21 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=true"
         "&response_type=token"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
+        "&client_id=client1"
+        "&origin=ext1"
+        "&lib_ver=test_version"
+        "&release_channel=test_channel");
+    EXPECT_EQ(expected_body, body);
+  }
+  {  // Mint token with granular permissions enabled.
+    CreateFlowWithEnableGranularPermissions(true);
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=false"
+        "&response_type=none"
+        "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=true"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -347,6 +372,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=false"
         "&response_type=none"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -362,6 +388,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "force=false"
         "&response_type=token"
         "&scope=http://scope1+http://scope2"
+        "&enable_granular_permissions=false"
         "&client_id=client1"
         "&origin=ext1"
         "&lib_ver=test_version"
@@ -679,7 +706,8 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess_RemoteConsentFailure) {
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure_NullDelegate) {
   network::mojom::URLResponseHead head;
-  CreateFlow(nullptr, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "", "");
+  CreateFlow(nullptr, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, false, "",
+             "");
   ProcessApiCallFailure(net::ERR_FAILED, &head, nullptr);
   histogram_tester_.ExpectUniqueSample(
       kOAuth2MintTokenApiCallResultHistogram,

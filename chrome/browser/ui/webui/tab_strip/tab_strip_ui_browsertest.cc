@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
-
 #include <memory>
 
 #include "base/command_line.h"
@@ -14,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -107,24 +106,6 @@ IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest, ActivatingTabClosesEmbedder) {
 
   EXPECT_CALL(mock_embedder_, CloseContainer()).Times(1);
   ASSERT_TRUE(content::ExecJs(webui_contents_.get(), activate_tab_js,
-                              content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                              ISOLATED_WORLD_ID_CHROME_INTERNAL));
-}
-
-// Checks that the contextmenu event on a tab gets forwarded to the
-// TabStripUI::Embedder.
-IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest,
-                       InvokesEmbedderContextMenuForTab) {
-  using ::testing::_;
-
-  const std::string invoke_menu_js =
-      "const event ="
-      "    new MouseEvent('contextmenu', { clientX: 100, clientY: 50 });" +
-      tab_query_js + ".dispatchEvent(event)";
-
-  EXPECT_CALL(mock_embedder_, ShowContextMenuAtPoint(gfx::Point(100, 50), _))
-      .Times(1);
-  ASSERT_TRUE(content::ExecJs(webui_contents_.get(), invoke_menu_js,
                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                               ISOLATED_WORLD_ID_CHROME_INTERNAL));
 }

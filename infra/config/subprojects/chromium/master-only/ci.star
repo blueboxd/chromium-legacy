@@ -1900,7 +1900,7 @@ ci.fyi_ios_builder(
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "x12a8179i_audio",
+        "xcode_build_version": "12a8179i_audio",
     },
 )
 

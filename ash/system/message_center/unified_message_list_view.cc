@@ -304,6 +304,15 @@ int UnifiedMessageListView::GetTotalNotificationCount() const {
   return int{children().size()};
 }
 
+int UnifiedMessageListView::GetTotalPinnedNotificationCount() const {
+  int count = 0;
+  for (auto* child : children()) {
+    if (AsMVC(child)->IsPinned())
+      count++;
+  }
+  return count;
+}
+
 bool UnifiedMessageListView::IsAnimating() const {
   return animation_->is_animating();
 }

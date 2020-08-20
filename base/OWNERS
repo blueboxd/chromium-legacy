@@ -22,7 +22,7 @@ per-file *_fuchsia*=file://build/fuchsia/OWNERS
 # For Windows-specific changes:
 per-file *_win*=file://base/win/OWNERS
 
-# For FeatureList API:
+per-file callback_list*=pkasting@chromium.org
 per-file feature_list*=asvitkine@chromium.org
 per-file feature_list*=isherman@chromium.org
 

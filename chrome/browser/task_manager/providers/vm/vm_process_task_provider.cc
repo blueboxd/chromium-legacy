@@ -104,14 +104,14 @@ bool CrostiniExtractVmNameAndOwnerId(const std::string& arg,
 }
 
 // We are looking for an argument like this:
-// /home/root/<cryptohome id>/pvm/UHZtRGVmYXVsdA==.pvm:/pvm:true
+// /run/daemon-store/pvm/<cryptohome id>/UHZtRGVmYXVsdA==.pvm:/pvm:true
 bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
                                      std::string* vm_name_out,
                                      std::string* owner_id_out) {
   DCHECK(vm_name_out);
   DCHECK(owner_id_out);
 
-  constexpr char kArgStart[] = "/home/root/";
+  constexpr char kArgStart[] = "/run/daemon-store/pvm/";
   constexpr char kArgEnd[] = ":/pvm:true";
 
   // Skip paths that don't start/end with the expected prefix/suffix.
@@ -126,7 +126,7 @@ bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
   std::vector<std::string> components;
   vm_disk_path.GetComponents(&components);
 
-  // Expect /, home, root, <owner_id>, pvm, vm_name.pvm
+  // Expect /, run, daemon-store, pvm, <owner_id>, vm_name.pvm
   if (components.size() != 6)
     return false;
 
@@ -138,7 +138,7 @@ bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
   // file itself without the extension.
   base::Base64Decode(vm_subdir.RemoveExtension().value(), vm_name_out);
 
-  *owner_id_out = components[3];
+  *owner_id_out = components[4];
 
   return true;
 }

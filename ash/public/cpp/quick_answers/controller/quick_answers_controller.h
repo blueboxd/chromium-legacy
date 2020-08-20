@@ -56,6 +56,10 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   virtual void UpdateQuickAnswersAnchorBounds(
       const gfx::Rect& anchor_bounds) = 0;
 
+  // Called when a quick-answers session has started but the detailed context is
+  // still pending.
+  virtual void SetPendingShowQuickAnswers() = 0;
+
   virtual chromeos::quick_answers::QuickAnswersDelegate*
   GetQuickAnswersDelegate() = 0;
 };

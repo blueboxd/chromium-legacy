@@ -13,6 +13,7 @@ constexpr char ContentCaptureTaskHistogramReporter::kCaptureContentTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kSendContentTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kSentContentCount[];
+constexpr char ContentCaptureTaskHistogramReporter::kTaskDelayInMs[];
 
 ContentCaptureTaskHistogramReporter::ContentCaptureTaskHistogramReporter()
     : capture_content_delay_time_histogram_(kCaptureContentDelayTime,
@@ -21,15 +22,27 @@ ContentCaptureTaskHistogramReporter::ContentCaptureTaskHistogramReporter()
                                             50),
       capture_content_time_histogram_(kCaptureContentTime, 0, 50000, 50),
       send_content_time_histogram_(kSendContentTime, 0, 50000, 50),
-      sent_content_count_histogram_(kSentContentCount, 0, 10000, 50) {}
+      sent_content_count_histogram_(kSentContentCount, 0, 10000, 50),
+      task_delay_time_in_ms_histogram_(kTaskDelayInMs, 1, 128000, 100) {}
 
 ContentCaptureTaskHistogramReporter::~ContentCaptureTaskHistogramReporter() =
     default;
 
 void ContentCaptureTaskHistogramReporter::OnContentChanged() {
+  // Always save the latest schedule time.
+  task_scheduled_time_ = base::TimeTicks::Now();
+
   if (content_change_time_)
     return;
   content_change_time_ = base::TimeTicks::Now();
+}
+
+void ContentCaptureTaskHistogramReporter::OnTaskRun() {
+  if (!task_scheduled_time_.is_null()) {
+    task_delay_time_in_ms_histogram_.CountMilliseconds(base::TimeTicks::Now() -
+                                                       task_scheduled_time_);
+    task_scheduled_time_ = base::TimeTicks();
+  }
 }
 
 void ContentCaptureTaskHistogramReporter::OnCaptureContentStarted() {

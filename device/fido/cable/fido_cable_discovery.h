@@ -96,7 +96,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
     base::Optional<CableEidArray> service_data;
     std::vector<CableEidArray> uuids;
-    base::Optional<CableDiscoveryData> maybe_discovery_data;
   };
 
   static const BluetoothUUID& CableAdvertisementUUID();
@@ -143,7 +142,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       const BluetoothDevice* device) const;
   base::Optional<Result> GetCableDiscoveryDataFromAuthenticatorEid(
       CableEidArray authenticator_eid) const;
-  bool IsObservedV1Device(const std::string& address) const;
   void RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent event);
 
   // FidoDeviceDiscovery:

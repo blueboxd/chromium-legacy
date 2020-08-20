@@ -14,12 +14,14 @@ SwitchAccessNavigationManagerTest = class extends SwitchAccessE2ETest {
   }
 
   moveToPageContents(pageContents) {
-    if (!SwitchAccessPredicate.isGroup(pageContents)) {
-      pageContents = new AutomationTreeWalker(
-                         pageContents, constants.Dir.FORWARD,
-                         {visit: SwitchAccessPredicate.isGroup})
-                         .next()
-                         .node;
+    const cache = new SACache();
+    if (!SwitchAccessPredicate.isGroup(pageContents, null, cache)) {
+      pageContents =
+          new AutomationTreeWalker(pageContents, constants.Dir.FORWARD, {
+            visit: (node) => SwitchAccessPredicate.isGroup(node, null, cache)
+          })
+              .next()
+              .node;
     }
     assertNotNullNorUndefined(
         pageContents, 'Could not find group corresponding to page contents');

@@ -451,6 +451,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4605958867780575332">Element entfernt: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> öffnen</translation>
 <translation id="4634124774493850572">Passwort verwenden</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 gehacktes Passwort}other{# gehackte Passwörter}}</translation>
 <translation id="4650364565596261010">Systemstandardeinstellung</translation>
 <translation id="465657074423018424">Safe Browsing schützt Sie vor betrügerischen Websites. Wenn Sie Safe Browsing deaktivieren, sollten Sie besonders vorsichtig sein, wenn Sie im Internet surfen, besonders wenn Sie Passwörter eingeben.</translation>
 <translation id="4662373422909645029">Der Alias darf keine Zahlen enthalten</translation>
@@ -1074,7 +1075,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Chrome-Aktivitäten aus Digital Wellbeing entfernen</translation>
 <translation id="927968626442779827">Verwenden Sie den Lite-Modus in Google Chrome</translation>
-<translation id="932327136139879170">Privat</translation>
+<translation id="932327136139879170">Startseite</translation>
 <translation id="93753284658583800">Startseite geändert</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">Passphrase eingeben</translation>

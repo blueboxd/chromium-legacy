@@ -215,10 +215,6 @@ View* WidgetDelegate::CreateOverlayView() {
   return nullptr;
 }
 
-bool WidgetDelegate::WillProcessWorkAreaChange() const {
-  return false;
-}
-
 bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }

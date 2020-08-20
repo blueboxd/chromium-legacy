@@ -253,7 +253,7 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
     {USCRIPT_VAI, "vai", L"\uA501\uA502", {"Ebrima"}},
     {USCRIPT_YI, "yi", L"\uA000\uA001", {"Microsoft Yi Baiti"}}};
 
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // A list of script and the fallback font on the linux test environment.
 // On linux, font-config configuration and fonts are mock. The config

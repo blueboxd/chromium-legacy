@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -41,6 +40,8 @@ class CORE_EXPORT ObjectPaintProperties {
 
  public:
   ObjectPaintProperties() = default;
+  ObjectPaintProperties(const ObjectPaintProperties&) = delete;
+  ObjectPaintProperties& operator=(const ObjectPaintProperties&) = delete;
 #if DCHECK_IS_ON()
   ~ObjectPaintProperties() { DCHECK(!is_immutable_); }
 #endif
@@ -303,8 +304,6 @@ class CORE_EXPORT ObjectPaintProperties {
 #if DCHECK_IS_ON()
   mutable bool is_immutable_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ObjectPaintProperties);
 };
 
 }  // namespace blink

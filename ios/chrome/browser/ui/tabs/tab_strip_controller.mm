@@ -35,6 +35,7 @@
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
@@ -120,6 +121,11 @@ const CGFloat kNewTabButtonBottomImageInset = -2.0;
 
 // Returns the background color.
 UIColor* BackgroundColor() {
+  if (base::FeatureList::IsEnabled(kExpandedTabStrip)) {
+    // The background needs to be clear to allow the thumb strip to be seen
+    // from behind the tab strip during the enter/exit thumb strip animation.
+    return UIColor.clearColor;
+  }
   return UIColor.blackColor;
 }
 
@@ -282,6 +288,9 @@ UIColor* BackgroundColor() {
 // Handler for URL drop interactions.
 @property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 
+// Pan gesture recognizer for the view revealing pan gesture handler.
+@property(nonatomic, weak) UIPanGestureRecognizer* panGestureRecognizer;
+
 // Initializes the tab array based on the the entries in the |_webStateList|'s.
 // Creates one TabView per Tab and adds it to the tabstrip.  A later call to
 // |-layoutTabs| is needed to properly place the tabs in the correct positions.
@@ -423,6 +432,7 @@ UIColor* BackgroundColor() {
 @synthesize longPressDelegate = _longPressDelegate;
 @synthesize presentationProvider = _presentationProvider;
 @synthesize animationWaitDuration = _animationWaitDuration;
+@synthesize panGestureHandler = _panGestureHandler;
 
 - (instancetype)initWithBrowser:(Browser*)browser style:(TabStripStyle)style {
   if ((self = [super init])) {
@@ -567,6 +577,20 @@ UIColor* BackgroundColor() {
 - (void)tabStripSizeDidChange {
   [self updateContentSizeAndRepositionViews];
   [self layoutTabStripSubviews];
+}
+
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler {
+  _panGestureHandler = panGestureHandler;
+  [self.view removeGestureRecognizer:self.panGestureRecognizer];
+
+  UIPanGestureRecognizer* panGestureRecognizer = [[UIPanGestureRecognizer alloc]
+      initWithTarget:panGestureHandler
+              action:@selector(handlePanGesture:)];
+  panGestureRecognizer.maximumNumberOfTouches = 1;
+  [self.view addGestureRecognizer:panGestureRecognizer];
+
+  self.panGestureRecognizer = panGestureRecognizer;
 }
 
 #pragma mark - Private

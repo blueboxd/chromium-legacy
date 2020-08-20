@@ -90,7 +90,7 @@ Polymer({
 
   /** @private */
   updateListItems_() {
-    this.saveScroll(this.$.networkList);
+    this.saveScroll(/** @type {!IronListElement} */ (this.$.networkList));
     const beforeNetworks = this.customItems.filter(function(item) {
       return item.showBeforeNetworksList === true;
     });
@@ -98,7 +98,7 @@ Polymer({
       return item.showBeforeNetworksList !== true;
     });
     this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
-    this.restoreScroll(this.$.networkList);
+    this.restoreScroll(/** @type {!IronListElement} */ (this.$.networkList));
     this.updateScrollableContents();
     if (this.focusRequested_) {
       this.async(function() {

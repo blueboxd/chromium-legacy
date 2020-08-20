@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "printing/page_range.h"
 
 typedef struct HDC__* HDC;
@@ -20,12 +19,14 @@ class PrintSettings;
 // Initializes a PrintSettings object from the provided device context.
 class PRINTING_EXPORT PrintSettingsInitializerWin {
  public:
+  PrintSettingsInitializerWin() = delete;
+  PrintSettingsInitializerWin(const PrintSettingsInitializerWin&) = delete;
+  PrintSettingsInitializerWin& operator=(const PrintSettingsInitializerWin&) =
+      delete;
+
   static void InitPrintSettings(HDC hdc,
                                 const DEVMODE& dev_mode,
                                 PrintSettings* print_settings);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PrintSettingsInitializerWin);
 };
 
 }  // namespace printing

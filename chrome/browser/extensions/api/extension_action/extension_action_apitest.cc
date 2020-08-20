@@ -254,7 +254,7 @@ class MultiActionAPICanvasTest : public MultiActionAPITest {
  public:
   void SetUp() override {
     EnablePixelOutput();
-    ExtensionActionAPITest::SetUp();
+    MultiActionAPITest::SetUp();
   }
 };
 

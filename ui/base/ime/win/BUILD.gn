@@ -15,6 +15,8 @@ component("win") {
     "input_method_win_imm32.h",
     "input_method_win_tsf.cc",
     "input_method_win_tsf.h",
+    "mock_tsf_bridge.cc",
+    "mock_tsf_bridge.h",
     "on_screen_keyboard_display_manager_input_pane.cc",
     "on_screen_keyboard_display_manager_input_pane.h",
     "on_screen_keyboard_display_manager_tab_tip.cc",

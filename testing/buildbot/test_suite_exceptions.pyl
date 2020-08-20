@@ -1564,6 +1564,11 @@
       },
     },
   },
+  'maps_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1058255
+    ],
+  },
   'media_unittests': {
     'modifications': {
       'android-marshmallow-x86-rel': {

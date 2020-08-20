@@ -128,6 +128,10 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
   std::unique_ptr<signin::AccessTokenFetcher>
       token_key_account_access_token_fetcher_;
 
+  // Returns whether granular permissions will be requested.
+  // Exposed for testing.
+  bool enable_granular_permissions() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
                            ComponentWithChromeClientId);
@@ -216,17 +220,20 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
   // Returns true if extensions are restricted to the primary account.
   bool IsPrimaryAccountOnly() const;
 
-  bool interactive_;
-  bool should_prompt_for_scopes_;
+  bool interactive_ = false;
+  bool should_prompt_for_scopes_ = false;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
   std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
   OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
-  bool should_prompt_for_signin_;
+  bool should_prompt_for_signin_ = false;
+  bool enable_granular_permissions_ = false;
 
   // Shown in the extension login prompt.
   std::string email_for_default_web_account_;
 
-  ExtensionTokenKey token_key_;
+  ExtensionTokenKey token_key_{/*extension_id=*/"",
+                               /*account_id=*/CoreAccountId(),
+                               /*scopes=*/{}};
   std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
@@ -244,7 +251,7 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
       identity_api_shutdown_subscription_;
 
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      scoped_identity_manager_observer_;
+      scoped_identity_manager_observer_{this};
 
   // This class can be listening to account changes, but only for one type of
   // events at a time.

@@ -233,13 +233,6 @@ export class TabElement extends CustomElement {
    */
   onContextMenu_(event) {
     event.preventDefault();
-
-    if (!this.tab_) {
-      return;
-    }
-
-    this.embedderApi_.showTabContextMenu(
-        this.tab_.id, event.clientX, event.clientY);
     event.stopPropagation();
   }
 

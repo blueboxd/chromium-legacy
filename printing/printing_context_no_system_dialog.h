@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "printing/printing_context.h"
 
 namespace printing {
@@ -15,6 +14,9 @@ namespace printing {
 class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
  public:
   explicit PrintingContextNoSystemDialog(Delegate* delegate);
+  PrintingContextNoSystemDialog(const PrintingContextNoSystemDialog&) = delete;
+  PrintingContextNoSystemDialog& operator=(
+      const PrintingContextNoSystemDialog&) = delete;
   ~PrintingContextNoSystemDialog() override;
 
   // PrintingContext implementation.
@@ -34,9 +36,6 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
   void Cancel() override;
   void ReleaseContext() override;
   printing::NativeDrawingContext context() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextNoSystemDialog);
 };
 
 }  // namespace printing

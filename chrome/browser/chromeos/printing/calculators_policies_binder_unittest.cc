@@ -163,7 +163,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsWhitelist) {
       prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAllowlist,
                         StringsToList(kWhitelistIds));
 
   env_.RunUntilIdle();
@@ -194,7 +194,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsBeforeBind) {
       prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::ALLOWLIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersWhitelist,
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersAllowlist,
                         StringsToList(kWhitelistIds));
 
   auto calculator = UserCalculator();

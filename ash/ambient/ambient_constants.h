@@ -44,6 +44,10 @@ constexpr char kPhotoDetailsFileExt[] = ".txt";
 // Directory name of ambient mode.
 constexpr char kAmbientModeDirectoryName[] = "ambient-mode";
 
+// The buffer time to use the access token.
+constexpr base::TimeDelta kTokenUsageTimeBuffer =
+    base::TimeDelta::FromMinutes(10);
+
 }  // namespace ash
 
 #endif  // ASH_AMBIENT_AMBIENT_CONSTANTS_H_

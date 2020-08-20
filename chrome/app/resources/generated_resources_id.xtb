@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Versi saat ini adalah Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Akses <ph name="DEVICE_NAME_AND_VENDOR" /> apa pun via USB</translation>
 <translation id="1509960214886564027">Fitur di banyak situs mungkin error</translation>
-<translation id="1510030919967934016">Halaman ini telah dicekal agar tidak melacak lokasi Anda.</translation>
 <translation id="1510238584712386396">Peluncur</translation>
 <translation id="1510785804673676069">Jika Anda menggunakan server proxy, periksa setelan proxy Anda atau
     hubungi administrator jaringan untuk memastikan server
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Edit file</translation>
 <translation id="1698122934742150150">Sesi samaran saat ini saja</translation>
 <translation id="1700079447639026019">Situs yang tidak boleh menggunakan cookie</translation>
-<translation id="1700845716982723710">Nonaktifkan Mode Standby</translation>
 <translation id="1701062906490865540">Hapus orang ini</translation>
 <translation id="1703331064825191675">Tidak perlu mengkhawatirkan sandi Anda</translation>
 <translation id="1704970325597567340">Pemeriksaan keselamatan berjalan tanggal <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Ganti file dan aplikasi Linux Anda dengan cadangan sebelumnya</translation>
 <translation id="1842766183094193446">Yakin ingin mengaktifkan mode demo?</translation>
 <translation id="1846308012215045257">Kontrol-klik untuk menjalankan <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Aktifkan Mode Standby</translation>
 <translation id="1849186935225320012">Halaman ini memiliki kontrol penuh perangkat MIDI.</translation>
 <translation id="1850508293116537636">Putar &amp;searah jarum jam</translation>
 <translation id="1852141627593563189">Temukan software berbahaya</translation>
@@ -1174,7 +1171,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2392163307141705938">Kamu sudah mencapai batas waktu yang ditetapkan orang tuamu untuk <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktifkan</translation>
 <translation id="2393136602862631930">Siapkan <ph name="APP_NAME" /> di Chromebook Anda</translation>
-<translation id="2394566832561516196">Setelan akan dihapus pada pemuatan ulang berikutnya.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> berhasil didaftarkan untuk pengelolaan perusahaan, namun gagal mengirimkan informasi lokasi dan asetnya. Masukkan informasi ini secara manual dari Konsol Admin untuk perangkat ini.</translation>
 <translation id="2396387085693598316">Admin Anda telah memblokir "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="2396783860772170191">Masukkan PIN 4 digit (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2979639724566107830">Buka di jendela baru</translation>
 <translation id="2981113813906970160">Tampilkan kursor mouse besar</translation>
 <translation id="2985348301114641460">Kirim permintaan ke administrator Anda untuk menginstal "<ph name="EXTENSION_NAME" />"?</translation>
-<translation id="2986010903908656993">Halaman ini diblokir karena memiliki kontrol penuh atas perangkat MIDI.</translation>
 <translation id="2987620471460279764">Teks yang dibagikan dari perangkat lain</translation>
 <translation id="2988018669686457659">Perender Cadangan</translation>
 <translation id="2989123969927553766">Akselerasi scroll mouse</translation>
@@ -2088,7 +2083,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3524965460886318643">Ekspor Aktivitas</translation>
 <translation id="3526034519184079374">Tidak Dapat Membaca atau Mengubah Data Situs</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3528033729920178817">Halaman ini melacak lokasi Anda.</translation>
 <translation id="3528498924003805721">Target pintasan</translation>
 <translation id="3532273508346491126">Pengelolaan sinkronisasi</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio dinonaktifkan</translation>
@@ -2564,7 +2558,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4061374428807229313">Untuk berbagi, klik kanan pada folder di aplikasi File, lalu pilih "Bagikan ke Parallels Desktop".</translation>
 <translation id="4065876735068446555">Jaringan yang digunakan (<ph name="NETWORK_ID" />) mungkin mewajibkan Anda mengunjungi halaman masuk jaringan.</translation>
 <translation id="4066207411788646768">Periksa koneksi untuk melihat printer yang tersedia dalam jaringan Anda</translation>
-<translation id="4068506536726151626">Halaman ini berisi elemen dari situs berikut yang melacak lokasi Anda:</translation>
 <translation id="4068776064906523561">Sidik jari yang disimpan</translation>
 <translation id="407173827865827707">Saat diklik</translation>
 <translation id="4074900173531346617">Sertifikat Penandatangan Email</translation>
@@ -3207,7 +3200,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ingin berkomunikasi dengan ekstensi "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4918221908152712722">Instal <ph name="APP_NAME" /> (tidak perlu didownload)</translation>
-<translation id="4920887663447894854">Situs berikut telah dicekal agar tidak melacak lokasi Anda pada halaman ini:</translation>
 <translation id="4921290200821452703">Informasi akun sekolah untuk orang tua</translation>
 <translation id="4921348630401250116">Text-to-speech</translation>
 <translation id="49226369361073053">{0,plural, =0{Update perangkat sekarang}=1{Update perangkat dalam 1 detik}other{Update perangkat dalam # detik}}</translation>
@@ -3285,7 +3277,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5027562294707732951">Tambahkan ekstensi</translation>
 <translation id="5029568752722684782">Hapus salinan</translation>
 <translation id="5033266061063942743">Bentuk geometris</translation>
-<translation id="5033370009438029887">Nonaktifkan Mode Standby</translation>
 <translation id="5036662165765606524">Jangan izinkan situs apa pun mendownload beberapa file secara otomatis</translation>
 <translation id="5037676449506322593">Pilih Semua</translation>
 <translation id="5038022729081036555">Kamu bisa menggunakannya besok selama <ph name="TIME_LIMIT" />.</translation>
@@ -3962,7 +3953,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5865508026715185451"><ph name="APP_NAME" /> akan segera dijeda</translation>
 <translation id="586567932979200359">Anda menjalankan <ph name="PRODUCT_NAME" /> dari citra disknya. Dengan memasangnya di komputer, Anda dapat menjalankannya tanpa citra disk, dan memastikannya tetap mutakhir.</translation>
 <translation id="5865733239029070421">Secara otomatis mengirimkan statistik penggunaan dan laporan kerusakan ke Google</translation>
-<translation id="5866557323934807206">Hapus setelan ini untuk kunjungan di waktu mendatang</translation>
 <translation id="5866840822086176774">Sangat kuat</translation>
 <translation id="5867841422488265304">Telusuri atau ketik alamat web</translation>
 <translation id="5869029295770560994">Oke, Mengerti</translation>
@@ -4247,7 +4237,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6225475702458870625">Koneksi data tersedia dari <ph name="PHONE_NAME" /> Anda</translation>
 <translation id="6226777517901268232">File kunci pribadi (opsional)</translation>
 <translation id="6227280783235722609">ekstensi</translation>
-<translation id="6228691855869374890">Situs ini memiliki kontrol penuh atas perangkat MIDI.</translation>
 <translation id="6229849828796482487">Putuskan koneksi jaringan Wi-Fi</translation>
 <translation id="6229890768313448549">Persyaratan Layanan Google Play tidak dapat dimuat. Coba lagi.</translation>
 <translation id="6231881193380278751">Tambahkan parameter kueri di URL untuk menyegarkan halaman secara otomatis: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6412931879992742813">Jendela samaran baru</translation>
 <translation id="641469293210305670">Instal Update dan Aplikasi</translation>
 <translation id="6414888972213066896">Kamu telah meminta izin kepada orang tua untuk mengunjungi situs ini</translation>
-<translation id="6415659939354280526">Pilih sumber Mode Standby</translation>
 <translation id="6415900369006735853">Terhubung ke internet melalui ponsel Anda</translation>
 <translation id="6416743254476733475">Izinkan atau blokir di komputer Anda.</translation>
 <translation id="6417265370957905582">Asisten Google</translation>
@@ -5345,7 +5333,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7616214729753637086">Mendaftarkan perangkat...</translation>
 <translation id="7617263010641145920">Aktifkan Play Store</translation>
 <translation id="7617366389578322136">Menyambungkan ke "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">Mode Standby</translation>
 <translation id="7621382409404463535">Sistem gagal menyimpan konfigurasi ponsel.</translation>
 <translation id="7622114377921274169">Mengisi daya.</translation>
 <translation id="7622903810087708234">Detail sandi</translation>
@@ -5589,7 +5576,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Lihat Akun</translation>
 <translation id="7882358943899516840">Jenis penyedia</translation>
-<translation id="78851824530736377">Aktifkan Mode Standby</translation>
 <translation id="7885253890047913815">Tujuan Saat Ini</translation>
 <translation id="7887334752153342268">Gandakan</translation>
 <translation id="7887864092952184874">Mouse Bluetooth disandingkan</translation>

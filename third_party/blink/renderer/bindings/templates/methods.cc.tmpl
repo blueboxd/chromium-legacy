@@ -244,7 +244,7 @@ if (!{{argument.local_cpp_variable}}.IsUndefinedOrNull() && !{{argument.local_cp
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {# Local variables #}
-{% if method.is_call_with_execution_context %}
+{% if method.is_call_with_execution_context or method.high_entropy == 'Direct' %}
 {# [ConstructorCallWith=ExecutionContext] or [CallWith=ExecutionContext] #}
 {% if method.is_constructor %}
 ExecutionContext* execution_context = ToExecutionContext(
@@ -270,6 +270,9 @@ Document& document = *ToLocalDOMWindow(
 {{method.cpp_type}} impl = {{cpp_value}};
 {% elif method.use_local_result %}
 {{method.cpp_type}} result = {{cpp_value}};
+{% if method.high_entropy == 'Direct' %}
+Dactyloscoper::RecordDirectSurface(execution_context, WebFeature::k{{method.measure_as('Method')}}, result);
+{% endif %}
 {% endif %}
 {# Post-call #}
 {% if method.is_raises_exception %}

@@ -74,7 +74,7 @@ InsecureFormNavigationThrottle::MaybeCreateNavigationThrottle(
     std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
     PrefService* prefs) {
   if (!base::FeatureList::IsEnabled(kInsecureFormSubmissionInterstitial) ||
-      !prefs->GetBoolean(prefs::kMixedFormsWarningsEnabled))
+      (prefs && !prefs->GetBoolean(prefs::kMixedFormsWarningsEnabled)))
     return nullptr;
   return std::make_unique<InsecureFormNavigationThrottle>(
       navigation_handle, std::move(blocking_page_factory));

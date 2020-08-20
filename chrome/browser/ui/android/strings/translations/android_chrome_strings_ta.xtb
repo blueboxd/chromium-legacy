@@ -55,7 +55,7 @@
 <translation id="1360432990279830238">வெளியேறி, ஒத்திசைவை முடக்கவா?</translation>
 <translation id="1373696734384179344">தேர்ந்தெடுத்ததைப் பதிவிறக்க, போதுமான நினைவகம் இல்லை.</translation>
 <translation id="1376578503827013741">கணக்கிடுகிறது…</translation>
-<translation id="1383876407941801731">தேடு</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> நாட்களுக்கு முன் பயன்படுத்தியுள்ளார்</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> மூலம் தேடுக</translation>
 <translation id="1406000523432664303">'கண்காணிக்க வேண்டாம்'</translation>
@@ -451,6 +451,7 @@
 <translation id="4605958867780575332">உருப்படி அகற்றப்பட்டது: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ஐத் திற</translation>
 <translation id="4634124774493850572">கடவுச்சொல்லைப் பயன்படுத்து</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 களவாடப்பட்ட கடவுச்சொல்}other{# களவாடப்பட்ட கடவுச்சொற்கள்}}</translation>
 <translation id="4650364565596261010">சிஸ்டத்தின் இயல்புநிலை</translation>
 <translation id="465657074423018424">பாதுகாப்பு உலாவல் ஏமாற்றும் வகையிலான இணையதளங்களிலிருந்து உங்களைப் பாதுகாக்கிறது. இதை முடக்கினால் உலாவும்போது, அதிலும் குறிப்பாகக் கடவுச்சொற்களை உள்ளிடும்போது அதிகக் கவனத்துடன் இருப்பது அவசியம்.</translation>
 <translation id="4662373422909645029">புனைப்பெயரில் எண்கள் இருக்கக்கூடாது</translation>

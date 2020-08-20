@@ -47,12 +47,18 @@ public class NetworkActivationRequest extends NetworkCallback {
         mNativePtr = nativePtr;
         if (mConnectivityManager == null) return;
 
-        mConnectivityManager.requestNetwork(
-                new NetworkRequest.Builder()
-                        .addTransportType(transportType)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                        .build(),
-                this);
+        try {
+            mConnectivityManager.requestNetwork(
+                    new NetworkRequest.Builder()
+                            .addTransportType(transportType)
+                            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                            .build(),
+                    this);
+        } catch (SecurityException e) {
+            // On some older devices the CHANGE_NETWORK_STATE permission is not sufficient to allow
+            // use of {@code requestNetwork} above and it will throw a SecurityException. Do nothing
+            // in this case.
+        }
     }
 
     /**

@@ -50,6 +50,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                  l10n_util::GetPluralStringFUTF16(
                      IDS_TAB_CXMENU_ADD_TAB_TO_GROUP, num_affected_tabs),
                  add_to_existing_group_submenu_.get());
+      SetIsNewFeatureAt(GetItemCount() - 1, true);
     } else {
       AddItem(TabStripModel::CommandAddToNewGroup,
               l10n_util::GetPluralStringFUTF16(

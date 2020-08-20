@@ -339,6 +339,27 @@ if (!is_android) {
 }
 
 if (is_chromeos) {
+  grit("multidevice_internals_resources") {
+    source =
+        "chromeos/multidevice_internals/multidevice_internals_resources.grd"
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    deps = [ "//chrome/browser/resources/chromeos/multidevice_internals:web_components" ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/multidevice_internals_resources.h",
+      "grit/multidevice_internals_resources_map.cc",
+      "grit/multidevice_internals_resources_map.h",
+      "multidevice_internals_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("os_settings_resources") {
     grit_flags = [
       "-E",

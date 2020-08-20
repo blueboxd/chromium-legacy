@@ -55,4 +55,18 @@ TEST_F(EventTargetTest, UseCountPassiveTouchEventListenerPassiveNotSpecified) {
       GetDocument().IsUseCounted(WebFeature::kNonPassiveTouchEventListener));
 }
 
+TEST_F(EventTargetTest, UseCountBeforematch) {
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kBeforematchHandlerRegistered));
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(R"HTML(
+                       const element = document.createElement('div');
+                       document.body.appendChild(element);
+                       element.addEventListener('beforematch', () => {});
+                      )HTML"))
+      ->RunScript(GetDocument().GetFrame());
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kBeforematchHandlerRegistered));
+}
+
 }  // namespace blink

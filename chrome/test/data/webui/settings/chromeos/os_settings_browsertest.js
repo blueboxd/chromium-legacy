@@ -1118,7 +1118,7 @@ var OSSettingsPeoplePageLockScreenTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['features::kQuickUnlockPinAutosubmit']};
+    return {enabled: ['chromeos::features::kQuickUnlockPinAutosubmit']};
   }
 
   /** @override */
@@ -1199,7 +1199,7 @@ var OSSettingsPeoplePagePinAutosubmitDialogTest =
 
   /** @override */
   get featureList() {
-    return {enabled: ['features::kQuickUnlockPinAutosubmit']};
+    return {enabled: ['chromeos::features::kQuickUnlockPinAutosubmit']};
   }
 
   /** @override */

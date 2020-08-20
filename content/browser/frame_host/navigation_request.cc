@@ -1058,7 +1058,7 @@ NavigationRequest::NavigationRequest(
           frame_tree_node->current_frame_host()->GetRoutingID())),
       initiator_routing_id_(initiator_routing_id),
       client_security_state_(network::mojom::ClientSecurityState::New()),
-      coop_status_(frame_tree_node),
+      coop_status_(frame_tree_node, common_params_->initiator_origin),
       previous_page_load_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
@@ -1648,34 +1648,6 @@ NavigationRequest::TakeCoepReporter() {
   return std::move(coep_reporter_);
 }
 
-void NavigationRequest::CreateCoopReporter(
-    StoragePartition* storage_partition) {
-  // If the main document hasn't specified any network report endpoint(s),
-  // then it is likely not interested in receiving:
-  // 1. Network reports (for obvious reasons).
-  // 2. ReportingObserver's reports.
-  // 3. Devtools warnings.
-  //
-  // Not creating a COOP reporter currently prevents all of these.
-  //
-  // TODO(arthursonzogni): Reconsider this decision later, developers might be
-  // interested in (2) and (3), despite not being interested in (1).
-  if (!coop_status_.current_coop().reporting_endpoint &&
-      !coop_status_.current_coop().report_only_reporting_endpoint) {
-    return;
-  }
-
-  DCHECK(IsInMainFrame());
-  coop_reporter_ = std::make_unique<CrossOriginOpenerPolicyReporter>(
-      storage_partition, frame_tree_node_->current_frame_host(),
-      common_params_->url, coop_status_.current_coop());
-}
-
-std::unique_ptr<CrossOriginOpenerPolicyReporter>
-NavigationRequest::TakeCoopReporter() {
-  return std::move(coop_reporter_);
-}
-
 ukm::SourceId NavigationRequest::GetPreviousPageUkmSourceId() {
   return previous_page_load_ukm_source_id_;
 }
@@ -1789,7 +1761,7 @@ void NavigationRequest::OnRequestRedirected(
   const base::Optional<network::mojom::BlockedByResponseReason>
       coop_requires_blocking = coop_status_.EnforceCOOP(
           response_head_.get(), url::Origin::Create(common_params_->url),
-          common_params_->url);
+          common_params_->url, common_params_->referrer->url);
   if (coop_requires_blocking) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(*coop_requires_blocking),
@@ -2220,7 +2192,7 @@ void NavigationRequest::OnResponseStarted(
   const base::Optional<network::mojom::BlockedByResponseReason>
       coop_requires_blocking = coop_status_.EnforceCOOP(
           response_head_.get(), url::Origin::Create(common_params_->url),
-          common_params_->url);
+          common_params_->url, common_params_->referrer->url);
   if (coop_requires_blocking) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(*coop_requires_blocking),
@@ -2299,23 +2271,6 @@ void NavigationRequest::OnResponseStarted(
       }
     } else {
       cross_origin_embedder_policy = network::CrossOriginEmbedderPolicy();
-    }
-  }
-
-  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
-  if (coop_status_.had_opener() && current_rfh->coop_reporter()) {
-    if (coop_status_.require_browsing_instance_swap()) {
-      current_rfh->coop_reporter()->QueueOpenerBreakageReport(
-          current_rfh->coop_reporter()->GetNextDocumentUrlForReporting(
-              GetRedirectChain(), GetInitiatorRoutingId()),
-          true /* is_reported_from_document */, false /* is_report_only */);
-    }
-
-    if (coop_status_.virtual_browsing_instance_swap()) {
-      current_rfh->coop_reporter()->QueueOpenerBreakageReport(
-          current_rfh->coop_reporter()->GetNextDocumentUrlForReporting(
-              GetRedirectChain(), GetInitiatorRoutingId()),
-          true /* is_reported_from_document */, true /* is_report_only */);
     }
   }
 
@@ -3190,7 +3145,8 @@ void NavigationRequest::CommitNavigation() {
 
   sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
-  CreateCoopReporter(render_frame_host_->GetProcess()->GetStoragePartition());
+  coop_status_.UpdateReporterStoragePartition(
+      render_frame_host_->GetProcess()->GetStoragePartition());
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator().GetController()->GetBrowserContext();

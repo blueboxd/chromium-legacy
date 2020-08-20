@@ -144,7 +144,7 @@ class BrowserActionApiCanvasTest : public BrowserActionApiTest {
  public:
   void SetUp() override {
     EnablePixelOutput();
-    ExtensionApiTest::SetUp();
+    BrowserActionApiTest::SetUp();
   }
 };
 
@@ -157,14 +157,11 @@ enum TestFlags {
 class BrowserActionApiLazyTest : public BrowserActionApiTest,
                                  public testing::WithParamInterface<int> {
  public:
-  void SetUp() override {
-    BrowserActionApiTest::SetUp();
+  BrowserActionApiLazyTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
-    if ((GetParam() & kUseServiceWorker) != 0) {
-      current_channel_ =
-          std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
-    }
+    if ((GetParam() & kUseServiceWorker) != 0)
+      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
 
     if ((GetParam() & kUseExtensionsMenuUi) != 0) {
       feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);

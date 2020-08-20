@@ -14,7 +14,9 @@ package metrics;
 import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
-// The system configuration fields are recorded once per client session.
+// Almost all the fields should be populated on every upload. (The only
+// exception is some fields in the stability section that are only uploaded
+// once per browsing session, usually shortly after startup.)
 // Next tag: 35
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
@@ -238,9 +240,6 @@ message SystemProfileProto {
 
       // The driver version on the GPU.
       optional string driver_version = 3;
-
-      // The driver date on the GPU.
-      optional string driver_date = 4;
 
       // The GL_VENDOR string. An example of a gl_vendor string is
       // "Imagination Technologies". "" if we are not using OpenGL.

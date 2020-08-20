@@ -7966,6 +7966,15 @@ static void HighEntropyMethodWithMeasureAsMethod(const v8::FunctionCallbackInfo<
   impl->highEntropyMethodWithMeasureAs();
 }
 
+static void HighEntropyDirectBooleanMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
+  bool result = impl->highEntropyDirectBoolean();
+  Dactyloscoper::RecordDirectSurface(execution_context, WebFeature::kTestMethodHighEntropyDirectNoArgsRetBoolean, result);
+  V8SetReturnValueBool(info, result);
+}
+
 static void CeReactionsNotOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsNotOverloadedMethod");
   CEReactionsScope ce_reactions_scope;
@@ -12579,6 +12588,16 @@ void V8TestObject::HighEntropyMethodWithMeasureAsMethodCallback(const v8::Functi
   test_object_v8_internal::HighEntropyMethodWithMeasureAsMethod(info);
 }
 
+void V8TestObject::HighEntropyDirectBooleanMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestObject.highEntropyDirectBoolean");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyDirectBoolean");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestMethodHighEntropyDirectNoArgsRetBoolean);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kTestMethodHighEntropyDirectNoArgsRetBoolean);
+  test_object_v8_internal::HighEntropyDirectBooleanMethod(info);
+}
+
 void V8TestObject::CeReactionsNotOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   BLINK_BINDINGS_TRACE_EVENT("TestObject.ceReactionsNotOverloadedMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_ceReactionsNotOverloadedMethod");
@@ -13191,6 +13210,7 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"measureAsSameValueOverloadedMethod", V8TestObject::MeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"highEntropyMethodWithMeasure", V8TestObject::HighEntropyMethodWithMeasureMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"highEntropyMethodWithMeasureAs", V8TestObject::HighEntropyMethodWithMeasureAsMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"highEntropyDirectBoolean", V8TestObject::HighEntropyDirectBooleanMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"ceReactionsNotOverloadedMethod", V8TestObject::CeReactionsNotOverloadedMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"ceReactionsOverloadedMethod", V8TestObject::CeReactionsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"deprecateAsMeasureAsSameValueOverloadedMethod", V8TestObject::DeprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

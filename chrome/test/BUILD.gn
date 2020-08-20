@@ -4367,6 +4367,7 @@ test("unit_tests") {
       "../browser/ui/webui/management_ui_handler_unittest.cc",
       "../browser/ui/webui/new_tab_page/new_tab_page_handler_unittest.cc",
       "../browser/ui/webui/new_tab_page/promo_browser_command/promo_browser_command_handler_unittest.cc",
+      "../browser/ui/webui/sanitized_image_source_unittest.cc",
       "../browser/ui/webui/settings/downloads_handler_unittest.cc",
       "../browser/ui/webui/settings/hats_handler_unittest.cc",
       "../browser/ui/webui/settings/metrics_reporting_handler_unittest.cc",

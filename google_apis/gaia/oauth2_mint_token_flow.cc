@@ -31,8 +31,8 @@
 
 namespace {
 
-const char kForceValueFalse[] = "false";
-const char kForceValueTrue[] = "true";
+const char kValueFalse[] = "false";
+const char kValueTrue[] = "true";
 const char kResponseTypeValueNone[] = "none";
 const char kResponseTypeValueToken[] = "token";
 
@@ -40,6 +40,7 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "force=%s"
     "&response_type=%s"
     "&scope=%s"
+    "&enable_granular_permissions=%s"
     "&client_id=%s"
     "&origin=%s"
     "&lib_ver=%s"
@@ -147,6 +148,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::string& eid,
     const std::string& cid,
     const std::vector<std::string>& scopes_arg,
+    bool enable_granular_permissions,
     const std::string& device_id,
     const std::string& consent_result,
     const std::string& version,
@@ -155,6 +157,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     : extension_id(eid),
       client_id(cid),
       scopes(scopes_arg),
+      enable_granular_permissions(enable_granular_permissions),
       device_id(device_id),
       consent_result(consent_result),
       version(version),
@@ -210,19 +213,23 @@ GURL OAuth2MintTokenFlow::CreateApiCallUrl() {
 }
 
 std::string OAuth2MintTokenFlow::CreateApiCallBody() {
-  const char* force_value =
-      (parameters_.mode == MODE_MINT_TOKEN_FORCE ||
-       parameters_.mode == MODE_RECORD_GRANT)
-          ? kForceValueTrue : kForceValueFalse;
+  const char* force_value = (parameters_.mode == MODE_MINT_TOKEN_FORCE ||
+                             parameters_.mode == MODE_RECORD_GRANT)
+                                ? kValueTrue
+                                : kValueFalse;
   const char* response_type_value =
       (parameters_.mode == MODE_MINT_TOKEN_NO_FORCE ||
        parameters_.mode == MODE_MINT_TOKEN_FORCE)
           ? kResponseTypeValueToken : kResponseTypeValueNone;
+  const char* enable_granular_permissions_value =
+      parameters_.enable_granular_permissions ? kValueTrue : kValueFalse;
   std::string body = base::StringPrintf(
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),
       net::EscapeUrlEncodedData(base::JoinString(parameters_.scopes, " "), true)
+          .c_str(),
+      net::EscapeUrlEncodedData(enable_granular_permissions_value, true)
           .c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
       net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str(),

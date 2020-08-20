@@ -58,6 +58,11 @@ namespace identity {
     // When the <code>scopes</code> field is present, it overrides the
     // list of scopes specified in manifest.json.
     DOMString[]? scopes;
+
+    // The <code>enableGranularPermissions</code> flag allows extensions to
+    // opt-in early to the granular permissions consent screen, in which
+    // requested permissions are granted or denied individually.
+    [nodoc] boolean? enableGranularPermissions;
   };
 
   dictionary InvalidTokenDetails {

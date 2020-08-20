@@ -1245,6 +1245,7 @@ void DocumentLoader::StartLoadingInternal() {
     AtomicString new_http_method = redirect.new_http_method;
     if (http_method_ != new_http_method) {
       http_body_ = nullptr;
+      http_content_type_ = g_null_atom;
       http_method_ = new_http_method;
     }
     if (redirect.new_referrer.IsEmpty()) {
@@ -1253,7 +1254,7 @@ void DocumentLoader::StartLoadingInternal() {
     } else {
       referrer_ = Referrer(redirect.new_referrer, redirect.new_referrer_policy);
     }
-    http_content_type_ = g_null_atom;
+
     // TODO(dgozman): check whether clearing origin policy is intended behavior.
     origin_policy_ = base::nullopt;
     probe::WillSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),

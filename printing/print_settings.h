@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -79,6 +78,8 @@ class PRINTING_EXPORT PrintSettings {
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   PrintSettings();
+  PrintSettings(const PrintSettings&) = delete;
+  PrintSettings& operator=(const PrintSettings&) = delete;
   ~PrintSettings();
 
   // Reinitialize the settings to the default values.
@@ -327,8 +328,6 @@ class PRINTING_EXPORT PrintSettings {
   // PIN code entered by the user.
   std::string pin_value_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(PrintSettings);
 };
 
 }  // namespace printing

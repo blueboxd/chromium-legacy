@@ -303,8 +303,6 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/browser/android/crypto:java",
     "//chrome/browser/android/lifecycle:java",
-    "//chrome/browser/android/thin_webview:factory_java",
-    "//chrome/browser/android/thin_webview:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/contextmenu:java",
     "//chrome/browser/download/android:factory_java",
@@ -433,6 +431,8 @@ android_library("chrome_java") {
     "//components/subresource_filter/android:java",
     "//components/sync/android:sync_java",
     "//components/sync/protocol:protocol_java",
+    "//components/thin_webview:factory_java",
+    "//components/thin_webview:java",
     "//components/translate/content/android:java",
     "//components/translate/content/android:translate_android_enums_java",
     "//components/url_formatter/android:url_formatter_java",
@@ -3265,7 +3265,11 @@ android_library("native_java_unittests_java") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
-  sources = native_java_unittests_tests
+  sources = [
+    "native_java_unittests/src/org/chromium/chrome/browser/UnitTestUtils.java",
+  ]
+
+  sources += native_java_unittests_tests
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

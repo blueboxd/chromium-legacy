@@ -219,8 +219,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js")
 
 // Flaky on Linux, Mac & Win. TODO(crbug.com/930717): Re-enable.
-#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN) || \
-    defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
+    defined(OS_WIN) || defined(OS_FUCHSIA)
 #define MAYBE_VirtualTimeCrossProcessNavigation \
   DISABLED_VirtualTimeCrossProcessNavigation
 #else
@@ -320,7 +320,7 @@ class HeadlessProtocolCompositorBrowserTest
 // TODO(crbug.com/954398): Suite is timeout-flaky on Windows.
 // TODO(crbug.com/1020046): Suite is flaky on TSan Linux.
 #if defined(OS_MAC) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
+    ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER))
 #define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME) \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest,   \
                          DISABLED_##TEST_NAME) {                  \
@@ -344,7 +344,7 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     "emulation/compositor-image-animation-test.js")
 
 // Flaky on Linux. TODO(crbug.com/986027): Re-enable.
-#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 #define MAYBE_CompositorCssAnimation DISABLED_CompositorCssAnimation
 #else
 #define MAYBE_CompositorCssAnimation CompositorCssAnimation

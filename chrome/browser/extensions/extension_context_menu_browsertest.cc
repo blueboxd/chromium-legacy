@@ -198,8 +198,7 @@ class ExtensionContextMenuLazyTest
     : public ExtensionContextMenuBrowserTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    ExtensionContextMenuBrowserTest::SetUp();
+  ExtensionContextMenuLazyTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker) {

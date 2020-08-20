@@ -63,11 +63,65 @@ export let HttpMessage;
  * The ContactUpdate message object sent by NearbyInternalsContactsHandler
  * chrome/browser/ui/webui/nearby_internals/nearby_internals_contact_handler.cc.
  * @typedef {{time: number,
- *            contacts_passed: boolean,
- *            contacts_list_changed: boolean,
- *            contacts_added_to_allowlist: boolean,
- *            contacts_removed_from_allowlist: boolean,
- *            allowed_ids: string,
- *            contact_records: string}}
+ *            contactsPassed: boolean,
+ *            contactsListChanged: boolean,
+ *            contactsAddedToAllowlist: boolean,
+ *            contactsRemovedFromAllowlist: boolean,
+ *            allowedIds: string,
+ *            contactRecords: string}}
  */
 export let ContactUpdate;
+
+/**
+ * The StatusCode callback object, sent by NearbyInternalsUiTriggerHandler
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_ui_trigger_handler.cc.
+ * @typedef {{statusCode: string,
+ *            time: number,
+ *            triggerEvent: string}}
+ */
+export let StatusCode;
+
+/**
+ * The TransferMetadata callback object, sent by NearbyInternalsUiTriggerHandler
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_ui_trigger_handler.cc.
+ * @typedef {{transferMetadataStatus: string,
+ *            time: number,
+ *            deviceName: string,
+ *            shareTargetId: string}}
+ */
+export let TransferMetadataStatus;
+
+/**
+ * Timestamped message object that allows us to display information passed in
+ * from the WebUIHandler in the list of the UI trigger tab.
+ * @typedef {{message: string,
+ *            time: number}}
+ */
+export let TimestampedMessage;
+
+/**
+ * Share Target object sent by NearbyInternalsUiTriggerHandler on discovery or
+ * lost.
+ * @typedef {{deviceName: string,
+ *            shareTargetId: string,
+ *            time: number}}
+ */
+export let ShareTarget;
+
+/**
+ * ShareTargetDiscoveryChange enum for display when ShareTarget is lost or
+ * discovered.
+ * @enum {number}
+ */
+export const ShareTargetDiscoveryChange = {
+  DISCOVERED: 0,
+  LOST: 1
+};
+
+/**
+ * Select object for displaying passed in ShareTargets in selection list.
+ * @typedef {{name: string,
+ *            selected: boolean,
+ *            value: string}}
+ */
+export let ShareTargetSelectOption;

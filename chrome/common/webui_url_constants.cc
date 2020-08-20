@@ -88,6 +88,8 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistorySyncedTabs[] = "/syncedTabs";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIIdentityInternalsHost[] = "identity-internals";
+const char kChromeUIImageHost[] = "image";
+const char kChromeUIImageURL[] = "chrome://image/";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInternalsHost[] = "internals";
@@ -252,6 +254,7 @@ const char kChromeUIMachineLearningInternalsHost[] =
     "machine-learning-internals";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
+const char kChromeUIMultiDeviceInternalsHost[] = "multidevice-internals";
 const char kChromeUIMultiDeviceSetupHost[] = "multidevice-setup";
 const char kChromeUIMultiDeviceSetupUrl[] = "chrome://multidevice-setup";
 const char kChromeUINetworkHost[] = "network";

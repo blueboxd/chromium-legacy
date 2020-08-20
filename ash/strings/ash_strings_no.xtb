@@ -40,6 +40,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1302880136325416935">Vis Bluetooth-innstillinger. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Vis alltid hyllen</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> er tilkoblet</translation>
 <translation id="1341651618736211726">Overflyt</translation>
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
@@ -519,6 +520,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6972754398087986839">Kom i gang</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
+<translation id="6990778048354947307">Mørkt tema</translation>
 <translation id="7007983414944123363">PIN-koden eller passordet kunne ikke verifiseres. Prøv på nytt.</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Koble <ph name="DEVICE_NAME" /> til telefonen</translation>

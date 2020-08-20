@@ -3735,6 +3735,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          omnibox::kHistoryQuickProviderAllowMidwordContinuations)},
 
+    {"omnibox-trending-zero-prefix-suggestions-on-ntp",
+     flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPName,
+     flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTrendingZeroPrefixSuggestionsOnNTP)},
+
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN)
     {"omnibox-experimental-keyword-mode",
@@ -3830,6 +3836,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabbedAppOverflowMenuIconsName,
      flag_descriptions::kTabbedAppOverflowMenuIconsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabbedAppOverflowMenuIcons)},
+    {"tabbed-app-overflow-menu-regroup",
+     flag_descriptions::kTabbedAppOverflowMenuRegroupName,
+     flag_descriptions::kTabbedAppOverflowMenuRegroupDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabbedAppOverflowMenuRegroup)},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -5173,6 +5183,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-phone-hub", flag_descriptions::kPhoneHubName,
      flag_descriptions::kPhoneHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
+
+    {"wifi-sync-android", flag_descriptions::kWifiSyncAndroidName,
+     flag_descriptions::kWifiSyncAndroidDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kWifiSyncAndroid)},
 
     {"display-identification", flag_descriptions::kDisplayIdentificationName,
      flag_descriptions::kDisplayIdentificationDescription, kOsCrOS,

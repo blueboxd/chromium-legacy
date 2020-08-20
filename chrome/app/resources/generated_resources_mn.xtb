@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Одоогийн хувилбар нь Debian 9 (Stretch) байна</translation>
 <translation id="1509281256533087115">Дурын <ph name="DEVICE_NAME_AND_VENDOR" />-д USB ашиглан нэвтрэх</translation>
 <translation id="1509960214886564027">Олон сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
-<translation id="1510030919967934016">Энэ хуудсыг таны байршлыг тогтоохоос хамгаалсан.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1510785804673676069">Хэрэв та төлөөлөх сервер ашиглаж байгаа бол төлөөлөх серверийн тохиргоог шалгах эсвэл төлөөлөх сервер ажиллаж байгаа эсэхийг шалгах зорилгоор сүлжээний ажилтанд хандана уу. Хэрэв та төлөөлөх сервер ашиглаагүй гэж үзэж байгаа тохиолдолд өөрийн <ph name="LINK_START" /> төлөөлөх серверийн тохиргоог өөрчилнө үү <ph name="LINK_END" /> .</translation>
 <translation id="1511997356770098059">Энэ аюулгүй байдлын түлхүүрт ямар нэгэн нэвтрэх өгөгдөл хадгалах боломжгүй</translation>
@@ -598,7 +597,6 @@
 <translation id="1697686431566694143">Файлыг засах</translation>
 <translation id="1698122934742150150">Зөвхөн одоогийн нууцлалын горимын тов</translation>
 <translation id="1700079447639026019">Хэзээ ч күүки ашиглах боломжгүй сайтууд</translation>
-<translation id="1700845716982723710">Орчиндоо зохицох горимыг унтраах</translation>
 <translation id="1701062906490865540">Энэ хүнийг устга</translation>
 <translation id="1703331064825191675">Нууц үгэндээ хэзээ ч бүү санаа зов</translation>
 <translation id="1704970325597567340">Аюулгүй байдлын шалгалтыг <ph name="DATE" />-нд хийсэн</translation>
@@ -727,7 +725,6 @@
 <translation id="184273675144259287">Linux аппууд болон файлуудаа өмнөх нөөцлөлтөөр солих</translation>
 <translation id="1842766183094193446">Та туршилтын горимыг идэвхжүүлэх үү?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />-г ажиллуулахын тулд control товчлуурыг дарна уу</translation>
-<translation id="184715642345428649">Орчиндоо зохицох горимыг идэвхжүүлэх</translation>
 <translation id="1849186935225320012">Энэ хуудас нь MIDI төхөөрөмжүүдийг бүрэн хянаж байна.</translation>
 <translation id="1850508293116537636">Цагийн зүүний дагуу эргүүлэх</translation>
 <translation id="1852141627593563189">Аюултай программ хангамжийг хайх</translation>
@@ -1170,7 +1167,6 @@
 <translation id="2392163307141705938">Та <ph name="IDS_SHORT_PRODUCT_NAME" /> дээр таны эцэг эхийн тохируулсан цагийн хязгаарт хүрсэн байна.</translation>
 <translation id="2392369802118427583">Идэвхжүүлэх</translation>
 <translation id="2393136602862631930"><ph name="APP_NAME" />-г Chromebook дээрээ тохируулна уу</translation>
-<translation id="2394566832561516196">Дараа дахин ачаалах үед тохиргоонууд цэвэрлэгдэх болно.</translation>
 <translation id="2395616325548404795">Таны <ph name="DEVICE_TYPE" />-г байгууллагын удирдлагад амжилттай бүртгэсэн хэдий ч үүний өмч болон байршлын мэдээллийг илгээж чадсангүй. Энэ мэдээллийг админ консолоосоо төхөөрөмжид гараар оруулна уу.</translation>
 <translation id="2396387085693598316">Таны админ "<ph name="EXTENSION_NAME" />"-г блоклосон</translation>
 <translation id="2396783860772170191">4 оронтой пинг (0000-9999) оруулна уу</translation>
@@ -1659,7 +1655,6 @@
 <translation id="2979639724566107830">Шинэ цонхонд нээх</translation>
 <translation id="2981113813906970160">Том хулганын заагч сумыг харуулах</translation>
 <translation id="2985348301114641460">Таны администраторт "<ph name="EXTENSION_NAME" />"-г суулгах хүсэлтийг илгээх үү?</translation>
-<translation id="2986010903908656993">Энэ хуудсыг MIDI төхөөрөмжүүдийг бүрэн хяналтандаа авсан учир блоклосон.</translation>
 <translation id="2987620471460279764">Өөр төхөөрөмжөөс хуваалцсан текст</translation>
 <translation id="2988018669686457659">Илүү буулгагч</translation>
 <translation id="2989123969927553766">Хулганын гүйлгэлтийн хурдасгуур</translation>
@@ -2083,7 +2078,6 @@
 <translation id="3524965460886318643">Үйл ажиллагааг экспортлох</translation>
 <translation id="3526034519184079374">Сайтын өгөгдлийг унших эсвэл өөрчлөх боломжгүй байна</translation>
 <translation id="3527085408025491307">Хавтас</translation>
-<translation id="3528033729920178817">Энэ хуудас нь таны байгаа байрлалыг хянаж байна.</translation>
 <translation id="3528498924003805721">Shortcut targets</translation>
 <translation id="3532273508346491126">Синк хийх удирдлага</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Аудионы дууг хаасан</translation>
@@ -2558,7 +2552,6 @@
 <translation id="4061374428807229313">Хуваалцахын тулд Файлс аппын фолдер дээр хулганын баруун талыг товшоод, дараа нь "Parallels Desktop-тай хуваалцах" гэснийг сонгоно уу.</translation>
 <translation id="4065876735068446555">Таны ашиглаж буй сүлжээ (<ph name="NETWORK_ID" />) таныг өөрийн нэвтрэх хуудаст хандахыг шаардах магадлалтай.</translation>
 <translation id="4066207411788646768">Таны сүлжээнд холбогдсон боломжтой байгаа хэвлэгчийг харахын тулд холболтоо шалгана уу</translation>
-<translation id="4068506536726151626">Энэ хуудас нь таны байршлыг илрүүлэх зорилго бүхий дараах хуудаснуудын элементийг агуулж байна.</translation>
 <translation id="4068776064906523561">Хадгалсан хурууны хээ</translation>
 <translation id="407173827865827707">Товшсон</translation>
 <translation id="4074900173531346617">И-мэйл баталгаажуулалтын сертификат</translation>
@@ -3201,7 +3194,6 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" өргөтгөлтэй холбогдох хүсэлтэй байна</translation>
 <translation id="4918086044614829423">Хүлээн зөвшөөрөх</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" />-г суулгах (татаж авах шаардлагагүй)</translation>
-<translation id="4920887663447894854">Дараах сайтуудыг таны байршлын тухай мэдээг авахыг оролдсон тул блоклосон болно. Үүнд:</translation>
 <translation id="4921290200821452703">Эцэг эхэд зориулсан сургуулийн бүртгэлийн мэдээлэл</translation>
 <translation id="4921348630401250116">Бичвэрийг ярианд хувиргах</translation>
 <translation id="49226369361073053">{0,plural, =0{Төхөөрөмжийг одоо шинэчилнэ үү}=1{Төхөөрөмжийг 1 секундийн дотор шинэчилнэ үү}other{Төхөөрөмжийг # секундийн дотор шинэчилнэ үү}}</translation>
@@ -3279,7 +3271,6 @@
 <translation id="5027562294707732951">Өргөтгөл нэмэх</translation>
 <translation id="5029568752722684782">Хуулбарыг арилгах</translation>
 <translation id="5033266061063942743">Геометрийн дүрс</translation>
-<translation id="5033370009438029887">Орчиндоо зохицох горимыг идэвхгүй болгох</translation>
 <translation id="5036662165765606524">Сайтад автоматаар олон файлуудыг татаж авахыг бүү зөвшөөр</translation>
 <translation id="5037676449506322593">Бүгдийг сонгох</translation>
 <translation id="5038022729081036555">Та түүнийг маргааш <ph name="TIME_LIMIT" />-н турш ашиглах боломжтой.</translation>
@@ -3957,7 +3948,6 @@
 <translation id="5865508026715185451"><ph name="APP_NAME" /> удахгүй түр зогсоно</translation>
 <translation id="586567932979200359">Та <ph name="PRODUCT_NAME" />-ийг дискний дүрснээс нь ажилуулж байна. Үүнийг компьютер дээрээ суулгаснаар та үүн дээр дискний дүрсгүйгээр ажиллах боломжтой болох бөгөөд үргэлж шинэчлэгдэж байх болно.</translation>
 <translation id="5865733239029070421">Хэрэглээний статистик мэдээ болон алдааны тайланг Google-д автоматаар илгээдэг</translation>
-<translation id="5866557323934807206">Цаашид орж байх зорилгоор эдгээр тохиргоонуудыг арилгах</translation>
 <translation id="5866840822086176774">Маш хүчтэй</translation>
 <translation id="5867841422488265304">Хайх эсвэл вэб хаяг бичих</translation>
 <translation id="5869029295770560994">OK, ойлголоо.</translation>
@@ -4241,7 +4231,6 @@
 <translation id="6225475702458870625">Таны <ph name="PHONE_NAME" />-с дата холболт боломжтой байна</translation>
 <translation id="6226777517901268232">Хувийн түлхүүрийн файл (заавал биш)</translation>
 <translation id="6227280783235722609">өргөтгөл</translation>
-<translation id="6228691855869374890">Энэ сайт нь MIDI төхөөрөмжүүдийг бүрэн хянаж байна.</translation>
 <translation id="6229849828796482487">Wi-Fi сүлжээг салгах</translation>
 <translation id="6229890768313448549">Google Play үйлчилгээний нөхцөлийг ачаалах боломжгүй байна. Дахин оролдоно уу.</translation>
 <translation id="6231881193380278751">Хуудсыг автоматаар сэргээх үүднээс асуулгын парамыг нэмэх: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4395,7 +4384,6 @@
 <translation id="6412931879992742813">Шинэ нууцлалтай цонх</translation>
 <translation id="641469293210305670">Шинэчлэлтүүд болон аппууд суулгах</translation>
 <translation id="6414888972213066896">Та эцэг эхээсээ энэ сайтад нэвтрэх зөвшөөрөл хүссэн байна</translation>
-<translation id="6415659939354280526">Орчиндоо зохицох горимын эх сурвалжийг сонгох</translation>
 <translation id="6415900369006735853">Утсаараа интернэтэд холбогдох</translation>
 <translation id="6416743254476733475">Компьютер дээрээ зөвшөөрч эсвэл хориглоно уу.</translation>
 <translation id="6417265370957905582">Google туслах</translation>
@@ -5339,7 +5327,6 @@
 <translation id="7616214729753637086">Төхөөрөмжийг бүртгүүлж байна...</translation>
 <translation id="7617263010641145920">Play Store-г асаах</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" руу холбогдож байна</translation>
-<translation id="761763866592998929">Орчиндоо зохицох горим</translation>
 <translation id="7621382409404463535">Систем төхөөрөмжийн тохируулгыг хадгалж чадсангүй.</translation>
 <translation id="7622114377921274169">Цэнэглэж байна.</translation>
 <translation id="7622903810087708234">Нууц үгийн дэлгэрэнгүй</translation>
@@ -5582,7 +5569,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Бүртгэл харах</translation>
 <translation id="7882358943899516840">Нийлүүлэгчийн төрөл</translation>
-<translation id="78851824530736377">Орчиндоо зохицох горимыг асаах</translation>
 <translation id="7885253890047913815">Хамгийн сүүлд ашигласан</translation>
 <translation id="7887334752153342268">Хувилах</translation>
 <translation id="7887864092952184874">Bluetooth хулганыг тохирууллаа</translation>

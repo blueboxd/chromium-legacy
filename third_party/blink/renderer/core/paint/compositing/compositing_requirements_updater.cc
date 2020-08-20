@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -81,6 +80,8 @@ class CompositingRequirementsUpdater::OverlapMap {
     // finishCurrentOverlapTestingContext() call.
     BeginNewOverlapTestingContext();
   }
+  OverlapMap(const OverlapMap&) = delete;
+  OverlapMap& operator=(const OverlapMap&) = delete;
 
   // Each rect added is marked as clipped or unclipped. clipped rects may
   // overlap only with other clipped rects, but unclipped rects may overlap
@@ -139,7 +140,6 @@ class CompositingRequirementsUpdater::OverlapMap {
 
  private:
   Vector<OverlapMapContainers> overlap_stack_;
-  DISALLOW_COPY_AND_ASSIGN(OverlapMap);
 };
 
 class CompositingRequirementsUpdater::RecursionData {

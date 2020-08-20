@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">ब्लुटुथसम्बन्धी सेटिङहरू देखाउनुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">सधैँ सेल्फ देखाउनुहोस्</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> कनेक्ट गरियो</translation>
 <translation id="1341651618736211726">ओभरफ्लो</translation>
 <translation id="1346748346194534595">दायाँ</translation>
 <translation id="1351937230027495976">मेनु संक्षिप्त गर्नुहोस्</translation>
@@ -94,6 +95,7 @@
 <translation id="1962969542251276847">लक स्क्रिन</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">नमस्कार, <ph name="USERNAME" /></translation>
+<translation id="1975500003782052650">हालसालै डाउनलोड गरिएका फाइलहरू</translation>
 <translation id="1978498689038657292">पाठ इनपुट</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> को पछिल्लो अद्यावधिकबारे थप जान्नुहोस्</translation>
 <translation id="1995660704900986789">निष्क्रिय पार्नुहोस्</translation>
@@ -258,6 +260,7 @@
 <translation id="3798670284305777884">स्पिकर (आन्तरिक)</translation>
 <translation id="3799080171973636491">तपाईंले फुल स्क्रिन म्याग्निफायरको किबोर्ड सर्टकट थिच्नुभयो। तपाईं यसलाई सक्रिय गर्न चाहनुहुन्छ?</translation>
 <translation id="380165613292957338">नमस्ते, म कसरी मद्दत गर्न सक्छु?</translation>
+<translation id="3826099427150913765">पासवर्ड प्रयोग गर्न थाल्नुहोस्</translation>
 <translation id="383629559565718788">किबोर्डका सेटिङहरू देखाउनुहोस्</translation>
 <translation id="3846575436967432996">सञ्जाल जानकारी उपलब्ध छैन</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
@@ -288,6 +291,7 @@
 <translation id="4181841719683918333">भाषाहरू</translation>
 <translation id="4195877955194704651">स्वतः क्लिक गर्ने बटन</translation>
 <translation id="4197790712631116042">अफ</translation>
+<translation id="4212472694152630271">पिन प्रयोग गर्न थाल्नुहोस्</translation>
 <translation id="4215497585250573029">VPN सेटिङहरू</translation>
 <translation id="4217571870635786043">श्रुतिलेखन</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -300,6 +304,7 @@
 <translation id="4321776623976362024">तपाईंले उच्च कन्ट्रास्ट मोडको किबोर्ड सर्टकट थिच्नुभयो। तपाईं यसलाई सक्रिय गर्न चाहनुहुन्छ?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">म्याग्निफाइङ्ग ग्लास</translation>
+<translation id="4350065043422286972">पिन गरिएको</translation>
 <translation id="4351433414020964307">सहायक लोड हुँदैछ...</translation>
 <translation id="4356930093361201197">उच्च कन्ट्रास्ट मोड</translation>
 <translation id="4368583494516669646">नमस्ते <ph name="GIVEN_NAME" /></translation>
@@ -362,6 +367,7 @@
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> कुनै नयाँ फोनसँग जोडियो</translation>
 <translation id="5035389544768382859">डिस्प्ले कन्फिगुरेसन पुष्टि गर्नुहोस्</translation>
 <translation id="5083553833479578423">सहायकका थप सुविधाहरू अनलक गर्नुहोस्।</translation>
+<translation id="5114495209940374989">स्क्रिनसटहरू</translation>
 <translation id="5136175204352732067">भिन्न किबोर्ड जडान गरियो</translation>
 <translation id="5168181903108465623">Cast यन्त्रहरू उपलब्ध</translation>
 <translation id="5170568018924773124">फोल्डरमा देखाउनुहोस्</translation>
@@ -514,6 +520,7 @@
 <translation id="6972754398087986839">सुरु गर्नुहोस्</translation>
 <translation id="6981982820502123353">पहुँच</translation>
 <translation id="698231206551913481">एक पटक यस प्रयोगकर्तालाई मेटाइएपछि यस प्रयोगकर्तासँग सम्बन्धित सबै फाइलहरू र  स्थानीय डेटा सदाका लागि मेटिनेछन्।</translation>
+<translation id="6990778048354947307">डार्क थीम</translation>
 <translation id="7007983414944123363">तपाईंको PIN वा पासवर्ड पुष्टि गर्न सकिएन। फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> मा फर्केर आउनुहोस्।</translation>
 <translation id="7025533177575372252">तपाईंको <ph name="DEVICE_NAME" /> लाई आफ्नो फोनसँग जोड्नुहोस्</translation>
@@ -608,6 +615,7 @@
 <translation id="8061464966246066292">उच्च कन्ट्रास्ट</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> मा स्क्रिन casting गर्ने काम रोक्नुहोस्</translation>
 <translation id="8113423164597455979">सबै यन्त्रमा अन</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° से.</translation>
 <translation id="8131740175452115882">निश्चित</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> मा जडित</translation>
 <translation id="813913629614996137">सुरुवात गर्दै...</translation>

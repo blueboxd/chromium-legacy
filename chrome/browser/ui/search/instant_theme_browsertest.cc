@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToNewTab) {
 }
 
 // The test is flaky on linux asan. crbug.com/1045708.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ADDRESS_SANITIZER)
 #define MAYBE_ThemeChangedWhenApplyingNewTheme \
   DISABLED_ThemeChangedWhenApplyingNewTheme
 #else

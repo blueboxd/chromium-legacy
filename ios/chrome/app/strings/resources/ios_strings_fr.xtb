@@ -442,6 +442,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6125339936101702016">Géré par <ph name="COMPANY" />. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
 <translation id="6136914049981179737">À l'instant.</translation>
+<translation id="6144589619057374135">Ouvrir ${url} en mode navigation privée</translation>
 <translation id="616831107264507309">Lire plus tard</translation>
 <translation id="6177442314419606057">Effectuer une recherche dans Chrome</translation>
 <translation id="6184086493125982861">Afficher les onglets</translation>

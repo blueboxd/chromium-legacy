@@ -40,10 +40,11 @@
 <translation id="1302880136325416935">ব্লুটুথ সেটিংস দেখান। <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">সিগন্যাল: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">সবসময় শেল্ফ দেখান</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> কানেক্ট করা হয়েছে</translation>
 <translation id="1341651618736211726">ওভারফ্লো</translation>
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="1351937230027495976">মেনুটি আড়াল করুন</translation>
-<translation id="1383876407941801731">খুঁজুন</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1391102559483454063">চালু করা আছে</translation>
 <translation id="1419738280318246476">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য ডিভাইস আনলক করুন</translation>
 <translation id="1420408895951708260">নাইট লাইট ফিচারটি টগল করুন। <ph name="STATE_TEXT" /></translation>
@@ -259,7 +260,7 @@
 <translation id="3798670284305777884">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="3799080171973636491">ফুল-স্ক্রিন ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="380165613292957338">হাই, আমি কীভাবে সাহায্য করতে পারি?</translation>
-<translation id="3826099427150913765">পাসওয়ার্ডে পাল্টান</translation>
+<translation id="3826099427150913765">যাচাইকরণের জন্য পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="383629559565718788">কীবোর্ড সেটিংস দেখান</translation>
 <translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
 <translation id="385051799172605136">ফিরুন</translation>
@@ -290,7 +291,7 @@
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4195877955194704651">অটোমেটিক ক্লিক বোতাম</translation>
 <translation id="4197790712631116042">বন্ধ করা আছে</translation>
-<translation id="4212472694152630271">পিনে পাল্টান</translation>
+<translation id="4212472694152630271">যাচাইকরণের জন্য পিন ব্যবহার করুন</translation>
 <translation id="4215497585250573029">ভিপিএন সেটিংস</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -520,6 +521,7 @@
 <translation id="6972754398087986839">শুরু করুন</translation>
 <translation id="6981982820502123353">ব্যবহারযোগ্যতা</translation>
 <translation id="698231206551913481">একবার এই ব্যবহারকারীকে সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে।</translation>
+<translation id="6990778048354947307">ডার্ক থিম</translation>
 <translation id="7007983414944123363">আপনার পিন বা পাসওয়ার্ড যাচাই করা যায়নি। আবার চেষ্টা করুন।</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" />-কে আপনার ফোনের সাথে কানেক্ট করুন</translation>

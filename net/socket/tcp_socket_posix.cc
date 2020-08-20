@@ -70,7 +70,7 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
   if (!enable)
     return true;
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // Setting the keepalive interval varies by platform.
 
   // Set seconds until first TCP keep alive.

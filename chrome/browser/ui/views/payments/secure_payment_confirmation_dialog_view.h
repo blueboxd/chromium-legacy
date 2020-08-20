@@ -7,7 +7,16 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/secure_payment_confirmation_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace gfx {
+struct VectorIcon;
+}
+
+namespace views {
+class ProgressBar;
+}
 
 namespace payments {
 
@@ -24,6 +33,10 @@ class SecurePaymentConfirmationDialogView
     virtual void OnConfirmButtonPressed() = 0;
     virtual void OnCancelButtonPressed() = 0;
   };
+
+  // IDs that identify a view within the secure payment confirmation dialog.
+  // Used to validate views in browsertests.
+  enum DialogViewID : int { VIEW_ID_NONE = 0, HEADER_ICON, PROGRESS_BAR };
 
   explicit SecurePaymentConfirmationDialogView(
       ObserverForTest* observer_for_test);
@@ -50,11 +63,19 @@ class SecurePaymentConfirmationDialogView
   void OnDialogCancelled();
   void OnDialogClosed();
 
+  const gfx::VectorIcon& GetFingerprintIcon();
+
+  void InitChildViews();
+
+  std::unique_ptr<views::View> CreateHeaderView();
+
   // May be null.
-  ObserverForTest* observer_for_test_;
+  ObserverForTest* observer_for_test_ = nullptr;
 
   VerifyCallback verify_callback_;
   CancelCallback cancel_callback_;
+
+  views::ProgressBar* progress_bar_ = nullptr;
 
   base::WeakPtrFactory<SecurePaymentConfirmationDialogView> weak_ptr_factory_{
       this};

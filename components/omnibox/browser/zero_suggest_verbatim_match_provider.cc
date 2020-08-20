@@ -12,6 +12,24 @@ namespace {
 // The relevance score for verbatim match.
 // Must outrank the QueryTiles relevance score.
 const int kVerbatimMatchRelevanceScore = 1600;
+
+// Returns whether specific context is eligible for a verbatim match.
+// Only offer verbatim match on a site visit and SRP (no NTP etc).
+bool IsVerbatimMatchEligible(
+    metrics::OmniboxEventProto::PageClassification context) {
+  // Only offer verbatim match on a site visit and SRP (no NTP etc).
+  switch (context) {
+    case metrics::OmniboxEventProto::
+        SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
+    case metrics::OmniboxEventProto::
+        SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT:
+    case metrics::OmniboxEventProto::OTHER:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 ZeroSuggestVerbatimMatchProvider::ZeroSuggestVerbatimMatchProvider(
@@ -23,9 +41,7 @@ ZeroSuggestVerbatimMatchProvider::~ZeroSuggestVerbatimMatchProvider() = default;
 void ZeroSuggestVerbatimMatchProvider::Start(const AutocompleteInput& input,
                                              bool minimal_changes) {
   Stop(true, false);
-
-  // Only offer verbatim match on a site visit (non-SRP, non-NTP).
-  if (input.current_page_classification() != metrics::OmniboxEventProto::OTHER)
+  if (!IsVerbatimMatchEligible(input.current_page_classification()))
     return;
 
   // Only offer verbatim match after the user just focused the Omnibox,

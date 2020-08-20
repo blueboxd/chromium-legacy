@@ -100,11 +100,11 @@ constexpr CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::Last() {
 
 template <>
 constexpr CSSPropertyID CSSPropertyPriorityData<kLowPropertyPriority>::First() {
-  static_assert(
-      static_cast<int>(CSSPropertyID::kAlignContent) ==
-          static_cast<int>(CSSPropertyID::kZoom) + 1,
-      "CSSPropertyID::kAlignContent should be the first low priority property");
-  return CSSPropertyID::kAlignContent;
+  static_assert(static_cast<int>(CSSPropertyID::kAdvanceOverride) ==
+                    static_cast<int>(CSSPropertyID::kZoom) + 1,
+                "CSSPropertyID::kAdvanceOverride should be the first low "
+                "priority property");
+  return CSSPropertyID::kAdvanceOverride;
 }
 
 template <>

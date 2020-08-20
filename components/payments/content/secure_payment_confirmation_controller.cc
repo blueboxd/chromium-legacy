@@ -32,6 +32,7 @@ void SecurePaymentConfirmationController::ShowDialog(
   model_.set_verify_button_label(l10n_util::GetStringUTF16(
       IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_BUTTON_LABEL));
   model_.set_cancel_button_label(l10n_util::GetStringUTF16(IDS_CANCEL));
+  model_.set_progress_bar_visible(false);
 
   view_->ShowDialog(
       request->web_contents(), model_.GetWeakPtr(),
@@ -42,10 +43,19 @@ void SecurePaymentConfirmationController::ShowDialog(
 }
 
 void SecurePaymentConfirmationController::CloseDialog() {
+  if (!view_)
+    return;
+
   view_->HideDialog();
 }
 
-void SecurePaymentConfirmationController::ShowProcessingSpinner() {}
+void SecurePaymentConfirmationController::ShowProcessingSpinner() {
+  if (!view_)
+    return;
+
+  model_.set_progress_bar_visible(true);
+  view_->OnModelUpdated();
+}
 
 void SecurePaymentConfirmationController::OnDismiss() {}
 

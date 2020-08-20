@@ -47,14 +47,20 @@ namespace {
 // YUV-to-RGB conversion. If the image does not have an ICC profile, this color
 // space is also used to create the embedded color profile.
 gfx::ColorSpace GetColorSpace(const avifImage* image) {
-  // MIAF Section 7.3.6.4 says:
+  // (As of ISO/IEC 23000-22:2019 Amendment 2) MIAF Section 7.3.6.4 says:
   //   If a coded image has no associated colour property, the default property
   //   is defined as having colour_type equal to 'nclx' with properties as
   //   follows:
-  //   – For YCbCr encoding, sYCC should be assumed as indicated by
-  //   colour_primaries equal to 1, transfer_characteristics equal to 13,
-  //   matrix_coefficients equal to 1, and full_range_flag equal to 1.
+  //   – colour_primaries equal to 1,
+  //   - transfer_characteristics equal to 13,
+  //   - matrix_coefficients equal to 5 or 6 (which are functionally identical),
+  //     and
+  //   - full_range_flag equal to 1.
   //   ...
+  // These values correspond to AVIF_COLOR_PRIMARIES_BT709,
+  // AVIF_TRANSFER_CHARACTERISTICS_SRGB, and AVIF_MATRIX_COEFFICIENTS_BT601,
+  // respectively.
+  //
   // Note that this only specifies the default color property when the color
   // property is absent. It does not really specify the default values for
   // colour_primaries, transfer_characteristics, and matrix_coefficients when
@@ -73,7 +79,7 @@ gfx::ColorSpace GetColorSpace(const avifImage* image) {
                             : image->transferCharacteristics;
   const auto matrix =
       image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED
-          ? AVIF_MATRIX_COEFFICIENTS_BT709
+          ? AVIF_MATRIX_COEFFICIENTS_BT601
           : image->matrixCoefficients;
   const auto range = image->yuvRange == AVIF_RANGE_FULL
                          ? gfx::ColorSpace::RangeID::FULL

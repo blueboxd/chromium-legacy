@@ -43,7 +43,7 @@
 <translation id="2120620239521071941">‏این کار <ph name="ITEMS_COUNT" /> مورد را از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با <ph name="USER_EMAIL" /> وارد سیستم Chrome شوید.</translation>
 <translation id="2123055963409958220">‏با گزارش <ph name="BEGIN_LINK" />تنظیمات کنونی<ph name="END_LINK" />، به بهتر شدن Chrome کمک کنید</translation>
 <translation id="2151406531797534936">‏لطفاً اکنون Chrome را بازراه‌اندازی کنید</translation>
-<translation id="2246246234298806438">‏زمانی که نمایش دهنده داخلی PDF وجود نداشته باشد، Google Chrome نمی‌تواند پیش‌نمایش چاپ را نشان دهد.</translation>
+<translation id="2246246234298806438">‏زمانی که نمایش دهنده داخلی PDF وجود نداشته باشد، Google Chrome نمی‌تواند پیش‌نمای چاپ را نشان دهد.</translation>
 <translation id="226038281051944330">‏با حساب جدیدی در فضای <ph name="EXISTING_USER" /> به سیستم وارد شدید. مایلید فضای جدیدی در Chrome برای <ph name="NEW_USER" /> ایجاد کنید تا داده‌هایتان به‌صورت جداگانه نگهداری شود؟</translation>
 <translation id="2290014774651636340">‏کلیدهای Google API وجود ندارد. برخی از عملکردهای Google Chrome از کار خواهد افتاد.</translation>
 <translation id="2290095356545025170">‏آیا می‌خواهید Google Chrome را غیر فعال کنید؟</translation>
@@ -82,7 +82,7 @@
 <translation id="3351117925998652957">‏انتخاب «فضای Chrome»</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏Chrome هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chrome ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>
-<translation id="3395323229510056640">‏دریافت کمک از سیستم عامل Chrome</translation>
+<translation id="3395323229510056640">‏دریافت کمک از Chrome OS</translation>
 <translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم عامل رخ داد. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="3434246496373299699">‏Chrome زمانی می‌تواند گذرواژه‌هایتان را بررسی کند که با «حساب Google» خود به سیستم وارد شوید</translation>
@@ -115,9 +115,9 @@
 <translation id="4251615635259297716">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="4293420128516039005">‏برای همگام‌سازی و شخصی‌سازی Chrome در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
-<translation id="4325083532956419387">‏نسخه «سیستم عامل Chrome»</translation>
+<translation id="4325083532956419387">‏نسخه Chrome OS</translation>
 <translation id="4328355335528187361">‏Google Chrome نسخه Dev‏، (mDNS-In)</translation>
-<translation id="4331809312908958774">‏سیستم عامل Chrome</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">‏Chrome می‌تواند به ایمن ماندن شما در برابر نقض داده، افزونه‌های مخرب، و خطرهای دیگر کمک کند</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4384570495110188418">‏چون به سیستم وارد نشده‌اید، Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
@@ -164,7 +164,7 @@
 <translation id="5686916850681061684">‏Google Chrome ‫را سفارشی و کنترل کنید. چیزی نیاز به رسیدگی دارد، برای اطلاعات بیشتر کلیک کنید.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{‏Google Chrome بعد از ۱ ثانیه بازراه‌اندازی می‌شود}one{‏Google Chrome بعد از # ثانیه بازراه‌اندازی می‌شود}other{‏Google Chrome بعد از # ثانیه بازراه‌اندازی می‌شود}}</translation>
-<translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
+<translation id="573759479754913123">‏درباره Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">‏Chrome راه‌اندازی نشد. دوباره امتحان کنید.</translation>
 <translation id="5867197326698922595">‏Google Chrome می‌خواهد گذرواژه‌ها را ویرایش کند.</translation>
@@ -212,7 +212,7 @@
 <translation id="7419046106786626209">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="7486227612705979895">‏Chrome برای ارائه پیشنهاد در نوار نشانی، به Drive شما دسترسی خواهد داشت</translation>
 <translation id="7535429826459677826">‏Google Chrome نسخه Dev</translation>
-<translation id="7573289029918943991">‏برای اینکه ببینید دستگاهتان به‌روز است یا نه، به <ph name="LINK_BEGIN" />تنظیمات سیستم عامل Chrome<ph name="LINK_END" /> بروید</translation>
+<translation id="7573289029918943991">‏برای اینکه ببینید دستگاهتان به‌روز است یا نه، به <ph name="LINK_BEGIN" />تنظیمات Chrome OS<ph name="LINK_END" /> بروید</translation>
 <translation id="7589360514048265910">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند، زیرا Mac OS X نسخه ۱۰.۹ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="7591404275842302616">‏بااستفاده از «فضاهای Chrome»، مرورتان را در این دستگاه سازمان‌دهی کنید</translation>
 <translation id="7592736734348559088">‏Google Chrome قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>

@@ -4,6 +4,7 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 
+#include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -18,10 +19,6 @@ constexpr base::TimeDelta kMinTokenRefreshDelay =
 constexpr base::TimeDelta kMaxTokenRefreshDelay =
     base::TimeDelta::FromMilliseconds(60 * 1000);
 
-// The buffer time to use the access token.
-constexpr base::TimeDelta kTokenExpirationTimeBuffer =
-    base::TimeDelta::FromMinutes(10);
-
 }  // namespace
 
 AmbientAccessTokenController::AmbientAccessTokenController() = default;
@@ -29,7 +26,8 @@ AmbientAccessTokenController::AmbientAccessTokenController() = default;
 AmbientAccessTokenController::~AmbientAccessTokenController() = default;
 
 void AmbientAccessTokenController::RequestAccessToken(
-    AccessTokenCallback callback) {
+    AccessTokenCallback callback,
+    bool may_refresh_token_on_lock) {
   // |token_refresh_timer_| may become stale during sleeping.
   if (token_refresh_timer_.IsRunning())
     token_refresh_timer_.AbandonAndStop();
@@ -39,13 +37,18 @@ void AmbientAccessTokenController::RequestAccessToken(
 
     // Return the token if there is enough time to use the access token when
     // requested.
-    if (expiration_time_ - base::Time::Now() > kTokenExpirationTimeBuffer) {
+    if (expiration_time_ - base::Time::Now() > token_usage_time_buffer_) {
       RunCallback(std::move(callback));
       return;
     }
 
     access_token_ = std::string();
     expiration_time_ = base::Time::Now();
+  }
+
+  if (!may_refresh_token_on_lock && LockScreen::HasInstance()) {
+    RunCallback(std::move(callback));
+    return;
   }
 
   callbacks_.emplace_back(std::move(callback));
@@ -107,9 +110,13 @@ void AmbientAccessTokenController::NotifyAccessTokenRefreshed() {
 }
 
 void AmbientAccessTokenController::RunCallback(AccessTokenCallback callback) {
-  DCHECK(!gaia_id_.empty());
-  DCHECK(!access_token_.empty());
+  LOG(ERROR) << " DW run calback " << access_token_;
   std::move(callback).Run(gaia_id_, access_token_);
+}
+
+void AmbientAccessTokenController::SetTokenUsageBufferForTesting(
+    base::TimeDelta time) {
+  token_usage_time_buffer_ = time;
 }
 
 }  // namespace ash

@@ -46,7 +46,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -95,6 +94,8 @@ class CORE_EXPORT PaintLayerStackingNode {
 
  public:
   explicit PaintLayerStackingNode(PaintLayer&);
+  PaintLayerStackingNode(const PaintLayerStackingNode&) = delete;
+  PaintLayerStackingNode& operator=(const PaintLayerStackingNode&) = delete;
   ~PaintLayerStackingNode();
 
   void DirtyZOrderLists();
@@ -201,8 +202,6 @@ class CORE_EXPORT PaintLayerStackingNode {
 
   // Indicates whether the z-order lists above are dirty.
   bool z_order_lists_dirty_ : 1;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNode);
 };
 
 }  // namespace blink

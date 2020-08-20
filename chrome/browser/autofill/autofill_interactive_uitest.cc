@@ -2710,7 +2710,8 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
+IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest,
+                       DISABLED_AllAutocomplete) {
   SCOPED_TRACE(base::StringPrintf("restrict_unowned_fields_ = %d",
                                   restrict_unowned_fields_));
   CreateTestProfile();

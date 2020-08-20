@@ -21,6 +21,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{१ डाउनलोड विचारधीन छ।}other{# डाउनलोडहरू विचारधीन छन्।}}</translation>
 <translation id="1145536944570833626">विद्यमान डेटा मेट्नुहोस्।</translation>
 <translation id="1146678959555564648">VR मा प्रवेश गर्नुहोस्</translation>
+<translation id="1154704303112745282">यो पृष्ठ अफलाइन मोडमा उपलब्ध छैन: <ph name="VIOLATED_URL" /></translation>
 <translation id="116280672541001035">प्रयोग भएको डेटा</translation>
 <translation id="1171770572613082465">"शीर्ष साइटहरू" नामक बटनमा ट्याप गरी लोकप्रिय वेबसाइटहरू हेर्नुहोस्</translation>
 <translation id="1173894706177603556">पुन: नामाकरण गर्नुहोस्</translation>
@@ -363,6 +364,7 @@
 <translation id="3892148308691398805">पाठ कपी गर्नुहोस्</translation>
 <translation id="3894427358181296146">फोल्डर थप्नुहोस्</translation>
 <translation id="3895926599014793903">जूम सक्षम गर्न दबाब दिनु</translation>
+<translation id="3908308510347173149"><ph name="PRODUCT_NAME" /> अपडेट गर्नुहोस्</translation>
 <translation id="3909763690984331376">सुरक्षा जाँच <ph name="BEGIN_NEW" />नयाँ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेबका उत्कृष्ट सामग्रीहरू फेला पार्दै…</translation>
 <translation id="3924911262913579434">'<ph name="SAFE_BROWSING_MODE" />' अन छ</translation>
@@ -416,6 +418,7 @@
 <translation id="4335835283689002019">Safe Browsing अफ छ</translation>
 <translation id="4351244548802238354">सम्बाद बन्द गर्नुहोस्</translation>
 <translation id="4378154925671717803">फोन</translation>
+<translation id="4382908510000698092">Chrome मा यो भाषा प्रयोग गर्नुहोस्</translation>
 <translation id="4384468725000734951">खोजीका लागि Sogou प्रयोग गर्दै</translation>
 <translation id="4404568932422911380">कुनै पनि पुस्तक चिन्ह छैन</translation>
 <translation id="4405224443901389797">यहाँ सार्नुहोस्…</translation>
@@ -447,6 +450,7 @@
 <translation id="4605958867780575332">हटाइएको वस्तु: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> खोल्नुहोस्</translation>
 <translation id="4634124774493850572">पासवर्ड प्रयोग गर्नुहोस्</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{अरूले देखेको १ पासवर्ड फेला पर्‍यो}other{अरूले देखेका # वटा पासवर्ड फेला परे}}</translation>
 <translation id="4650364565596261010">प्रणालीको पूर्वनिर्धारित सेटिङ</translation>
 <translation id="465657074423018424">Safe Browsing नामक सुविधाको सहयोगले तपाईं भ्रामक वेबसाइटहरूबाट सुरक्षित रहनुहुन्छ। तपाईंले यो सेटिङ अफ गर्नुभएको छ भने ब्राउजिङ गर्दा र त्यसमा पनि विशेष गरी पासवर्ड प्रविष्टि गर्दा अझ सतर्क रहनुहोला।</translation>
 <translation id="4662373422909645029">उपनाममा अङ्क प्रयोग गर्न पाइँदैन</translation>
@@ -591,6 +595,7 @@
 <translation id="568275469169136466">केही समयका लागि साइन इन गर्न</translation>
 <translation id="5683547024293500885">Chrome ले अपडेट उपलब्ध छन् कि छैनन् भन्ने कुरा जाँच गर्न सकेन</translation>
 <translation id="5686790454216892815">फाइलको नाम ज्यादै लामो छ</translation>
+<translation id="5687809546194252819"><ph name="APP_NAME" /> रिस्टार्ट भएपछि यसले <ph name="LANGUAGE" /> भाषा प्रयोग गर्ने छ।</translation>
 <translation id="5694049548840660018">सजिलैसँग गृहपृष्ठमा फर्कनुहोस्</translation>
 <translation id="569536719314091526">थप विकल्पहरू नामक बटनबाट यस पृष्ठलाई जुनसुकै भाषामा अनुवाद गर्नुहोस्</translation>
 <translation id="5696597120588531049">Chrome ले तपाईंलाई डेटा चोरीका घटना, असुरक्षित वेबसाइटहरू र थप समस्याहरूबाट जोगिन मद्दत गर्न सक्छ</translation>
@@ -694,6 +699,7 @@
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6397616442223433927">यन्त्र फेरि अनलाइन भयो</translation>
 <translation id="6398765197997659313">पूर्ण स्क्रिनलाई हटाउनुहोस्</translation>
+<translation id="6402652558933147609"><ph name="VIOLATED_URL" /> मा <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">बुकमार्क सम्पादन गर्नुहोस्</translation>
 <translation id="6406506848690869874">समक्रमण</translation>
 <translation id="6412673304250309937">Chrome मा भण्डारण गरिएका असुरक्षित साइटको सूची जाँच गरी URL हरू सुरक्षित छन् वा छैनन् भन्ने कुरा यकिन गर्छ। कुनै साइटले तपाईंको पासवर्ड चोरी गर्न खोज्दा वा तपाईंले कुनै हानिकारक फाइल डाउनलोड गर्दा Chrome ले पृष्ठका केही सामग्रीसहित URL हरूलाई सुरक्षित ब्राउजिङमा पठाउन पनि सक्छ।</translation>
@@ -768,6 +774,7 @@
 <translation id="6896758677409633944">प्रतिलिपि गर्नुहोस्</translation>
 <translation id="6900532703269623216">परिष्कृत सुरक्षा</translation>
 <translation id="6903907808598579934">सिंकलाई सक्रिय गर्नुहोस्</translation>
+<translation id="6929699136511445623">Android सिस्टम सिंक गर्ने सुविधा सक्षम पार्नुहोस्</translation>
 <translation id="6942665639005891494">सेटिङहरू नामक मेनुको विकल्प प्रयोग गरी पूर्वनिर्धारित डाउनलोड स्थान जुनसुकै बेला परिवर्तन गर्नुहोस्</translation>
 <translation id="6945221475159498467">चयन गर्नुहोस्</translation>
 <translation id="6955535239952325894">व्यवस्थापन गरिएका ब्राउजरहरूमा यो सेटिङ असक्षम पारिएको हुन्छ</translation>
@@ -868,6 +875,7 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" /> मा इमेल सिर्जना गर्नुहोस्</translation>
 <translation id="7704317875155739195">खोज तथा URL हरू स्वतः पूर्ण गर्नुहोस्</translation>
 <translation id="7725024127233776428">तपाईंले पुस्तक चिन्ह लगाउनुभएका पृष्ठहरू यहाँ देखिन्छन्</translation>
+<translation id="7735637452482172701">स्क्रिन लक प्रयोग गरी अनलक गर्नुहोस्</translation>
 <translation id="7746457520633464754">Chrome ले खतरनाक एप र साइटहरू पत्ता लगाउने प्रयोजनका लागि तपाईंले भ्रमण गर्ने केही पृष्ठका URL, प्रणालीसम्बन्धी सीमित जानकारी र केही पृष्ठका सामग्री Google मा पठाउँछ</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> ले आदान प्रदान गरेको पाठ</translation>
 <translation id="7761849928583394409">मिति र समय रोज्नुहोस्</translation>
@@ -948,6 +956,7 @@
 <translation id="8261506727792406068">मेट्नुहोस्</translation>
 <translation id="8266862848225348053">स्थान डाउनलोड गर्नुहोस्</translation>
 <translation id="8274165955039650276">डाउनलोडहरू हेर्नुहोस्</translation>
+<translation id="8278640294239011163">सिंक पुष्टि गर्नुहोस्</translation>
 <translation id="8284326494547611709">क्याप्सन</translation>
 <translation id="8310344678080805313">मानक ट्याबहरू</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> र थप साइटहरू</translation>

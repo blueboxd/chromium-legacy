@@ -1,0 +1,66 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_THIN_WEBVIEW_INTERNAL_THIN_WEBVIEW_H_
+#define COMPONENTS_THIN_WEBVIEW_INTERNAL_THIN_WEBVIEW_H_
+
+#include <jni.h>
+
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
+#include "components/thin_webview/internal/compositor_view_impl.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/android/window_android.h"
+
+namespace web_contents_delegate_android {
+class WebContentsDelegateAndroid;
+}  // namespace web_contents_delegate_android
+
+namespace thin_webview {
+namespace android {
+
+// Native counterpart of ThinWebViewImpl.java.
+class ThinWebView {
+ public:
+  ThinWebView(JNIEnv* env,
+              jobject obj,
+              CompositorView* compositor_view,
+              ui::WindowAndroid* window_android);
+  ~ThinWebView();
+
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& object);
+
+  void SetWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      const base::android::JavaParamRef<jobject>& jweb_contents_delegate);
+
+  void SizeChanged(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& object,
+                   jint width,
+                   jint height);
+
+ private:
+  void SetWebContents(
+      content::WebContents* web_contents,
+      web_contents_delegate_android::WebContentsDelegateAndroid* delegate);
+  void ResizeWebContents(const gfx::Size& size);
+
+  base::android::ScopedJavaGlobalRef<jobject> obj_;
+  CompositorView* compositor_view_;
+  ui::WindowAndroid* window_android_;
+  content::WebContents* web_contents_;
+  std::unique_ptr<web_contents_delegate_android::WebContentsDelegateAndroid>
+      web_contents_delegate_;
+  gfx::Size view_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThinWebView);
+};
+
+}  // namespace android
+}  // namespace thin_webview
+
+#endif  // COMPONENTS_THIN_WEBVIEW_INTERNAL_THIN_WEBVIEW_H_

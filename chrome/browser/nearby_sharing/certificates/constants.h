@@ -90,4 +90,7 @@ extern const char kNearbyShareReceiverVerificationPrefix;
 // The maximum number of attempts to initialize LevelDB in Certificate Storage.
 extern const size_t kNearbyShareCertificateStorageMaxNumInitializeAttempts;
 
+// The frequency with which to download public certificates.
+extern const base::TimeDelta kNearbySharePublicCertificateDownloadPeriod;
+
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_CONSTANTS_H_

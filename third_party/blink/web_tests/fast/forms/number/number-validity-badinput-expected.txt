@@ -47,6 +47,12 @@ PASS number.value is "1"
 ' +1. ' is not a badInput.
 PASS number.validity.badInput is false
 PASS number.value is "1"
+Arabic number is not a badInput.
+PASS number_ar.validity.badInput is false
+PASS number_ar.value is "1.1"
+Arabic number with two decimal separators is a badInput.
+PASS number_ar.validity.badInput is true
+PASS number_ar.value is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE

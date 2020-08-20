@@ -91,10 +91,6 @@ bool SliderThumbElement::MatchesReadWritePseudoClass() const {
   return HostInput() && HostInput()->MatchesReadWritePseudoClass();
 }
 
-const Node* SliderThumbElement::FocusDelegate() const {
-  return HostInput();
-}
-
 void SliderThumbElement::DragFrom(const LayoutPoint& point) {
   StartDragging();
   SetPositionFromPoint(point);

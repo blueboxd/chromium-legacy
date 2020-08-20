@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
+import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
@@ -66,6 +67,8 @@ public class FirstRunIntegrationTest {
 
     @Mock
     public FirstRunAppRestrictionInfo mMockAppRestrictionInfo;
+    @Mock
+    public EnterpriseInfo mEntepriseInfo;
 
     private final Set<Class> mSupportedActivities =
             CollectionUtil.newHashSet(ChromeLauncherActivity.class, FirstRunActivity.class,
@@ -95,6 +98,7 @@ public class FirstRunIntegrationTest {
     public void tearDown() {
         FirstRunActivity.setEnableEnterpriseCCTForTest(false);
         FirstRunAppRestrictionInfo.setInstanceForTest(null);
+        EnterpriseInfo.setInstanceForTest(null);
         if (mLastActivity != null) mLastActivity.finish();
     }
 
@@ -121,6 +125,17 @@ public class FirstRunIntegrationTest {
                 .when(mMockAppRestrictionInfo)
                 .getHasAppRestriction(any());
         FirstRunAppRestrictionInfo.setInstanceForTest(mMockAppRestrictionInfo);
+    }
+
+    private void setDeviceOwnedForMock() {
+        Mockito.doAnswer(invocation -> {
+                   Callback<EnterpriseInfo.OwnedState> callback = invocation.getArgument(0);
+                   callback.onResult(new EnterpriseInfo.OwnedState(true, false));
+                   return null;
+               })
+                .when(mEntepriseInfo)
+                .getDeviceEnterpriseInfo(any());
+        EnterpriseInfo.setInstanceForTest(mEntepriseInfo);
     }
 
     @Test
@@ -259,6 +274,7 @@ public class FirstRunIntegrationTest {
         Bundle restrictions = new Bundle();
         restrictions.putBoolean("CCTToSDialogEnabled", false);
         AbstractAppRestrictionsProvider.setTestRestrictions(restrictions);
+        setDeviceOwnedForMock();
 
         Intent intent =
                 CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, "https://test.com");

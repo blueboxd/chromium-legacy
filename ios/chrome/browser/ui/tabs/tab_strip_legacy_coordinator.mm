@@ -57,6 +57,11 @@
   [self.tabStripController tabStripSizeDidChange];
 }
 
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler {
+  self.tabStripController.panGestureHandler = panGestureHandler;
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {

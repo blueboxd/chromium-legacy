@@ -217,8 +217,10 @@ void FromTextureQuad(const TextureDrawQuad* quad,
 // all configurations, RequiresOverlay() will be true for all protected video.
 bool RequiresOverlay(const QuadList::Iterator& it) {
   if (it->material == DrawQuad::Material::kYuvVideoContent &&
-      YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type ==
-          gfx::ProtectedVideoType::kHardwareProtected) {
+      (YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type ==
+           gfx::ProtectedVideoType::kHardwareProtected ||
+       YUVVideoDrawQuad::MaterialCast(*it)->protected_video_type ==
+           gfx::ProtectedVideoType::kSoftwareProtected)) {
     return true;
   } else if (it->material == DrawQuad::Material::kTextureContent) {
     return true;
@@ -401,11 +403,6 @@ void DCLayerOverlayProcessor::Process(
   gfx::Rect this_frame_overlay_rect;
   gfx::Rect this_frame_underlay_rect;
 
-  int candidate_rect_area = 0;
-  gfx::Rect candidate_quad_rectangle_in_target_space;
-  gfx::Rect candidate_occluding_damage_rect;
-  bool candidate_is_overlay = false;
-
   // Which render passes have backdrop filters.
   base::flat_set<RenderPassId> render_pass_has_backdrop_filters;
   for (const auto& render_pass : *render_pass_list) {
@@ -423,15 +420,21 @@ void DCLayerOverlayProcessor::Process(
     DCHECK_GT(render_pass_list->size(), 1u);
     root_render_pass = (*render_pass_list)[render_pass_list->size() - 2].get();
   }
-  QuadList* quad_list = &root_render_pass->quad_list;
-  auto candidate_it = quad_list->begin();
-  auto next_it = quad_list->begin();
-  for (auto it = quad_list->begin(); it != quad_list->end(); it = next_it) {
-    // next_it may be modified inside the loop if methods modify the quad list
-    // and invalidate iterators to it.
-    next_it = it;
-    ++next_it;
 
+  // Used for generating the candidate index list.
+  QuadList* quad_list = &root_render_pass->quad_list;
+  std::vector<size_t> candidate_index_list;
+  size_t index = 0;
+
+  // Used for looping through candidate_index_list to UpdateDCLayerOverlays()
+  size_t prev_index = 0;
+  auto prev_it = quad_list->begin();
+
+  // Used for whether overlay should be skipped
+  int yuv_quads_in_quad_list = 0;
+  bool has_required_overlays = false;
+
+  for (auto it = quad_list->begin(); it != quad_list->end(); ++it, ++index) {
     if (it->material == DrawQuad::Material::kRenderPass) {
       const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
       if (render_pass_has_backdrop_filters.count(rpdq->render_pass_id)) {
@@ -444,10 +447,11 @@ void DCLayerOverlayProcessor::Process(
     DCLayerResult result;
     switch (it->material) {
       case DrawQuad::Material::kYuvVideoContent:
-        result = ValidateYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
-                                 backdrop_filter_rects, has_overlay_support_,
-                                 current_frame_processed_overlay_count_,
-                                 resource_provider);
+        result =
+            ValidateYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
+                            backdrop_filter_rects, has_overlay_support_,
+                            candidate_index_list.size(), resource_provider);
+        yuv_quads_in_quad_list++;
         break;
       case DrawQuad::Material::kTextureContent:
         result = ValidateTextureQuad(TextureDrawQuad::MaterialCast(*it),
@@ -461,6 +465,33 @@ void DCLayerOverlayProcessor::Process(
       RecordDCLayerResult(result, it);
       continue;
     }
+    const bool requires_overlay = RequiresOverlay(it);
+    if (requires_overlay)
+      has_required_overlays = true;
+
+    if (candidate_index_list.size() == 0) {
+      prev_index = index;
+      prev_it = it;
+    }
+
+    candidate_index_list.push_back(index);
+  }
+
+  // We might not save power if there are more than one videos and only
+  // one is promoted to overlay. Skip overlay for this frame.
+  if (candidate_index_list.size() > 0 && yuv_quads_in_quad_list > 1 &&
+      !has_required_overlays) {
+    candidate_index_list.clear();
+    // In this case, there is only one candidate in the list.
+    RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS, prev_it);
+  }
+
+  // Copy the overlay quad info to dc_layer_overlays and replace/delete overlay
+  // quads in quad_list.
+  for (auto index : candidate_index_list) {
+    auto it = std::next(prev_it, index - prev_index);
+    prev_it = it;
+    prev_index = index;
 
     gfx::Rect quad_rectangle_in_target_space =
         gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
@@ -477,59 +508,20 @@ void DCLayerOverlayProcessor::Process(
     const bool requires_overlay = RequiresOverlay(it);
 
     // Skip quad if it's an underlay and underlays are not allowed.
-    if (!is_overlay && !requires_overlay)
-      result = IsUnderlayAllowed(it);
+    if (!is_overlay && !requires_overlay) {
+      DCLayerResult result = IsUnderlayAllowed(it);
 
-    if (result != DC_LAYER_SUCCESS) {
-      RecordDCLayerResult(result, it);
-      continue;
-    }
-
-    if (requires_overlay) {
-      // Record the DCLayer result for the previous candidate. We won't consider
-      // any more candidates for overlays other than required ones.
-      if (candidate_rect_area > 0) {
-        RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS, candidate_it);
-        candidate_rect_area = 0;
-      }
-
-      UpdateDCLayerOverlays(
-          display_rect, root_render_pass, it, quad_rectangle_in_target_space,
-          occluding_damage_rect, is_overlay, &next_it, &this_frame_overlay_rect,
-          &this_frame_underlay_rect, damage_rect, dc_layer_overlays);
-    } else {
-      // Defer UpdateDCLayerOverlays(). Only one overlay is allowed.
-      // The quad with the largest size will be sellected.
-      int rect_area = quad_rectangle_in_target_space.size().GetArea();
-      if (rect_area > candidate_rect_area) {
-        // Record the DCLayer result for the previous candidate.
-        if (candidate_rect_area)
-          RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS, candidate_it);
-
-        candidate_it = it;
-        candidate_rect_area = rect_area;
-        candidate_quad_rectangle_in_target_space =
-            quad_rectangle_in_target_space;
-        candidate_occluding_damage_rect = occluding_damage_rect;
-        candidate_is_overlay = is_overlay;
+      if (result != DC_LAYER_SUCCESS) {
+        RecordDCLayerResult(result, it);
+        continue;
       }
     }
-  }
 
-  // Now update |dc_layer_overlays| after all quads in the current render pass
-  // have been validated. No need to promote it to overlay if there is already
-  // one.
-  if (candidate_rect_area && current_frame_processed_overlay_count_ == 0) {
-    // Be very careful. candidate_it is valid here only if
-    // |current_frame_processed_overlay_count_| == 0. If it's not 0,
-    // UpdateDCLayerOverlays() has been called and the old iterators might be
-    // invalid.
-    UpdateDCLayerOverlays(display_rect, root_render_pass, candidate_it,
-                          candidate_quad_rectangle_in_target_space,
-                          candidate_occluding_damage_rect, candidate_is_overlay,
-                          &next_it, &this_frame_overlay_rect,
-                          &this_frame_underlay_rect, damage_rect,
-                          dc_layer_overlays);
+    UpdateDCLayerOverlays(display_rect, root_render_pass, it,
+                          quad_rectangle_in_target_space, occluding_damage_rect,
+                          is_overlay, &prev_it, &prev_index,
+                          &this_frame_overlay_rect, &this_frame_underlay_rect,
+                          damage_rect, dc_layer_overlays);
   }
 
   // Update previous frame state after processing root pass. If there is no
@@ -564,7 +556,8 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
     const gfx::Rect& quad_rectangle_in_target_space,
     const gfx::Rect& occluding_damage_rect,
     bool is_overlay,
-    QuadList::Iterator* next_it,
+    QuadList::Iterator* new_it,
+    size_t* new_index,
     gfx::Rect* this_frame_overlay_rect,
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* damage_rect,
@@ -607,9 +600,10 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
   // TODO(sunnyps): Is the above comment correct?  We seem to allow multiple
   // overlays for protected video, but don't calculate damage differently.
   if (is_overlay) {
-    *next_it =
+    *new_it =
         ProcessForOverlay(display_rect, render_pass,
                           quad_rectangle_in_target_space, it, damage_rect);
+    (*new_index)++;
     *this_frame_overlay_rect = quad_rectangle_in_target_space;
   } else {
     ProcessForUnderlay(display_rect, render_pass,

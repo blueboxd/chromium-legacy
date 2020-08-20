@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {PrinterSetupResult, PrintServerResult, CupsPrinterInfo} from './cups_printers_browser_proxy.m.js';
+// #import {PrinterListEntry} from './cups_printer_types.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+// clang-format on
+
 /**
  * @fileoverview  Utility functions that are used in Cups printer setup dialogs.
  */
@@ -11,7 +18,7 @@ cr.define('settings.printing', function() {
    * @param {string} protocol
    * @return {boolean} Whether |protocol| is a network protocol
    */
-  function isNetworkProtocol(protocol) {
+  /* #export */ function isNetworkProtocol(protocol) {
     return ['ipp', 'ipps', 'http', 'https', 'socket', 'lpd'].includes(protocol);
   }
 
@@ -25,7 +32,7 @@ cr.define('settings.printing', function() {
    * @param {CupsPrinterInfo} printer
    * @return {boolean}
    */
-  function isNameAndAddressValid(printer) {
+  /* #export */ function isNameAndAddressValid(printer) {
     if (!printer) {
       return false;
     }
@@ -80,7 +87,7 @@ cr.define('settings.printing', function() {
    * @param {string} ppdPath
    * @return {boolean}
    */
-  function isPPDInfoValid(manufacturer, model, ppdPath) {
+  /* #export */ function isPPDInfoValid(manufacturer, model, ppdPath) {
     return !!((manufacturer && model) || ppdPath);
   }
 
@@ -89,7 +96,7 @@ cr.define('settings.printing', function() {
    * @param {string} path The full path of the file
    * @return {string} The base name of the file
    */
-  function getBaseName(path) {
+  /* #export */ function getBaseName(path) {
     if (path && path.length > 0) {
       return path.substring(path.lastIndexOf('/') + 1);
     }
@@ -113,7 +120,7 @@ cr.define('settings.printing', function() {
    * @param {!PrinterSetupResult} result
    * @return {string}
    */
-  function getErrorText(result) {
+  /* #export */ function getErrorText(result) {
     switch (result) {
       case PrinterSetupResult.FATAL_ERROR:
         return loadTimeData.getString('printerAddedFatalErrorMessage');
@@ -146,7 +153,7 @@ cr.define('settings.printing', function() {
    * @param {!PrintServerResult} result
    * @return {string}
    */
-  function getPrintServerErrorText(result) {
+  /* #export */ function getPrintServerErrorText(result) {
     switch (result) {
       case PrintServerResult.CONNECTION_ERROR:
         return loadTimeData.getString('printServerConnectionError');
@@ -165,7 +172,7 @@ cr.define('settings.printing', function() {
    * @param {!PrinterListEntry} second
    * @return {number}
    */
-  function sortPrinters(first, second) {
+  /* #export */ function sortPrinters(first, second) {
     if (first.printerType == second.printerType) {
       return settings.printing.alphabeticalSort(
           first.printerInfo, second.printerInfo);
@@ -179,7 +186,7 @@ cr.define('settings.printing', function() {
    * @param {string} searchTerm
    * @return {boolean} True if the printer has |searchTerm| in its name.
    */
-  function matchesSearchTerm(printer, searchTerm) {
+  /* #export */ function matchesSearchTerm(printer, searchTerm) {
     return printer.printerName.toLowerCase().includes(searchTerm.toLowerCase());
   }
 
@@ -198,7 +205,7 @@ cr.define('settings.printing', function() {
    * @param {!Array<!PrinterListEntry>} secondArr
    * @return {!Array<!PrinterListEntry>}
    */
-  function findDifference(firstArr, secondArr) {
+  /* #export */ function findDifference(firstArr, secondArr) {
     return firstArr.filter(p1 => {
       return !secondArr.some(
           p2 => p2.printerInfo.printerId == p1.printerInfo.printerId);

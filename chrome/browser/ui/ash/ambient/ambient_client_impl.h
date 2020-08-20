@@ -30,6 +30,7 @@ class AmbientClientImpl : public ash::AmbientClient {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   void RequestWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
+  bool ShouldUseProdServer() override;
 
  private:
   void GetAccessToken(GetAccessTokenCallback callback,

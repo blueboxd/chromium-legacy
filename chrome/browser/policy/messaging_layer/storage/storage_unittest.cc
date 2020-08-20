@@ -232,6 +232,21 @@ TEST_F(StorageTest, WriteIntoNewStorageAndReopen) {
   CreateStorageTestOrDie(BuildStorageOptions());
 }
 
+TEST_F(StorageTest, WriteIntoNewStorageReopenAndWriteMore) {
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(_, NotNull())).Times(0);
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(FAST_BATCH, blobs[0]);
+  WriteStringOrDie(FAST_BATCH, blobs[1]);
+  WriteStringOrDie(FAST_BATCH, blobs[2]);
+
+  storage_.reset();
+
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(FAST_BATCH, more_blobs[0]);
+  WriteStringOrDie(FAST_BATCH, more_blobs[1]);
+  WriteStringOrDie(FAST_BATCH, more_blobs[2]);
+}
+
 TEST_F(StorageTest, WriteIntoNewStorageAndUpload) {
   CreateStorageTestOrDie(BuildStorageOptions());
   WriteStringOrDie(FAST_BATCH, blobs[0]);
@@ -246,6 +261,36 @@ TEST_F(StorageTest, WriteIntoNewStorageAndUpload) {
                 .Required(blobs[0])
                 .Required(blobs[1])
                 .Required(blobs[2]);
+          }));
+
+  // Trigger upload.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(StorageTest, WriteIntoNewStorageReopenWriteMoreAndUpload) {
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(FAST_BATCH, blobs[0]);
+  WriteStringOrDie(FAST_BATCH, blobs[1]);
+  WriteStringOrDie(FAST_BATCH, blobs[2]);
+
+  storage_.reset();
+
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(FAST_BATCH, more_blobs[0]);
+  WriteStringOrDie(FAST_BATCH, more_blobs[1]);
+  WriteStringOrDie(FAST_BATCH, more_blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(Eq(FAST_BATCH), NotNull()))
+      .WillOnce(
+          Invoke([](Priority priority, MockUploadClient* mock_upload_client) {
+            MockUploadClient::SetUp(priority, mock_upload_client)
+                .Required(blobs[0])
+                .Required(blobs[1])
+                .Required(blobs[2])
+                .Required(more_blobs[0])
+                .Required(more_blobs[1])
+                .Required(more_blobs[2]);
           }));
 
   // Trigger upload.
@@ -267,6 +312,37 @@ TEST_F(StorageTest, WriteIntoNewStorageAndFlush) {
                 .Required(blobs[0])
                 .Required(blobs[1])
                 .Required(blobs[2]);
+          }));
+
+  // Trigger upload.
+  EXPECT_OK(storage_->Flush(MANUAL_BATCH));
+}
+
+TEST_F(StorageTest, WriteIntoNewStorageReopenWriteMoreAndFlush) {
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(MANUAL_BATCH, blobs[0]);
+  WriteStringOrDie(MANUAL_BATCH, blobs[1]);
+  WriteStringOrDie(MANUAL_BATCH, blobs[2]);
+
+  storage_.reset();
+
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(MANUAL_BATCH, more_blobs[0]);
+  WriteStringOrDie(MANUAL_BATCH, more_blobs[1]);
+  WriteStringOrDie(MANUAL_BATCH, more_blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_,
+              Call(Eq(MANUAL_BATCH), NotNull()))
+      .WillOnce(
+          Invoke([](Priority priority, MockUploadClient* mock_upload_client) {
+            MockUploadClient::SetUp(priority, mock_upload_client)
+                .Required(blobs[0])
+                .Required(blobs[1])
+                .Required(blobs[2])
+                .Required(more_blobs[0])
+                .Required(more_blobs[1])
+                .Required(more_blobs[2]);
           }));
 
   // Trigger upload.

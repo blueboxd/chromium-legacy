@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/cast_mirroring_service_host.h"
+#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/issues_observer.h"

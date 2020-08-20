@@ -56,6 +56,8 @@ class VIEWS_EXPORT EditableCombobox
   static constexpr int kDefaultTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultTextStyle = style::STYLE_PRIMARY;
 
+  EditableCombobox();
+
   // |combobox_model|: The ComboboxModel that gives us the items to show in the
   // menu.
   // |filter_on_edit|: Whether to only show the items that are case-insensitive
@@ -66,15 +68,17 @@ class VIEWS_EXPORT EditableCombobox
   // |text_context| and |text_style|: Together these indicate the font to use.
   // |display_arrow|: Whether to display an arrow in the combobox to indicate
   // that there is a drop-down list.
-  EditableCombobox(std::unique_ptr<ui::ComboboxModel> combobox_model,
-                   bool filter_on_edit,
-                   bool show_on_empty,
-                   Type type = Type::kRegular,
-                   int text_context = kDefaultTextContext,
-                   int text_style = kDefaultTextStyle,
-                   bool display_arrow = true);
+  explicit EditableCombobox(std::unique_ptr<ui::ComboboxModel> combobox_model,
+                            bool filter_on_edit = false,
+                            bool show_on_empty = true,
+                            Type type = Type::kRegular,
+                            int text_context = kDefaultTextContext,
+                            int text_style = kDefaultTextStyle,
+                            bool display_arrow = true);
 
   ~EditableCombobox() override;
+
+  void SetModel(std::unique_ptr<ui::ComboboxModel> model);
 
   const base::string16& GetText() const;
   void SetText(const base::string16& text);
@@ -166,6 +170,12 @@ class VIEWS_EXPORT EditableCombobox
   const int text_style_;
 
   const Type type_;
+
+  // Whether to adapt the items shown to the textfield content.
+  bool filter_on_edit_;
+
+  // Whether to show options when the textfield is empty.
+  bool show_on_empty_;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;

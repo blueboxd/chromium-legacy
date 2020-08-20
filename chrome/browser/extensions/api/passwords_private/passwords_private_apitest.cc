@@ -44,12 +44,6 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
   PasswordsPrivateApiTest() = default;
   ~PasswordsPrivateApiTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUp() override { ExtensionApiTest::SetUp(); }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     s_test_delegate_ = static_cast<TestPasswordsPrivateDelegate*>(

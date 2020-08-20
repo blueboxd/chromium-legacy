@@ -15,7 +15,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -41,6 +40,8 @@ class ProfileAttributesStorage
   using Observer = ProfileInfoCacheObserver;
 
   explicit ProfileAttributesStorage(PrefService* prefs);
+  ProfileAttributesStorage(const ProfileAttributesStorage&) = delete;
+  ProfileAttributesStorage& operator=(const ProfileAttributesStorage&) = delete;
   virtual ~ProfileAttributesStorage();
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
@@ -210,8 +211,6 @@ class ProfileAttributesStorage
   // Notifies observers.
   void NotifyOnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) const;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileAttributesStorage);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_STORAGE_H_

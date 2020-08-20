@@ -106,7 +106,7 @@ TEST_F(SignalStrengthRoutineTest, TestUnknownSignal) {
       mojom::SignalStrengthProblem::kSignalNotFound};
   signal_strength_routine()->RunRoutine(
       base::BindOnce(&SignalStrengthRoutineTest::CompareVerdict, weak_ptr(),
-                     mojom::RoutineVerdict::kNotRun, expected_problems));
+                     mojom::RoutineVerdict::kProblem, expected_problems));
   base::RunLoop().RunUntilIdle();
 }
 

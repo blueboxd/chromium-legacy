@@ -1045,6 +1045,7 @@
         'PrintersBulkConfiguration',
         'PrintersBulkAccessMode',
         'PrintersBulkBlocklist',
+        'PrintersBulkAllowlist',
         'DeviceNativePrinters',
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
@@ -15447,6 +15448,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value':  ["id1", "id2", "id3"],
       'caption': '''Enabled enterprise printers''',
       'tags': [],
@@ -15455,6 +15457,32 @@
       This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME">NativePrintersBulkAccessMode</ph>.
 
       If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY_NAME">NativePrintersBulkConfiguration</ph>.
+
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME">PrintersBulkAllowlist</ph> instead.
+      ''',
+    },
+    {
+      'name': 'PrintersBulkAllowlist',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'supported_on': ['chrome_os:86-'],
+      'id': 780,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled enterprise printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_ALLOWLIST">AllowlistPrintersOnly</ph> is chosen for <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME">PrintersBulkAccessMode</ph>.
+
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME">PrintersBulkConfiguration</ph>.
       ''',
     },
     {
@@ -24124,6 +24152,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 779,
+  'highest_id_currently_used': 780,
   'highest_atomic_group_id_currently_used': 40
 }

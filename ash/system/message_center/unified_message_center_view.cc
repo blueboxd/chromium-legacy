@@ -94,8 +94,10 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->SetDrawOverflowIndicator(false);
   AddChildView(scroller_);
 
-  notification_bar_->Update(message_list_view_->GetTotalNotificationCount(),
-                            GetStackedNotifications());
+  notification_bar_->Update(
+      message_list_view_->GetTotalNotificationCount(),
+      message_list_view_->GetTotalPinnedNotificationCount(),
+      GetStackedNotifications());
 }
 
 UnifiedMessageCenterView::~UnifiedMessageCenterView() {
@@ -163,16 +165,16 @@ bool UnifiedMessageCenterView::IsNotificationBarVisible() {
 }
 
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
-  if (collapsed_) {
-    if (!message_list_view_->GetTotalNotificationCount())
+  if (notification_bar_->GetVisible()) {
+    notification_bar_->Update(
+        message_list_view_->GetTotalNotificationCount(),
+        message_list_view_->GetTotalPinnedNotificationCount(),
+        GetStackedNotifications());
+    if (!notification_bar_->GetVisible())
       StartHideStackingBarAnimation();
-    return;
   }
 
-  if (notification_bar_->GetVisible() &&
-      message_list_view_->GetTotalNotificationCount() <= 1) {
-    StartHideStackingBarAnimation();
-  } else if (!message_list_view_->GetTotalNotificationCount()) {
+  if (!message_list_view_->GetTotalNotificationCount()) {
     StartCollapseAnimation();
   }
 }
@@ -270,9 +272,10 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
   model_->set_notification_target_mode(
       UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION);
 
-  bool was_count_updated =
-      notification_bar_->Update(message_list_view_->GetTotalNotificationCount(),
-                                GetStackedNotifications());
+  bool was_count_updated = notification_bar_->Update(
+      message_list_view_->GetTotalNotificationCount(),
+      message_list_view_->GetTotalPinnedNotificationCount(),
+      GetStackedNotifications());
   if (was_count_updated) {
     const int previous_y = scroller_->y();
     Layout();
@@ -451,8 +454,10 @@ void UnifiedMessageCenterView::ScrollToTarget() {
   }
 
   scroller_->ScrollToPosition(scroll_bar_, position);
-  notification_bar_->Update(message_list_view_->GetTotalNotificationCount(),
-                            GetStackedNotifications());
+  notification_bar_->Update(
+      message_list_view_->GetTotalNotificationCount(),
+      message_list_view_->GetTotalPinnedNotificationCount(),
+      GetStackedNotifications());
   last_scroll_position_from_bottom_ =
       scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
 }
@@ -464,6 +469,13 @@ UnifiedMessageCenterView::GetStackedNotifications() const {
   if (scroller_->bounds().IsEmpty())
     scroller_->SetBoundsRect(GetContentsBounds());
 
+  // If nothing is hidden in the scroller view, this means notification bar is
+  // not shown. Thus, we should not consider it in the calculation.
+  int notification_bar_height =
+      scroller_->GetVisibleRect().y() == scroller_->y()
+          ? 0
+          : kStackedNotificationBarHeight;
+
   // Use this y offset to count number of hidden notifications.
   // Set to the bottom of the last notification when message center is
   // collapsed. Set below stacked notification bar when message center is
@@ -474,11 +486,10 @@ UnifiedMessageCenterView::GetStackedNotifications() const {
     y_offset = last_bounds.y() + last_bounds.height();
   } else {
     y_offset = scroller_->GetVisibleRect().y() - scroller_->y() +
-               kStackedNotificationBarHeight;
+               notification_bar_height;
   }
   return message_list_view_->GetNotificationsAboveY(y_offset);
 }
-
 
 void UnifiedMessageCenterView::FocusOut(bool reverse) {
   if (message_center_bubble_ && message_center_bubble_->FocusOut(reverse)) {

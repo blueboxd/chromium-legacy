@@ -31,18 +31,29 @@ void HoldingSpacePresenter::OnHoldingSpaceModelDetached(
 
 void HoldingSpacePresenter::OnHoldingSpaceItemAdded(
     const HoldingSpaceItem* item) {
-  item_ids_.push_back(item->id());
+  item_ids_[item->type()].push_back(item->id());
 }
 
 void HoldingSpacePresenter::OnHoldingSpaceItemRemoved(
     const HoldingSpaceItem* item) {
-  base::Erase(item_ids_, item->id());
+  base::Erase(item_ids_[item->type()], item->id());
+}
+
+const std::vector<std::string>& HoldingSpacePresenter::GetItemIds(
+    HoldingSpaceItem::Type type) const {
+  const auto& item_list_it = item_ids_.find(type);
+  if (item_list_it == item_ids_.end()) {
+    static std::vector<std::string> empty_list;
+    return empty_list;
+  }
+  return item_list_it->second;
 }
 
 void HoldingSpacePresenter::HandleNewModel(HoldingSpaceModel* model) {
   model_observer_.Add(model);
 
   for (auto& item : model->items())
-    item_ids_.push_back(item->id());
+    item_ids_[item->type()].push_back(item->id());
 }
+
 }  // namespace ash

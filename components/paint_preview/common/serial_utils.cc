@@ -111,8 +111,7 @@ sk_sp<SkPicture> GetPictureFromDeserialContext(const void* data,
       -context->scroll_offsets.width() - it->second.scroll_offsets.width(),
       -context->scroll_offsets.height() - it->second.scroll_offsets.height());
   canvas->drawPicture(it->second.picture, &apply_scroll_offsets, nullptr);
-  return recorder.finishRecordingAsPicture(
-      SkPictureRecorder::kPlaybackDrawPicture_RecordFlag);
+  return recorder.finishRecordingAsPicture();
 }
 
 }  // namespace

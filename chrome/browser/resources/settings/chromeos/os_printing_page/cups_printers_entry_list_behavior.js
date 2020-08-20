@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {PrinterListEntry} from './cups_printer_types.m.js';
+// #import {CupsPrintersEntryManager} from './cups_printers_entry_manager.m.js';
+// #import {findDifference} from './cups_printer_dialog_util.m.js';
+
 /**
  * @fileoverview Polymer behavior for observing CupsPrintersEntryManager events.
  * Use this behavior if you want to receive a dynamically updated list of both
@@ -9,7 +14,7 @@
  */
 
 /** @polymerBehavior */
-const CupsPrintersEntryListBehavior = {
+/* #export */ const CupsPrintersEntryListBehavior = {
   properties: {
     /** @private {!settings.printing.CupsPrintersEntryManager} */
     entryManager_: Object,

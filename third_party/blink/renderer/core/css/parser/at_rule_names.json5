@@ -55,7 +55,7 @@
       name: "initial-value"
     },
     {
-      name: "letter-spacing-override"
+      name: "advance-override"
     },
     {
       name: "line-gap-override",

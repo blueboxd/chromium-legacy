@@ -17458,6 +17458,41 @@
       },
       {
         "args": [
+          "maps",
+          "--show-stdout",
+          "--browser=web-engine-shell",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--git-revision=${got_revision}"
+        ],
+        "isolate_name": "fuchsia_telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "maps_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://content/test:fuchsia_telemetry_gpu_integration_test/"
+      },
+      {
+        "args": [
           "pixel",
           "--show-stdout",
           "--browser=web-engine-shell",
@@ -19686,7 +19721,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -19700,7 +19735,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone SE 13.6",
+        "name": "base_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -20022,7 +20057,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -20036,7 +20071,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone SE 13.6",
+        "name": "components_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -20274,7 +20309,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -20288,7 +20323,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone SE 13.6",
+        "name": "gfx_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -21801,7 +21836,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -21815,7 +21850,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone SE 13.6",
+        "name": "ios_chrome_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -22725,7 +22760,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -22739,7 +22774,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone SE 13.6",
+        "name": "ios_web_inttests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23103,7 +23138,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -23117,7 +23152,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone SE 13.6",
+        "name": "ios_web_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23271,7 +23306,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -23285,7 +23320,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone SE 13.6",
+        "name": "ios_web_view_inttests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23439,7 +23474,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -23453,7 +23488,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone SE 13.6",
+        "name": "ios_web_view_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23775,7 +23810,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -23789,7 +23824,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone SE 13.6",
+        "name": "skia_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -24027,7 +24062,7 @@
       {
         "args": [
           "--platform",
-          "iPhone SE",
+          "iPhone SE (1st generation)",
           "--version",
           "13.6",
           "--out-dir",
@@ -24041,7 +24076,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone SE 13.6",
+        "name": "ui_base_unittests_iPhone SE (1st generation) 13.6",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

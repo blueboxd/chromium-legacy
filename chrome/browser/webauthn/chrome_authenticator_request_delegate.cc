@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
@@ -330,6 +331,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     content::GetDeviceService().BindUsbDeviceManager(
         usb_device_manager.BindNewPipeAndPassReceiver());
     discovery_factory->set_usb_device_manager(std::move(usb_device_manager));
+    discovery_factory->set_network_context(
+        SystemNetworkContextManager::GetInstance()->GetContext());
   }
 
   if (pairings.empty() && !qr_generator_key) {

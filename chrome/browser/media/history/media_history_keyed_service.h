@@ -236,8 +236,8 @@ class MediaHistoryKeyedService : public KeyedService,
   // Returns Media Feeds.
   struct GetMediaFeedsRequest {
     enum class Type {
-      // Return all the fields for debugging.
-      kDebugAll,
+      // Return all the fields.
+      kAll,
 
       // Returns the top feeds to be fetched. These will be sorted by the
       // by audio+video watchtime descending and we will also populate the
@@ -263,7 +263,7 @@ class MediaHistoryKeyedService : public KeyedService,
     GetMediaFeedsRequest();
     GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
 
-    Type type = Type::kDebugAll;
+    Type type = Type::kAll;
 
     // The maximum number of feeds to return. Only valid for |kTopFeedsForFetch|
     // and |kTopFeedsForDisplay|.

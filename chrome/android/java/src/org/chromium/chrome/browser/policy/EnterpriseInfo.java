@@ -29,7 +29,7 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * Provide the enterprise information for the current device and profile.
  */
-public final class EnterpriseInfo {
+public class EnterpriseInfo {
     private static final String TAG = "EnterpriseInfo";
 
     private static EnterpriseInfo sInstance;
@@ -40,9 +40,10 @@ public final class EnterpriseInfo {
 
     private boolean mSkipAsyncCheckForTesting;
 
-    static class OwnedState {
-        final boolean mDeviceOwned;
-        final boolean mProfileOwned;
+    /** A simple tuple to hold onto named fields about the state of ownership. */
+    public static class OwnedState {
+        public final boolean mDeviceOwned;
+        public final boolean mProfileOwned;
 
         public OwnedState(boolean isDeviceOwned, boolean isProfileOwned) {
             mDeviceOwned = isDeviceOwned;
@@ -68,6 +69,11 @@ public final class EnterpriseInfo {
         if (sInstance == null) sInstance = new EnterpriseInfo();
 
         return sInstance;
+    }
+
+    @VisibleForTesting
+    public static void setInstanceForTest(EnterpriseInfo instance) {
+        sInstance = instance;
     }
 
     /**

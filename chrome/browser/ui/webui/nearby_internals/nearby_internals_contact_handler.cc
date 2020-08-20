@@ -29,14 +29,14 @@ base::Value GetJavascriptTimestamp() {
 
 // Keys in the JSON representation of a contact message
 const char kContactMessageTimeKey[] = "time";
-const char kContactMessageContactListChangedKey[] = "contacts_list_changed";
+const char kContactMessageContactListChangedKey[] = "contactListChanged";
 const char kContactMessageContactsAddedToAllowedListKey[] =
-    "contacts_added_to_allowlist";
+    "contactsAddedToAllowlist";
 const char kContactMessageContactsRemovedFromAllowedListKey[] =
-    "contacts_removed_from_allowlist";
-const char kContactMessageAllowedIdsKey[] = "allowed_ids";
-const char kContactMessageContactsPassedKey[] = "contacts_passed";
-const char kContactMessageContactRecordKey[] = "contact_records";
+    "contactsRemovedFromAllowlist";
+const char kContactMessageAllowedIdsKey[] = "allowedIds";
+const char kContactMessageContactsPassedKey[] = "contactsPassed";
+const char kContactMessageContactRecordKey[] = "contactRecords";
 
 // Converts Contact to a raw dictionary value used as a JSON argument to
 // JavaScript functions.

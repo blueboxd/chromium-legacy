@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">ब्लूटूथ सेटिंग्ज दाखवा. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">नेहमी शेल्फ दाखवा</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> कनेक्‍ट केले</translation>
 <translation id="1341651618736211726">ओव्हरफ्लो</translation>
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">प्रारंभ करा</translation>
 <translation id="6981982820502123353">ॲक्सेसिबिलिटी</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फाइल आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
+<translation id="6990778048354947307">गडद थीम</translation>
 <translation id="7007983414944123363">तुमच्या पिन किंवा पासवर्डची पडताळणी करता आली नाही. पुन्हा प्रयत्न करा.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="7025533177575372252">तुमचे <ph name="DEVICE_NAME" /> तुमच्या फोनशी कनेक्ट करा</translation>

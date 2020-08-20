@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom-forward.h"
@@ -33,6 +32,8 @@ struct PrintMsg_PrintPages_Params;
 class PrintMockRenderThread : public content::MockRenderThread {
  public:
   PrintMockRenderThread();
+  PrintMockRenderThread(const PrintMockRenderThread&) = delete;
+  PrintMockRenderThread& operator=(const PrintMockRenderThread&) = delete;
   ~PrintMockRenderThread() override;
 
   // content::RenderThread overrides.
@@ -110,8 +111,6 @@ class PrintMockRenderThread : public content::MockRenderThread {
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintMockRenderThread);
 };
 
 #endif  // COMPONENTS_PRINTING_TEST_PRINT_MOCK_RENDER_THREAD_H_

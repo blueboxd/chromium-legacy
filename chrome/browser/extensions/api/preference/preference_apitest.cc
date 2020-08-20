@@ -109,10 +109,6 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     EXPECT_EQ(expected_controlled, pref->IsExtensionControlled());
   }
 
-  void SetUp() override {
-    extensions::ExtensionApiTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
 

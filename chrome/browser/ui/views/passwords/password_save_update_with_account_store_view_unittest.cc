@@ -9,7 +9,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -112,42 +111,21 @@ void PasswordSaveUpdateWithAccountStoreViewTest::SimulateSignIn() {
       signin::MakePrimaryAccountAvailable(identity_manager, "test@email.com");
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_HasTitleAndTwoButtons DISABLED_HasTitleAndTwoButtons
-#else
-#define MAYBE_HasTitleAndTwoButtons HasTitleAndTwoButtons
-#endif
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_HasTitleAndTwoButtons) {
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, HasTitleAndTwoButtons) {
   CreateViewAndShow();
   EXPECT_TRUE(view()->ShouldShowWindowTitle());
   EXPECT_TRUE(view()->GetOkButton());
   EXPECT_TRUE(view()->GetCancelButton());
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_ShouldNotShowAccountPicker DISABLED_ShouldNotShowAccountPicker
-#else
-#define MAYBE_ShouldNotShowAccountPicker ShouldNotShowAccountPicker
-#endif
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_ShouldNotShowAccountPicker) {
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldNotShowAccountPicker) {
   ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(false));
   CreateViewAndShow();
   EXPECT_FALSE(account_picker());
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_ShouldShowAccountPicker DISABLED_ShouldShowAccountPicker
-#else
-#define MAYBE_ShouldShowAccountPicker ShouldShowAccountPicker
-#endif
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_ShouldShowAccountPicker) {
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldShowAccountPicker) {
   ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   SimulateSignIn();
@@ -156,16 +134,8 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
   EXPECT_EQ(0, account_picker()->GetSelectedIndex());
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_ShouldSelectAccountStoreByDefault \
-  DISABLED_ShouldSelectAccountStoreByDefault
-#else
-#define MAYBE_ShouldSelectAccountStoreByDefault \
-  ShouldSelectAccountStoreByDefault
-#endif
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_ShouldSelectAccountStoreByDefault) {
+       ShouldSelectAccountStoreByDefault) {
   ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager_mock(), GetDefaultPasswordStore)
@@ -183,16 +153,8 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
       account_picker()->GetTextForRow(account_picker()->GetSelectedIndex()));
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_ShouldSelectProfileStoreByDefault \
-  DISABLED_ShouldSelectProfileStoreByDefault
-#else
-#define MAYBE_ShouldSelectProfileStoreByDefault \
-  ShouldSelectProfileStoreByDefault
-#endif
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_ShouldSelectProfileStoreByDefault) {
+       ShouldSelectProfileStoreByDefault) {
   ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager_mock(), GetDefaultPasswordStore)
@@ -207,17 +169,9 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
       account_picker()->GetTextForRow(account_picker()->GetSelectedIndex()));
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_OnThemesChangedShouldNotCrashForFederatedCredentials \
-  DISABLED_OnThemesChangedShouldNotCrashForFederatedCredentials
-#else
-#define MAYBE_OnThemesChangedShouldNotCrashForFederatedCredentials \
-  OnThemesChangedShouldNotCrashForFederatedCredentials
-#endif
 // This is a regression test for crbug.com/1093290
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       MAYBE_OnThemesChangedShouldNotCrashForFederatedCredentials) {
+       OnThemesChangedShouldNotCrashForFederatedCredentials) {
   GURL kURL("https://example.com");
   url::Origin kOrigin = url::Origin::Create(kURL);
   ON_CALL(*model_delegate_mock(), GetOrigin).WillByDefault(Return(kOrigin));

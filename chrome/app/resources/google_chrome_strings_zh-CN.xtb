@@ -44,7 +44,7 @@
 <translation id="2123055963409958220">报告<ph name="BEGIN_LINK" />当前设置<ph name="END_LINK" />，协助我们改进 Chrome</translation>
 <translation id="2151406531797534936">请立即重启 Chrome</translation>
 <translation id="2246246234298806438">在缺少内置 PDF 查看器的情况下，Google Chrome 浏览器无法显示打印预览。</translation>
-<translation id="226038281051944330">您已在<ph name="EXISTING_USER" />的空间中使用新帐号登录。想为<ph name="NEW_USER" />创建一个新的 Chrome 空间来单独保存您的数据吗？</translation>
+<translation id="226038281051944330">您已使用新帐号登录<ph name="EXISTING_USER" />的空间。想为<ph name="NEW_USER" />创建一个新的 Chrome 空间来单独保存您的数据吗？</translation>
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="2309047409763057870">这是 Google Chrome 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
@@ -261,7 +261,7 @@
 <translation id="8823341990149967727">Chrome版本太旧</translation>
 <translation id="8834965163890861871">Google Chrome 正在尝试修改密码。请输入您的 Windows 密码以允许此操作。</translation>
 <translation id="884296878221830158">它还能够控制您启动Chrome或点击“主页”按钮后系统显示的页面。</translation>
-<translation id="8859948767482842016">您已在<ph name="EXISTING_USER" />的空间中使用工作帐号登录。想为<ph name="WORK_DOMAIN" />创建一个新的 Chrome 空间来单独保存您的数据吗？</translation>
+<translation id="8859948767482842016">您已使用工作帐号登录<ph name="EXISTING_USER" />的空间。想为<ph name="WORK_DOMAIN" />创建一个新的 Chrome 空间来单独保存您的数据吗？</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
 <translation id="8877586659207810298">要为<ph name="NEW_USER" />创建新的 Chrome 空间？</translation>
 <translation id="8914504000324227558">重启 Chrome</translation>

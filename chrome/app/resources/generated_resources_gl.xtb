@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">A versión actual é Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Acceda a calquera <ph name="DEVICE_NAME_AND_VENDOR" /> por USB</translation>
 <translation id="1509960214886564027">As funcións de moitos sitios poden deixar de funcionar</translation>
-<translation id="1510030919967934016">Bloqueouse esta páxina para que non poida facer un seguimento da túa localización.</translation>
 <translation id="1510238584712386396">Menú de aplicacións</translation>
 <translation id="1510785804673676069">Se estás utilizando un servidor proxy, comproba a configuración do teu proxy ou
     ponte en contacto co administrador da túa rede para comprobar que o servidor
@@ -601,7 +600,6 @@
 <translation id="1697686431566694143">Editar ficheiro</translation>
 <translation id="1698122934742150150">Só sesión do modo de incógnito actual</translation>
 <translation id="1700079447639026019">Sitios que nunca poden utilizar cookies</translation>
-<translation id="1700845716982723710">Desactivar modo ambiente</translation>
 <translation id="1701062906490865540">Eliminar esta persoa</translation>
 <translation id="1703331064825191675">Non te preocupes nunca polos teus contrasinais</translation>
 <translation id="1704970325597567340">A comprobación de seguranza executouse o <ph name="DATE" /></translation>
@@ -730,7 +728,6 @@
 <translation id="184273675144259287">Substitúe as aplicacións e os ficheiros de Linux por unha copia de seguranza creada anteriormente</translation>
 <translation id="1842766183094193446">Seguro que queres activar o modo de demostración?</translation>
 <translation id="1846308012215045257">Fai clic mentres mantés premida a tecla Control para executar <ph name="PLUGIN_NAME" />.</translation>
-<translation id="184715642345428649">Activar modo ambiente</translation>
 <translation id="1849186935225320012">Esta páxina ten control total sobre os dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Xirar á &amp;dereita</translation>
 <translation id="1852141627593563189">Buscar software daniño</translation>
@@ -1173,7 +1170,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2392163307141705938">Chegaches ao límite que definiu teu pai ou túa nai para <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activar</translation>
 <translation id="2393136602862631930">Instala a aplicación <ph name="APP_NAME" /> no teu Chromebook</translation>
-<translation id="2394566832561516196">A configuración borrarase na seguinte recarga.</translation>
 <translation id="2395616325548404795">O teu <ph name="DEVICE_TYPE" /> inscribiuse correctamente para a xestión de empresas, pero non enviou a súa información de recursos e localización. Introduce manualmente esta información desde a consola de administración para este dispositivo.</translation>
 <translation id="2396387085693598316">O administrador bloqueou <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Introduce o PIN de 4 díxitos (0000-9999)</translation>
@@ -1663,7 +1659,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2979639724566107830">Abre o marcador nunha ventá nova</translation>
 <translation id="2981113813906970160">Mostrar cursor do rato grande</translation>
 <translation id="2985348301114641460">Queres enviarlle unha solicitude ao teu administrador para que instale <ph name="EXTENSION_NAME" />?</translation>
-<translation id="2986010903908656993">Bloqueouse esta páxina para que non teña un control absoluto dos dispositivos MIDI.</translation>
 <translation id="2987620471460279764">O texto compartiuse desde outro dispositivo</translation>
 <translation id="2988018669686457659">Renderizador de reposto</translation>
 <translation id="2989123969927553766">Aceleración de desprazamento do rato</translation>
@@ -2087,7 +2082,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3524965460886318643">Exportar actividades</translation>
 <translation id="3526034519184079374">Non se puideron ler ou cambiar os datos do sitio</translation>
 <translation id="3527085408025491307">Cartafol</translation>
-<translation id="3528033729920178817">Esta páxina fai un seguimento da túa localización.</translation>
 <translation id="3528498924003805721">Atallos</translation>
 <translation id="3532273508346491126">Xestión da sincronización</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" />: audio silenciado</translation>
@@ -2563,7 +2557,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4061374428807229313">Para compartir un cartafol, fai clic co botón dereito sobre el na aplicación Ficheiros e despois selecciona Compartir con Parallels Desktop.</translation>
 <translation id="4065876735068446555">É posible que a rede que utilizas (<ph name="NETWORK_ID" />) solicite o acceso á súa páxina de inicio de sesión.</translation>
 <translation id="4066207411788646768">Comproba a conexión para ver as impresoras dispoñibles na túa rede.</translation>
-<translation id="4068506536726151626">Esta páxina contén elementos dos seguintes sitios que están rastrexando a túa localización:</translation>
 <translation id="4068776064906523561">Impresións dixitais gardadas</translation>
 <translation id="407173827865827707">Ao facer clic</translation>
 <translation id="4074900173531346617">Certificado de sinatura de correo electrónico</translation>
@@ -3206,7 +3199,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4918021164741308375"><ph name="ORIGIN" /> quere comunicarse coa extensión "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4918221908152712722">Instala a aplicación <ph name="APP_NAME" /> (non require descarga)</translation>
-<translation id="4920887663447894854">Os sitios que se indican a continuación bloqueáronse para evitar que poidan facer un seguimento da túa localización nesta páxina:</translation>
 <translation id="4921290200821452703">Información para os pais sobre contas de centro educativo</translation>
 <translation id="4921348630401250116">Síntese de voz</translation>
 <translation id="49226369361073053">{0,plural, =0{Actualiza o dispositivo agora}=1{Actualiza o dispositivo en 1 segundo}other{Actualiza o dispositivo en # segundos}}</translation>
@@ -3284,7 +3276,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5027562294707732951">Engadir extensión</translation>
 <translation id="5029568752722684782">Borrar copia</translation>
 <translation id="5033266061063942743">Figuras xeométricas</translation>
-<translation id="5033370009438029887">Desactivar modo ambiente</translation>
 <translation id="5036662165765606524">Non permitir que ningún sitio descargue varios ficheiros automaticamente</translation>
 <translation id="5037676449506322593">Seleccionar todo</translation>
 <translation id="5038022729081036555">Mañá poderás utilizalo durante <ph name="TIME_LIMIT" />.</translation>
@@ -3961,7 +3952,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5865508026715185451">A aplicación <ph name="APP_NAME" /> porase en pausa en breve</translation>
 <translation id="586567932979200359">Estás executando <ph name="PRODUCT_NAME" /> desde a imaxe de disco. Se o instalas no ordenador, poderás executalo sen a imaxe de disco e aseguraraste de mantelo actualizado.</translation>
 <translation id="5865733239029070421">Envía estatísticas de uso e informes de erros automaticamente a Google</translation>
-<translation id="5866557323934807206">Borrar esta configuración para futuras visitas</translation>
 <translation id="5866840822086176774">Moi forte</translation>
 <translation id="5867841422488265304">Busca ou escribe o enderezo web</translation>
 <translation id="5869029295770560994">De acordo</translation>
@@ -4246,7 +4236,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6225475702458870625">Hai unha conexión de datos dispoñible desde o teléfono <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Ficheiro de clave privada (opcional)</translation>
 <translation id="6227280783235722609">extensión</translation>
-<translation id="6228691855869374890">Este sitio ten control total dos dispositivos MIDI.</translation>
 <translation id="6229849828796482487">Desconectar rede wifi</translation>
 <translation id="6229890768313448549">Non se poden cargar as Condicións de servizo de Google Play. Téntao de novo.</translation>
 <translation id="6231881193380278751">Introduce un parámetro de consulta no URL para actualizar automaticamente a páxina: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4400,7 +4389,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6412931879992742813">Nova ventá do modo de incógnito</translation>
 <translation id="641469293210305670">Instalar actualizacións e aplicacións</translation>
 <translation id="6414888972213066896">Preguntaches aos teus pais se podes visitar este sitio</translation>
-<translation id="6415659939354280526">Escoller fonte de modo ambiente</translation>
 <translation id="6415900369006735853">Conéctase a Internet a través do teléfono</translation>
 <translation id="6416743254476733475">Permíteos ou bloquéaos no teu ordenador.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
@@ -5344,7 +5332,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7616214729753637086">Inscribindo dispositivo…</translation>
 <translation id="7617263010641145920">Activar Play Store</translation>
 <translation id="7617366389578322136">Establecendo conexión con "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">Modo ambiente</translation>
 <translation id="7621382409404463535">Produciuse un erro no sistema e non se puido gardar a configuración do dispositivo.</translation>
 <translation id="7622114377921274169">Cargando.</translation>
 <translation id="7622903810087708234">Detalles do contrasinal</translation>
@@ -5588,7 +5575,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Ver conta</translation>
 <translation id="7882358943899516840">Tipo de fornecedor</translation>
-<translation id="78851824530736377">Activar modo ambiente</translation>
 <translation id="7885253890047913815">Destinos recentes</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Rato Bluetooth sincronizado</translation>

@@ -13,6 +13,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
+#include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace updater {
@@ -104,6 +105,16 @@ void ExpectActive() {
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(Launchd::User, Launchd::Agent,
                                                   CopyServiceLaunchdName()));
+}
+
+void RunWake(int expected_exit_code) {
+  const base::FilePath path = GetExecutablePath();
+  ASSERT_FALSE(path.empty());
+  base::CommandLine command_line(path);
+  command_line.AppendSwitch(kWakeSwitch);
+  int exit_code = -1;
+  ASSERT_TRUE(Run(command_line, &exit_code));
+  EXPECT_EQ(exit_code, expected_exit_code);
 }
 
 void Uninstall() {

@@ -105,10 +105,10 @@ DrmDisplay::DrmDisplay(ScreenManager* screen_manager,
       drm_(drm),
       current_color_space_(gfx::ColorSpace::CreateSRGB()) {}
 
-DrmDisplay::~DrmDisplay() {
-}
+DrmDisplay::~DrmDisplay() = default;
 
 uint32_t DrmDisplay::connector() const {
+  DCHECK(connector_);
   return connector_->connector_id;
 }
 
@@ -118,12 +118,13 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
   std::unique_ptr<display::DisplaySnapshot> params = CreateDisplaySnapshot(
       info, drm_->get_fd(), drm_->device_path(), device_index, origin_);
   crtc_ = info->crtc()->crtc_id;
-  // TODO(dcastagna): consider taking ownership of |info->connector()|
+  // TODO(crbug.com/1119499): consider taking ownership of |info->connector()|
   connector_ = ScopedDrmConnectorPtr(
       drm_->GetConnector(info->connector()->connector_id));
   if (!connector_) {
     PLOG(ERROR) << "Failed to get connector "
                 << info->connector()->connector_id;
+    return nullptr;
   }
 
   display_id_ = params->display_id();
@@ -229,7 +230,8 @@ void DrmDisplay::SetGammaCorrection(
   // When both |degamma_lut| and |gamma_lut| are empty they are interpreted as
   // "linear/pass-thru" [1]. If the display |is_hdr_capable_| we have to make
   // sure the |current_color_space_| is considered properly.
-  // [1] https://www.kernel.org/doc/html/v4.19/gpu/drm-kms.html#color-management-properties
+  // [1]
+  // https://www.kernel.org/doc/html/v4.19/gpu/drm-kms.html#color-management-properties
   if (degamma_lut.empty() && gamma_lut.empty() && is_hdr_capable_)
     SetColorSpace(current_color_space_);
   else

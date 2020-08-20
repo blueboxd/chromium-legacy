@@ -153,13 +153,11 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return visual_overflow_inflation_for_descent_;
   }
 
-  bool HasLetterSpacingOverride() const override {
-    return letter_spacing_override_.has_value();
+  bool HasAdvanceOverride() const override {
+    return advance_override_.has_value();
   }
 
-  float GetLetterSpacingOverride() const {
-    return letter_spacing_override_.value_or(0);
-  }
+  float GetAdvanceOverride() const { return advance_override_.value_or(0); }
 
  protected:
   SimpleFontData(
@@ -212,8 +210,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   unsigned visual_overflow_inflation_for_descent_;
 
   // The additional spacing between letters as defined by the
-  // letter-spacing-override value in @font-face.
-  base::Optional<float> letter_spacing_override_;
+  // advance-override value in @font-face.
+  base::Optional<float> advance_override_;
 
   mutable LayoutUnit em_height_ascent_;
   mutable LayoutUnit em_height_descent_;

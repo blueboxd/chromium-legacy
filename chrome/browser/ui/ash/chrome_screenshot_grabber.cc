@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/shell.h"
 #include "base/base64.h"
@@ -38,6 +39,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chrome/browser/ui/ash/clipboard_util.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -559,6 +562,12 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
   NotificationDisplayService::GetForProfile(GetProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification,
                 /*metadata=*/nullptr);
+
+  if (success && ash::features::IsTemporaryHoldingSpaceEnabled()) {
+    ash::HoldingSpaceKeyedServiceFactory::GetInstance()
+        ->GetService(GetProfile())
+        ->AddScreenshot(screenshot_path, image.AsImageSkia());
+  }
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -149,6 +148,8 @@ class DidPreviewPageListener : public IPC::Listener {
  public:
   explicit DidPreviewPageListener(base::RunLoop* run_loop)
       : run_loop_(run_loop) {}
+  DidPreviewPageListener(const DidPreviewPageListener&) = delete;
+  DidPreviewPageListener& operator=(const DidPreviewPageListener&) = delete;
 
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID)
@@ -158,7 +159,6 @@ class DidPreviewPageListener : public IPC::Listener {
 
  private:
   base::RunLoop* const run_loop_;
-  DISALLOW_COPY_AND_ASSIGN(DidPreviewPageListener);
 };
 
 class FakePrintPreviewUI : public mojom::PrintPreviewUI {
@@ -258,6 +258,10 @@ class TestPrintManagerHost
 class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
  public:
   PrintRenderFrameHelperTestBase() = default;
+  PrintRenderFrameHelperTestBase(const PrintRenderFrameHelperTestBase&) =
+      delete;
+  PrintRenderFrameHelperTestBase& operator=(
+      const PrintRenderFrameHelperTestBase&) = delete;
   ~PrintRenderFrameHelperTestBase() override = default;
 
  protected:
@@ -440,8 +444,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   // |content::RenderViewTest::render_thread_|.
   PrintMockRenderThread* print_render_thread_ = nullptr;
   std::unique_ptr<TestPrintManagerHost> print_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelperTestBase);
 };
 
 // RenderViewTest-based tests crash on Android
@@ -455,10 +457,11 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
 class MAYBE_PrintRenderFrameHelperTest : public PrintRenderFrameHelperTestBase {
  public:
   MAYBE_PrintRenderFrameHelperTest() = default;
+  MAYBE_PrintRenderFrameHelperTest(const MAYBE_PrintRenderFrameHelperTest&) =
+      delete;
+  MAYBE_PrintRenderFrameHelperTest& operator=(
+      const MAYBE_PrintRenderFrameHelperTest&) = delete;
   ~MAYBE_PrintRenderFrameHelperTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperTest);
 };
 
 // This tests only for platforms without print preview.
@@ -745,6 +748,10 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
     : public PrintRenderFrameHelperTestBase {
  public:
   MAYBE_PrintRenderFrameHelperPreviewTest() = default;
+  MAYBE_PrintRenderFrameHelperPreviewTest(
+      const MAYBE_PrintRenderFrameHelperPreviewTest&) = delete;
+  MAYBE_PrintRenderFrameHelperPreviewTest& operator=(
+      const MAYBE_PrintRenderFrameHelperPreviewTest&) = delete;
   ~MAYBE_PrintRenderFrameHelperPreviewTest() override = default;
 
   void SetUp() override {
@@ -828,9 +835,6 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
     EXPECT_EQ(expected_margin_bottom, std::get<0>(param).margin_bottom);
     EXPECT_EQ(expected_page_has_print_css, std::get<2>(param));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperPreviewTest);
 };
 
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BlockScriptInitiatedPrinting) {

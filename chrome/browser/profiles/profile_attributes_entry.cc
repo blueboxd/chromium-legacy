@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -96,28 +97,6 @@ int GetLowEntropyHashValue(const std::string& value) {
   return base::PersistentHash(value) % kNumberOfLowEntropyHashValues;
 }
 
-class ImageWithBackgroundSource : public gfx::CanvasImageSource {
- public:
-  ImageWithBackgroundSource(const gfx::ImageSkia& image, SkColor background)
-      : gfx::CanvasImageSource(image.size()),
-        image_(image),
-        background_(background) {}
-
-  ~ImageWithBackgroundSource() override = default;
-
-  // gfx::CanvasImageSource override.
-  void Draw(gfx::Canvas* canvas) override {
-    canvas->DrawColor(background_);
-    canvas->DrawImageInt(image_, 0, 0);
-  }
-
- private:
-  const gfx::ImageSkia image_;
-  const SkColor background_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageWithBackgroundSource);
-};
-
 }  // namespace
 
 bool ProfileThemeColors::operator==(const ProfileThemeColors& other) const {
@@ -155,10 +134,7 @@ void ProfileAttributesEntry::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(kNextMetricsBucketIndex, 1);
 }
 
-ProfileAttributesEntry::ProfileAttributesEntry()
-    : profile_info_cache_(nullptr),
-      prefs_(nullptr),
-      profile_path_(base::FilePath()) {}
+ProfileAttributesEntry::ProfileAttributesEntry() = default;
 
 void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
                                         const base::FilePath& path,
@@ -748,14 +724,9 @@ const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
 
 gfx::Image ProfileAttributesEntry::GetPlaceholderAvatarIcon(int size) const {
   ProfileThemeColors colors = GetProfileThemeColors();
-  gfx::ImageSkia icon_without_background =
-      gfx::CreateVectorIcon(gfx::IconDescription(
-          kPersonOutlinePaddedIcon, size, colors.default_avatar_stroke_color));
-  gfx::ImageSkia icon_with_background(
-      std::make_unique<ImageWithBackgroundSource>(
-          icon_without_background, colors.default_avatar_fill_color),
+  return profiles::GetPlaceholderAvatarIconWithColors(
+      colors.default_avatar_fill_color, colors.default_avatar_stroke_color,
       size);
-  return gfx::Image(icon_with_background);
 }
 
 bool ProfileAttributesEntry::HasMultipleAccountNames() const {

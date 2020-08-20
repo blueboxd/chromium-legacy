@@ -102,7 +102,8 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   isGroup() {
-    return SwitchAccessPredicate.isGroup(this.baseNode_, this.parent_);
+    const cache = new SACache();
+    return SwitchAccessPredicate.isGroup(this.baseNode_, this.parent_, cache);
   }
 
   /** @override */

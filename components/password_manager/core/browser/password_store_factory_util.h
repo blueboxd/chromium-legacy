@@ -50,6 +50,15 @@ void DeleteLoginDatabaseForAccountStorageFiles(
 base::FilePath GetLoginDatabaseForAccountStoragePathForTesting(
     const base::FilePath& profile_path);
 
+// Determines if affiliation based matching can be performed.
+// It checks whether the user
+// 1) has password syncing across multiple devices enabled
+//    (first setup must be completed)
+// 2) does not have secondary passphrase set.
+// Failure to meet both of those requirements results in preventing Chrome from
+// sending requests to Google Affiliation Service API.
+bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_FACTORY_UTIL_H_

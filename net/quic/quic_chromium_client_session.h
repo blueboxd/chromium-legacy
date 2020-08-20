@@ -607,6 +607,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
+  // Returns true if the stream factory disables gQUIC 0-RTT.
+  bool gquic_zero_rtt_disabled() const;
+
   // Returns a Handle to this session.
   std::unique_ptr<QuicChromiumClientSession::Handle> CreateHandle(
       const HostPortPair& destination);

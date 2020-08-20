@@ -147,6 +147,8 @@ message ExtensionInstallProto {
     // The extension is disabled due to having a malware attribute in the Omaha
     // config.
     DISABLE_REMOTELY_FOR_MALWARE = 15;
+    // The extension is being reinstalled.
+    REINSTALL = 16;
   }
   // Any DisableReasons in effect for the extension. An empty list means the
   // extension is not disabled. Note that an extension that is not disabled may

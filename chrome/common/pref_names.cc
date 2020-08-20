@@ -607,7 +607,7 @@ const char kNoteTakingAppEnabledOnLockScreen[] =
     "settings.note_taking_app_enabled_on_lock_screen";
 
 // List of note taking aps that can be enabled to run on the lock screen.
-// The intended usage is to whitelist the set of apps that the user can enable
+// The intended usage is to allow the set of apps that the user can enable
 // to run on lock screen, not to actually enable the apps to run on lock screen.
 // Note that this used to be `kNoteTakingAppsLockScreenWhitelist`, hence the
 // difference between the variable name and the string value.
@@ -957,7 +957,7 @@ const char kPerAppTimeLimitsLatestLimitUpdateTime[] =
 // child user. Controlled by PerAppTimeLimits policy.
 const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 
-// Dictionary pref containing the whitelisted urls, schemes and applications
+// Dictionary pref containing the allowed urls, schemes and applications
 // that would not be blocked by per app time limits.
 // Note that this used to be `kPerAppTimeLimitsWhitelistPolicy`, hence the
 // difference between the variable name and the string value.
@@ -1378,9 +1378,9 @@ const char kUserDataSnapshotRetentionLimit[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-// List of print servers ids that are allowed in the user policy. List of strings. Note that this
-// used to be `kExternalPrintServersWhitelist`, hence the difference between the
-// variable name and the string value.
+// List of print servers ids that are allowed in the user policy. List of
+// strings. Note that this used to be `kExternalPrintServersWhitelist`, hence
+// the difference between the variable name and the string value.
 const char kExternalPrintServersAllowlist[] =
     "native_printing.external_print_servers_whitelist";
 
@@ -1396,12 +1396,16 @@ const char kRecommendedPrinters[] = "native_printing.recommended_printers";
 const char kRecommendedPrintersAccessMode[] =
     "native_printing.recommended_printers_access_mode";
 
-// List of printer ids which are explicitly disallowed.  List of strings.
+// List of printer ids which are explicitly disallowed.  List of strings. Note
+// that this used to be `kRecommendedPrintersBlacklist`, hence the difference
+// between the variable name and the string value.
 const char kRecommendedPrintersBlocklist[] =
     "native_printing.recommended_printers_blacklist";
 
-// List of printer ids that are allowed.  List of strings.
-const char kRecommendedNativePrintersWhitelist[] =
+// List of printer ids that are allowed.  List of strings. Note that this
+// used to be `kRecommendedNativePrintersWhitelist`, hence the difference
+// between the variable name and the string value.
+const char kRecommendedPrintersAllowlist[] =
     "native_printing.recommended_printers_whitelist";
 
 // A Boolean flag which represents whether or not users are allowed to configure
@@ -1979,10 +1983,13 @@ const char kDisableAuthNegotiateCnameLookup[] =
 const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
 
 // Allowlist containing servers for which Integrated Authentication is enabled.
+// Note that this used to be `kAuthServerWhitelist`, hence the difference
+// between the variable name and the string value.
 const char kAuthServerAllowlist[] = "auth.server_whitelist";
 
 // Allowlist containing servers Chrome is allowed to do Kerberos delegation
-// with.
+// with. Note that this used to be `kAuthNegotiateDelegateWhitelist`, hence the
+// difference between the variable name and the string value.
 const char kAuthNegotiateDelegateAllowlist[] =
     "auth.negotiate_delegate_whitelist";
 

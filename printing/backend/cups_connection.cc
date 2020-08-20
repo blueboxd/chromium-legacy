@@ -33,6 +33,8 @@ constexpr int kCompletedJobsLimit = 3;
 class DestinationEnumerator {
  public:
   DestinationEnumerator() {}
+  DestinationEnumerator(const DestinationEnumerator&) = delete;
+  DestinationEnumerator& operator=(const DestinationEnumerator&) = delete;
 
   static int cups_callback(void* user_data, unsigned flags, cups_dest_t* dest) {
     cups_dest_t* copied_dest;
@@ -51,8 +53,6 @@ class DestinationEnumerator {
 
  private:
   std::vector<ScopedDestination> dests_;
-
-  DISALLOW_COPY_AND_ASSIGN(DestinationEnumerator);
 };
 
 }  // namespace

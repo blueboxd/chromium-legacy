@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Jelenlegi verzió: Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Bármely <ph name="DEVICE_NAME_AND_VENDOR" /> elérése USB-n keresztül</translation>
 <translation id="1509960214886564027">Számos webhelyen nem működnek a funkciók</translation>
-<translation id="1510030919967934016">Ez az oldal nem figyelheti a tartózkodási helyét.</translation>
 <translation id="1510238584712386396">Indító</translation>
 <translation id="1510785804673676069">Ha proxyszervert használ, tekintse át a proxybeállításokat, vagy
     forduljon hálózati rendszergazdájához, hogy ellenőrizze a proxyszerver
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Fájl szerkesztése</translation>
 <translation id="1698122934742150150">Csak a jelenlegi inkognitó munkamenet</translation>
 <translation id="1700079447639026019">Webhelyek, amelyek sosem használhatnak cookie-kat</translation>
-<translation id="1700845716982723710">Ambient-mód kikapcsolása</translation>
 <translation id="1701062906490865540">Személy eltávolítása</translation>
 <translation id="1703331064825191675">Sosem kell aggódnia jelszavai miatt</translation>
 <translation id="1704970325597567340">A biztonsági ellenőrzés utolsó lefutásának dátuma: <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">A Linux-alkalmazások és -fájlok lecserélése a korábbi biztonsági másolat tartalmával</translation>
 <translation id="1842766183094193446">Biztosan engedélyezi a demó módot?</translation>
 <translation id="1846308012215045257">A Control billentyű lenyomása mellett kattintson ide a(z) <ph name="PLUGIN_NAME" /> futtatásához.</translation>
-<translation id="184715642345428649">Ambient-mód engedélyezése</translation>
 <translation id="1849186935225320012">Ez az oldal teljes hozzáféréssel rendelkezik a MIDI-eszközökhöz.</translation>
 <translation id="1850508293116537636">Forgatás &amp;jobbra</translation>
 <translation id="1852141627593563189">Keressen kártékony szoftvereket</translation>
@@ -1174,7 +1171,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2392163307141705938">Elérted az időkorlátot, amelyet szülőd állított be a következőhöz: <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktiválás</translation>
 <translation id="2393136602862631930">A(z) <ph name="APP_NAME" /> beállítása a Chromebookon</translation>
-<translation id="2394566832561516196">A beállításokat az oldal következő újratöltésekor törli a rendszer.</translation>
 <translation id="2395616325548404795">A(z) <ph name="DEVICE_TYPE" /> eszköz vállalati kezelés céljából történő rögzítése sikerült, de a tartalmi és helyadatainak elküldése nem. Kérjük, az eszköz ezen adatait írja be manuálisan a Felügyeleti konzolból.</translation>
 <translation id="2396387085693598316">A következő bővítményt a rendszergazda letiltotta: <ph name="EXTENSION_NAME" />.</translation>
 <translation id="2396783860772170191">Adjon meg egy négyjegyű PIN-kódot (0000–9999)</translation>
@@ -1664,7 +1660,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2979639724566107830">Megnyitás új ablakban</translation>
 <translation id="2981113813906970160">Nagy egérmutató megjelenítése</translation>
 <translation id="2985348301114641460">Kérelmet küld a rendszergazdának a bővítmény (<ph name="EXTENSION_NAME" />) telepítésére vonatkozóan?</translation>
-<translation id="2986010903908656993">Ennél az oldalnál le van tiltva a MIDI-eszközökhöz való teljes hozzáférés.</translation>
 <translation id="2987620471460279764">Más eszközről megosztott szöveg</translation>
 <translation id="2988018669686457659">Tartalék megjelenítő</translation>
 <translation id="2989123969927553766">Egérgörgetés gyorsítása</translation>
@@ -2088,7 +2083,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3524965460886318643">Tevékenységek exportálása</translation>
 <translation id="3526034519184079374">Nem lehetséges a webhely adatainak olvasása és módosítása</translation>
 <translation id="3527085408025491307">Mappa</translation>
-<translation id="3528033729920178817">Ez az oldali figyeli a tartózkodási helyét.</translation>
 <translation id="3528498924003805721">Parancsikonok célpontjai</translation>
 <translation id="3532273508346491126">Szinkronizálás kezelése</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Hang kikapcsolva</translation>
@@ -2563,7 +2557,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4061374428807229313">A megosztáshoz kattintson jobb gombbal a kívánt mappára a Fájlok alkalmazásban, majd válassza a „Megosztás a Parallels Desktoppal” lehetőséget.</translation>
 <translation id="4065876735068446555">Előfordulhat, hogy az Ön által használt hálózat (<ph name="NETWORK_ID" />) előírja a bejelentkezési oldal felkeresését.</translation>
 <translation id="4066207411788646768">A hálózatán hozzáférhető nyomtatók megtekintéséhez ellenőrizze az internetkapcsolatot</translation>
-<translation id="4068506536726151626">Ezen az oldalon olyan elemek vannak webhelyekről, amelyek figyelik a tartózkodási helyét:</translation>
 <translation id="4068776064906523561">Mentett ujjlenyomatok</translation>
 <translation id="407173827865827707">Kattintásra</translation>
 <translation id="4074900173531346617">E-mail aláíró tanúsítvány</translation>
@@ -3206,7 +3199,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4918021164741308375"><ph name="ORIGIN" /> kommunikálni szeretne a(z) „<ph name="EXTENSION_NAME" />” bővítménnyel.</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> telepítése (nincs szükség letöltésre)</translation>
-<translation id="4920887663447894854">A következő webhelyek nem figyelhetik a tartózkodási helyét ezen az oldalon:</translation>
 <translation id="4921290200821452703">Iskolai fiókokra vonatkozó tudnivalók szülőknek</translation>
 <translation id="4921348630401250116">Szövegfelolvasás</translation>
 <translation id="49226369361073053">{0,plural, =0{Frissítse az eszközt most}=1{1 másodpercen belül frissítse az eszközt}other{# másodpercen belül frissítse az eszközt}}</translation>
@@ -3284,7 +3276,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5027562294707732951">Bővítmény hozzáadása</translation>
 <translation id="5029568752722684782">Példány törlése</translation>
 <translation id="5033266061063942743">Geometriai alakzatok</translation>
-<translation id="5033370009438029887">Ambient-mód deaktiválása</translation>
 <translation id="5036662165765606524">Ne engedélyezze a webhelyeknek több fájl automatikus letöltését</translation>
 <translation id="5037676449506322593">Összes kiválasztása</translation>
 <translation id="5038022729081036555">Holnap újra használhatod a megadott ideig (<ph name="TIME_LIMIT" />).</translation>
@@ -3963,7 +3954,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> hamarosan szünetelni fog</translation>
 <translation id="586567932979200359">A <ph name="PRODUCT_NAME" /> alkalmazást jelenleg a lemezképéről futtatja. Ha telepíti a számítógépére, akkor futtathatja a lemezkép nélkül is, emellett biztosan naprakészen tartja.</translation>
 <translation id="5865733239029070421">Automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak</translation>
-<translation id="5866557323934807206">Beállítások törlése a jövőbeni látogatások miatt</translation>
 <translation id="5866840822086176774">Nagyon erős</translation>
 <translation id="5867841422488265304">Keressen, vagy írjon be internetcímet</translation>
 <translation id="5869029295770560994">Rendben, értem</translation>
@@ -4248,7 +4238,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6225475702458870625">Rendelkezésre áll adatkapcsolat <ph name="PHONE_NAME" /> eszközéről</translation>
 <translation id="6226777517901268232">Privátkulcs-fájl (nem kötelező)</translation>
 <translation id="6227280783235722609">bővítményt</translation>
-<translation id="6228691855869374890">Ez a webhely teljes hozzáféréssel rendelkezik a MIDI-eszközökhöz.</translation>
 <translation id="6229849828796482487">Lecsatlakozás a Wi-Fi-hálózatról</translation>
 <translation id="6229890768313448549">A Google Play Általános Szerződési Feltételeit nem sikerült betölteni. Próbálja újra.</translation>
 <translation id="6231881193380278751">Adjon meg egy lekérdezési paramétert az URL-ben az oldal automatikus frissítéséhez: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4402,7 +4391,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6412931879992742813">Új inkognitó ablak</translation>
 <translation id="641469293210305670">Frissítések és alkalmazások telepítése</translation>
 <translation id="6414888972213066896">Megkérdezted a szülőt, hogy meg szabad-e látogatnod ezt a webhelyet</translation>
-<translation id="6415659939354280526">Ambient-mód forrásának kiválasztása</translation>
 <translation id="6415900369006735853">Internetkapcsolat telefonon keresztül</translation>
 <translation id="6416743254476733475">Engedélyezze vagy tiltsa le a számítógépen.</translation>
 <translation id="6417265370957905582">Google Segéd</translation>
@@ -5346,7 +5334,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7616214729753637086">Eszköz regisztrálása…</translation>
 <translation id="7617263010641145920">A Play Áruház bekapcsolása</translation>
 <translation id="7617366389578322136">Csatlakozás a(z) „<ph name="DEVICE_NAME" />” eszközhöz</translation>
-<translation id="761763866592998929">Ambient mód</translation>
 <translation id="7621382409404463535">A rendszer nem tudta menteni az eszközkonfigurációt.</translation>
 <translation id="7622114377921274169">Töltés.</translation>
 <translation id="7622903810087708234">Jelszó részletes adatai</translation>
@@ -5590,7 +5577,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Fiók megtekintése</translation>
 <translation id="7882358943899516840">Szolgáltató típusa</translation>
-<translation id="78851824530736377">Ambient-mód bekapcsolása</translation>
 <translation id="7885253890047913815">Legutóbbi célhelyek</translation>
 <translation id="7887334752153342268">Másodpéldány</translation>
 <translation id="7887864092952184874">Bluetooth-egér párosítva</translation>

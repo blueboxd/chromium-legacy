@@ -690,10 +690,21 @@
   },
 
   "NativePrintersBulkWhitelist": {
+    "note": "This policy is deprecated, see http://crbug.com/1098047.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "NativePrintersBulkWhitelist": ["id4", "id7", "id10"] },
+        "prefs": { "native_printing.recommended_printers_whitelist": {} }
+      }
+    ]
+  },
+
+  "PrintersBulkAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrintersBulkAllowlist": ["id4", "id7", "id10"] },
         "prefs": { "native_printing.recommended_printers_whitelist": {} }
       }
     ]

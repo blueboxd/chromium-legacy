@@ -1,0 +1,47 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.app.appmenu;
+
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
+
+/**
+ * A custom binder used to bind the managed menu item.
+ */
+class DividerLineMenuItemViewBinder implements CustomViewBinder {
+    private static final int DIVIDER_LINE_ITEM_VIEW_TYPE = 0;
+
+    @Override
+    public int getViewTypeCount() {
+        return 1;
+    }
+
+    @Override
+    public int getItemViewType(int id) {
+        return id == R.id.divider_line_id ? DIVIDER_LINE_ITEM_VIEW_TYPE
+                                          : CustomViewBinder.NOT_HANDLED;
+    }
+
+    @Override
+    public View getView(
+            MenuItem item, View convertView, ViewGroup parent, LayoutInflater inflater) {
+        assert item.getItemId() == R.id.divider_line_id;
+
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.divider_line_menu_item, parent, false);
+        }
+        return convertView;
+    }
+
+    @Override
+    public boolean supportsEnterAnimation(int id) {
+        return true;
+    }
+}

@@ -164,6 +164,12 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
                                            theme_colors.active_tab_color));
   dict.SetStringKey("themeFrameTextColor", color_utils::SkColorToRgbaString(
                                                theme_colors.frame_text_color));
+  gfx::Image icon = profiles::GetPlaceholderAvatarIconWithColors(
+      /*fill_color=*/theme_colors.frame_color,
+      /*stroke_color=*/GetAvatarStrokeColor(theme_colors.frame_color),
+      kAvatarIconSize);
+  dict.SetStringKey("themeGenericAvatar",
+                    webui::GetBitmapDataUrl(icon.AsBitmap()));
 
   ResolveJavascriptCallback(callback_id, std::move(dict));
 }

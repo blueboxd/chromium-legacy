@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -371,6 +372,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    const gfx::FontList& font_list)
     : OmniboxView(controller, std::move(client)),
       popup_window_mode_(popup_window_mode),
+      clock_(base::DefaultClock::GetInstance()),
       location_bar_view_(location_bar),
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0) {
@@ -540,21 +542,54 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   base::string16 text = GetText();
   UpdateTextStyle(text, text_is_url, model()->client()->GetSchemeClassifier());
 
-  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
-      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
-      !model()->ShouldPreventElision()) {
-    // If reveal-on-hover is enabled and hide-on-interaction is disabled, elide
-    // to the simplified domain now. We don't animate because we don't want this
-    // to be a user-visible transformation; in this variation, we want to always
-    // show just the simplified domain until the user specifically interacts
-    // with the omnibox by hovering over it.
-    if (IsURLEligibleForSimplifiedDomainEliding()) {
+  if (model()->ShouldPreventElision())
+    return;
+
+  // If the text isn't eligible to be elided to a simplified domain, and
+  // simplified domain field trials are enabled, then ensure that as much of the
+  // text as will fit is visible.
+  if (!IsURLEligibleForSimplifiedDomainEliding() &&
+      (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+       OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover())) {
+    FitToLocalBounds();
+    return;
+  }
+
+  // In the simplified domain field trials, elide or unelide according to the
+  // current state and field trial configuration. These elisions are not
+  // animated because we often don't want this to be a user-visible
+  // transformation; for example, a navigation should just show the URL in the
+  // desired state without drawing additional attention from the user.
+  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+    // In the hide-on-interaction field trial, elide or unelide the URL to the
+    // simplified domain depending on whether the user has already interacted
+    // with the page or not. This is a best guess at the correct elision state,
+    // which we don't really know for sure until a navigation has committed
+    // (because the elision behavior depends on whether the navigation is
+    // same-document and if it changes the path). We elide here based on the
+    // current elision setting; we'll then update the elision state as we get
+    // more information about the navigation in DidStartNavigation and
+    // DidFinishNavigation.
+    if (elide_after_web_contents_interaction_animation_) {
+      // This can cause a slight quirk in browser-initiated navigations that
+      // occur after the user interacts with the previous page. In this case,
+      // the simplified domain will be shown briefly before we show the full URL
+      // in DidStartNavigation().
       ElideURL();
     } else {
-      // If the text isn't eligible to be elided to a simplified domain, then
-      // ensure that as much of it is visible as will fit.
-      FitToLocalBounds();
+      // Note that here we are only adjusting the display of the URL, not
+      // resetting any state associated with the animations (in particular, we
+      // are not calling ResetToHideOnInteraction()). This is, as above, because
+      // we don't know exactly how to set state until we know what kind of
+      // navigation is happening. Thus here we are only adjusting the display so
+      // things look right mid-navigation, and the final state will be set
+      // appropriately in DidFinishNavigation().
+      ShowFullURLWithoutSchemeAndTrivialSubdomain();
     }
+  } else if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+    // If reveal-on-hover is enabled and hide-on-interaction is disabled, elide
+    // to the simplified domain now.
+    ElideURL();
   }
 }
 
@@ -796,6 +831,16 @@ void OmniboxViewViews::RemovedFromWidget() {
   scoped_compositor_observer_.RemoveAll();
 }
 
+OmniboxViewViews::ElideAnimation*
+OmniboxViewViews::GetHoverElideOrUnelideAnimationForTesting() {
+  return hover_elide_or_unelide_animation_.get();
+}
+
+OmniboxViewViews::ElideAnimation*
+OmniboxViewViews::GetElideAfterInteractionAnimationForTesting() {
+  return elide_after_web_contents_interaction_animation_.get();
+}
+
 void OmniboxViewViews::OnThemeChanged() {
   views::Textfield::OnThemeChanged();
 
@@ -819,6 +864,10 @@ bool OmniboxViewViews::IsDropCursorForInsertion() const {
   // paste-and-go behavior, so returning false in that case prevents the
   // confusing insertion-style drop cursor.
   return HasTextBeingDragged();
+}
+
+void OmniboxViewViews::ApplyColor(SkColor color, const gfx::Range& range) {
+  Textfield::ApplyColor(color, range);
 }
 
 void OmniboxViewViews::SetTextAndSelectedRanges(
@@ -1235,6 +1284,10 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
   if (location_bar_view_)
     location_bar_view_->OnOmniboxHovered(true);
 
+  if (hover_start_time_ == base::Time()) {
+    hover_start_time_ = clock_->Now();
+  }
+
   if (!OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() ||
       model()->ShouldPreventElision()) {
     return;
@@ -1318,6 +1371,9 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
 void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
   if (location_bar_view_)
     location_bar_view_->OnOmniboxHovered(false);
+
+  UmaHistogramTimes("Omnibox.HoverTime", clock_->Now() - hover_start_time_);
+  hover_start_time_ = base::Time();
 
   if (!OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() ||
       model()->ShouldPreventElision()) {
@@ -1895,6 +1951,23 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
          location_bar_view_->command_updater()->IsCommandEnabled(command_id);
 }
 
+void OmniboxViewViews::DidStartNavigation(
+    content::NavigationHandle* navigation) {
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      model()->ShouldPreventElision()) {
+    return;
+  }
+
+  // If navigating to a different page in a browser-initiated navigation, the
+  // new URL should be shown unelided while the navigation is in progress. For
+  // renderer-initiated navigations, the URL isn't displayed until the
+  // navigation commits, so there's no need to elide/unelide it now.
+  if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
+      !navigation->IsRendererInitiated()) {
+    ResetToHideOnInteraction();
+  }
+}
+
 void OmniboxViewViews::DidFinishNavigation(
     content::NavigationHandle* navigation) {
   if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
@@ -1907,48 +1980,16 @@ void OmniboxViewViews::DidFinishNavigation(
   if (!navigation->IsInMainFrame())
     return;
 
-  // Same-document navigations should be treated with the following
-  // considerations:
-  // - If the same-document navigation was triggered by a fragment navigation,
-  // the current elision/unelision state shouldn't be altered, since it always
-  // remains in the same page, keeping location.pathname
-  // - If the same-document navigation was triggered by the use of history
-  // pushState/replaceState API, we should unelide and reset state to support
-  // the same behaviour in websites that rely on same-document navigation to
-  // render different views as if it were 'normal' navigation
-  if (navigation->IsSameDocument() &&
-      navigation->GetPreviousURL().EqualsIgnoringRef(navigation->GetURL())) {
-    if (!IsURLEligibleForSimplifiedDomainEliding())
-      return;
-
-    // Handling same-document navigations is a bit tricky because they shouldn't
-    // change the current elision/unelision state:
-    // - If the user interacted with the page, and we have already finished
-    // animating to the simplified domain, then make sure we stay in the elided
-    // state, showing only the simplified domain. This is an abrupt elision,
-    // rather than an animation, because we don't want there to be any visible
-    // change in the URL from the user's perspective.
-    // - If the user interacted with the page, and we are currently animating to
-    // the simplified domain as a result, we want to let the animation run
-    // undisturbed, eventually ending up in the elided state.
-    // - If the user hadn't interacted with the previous page, then we need to
-    // ensure the full URL (without scheme and trivial subdomain) is showing;
-    // this is done by falling through to ResetToHideOnInteraction() below.
-    //
-    // |elide_after_web_contents_interaction_animation_| is only created after
-    // the user interacts with the page (in DidGetUserInteraction()), so we use
-    // its existence to determine whether the user has interacted with the page
-    // yet or not.
-    if (elide_after_web_contents_interaction_animation_) {
-      if (!elide_after_web_contents_interaction_animation_->IsAnimating())
-        ElideURL();
-      return;
-    }
+  // Once a navigation finishes that changes the visible URL (besides just the
+  // ref), unelide and reset state so that we'll show the simplified domain on
+  // interaction. Same-document navigations that only change the ref are treated
+  // specially and don't cause the elision/unelision state to be altered. This
+  // is to avoid frequent eliding/uneliding within single-page apps that do
+  // frequent fragment navigations.
+  if (!navigation->IsSameDocument() ||
+      !navigation->GetPreviousURL().EqualsIgnoringRef(navigation->GetURL())) {
+    ResetToHideOnInteraction();
   }
-
-  // Once a navigation finishes, unelide and reset state so
-  // that we'll show the simplified domain on interaction.
-  ResetToHideOnInteraction();
 }
 
 void OmniboxViewViews::DidGetUserInteraction(
@@ -2754,18 +2795,4 @@ url::Component OmniboxViewViews::GetHostComponentAfterTrivialSubdomain() {
       text, model()->client()->GetSchemeClassifier(), &unused_scheme, &host);
   url_formatter::StripWWWFromHostComponent(base::UTF16ToUTF8(text), &host);
   return host;
-}
-
-void OmniboxViewViews::ApplyColor(SkColor color, const gfx::Range& range) {
-  Textfield::ApplyColor(color, range);
-}
-
-OmniboxViewViews::ElideAnimation*
-OmniboxViewViews::GetHoverElideOrUnelideAnimationForTesting() {
-  return hover_elide_or_unelide_animation_.get();
-}
-
-OmniboxViewViews::ElideAnimation*
-OmniboxViewViews::GetElideAfterInteractionAnimationForTesting() {
-  return elide_after_web_contents_interaction_animation_.get();
 }

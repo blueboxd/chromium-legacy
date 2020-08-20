@@ -427,8 +427,6 @@ bool LayoutTheme::IsControlStyled(ControlPart part,
 
 bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
                                              const ComputedStyle& style) const {
-  if (ThemeDrawsFocusRing(style))
-    return false;
   if (!node)
     return true;
   if (!style.HasEffectiveAppearance() && !node->IsLink())
@@ -446,55 +444,11 @@ bool LayoutTheme::ControlStateChanged(const Node* node,
   if (!style.HasEffectiveAppearance())
     return false;
 
-  // Default implementation assumes the controls don't respond to changes in
-  // :hover state
-  if (state == kHoverControlState && !SupportsHover(style))
-    return false;
-
   // Assume pressed state is only responded to if the control is enabled.
   if (state == kPressedControlState && !IsEnabled(node))
     return false;
 
   return true;
-}
-
-ControlStates LayoutTheme::ControlStatesForNode(const Node* node,
-                                                const ComputedStyle& style) {
-  ControlStates result = 0;
-  if (IsHovered(node)) {
-    result |= kHoverControlState;
-    if (IsSpinUpButtonPartHovered(node))
-      result |= kSpinUpControlState;
-  }
-  if (IsPressed(node)) {
-    result |= kPressedControlState;
-    if (IsSpinUpButtonPartPressed(node))
-      result |= kSpinUpControlState;
-  }
-  if (IsFocused(node) && style.OutlineStyleIsAuto())
-    result |= kFocusControlState;
-  if (IsEnabled(node))
-    result |= kEnabledControlState;
-  if (IsChecked(node))
-    result |= kCheckedControlState;
-  if (IsReadOnlyControl(node))
-    result |= kReadOnlyControlState;
-  if (!IsActive(node))
-    result |= kWindowInactiveControlState;
-  if (IsIndeterminate(node))
-    result |= kIndeterminateControlState;
-  return result;
-}
-
-bool LayoutTheme::IsActive(const Node* node) {
-  if (!node)
-    return false;
-
-  Page* page = node->GetDocument().GetPage();
-  if (!page)
-    return false;
-
-  return page->GetFocusController().IsActive();
 }
 
 bool LayoutTheme::IsChecked(const Node* node) {
@@ -516,29 +470,10 @@ bool LayoutTheme::IsEnabled(const Node* node) {
   return !element->IsDisabledFormControl();
 }
 
-bool LayoutTheme::IsFocused(const Node* node) {
-  if (!node)
-    return false;
-
-  node = node->FocusDelegate();
-  Document& document = node->GetDocument();
-  LocalFrame* frame = document.GetFrame();
-  return node == document.FocusedElement() && node->IsFocused() &&
-         node->ShouldHaveFocusAppearance() && frame &&
-         frame->Selection().FrameIsFocusedAndActive();
-}
-
 bool LayoutTheme::IsPressed(const Node* node) {
   if (!node)
     return false;
   return node->IsActive();
-}
-
-bool LayoutTheme::IsSpinUpButtonPartPressed(const Node* node) {
-  const auto* element = DynamicTo<SpinButtonElement>(node);
-  if (!element || !element->IsActive())
-    return false;
-  return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
 bool LayoutTheme::IsReadOnlyControl(const Node* node) {
@@ -550,13 +485,6 @@ bool LayoutTheme::IsHovered(const Node* node) {
   if (!node)
     return false;
   return node->IsHovered();
-}
-
-bool LayoutTheme::IsSpinUpButtonPartHovered(const Node* node) {
-  const auto* element = DynamicTo<SpinButtonElement>(node);
-  if (!element)
-    return false;
-  return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
 void LayoutTheme::AdjustCheckboxStyle(ComputedStyle& style) const {
@@ -600,11 +528,6 @@ void LayoutTheme::AdjustMenuListStyle(ComputedStyle& style, Element*) const {
   // https://bugs.webkit.org/show_bug.cgi?id=21287
   style.SetOverflowX(EOverflow::kVisible);
   style.SetOverflowY(EOverflow::kVisible);
-}
-
-bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {
-  return input_element->IsSteppable() &&
-         input_element->type() != input_type_names::kRange;
 }
 
 void LayoutTheme::AdjustMenuListButtonStyle(ComputedStyle&, Element*) const {}
@@ -847,10 +770,6 @@ String LayoutTheme::DisplayNameForFile(const File& file) const {
   return file.name();
 }
 
-bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
-  return false;
-}
-
 bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   if (features::IsFormControlsRefreshEnabled() &&
@@ -960,41 +879,6 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   // box and turns off the Windows XP theme)
   // for now, we will not honor it.
   style.ResetBorder();
-}
-
-LengthBox LayoutTheme::ControlPadding(ControlPart part,
-                                      const FontDescription&,
-                                      const Length& zoomed_box_top,
-                                      const Length& zoomed_box_right,
-                                      const Length& zoomed_box_bottom,
-                                      const Length& zoomed_box_left,
-                                      float) const {
-  switch (part) {
-    case kMenulistPart:
-    case kMenulistButtonPart:
-    case kCheckboxPart:
-    case kRadioPart:
-      return LengthBox(0);
-    default:
-      return LengthBox(zoomed_box_top, zoomed_box_right, zoomed_box_bottom,
-                       zoomed_box_left);
-  }
-}
-
-LengthBox LayoutTheme::ControlBorder(ControlPart part,
-                                     const FontDescription&,
-                                     const LengthBox& zoomed_box,
-                                     float) const {
-  switch (part) {
-    case kPushButtonPart:
-    case kMenulistPart:
-    case kSearchFieldPart:
-    case kCheckboxPart:
-    case kRadioPart:
-      return LengthBox(0);
-    default:
-      return zoomed_box;
-  }
 }
 
 void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {

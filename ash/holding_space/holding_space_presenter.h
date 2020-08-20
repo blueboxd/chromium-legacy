@@ -11,8 +11,10 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_controller_observer.h"
+#include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
+#include "base/containers/flat_map.h"
 #include "base/scoped_observer.h"
 
 namespace ash {
@@ -43,7 +45,7 @@ class ASH_EXPORT HoldingSpacePresenter : public HoldingSpaceControllerObserver,
   void OnHoldingSpaceItemAdded(const HoldingSpaceItem* item) override;
   void OnHoldingSpaceItemRemoved(const HoldingSpaceItem* item) override;
 
-  const std::vector<std::string>& item_ids() const { return item_ids_; }
+  const std::vector<std::string>& GetItemIds(HoldingSpaceItem::Type type) const;
 
  private:
   // Handles the items from the model, and starts observing the model.
@@ -51,7 +53,7 @@ class ASH_EXPORT HoldingSpacePresenter : public HoldingSpaceControllerObserver,
 
   // IDs of items in the active holding space model, as observed by the holding
   // space presenter.
-  std::vector<std::string> item_ids_;
+  base::flat_map<HoldingSpaceItem::Type, std::vector<std::string>> item_ids_;
 
   ScopedObserver<HoldingSpaceController, HoldingSpaceControllerObserver>
       controller_observer_{this};

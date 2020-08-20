@@ -95,7 +95,7 @@
 <translation id="1962969542251276847">Блокировать экран</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Здравствуйте, <ph name="USERNAME" />!</translation>
-<translation id="1975500003782052650">Последние скачивания</translation>
+<translation id="1975500003782052650">Последние скачанные файлы</translation>
 <translation id="1978498689038657292">Ввод текста</translation>
 <translation id="1993072747612765854">Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="1995660704900986789">Выключить</translation>
@@ -520,6 +520,7 @@
 <translation id="6972754398087986839">Начать</translation>
 <translation id="6981982820502123353">Спец. возможности</translation>
 <translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>
+<translation id="6990778048354947307">Тёмная тема</translation>
 <translation id="7007983414944123363">Введенный PIN-код или пароль недействителен. Повторите попытку.</translation>
 <translation id="7015766095477679451">Увидимся снова в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Подключите <ph name="DEVICE_NAME" /> к своему телефону</translation>

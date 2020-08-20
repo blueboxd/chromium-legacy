@@ -4,10 +4,14 @@
      found in the LICENSE file. -->
 
 <!-- We are working on redesigning menu (crbug.com/1109095), and the icons in
-     here are experimental. If you want to add a new menu item which always
-     shows an icon even not in redesigned menu, please also update
-     AppMenuPropertiesDelegateImpl#prepareCommonMenuItems to keep the icon,
-     like reader_mode_prefs_id.   -->
+     here are experimental. If you want to add a new menu item, you need to
+     update both main_menu.xml and main_menu_regroup.xml. If you want to add
+     a new menu item which always shows an icon even not in redesigned menu,
+     please also update AppMenuPropertiesDelegateImpl#prepareCommonMenuItems
+     to keep the icon, like reader_mode_prefs_id.  -->
+
+<!-- TODO(crbug.com/1119550): explore replacing with programatically created
+     menu.  -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- These menu items are common to tablet and phone. -->

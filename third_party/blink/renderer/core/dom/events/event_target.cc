@@ -537,14 +537,17 @@ void EventTarget::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (Document* document = executing_window->document()) {
-      if (event_type == event_type_names::kAuxclick)
+      if (event_type == event_type_names::kAuxclick) {
         UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
-      else if (event_type == event_type_names::kAppinstalled)
+      } else if (event_type == event_type_names::kAppinstalled) {
         UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
-      else if (event_util::IsPointerEventType(event_type))
+      } else if (event_util::IsPointerEventType(event_type)) {
         UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
-      else if (event_type == event_type_names::kSlotchange)
+      } else if (event_type == event_type_names::kSlotchange) {
         UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
+      } else if (event_type == event_type_names::kBeforematch) {
+        UseCounter::Count(*document, WebFeature::kBeforematchHandlerRegistered);
+      }
     }
   }
 

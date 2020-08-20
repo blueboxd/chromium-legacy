@@ -35,8 +35,6 @@
 namespace blink {
 
 namespace {
-// The name to use for the root directory of a sandboxed file system.
-constexpr const char kSandboxRootDirectoryName[] = "";
 
 mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
                                                            bool multiple) {
@@ -130,50 +128,6 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
             t->hasDescription() ? t->description() : g_empty_string,
             std::move(mimeTypes), std::move(extensions)));
   }
-  return result;
-}
-
-ScriptPromise GetOriginPrivateDirectoryImpl(ScriptState* script_state,
-                                            ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  if (!context->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (context->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
-      exception_state.ThrowSecurityError(
-          "System directory access is denied because the context is "
-          "sandboxed and lacks the 'allow-same-origin' flag.");
-      return ScriptPromise();
-    } else {
-      exception_state.ThrowSecurityError("System directory access is denied.");
-      return ScriptPromise();
-    }
-  }
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
-  context->GetBrowserInterfaceBroker().GetInterface(
-      manager.BindNewPipeAndPassReceiver());
-
-  auto* raw_manager = manager.get();
-  raw_manager->GetSandboxedFileSystem(WTF::Bind(
-      [](ScriptPromiseResolver* resolver,
-         mojo::Remote<mojom::blink::NativeFileSystemManager>,
-         mojom::blink::NativeFileSystemErrorPtr result,
-         mojo::PendingRemote<mojom::blink::NativeFileSystemDirectoryHandle>
-             handle) {
-        ExecutionContext* context = resolver->GetExecutionContext();
-        if (!context)
-          return;
-        if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
-          native_file_system_error::Reject(resolver, *result);
-          return;
-        }
-        resolver->Resolve(MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-            context, kSandboxRootDirectoryName, std::move(handle)));
-      },
-      WrapPersistent(resolver), std::move(manager)));
-
   return result;
 }
 
@@ -380,22 +334,6 @@ ScriptPromise GlobalNativeFileSystem::showDirectoryPicker(
       mojom::blink::ChooseFileSystemEntryType::kOpenDirectory, {},
       /*accept_all=*/true,
       /*return_as_sequence=*/false);
-}
-
-// static
-ScriptPromise GlobalNativeFileSystem::getOriginPrivateDirectory(
-    ScriptState* script_state,
-    const LocalDOMWindow& window,
-    ExceptionState& exception_state) {
-  return GetOriginPrivateDirectoryImpl(script_state, exception_state);
-}
-
-// static
-ScriptPromise GlobalNativeFileSystem::getOriginPrivateDirectory(
-    ScriptState* script_state,
-    const WorkerGlobalScope& workerGlobalScope,
-    ExceptionState& exception_state) {
-  return GetOriginPrivateDirectoryImpl(script_state, exception_state);
 }
 
 }  // namespace blink

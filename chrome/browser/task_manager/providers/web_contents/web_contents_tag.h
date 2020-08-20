@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAG_H_
 #define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAG_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
@@ -36,11 +38,9 @@ class WebContentsTag : public base::SupportsUserData::Data {
 
   // The concrete Tags know how to instantiate a |RendererTask| that corresponds
   // to the owning WebContents and Service. This will be used by the
-  // WebContentsTaskProvider to create the appropriate Tasks.
-  //
-  // The returned |RendererTask| is owned by the caller (in this case it will be
-  // the provider, |task_provider|).
-  virtual RendererTask* CreateTask(
+  // WebContentsTaskProvider to create the appropriate Tasks. |task_provicer| is
+  // provided in case the task needs it for construction.
+  virtual std::unique_ptr<RendererTask> CreateTask(
       WebContentsTaskProvider* task_provider) const = 0;
 
   content::WebContents* web_contents() const { return web_contents_; }

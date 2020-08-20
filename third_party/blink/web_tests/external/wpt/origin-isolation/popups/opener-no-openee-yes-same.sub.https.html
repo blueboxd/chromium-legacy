@@ -20,7 +20,6 @@ promise_setup(async () => {
 
 // Since they're same-origin, and the opener loaded without isolation, the
 // child's request for isolation gets ignored, and both end up site-keyed.
-
 testOpenedWindowIsInSameAgentCluster(() => openee);
 
 testGetter(self, false, "opener");

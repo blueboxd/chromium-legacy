@@ -9,7 +9,7 @@
 #include "cc/layers/surface_layer.h"
 #include "chrome/android/chrome_jni_headers/PictureInPictureActivity_jni.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/thin_webview/compositor_view.h"
+#include "components/thin_webview/compositor_view.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "ui/android/window_android_compositor.h"

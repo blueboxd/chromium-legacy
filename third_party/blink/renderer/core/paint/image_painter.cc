@@ -98,10 +98,6 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   if (area_element->ImageElement() != layout_image_.GetNode())
     return;
 
-  // Even if the theme handles focus ring drawing for entire elements, it won't
-  // do it for an area within an image, so we don't call
-  // LayoutTheme::themeDrawsFocusRing here.
-
   // We use EnsureComputedStyle() instead of GetComputedStyle() here because
   // <area> is used and its style applied even if it has display:none.
   const ComputedStyle* area_element_style = area_element->EnsureComputedStyle();

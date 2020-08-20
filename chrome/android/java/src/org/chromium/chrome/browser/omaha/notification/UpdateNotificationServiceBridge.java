@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -103,18 +102,9 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
     @CalledByNative
     private static void launchChromeActivity(@UpdateState int state) {
         try {
-            RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Notification.LaunchEvent",
-                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent.START,
-                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
-                            .NUM_ENTRIES);
             UpdateUtils.onUpdateAvailable(ContextUtils.getApplicationContext(), state);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Failed to start activity in background.", e);
-            RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Notification.LaunchEvent",
-                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
-                            .START_ACTIVITY_FAILED,
-                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
-                            .NUM_ENTRIES);
         }
     }
 }

@@ -147,7 +147,7 @@ class TCPSocketTest : public PlatformTest, public WithTaskEnvironment {
     EXPECT_EQ(accepted_address.address(), local_address_.address());
   }
 
-#if defined(TCP_INFO) || defined(OS_LINUX)
+#if defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Tests that notifications to Socket Performance Watcher (SPW) are delivered
   // correctly. |should_notify_updated_rtt| is true if the SPW is interested in
   // receiving RTT notifications. |num_messages| is the number of messages that
@@ -218,7 +218,7 @@ class TCPSocketTest : public PlatformTest, public WithTaskEnvironment {
     EXPECT_EQ(expect_rtt_notification_count,
               watcher_ptr->rtt_notification_count());
   }
-#endif  // defined(TCP_INFO) || defined(OS_LINUX)
+#endif  // defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   AddressList local_address_list() const {
     return AddressList(local_address_);
@@ -710,7 +710,7 @@ TEST_F(TCPSocketTest, BeforeConnectCallback) {
   ASSERT_EQ(0, os_result);
 // Linux platforms generally allocate twice as much buffer size is requested to
 // account for internal kernel data structures.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   EXPECT_EQ(2 * kReceiveBufferSize, actual_size);
 // Unfortunately, Apple platform behavior doesn't seem to be documented, and
 // doesn't match behavior on any other platforms.
@@ -813,7 +813,7 @@ TEST_F(TCPSocketTest, SetNoDelay) {
 
 // These tests require kernel support for tcp_info struct, and so they are
 // enabled only on certain platforms.
-#if defined(TCP_INFO) || defined(OS_LINUX)
+#if defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // If SocketPerformanceWatcher::ShouldNotifyUpdatedRTT always returns false,
 // then the wtatcher should not receive any notifications.
 TEST_F(TCPSocketTest, SPWNotInterested) {
@@ -825,7 +825,7 @@ TEST_F(TCPSocketTest, SPWNotInterested) {
 TEST_F(TCPSocketTest, SPWNoAdvance) {
   TestSPWNotifications(true, 2u, 0u, 3u);
 }
-#endif  // defined(TCP_INFO) || defined(OS_LINUX)
+#endif  // defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // On Android, where socket tagging is supported, verify that TCPSocket::Tag
 // works as expected.

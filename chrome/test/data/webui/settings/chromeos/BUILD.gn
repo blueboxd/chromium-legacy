@@ -70,6 +70,11 @@ js_modulizer("modulize") {
     "test_os_sync_browser_proxy.js",
     "timezone_selector_test.js",
     "timezone_subpage_test.js",
+    "test_cups_printers_browser_proxy.js",
+    "cups_printer_page_tests.js",
+    "cups_printer_test_utils.js",
+    "cups_printer_landing_page_tests.js",
+    "cups_printer_entry_tests.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

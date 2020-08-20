@@ -306,6 +306,10 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
         &any_thread_.immediate_incoming_queue.back(), name_);
     MaybeReportIpcTaskQueuedFromAnyThreadLocked(
         &any_thread_.immediate_incoming_queue.back(), name_);
+    if (!any_thread_.on_task_posted_handler.is_null()) {
+      any_thread_.on_task_posted_handler.Run(
+          any_thread_.immediate_incoming_queue.back());
+    }
 
     // If this queue was completely empty, then the SequenceManager needs to be
     // informed so it can reload the work queue and add us to the
@@ -1175,6 +1179,12 @@ void TaskQueueImpl::OnTaskCompleted(const Task& task,
 bool TaskQueueImpl::RequiresTaskTiming() const {
   return !main_thread_only().on_task_started_handler.is_null() ||
          !main_thread_only().on_task_completed_handler.is_null();
+}
+
+void TaskQueueImpl::SetOnTaskPostedHandler(OnTaskPostedHandler handler) {
+  DCHECK(should_notify_observers_ || handler.is_null());
+  base::internal::CheckedAutoLock lock(any_thread_lock_);
+  any_thread_.on_task_posted_handler = std::move(handler);
 }
 
 bool TaskQueueImpl::IsUnregistered() const {

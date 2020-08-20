@@ -299,9 +299,9 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
   worker_->StartWorkerContext(
       CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
-      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
-      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
-      browser_interface_broker.BindNewPipeAndPassRemote().PassPipe(),
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -318,9 +318,9 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   worker_->StartWorkerContext(
       std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
-      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
-      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
-      browser_interface_broker.BindNewPipeAndPassRemote().PassPipe(),
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -340,9 +340,9 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   worker_->StartWorkerContext(
       std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
-      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
-      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
-      browser_interface_broker.BindNewPipeAndPassRemote().PassPipe(),
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 

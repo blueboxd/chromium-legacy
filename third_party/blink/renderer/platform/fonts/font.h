@@ -242,10 +242,9 @@ class PLATFORM_EXPORT Font {
   }
 
   // Returns true if any of the matched @font-face rules has set a
-  // letter-spacing-override value.
-  bool HasLetterSpacingOverride() const {
-    return font_fallback_list_ &&
-           font_fallback_list_->HasLetterSpacingOverride();
+  // advance-override value.
+  bool HasAdvanceOverride() const {
+    return font_fallback_list_ && font_fallback_list_->HasAdvanceOverride();
   }
 
  private:

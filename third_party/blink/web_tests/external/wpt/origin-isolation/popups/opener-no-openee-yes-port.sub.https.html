@@ -21,7 +21,6 @@ promise_setup(async () => {
 // Since they're different-origin, the openee's isolation request is respected,
 // so the opener ends up in the site-keyed agent cluster and the openee in the
 // origin-keyed one.
-
 testOpenedWindowIsInADifferentAgentCluster(() => openee);
 
 testGetter(self, false, "opener");

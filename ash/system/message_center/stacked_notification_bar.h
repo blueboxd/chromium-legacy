@@ -37,9 +37,10 @@ class StackedNotificationBar : public views::View,
   ~StackedNotificationBar() override;
 
   // Sets the icons and overflow count for hidden notifications as well as the
-  // total notifications count. Returns true if the state of the bar has
-  // changed.
+  // total/pinned notifications count. Returns true if the state of the bar
+  // has changed.
   bool Update(int total_notification_count,
+              int pinned_notification_count,
               std::vector<message_center::Notification*> stacked_notifications);
 
   // Sets the current animation state.
@@ -98,6 +99,7 @@ class StackedNotificationBar : public views::View,
       std::vector<message_center::Notification*> stacked_notifications);
 
   int total_notification_count_ = 0;
+  int pinned_notification_count_ = 0;
   int stacked_notification_count_ = 0;
 
   UnifiedMessageCenterAnimationState animation_state_ =

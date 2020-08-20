@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
@@ -115,6 +116,8 @@ void AmbientAshTestBase::SetUp() {
       std::make_unique<TestAmbientURLLoaderImpl>());
   photo_controller()->set_image_decoder_for_testing(
       std::make_unique<TestAmbientImageDecoderImpl>());
+  token_controller()->SetTokenUsageBufferForTesting(
+      base::TimeDelta::FromSeconds(30));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -261,6 +264,10 @@ AmbientPhotoController* AmbientAshTestBase::photo_controller() {
 
 AmbientContainerView* AmbientAshTestBase::container_view() {
   return ambient_controller()->get_container_view_for_testing();
+}
+
+AmbientAccessTokenController* AmbientAshTestBase::token_controller() {
+  return ambient_controller()->access_token_controller_for_testing();
 }
 
 void AmbientAshTestBase::FetchTopics() {

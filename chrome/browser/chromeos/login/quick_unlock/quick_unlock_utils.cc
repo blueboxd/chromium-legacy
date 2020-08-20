@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -87,8 +88,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);
 
   // Register as true by default only when the feature is enabled.
-  registry->RegisterBooleanPref(prefs::kPinUnlockAutosubmitEnabled,
-                                IsPinAutosubmitFeatureEnabled());
+  registry->RegisterBooleanPref(
+      prefs::kPinUnlockAutosubmitEnabled,
+      features::IsPinAutosubmitFeatureEnabled());
 }
 
 bool IsPinDisabledByPolicy(PrefService* pref_service) {
@@ -157,20 +159,11 @@ bool IsFingerprintEnabled(Profile* profile) {
     return false;
 
   // Enable fingerprint unlock only if the switch is present.
-  return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
+  return base::FeatureList::IsEnabled(::features::kQuickUnlockFingerprint);
 }
 
 void EnabledForTesting(bool state) {
   enable_for_testing_ = state;
-}
-
-bool IsPinAutosubmitFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kQuickUnlockPinAutosubmit);
-}
-
-bool IsPinAutosubmitBackfillFeatureEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kQuickUnlockPinAutosubmitBackfill);
 }
 
 void DisablePinByPolicyForTesting(bool disable) {

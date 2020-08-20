@@ -1267,6 +1267,13 @@
         ],
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
       },
+      'maps': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
       'pixel': {
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
         'mixins': [
@@ -5681,7 +5688,7 @@
         'variants': [
           'SIM_IPHONE_6S_PLUS_13_6',
           'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_13_6',
+          'SIM_IPHONE_SE_1ST_GEN_13_6',
           'SIM_IPAD_AIR_2_13_6'
         ],
       },
@@ -5755,7 +5762,7 @@
         'variants': [
           'SIM_IPHONE_6S_PLUS_13_6',
           'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_13_6',
+          'SIM_IPHONE_SE_1ST_GEN_13_6',
           'SIM_IPAD_AIR_2_13_6'
         ]
       }

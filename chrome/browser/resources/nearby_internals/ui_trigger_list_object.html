@@ -1,0 +1,25 @@
+<style>
+  #generic-object {
+    left: 0;
+    padding-left: 5px;
+    position: absolute;
+    text-align: left;
+    width: 100%;
+  }
+
+  #time {
+    font-size: 10px;
+    padding: 5px;
+    position: absolute;
+    right: 0;
+  }
+
+  #item {
+    margin: 10px;
+    padding: 10px;
+  }
+</style>
+<div id="item">
+  <span id="generic-object">[[item.message]]</span>
+  <span id="time">[[formatTime_(item.time)]]</span>
+</div>

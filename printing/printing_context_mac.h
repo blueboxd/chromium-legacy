@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
@@ -21,6 +20,8 @@ namespace printing {
 class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
  public:
   explicit PrintingContextMac(Delegate* delegate);
+  PrintingContextMac(const PrintingContextMac&) = delete;
+  PrintingContextMac& operator=(const PrintingContextMac&) = delete;
   ~PrintingContextMac() override;
 
   // PrintingContext implementation.
@@ -95,8 +96,6 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   // The current page's context; only valid between NewPage and PageDone call
   // pairs.
   CGContext* context_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextMac);
 };
 
 }  // namespace printing

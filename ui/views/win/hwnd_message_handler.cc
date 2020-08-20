@@ -2532,8 +2532,7 @@ LRESULT HWNDMessageHandler::OnSetText(const wchar_t* text) {
 }
 
 void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
-  if (!GetParent(hwnd()) && (flags == SPI_SETWORKAREA) &&
-      !delegate_->WillProcessWorkAreaChange()) {
+  if (!GetParent(hwnd()) && (flags == SPI_SETWORKAREA)) {
     // Fire a dummy SetWindowPos() call, so we'll trip the code in
     // OnWindowPosChanging() below that notices work area changes.
     ::SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0,

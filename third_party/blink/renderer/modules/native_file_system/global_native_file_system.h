@@ -18,7 +18,6 @@ class ExceptionState;
 class LocalDOMWindow;
 class ScriptPromise;
 class ScriptState;
-class WorkerGlobalScope;
 
 class GlobalNativeFileSystem {
   STATIC_ONLY(GlobalNativeFileSystem);
@@ -42,13 +41,6 @@ class GlobalNativeFileSystem {
                                            LocalDOMWindow&,
                                            const DirectoryPickerOptions*,
                                            ExceptionState&);
-
-  static ScriptPromise getOriginPrivateDirectory(ScriptState*,
-                                                 const LocalDOMWindow&,
-                                                 ExceptionState&);
-  static ScriptPromise getOriginPrivateDirectory(ScriptState*,
-                                                 const WorkerGlobalScope&,
-                                                 ExceptionState&);
 };
 
 }  // namespace blink

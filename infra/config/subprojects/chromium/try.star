@@ -673,6 +673,14 @@ def chrome_internal_verifier(
     )
 
 chrome_internal_verifier(
+    builder = "linux-chrome-beta",
+)
+
+chrome_internal_verifier(
+    builder = "linux-chrome-stable",
+)
+
+chrome_internal_verifier(
     builder = "mac-chrome-beta",
 )
 

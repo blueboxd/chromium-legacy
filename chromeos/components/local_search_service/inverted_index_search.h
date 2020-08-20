@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "chromeos/components/local_search_service/index.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
@@ -52,7 +54,14 @@ class InvertedIndexSearch : public Index {
       const base::string16& term) const;
 
  private:
+  void OnExtractDocumentsContentDone(
+      const std::vector<std::pair<std::string, std::vector<Token>>>& documents);
+
   std::unique_ptr<InvertedIndex> inverted_index_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InvertedIndexSearch> weak_ptr_factory_{this};
 };
 
 }  // namespace local_search_service

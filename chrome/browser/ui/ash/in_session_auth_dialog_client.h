@@ -63,6 +63,9 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
 
   void AuthenticateWithPassword(const chromeos::UserContext& user_context);
 
+  void OnPinAttemptDone(const chromeos::UserContext& user_context,
+                        bool success);
+
   void OnPasswordAuthSuccess(const chromeos::UserContext& user_context);
 
   // Used to authenticate the user to unlock supervised users.

@@ -248,6 +248,8 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/cr_policy_network_behavior_mojo_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/cr_policy_network_indicator_mojo_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_config_element_behavior_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_list_item_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_list_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_password_input_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_page_test.m.js",
@@ -287,6 +289,11 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_wallpaper_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/timezone_selector_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/timezone_subpage_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_cups_printers_browser_proxy.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cups_printer_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cups_printer_test_utils.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cups_printer_landing_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cups_printer_entry_tests.m.js",
       ]
     }
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

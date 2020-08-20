@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -41,6 +40,8 @@ class PRINTING_EXPORT PrintedDocument
   PrintedDocument(std::unique_ptr<PrintSettings> settings,
                   const base::string16& name,
                   int cookie);
+  PrintedDocument(const PrintedDocument&) = delete;
+  PrintedDocument& operator=(const PrintedDocument&) = delete;
 
 #if defined(OS_WIN)
   // Indicates that the PDF has been generated and the document is waiting for
@@ -206,8 +207,6 @@ class PRINTING_EXPORT PrintedDocument
 
   // All the immutable members.
   const Immutable immutable_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintedDocument);
 };
 
 }  // namespace printing

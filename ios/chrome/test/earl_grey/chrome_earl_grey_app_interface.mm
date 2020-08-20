@@ -587,6 +587,10 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return base::SysUTF8ToNSString(chrome_test_util::GetSyncCacheGuid());
 }
 
++ (BOOL)isFakeSyncServerSetUp {
+  return chrome_test_util::IsFakeSyncServerSetUp();
+}
+
 + (void)setUpFakeSyncServer {
   chrome_test_util::SetUpFakeSyncServer();
 }

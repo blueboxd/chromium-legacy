@@ -31,6 +31,8 @@ class PrintCompositeClient
       public content::WebContentsObserver {
  public:
   explicit PrintCompositeClient(content::WebContents* web_contents);
+  PrintCompositeClient(const PrintCompositeClient&) = delete;
+  PrintCompositeClient& operator=(const PrintCompositeClient&) = delete;
   ~PrintCompositeClient() override;
 
   // content::WebContentsObserver
@@ -174,8 +176,6 @@ class PrintCompositeClient
   base::WeakPtrFactory<PrintCompositeClient> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PrintCompositeClient);
 };
 
 }  // namespace printing

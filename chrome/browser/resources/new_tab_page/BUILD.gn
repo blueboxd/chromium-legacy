@@ -16,7 +16,6 @@ js_type_check("closure_compile") {
     ":customize_dialog",
     ":doodle_share_dialog",
     ":fakebox",
-    ":grid",
     ":iframe",
     ":logo",
     ":module_descriptor",
@@ -101,9 +100,9 @@ js_library("customize_backgrounds") {
 
 js_library("customize_themes") {
   deps = [
-    ":grid",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_grid",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
 }
@@ -124,12 +123,6 @@ js_library("customize_shortcuts") {
 }
 
 js_library("theme_icon") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("grid") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -264,7 +257,6 @@ html_to_js("web_components_local") {
     "customize_themes.js",
     "doodle_share_dialog.js",
     "fakebox.js",
-    "grid.js",
     "logo.js",
     "mini_page.js",
     "most_visited.js",

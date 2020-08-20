@@ -7,11 +7,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/logging.h"
-#include "base/system/sys_info.h"
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_fuchsia.h"
 #elif defined(OS_MAC)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_mac.h"
@@ -31,16 +27,7 @@ constexpr base::Feature kUseWinOSMemoryPressureSignals{
 std::unique_ptr<SystemMemoryPressureEvaluator>
 SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     MultiSourceMemoryPressureMonitor* monitor) {
-#if defined(OS_CHROMEOS)
-  if (util::chromeos::SystemMemoryPressureEvaluator::
-          SupportsKernelNotifications()) {
-    return std::make_unique<util::chromeos::SystemMemoryPressureEvaluator>(
-        monitor->CreateVoter());
-  }
-  LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
-      << "No MemoryPressureMonitor created because the kernel does not have "
-         "support.";
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
   return std::make_unique<util::SystemMemoryPressureEvaluatorFuchsia>(
       monitor->CreateVoter());
 #elif defined(OS_MAC)

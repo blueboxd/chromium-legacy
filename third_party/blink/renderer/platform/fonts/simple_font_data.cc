@@ -179,9 +179,9 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
   if (int units_per_em = face->getUnitsPerEm())
     font_metrics_.SetUnitsPerEm(units_per_em);
 
-  if (metrics_override.letter_spacing_override) {
-    letter_spacing_override_ =
-        *metrics_override.letter_spacing_override * platform_data_.size();
+  if (metrics_override.advance_override) {
+    advance_override_ =
+        *metrics_override.advance_override * platform_data_.size();
   }
 }
 

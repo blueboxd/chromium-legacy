@@ -66,6 +66,9 @@ class ASH_EXPORT UnifiedMessageListView
   // Returns the total number of notifications in the list.
   int GetTotalNotificationCount() const;
 
+  // Returns the total number of pinned notifications in the list.
+  int GetTotalPinnedNotificationCount() const;
+
   // Returns true if an animation is currently in progress.
   bool IsAnimating() const;
 

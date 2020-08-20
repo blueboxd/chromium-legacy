@@ -9,6 +9,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 /** @const {number} */
@@ -100,6 +101,13 @@ class DragSession {
     /** @const {!TabElement|!TabGroupElement} */
     this.element_ = element;
 
+    /**
+     * Flag indicating if during the drag session, the element has at least
+     * moved once.
+     * @private {boolean}
+     */
+    this.hasMoved_ = false;
+
     /** @const {number} */
     this.srcIndex = srcIndex;
 
@@ -108,6 +116,9 @@ class DragSession {
 
     /** @private @const {!TabsApiProxy} */
     this.tabsProxy_ = TabsApiProxyImpl.getInstance();
+
+    /** @private {!TabStripEmbedderProxy} */
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxyImpl.getInstance();
   }
 
   /**
@@ -279,6 +290,13 @@ class DragSession {
 
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
+
+    if (isTabElement(this.element_) && !this.hasMoved_) {
+      // If the user was dragging a tab and the tab has not ever been moved,
+      // show a context menu instead.
+      this.tabStripEmbedderProxy_.showTabContextMenu(
+          this.element_.tab.id, event.clientX, event.clientY);
+    }
   }
 
   /**
@@ -352,6 +370,7 @@ class DragSession {
   update(event) {
     if (event.type === 'dragleave') {
       this.element_.setDraggedOut(true);
+      this.hasMoved_ = true;
       return;
     }
 
@@ -385,6 +404,7 @@ class DragSession {
       dragOverIndex +=
           this.shouldOffsetIndexForGroup_(dragOverTabElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
+      this.hasMoved_ = true;
       return;
     }
 
@@ -396,6 +416,7 @@ class DragSession {
       dragOverIndex +=
           this.shouldOffsetIndexForGroup_(dragOverGroupElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
+      this.hasMoved_ = true;
     }
   }
 
@@ -427,12 +448,14 @@ class DragSession {
         dragOverTabGroup.isValidDragOverTarget) {
       this.delegate_.placeTabElement(
           tabElement, this.dstIndex, false, dragOverTabGroup.dataset.groupId);
+      this.hasMoved_ = true;
       return;
     }
 
     if (!dragOverTabGroup && previousGroupId) {
       this.delegate_.placeTabElement(
           tabElement, this.dstIndex, false, undefined);
+      this.hasMoved_ = true;
       return;
     }
 
@@ -443,6 +466,7 @@ class DragSession {
     const dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
     this.delegate_.placeTabElement(
         tabElement, dragOverIndex, tabElement.tab.pinned, previousGroupId);
+    this.hasMoved_ = true;
   }
 }
 

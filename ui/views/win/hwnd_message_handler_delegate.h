@@ -82,8 +82,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // window.
   virtual int GetInitialShowState() const = 0;
 
-  virtual bool WillProcessWorkAreaChange() const = 0;
-
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
   virtual void GetWindowMask(const gfx::Size& size, SkPath* mask) = 0;
 

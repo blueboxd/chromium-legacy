@@ -15,11 +15,11 @@ FakeNearbyShareCertificateStorage::Factory::~Factory() = default;
 std::unique_ptr<NearbyShareCertificateStorage>
 FakeNearbyShareCertificateStorage::Factory::CreateInstance(
     PrefService* pref_service,
-    std::unique_ptr<
-        leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-        proto_database) {
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& profile_path) {
   latest_pref_service_ = pref_service;
-  latest_proto_database_ = std::move(proto_database);
+  latest_proto_database_provider_ = proto_database_provider;
+  latest_profile_path_ = profile_path;
 
   auto instance = std::make_unique<FakeNearbyShareCertificateStorage>();
   instances_.push_back(instance.get());

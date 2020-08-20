@@ -66,9 +66,13 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   void StartWorkerContext(
       std::unique_ptr<WebEmbeddedWorkerStartData>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
-      mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle cache_storage,
-      mojo::ScopedMessagePipeHandle browser_interface_broker,
+      CrossVariantMojoRemote<
+          mojom::blink::WorkerContentSettingsProxyInterfaceBase>
+          content_settings,
+      CrossVariantMojoRemote<mojom::blink::CacheStorageInterfaceBase>
+          cache_storage,
+      CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+          browser_interface_broker,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
       override;
   void TerminateWorkerContext() override;

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/holding_space/holding_space_controller.h"
+#include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,12 +32,17 @@
 using testing::_;
 using testing::Return;
 
+// Parameterized by TemporaryHoldingSpace feature state.
 class ChromeScreenshotGrabberBrowserTest
     : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool>,
       public ChromeScreenshotGrabberTestObserver,
       public ui::ClipboardObserver {
  public:
-  ChromeScreenshotGrabberBrowserTest() = default;
+  ChromeScreenshotGrabberBrowserTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        ash::features::kTemporaryHoldingSpace, GetParam());
+  }
   ~ChromeScreenshotGrabberBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -81,6 +90,14 @@ class ChromeScreenshotGrabberBrowserTest
         ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
   }
 
+  bool TemporaryHoldingSpaceEnabled() const { return GetParam(); }
+
+  ash::HoldingSpaceModel* GetHoldingSpaceModel() const {
+    ash::HoldingSpaceController* const controller =
+        ash::HoldingSpaceController::Get();
+    return controller ? controller->model() : nullptr;
+  }
+
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
@@ -91,10 +108,16 @@ class ChromeScreenshotGrabberBrowserTest
   policy::MockDlpContentManager mock_dlp_content_manager_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabberBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         ChromeScreenshotGrabberBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   ChromeScreenshotGrabber* chrome_screenshot_grabber =
       ChromeScreenshotGrabber::Get();
   SetTestObserver(chrome_screenshot_grabber, this);
@@ -124,6 +147,20 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
     EXPECT_TRUE(base::PathExists(screenshot_path_));
   }
 
+  if (TemporaryHoldingSpaceEnabled()) {
+    ash::HoldingSpaceModel* holding_space_model = GetHoldingSpaceModel();
+    ASSERT_TRUE(holding_space_model);
+    ASSERT_EQ(1u, holding_space_model->items().size());
+
+    ash::HoldingSpaceItem* holding_space_item =
+        holding_space_model->items()[0].get();
+    EXPECT_EQ(ash::HoldingSpaceItem::Type::kScreenshot,
+              holding_space_item->type());
+    EXPECT_EQ(screenshot_path_, holding_space_item->file_path());
+  } else {
+    EXPECT_FALSE(GetHoldingSpaceModel());
+  }
+
   EXPECT_FALSE(IsImageClipboardAvailable());
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 
@@ -138,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   EXPECT_TRUE(IsImageClipboardAvailable());
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
+IN_PROC_BROWSER_TEST_P(ChromeScreenshotGrabberBrowserTest,
                        ScreenshotsDisallowed) {
   ChromeScreenshotGrabber* chrome_screenshot_grabber =
       ChromeScreenshotGrabber::Get();
@@ -152,9 +189,17 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
   EXPECT_TRUE(notification_added_);
   EXPECT_TRUE(display_service_->GetNotification(std::string("screenshot")));
   EXPECT_EQ(ui::ScreenshotResult::DISABLED, screenshot_result_);
+
+  if (TemporaryHoldingSpaceEnabled()) {
+    ash::HoldingSpaceModel* holding_space_model = GetHoldingSpaceModel();
+    ASSERT_TRUE(holding_space_model);
+    EXPECT_TRUE(holding_space_model->items().empty());
+  } else {
+    EXPECT_FALSE(GetHoldingSpaceModel());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
+IN_PROC_BROWSER_TEST_P(ChromeScreenshotGrabberBrowserTest,
                        ScreenshotsRestricted) {
   ChromeScreenshotGrabber* chrome_screenshot_grabber =
       ChromeScreenshotGrabber::Get();
@@ -172,4 +217,12 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
   EXPECT_TRUE(notification_added_);
   EXPECT_TRUE(display_service_->GetNotification(std::string("screenshot")));
   EXPECT_EQ(ui::ScreenshotResult::DISABLED, screenshot_result_);
+
+  if (TemporaryHoldingSpaceEnabled()) {
+    ash::HoldingSpaceModel* holding_space_model = GetHoldingSpaceModel();
+    ASSERT_TRUE(holding_space_model);
+    EXPECT_TRUE(holding_space_model->items().empty());
+  } else {
+    EXPECT_FALSE(GetHoldingSpaceModel());
+  }
 }

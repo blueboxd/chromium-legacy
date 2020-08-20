@@ -65,6 +65,7 @@ enum FeedbackSource {
   kFeedbackSourceHelpApp,
   kFeedbackSourceKaleidoscope,
   kFeedbackSourceNetworkHealthPage,
+  kFeedbackSourceTabSearch,
 
   // Must be last.
   kFeedbackSourceCount,

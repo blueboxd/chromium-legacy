@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "printing/printing_context.h"
 
 namespace printing {
@@ -20,6 +19,8 @@ class PrintDialogGtkInterface;
 class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
  public:
   explicit PrintingContextLinux(Delegate* delegate);
+  PrintingContextLinux(const PrintingContextLinux&) = delete;
+  PrintingContextLinux& operator=(const PrintingContextLinux&) = delete;
   ~PrintingContextLinux() override;
 
   // Sets the function that creates the print dialog.
@@ -57,8 +58,6 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
  private:
   base::string16 document_name_;
   PrintDialogGtkInterface* print_dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextLinux);
 };
 
 }  // namespace printing

@@ -1415,6 +1415,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter onquotachange
 [Worker]     method constructor
 [Worker]     method estimate
+[Worker]     method getDirectory
 [Worker]     method persisted
 [Worker]     setter onquotachange
 [Worker] interface SubtleCrypto
@@ -3925,7 +3926,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method createImageBitmap
 [Worker]     method fetch
-[Worker]     method getOriginPrivateDirectory
 [Worker]     method importScripts
 [Worker]     method queueMicrotask
 [Worker]     method setInterval

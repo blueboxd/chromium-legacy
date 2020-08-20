@@ -18,8 +18,13 @@ os_test_namespace_rewrites = os_settings_namespace_rewrites + [
                                "settings.TestLanguagesMetricsProxy|TestLanguagesMetricsProxy",
                                "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                                "settings.TestWallpaperBrowserProxy|TestWallpaperBrowserProxy",
+                               "printerBrowserProxy.TestCupsPrintersBrowserProxy|TestCupsPrintersBrowserProxy",
                                "test_util.eventToPromise|eventToPromise",
                                "test_util.fakeDataBind|fakeDataBind",
                                "test_util.flushTasks|flushTasks",
                                "test_util.waitAfterNextRender|waitAfterNextRender",
+                               "MockInteractions.keyEventOn|keyEventOn",
+                               "cups_printer_test_util.createCupsPrinterInfo|createCupsPrinterInfo",
+                               "cups_printer_test_util.createPrinterListEntry|createPrinterListEntry",
+                               "cups_printer_test_util.getPrinterEntries|getPrinterEntries",
                              ]

@@ -12,7 +12,6 @@
 #include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "skia/ext/skia_utils_win.h"

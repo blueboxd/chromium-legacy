@@ -1431,6 +1431,7 @@ interface StorageManager : EventTarget
     getter onquotachange
     method constructor
     method estimate
+    method getDirectory
     method persisted
     setter onquotachange
 interface SubtleCrypto
@@ -3827,7 +3828,6 @@ interface WorkerGlobalScope : EventTarget
     method constructor
     method createImageBitmap
     method fetch
-    method getOriginPrivateDirectory
     method importScripts
     method queueMicrotask
     method setInterval

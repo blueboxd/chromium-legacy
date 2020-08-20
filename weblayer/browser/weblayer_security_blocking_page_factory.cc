@@ -6,10 +6,12 @@
 
 #include "components/captive_portal/core/buildflags.h"
 #include "components/security_interstitials/content/content_metrics_helper.h"
+#include "components/security_interstitials/content/insecure_form_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "weblayer/browser/captive_portal_service_factory.h"
+#include "weblayer/browser/insecure_form_controller_client.h"
 #include "weblayer/browser/ssl_error_controller_client.h"
 
 #if defined(OS_ANDROID)
@@ -201,10 +203,12 @@ std::unique_ptr<security_interstitials::InsecureFormBlockingPage>
 WebLayerSecurityBlockingPageFactory::CreateInsecureFormBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url) {
-  // TODO(crbug.com/1093102): Insecure form warnings are not yet implemented in
-  // Weblayer.
-  NOTREACHED();
-  return nullptr;
+  std::unique_ptr<InsecureFormControllerClient> client =
+      std::make_unique<InsecureFormControllerClient>(web_contents, request_url);
+  auto page =
+      std::make_unique<security_interstitials::InsecureFormBlockingPage>(
+          web_contents, request_url, std::move(client));
+  return page;
 }
 
 #if defined(OS_ANDROID)

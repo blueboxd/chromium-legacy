@@ -153,6 +153,15 @@ class CableAuthenticator {
         mCallback.onComplete();
     }
 
+    /**
+     * Called by USBHandler to signal that a USB peer wrote data.
+     */
+    public byte[] onUSBWrite(byte[] payload) {
+        assert mTaskRunner.belongsToCurrentThread();
+        // TODO: wire up.
+        return null;
+    }
+
     // Calls from native code.
 
     /**

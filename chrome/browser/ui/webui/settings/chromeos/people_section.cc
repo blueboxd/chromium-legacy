@@ -460,9 +460,8 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("quickUnlockEnabled",
                           chromeos::quick_unlock::IsPinEnabled(pref_service));
-  html_source->AddBoolean(
-      "quickUnlockPinAutosubmitFeatureEnabled",
-      chromeos::quick_unlock::IsPinAutosubmitFeatureEnabled());
+  html_source->AddBoolean("quickUnlockPinAutosubmitFeatureEnabled",
+                          chromeos::features::IsPinAutosubmitFeatureEnabled());
   html_source->AddBoolean(
       "quickUnlockDisabledByPolicy",
       chromeos::quick_unlock::IsPinDisabledByPolicy(pref_service));

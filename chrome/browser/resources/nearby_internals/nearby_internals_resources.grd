@@ -34,6 +34,10 @@
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\logging_tab.js"
                use_base_dir="false"
                type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_UI_TRIGGER_TAB_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\ui_trigger_tab.js"
+               use_base_dir="false"
+               type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_NEARBY_INTERNALS_JS"
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\nearby_internals.js"
                use_base_dir="false"
@@ -43,6 +47,9 @@
                type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_NEARBY_LOGS_BROWSER_PROXY_JS"
                file="nearby_logs_browser_proxy.js"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_NEARBY_UI_TRIGGER_BROWSER_PROXY_JS"
+               file="nearby_ui_trigger_browser_proxy.js"
                type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_SHARED_STYLE_JS"
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\shared_style.js"
@@ -58,6 +65,10 @@
                type="BINDATA"/>
        <include name="IDR_NEARBY_INTERNALS_NEARBY_CONTACT_BROWSER_PROXY_JS"
                file="nearby_contact_browser_proxy.js"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_UI_TRIGGER_LIST_OBJECT_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\ui_trigger_list_object.js"
+               use_base_dir="false"
                type="BINDATA"/>
     </includes>
   </release>

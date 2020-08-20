@@ -51,6 +51,7 @@
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/test/test_ax_event_observer.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -3474,6 +3475,22 @@ TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
   EXPECT_FALSE(test_api_->IsCursorBlinkTimerRunning());
   textfield_->InsertOrReplaceText(base::ASCIIToUTF16("foo"));
   EXPECT_TRUE(test_api_->IsCursorBlinkTimerRunning());
+}
+
+// Verifies setting the accessible name will call NotifyAccessibilityEvent.
+TEST_F(TextfieldTest, SetAccessibleNameNotifiesAccessibilityEvent) {
+  InitTextfield();
+  base::string16 test_tooltip_text = ASCIIToUTF16("Test Accessible Name");
+  test::TestAXEventObserver observer;
+  EXPECT_EQ(0, observer.text_changed_event_count());
+  textfield_->SetAccessibleName(test_tooltip_text);
+  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(test_tooltip_text, textfield_->GetAccessibleName());
+  ui::AXNodeData data;
+  textfield_->GetAccessibleNodeData(&data);
+  const std::string& name =
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  EXPECT_EQ(test_tooltip_text, ASCIIToUTF16(name));
 }
 
 #if defined(OS_CHROMEOS)

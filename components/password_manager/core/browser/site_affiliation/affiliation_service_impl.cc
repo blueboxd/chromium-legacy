@@ -4,47 +4,68 @@
 
 #include "components/password_manager/core/browser/site_affiliation/affiliation_service_impl.h"
 
+#include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
+#include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
-#include "url/origin.h"
-
-namespace {
-
-// Checks if a user is synced.
-bool IsUserSynced(syncer::SyncService* sync_service) {
-  return sync_service->IsSyncFeatureEnabled();
-}
-
-// Checks if a user has a custom passphrase set.
-bool IsPassphraseSet(syncer::SyncService* sync_service) {
-  return sync_service->GetUserSettings()->IsPassphraseRequired();
-}
-
-}  // namespace
+#include "url/scheme_host_port.h"
 
 namespace password_manager {
 
 AffiliationServiceImpl::AffiliationServiceImpl(
-    syncer::SyncService* sync_service)
-    : sync_service_(sync_service) {}
+    syncer::SyncService* sync_service,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : sync_service_(sync_service),
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 AffiliationServiceImpl::~AffiliationServiceImpl() = default;
 
 void AffiliationServiceImpl::PrefetchChangePasswordURLs(
-    const std::vector<url::Origin>& origins) {
-  if (IsUserSynced(sync_service_) && !IsPassphraseSet(sync_service_)) {
-    // AffiliationFetcher::Create and AffiliationFetcher::StartRequest
+    const std::vector<url::SchemeHostPort>& tuple_origins) {
+  if (ShouldAffiliationBasedMatchingBeActive(sync_service_)) {
+    RequestFacetsAffiliations(
+        ConvertMissingSchemeHostPortsToFacets(tuple_origins));
   }
 }
 
 void AffiliationServiceImpl::Clear() {
+  fetcher_.reset();
   change_password_urls_.clear();
 }
 
-GURL AffiliationServiceImpl::GetChangePasswordURL(const url::Origin& origin) {
-  auto it = change_password_urls_.find(origin);
+GURL AffiliationServiceImpl::GetChangePasswordURL(
+    const url::SchemeHostPort& tuple) const {
+  auto it = change_password_urls_.find(tuple);
   return it != change_password_urls_.end() ? it->second : GURL();
+}
+
+void AffiliationServiceImpl::OnFetchSucceeded(
+    std::unique_ptr<AffiliationFetcherDelegate::Result> result) {}
+
+void AffiliationServiceImpl::OnFetchFailed() {}
+
+void AffiliationServiceImpl::OnMalformedResponse() {}
+
+std::vector<FacetURI>
+AffiliationServiceImpl::ConvertMissingSchemeHostPortsToFacets(
+    const std::vector<url::SchemeHostPort>& tuple_origins) {
+  std::vector<FacetURI> facets;
+  for (const auto& tuple : tuple_origins) {
+    if (tuple.IsValid() && !base::Contains(change_password_urls_, tuple)) {
+      requested_tuple_origins_.push_back(tuple);
+      facets.push_back(FacetURI::FromCanonicalSpec(tuple.Serialize()));
+    }
+  }
+  return facets;
+}
+
+// TODO(crbug.com/1117045): New request resets the pointer to
+// AffiliationFetcher, therefore the previous request gets canceled.
+void AffiliationServiceImpl::RequestFacetsAffiliations(
+    const std::vector<FacetURI>& facets) {
+  fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_, this));
+  fetcher_->StartRequest(facets);
 }
 
 }  // namespace password_manager

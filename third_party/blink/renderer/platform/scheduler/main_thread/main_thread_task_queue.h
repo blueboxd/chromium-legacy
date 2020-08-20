@@ -383,6 +383,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       base::sequence_manager::TaskQueue::TaskTiming* task_timing,
       base::sequence_manager::LazyNow* lazy_now);
 
+  void SetOnIPCTaskPosted(
+      base::RepeatingCallback<void(const base::sequence_manager::Task&)>
+          on_ipc_task_posted_callback);
+  void DetachOnIPCTaskPostedWhileInBackForwardCache();
+
   void DetachFromMainThreadScheduler();
 
   // Override base method to notify MainThreadScheduler about shutdown queue.

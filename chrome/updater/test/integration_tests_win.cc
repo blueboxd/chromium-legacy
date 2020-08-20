@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,6 +104,23 @@ void ExpectInstalled() {
 
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
+}
+
+void ExpectActive() {
+  // TODO(crbug.com/1062288): Assert that COM interfaces point to this version.
+
+  // Files must exist on the file system.
+  EXPECT_TRUE(base::PathExists(GetProductPath()));
+}
+
+void RunWake(int expected_exit_code) {
+  const base::FilePath path = GetExecutablePath();
+  ASSERT_FALSE(path.empty());
+  base::CommandLine command_line(path);
+  command_line.AppendSwitch(kWakeSwitch);
+  int exit_code = -1;
+  ASSERT_TRUE(Run(command_line, &exit_code));
+  EXPECT_EQ(exit_code, expected_exit_code);
 }
 
 void Install() {

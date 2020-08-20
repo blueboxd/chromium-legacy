@@ -30,6 +30,8 @@ class AmbientClientImplTest : public ChromeAshTestBase {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kAmbientModeFeature);
+    // Needed by ash.
+    ambient_client_ = std::make_unique<AmbientClientImpl>();
     AshTestBase::SetUp();
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -46,7 +48,6 @@ class AmbientClientImplTest : public ChromeAshTestBase {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
-    ambient_client_ = std::make_unique<AmbientClientImpl>();
   }
 
   void TearDown() override {

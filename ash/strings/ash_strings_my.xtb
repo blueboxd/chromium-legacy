@@ -315,7 +315,7 @@
 <translation id="4421231901400348175">အဝေးမှ ထောက်ကူခြင်း ဆိုသည်မှ တဆင့် သင့်ဖန်သားပြင်အား <ph name="HELPER_NAME" /> နှင့် မျှဝေသုံးစွဲခြင်း။</translation>
 <translation id="4430019312045809116">ပမာဏ</translation>
 <translation id="4450893287417543264">ထပ်မပြပါနှင့်</translation>
-<translation id="4458688154122353284">ဖန်သားပြင်ရိုက်ကူးစက်ကို ရပ်ရန်</translation>
+<translation id="4458688154122353284">ဖန်သားပြင်ရိုက်ကူးမှု ရပ်ရန်</translation>
 <translation id="4477350412780666475">နောက်တစ်ပုဒ်</translation>
 <translation id="4477892968187500306">ဤစက်တွင် Google က အတည်ပြုမထားသော အက်ပ်များ ပါဝင်နိုင်သည်။</translation>
 <translation id="4479639480957787382">အီတာနက်</translation>
@@ -520,6 +520,7 @@
 <translation id="6972754398087986839">စကြရအောင်</translation>
 <translation id="6981982820502123353">ရယူအသုံးချနိုင်မှု</translation>
 <translation id="698231206551913481">ဤအသုံးပြုသူကို ဖယ်ရှားလိုက်သည်နှင့် ၎င်းနှင့်ဆက်စပ်နေသော ဖိုင်များနှင့် စက်တွင်းဒေတာများအားလုံး အပြီးတိုင် ပျက်သွားလိမ့်မည်။</translation>
+<translation id="6990778048354947307">မှောင်မည်းသော အပြင်အဆင်</translation>
 <translation id="7007983414944123363">သင့်ပင်နံပါတ် သို့မဟုတ် စကားဝှက်ကို စစ်ဆေး၍မရနိုင်သေးပါ။ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> ၌ ပြန်လာပါ။</translation>
 <translation id="7025533177575372252">သင်၏ <ph name="DEVICE_NAME" /> ကို သင့်ဖုန်းဖြင့် ချိတ်ဆက်ပါ</translation>

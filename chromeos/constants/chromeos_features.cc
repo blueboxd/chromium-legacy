@@ -29,6 +29,11 @@ const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
 const base::Feature kAmbientModePhotoPreviewFeature{
     "ChromeOSAmbientModePhotoPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to allow Dev channel to use Prod server feature.
+const base::Feature kAmbientModeDevUseProdFeature{
+    "ChromeOSAmbientModeDevChannelUseProdServer",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -393,6 +398,16 @@ const base::Feature kQuickAnswersSubToggle{"QuickAnswersSubToggle",
 const base::Feature kQuickAnswersTranslation{"QuickAnswersTranslation",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the PIN auto submit feature is enabled.
+const base::Feature kQuickUnlockPinAutosubmit{
+    "QuickUnlockPinAutosubmit", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// TODO(crbug.com/1104164) - Remove this once most
+// users have their preferences backfilled.
+// Controls whether the PIN auto submit backfill operation should be performed.
+const base::Feature kQuickUnlockPinAutosubmitBackfill{
+    "QuickUnlockPinAutosubmitBackfill", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables Release Notes on Chrome OS.
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -512,6 +527,11 @@ const base::Feature kVirtualKeyboardBorderedKey{
 const base::Feature kVirtualKeyboardFloatingResizable{
     "VirtualKeyboardFloatingResizable", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to enable syncing of Wi-Fi configurations between
+// ChromeOS and a connected Android phone.
+const base::Feature kWifiSyncAndroid{"WifiSyncAndroid",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable MOZC IME to use protobuf as interactive message format.
 const base::Feature kImeMozcProto{"ImeMozcProto",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -524,6 +544,10 @@ bool IsAmbientModeEnabled() {
 
 bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
+}
+
+bool IsAmbientModeDevUseProdEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeDevUseProdFeature);
 }
 
 bool IsBetterUpdateEnabled() {
@@ -581,6 +605,14 @@ bool IsParentalControlsSettingsEnabled() {
 
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
+}
+
+bool IsPinAutosubmitFeatureEnabled() {
+  return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmit);
+}
+
+bool IsPinAutosubmitBackfillFeatureEnabled() {
+  return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmitBackfill);
 }
 
 bool IsQuickAnswersDogfood() {

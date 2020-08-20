@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -65,11 +66,24 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
+class TestingOmniboxView;
+
+void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
+                                    const base::string16& scheme,
+                                    const base::string16& subdomain,
+                                    const base::string16& hostname_and_scheme,
+                                    const base::string16& path,
+                                    bool should_elide_to_registrable_domain);
+
+void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
+                                        const gfx::Range& display_url);
+
 // TestingOmniboxView ---------------------------------------------------------
 
 class TestingOmniboxView : public OmniboxViewViews {
  public:
   TestingOmniboxView(OmniboxEditController* controller,
+                     TestLocationBarModel* location_bar_model,
                      std::unique_ptr<OmniboxClient> client);
 
   using views::Textfield::GetRenderText;
@@ -93,6 +107,34 @@ class TestingOmniboxView : public OmniboxViewViews {
   // OmniboxViewViews:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
   void OnThemeChanged() override;
+
+  // In the simplified domain field trials, these methods advance through
+  // elision/unelision animations (triggered by hovering over the omnibox and
+  // interacting with the web contents, respectively) by |step_ms|.
+  void StepSimplifiedDomainHoverAnimation(int64_t step_ms);
+  void StepSimplifiedDomainInteractionAnimation(int64_t step_ms);
+
+  // Simulates a navigation and checks that the URL is elided to the simplified
+  // domain afterwards. This simulates a renderer-initiated navigation, in which
+  // the display URL is updated between DidStartNavigation() and
+  // DidFinishNavigation() calls.
+  void NavigateAndExpectElided(const GURL& url,
+                               bool is_same_document,
+                               const GURL& previous_url,
+                               const base::string16& scheme,
+                               const base::string16& subdomain,
+                               const base::string16& hostname_and_scheme,
+                               const base::string16& path,
+                               bool should_elide_to_registrable_domain);
+
+  // Simluates a navigation and checks that the URL is unelided from the
+  // simplified domain afterwards. This simulates a renderer-initiated
+  // navigation, in which the display URL is updated between
+  // DidStartNavigation() and DidFinishNavigation() calls.
+  void NavigateAndExpectUnelided(const base::string16& url,
+                                 bool is_same_document,
+                                 const GURL& previous_url,
+                                 const base::string16& scheme);
 
   using OmniboxView::OnInlineAutocompleteTextMaybeChanged;
 
@@ -120,6 +162,8 @@ class TestingOmniboxView : public OmniboxViewViews {
   // order.
   std::vector<std::pair<SkColor, gfx::Range>> range_colors_;
 
+  TestLocationBarModel* location_bar_model_;
+
   // SetEmphasis() logs whether the base color of the text is emphasized.
   bool base_text_emphasis_;
 
@@ -127,12 +171,14 @@ class TestingOmniboxView : public OmniboxViewViews {
 };
 
 TestingOmniboxView::TestingOmniboxView(OmniboxEditController* controller,
+                                       TestLocationBarModel* location_bar_model,
                                        std::unique_ptr<OmniboxClient> client)
     : OmniboxViewViews(controller,
                        std::move(client),
                        false,
                        nullptr,
-                       gfx::FontList()) {}
+                       gfx::FontList()),
+      location_bar_model_(location_bar_model) {}
 
 void TestingOmniboxView::ResetEmphasisTestState() {
   base_text_emphasis_ = false;
@@ -202,6 +248,191 @@ void TestingOmniboxView::ApplyColor(SkColor color, const gfx::Range& range) {
   OmniboxViewViews::ApplyColor(color, range);
 }
 
+void TestingOmniboxView::StepSimplifiedDomainHoverAnimation(int64_t step_ms) {
+  OmniboxViewViews::ElideAnimation* hover_animation =
+      GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(hover_animation);
+  EXPECT_TRUE(hover_animation->IsAnimating());
+  gfx::AnimationContainerElement* hover_animation_as_element =
+      static_cast<gfx::AnimationContainerElement*>(
+          hover_animation->GetAnimationForTesting());
+  hover_animation_as_element->SetStartTime(base::TimeTicks());
+  hover_animation_as_element->Step(base::TimeTicks() +
+                                   base::TimeDelta::FromMilliseconds(step_ms));
+}
+
+void TestingOmniboxView::StepSimplifiedDomainInteractionAnimation(
+    int64_t step_ms) {
+  OmniboxViewViews::ElideAnimation* interaction_animation =
+      GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(interaction_animation);
+  EXPECT_TRUE(interaction_animation->IsAnimating());
+  gfx::AnimationContainerElement* interaction_animation_as_element =
+      static_cast<gfx::AnimationContainerElement*>(
+          interaction_animation->GetAnimationForTesting());
+  interaction_animation_as_element->SetStartTime(base::TimeTicks());
+  interaction_animation_as_element->Step(
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(step_ms));
+}
+
+void TestingOmniboxView::NavigateAndExpectElided(
+    const GURL& url,
+    bool is_same_document,
+    const GURL& previous_url,
+    const base::string16& scheme,
+    const base::string16& subdomain,
+    const base::string16& hostname_and_scheme,
+    const base::string16& path,
+    bool should_elide_to_registrable_domain) {
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(is_same_document);
+  navigation.set_url(url);
+  navigation.set_previous_url(previous_url);
+  DidStartNavigation(&navigation);
+  location_bar_model_->set_url(url);
+  location_bar_model_->set_url_for_display(base::ASCIIToUTF16(url.spec()));
+  model()->ResetDisplayTexts();
+  RevertAll();
+  DidFinishNavigation(&navigation);
+  ExpectElidedToSimplifiedDomain(this, scheme, subdomain, hostname_and_scheme,
+                                 path, should_elide_to_registrable_domain);
+}
+
+void TestingOmniboxView::NavigateAndExpectUnelided(
+    const base::string16& url,
+    bool is_same_document,
+    const GURL& previous_url,
+    const base::string16& scheme) {
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(is_same_document);
+  navigation.set_url(GURL(url));
+  navigation.set_previous_url(previous_url);
+  DidStartNavigation(&navigation);
+  location_bar_model_->set_url(GURL(url));
+  location_bar_model_->set_url_for_display(url);
+  model()->ResetDisplayTexts();
+  RevertAll();
+  DidFinishNavigation(&navigation);
+  ExpectUnelidedFromSimplifiedDomain(this->GetRenderText(),
+                                     gfx::Range(scheme.size(), url.size()));
+}
+
+// TODO(crbug.com/1112536): With RTL UI, the URL is sometimes off by one pixel
+// of the right edge. Investigate if this is expected, otherwise replace this
+// with equality checks in tests that use it. Checks |a| is within 1 of |b|.
+void CheckEqualsWithMarginOne(int a, int b) {
+  EXPECT_LE(std::abs(a - b), 1);
+}
+
+// Checks that |view|'s current display rect and offset does not display
+// |path|, and also does not display |subdomain_and_scheme| if
+// |should_elide_to_registrable_domain| is true.
+//
+// |subdomain_and_scheme| is assumed to be a prefix of |hostname_and_scheme|.
+// |subdomain_and_scheme| and |subdomain| should include a trailing ".", and
+// |path| should include a leading "/".
+void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
+                                    const base::string16& scheme,
+                                    const base::string16& subdomain,
+                                    const base::string16& hostname_and_scheme,
+                                    const base::string16& path,
+                                    bool should_elide_to_registrable_domain) {
+  gfx::RenderText* render_text = view->GetRenderText();
+  gfx::Rect subdomain_and_scheme_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(0, scheme.size() + subdomain.size()))) {
+    subdomain_and_scheme_rect.Union(rect);
+  }
+  gfx::Rect path_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(hostname_and_scheme.size(),
+                      hostname_and_scheme.size() + path.size()))) {
+    path_rect.Union(rect);
+  }
+  EXPECT_FALSE(render_text->display_rect().Contains(path_rect));
+  if (should_elide_to_registrable_domain) {
+    EXPECT_FALSE(
+        render_text->display_rect().Contains(subdomain_and_scheme_rect));
+    gfx::Rect registrable_domain_rect;
+    for (const auto& rect : render_text->GetSubstringBounds(gfx::Range(
+             scheme.size() + subdomain.size(), hostname_and_scheme.size()))) {
+      registrable_domain_rect.Union(rect);
+    }
+    EXPECT_TRUE(render_text->display_rect().Contains(registrable_domain_rect));
+    // The text should be scrolled to push the scheme and subdomain offscreen,
+    // so that the text starts at the registrable domain. Note that this code
+    // computes the expected offset by comparing x() values rather than
+    // comparing based on widths (for example, it wouldn't work to check that
+    // the display offset is equal to |subdomain_and_scheme_rect|'s width). This
+    // is because GetSubstringBounds() rounds outward, so the width of
+    // |subdomain_and_scheme_rect| could slightly overlap
+    // |registrable_domain_rect|.
+    // In the RTL UI case, the offset instead has to push the path offscreen to
+    // the right, so we check offset equals the width of the path rectangle.
+    if (base::i18n::IsRTL()) {
+      CheckEqualsWithMarginOne(path_rect.width(),
+                               render_text->GetUpdatedDisplayOffset().x());
+    } else {
+      EXPECT_EQ(registrable_domain_rect.x() - subdomain_and_scheme_rect.x(),
+                -1 * render_text->GetUpdatedDisplayOffset().x());
+    }
+    // The scheme and subdomain should be transparent.
+    EXPECT_EQ(SK_ColorTRANSPARENT, view->GetLatestColorForRange(gfx::Range(
+                                       0, scheme.size() + subdomain.size())));
+  } else {
+    // When elision to registrable domain is disabled, the scheme should be
+    // hidden but the subdomain should not be.
+    EXPECT_FALSE(
+        render_text->display_rect().Contains(subdomain_and_scheme_rect));
+    gfx::Rect hostname_rect;
+    for (const auto& rect : render_text->GetSubstringBounds(
+             gfx::Range(scheme.size(), hostname_and_scheme.size()))) {
+      hostname_rect.Union(rect);
+    }
+    // The text should be scrolled to push the scheme offscreen, so that the
+    // text starts at the subdomain. As above, it's important to compute the
+    // expected offset with x() values instead of width()s, since the width()s
+    // of different adjacent substring bounds could overlap.
+    // In the RTL UI case, the offset instead has to push the path offscreen to
+    // the right, so we check offset equals the width of the path rectangle.
+    if (base::i18n::IsRTL()) {
+      CheckEqualsWithMarginOne(path_rect.width(),
+                               render_text->GetUpdatedDisplayOffset().x());
+    } else {
+      EXPECT_EQ(hostname_rect.x() - subdomain_and_scheme_rect.x(),
+                -1 * render_text->GetUpdatedDisplayOffset().x());
+    }
+    // The scheme should be transparent.
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              view->GetLatestColorForRange(gfx::Range(0, scheme.size())));
+  }
+  // The path should be transparent.
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            view->GetLatestColorForRange(
+                gfx::Range(hostname_and_scheme.size(),
+                           hostname_and_scheme.size() + path.size())));
+}
+
+// Checks that |render_text|'s current display rect and offset displays all of
+// |display_url|, starting at the leading edge.
+void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
+                                        const gfx::Range& display_url) {
+  gfx::Rect unelided_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(display_url)) {
+    unelided_rect.Union(rect);
+  }
+  EXPECT_TRUE(render_text->display_rect().Contains(unelided_rect));
+  // |display_url| should be at the leading edge of |render_text|'s display
+  // rect for LTR UI, or at the rightmost side of the omnibox for RTL UI.
+  if (base::i18n::IsRTL()) {
+    CheckEqualsWithMarginOne(
+        unelided_rect.x(),
+        render_text->display_rect().right() - unelided_rect.width());
+  } else {
+    EXPECT_EQ(unelided_rect.x(), render_text->display_rect().x());
+  }
+}
+
 // TestingOmniboxEditController -----------------------------------------------
 
 class TestingOmniboxEditController : public ChromeOmniboxEditController {
@@ -233,13 +464,6 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
-
-// TODO(crbug.com/1112536): With RTL UI, the URL is sometimes off by one pixel
-// of the right edge. Investigate if this is expected, otherwise replace this
-// with equality checks in tests that use it. Checks |a| is within 1 of |b|.
-void CheckEqualsWithMarginOne(int a, int b) {
-  EXPECT_LE(std::abs(a - b), 1);
-}
 
 }  // namespace
 
@@ -319,12 +543,17 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
     return &omnibox_edit_controller_;
   }
 
-  // Sets up tests for the simplified domain field trials.
-  void SetUpSimplifiedDomainTest() {
-    location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayUrl));
-    location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
+  // Updates the models' URL and display text to |new_url|.
+  void UpdateDisplayURL(const base::string16& new_url) {
+    location_bar_model()->set_url(GURL(new_url));
+    location_bar_model()->set_url_for_display(new_url);
     omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();
+  }
+
+  // Sets up tests for the simplified domain field trials.
+  void SetUpSimplifiedDomainTest() {
+    UpdateDisplayURL(kSimplifiedDomainDisplayUrl);
     // Call OnThemeChanged() to create the animations.
     omnibox_view()->OnThemeChanged();
   }
@@ -397,7 +626,7 @@ void OmniboxViewViewsTest::SetUp() {
       profile_.get(),
       base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
   auto omnibox_view = std::make_unique<TestingOmniboxView>(
-      &omnibox_edit_controller_,
+      &omnibox_edit_controller_, location_bar_model(),
       std::make_unique<ChromeOmniboxClient>(&omnibox_edit_controller_,
                                             profile_.get()));
   test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view.get());
@@ -1451,115 +1680,6 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
   ExpectFullUrlDisplayed();
 }
 
-// Checks that |view|'s current display rect and offset does not display
-// |path|, and also does not display |subdomain_and_scheme| if
-// |should_elide_to_registrable_domain| is true.
-//
-// |subdomain_and_scheme| is assumed to be a prefix of |hostname_and_scheme|.
-// |subdomain_and_scheme| and |subdomain| should include a trailing ".", and
-// |path| should include a leading "/".
-void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
-                                    const base::string16& scheme,
-                                    const base::string16& subdomain,
-                                    const base::string16& hostname_and_scheme,
-                                    const base::string16& path,
-                                    bool should_elide_to_registrable_domain) {
-  gfx::RenderText* render_text = view->GetRenderText();
-  gfx::Rect subdomain_and_scheme_rect;
-  for (const auto& rect : render_text->GetSubstringBounds(
-           gfx::Range(0, scheme.size() + subdomain.size()))) {
-    subdomain_and_scheme_rect.Union(rect);
-  }
-  gfx::Rect path_rect;
-  for (const auto& rect : render_text->GetSubstringBounds(
-           gfx::Range(hostname_and_scheme.size(),
-                      hostname_and_scheme.size() + path.size()))) {
-    path_rect.Union(rect);
-  }
-  EXPECT_FALSE(render_text->display_rect().Contains(path_rect));
-  if (should_elide_to_registrable_domain) {
-    EXPECT_FALSE(
-        render_text->display_rect().Contains(subdomain_and_scheme_rect));
-    gfx::Rect registrable_domain_rect;
-    for (const auto& rect : render_text->GetSubstringBounds(gfx::Range(
-             scheme.size() + subdomain.size(), hostname_and_scheme.size()))) {
-      registrable_domain_rect.Union(rect);
-    }
-    EXPECT_TRUE(render_text->display_rect().Contains(registrable_domain_rect));
-    // The text should be scrolled to push the scheme and subdomain offscreen,
-    // so that the text starts at the registrable domain. Note that this code
-    // computes the expected offset by comparing x() values rather than
-    // comparing based on widths (for example, it wouldn't work to check that
-    // the display offset is equal to |subdomain_and_scheme_rect|'s width). This
-    // is because GetSubstringBounds() rounds outward, so the width of
-    // |subdomain_and_scheme_rect| could slightly overlap
-    // |registrable_domain_rect|.
-    // In the RTL UI case, the offset instead has to push the path offscreen to
-    // the right, so we check offset equals the width of the path rectangle.
-    if (base::i18n::IsRTL()) {
-      CheckEqualsWithMarginOne(path_rect.width(),
-                               render_text->GetUpdatedDisplayOffset().x());
-    } else {
-      EXPECT_EQ(registrable_domain_rect.x() - subdomain_and_scheme_rect.x(),
-                -1 * render_text->GetUpdatedDisplayOffset().x());
-    }
-    // The scheme and subdomain should be transparent.
-    EXPECT_EQ(SK_ColorTRANSPARENT, view->GetLatestColorForRange(gfx::Range(
-                                       0, scheme.size() + subdomain.size())));
-  } else {
-    // When elision to registrable domain is disabled, the scheme should be
-    // hidden but the subdomain should not be.
-    EXPECT_FALSE(
-        render_text->display_rect().Contains(subdomain_and_scheme_rect));
-    gfx::Rect hostname_rect;
-    for (const auto& rect : render_text->GetSubstringBounds(
-             gfx::Range(scheme.size(), hostname_and_scheme.size()))) {
-      hostname_rect.Union(rect);
-    }
-    // The text should be scrolled to push the scheme offscreen, so that the
-    // text starts at the subdomain. As above, it's important to compute the
-    // expected offset with x() values instead of width()s, since the width()s
-    // of different adjacent substring bounds could overlap.
-    // In the RTL UI case, the offset instead has to push the path offscreen to
-    // the right, so we check offset equals the width of the path rectangle.
-    if (base::i18n::IsRTL()) {
-      CheckEqualsWithMarginOne(path_rect.width(),
-                               render_text->GetUpdatedDisplayOffset().x());
-    } else {
-      EXPECT_EQ(hostname_rect.x() - subdomain_and_scheme_rect.x(),
-                -1 * render_text->GetUpdatedDisplayOffset().x());
-    }
-    // The scheme should be transparent.
-    EXPECT_EQ(SK_ColorTRANSPARENT,
-              view->GetLatestColorForRange(gfx::Range(0, scheme.size())));
-  }
-  // The path should be transparent.
-  EXPECT_EQ(SK_ColorTRANSPARENT,
-            view->GetLatestColorForRange(
-                gfx::Range(hostname_and_scheme.size(),
-                           hostname_and_scheme.size() + path.size())));
-}
-
-// Checks that |render_text|'s current display rect and offset displays all of
-// |display_url|, starting at the leading edge.
-void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
-                                        const gfx::Range& display_url) {
-  gfx::Rect unelided_rect;
-  for (const auto& rect : render_text->GetSubstringBounds(display_url)) {
-    unelided_rect.Union(rect);
-  }
-  EXPECT_TRUE(render_text->display_rect().Contains(unelided_rect));
-  // |display_url| should be at the leading edge of |render_text|'s display
-  // rect for LTR UI, or at the rightmost side of the omnibox for RTL UI.
-  if (base::i18n::IsRTL()) {
-    CheckEqualsWithMarginOne(
-        unelided_rect.x(),
-        render_text->display_rect().right() - unelided_rect.width());
-  } else {
-    EXPECT_EQ(unelided_rect.x(), render_text->display_rect().x());
-  }
-}
-
 // Returns true if |render_text|'s current display rect and offset display at
 // least part of |path_bounds|, but not the full |display_url|. This is useful
 // for checking the displayed text partway through an animation.
@@ -1667,14 +1787,8 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   EXPECT_TRUE(hover_animation->IsAnimating());
 
   // Advance the clock through the animation.
-  gfx::AnimationContainerElement* hover_animation_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          hover_animation->GetAnimationForTesting());
-  hover_animation_as_element->SetStartTime(base::TimeTicks());
-  hover_animation_as_element->Step(
-      base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(
-          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
+  ASSERT_NO_FATAL_FAILURE(omnibox_view()->StepSimplifiedDomainHoverAnimation(
+      OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
   // After the extended hover threshold has elapsed, the display text shouldn't
   // have changed yet.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
@@ -1685,8 +1799,8 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
 
   // Now advance through the unelision and check the display text. We assume
   // that the animation takes less than 1 second.
-  hover_animation_as_element->Step(base::TimeTicks() +
-                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       render_text, gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
   EXPECT_FALSE(hover_animation->IsAnimating());
@@ -1702,13 +1816,8 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   // Now exit the mouse. At this point the elision animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
   EXPECT_TRUE(hover_animation->IsAnimating());
-
-  hover_animation_as_element = static_cast<gfx::AnimationContainerElement*>(
-      hover_animation->GetAnimationForTesting());
-  hover_animation_as_element->SetStartTime(base::TimeTicks());
-  // We assume that the animation takes less than 1 second.
-  hover_animation_as_element->Step(base::TimeTicks() +
-                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -1732,10 +1841,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
       base::UTF8ToUTF16("/bar");
   const base::string16 kSimplifiedDomainDisplayIDNUrlScheme =
       base::UTF8ToUTF16("https://");
-  location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayIDNUrl));
-  location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayIDNUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kSimplifiedDomainDisplayIDNUrl);
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 
@@ -1749,20 +1855,9 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
   // As soon as the mouse hovers over the omnibox, the unelide animation should
   // start running.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* hover_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(hover_animation);
-  EXPECT_TRUE(hover_animation->IsAnimating());
-
   // Advance the clock through the animation.
-  gfx::AnimationContainerElement* hover_animation_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          hover_animation->GetAnimationForTesting());
-  hover_animation_as_element->SetStartTime(base::TimeTicks());
-  hover_animation_as_element->Step(
-      base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(
-          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
+  ASSERT_NO_FATAL_FAILURE(omnibox_view()->StepSimplifiedDomainHoverAnimation(
+      OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
   // After the extended hover threshold has elapsed, the display text shouldn't
   // have changed yet.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
@@ -1773,10 +1868,13 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
 
   // Now advance through the unelision and check the display text. We assume
   // that the animation takes less than 1 second.
-  hover_animation_as_element->Step(base::TimeTicks() +
-                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       render_text, gfx::Range(0, kSimplifiedDomainDisplayIDNUrl.size())));
+  OmniboxViewViews::ElideAnimation* hover_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(hover_animation);
   EXPECT_FALSE(hover_animation->IsAnimating());
   // Check that the path and subdomain are not transparent.
   EXPECT_NE(SK_ColorTRANSPARENT,
@@ -1790,13 +1888,8 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
   // Now exit the mouse. At this point the elision animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
   EXPECT_TRUE(hover_animation->IsAnimating());
-
-  hover_animation_as_element = static_cast<gfx::AnimationContainerElement*>(
-      hover_animation->GetAnimationForTesting());
-  hover_animation_as_element->SetStartTime(base::TimeTicks());
-  // We assume that the animation takes less than 1 second.
-  hover_animation_as_element->Step(base::TimeTicks() +
-                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayIDNUrlScheme,
       kSimplifiedDomainDisplayIDNUrlSubdomain,
@@ -1828,12 +1921,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, PrivateRegistry) {
       base::UTF8ToUTF16("/bar");
   const base::string16 kSimplifiedDomainDisplayPrivateRegistryUrlScheme =
       base::UTF8ToUTF16("https://");
-  location_bar_model()->set_url(
-      GURL(kSimplifiedDomainDisplayPrivateRegistryUrl));
-  location_bar_model()->set_url_for_display(
-      kSimplifiedDomainDisplayPrivateRegistryUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kSimplifiedDomainDisplayPrivateRegistryUrl);
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 
@@ -1929,27 +2017,17 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        UserInteractionAndHover) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction and check that the fade-out animation runs.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  EXPECT_TRUE(elide_animation->IsAnimating());
-
   // Advance the clock through the fade-out animation; we assume that it takes
   // less than 1s.
-  gfx::AnimationContainerElement* elide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          elide_animation->GetAnimationForTesting());
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -1964,16 +2042,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   // The URL should come back on hover.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* unelide_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(unelide_animation);
-  EXPECT_TRUE(unelide_animation->IsAnimating());
-  gfx::AnimationContainerElement* unelide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          unelide_animation->GetAnimationForTesting());
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  // Assume that the extended hover time + fade-in time is less than 2 seconds.
-  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   // The hover should bring back the full URL, including scheme and trivial
   // subdomains.
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
@@ -1989,18 +2059,112 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                 0, kSimplifiedDomainDisplayUrlSubdomainAndScheme.size())));
 }
 
+// Tests that the hide-on-interaction simplified domain field trial handles
+// intermediate states during a navigation properly. This test simulates a
+// browser-initiated navigation in which the URL updates before the navigation
+// commits.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       BrowserInitiatedNavigation) {
+  SetUpSimplifiedDomainTest();
+
+  ASSERT_NO_FATAL_FAILURE(omnibox_view()->NavigateAndExpectUnelided(
+      kSimplifiedDomainDisplayUrl,
+      /*is_same_document=*/false, GURL(), kSimplifiedDomainDisplayUrlScheme));
+
+  // Before a user interaction triggers elision, a browser-initiated navigation
+  // should show the full URL (minus scheme and trivial subdomain) throughout
+  // the navigation.
+
+  // Set a longer URL to ensure that the full URL stays visible even if it's
+  // longer than the previous URL.
+  const base::string16 kUrlSuffix = base::ASCIIToUTF16("/foobar");
+  UpdateDisplayURL(kSimplifiedDomainDisplayUrl + kUrlSuffix);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+
+  {
+    // In this test, we create MockNavigationHandles here instead of using the
+    // NavigateAndExpect* helpers because those helpers simulate
+    // renderer-initiated navigations, where the display URL isn't updated until
+    // just before DidFinishNavigation.
+    content::MockNavigationHandle navigation;
+    navigation.set_is_renderer_initiated(false);
+
+    omnibox_view()->DidStartNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+        omnibox_view()->GetRenderText(),
+        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+
+    omnibox_view()->DidFinishNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+        omnibox_view()->GetRenderText(),
+        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    EXPECT_FALSE(elide_animation);
+  }
+
+  // Simulate a user interaction and advance all the way through the animation
+  // until the URL is elided to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath + kUrlSuffix,
+      ShouldElideToRegistrableDomain()));
+
+  // Begin simulating a browser-initiated navigation, in which the URL is
+  // updated before DidStartNavigation() runs.
+  UpdateDisplayURL(kSimplifiedDomainDisplayUrl + kUrlSuffix);
+  // Ideally we would actually be unelided at this point, when a
+  // browser-initiated navigation has begun. But EmphasizeURLComponents()
+  // doesn't know which type of navigation is in progress, so this is the best
+  // we can do.
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath + kUrlSuffix,
+      ShouldElideToRegistrableDomain()));
+  {
+    content::MockNavigationHandle navigation;
+    navigation.set_is_renderer_initiated(false);
+
+    // Once the navigation starts and we know that it's a cross-document
+    // navigation, the URL should be unelided.
+    omnibox_view()->DidStartNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+        omnibox_view()->GetRenderText(),
+        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+
+    omnibox_view()->DidFinishNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+        omnibox_view()->GetRenderText(),
+        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    EXPECT_FALSE(elide_animation);
+  }
+}
+
 // Tests that mouse clicks do not count as user interactions and do not elide
 // the URL.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, MouseClick) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a mouse click and check that the fade-out animation does not run.
   blink::WebMouseEvent event;
@@ -2017,13 +2181,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        FocusingEditableNode) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Focusing a non-editable node should not run the fade-out animation.
   content::FocusedNodeDetails details;
@@ -2047,13 +2207,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // After the bounds change, the URL should remain unelided.
   omnibox_view()->OnBoundsChanged(gfx::Rect());
@@ -2127,6 +2283,34 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 }
 
+// Tests that simplified domain hover duration histogram is recorded correctly.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverHistogram) {
+  base::HistogramTester histograms;
+  base::SimpleTestClock clock;
+  constexpr int kHoverTimeMs = 1000;
+  SetUpSimplifiedDomainTest();
+  clock.SetNow(base::Time::Now());
+  omnibox_view()->clock_ = &clock;
+
+  // Hover over the omnibox and then exit and check that the histogram is
+  // recorded correctly.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* unelide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(unelide_animation);
+  EXPECT_TRUE(unelide_animation->IsAnimating());
+  clock.Advance(base::TimeDelta::FromMilliseconds(kHoverTimeMs / 2));
+  // Call OnMouseMoved() again halfway through the hover time to ensure that the
+  // histogram is only recorded once per continuous hover.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  clock.Advance(base::TimeDelta::FromMilliseconds(kHoverTimeMs / 2));
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  auto samples = histograms.GetAllSamples("Omnibox.HoverTime");
+  ASSERT_EQ(1u, samples.size());
+  histograms.ExpectTimeBucketCount(
+      "Omnibox.HoverTime", base::TimeDelta::FromMilliseconds(kHoverTimeMs), 1);
+}
+
 // Tests that the simplified domain animation doesn't crash when it's cancelled.
 // Regression test for https://crbug.com/1103738.
 TEST_P(OmniboxViewViewsRevealOnHoverTest, CancellingAnimationDoesNotCrash) {
@@ -2142,31 +2326,16 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, CancellingAnimationDoesNotCrash) {
   // URL such that the current animation would go out of bounds if it continued
   // running.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* unelide_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(unelide_animation);
-  EXPECT_TRUE(unelide_animation->IsAnimating());
   // Step through the animation partially so that it has a nonzero current
   // value. (A zero current value causes an early return that circumvents the
   // crash we are regression-testing.)
-  gfx::AnimationContainerElement* unelide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          unelide_animation->GetAnimationForTesting());
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  unelide_as_element->Step(
-      base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(
-          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() + 1));
-
-  location_bar_model()->set_url(GURL(base::ASCIIToUTF16("https://foo.test")));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("https://foo.test"));
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  ASSERT_NO_FATAL_FAILURE(omnibox_view()->StepSimplifiedDomainHoverAnimation(
+      OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() + 1));
 
   // Stopping the animation after changing the underlying display text should
   // not crash.
-  unelide_animation->Stop();
+  UpdateDisplayURL(base::ASCIIToUTF16("https://foo.test"));
+  omnibox_view()->GetHoverElideOrUnelideAnimationForTesting()->Stop();
 }
 
 // Tests scheme and trivial subdomain elision when simplified domain field
@@ -2178,33 +2347,20 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   const base::string16 kFullUrl =
       base::ASCIIToUTF16("https://www.example.test/foo");
   constexpr size_t kSchemeAndSubdomainSize = 12;  // "https://www."
-  location_bar_model()->set_url(GURL("https://www.example.test/foo"));
-  location_bar_model()->set_url_for_display(kFullUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kFullUrl);
   omnibox_view()->OnThemeChanged();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSchemeAndSubdomainSize, kFullUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kFullUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            base::ASCIIToUTF16("htpts://www."));
   EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->GetLatestColorForRange(
                                      gfx::Range(0, kSchemeAndSubdomainSize)));
 
   // Hovering before user interaction should bring back the scheme and trivial
   // subdomain.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* unelide_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(unelide_animation);
-  EXPECT_TRUE(unelide_animation->IsAnimating());
-  gfx::AnimationContainerElement* unelide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          unelide_animation->GetAnimationForTesting());
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(), gfx::Range(0, kFullUrl.size())));
   EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->GetLatestColorForRange(
@@ -2212,15 +2368,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   // After mousing out, the scheme should fade out again.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  gfx::AnimationContainerElement* elide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          elide_animation->GetAnimationForTesting());
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(),
       gfx::Range(kSchemeAndSubdomainSize, kSimplifiedDomainDisplayUrl.size())));
@@ -2230,13 +2379,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // Simulate a user interaction and check that the URL gets elided to the
   // simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  elide_as_element = static_cast<gfx::AnimationContainerElement*>(
-      elide_animation->GetAnimationForTesting());
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   // Use should_elide_to_registrable_domain=true here regardless of how the
   // field trial is set because the "www." should be elided as a trivial
   // subdomain.
@@ -2249,13 +2394,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   // Do another hover and check that the URL gets unelided to the full URL.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(unelide_animation);
-  EXPECT_TRUE(unelide_animation->IsAnimating());
-  unelide_as_element = static_cast<gfx::AnimationContainerElement*>(
-      unelide_animation->GetAnimationForTesting());
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(), gfx::Range(0, kFullUrl.size())));
   EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->GetLatestColorForRange(
@@ -2264,13 +2404,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // And after another mouse exit, the URL should go back to the simplified
   // domain.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  elide_as_element = static_cast<gfx::AnimationContainerElement*>(
-      elide_animation->GetAnimationForTesting());
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), base::ASCIIToUTF16("https://"),
       base::ASCIIToUTF16("www."),
@@ -2331,10 +2466,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
   // the URL is displayed properly when trivial subdomain elision is disabled.
   const base::string16 kFullUrl =
       base::ASCIIToUTF16("https://www.example.test/foo");
-  location_bar_model()->set_url(GURL(kFullUrl));
-  location_bar_model()->set_url_for_display(kFullUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kFullUrl);
   omnibox_view()->OnThemeChanged();
 
   // Enable the "Always show full URLs" setting.
@@ -2429,10 +2561,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   // the URL is displayed properly when trivial subdomain elision is disabled.
   const base::string16 kFullUrl =
       base::ASCIIToUTF16("https://www.example.test/foo");
-  location_bar_model()->set_url(GURL(kFullUrl));
-  location_bar_model()->set_url_for_display(kFullUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kFullUrl);
   omnibox_view()->OnThemeChanged();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
@@ -2481,17 +2610,11 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   // should happen the same regardless of whether hide-on-interaction is
   // enabled.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  // Advance the animation, so the visible URL changes.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
-  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
   ASSERT_TRUE(elide_animation);
   EXPECT_TRUE(elide_animation->IsAnimating());
 }
@@ -2503,23 +2626,16 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        TabChangeWhenNotEligibleForEliding) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction and advance through the animation to elide the
   // URL.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -2531,11 +2647,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // URLs are eligible for eliding). The omnibox should take up the full local
   // bounds and be reset to tail-eliding behavior, just as if the above
   // simplified domain elision had not happened.
-  location_bar_model()->set_url(GURL("ftp://foo.example.test"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("ftp://foo.example.test"));
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(base::ASCIIToUTF16("ftp://foo.example.test"));
   std::unique_ptr<content::WebContents> web_contents =
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
   omnibox_view()->SaveStateToTab(web_contents.get());
@@ -2549,10 +2661,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // omnibox should take up the full local bounds but should not be reset to
   // tail-eliding behavior, because it should always be in NO_ELIDE mode when
   // editing.
-  location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayUrl));
-  location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kSimplifiedDomainDisplayUrl);
   omnibox_view()->Focus();
   omnibox_view()->model()->SetInputInProgress(true);
   std::unique_ptr<content::WebContents> web_contents2 =
@@ -2572,13 +2681,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        PathChangeDuringAnimation) {
   SetUpSimplifiedDomainTest();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction and check that the fade-out animation runs.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
@@ -2587,9 +2692,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   EXPECT_TRUE(elide_animation->IsAnimating());
 
   // Change the path and check that the animation is cancelled.
-  location_bar_model()->set_url(GURL("https://foo.example.test/bar#bar"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("foo.example.test/bar#bar"));
+  UpdateDisplayURL(base::ASCIIToUTF16("foo.example.test/bar#bar"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
   EXPECT_FALSE(elide_animation->IsAnimating());
@@ -2604,13 +2707,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   const gfx::Rect& original_display_rect = render_text->display_rect();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                 kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // After a navigation, the URL should not be elided to the simplified domain,
   // and the display rect (including vertical and horizontal position) should be
@@ -2625,12 +2724,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // through the animation; the vertical position should still be unchanged, and
   // the text should still start at the some position (the same x value).
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   const gfx::Rect& elided_display_rect = render_text->display_rect();
   EXPECT_EQ(original_display_rect.y(), elided_display_rect.y());
   EXPECT_EQ(original_display_rect.height(), elided_display_rect.height());
@@ -2640,14 +2736,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // rect (including vertical and horizontal position) is back to what it was
   // originally.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* unelide_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(unelide_animation);
-  gfx::AnimationContainerElement* unelide_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          unelide_animation->GetAnimationForTesting());
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
   const gfx::Rect& unelided_display_rect = render_text->display_rect();
   EXPECT_EQ(original_display_rect, unelided_display_rect);
 }
@@ -2658,12 +2748,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, ModifierKeys) {
   SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction with a modifier key and check that the elide
   // animation doesn't run.
@@ -2684,38 +2771,20 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, ModifierKeys) {
 // cross-document main-frame navigations, but not on same-document navigations.
 TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  {
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(false);
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                                kSimplifiedDomainDisplayUrl.size())));
-  }
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
+  const base::string16 kUrlSuffix = base::ASCIIToUTF16("/foobar");
 
   // On a same-document navigation before the URL has been simplified, the URL
-  // should remain unsimplified.
+  // should remain unsimplified after the navigation finishes.
+
   {
     // Set a longer URL to ensure that the full URL stays visible even if it's
     // longer than the previous URL.
-    const base::string16 kUrlSuffix = base::ASCIIToUTF16("/foobar");
-    location_bar_model()->set_url(GURL(base::ASCIIToUTF16("https://") +
-                                       kSimplifiedDomainDisplayUrl +
-                                       kUrlSuffix));
-    location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl +
-                                              kUrlSuffix);
-    omnibox_view()->model()->ResetDisplayTexts();
-    omnibox_view()->RevertAll();
-
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(true);
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text,
-        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
+    omnibox_view()->NavigateAndExpectUnelided(
+        kSimplifiedDomainDisplayUrl + kUrlSuffix, /*is_same_document=*/true,
+        GURL(), kSimplifiedDomainDisplayUrlScheme);
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     EXPECT_FALSE(elide_animation);
@@ -2731,18 +2800,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   // On a cross-document main-frame navigation, the unsimplified URL should
   // remain visible.
   {
-    location_bar_model()->set_url(
-        GURL(base::ASCIIToUTF16("https://") + kSimplifiedDomainDisplayUrl));
-    location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
-    omnibox_view()->model()->ResetDisplayTexts();
-    omnibox_view()->RevertAll();
-
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(false);
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                                kSimplifiedDomainDisplayUrl.size())));
+    omnibox_view()->NavigateAndExpectUnelided(
+        kSimplifiedDomainDisplayUrl, /*is_same_document=*/false, GURL(),
+        kSimplifiedDomainDisplayUrlScheme);
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     EXPECT_FALSE(elide_animation);
@@ -2751,51 +2811,25 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   // Simulate another user interaction to elide to the simplified domain, and
   // advance the clock all the way through the animation.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
-  // On a subsequent same-document main-frame navigation, the URL should remain
-  // elided to the simplified domain.
-  {
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(true);
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
-        kSimplifiedDomainDisplayUrlSubdomain,
-        kSimplifiedDomainDisplayUrlHostnameAndScheme,
-        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
-    OmniboxViewViews::ElideAnimation* elide_animation =
-        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-    ASSERT_TRUE(elide_animation);
-    EXPECT_FALSE(elide_animation->IsAnimating());
-  }
-
   // On same-document main-frame fragment navigation, the URL should remain
   // elided to the simplified domain.
   {
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(true);
-    navigation.set_previous_url(GURL(kSimplifiedDomainDisplayUrl));
-    navigation.set_url(
-        GURL(kSimplifiedDomainDisplayUrl + base::ASCIIToUTF16("#foobar")));
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
-        kSimplifiedDomainDisplayUrlSubdomain,
+    omnibox_view()->NavigateAndExpectElided(
+        GURL(kSimplifiedDomainDisplayUrl + base::ASCIIToUTF16("#foobar")),
+        /*is_same_document=*/true, GURL(kSimplifiedDomainDisplayUrl),
+        kSimplifiedDomainDisplayUrlScheme, kSimplifiedDomainDisplayUrlSubdomain,
         kSimplifiedDomainDisplayUrlHostnameAndScheme,
-        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+        kSimplifiedDomainDisplayUrlPath + base::ASCIIToUTF16("#foobar"),
+        ShouldElideToRegistrableDomain());
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     ASSERT_TRUE(elide_animation);
@@ -2805,15 +2839,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   // On same-document main-frame non-fragment navigation, the URL shouldn't
   // remain elided to the simplified domain.
   {
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(true);
-    navigation.set_previous_url(GURL(kSimplifiedDomainDisplayUrl));
-    navigation.set_url(
-        GURL(kSimplifiedDomainDisplayUrl + base::ASCIIToUTF16("/foobar")));
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                                kSimplifiedDomainDisplayUrl.size())));
+    omnibox_view()->NavigateAndExpectUnelided(
+        kSimplifiedDomainDisplayUrl + kUrlSuffix, /*is_same_document=*/true,
+        GURL(kSimplifiedDomainDisplayUrl), kSimplifiedDomainDisplayUrlScheme);
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     EXPECT_FALSE(elide_animation);
@@ -2821,7 +2849,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
 }
 
 // Tests that in the hide-on-interaction field trial, a same-document navigation
-// does not interfere with an animation that is currently running.
+// cancels a currently-running animation and goes straight to the end state
+// (elided to the simplified domain).
 TEST_P(OmniboxViewViewsHideOnInteractionTest,
        SameDocNavigationDuringAnimation) {
   SetUpSimplifiedDomainTest();
@@ -2830,54 +2859,39 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest,
       kSimplifiedDomainDisplayUrl.find(kSimplifiedDomainDisplayUrlPath),
       kSimplifiedDomainDisplayUrl.size());
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to begin animating to the simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
 
   // Advance the clock by 1ms until the full URL is no longer showing, but we
   // haven't finished eliding to the simplified domain yet. After a
-  // same-document navigation, we check that the URL is still in the same state
-  // (midway through elision) and that the animation is still running
-  // undisturbed. In other words, a same-document navigation shouldn't change
-  // anything when an animation is in progress.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
+  // same-document navigation, we check that the URL has gone straight to the
+  // end state. In other words, a same-document navigation will cancel a
+  // currently-running animation but should end up where the animation was
+  // targeting.
   bool is_midway_through_elision = false;
-  uint32_t step = 1;
+  uint32_t step_ms = 1;
   while (!is_midway_through_elision) {
-    elide_as_element->Step(base::TimeTicks() +
-                           base::TimeDelta::FromMilliseconds(++step));
+    ASSERT_NO_FATAL_FAILURE(
+        omnibox_view()->StepSimplifiedDomainInteractionAnimation(++step_ms));
     is_midway_through_elision = IsPartlyThroughSimplifiedDomainElision(
         render_text, kSimplifiedDomainDisplayUrl, path_bounds);
   }
-  double animation_value =
-      elide_animation->GetAnimationForTesting()->GetCurrentValue();
 
-  content::MockNavigationHandle same_doc_navigation;
-  same_doc_navigation.set_is_same_document(true);
-  omnibox_view()->DidFinishNavigation(&same_doc_navigation);
-  elide_animation =
+  omnibox_view()->NavigateAndExpectElided(
+      GURL(kSimplifiedDomainDisplayUrl),
+      /*is_same_document=*/true, GURL(kSimplifiedDomainDisplayUrl),
+      kSimplifiedDomainDisplayUrlScheme, kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain());
+
+  OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  EXPECT_EQ(animation_value,
-            elide_animation->GetAnimationForTesting()->GetCurrentValue());
-  // The current display text should reflect that the animation in progress: the
-  // full display URL shouldn't be still visible, but we haven't necessarily
-  // reached the end state (just the simplified domain visible) yet.
-  EXPECT_TRUE(IsPartlyThroughSimplifiedDomainElision(
-      render_text, kSimplifiedDomainDisplayUrl, path_bounds));
+  EXPECT_FALSE(elide_animation->IsAnimating());
 }
 
 // Tests that gradient mask is set correctly.
@@ -2889,31 +2903,19 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
   }
   SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to begin animating to the simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-
   // Advance the clock by 1ms until the full size gradient has been added.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  uint32_t step = 1;
+  uint32_t step_ms = 1;
   int max_gradient_width = OmniboxViewViews::kSmoothingGradientMaxWidth - 1;
   while (omnibox_view()->elide_animation_smoothing_rect_right_.width() <
          max_gradient_width) {
-    elide_as_element->Step(base::TimeTicks() +
-                           base::TimeDelta::FromMilliseconds(++step));
+    ASSERT_NO_FATAL_FAILURE(
+        omnibox_view()->StepSimplifiedDomainInteractionAnimation(++step_ms));
   }
   // If we are eliding from the left, the other side gradient should also be
   // full size at this point, otherwise it should be 0.
@@ -2938,10 +2940,12 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMask) {
              max_gradient_width ||
          omnibox_view()->elide_animation_smoothing_rect_right_.width() ==
              max_gradient_width) {
-    elide_as_element->Step(base::TimeTicks() +
-                           base::TimeDelta::FromMilliseconds(++step));
+    ASSERT_NO_FATAL_FAILURE(
+        omnibox_view()->StepSimplifiedDomainInteractionAnimation(++step_ms));
   }
-  int offset = elide_animation->GetCurrentOffsetForTesting();
+  int offset = omnibox_view()
+                   ->GetElideAfterInteractionAnimationForTesting()
+                   ->GetCurrentOffsetForTesting();
   gfx::Rect display_rect = render_text->display_rect();
   // Check the expected size and positions for both gradients.
   EXPECT_TRUE(omnibox_view()->elide_animation_smoothing_rect_left_.width() ==
@@ -2964,28 +2968,17 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, GradientMaskResetAfterStop) {
     return;
   }
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to begin animating to the simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-
   // Advance animation so it sets the gradient mask, then stop it.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
-  elide_animation->Stop();
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
+  omnibox_view()->GetElideAfterInteractionAnimationForTesting()->Stop();
 
   // Both gradient mask rectangles should have a width of 0 once the animation
   // has stopped.
@@ -3004,20 +2997,12 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
   gfx::Range path_bounds(
       kSimplifiedDomainDisplayUrl.find(kSimplifiedDomainDisplayUrlPath),
       kSimplifiedDomainDisplayUrl.size());
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to begin animating to the simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
 
   // Advance the clock by 1ms until the full URL is no longer showing, but we
   // haven't finished eliding to the simplified domain yet. After a subsequent
@@ -3025,22 +3010,21 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
   // through elision) and that the animation is still running undisturbed. In
   // other words, a second user interaction shouldn't change anything when an
   // animation is in progress.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
   bool is_midway_through_elision = false;
-  uint32_t step = 1;
+  uint32_t step_ms = 0;
   while (!is_midway_through_elision) {
-    elide_as_element->Step(base::TimeTicks() +
-                           base::TimeDelta::FromMilliseconds(++step));
+    ASSERT_NO_FATAL_FAILURE(
+        omnibox_view()->StepSimplifiedDomainInteractionAnimation(++step_ms));
     is_midway_through_elision = IsPartlyThroughSimplifiedDomainElision(
         render_text, kSimplifiedDomainDisplayUrl, path_bounds);
   }
-  double animation_value =
-      elide_animation->GetAnimationForTesting()->GetCurrentValue();
+  double animation_value = omnibox_view()
+                               ->GetElideAfterInteractionAnimationForTesting()
+                               ->GetAnimationForTesting()
+                               ->GetCurrentValue();
 
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  elide_animation =
+  OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
   EXPECT_TRUE(elide_animation->IsAnimating());
@@ -3057,28 +3041,16 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
 // on subframe navigations.
 TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  {
-    content::MockNavigationHandle navigation;
-    navigation.set_is_same_document(false);
-    omnibox_view()->DidFinishNavigation(&navigation);
-    ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                                kSimplifiedDomainDisplayUrl.size())));
-  }
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to elide to the simplified domain, and advance
   // the clock all the way through the animation.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -3098,6 +3070,12 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
         content::RenderFrameHostTester::For(web_contents->GetMainFrame())
             ->AppendChild("subframe");
     navigation.set_render_frame_host(subframe);
+    omnibox_view()->DidStartNavigation(&navigation);
+    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
+        kSimplifiedDomainDisplayUrlSubdomain,
+        kSimplifiedDomainDisplayUrlHostnameAndScheme,
+        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
         omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
@@ -3182,20 +3160,16 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        HideOnInteractionAfterFocusAndBlur) {
   SetUpSimplifiedDomainTest();
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
 
   // Simulate a user interaction to fade out the path.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -3229,7 +3203,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // After a post-blur user interaction, the URL should animate to the
   // simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  elide_animation =
+  OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());
 }
@@ -3246,18 +3220,15 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // store a copy of it.
   gfx::Rect omnibox_bounds(render_text->display_rect());
 
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to fade out the path.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
       omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
@@ -3311,40 +3282,20 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
     return;
   }
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  content::MockNavigationHandle navigation;
-  navigation.set_is_same_document(false);
-  omnibox_view()->DidFinishNavigation(&navigation);
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                              kSimplifiedDomainDisplayUrl.size())));
+  omnibox_view()->NavigateAndExpectUnelided(kSimplifiedDomainDisplayUrl,
+                                            /*is_same_document=*/false, GURL(),
+                                            kSimplifiedDomainDisplayUrlScheme);
 
   // Simulate a user interaction to begin animating to the simplified domain.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
-  OmniboxViewViews::ElideAnimation* elide_animation =
-      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(elide_animation);
-  EXPECT_TRUE(elide_animation->IsAnimating());
-
-  // Allow elide animation to finish.
-  gfx::AnimationContainerElement* elide_as_element =
-      elide_animation->GetAnimationForTesting();
-  elide_as_element->SetStartTime(base::TimeTicks());
-  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(4));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainInteractionAnimation(
+          /*step_ms=*/1000));
 
   // Hover over the omnibox to trigger unelide animation.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::ElideAnimation* hover_animation =
-      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
-  ASSERT_TRUE(hover_animation);
-  EXPECT_TRUE(hover_animation->IsAnimating());
-
-  // Allow unelide animation to finish.
-  gfx::AnimationContainerElement* unelide_as_element =
-      hover_animation->GetAnimationForTesting();
-  unelide_as_element->SetStartTime(base::TimeTicks());
-  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(4));
+  ASSERT_NO_FATAL_FAILURE(
+      omnibox_view()->StepSimplifiedDomainHoverAnimation(/*step_ms=*/1000));
 
   // Both gradient mask rectangles will be full sized at this point
   EXPECT_EQ(omnibox_view()->elide_animation_smoothing_rect_left_.width(),
@@ -3403,10 +3354,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, RegistrableDomainRepeated) {
       20 /* "https://www.example.com." */,
       kRepeatedRegistrableDomainUrl.size());
 
-  location_bar_model()->set_url(GURL(kRepeatedRegistrableDomainUrl));
-  location_bar_model()->set_url_for_display(kRepeatedRegistrableDomainUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  UpdateDisplayURL(kRepeatedRegistrableDomainUrl);
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 

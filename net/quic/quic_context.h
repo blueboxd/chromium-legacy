@@ -167,6 +167,8 @@ struct NET_EXPORT QuicParams {
   base::TimeDelta initial_rtt_for_handshake;
   // If true, QUIC with TLS will not try 0-RTT connection.
   bool disable_tls_zero_rtt = false;
+  // If true, gQUIC requests will always require confirmation.
+  bool disable_gquic_zero_rtt = false;
 };
 
 // QuicContext contains QUIC-related variables that are shared across all of the

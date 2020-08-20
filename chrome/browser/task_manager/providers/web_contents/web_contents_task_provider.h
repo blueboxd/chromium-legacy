@@ -17,7 +17,6 @@ class WebContents;
 
 namespace task_manager {
 
-class WebContentsEntry;
 class WebContentsTag;
 
 // Defines a provider to provide the renderer tasks that are associated with
@@ -45,7 +44,7 @@ class WebContentsTaskProvider : public TaskProvider {
   Task* GetTaskOfFrame(content::RenderFrameHost* frame);
 
  private:
-  friend class WebContentsEntry;
+  class WebContentsEntry;
 
   // task_manager::TaskProvider:
   void StartUpdating() override;
@@ -62,7 +61,7 @@ class WebContentsTaskProvider : public TaskProvider {
 
   // True if this provider is listening to WebContentsTags and updating its
   // observers, false otherwise.
-  bool is_updating_;
+  bool is_updating_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTaskProvider);
 };

@@ -18,7 +18,6 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
@@ -763,6 +762,9 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
                               blink::WebLocalFrame* frame,
                               const blink::WebNode& node,
                               bool ignore_css_margins);
+  PrepareFrameAndViewForPrint(const PrepareFrameAndViewForPrint&) = delete;
+  PrepareFrameAndViewForPrint& operator=(const PrepareFrameAndViewForPrint&) =
+      delete;
   ~PrepareFrameAndViewForPrint() override;
 
   // Optional. Replaces |frame_| with selection if needed. Will call |on_ready|
@@ -824,8 +826,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   bool is_printing_started_ = false;
 
   base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(

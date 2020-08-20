@@ -47,7 +47,6 @@
 
 #include <memory>
 #include "base/auto_reset.h"
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -110,10 +109,13 @@ class CORE_EXPORT DisableCompositingQueryAsserts {
 
  public:
   DisableCompositingQueryAsserts();
+  DisableCompositingQueryAsserts(const DisableCompositingQueryAsserts&) =
+      delete;
+  DisableCompositingQueryAsserts& operator=(
+      const DisableCompositingQueryAsserts&) = delete;
 
  private:
   base::AutoReset<CompositingQueryMode> disabler_;
-  DISALLOW_COPY_AND_ASSIGN(DisableCompositingQueryAsserts);
 };
 
 struct PaintLayerRareData {
@@ -121,6 +123,8 @@ struct PaintLayerRareData {
 
  public:
   PaintLayerRareData();
+  PaintLayerRareData(const PaintLayerRareData&) = delete;
+  PaintLayerRareData& operator=(const PaintLayerRareData&) = delete;
   ~PaintLayerRareData();
 
   // The offset for an in-flow relative-positioned PaintLayer. This is not
@@ -171,8 +175,6 @@ struct PaintLayerRareData {
   // The accumulated subpixel offset of a composited layer's composited bounds
   // compared to absolute coordinates.
   PhysicalOffset subpixel_accumulation;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerRareData);
 };
 
 // PaintLayer is an old object that handles lots of unrelated operations.
@@ -245,6 +247,8 @@ struct PaintLayerRareData {
 class CORE_EXPORT PaintLayer : public DisplayItemClient {
  public:
   PaintLayer(LayoutBoxModelObject&);
+  PaintLayer(const PaintLayer&) = delete;
+  PaintLayer& operator=(const PaintLayer&) = delete;
   ~PaintLayer() override;
 
   // DisplayItemClient methods
@@ -1445,8 +1449,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                            DescendantDependentFlagsStopsAtThrottledFrames);
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
                            PaintLayerTransformUpdatedOnStyleTransformAnimation);
-
-  DISALLOW_COPY_AND_ASSIGN(PaintLayer);
 };
 
 #if DCHECK_IS_ON()

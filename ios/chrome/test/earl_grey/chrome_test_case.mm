@@ -12,6 +12,7 @@
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -27,6 +28,9 @@ namespace {
 // This flag indicates whether +setUpForTestCase has been executed in a test
 // case.
 bool gExecutedSetUpForTestCase = false;
+
+bool gIsHTTPServerStopped = false;
+bool gIsMockAuthenticationDisabled = false;
 
 #if defined(CHROME_EARL_GREY_1)
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
@@ -94,6 +98,13 @@ NSArray* multitaskingTests = @[
 
 const CFTimeInterval kDrainTimeout = 5;
 
+bool IsMockAuthenticationSetUp() {
+  // |SetUpMockAuthentication| enables the fake sync server so checking
+  // |isFakeSyncServerSetUp| here is sufficient to determine mock authentication
+  // state.
+  return [ChromeEarlGreyAppInterface isFakeSyncServerSetUp];
+}
+
 void SetUpMockAuthentication() {
   [ChromeTestCaseAppInterface setUpMockAuthentication];
 }
@@ -132,8 +143,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // test method.
   BOOL _executedTestMethodSetUp;
 
-  BOOL _isHTTPServerStopped;
-  BOOL _isMockAuthenticationDisabled;
   std::unique_ptr<net::EmbeddedTestServer> _testServer;
 
   // The orientation of the device when entering these tests.
@@ -266,14 +275,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
   // Re-start anything that was disabled this test, so it is running when the
   // next test starts.
-  if (_isHTTPServerStopped) {
-    [[self class] startHTTPServer];
-    _isHTTPServerStopped = NO;
-  }
-  if (_isMockAuthenticationDisabled) {
-    [[self class] enableMockAuthentication];
-    _isMockAuthenticationDisabled = NO;
-  }
+  [[self class] startHTTPServer];
+  [[self class] enableMockAuthentication];
 
   // Clean up any UI that may remain open so the next test starts in a clean
   // state.
@@ -313,25 +316,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 }
 
 - (void)disableMockAuthentication {
-  // Enforce that disableMockAuthentication can only be called once.
-  DCHECK(!_isMockAuthenticationDisabled);
   [[self class] disableMockAuthentication];
-  _isMockAuthenticationDisabled = YES;
 }
 
 - (void)enableMockAuthentication {
-  // Enforce that enableMockAuthentication can only be called once.
-  DCHECK(_isMockAuthenticationDisabled);
   [[self class] enableMockAuthentication];
-  _isMockAuthenticationDisabled = NO;
+}
+
+- (void)startHTTPServer {
+  [[self class] startHTTPServer];
 }
 
 - (void)stopHTTPServer {
-  // Enforce that the HTTP server can only be stopped once per test. It should
-  // not be stopped if it is not running.
-  DCHECK(!_isHTTPServerStopped);
   [[self class] stopHTTPServer];
-  _isHTTPServerStopped = YES;
 }
 
 - (BOOL)isRunningTest:(SEL)selector {
@@ -341,6 +338,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #pragma mark - Private methods
 
 + (void)disableMockAuthentication {
+  if (!IsMockAuthenticationSetUp()) {
+    return;
+  }
+  gIsMockAuthenticationDisabled = YES;
+
   // Make sure local data is cleared, before disabling mock authentication,
   // where data may be sent to real servers.
   [ChromeEarlGrey signOutAndClearIdentities];
@@ -349,18 +351,32 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 }
 
 + (void)enableMockAuthentication {
+  if (IsMockAuthenticationSetUp()) {
+    return;
+  }
+  gIsMockAuthenticationDisabled = NO;
+
   SetUpMockAuthentication();
   [ChromeEarlGrey setUpFakeSyncServer];
 }
 
 + (void)stopHTTPServer {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  DCHECK(server.IsRunning());
+  if (!server.IsRunning()) {
+    return;
+  }
+  gIsHTTPServerStopped = YES;
+
   server.Stop();
 }
 
 + (void)startHTTPServer {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+  if (server.IsRunning()) {
+    return;
+  }
+  gIsHTTPServerStopped = NO;
+
   NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
   server.StartOrDie(base::FilePath(base::SysNSStringToUTF8(bundlePath)));
 }
@@ -434,11 +450,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
                                       error:nil];
 }
 
-// Resets the variables tracking app state.
+// Resets the application state.
 // Called at the start of a test and when the app is relaunched.
 - (void)resetAppState {
-  _isHTTPServerStopped = NO;
-  _isMockAuthenticationDisabled = NO;
+  [[self class] stopHTTPServer];
+  [[self class] startHTTPServer];
+  [[self class] disableMockAuthentication];
+  [[self class] enableMockAuthentication];
+
+  gIsHTTPServerStopped = NO;
+  gIsMockAuthenticationDisabled = NO;
   _tearDownHandler = nil;
   _originalOrientation = GetCurrentDeviceOrientation();
 }
@@ -465,10 +486,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
                              runResets:(BOOL)runResets {
   if (!runResets) {
     // Check stored flags and restore to app status before relaunch.
-    if (!_isHTTPServerStopped) {
+    if (!gIsHTTPServerStopped) {
       [[self class] startHTTPServer];
     }
-    if (!_isMockAuthenticationDisabled) {
+    if (!gIsMockAuthenticationDisabled) {
       [[self class] enableMockAuthentication];
     }
     return;

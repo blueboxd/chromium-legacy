@@ -26,6 +26,7 @@ _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/an
 # These checks are not useful for chromium.
 _DISABLED_ALWAYS = [
     "Assert",  # R8 --force-enable-assertions is used to enable java asserts.
+    "LintBaseline",  # Don't warn about using baseline.xml files.
     "MissingApplicationIcon",  # False positive for non-production targets.
     "SwitchIntDef",  # Many C++ enums are not used at all in java.
     "UniqueConstants",  # Chromium enums allow aliases.
@@ -154,17 +155,11 @@ def _RunLint(lint_binary_path,
              lint_gen_dir,
              baseline,
              testonly_target=False,
-             warnings_as_errors=False,
-             silent=False):
+             warnings_as_errors=False):
   logging.info('Lint starting')
 
   cmd = [
       lint_binary_path,
-      # Consider all lint warnings as errors. Warnings should either always be
-      # fixed or completely suppressed in suppressions.xml. They should not
-      # bloat build output if they are not important enough to be fixed.
-      '-Werror',
-      '--exitcode',  # Sets error code if there are errors.
       '--quiet',  # Silences lint's "." progress updates.
       '--disable',
       ','.join(_DISABLED_ALWAYS),
@@ -238,32 +233,37 @@ def _RunLint(lint_binary_path,
   env['LINT_PRINT_STACKTRACE'] = 'true'
   # This filter is necessary for JDK11.
   stderr_filter = build_utils.FilterReflectiveAccessJavaWarnings
+  stdout_filter = lambda x: build_utils.FilterLines(x, 'No issues found')
 
+  start = time.time()
+  logging.debug('Lint command %s', cmd)
+  failed = True
   try:
-    logging.debug('Lint command %s', cmd)
-    start = time.time()
-    # Lint outputs "No issues found" if it succeeds, and uses stderr when it
-    # fails, so we can safely ignore stdout.
-    build_utils.CheckOutput(cmd,
-                            env=env,
-                            stderr_filter=stderr_filter)
+    failed = bool(
+        build_utils.CheckOutput(cmd,
+                                env=env,
+                                print_stdout=True,
+                                stdout_filter=stdout_filter,
+                                stderr_filter=stderr_filter,
+                                fail_on_output=warnings_as_errors))
+  finally:
+    # When not treating warnings as errors, display the extra footer.
+    is_debug = os.environ.get('LINT_DEBUG', '0') != '0'
+
+    if failed:
+      print('- For more help with lint in Chrome:', _LINT_MD_URL)
+      if is_debug:
+        print('- DEBUG MODE: Here is the project.xml: {}'.format(
+            _SrcRelative(project_xml_path)))
+      else:
+        print('- Run with LINT_DEBUG=1 to enable lint configuration debugging')
+
     end = time.time() - start
     logging.info('Lint command took %ss', end)
-  except build_utils.CalledProcessError as e:
-    if not silent:
-      print('Lint found new issues.\n'
-            ' - Here is the project.xml file passed to lint: {}\n'
-            ' - For more information about lint and how to fix lint issues,'
-            ' please refer to {}\n'.format(_SrcRelative(project_xml_path),
-                                           _LINT_MD_URL))
-      if warnings_as_errors:
-        raise
-      else:
-        print(e)
-  else:
-    # Lint succeeded, no need to keep generated files for debugging purposes.
-    shutil.rmtree(resource_root_dir, ignore_errors=True)
-    shutil.rmtree(srcjar_root_dir, ignore_errors=True)
+    if not is_debug:
+      shutil.rmtree(resource_root_dir, ignore_errors=True)
+      shutil.rmtree(srcjar_root_dir, ignore_errors=True)
+      os.unlink(project_xml_path)
 
   logging.info('Lint completed')
 
@@ -300,9 +300,6 @@ def _ParseArgs(argv):
   parser.add_argument('--warnings-as-errors',
                       action='store_true',
                       help='Treat all warnings as errors.')
-  parser.add_argument('--silent',
-                      action='store_true',
-                      help='If set, script will not log anything.')
   parser.add_argument('--java-sources',
                       help='File containing a list of java sources files.')
   parser.add_argument('--srcjars', help='GN list of included srcjars.')
@@ -366,8 +363,7 @@ def main():
            args.lint_gen_dir,
            args.baseline,
            testonly_target=args.testonly,
-           warnings_as_errors=args.warnings_as_errors,
-           silent=args.silent)
+           warnings_as_errors=args.warnings_as_errors)
   logging.info('Creating stamp file')
   build_utils.Touch(args.stamp)
 

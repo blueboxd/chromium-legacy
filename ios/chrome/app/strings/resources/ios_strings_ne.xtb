@@ -266,6 +266,7 @@
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4004204301268239848">तपाईं आफ्ना पासवर्डहरू जुनसुकै यन्त्रमा प्रयोग गर्न सक्नुहोस् भन्नाका खातिर तिनलाई तपाईंको Google खातामा सुरक्षित गरिन्छ।</translation>
 <translation id="4006921758705478413">आफ्ना यन्त्रहरूमा पठाउनुहोस्</translation>
+<translation id="4018310736049373830">क्रियाकलाप व्यवस्थापन गर्नुहोस्</translation>
 <translation id="4038354071007134711">यस यन्त्रमा भएको कुनै पनि अनुप्रयोगले फाइल खोल्न सक्दैन।</translation>
 <translation id="4042870976416480368">पृष्ठमा खोज्नुहोस्</translation>
 <translation id="4049507953662678203">तपाईँसँग नेटवर्क जडान छ भनी निश्चित गर्नुहोस् र फेरि प्रयास गर्नुहोस्।</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016"><ph name="COMPANY" /> ले व्यवस्थापन गरेको। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">वस्तुलाई हटाइयो</translation>
 <translation id="6136914049981179737">सेकेन्ड अघि</translation>
+<translation id="6144589619057374135">${url} इन्कोग्निटो मोडमा खोल्नुहोस्</translation>
 <translation id="616831107264507309">पछि पढ्नुुहोस्</translation>
 <translation id="6177442314419606057">Chrome मा खोज्नुहोस्</translation>
 <translation id="6184086493125982861">ट्याबहरू देखाउनुहोस्</translation>
@@ -615,6 +617,7 @@
 <translation id="8007420562015504427">इन्कोग्निटो खोज</translation>
 <translation id="802154636333426148">डाउनलोड गर्न सकिएन</translation>
 <translation id="8023878949384262191">खण्ड विस्तार गर्छ</translation>
+<translation id="8027581147000338959">नयाँ विन्डोमा खोल्नुहोस्</translation>
 <translation id="804427445359061970">तपाईंका अन्य यन्त्रका ट्याबहरू यहाँ देखिने छन्</translation>
 <translation id="8059533439631660104">खण्ड संक्षिप्त गर्छ।</translation>
 <translation id="8065292699993359127">URL हरू Chrome को इन्कोग्निटो मोडमा खोल्नुहोस्</translation>
@@ -631,6 +634,7 @@
 <translation id="8225985093977202398">क्यास गरिएका छवि र फाइलहरू</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>
 <translation id="8281781826761538115">पूर्वनिर्धारित - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8299417921174340354">पासवर्डहरू प्रयोग गर्न सर्वप्रथम तपाईंले आफ्नो यन्त्रमा अनिवार्य रूपमा कुनै पासकोड सेट गर्नु पर्छ।</translation>
 <translation id="8319076807703933069">नयाँ खोज</translation>
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न छोइराख्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>

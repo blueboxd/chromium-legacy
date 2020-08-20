@@ -15,6 +15,7 @@
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/win/mock_tsf_bridge.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/ime/win/tsf_text_store.h"
 #include "ui/base/ui_base_features.h"
@@ -658,9 +659,21 @@ HRESULT TSFBridge::Initialize() {
 }
 
 // static
+void TSFBridge::InitializeForTesting() {
+  if (!base::CurrentUIThread::IsSet()) {
+    return;
+  }
+  TSFBridgeImpl* delegate = static_cast<TSFBridgeImpl*>(TSFBridgeTLS().Get());
+  if (delegate)
+    return;
+  if (!base::FeatureList::IsEnabled(features::kTSFImeSupport))
+    return;
+  TSFBridgeTLS().Set(new MockTSFBridge());
+}
+
+// static
 TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
   if (!base::CurrentUIThread::IsSet()) {
-    DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return nullptr;
   }
   TSFBridge* old_bridge = TSFBridge::GetInstance();

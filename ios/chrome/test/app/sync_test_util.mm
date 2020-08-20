@@ -79,6 +79,10 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
 
 namespace chrome_test_util {
 
+bool IsFakeSyncServerSetUp() {
+  return gSyncFakeServer;
+}
+
 void SetUpFakeSyncServer() {
   DCHECK(!gSyncFakeServer);
   gSyncFakeServer = new fake_server::FakeServer();

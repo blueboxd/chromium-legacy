@@ -7,11 +7,16 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 class NearbySharePrivateCertificate;
 class PrefService;
+
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
 
 namespace nearbyshare {
 namespace proto {
@@ -29,18 +34,16 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
    public:
     static std::unique_ptr<NearbyShareCertificateStorage> Create(
         PrefService* pref_service,
-        std::unique_ptr<
-            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-            proto_database);
+        leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+        const base::FilePath& profile_path);
     static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<NearbyShareCertificateStorage> CreateInstance(
         PrefService* pref_service,
-        std::unique_ptr<
-            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-            proto_database) = 0;
+        leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+        const base::FilePath& profile_path) = 0;
 
    private:
     static Factory* test_factory_;
@@ -48,6 +51,11 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
 
   using ExpirationList = std::vector<std::pair<std::string, base::Time>>;
 
+  NearbyShareCertificateStorageImpl(
+      PrefService* pref_service,
+      std::unique_ptr<
+          leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
+          proto_database);
   ~NearbyShareCertificateStorageImpl() override;
   NearbyShareCertificateStorageImpl(NearbyShareCertificateStorageImpl&) =
       delete;
@@ -79,12 +87,6 @@ class NearbyShareCertificateStorageImpl : public NearbyShareCertificateStorage {
   void ClearPublicCertificates(ResultCallback callback) override;
 
  private:
-  NearbyShareCertificateStorageImpl(
-      PrefService* pref_service,
-      std::unique_ptr<
-          leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-          proto_database);
-
   enum class InitStatus { kUninitialized, kInitialized, kFailed };
 
   void Initialize();

@@ -12,8 +12,12 @@ namespace prefs {
 const char kKaleidoscopeFirstRunCompleted[] =
     "kaleidoscope.first_run_completed";
 
+const char kKaleidoscopeAutoSelectMediaFeeds[] =
+    "kaleidoscope.auto_select_media_feeds";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kKaleidoscopeFirstRunCompleted, 0);
+  registry->RegisterBooleanPref(kKaleidoscopeAutoSelectMediaFeeds, false);
 }
 
 }  // namespace prefs

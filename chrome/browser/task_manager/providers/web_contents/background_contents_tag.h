@@ -20,7 +20,8 @@ class BackgroundContentsTag : public WebContentsTag {
   ~BackgroundContentsTag() override;
 
   // task_manager::WebContentsTag:
-  BackgroundContentsTask* CreateTask(WebContentsTaskProvider*) const override;
+  std::unique_ptr<RendererTask> CreateTask(
+      WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

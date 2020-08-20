@@ -591,9 +591,9 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
   }
 }
 
-// If there are multiple overlay quad candidates, the one with the largest
-// size should be promoted to overlay.
-TEST_F(DCLayerOverlayTest, DifferentOverlaySizes) {
+// If there are multiple yuv overlay quad candidates, no overlay will be
+// promoted to save power.
+TEST_F(DCLayerOverlayTest, MultipleYUVOverlay) {
   base::test::ScopedFeatureList feature_list;
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -628,13 +628,16 @@ TEST_F(DCLayerOverlayTest, DifferentOverlaySizes) {
         render_pass_filters, render_pass_backdrop_filters, nullptr,
         &dc_layer_list, &damage_rect_, &content_bounds_);
 
-    // Only one overlay is allowed.
-    EXPECT_EQ(1U, dc_layer_list.size());
+    // Skip overlays.
+    EXPECT_EQ(0U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
     EXPECT_EQ(gfx::Rect(0, 0, 220, 220), damage_rect_);
 
-    // The second video with a larger size should be prmoted to overlay.
-    EXPECT_EQ(second_rect, dc_layer_list.front().quad_rect);
+    // Check whether all 3 quads including two YUV quads are still in the render
+    // pass
+    RenderPass* root_pass = pass_list.back().get();
+    int quad_count = root_pass->quad_list.size();
+    EXPECT_EQ(3, quad_count);
   }
 }
 

@@ -7,14 +7,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chromeos/components/local_search_service/content_extraction_utils.h"
 #include "chromeos/components/local_search_service/inverted_index.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace local_search_service {
@@ -22,6 +26,8 @@ namespace local_search_service {
 namespace {
 
 using chromeos::string_matching::TokenizedString;
+using ExtractedContent =
+    std::vector<std::pair<std::string, std::vector<Token>>>;
 
 std::vector<Token> ExtractDocumentTokens(const Data& data) {
   // Use input locale unless it's empty. In this case we will use system
@@ -40,32 +46,49 @@ std::vector<Token> ExtractDocumentTokens(const Data& data) {
   return ConsolidateToken(document_tokens);
 }
 
-}  // namespace
-
-InvertedIndexSearch::InvertedIndexSearch(IndexId index_id,
-                                         PrefService* local_state)
-    : Index(index_id, Backend::kInvertedIndex, local_state),
-      inverted_index_(std::make_unique<InvertedIndex>()) {}
-
-InvertedIndexSearch::~InvertedIndexSearch() = default;
-
-uint64_t InvertedIndexSearch::GetSize() {
-  return inverted_index_->NumberDocuments();
-}
-
-void InvertedIndexSearch::AddOrUpdate(
-    const std::vector<local_search_service::Data>& data) {
-  std::vector<std::pair<std::string, std::vector<Token>>> documents;
+ExtractedContent ExtractDocumentsContent(const std::vector<Data>& data) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ExtractedContent documents;
   for (const Data& d : data) {
     const std::vector<Token> document_tokens = ExtractDocumentTokens(d);
     DCHECK(!document_tokens.empty());
     documents.push_back({d.id, document_tokens});
   }
-  inverted_index_->AddDocuments(documents);
-  inverted_index_->BuildInvertedIndex();
+
+  return documents;
+}
+
+}  // namespace
+
+InvertedIndexSearch::InvertedIndexSearch(IndexId index_id,
+                                         PrefService* local_state)
+    : Index(index_id, Backend::kInvertedIndex, local_state),
+      inverted_index_(std::make_unique<InvertedIndex>()),
+      blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
+
+InvertedIndexSearch::~InvertedIndexSearch() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+uint64_t InvertedIndexSearch::GetSize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return inverted_index_->NumberDocuments();
+}
+
+void InvertedIndexSearch::AddOrUpdate(
+    const std::vector<local_search_service::Data>& data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ExtractDocumentsContent, data),
+      base::BindOnce(&InvertedIndexSearch::OnExtractDocumentsContentDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   uint32_t num_deleted = inverted_index_->RemoveDocuments(ids);
   inverted_index_->BuildInvertedIndex();
   return num_deleted;
@@ -74,6 +97,7 @@ uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids) {
 ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
                                          uint32_t max_results,
                                          std::vector<Result>* results) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::TimeTicks start = base::TimeTicks::Now();
   DCHECK(results);
   results->clear();
@@ -118,6 +142,7 @@ ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
 
 std::vector<std::pair<std::string, uint32_t>>
 InvertedIndexSearch::FindTermForTesting(const base::string16& term) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const PostingList posting_list = inverted_index_->FindTerm(term);
   std::vector<std::pair<std::string, uint32_t>> doc_with_freq;
   for (const auto& kv : posting_list) {
@@ -125,6 +150,13 @@ InvertedIndexSearch::FindTermForTesting(const base::string16& term) const {
   }
 
   return doc_with_freq;
+}
+
+void InvertedIndexSearch::OnExtractDocumentsContentDone(
+    const ExtractedContent& documents) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  inverted_index_->AddDocuments(documents);
+  inverted_index_->BuildInvertedIndex();
 }
 
 }  // namespace local_search_service

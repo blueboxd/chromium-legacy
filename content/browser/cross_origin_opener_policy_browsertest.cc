@@ -1988,8 +1988,9 @@ IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
             network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
 }
 
+// TODO(http://crbug.com/1119555): Flaky on android-bfcache-rel.
 IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
-                       CoopStateWithToken) {
+                       DISABLED_CoopStateWithToken) {
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url != OriginTrialURL())
@@ -2017,8 +2018,9 @@ IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
             network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
 }
 
+// TODO(http://crbug.com/1119555): Flaky on android-bfcache-rel.
 IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
-                       AccessReportingWithoutToken) {
+                       DISABLED_AccessReportingWithoutToken) {
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url != OriginTrialURL())

@@ -47,7 +47,7 @@ FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::PeekNextFetcher() {
   return pending_fetchers_.front();
 }
 
-AffiliationFetcher* ScopedFakeAffiliationFetcherFactory::CreateInstance(
+FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::CreateInstance(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AffiliationFetcherDelegate* delegate) {
   FakeAffiliationFetcher* fetcher =

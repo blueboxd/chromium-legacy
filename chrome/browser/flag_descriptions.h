@@ -937,6 +937,9 @@ extern const char kOmniboxSuggestionsWrapAroundDescription[];
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
+extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[];
+extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
@@ -1826,6 +1829,9 @@ extern const char kAndroidNightModeTabReparentingDescription[];
 extern const char kTabbedAppOverflowMenuIconsName[];
 extern const char kTabbedAppOverflowMenuIconsDescription[];
 
+extern const char kTabbedAppOverflowMenuRegroupName[];
+extern const char kTabbedAppOverflowMenuRegroupDescription[];
+
 // Non-Android ----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -2528,6 +2534,9 @@ extern const char kVirtualKeyboardFloatingResizableDescription[];
 
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
+
+extern const char kWifiSyncAndroidName[];
+extern const char kWifiSyncAndroidDescription[];
 
 extern const char kZeroCopyVideoCaptureName[];
 extern const char kZeroCopyVideoCaptureDescription[];

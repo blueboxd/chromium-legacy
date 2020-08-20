@@ -118,7 +118,7 @@
 <translation id="5416696090975899932">Chromium не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
-<translation id="544968170749360982">Пријављени сте помоћу новог налога у простору корисника <ph name="EXISTING_USER" />. Желите ли да направите нов Chromium простор за корисника <ph name="NEW_USER" /> да би подаци били раздвојени?</translation>
+<translation id="544968170749360982">Пријављени сте помоћу новог налога у простору корисника <ph name="EXISTING_USER" />. Желите ли да направите нов Chromium простор за корисника <ph name="NEW_USER" /> да би вам подаци били раздвојени?</translation>
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
@@ -203,7 +203,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7561906087460245826">Обриши податке и из Chromium-а (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
       подешавањима Chromium ОС-а<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Пријављени сте помоћу пословног налога. Желите ли да направите нов Chromium простор за корисника <ph name="NEW_USER" /> да би лични подаци били раздвојени?</translation>
+<translation id="7607142834923530546">Пријављени сте помоћу пословног налога. Желите ли да направите нов Chromium простор за корисника <ph name="NEW_USER" /> да би вам лични подаци били раздвојени?</translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>
 <translation id="7617377681829253106">Управо смо побољшали Chromium</translation>
 <translation id="7628001322379820951">Chromium је пронашао штетан софтвер на рачунару</translation>

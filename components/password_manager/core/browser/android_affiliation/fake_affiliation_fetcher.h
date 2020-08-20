@@ -17,6 +17,8 @@ namespace password_manager {
 
 // A fake AffiliationFetcher that can be used in tests to return fake API
 // responses to users of AffiliationFetcher.
+// TODO(crbug.com/1117445): FakeAffiliationFetcher should implement
+// AffiliationFetcherInterface.
 class FakeAffiliationFetcher : public AffiliationFetcher {
  public:
   FakeAffiliationFetcher(
@@ -63,7 +65,7 @@ class ScopedFakeAffiliationFetcherFactory
   bool has_pending_fetchers() const { return !pending_fetchers_.empty(); }
 
   // AffiliationFetcherFactory:
-  AffiliationFetcher* CreateInstance(
+  FakeAffiliationFetcher* CreateInstance(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AffiliationFetcherDelegate* delegate) override;
 

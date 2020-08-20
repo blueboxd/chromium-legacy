@@ -9,7 +9,7 @@
 <translation id="150962533380566081">Անվավեր PUK:</translation>
 <translation id="1510238584712386396">Գործարկիչ</translation>
 <translation id="1644574205037202324">Պատմություն</translation>
-<translation id="1662989795263954667">Տպիչի աշխատանքը դադարեցվել է – Թանաքը սպառվել է</translation>
+<translation id="1662989795263954667">Դադարեցվել է – Թանաք չկա</translation>
 <translation id="1734367976349034509">Այս սարքը կառավարվում է կազմակերպության կողմից</translation>
 <translation id="1905710495812624430">Փորձերի առավելագույն թույլատրելի քանակը սպառվել է:</translation>
 <translation id="1930797645656624981">Chrome OS-ում ներածման եղանակի ծառայություն</translation>
@@ -40,17 +40,17 @@
 <translation id="4227825898293920515">Գաղտնաբառի գործողության ժամկետը <ph name="TIME" />ից կսպառվի</translation>
 <translation id="4238516577297848345">Տպելու ընթացիկ առաջադրանքներ չկան</translation>
 <translation id="428217921675623177">90 օրից հին տպելու առաջադրանքները կհեռացվեն</translation>
-<translation id="4297501883039923494">Տպիչի աշխատանքը դադարեցվել է – Անհայտ սխալ</translation>
+<translation id="4297501883039923494">Դադարեցվել է – Անհայտ սխալ</translation>
 <translation id="4429881212383817840">Kerberos տոմսի գործողության ժամկետը շուտով կսպառվի</translation>
 <translation id="445059817448385655">Հին գաղտնաբառը</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />։ Հպեք Enter՝ տպումը չեղարկելու համար։</translation>
 <translation id="467510802200863975">Գաղտնաբառերը չեն համընկնում</translation>
-<translation id="4691278870498629773">Տպիչի աշխատանքը դադարեցվել է – Դարակը բացակայում է</translation>
+<translation id="4691278870498629773">Դադարեցվել է – Դարակը բացակայում է</translation>
 <translation id="4731797938093519117">Ծնողի մուտք</translation>
 <translation id="4773299976671772492">Դադարեցված է</translation>
 <translation id="4808449224298348341">Տպման առաջադրանքը չեղարկվեց՝ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Հնարավորինս արագ փոխեք գաղտնաբառը</translation>
-<translation id="4917889632206600977">Տպիչի աշխատանքը դադարեցվել է – Թուղթը վերջացել է</translation>
+<translation id="4917889632206600977">Դադարեցվել է – Թուղթ չկա</translation>
 <translation id="4932733599132424254">Ամսաթիվ</translation>
 <translation id="5212543919916444558">Չհաջողվեց գտնել քարտեր էկրանին:
 Փորձեք օգտագործել խոսափողը` առաջադրանքներ տալու համար:</translation>
@@ -68,11 +68,11 @@
 <translation id="6106186594183574873">Ավարտելու համար մուտքագրեք ձեր հին գաղտնաբառը</translation>
 <translation id="6146993107019042706">Ավարտելու համար մուտքագրեք ձեր նոր գաղտնաբառը</translation>
 <translation id="636850387210749493">Ձեռնարկության գրանցում</translation>
-<translation id="649050271426829538">Տպիչի աշխատանքը դադարեցվել է – Թուղթը խցանվել է</translation>
+<translation id="649050271426829538">Դադարեցվել է – Թղթի խցանում</translation>
 <translation id="6517239166834772319">Հնարավորություններ</translation>
 <translation id="6564646048574748301">Չհաջողվեց տպել – Տպիչն անհասանելի է</translation>
 <translation id="6643016212128521049">Մաքրել</translation>
-<translation id="6747215703636344499">Տպիչի աշխատանքը դադարեցվել է – Ելքային դարակը լցված է</translation>
+<translation id="6747215703636344499">Դադարեցվել է – Ելքային դարակը լցված է</translation>
 <translation id="7162487448488904999">Ցուցասրահ</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Այս գործողությունը կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
@@ -84,7 +84,7 @@
 <translation id="8347227221149377169">Տպելու առաջադրանքներ</translation>
 <translation id="8701136875688985581">Այս օգտատերը կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> տիրույթի կողմից։ Այն կարող է հեռակա կառավարել կարգավորումները և վերահսկել օգտատիրոջ գործողությունները։</translation>
 <translation id="871560550817059752">Չհաջողվեց տպել – Թանաքը սպառվել է</translation>
-<translation id="8726019395068607495">Տպիչի աշխատանքը դադարեցվել է – Դռնակը բաց է</translation>
+<translation id="8726019395068607495">Դադարեցվել է – Դռնակը բաց է</translation>
 <translation id="8747900814994928677">Հաստատեք փոփոխությունը</translation>
 <translation id="8919837981463578619">Չհաջողվեց տպել – Դարակը բացակայում է</translation>
 <translation id="8928727111548978589">Չհաջողվեց տպել – Թուղթը սպառվել է</translation>

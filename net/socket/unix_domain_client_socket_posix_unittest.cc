@@ -36,7 +36,7 @@ const char kSocketFilename[] = "socket_for_testing";
 bool UserCanConnectCallback(
     bool allow_user, const UnixDomainServerSocket::Credentials& credentials) {
   // Here peers are running in same process.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   EXPECT_EQ(getpid(), credentials.process_id);
 #endif
   EXPECT_EQ(getuid(), credentials.user_id);
@@ -215,7 +215,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {
   UnixDomainClientSocket client_socket(socket_path_, kUseAbstractNamespace);
   EXPECT_FALSE(client_socket.IsConnected());
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
   EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
@@ -257,7 +257,7 @@ TEST_F(UnixDomainClientSocketTest,
   EXPECT_FALSE(client_socket.IsConnected());
 
   TestCompletionCallback connect_callback;
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_THAT(ConnectSynchronously(&client_socket),
               IsError(ERR_CONNECTION_REFUSED));
 #else

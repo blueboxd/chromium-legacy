@@ -282,6 +282,9 @@
 // calling this.
 + (NSString*)syncCacheGUID;
 
+// Whether or not the fake sync server has been setup.
++ (BOOL)isFakeSyncServerSetUp;
+
 // Sets up a fake sync server to be used by the ProfileSyncService.
 + (void)setUpFakeSyncServer;
 

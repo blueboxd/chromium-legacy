@@ -68,9 +68,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #endif
 
 using content::GlobalRequestID;
@@ -499,16 +497,6 @@ void Navigate(NavigateParams* params) {
 
   if (!AdjustNavigateParamsForURL(params))
     return;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(params->initiating_profile)
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(params->url);
-  // Platform apps cannot navigate. Block the request.
-  if (extension && extension->is_platform_app())
-    params->url = GURL(chrome::kExtensionInvalidRequestURL);
-#endif
 
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background

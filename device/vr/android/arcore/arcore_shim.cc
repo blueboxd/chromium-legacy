@@ -15,14 +15,14 @@ namespace {
 
 // Run DO macro for every function defined in the API.
 #define FOR_EACH_API_FN(DO)                                        \
-  DO(ArAnchorList_acquireItem)                                     \
-  DO(ArAnchorList_create)                                          \
-  DO(ArAnchorList_destroy)                                         \
-  DO(ArAnchorList_getSize)                                         \
   DO(ArAnchor_detach)                                              \
   DO(ArAnchor_getPose)                                             \
   DO(ArAnchor_getTrackingState)                                    \
   DO(ArAnchor_release)                                             \
+  DO(ArAnchorList_acquireItem)                                     \
+  DO(ArAnchorList_create)                                          \
+  DO(ArAnchorList_destroy)                                         \
+  DO(ArAnchorList_getSize)                                         \
   DO(ArCamera_getDisplayOrientedPose)                              \
   DO(ArCamera_getProjectionMatrix)                                 \
   DO(ArCamera_getTrackingState)                                    \
@@ -43,9 +43,12 @@ namespace {
   DO(ArCameraConfigList_getSize)                                   \
   DO(ArConfig_create)                                              \
   DO(ArConfig_destroy)                                             \
+  DO(ArConfig_getDepthMode)                                        \
   DO(ArConfig_getLightEstimationMode)                              \
+  DO(ArConfig_setDepthMode)                                        \
   DO(ArConfig_setLightEstimationMode)                              \
   DO(ArFrame_acquireCamera)                                        \
+  DO(ArFrame_acquireDepthImage)                                    \
   DO(ArFrame_create)                                               \
   DO(ArFrame_destroy)                                              \
   DO(ArFrame_getLightEstimate)                                     \
@@ -62,6 +65,15 @@ namespace {
   DO(ArHitResultList_destroy)                                      \
   DO(ArHitResultList_getItem)                                      \
   DO(ArHitResultList_getSize)                                      \
+  DO(ArImage_getFormat)                                            \
+  DO(ArImage_getHeight)                                            \
+  DO(ArImage_getNumberOfPlanes)                                    \
+  DO(ArImage_getPlaneData)                                         \
+  DO(ArImage_getPlanePixelStride)                                  \
+  DO(ArImage_getPlaneRowStride)                                    \
+  DO(ArImage_getTimestamp)                                         \
+  DO(ArImage_getWidth)                                             \
+  DO(ArImage_release)                                              \
   DO(ArLightEstimate_acquireEnvironmentalHdrCubemap)               \
   DO(ArLightEstimate_create)                                       \
   DO(ArLightEstimate_destroy)                                      \
@@ -101,15 +113,7 @@ namespace {
   DO(ArTrackableList_acquireItem)                                  \
   DO(ArTrackableList_create)                                       \
   DO(ArTrackableList_destroy)                                      \
-  DO(ArTrackableList_getSize)                                      \
-  DO(ArImage_getWidth)                                             \
-  DO(ArImage_getHeight)                                            \
-  DO(ArImage_getFormat)                                            \
-  DO(ArImage_getNumberOfPlanes)                                    \
-  DO(ArImage_getPlanePixelStride)                                  \
-  DO(ArImage_getPlaneRowStride)                                    \
-  DO(ArImage_getPlaneData)                                         \
-  DO(ArImage_release)
+  DO(ArTrackableList_getSize)
 
 struct ArCoreApi {
   // Generate a function pointer field for every ArCore API function.
@@ -173,6 +177,27 @@ bool IsArCoreSupported() {
 
 }  // namespace vr
 
+void ArAnchor_detach(ArSession* session, ArAnchor* anchor) {
+  return g_arcore_api->impl_ArAnchor_detach(session, anchor);
+}
+
+void ArAnchor_getPose(const ArSession* session,
+                      const ArAnchor* anchor,
+                      ArPose* out_pose) {
+  return g_arcore_api->impl_ArAnchor_getPose(session, anchor, out_pose);
+}
+
+void ArAnchor_getTrackingState(const ArSession* session,
+                               const ArAnchor* anchor,
+                               ArTrackingState* out_tracking_state) {
+  return g_arcore_api->impl_ArAnchor_getTrackingState(session, anchor,
+                                                      out_tracking_state);
+}
+
+void ArAnchor_release(ArAnchor* anchor) {
+  g_arcore_api->impl_ArAnchor_release(anchor);
+}
+
 void ArAnchorList_acquireItem(const ArSession* session,
                               const ArAnchorList* anchor_list,
                               int32_t index,
@@ -195,27 +220,6 @@ void ArAnchorList_getSize(const ArSession* session,
                           int32_t* out_size) {
   return g_arcore_api->impl_ArAnchorList_getSize(session, anchor_list,
                                                  out_size);
-}
-
-void ArAnchor_detach(ArSession* session, ArAnchor* anchor) {
-  return g_arcore_api->impl_ArAnchor_detach(session, anchor);
-}
-
-void ArAnchor_getPose(const ArSession* session,
-                      const ArAnchor* anchor,
-                      ArPose* out_pose) {
-  return g_arcore_api->impl_ArAnchor_getPose(session, anchor, out_pose);
-}
-
-void ArAnchor_getTrackingState(const ArSession* session,
-                               const ArAnchor* anchor,
-                               ArTrackingState* out_tracking_state) {
-  return g_arcore_api->impl_ArAnchor_getTrackingState(session, anchor,
-                                                      out_tracking_state);
-}
-
-void ArAnchor_release(ArAnchor* anchor) {
-  g_arcore_api->impl_ArAnchor_release(anchor);
 }
 
 void ArCamera_getDisplayOrientedPose(const ArSession* session,
@@ -342,12 +346,25 @@ void ArConfig_destroy(ArConfig* config) {
   return g_arcore_api->impl_ArConfig_destroy(config);
 }
 
+void ArConfig_getDepthMode(const ArSession* session,
+                           const ArConfig* config,
+                           ArDepthMode* out_depth_mode) {
+  return g_arcore_api->impl_ArConfig_getDepthMode(session, config,
+                                                  out_depth_mode);
+}
+
 void ArConfig_getLightEstimationMode(
     const ArSession* session,
     const ArConfig* config,
     ArLightEstimationMode* light_estimation_mode) {
   return g_arcore_api->impl_ArConfig_getLightEstimationMode(
       session, config, light_estimation_mode);
+}
+
+void ArConfig_setDepthMode(const ArSession* session,
+                           ArConfig* config,
+                           ArDepthMode mode) {
+  return g_arcore_api->impl_ArConfig_setDepthMode(session, config, mode);
 }
 
 void ArConfig_setLightEstimationMode(
@@ -362,6 +379,13 @@ void ArFrame_acquireCamera(const ArSession* session,
                            const ArFrame* frame,
                            ArCamera** out_camera) {
   return g_arcore_api->impl_ArFrame_acquireCamera(session, frame, out_camera);
+}
+
+ArStatus ArFrame_acquireDepthImage(const ArSession* session,
+                                   const ArFrame* frame,
+                                   ArImage** out_depth_image) {
+  return g_arcore_api->impl_ArFrame_acquireDepthImage(session, frame,
+                                                      out_depth_image);
 }
 
 void ArFrame_create(const ArSession* session, ArFrame** out_frame) {
@@ -445,96 +469,6 @@ void ArHitResult_acquireTrackable(const ArSession* session,
                                                          out_trackable);
 }
 
-ArStatus ArTrackable_acquireNewAnchor(ArSession* session,
-                                      ArTrackable* trackable,
-                                      ArPose* pose,
-                                      ArAnchor** out_anchor) {
-  return g_arcore_api->impl_ArTrackable_acquireNewAnchor(session, trackable,
-                                                         pose, out_anchor);
-}
-
-void ArTrackable_getTrackingState(const ArSession* session,
-                                  const ArTrackable* trackable,
-                                  ArTrackingState* out_tracking_state) {
-  return g_arcore_api->impl_ArTrackable_getTrackingState(session, trackable,
-                                                         out_tracking_state);
-}
-
-void ArTrackable_getType(const ArSession* session,
-                         const ArTrackable* trackable,
-                         ArTrackableType* out_trackable_type) {
-  return g_arcore_api->impl_ArTrackable_getType(session, trackable,
-                                                out_trackable_type);
-}
-
-void ArTrackable_release(ArTrackable* trackable) {
-  return g_arcore_api->impl_ArTrackable_release(trackable);
-}
-
-void ArTrackableList_acquireItem(const ArSession* session,
-                                 const ArTrackableList* trackable_list,
-                                 int32_t index,
-                                 ArTrackable** out_trackable) {
-  return g_arcore_api->impl_ArTrackableList_acquireItem(session, trackable_list,
-                                                        index, out_trackable);
-}
-
-void ArTrackableList_create(const ArSession* session,
-                            ArTrackableList** out_trackable_list) {
-  return g_arcore_api->impl_ArTrackableList_create(session, out_trackable_list);
-}
-
-void ArTrackableList_destroy(ArTrackableList* trackable_list) {
-  return g_arcore_api->impl_ArTrackableList_destroy(trackable_list);
-}
-
-void ArTrackableList_getSize(const ArSession* session,
-                             const ArTrackableList* trackable_list,
-                             int32_t* out_size) {
-  return g_arcore_api->impl_ArTrackableList_getSize(session, trackable_list,
-                                                    out_size);
-}
-
-void ArPlane_acquireSubsumedBy(const ArSession* session,
-                               const ArPlane* plane,
-                               ArPlane** out_subsumed_by) {
-  return g_arcore_api->impl_ArPlane_acquireSubsumedBy(session, plane,
-                                                      out_subsumed_by);
-}
-
-void ArPlane_getCenterPose(const ArSession* session,
-                           const ArPlane* plane,
-                           ArPose* out_pose) {
-  return g_arcore_api->impl_ArPlane_getCenterPose(session, plane, out_pose);
-}
-
-void ArPlane_getPolygon(const ArSession* session,
-                        const ArPlane* plane,
-                        float* out_polygon_xz) {
-  return g_arcore_api->impl_ArPlane_getPolygon(session, plane, out_polygon_xz);
-}
-
-void ArPlane_getPolygonSize(const ArSession* session,
-                            const ArPlane* plane,
-                            int32_t* out_polygon_size) {
-  return g_arcore_api->impl_ArPlane_getPolygonSize(session, plane,
-                                                   out_polygon_size);
-}
-
-void ArPlane_getType(const ArSession* session,
-                     const ArPlane* plane,
-                     ArPlaneType* out_plane_type) {
-  return g_arcore_api->impl_ArPlane_getType(session, plane, out_plane_type);
-}
-
-void ArPlane_isPoseInPolygon(const ArSession* session,
-                             const ArPlane* plane,
-                             const ArPose* pose,
-                             int32_t* out_pose_in_polygon) {
-  return g_arcore_api->impl_ArPlane_isPoseInPolygon(session, plane, pose,
-                                                    out_pose_in_polygon);
-}
-
 void ArHitResultList_create(const ArSession* session,
                             ArHitResultList** out_hit_result_list) {
   return g_arcore_api->impl_ArHitResultList_create(session,
@@ -558,6 +492,67 @@ void ArHitResultList_getSize(const ArSession* session,
                              int* out_size) {
   return g_arcore_api->impl_ArHitResultList_getSize(session, hit_result_list,
                                                     out_size);
+}
+
+void ArImage_getFormat(const ArSession* session,
+                       const ArImage* image,
+                       ArImageFormat* out_format) {
+  return g_arcore_api->impl_ArImage_getFormat(session, image, out_format);
+}
+
+void ArImage_getHeight(const ArSession* session,
+                       const ArImage* image,
+                       int32_t* out_height) {
+  return g_arcore_api->impl_ArImage_getHeight(session, image, out_height);
+}
+
+void ArImage_getNumberOfPlanes(const ArSession* session,
+                               const ArImage* image,
+                               int32_t* out_num_planes) {
+  return g_arcore_api->impl_ArImage_getNumberOfPlanes(session, image,
+                                                      out_num_planes);
+}
+
+void ArImage_getPlaneData(const ArSession* session,
+                          const ArImage* image,
+                          int32_t plane_index,
+                          const uint8_t** out_data,
+                          int32_t* out_data_length) {
+  return g_arcore_api->impl_ArImage_getPlaneData(session, image, plane_index,
+                                                 out_data, out_data_length);
+}
+
+void ArImage_getPlanePixelStride(const ArSession* session,
+                                 const ArImage* image,
+                                 int32_t plane_index,
+                                 int32_t* out_pixel_stride) {
+  return g_arcore_api->impl_ArImage_getPlanePixelStride(
+      session, image, plane_index, out_pixel_stride);
+}
+
+void ArImage_getPlaneRowStride(const ArSession* session,
+                               const ArImage* image,
+                               int32_t plane_index,
+                               int32_t* out_row_stride) {
+  return g_arcore_api->impl_ArImage_getPlaneRowStride(
+      session, image, plane_index, out_row_stride);
+}
+
+void ArImage_getTimestamp(const ArSession* session,
+                          const ArImage* image,
+                          int64_t* out_timestamp_ns) {
+  return g_arcore_api->impl_ArImage_getTimestamp(session, image,
+                                                 out_timestamp_ns);
+}
+
+void ArImage_getWidth(const ArSession* session,
+                      const ArImage* image,
+                      int32_t* out_width) {
+  return g_arcore_api->impl_ArImage_getWidth(session, image, out_width);
+}
+
+void ArImage_release(ArImage* image) {
+  return g_arcore_api->impl_ArImage_release(image);
 }
 
 void ArLightEstimate_acquireEnvironmentalHdrCubemap(
@@ -616,6 +611,46 @@ void ArLightEstimate_getTimestamp(const ArSession* session,
                                   int64_t* out_timestamp_ns) {
   return g_arcore_api->impl_ArLightEstimate_getTimestamp(
       session, light_estimate, out_timestamp_ns);
+}
+
+void ArPlane_acquireSubsumedBy(const ArSession* session,
+                               const ArPlane* plane,
+                               ArPlane** out_subsumed_by) {
+  return g_arcore_api->impl_ArPlane_acquireSubsumedBy(session, plane,
+                                                      out_subsumed_by);
+}
+
+void ArPlane_getCenterPose(const ArSession* session,
+                           const ArPlane* plane,
+                           ArPose* out_pose) {
+  return g_arcore_api->impl_ArPlane_getCenterPose(session, plane, out_pose);
+}
+
+void ArPlane_getPolygon(const ArSession* session,
+                        const ArPlane* plane,
+                        float* out_polygon_xz) {
+  return g_arcore_api->impl_ArPlane_getPolygon(session, plane, out_polygon_xz);
+}
+
+void ArPlane_getPolygonSize(const ArSession* session,
+                            const ArPlane* plane,
+                            int32_t* out_polygon_size) {
+  return g_arcore_api->impl_ArPlane_getPolygonSize(session, plane,
+                                                   out_polygon_size);
+}
+
+void ArPlane_getType(const ArSession* session,
+                     const ArPlane* plane,
+                     ArPlaneType* out_plane_type) {
+  return g_arcore_api->impl_ArPlane_getType(session, plane, out_plane_type);
+}
+
+void ArPlane_isPoseInPolygon(const ArSession* session,
+                             const ArPlane* plane,
+                             const ArPose* pose,
+                             int32_t* out_pose_in_polygon) {
+  return g_arcore_api->impl_ArPlane_isPoseInPolygon(session, plane, pose,
+                                                    out_pose_in_polygon);
 }
 
 void ArPose_create(const ArSession* session,
@@ -715,56 +750,52 @@ ArStatus ArSession_update(ArSession* session, ArFrame* out_frame) {
   return g_arcore_api->impl_ArSession_update(session, out_frame);
 }
 
-void ArImage_getWidth(const ArSession* session,
-                      const ArImage* image,
-                      int32_t* out_width) {
-  return g_arcore_api->impl_ArImage_getWidth(session, image, out_width);
+ArStatus ArTrackable_acquireNewAnchor(ArSession* session,
+                                      ArTrackable* trackable,
+                                      ArPose* pose,
+                                      ArAnchor** out_anchor) {
+  return g_arcore_api->impl_ArTrackable_acquireNewAnchor(session, trackable,
+                                                         pose, out_anchor);
 }
 
-void ArImage_getHeight(const ArSession* session,
-                       const ArImage* image,
-                       int32_t* out_height) {
-  return g_arcore_api->impl_ArImage_getHeight(session, image, out_height);
+void ArTrackable_getTrackingState(const ArSession* session,
+                                  const ArTrackable* trackable,
+                                  ArTrackingState* out_tracking_state) {
+  return g_arcore_api->impl_ArTrackable_getTrackingState(session, trackable,
+                                                         out_tracking_state);
 }
 
-void ArImage_getFormat(const ArSession* session,
-                       const ArImage* image,
-                       ArImageFormat* out_format) {
-  return g_arcore_api->impl_ArImage_getFormat(session, image, out_format);
+void ArTrackable_getType(const ArSession* session,
+                         const ArTrackable* trackable,
+                         ArTrackableType* out_trackable_type) {
+  return g_arcore_api->impl_ArTrackable_getType(session, trackable,
+                                                out_trackable_type);
 }
 
-void ArImage_getNumberOfPlanes(const ArSession* session,
-                               const ArImage* image,
-                               int32_t* out_num_planes) {
-  return g_arcore_api->impl_ArImage_getNumberOfPlanes(session, image,
-                                                      out_num_planes);
+void ArTrackable_release(ArTrackable* trackable) {
+  return g_arcore_api->impl_ArTrackable_release(trackable);
 }
 
-void ArImage_getPlanePixelStride(const ArSession* session,
-                                 const ArImage* image,
-                                 int32_t plane_index,
-                                 int32_t* out_pixel_stride) {
-  return g_arcore_api->impl_ArImage_getPlanePixelStride(
-      session, image, plane_index, out_pixel_stride);
+void ArTrackableList_acquireItem(const ArSession* session,
+                                 const ArTrackableList* trackable_list,
+                                 int32_t index,
+                                 ArTrackable** out_trackable) {
+  return g_arcore_api->impl_ArTrackableList_acquireItem(session, trackable_list,
+                                                        index, out_trackable);
 }
 
-void ArImage_getPlaneRowStride(const ArSession* session,
-                               const ArImage* image,
-                               int32_t plane_index,
-                               int32_t* out_row_stride) {
-  return g_arcore_api->impl_ArImage_getPlaneRowStride(
-      session, image, plane_index, out_row_stride);
+void ArTrackableList_create(const ArSession* session,
+                            ArTrackableList** out_trackable_list) {
+  return g_arcore_api->impl_ArTrackableList_create(session, out_trackable_list);
 }
 
-void ArImage_getPlaneData(const ArSession* session,
-                          const ArImage* image,
-                          int32_t plane_index,
-                          const uint8_t** out_data,
-                          int32_t* out_data_length) {
-  return g_arcore_api->impl_ArImage_getPlaneData(session, image, plane_index,
-                                                 out_data, out_data_length);
+void ArTrackableList_destroy(ArTrackableList* trackable_list) {
+  return g_arcore_api->impl_ArTrackableList_destroy(trackable_list);
 }
 
-void ArImage_release(ArImage* image) {
-  return g_arcore_api->impl_ArImage_release(image);
+void ArTrackableList_getSize(const ArSession* session,
+                             const ArTrackableList* trackable_list,
+                             int32_t* out_size) {
+  return g_arcore_api->impl_ArTrackableList_getSize(session, trackable_list,
+                                                    out_size);
 }

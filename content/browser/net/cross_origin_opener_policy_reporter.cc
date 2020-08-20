@@ -23,19 +23,20 @@ namespace {
 // Report attribute names (camelCase):
 constexpr char kColumnNumber[] = "columnNumber";
 constexpr char kDisposition[] = "disposition";
-constexpr char kDocumentURI[] = "documentURI";
 constexpr char kEffectivePolicy[] = "effectivePolicy";
 constexpr char kLineNumber[] = "lineNumber";
-constexpr char kNavigationURI[] = "navigationURI";
+constexpr char kNextURL[] = "nextResponseURL";
+constexpr char kPreviousURL[] = "previousResponseURL";
 constexpr char kProperty[] = "property";
+constexpr char kReferrer[] = "referrer";
 constexpr char kSourceFile[] = "sourceFile";
 constexpr char kViolationType[] = "type";
 
 // Report attribute values:
 constexpr char kDispositionEnforce[] = "enforce";
 constexpr char kDispositionReporting[] = "reporting";
-constexpr char kTypeNavigationFromDocument[] = "navigation-from-document";
-constexpr char kTypeNavigationToDocument[] = "navigation-to-document";
+constexpr char kTypeFromResponse[] = "navigation-from-response";
+constexpr char kTypeToResponse[] = "navigation-to-response";
 
 std::string ToString(network::mojom::CrossOriginOpenerPolicyValue coop_value) {
   switch (coop_value) {
@@ -57,24 +58,6 @@ const char* ToString(network::mojom::CoopAccessReportType report_type) {
     case network::mojom::CoopAccessReportType::kReportAccessFrom:
       return "access-from-coop-page";
   }
-}
-
-RenderFrameHostImpl* GetSourceRfhForCoopReporting(
-    RenderFrameHostImpl* current_rfh) {
-  CHECK(current_rfh);
-
-  // If this is a fresh popup we would consider the source RFH to be
-  // our opener.
-  // TODO(arthursonzogni): This seems fragile. What if the opener has been
-  // removed in between the beginning of the navigation and now?
-  FrameTreeNode* opener = current_rfh->frame_tree_node()->opener();
-  // TODO(arthursonzogni): This seems fragile. What if the current_rfh was
-  // crashed and has_committed_any_navigation() returns false?
-  if (opener && !current_rfh->has_committed_any_navigation())
-    return opener->current_frame_host();
-
-  // Otherwise this is simply the current RFH.
-  return current_rfh;
 }
 
 base::UnguessableToken GetFrameToken(FrameTreeNode* frame,
@@ -121,37 +104,19 @@ std::vector<FrameTreeNode*> CollectOtherWindowForCoopAccess(
 
 CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
     StoragePartition* storage_partition,
-    RenderFrameHostImpl* current_rfh,
     const GURL& context_url,
     const network::CrossOriginOpenerPolicy& coop)
     : storage_partition_(storage_partition),
       context_url_(context_url),
       coop_(coop) {
-  DCHECK(storage_partition_);
-  RenderFrameHostImpl* source_rfh = GetSourceRfhForCoopReporting(current_rfh);
-  source_url_ = source_rfh->GetLastCommittedURL();
-  source_routing_id_ = source_rfh->GetGlobalFrameRoutingId();
-}
-
-CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
-    StoragePartition* storage_partition,
-    const GURL& source_url,
-    const GlobalFrameRoutingId source_routing_id,
-    const GURL& context_url,
-    const network::CrossOriginOpenerPolicy& coop)
-    : storage_partition_(storage_partition),
-      source_url_(source_url),
-      source_routing_id_(source_routing_id),
-      context_url_(context_url),
-      coop_(coop) {
-  DCHECK(storage_partition_);
 }
 
 CrossOriginOpenerPolicyReporter::~CrossOriginOpenerPolicyReporter() = default;
 
-void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
-    const GURL& other_url,
-    bool is_reported_from_document,
+void CrossOriginOpenerPolicyReporter::QueueNavigationToCOOPReport(
+    const GURL& previous_url,
+    const GURL& referrer_url,
+    bool same_origin_with_previous,
     bool is_report_only) {
   const base::Optional<std::string>& endpoint =
       is_report_only ? coop_.report_only_reporting_endpoint
@@ -162,24 +127,44 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
   url::Replacements<char> replacements;
   replacements.ClearUsername();
   replacements.ClearPassword();
-  std::string sanitized_context_url =
-      context_url_.ReplaceComponents(replacements).spec();
-  std::string sanitized_other_url =
-      other_url.ReplaceComponents(replacements).spec();
+  std::string sanitized_previous_url;
+  if (same_origin_with_previous) {
+    sanitized_previous_url =
+        previous_url.ReplaceComponents(replacements).spec();
+  }
+  std::string sanitized_referrer_url =
+      referrer_url.ReplaceComponents(replacements).spec();
   base::DictionaryValue body;
   body.SetString(kDisposition,
                  is_report_only ? kDispositionReporting : kDispositionEnforce);
-  body.SetString(kDocumentURI, sanitized_context_url);
-  body.SetString(kNavigationURI, sanitized_other_url);
-  body.SetString(kViolationType, is_reported_from_document
-                                     ? kTypeNavigationFromDocument
-                                     : kTypeNavigationToDocument);
-  body.SetString(
-      kEffectivePolicy,
-      ToString(is_report_only ? coop_.report_only_value : coop_.value));
-  storage_partition_->GetNetworkContext()->QueueReport(
-      "coop", *endpoint, context_url_, /*user_agent=*/base::nullopt,
-      std::move(body));
+  body.SetString(kPreviousURL, sanitized_previous_url);
+  body.SetString(kReferrer, sanitized_referrer_url);
+  body.SetString(kViolationType, kTypeToResponse);
+  QueueNavigationReport(std::move(body), *endpoint, is_report_only);
+}
+
+void CrossOriginOpenerPolicyReporter::QueueNavigationAwayFromCOOPReport(
+    const GURL& next_url,
+    bool is_current_source,
+    bool same_origin_with_next,
+    bool is_report_only) {
+  const base::Optional<std::string>& endpoint =
+      is_report_only ? coop_.report_only_reporting_endpoint
+                     : coop_.reporting_endpoint;
+  if (!endpoint)
+    return;
+
+  url::Replacements<char> replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  std::string sanitized_next_url;
+  if (is_current_source || same_origin_with_next) {
+    sanitized_next_url = next_url.ReplaceComponents(replacements).spec();
+  }
+  base::DictionaryValue body;
+  body.SetString(kNextURL, sanitized_next_url);
+  body.SetString(kViolationType, kTypeFromResponse);
+  QueueNavigationReport(std::move(body), *endpoint, is_report_only);
 }
 
 void CrossOriginOpenerPolicyReporter::QueueAccessReport(
@@ -217,54 +202,6 @@ void CrossOriginOpenerPolicyReporter::Clone(
     mojo::PendingReceiver<network::mojom::CrossOriginOpenerPolicyReporter>
         receiver) {
   receiver_set_.Add(this, std::move(receiver));
-}
-
-GURL CrossOriginOpenerPolicyReporter::GetPreviousDocumentUrlForReporting(
-    const std::vector<GURL>& redirect_chain,
-    const GURL& referrer_url) {
-  // If the current document and all its redirect chain are same-origin with
-  // the previous document, this is the previous document URL.
-  auto source_origin = url::Origin::Create(source_url_);
-  bool is_redirect_chain_same_origin = true;
-  for (auto& redirect_url : redirect_chain) {
-    auto redirect_origin = url::Origin::Create(redirect_url);
-    if (!redirect_origin.IsSameOriginWith(source_origin)) {
-      is_redirect_chain_same_origin = false;
-      break;
-    }
-  }
-  if (is_redirect_chain_same_origin)
-    return source_url_;
-
-  // Otherwise, it's the referrer of the navigation.
-  return referrer_url;
-}
-
-GURL CrossOriginOpenerPolicyReporter::GetNextDocumentUrlForReporting(
-    const std::vector<GURL>& redirect_chain,
-    const GlobalFrameRoutingId& initiator_routing_id) {
-  const url::Origin& source_origin = url::Origin::Create(source_url_);
-
-  // If the next document and all its redirect chain are same-origin with the
-  // current document, this is the next document URL.
-  bool is_redirect_chain_same_origin = true;
-  for (auto& redirect_url : redirect_chain) {
-    auto redirect_origin = url::Origin::Create(redirect_url);
-    if (!redirect_origin.IsSameOriginWith(source_origin)) {
-      is_redirect_chain_same_origin = false;
-      break;
-    }
-  }
-  if (is_redirect_chain_same_origin)
-    return redirect_chain[redirect_chain.size() - 1];
-
-  // If the current document is the initiator of the navigation, then it's the
-  // initial navigation URL.
-  if (source_routing_id_ == initiator_routing_id)
-    return redirect_chain[0];
-
-  // Otherwise, it's the empty URL.
-  return GURL();
 }
 
 // static
@@ -354,6 +291,24 @@ void CrossOriginOpenerPolicyReporter::MonitorAccesses(
 int CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup() {
   static int id = -1;
   return ++id;
+}
+
+void CrossOriginOpenerPolicyReporter::QueueNavigationReport(
+    base::DictionaryValue body,
+    const std::string& endpoint,
+    bool is_report_only) {
+  body.SetString(kDisposition,
+                 is_report_only ? kDispositionReporting : kDispositionEnforce);
+  body.SetString(
+      kEffectivePolicy,
+      ToString(is_report_only ? coop_.report_only_value : coop_.value));
+  url::Replacements<char> replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  GURL sanitized_context_url = context_url_.ReplaceComponents(replacements);
+  storage_partition_->GetNetworkContext()->QueueReport(
+      "coop", endpoint, sanitized_context_url, /*user_agent=*/base::nullopt,
+      std::move(body));
 }
 
 }  // namespace content

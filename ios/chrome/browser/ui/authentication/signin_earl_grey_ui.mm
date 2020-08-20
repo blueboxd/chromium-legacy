@@ -87,10 +87,6 @@ using chrome_test_util::SignOutAccountsButton;
       performAction:grey_tap()];
 }
 
-+ (void)confirmSigninConfirmationDialog {
-  [self tapSigninConfirmationDialog];
-}
-
 + (void)tapSigninConfirmationDialog {
   // To confirm the dialog, the scroll view content has to be scrolled to the
   // bottom to transform "MORE" button into the validation button.

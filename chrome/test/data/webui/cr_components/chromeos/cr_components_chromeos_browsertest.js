@@ -32,6 +32,8 @@ GEN('#include "content/public/test/browser_test.h"');
     ]
   ],
   ['NetworkConfigElementBehavior', 'network/network_config_element_behavior_test.js', []],
+  ['NetworkList', 'network/network_list_test.js', []],
+  ['NetworkListItem', 'network/network_list_item_test.js', []],
   ['NetworkPasswordInput', 'network/network_password_input_test.js', []],
 ].forEach(test => registerTest('NetworkComponents', 'os-settings', ...test));
 

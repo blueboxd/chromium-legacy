@@ -97,11 +97,38 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
   DCHECK(!pending_auth_state_);
   pending_auth_state_.emplace(std::move(callback));
 
-  // TODO(yichengli): If it can be PIN, use quick unlock to attempt PIN auth.
+  if (authenticated_by_pin) {
+    chromeos::quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
+        user_context.GetAccountId(), *user_context.GetKey(),
+        base::BindOnce(&InSessionAuthDialogClient::OnPinAttemptDone,
+                       weak_factory_.GetWeakPtr(), user_context));
+    // OnPinAttemptDone will call AuthenticateWithPassword if attempt fails.
+    return;
+  }
 
   // TODO(yichengli): If user type is SUPERVISED, use supervised authenticator?
 
   AuthenticateWithPassword(user_context);
+}
+
+void InSessionAuthDialogClient::OnPinAttemptDone(
+    const UserContext& user_context,
+    bool success) {
+  if (success) {
+    // Mark strong auth if this is cryptohome based pin.
+    if (chromeos::quick_unlock::PinBackend::GetInstance()->ShouldUseCryptohome(
+            user_context.GetAccountId())) {
+      chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+          chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(
+              user_context.GetAccountId());
+      if (quick_unlock_storage)
+        quick_unlock_storage->MarkStrongAuth();
+    }
+    OnAuthSuccess(user_context);
+  } else {
+    // PIN authentication has failed; try submitting as a normal password.
+    AuthenticateWithPassword(user_context);
+  }
 }
 
 void InSessionAuthDialogClient::AuthenticateWithPassword(

@@ -211,9 +211,7 @@ LayoutUnit MenuListIntrinsicInlineSize(const HTMLSelectElement& select,
   LayoutTheme& theme = LayoutTheme::GetTheme();
   int paddings = theme.PopupInternalPaddingStart(style) +
                  theme.PopupInternalPaddingEnd(box.GetFrame(), style);
-  return std::max(LayoutUnit(ceilf(max_option_width)),
-                  LayoutUnit(theme.MinimumMenuListSize(style))) +
-         LayoutUnit(paddings);
+  return LayoutUnit(ceilf(max_option_width)) + LayoutUnit(paddings);
 }
 
 LayoutUnit MenuListIntrinsicBlockSize(const HTMLSelectElement& select,

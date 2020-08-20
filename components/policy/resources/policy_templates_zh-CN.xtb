@@ -1424,6 +1424,7 @@
 <translation id="3192902750888034827">如果 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 已开启，您便可通过设置 <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> 来指定用于提供新标签页的搜索引擎网址。
 
       如果您不设置 <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />，系统将不会提供任何新标签页。</translation>
+<translation id="3195103497550111266">如果此政策设为<ph name="DEVICE_LTS_TAG_VALUE" />，它会允许设备接收 LTS（长期支持）更新。</translation>
 <translation id="3196585866522778760">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后采取闲置操作。
@@ -1440,6 +1441,7 @@
 <translation id="322359555555487980">确定变体在 <ph name="PRODUCT_OS_NAME" />中的可用情况</translation>
 <translation id="3236046242843493070">允许的扩展程序、应用和用户脚本安装源的网址格式</translation>
 <translation id="3240609035816615922">打印机配置访问政策。</translation>
+<translation id="324062325008698789">配置打印机列表</translation>
 <translation id="3240655340884151271">基座的内置 NIC MAC 地址</translation>
 <translation id="3242756958360374888">包含一系列用于控制在 <ph name="PRODUCT_NAME" /> 中显示哪些帐号的格式。
 
@@ -1649,11 +1651,6 @@
 
       如需详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="3540935459049973317">应用级时间限制</translation>
-<translation id="3543579213273969284">如果此政策已启用，HTTP 身份验证机制会遵循 KDC 政策的审批结果。换言之，如果 KDC 政策在服务凭单上设置了 <ph name="OK_AS_DELEGATE" />，<ph name="PRODUCT_NAME" /> 便会委派凭据。参阅 RFC 5896 ( https://tools.ietf.org/html/rfc5896.html )。服务应与 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 一致。
-
-      如果此政策已停用或未设置，那么在支持的平台上，只会遵循 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 政策，KDC 政策会被忽略。
-
-      在 <ph name="MS_WIN_NAME" /> 上，始终都会遵循 KDC 政策。</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3550122827225052130">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
@@ -2166,12 +2163,6 @@
       如果此政策已停用或未设置，用户便可在使用移动网络连接时将文件传输到 Google 云端硬盘。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">设备登录屏幕语言区域</translation>
-<translation id="427220754384423013">指定用户可以使用的打印机。
-
-      仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
-
-      如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="BULK_PRINTERS_POLICY" /> 中指定的文件内的“id”或“guid”字段相符。
-      </translation>
 <translation id="4285674129118156176">允许独立用户使用 ARC</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">设备的指定基座 MAC 地址</translation>
@@ -2763,22 +2754,6 @@
 <translation id="5272684451155669299">如果此政策设为 True，则用户可以使用 Chrome 设备上的硬件，通过 <ph name="ENTERPRISE_PLATFORM_KEYS_API" />（使用 <ph name="CHALLENGE_USER_KEY_FUNCTION" />）远程向隐私认证中心 (Privacy CA) 认证自己的身份。
 
           如果此政策设为 False 或未设置，则会导致无法调用此 API，并返回错误代码。</translation>
-<translation id="5273333167497341402">为绑定到设备的企业打印机提供配置。
-
-      此政策让您能够为 <ph name="PRODUCT_OS_NAME" />设备提供打印机配置。格式与 NativePrinters 字典一样，不过每台打印机都还对应一个额外的必填字段“id”或“guid”，以用于将相应打印机加入白名单/黑名单。
-
-      该文件不得超过 5MB，且必须用 JSON 编码。据估计，一个包含大约 21000 台打印机的文件在编码后的大小将会是 5MB。相应的加密哈希值用于验证下载内容是否完整。
-
-      系统会下载并缓存该文件。只要相应网址或哈希值发生了变化，系统就会重新下载该文件。
-
-      如果您设置了此政策，<ph name="PRODUCT_OS_NAME" />即会下载该文件以获取打印机配置，并会根据 <ph name="DEVICE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_ALLOWLIST" /> 和 <ph name="DEVICE_PRINTERS_BLOCKLIST" /> 向用户提供可用的打印机。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-
-      此政策是 <ph name="BULK_PRINTERS_POLICY" /> 的附加内容。
-
-      如果您不设置此政策，便不存在任何设备打印机，同时其他 <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> 政策会被忽略。
-      </translation>
 <translation id="5273744932022326215">在登录屏幕上启用“光标突出显示”无障碍功能。
 
           如果此政策设为 true，“光标突出显示”在登录屏幕上将始终处于启用状态。
@@ -2916,6 +2891,14 @@
       如果您设置了此政策，用户将无法更改或替换此政策。
 
       如果未设置此政策，则用户可以自行选择在登录屏幕上代表自己的头像图片。</translation>
+<translation id="5431392643649571773">启用后，<ph name="PRODUCT_NAME" /> 功能会允许使用往返缓存。当离开某个网页时，系统可将此网页的现状（文档树、脚本等）保存到往返缓存中。如果浏览器返回到此网页，系统便可从往返缓存中恢复此网页并以缓存之前的网页状态显示它。
+
+          该功能可能会导致某些未为这种缓存做好准备的网站出现问题。具体而言，某些网站需要在浏览器离开网页时收到系统传送的“<ph name="UNLOAD_HANDLER_NAME" />”事件。如果相应网页存储在往返缓存中，“<ph name="UNLOAD_HANDLER_NAME" />”事件将不会正常传送。
+
+          如果此政策已启用或未设置，系统会启用 <ph name="PRODUCT_NAME" /> 功能。
+
+          如果此政策已停用，系统会强制停用该功能。
+          </translation>
 <translation id="5437214086679373363">控制是否允许用户在需要扫描时上传或下载受密码保护的文件。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制哪些网域需要启用检查功能的政策。
 
       如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 会禁止用户上传或下载受密码保护的文件。
@@ -3194,17 +3177,6 @@
 <translation id="5775235485119094648">在电池电量位于指定范围内时为电池充电。</translation>
 <translation id="5776485039795852974">每次网站尝试显示桌面通知时都询问</translation>
 <translation id="5783009211970309878">打印页眉和页脚</translation>
-<translation id="5783576706065107606">在新版 <ph name="CORS" /> 实现方案中启用 <ph name="CORS" /> 检查缓解功能，从而允许扩展程序保持兼容的行为，并允许 <ph name="PRODUCT_NAME" /> 无需进行 <ph name="CORS" /> 检查便可发送指定标头。
-
-      如果此列表设为空，<ph name="PRODUCT_NAME" /> 会尝试以兼容的方式运行扩展程序，而不会激活 <ph name="PRODUCT_NAME" /> 79 中引入的 <ph name="API" /> 更改（如 <ph name="WEB_REQUEST_API_MANUAL" /> 所述）。
-
-      如果此列表设为包含 <ph name="HTTP" /> 请求标头名称，则 <ph name="CORS" /> 检查将会忽略所列的标头，并会为扩展程序启用缓解功能。
-
-      如果此列表未设置，系统将不会应用上述两项缓解功能。
-
-      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
-
-      请注意，我们曾宣布将在 <ph name="PRODUCT_NAME" /> 版本 82 中移除此政策，但该计划已改为在版本 84 中移除此政策。</translation>
 <translation id="5790763087505467169">减少受管理访客会话的自动启动通知</translation>
 <translation id="5806128552675651249">仅允许在没有背景图片的情况下打印</translation>
 <translation id="5809210507920527553">控制 Linux 容器 (Crostini) 的设置。</translation>
@@ -3268,17 +3240,6 @@
           如果停用或未设置该设置，那么所有主机都将使用默认的 TalkGadget 域名（“chromoting-host.talkgadget.google.com”）。
 
           远程访问客户端不受此策略设置影响。它们将始终使用“chromoting-client.talkgadget.google.com”访问 TalkGadget。</translation>
-<translation id="5888171512889380367">使用旧版 <ph name="CORS" /> 实现方案，而非新版 <ph name="CORS" />。
-
-      如果此设置设为 True，系统会使用旧版实现方案（此版实现方案应该会与以往的版本兼容）。
-
-      如果此设置设为 False 或未设置，系统会使用新版实现方案（此版实现方案可能会导致出现特定于企业的兼容性问题）。
-
-      此政策将在几个里程碑版本后移除。
-
-      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
-
-      请注意，我们曾宣布将在 <ph name="PRODUCT_NAME" /> 版本 82 中移除此政策，但该计划已改为在版本 84 中移除此政策。</translation>
 <translation id="5890063326284543943">控制对 Serial API 的使用</translation>
 <translation id="5893553533827140852">如果启用此设置，系统将通过远程主机连接经由代理处理gnubby身份验证请求。
 
@@ -3818,24 +3779,6 @@
 
       如果此政策设为 false 或未设置，系统不会为该用户启用 <ph name="PLUGIN_VM_NAME" />。
       如果此政策设为 true，系统会为该用户启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该用户运行它。若要允许 <ph name="PLUGIN_VM_NAME" /> 运行，您需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 和 <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true，并设置 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />。</translation>
-<translation id="6741496055862838205">为绑定到设备的企业打印机提供配置。
-
-      此政策让您能够为 <ph name="PRODUCT_OS_NAME" />设备提供打印机配置。格式与 NativePrinters 字典一样，不过每台打印机都还对应一个额外的必填字段“id”或“guid”，以用于将相应打印机加入白名单/黑名单。
-
-      该文件不得超过 5MB，且必须用 JSON 编码。据估计，一个包含大约 21000 台打印机的文件在编码后的大小将会是 5MB。相应的加密哈希值用于验证下载内容是否完整。
-
-      系统会下载并缓存该文件。只要相应网址或哈希值发生了变化，系统就会重新下载该文件。
-
-      如果您设置了此政策，<ph name="PRODUCT_OS_NAME" />即会下载该文件以获取打印机配置，并会根据 <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_ALLOWLIST" /> 和 <ph name="DEVICE_PRINTERS_BLOCKLIST" /> 向用户提供可用的打印机。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-
-      此政策是 <ph name="BULK_PRINTERS_POLICY" /> 的附加内容。
-
-      如果您不设置此政策，便不存在任何设备打印机，同时其他 <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> 政策会被忽略。
-
-      此政策已被弃用，请改用 <ph name="DEVICE_PRINTERS" />。
-      </translation>
 <translation id="6752711782954612641">如果 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 已开启，您便可通过设置 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> 来指定在借助 POST 搜索网址时应使用的参数。所指定的内容由一系列以英文逗号分隔的名称-值对组成。如果值为模板参数（例如<ph name="SEARCH_TERM_MARKER" />），系统会将其替换成真实的搜索字词数据。
 
       如果您不设置 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />，系统将使用 GET 方法发送网址搜索请求。</translation>
@@ -4333,6 +4276,22 @@
 <translation id="749556411189861380">报告已注册的设备使用的操作系统和固件版本。
 
       如果此政策未设置或设为True，已注册的设备将定期报告操作系统和固件版本。如果此政策设为False，则不报告版本信息。</translation>
+<translation id="7504111874944876852">配置打印机列表。
+
+      此政策让管理员能够为用户提供打印机配置。
+
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均是自由格式的字符串，且均可自定义，以便用户选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”可帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果您提供了相应值，该项可用于帮助删除重复的 <ph name="ZEROCONF_DISCOVERY" /> 打印机。
+
+      您可选择在 <ph name="PRINTER_EFFECTIVE_MODEL" /> 中包含打印机的名称，或者将 <ph name="PRINTER_AUTOCONF" /> 设为 true。同时兼具这两种属性或者两种属性均不具备的打印机将会被忽略。
+
+      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统会缓存常用的 PPD。
+
+      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
+
+      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”便会被替换为第 6 个字符后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
+
+      此政策已被弃用，请改用 <ph name="PRINTERS_POLICY_NAME" />。
+      </translation>
 <translation id="7506745375479451616">此政策旨在控制从 <ph name="IE_PRODUCT_NAME" /> 切换至 <ph name="PRODUCT_NAME" /> 时应使用哪个命令打开网址。此政策可设为一个可执行文件路径，也可设为 <ph name="PRODUCT_NAME_PLACEHOLDER" /> 以自动检测 <ph name="PRODUCT_NAME" /> 的位置。
 
       如果您不设置此政策，当从 Internet Explorer 中启动 <ph name="PRODUCT_NAME" /> 时，<ph name="IE_PRODUCT_NAME" /> 将会自动检测 <ph name="PRODUCT_NAME" /> 自有的可执行文件路径。
@@ -4577,6 +4536,9 @@
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7846952520291088817">在 WebRTC ICE 候选路径中显示本地 IP 的网址</translation>
 <translation id="7848641140449742406">操作系统设置</translation>
+<translation id="7850846808758624237">如果此政策已启用，当首次运行浏览器时，系统将会从先前的默认浏览器导入主页。如果此政策已停用或未设置，当首次运行浏览器时，系统不会导入主页。
+
+      用户可以触发导入对话框，系统将会根据此政策的值选中或不选中“主页”复选框。</translation>
 <translation id="7863947545897944083">在登录屏幕上启用高对比度模式无障碍功能。
 
           如果此政策设为 true，高对比度模式在登录屏幕上将始终处于启用状态。
@@ -5064,12 +5026,6 @@
 <translation id="858309738002328421">禁止上传大型文件</translation>
 <translation id="8584279193368801689">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果所设的模式不适用，系统会忽略此政策。请注意，PIN 码打印功能仅针对使用 IPPS、HTTPS、USB 或 IPP-over-USB 协议之一的打印机启用。</translation>
 <translation id="8585558195682146109">发送用户下载内容进行扫描</translation>
-<translation id="8586528890725660268">指定用户无法使用的打印机。
-
-      仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_BLACKLIST" /> 时，才可使用此政策。
-
-      如果使用此政策，那么除了与此政策中所列 ID 对应的打印机之外，其他所有打印机都可供用户使用。ID 必须与 <ph name="BULK_PRINTERS_POLICY" /> 中指定的文件内的“id”或“guid”字段相符。
-      </translation>
 <translation id="8587229956764455752">允许创建新的用户帐号</translation>
 <translation id="8591713876665299827">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
@@ -5264,6 +5220,7 @@
       如果此政策设为 false 或未设置，系统将不会报告显示状态和图形状态。如果此政策设为 true，系统将会报告显示状态和图形状态。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允许用户管理已安装的 CA 证书。</translation>
+<translation id="8919369436496201075">允许设备接收 LTS 更新</translation>
 <translation id="8927015246639044346">以列表形式指定：对于哪些网址格式，系统不需检查上传的文件、从剪贴板粘贴的数据或者拖放的数据是否违反敏感数据保护规则。仅当 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 设为“已启用”时，才会用到此政策。
 
       如果此政策未设置或设为一个空的网址格式列表，系统会检查所有内容是否违反敏感数据保护规则。

@@ -26,9 +26,7 @@ DiscoverFeedService::DiscoverFeedService(ChromeBrowserState* browser_state) {
   DiscoverFeedConfiguration* discover_config =
       [[DiscoverFeedConfiguration alloc] init];
   discover_config.browserState = browser_state;
-  // TODO(crbug.com/1085419): Send discover_config once downstream CL lands.
-  discover_feed_provider_->StartFeed(
-      AuthenticationServiceFactory::GetForBrowserState(browser_state));
+  discover_feed_provider_->StartFeed(discover_config);
 }
 
 DiscoverFeedService::~DiscoverFeedService() {}

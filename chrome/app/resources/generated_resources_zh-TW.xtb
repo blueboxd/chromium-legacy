@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">目前版本為 Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">透過 USB 存取任何 <ph name="DEVICE_NAME_AND_VENDOR" /></translation>
 <translation id="1509960214886564027">許多網站的功能可能無法正常運作</translation>
-<translation id="1510030919967934016">此網頁已遭封鎖，無法追蹤你的位置。</translation>
 <translation id="1510238584712386396">啟動器</translation>
 <translation id="1510785804673676069">如果你使用 Proxy 伺服器，請檢查你的 Proxy 設定或
     與網路管理員聯絡，確認 Proxy 伺服器是否運作正
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">編輯檔案</translation>
 <translation id="1698122934742150150">僅適用於目前的無痕模式工作階段</translation>
 <translation id="1700079447639026019">一律無法使用 Cookie 的網站</translation>
-<translation id="1700845716982723710">關閉微光模式</translation>
 <translation id="1701062906490865540">移除這個使用者</translation>
 <translation id="1703331064825191675">再也不必費心記住你的密碼</translation>
 <translation id="1704970325597567340">已於 <ph name="DATE" />執行安全檢查</translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">以先前的備份取代你的 Linux 應用程式和檔案</translation>
 <translation id="1842766183094193446">確定要啟用示範模式嗎？</translation>
 <translation id="1846308012215045257">按下 Ctrl 鍵並點選即可執行「<ph name="PLUGIN_NAME" />」</translation>
-<translation id="184715642345428649">啟用微光模式</translation>
 <translation id="1849186935225320012">這個網頁可完整控制 MIDI 裝置。</translation>
 <translation id="1850508293116537636">順時針旋轉(&amp;C)</translation>
 <translation id="1852141627593563189">尋找有害軟體</translation>
@@ -1174,7 +1171,6 @@
 <translation id="2392163307141705938">你已達到貴家長為 <ph name="IDS_SHORT_PRODUCT_NAME" /> 設定的使用時間限制。</translation>
 <translation id="2392369802118427583">啟用</translation>
 <translation id="2393136602862631930">在你的 Chromebook 上設定「<ph name="APP_NAME" />」</translation>
-<translation id="2394566832561516196">系統將在你重新載入網頁後清除設定</translation>
 <translation id="2395616325548404795">你的 <ph name="DEVICE_TYPE" /> 已成功註冊企業管理服務，但無法傳送資產和位置資訊。請前往管理控制台，為這個裝置手動輸入這些資訊。</translation>
 <translation id="2396387085693598316">管理員已封鎖「<ph name="EXTENSION_NAME" />」</translation>
 <translation id="2396783860772170191">輸入 4 位數 PIN 碼 (0000-9999)</translation>
@@ -1663,7 +1659,6 @@
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981113813906970160">顯示大型滑鼠游標</translation>
 <translation id="2985348301114641460">要傳送「<ph name="EXTENSION_NAME" />」的安裝要求給系統管理員嗎？</translation>
-<translation id="2986010903908656993">這個網頁已遭封鎖，無法取得 MIDI 裝置的完整控制權。</translation>
 <translation id="2987620471460279764">從其他裝置分享的文字</translation>
 <translation id="2988018669686457659">備用轉譯器</translation>
 <translation id="2989123969927553766">滑鼠捲動加速</translation>
@@ -2087,7 +2082,6 @@
 <translation id="3524965460886318643">匯出活動</translation>
 <translation id="3526034519184079374">無法讀取或變更網站的資料</translation>
 <translation id="3527085408025491307">資料夾</translation>
-<translation id="3528033729920178817">這個網頁正在追蹤你的位置。</translation>
 <translation id="3528498924003805721">捷徑目標</translation>
 <translation id="3532273508346491126">同步功能管理</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 靜音</translation>
@@ -2562,7 +2556,6 @@
 <translation id="4061374428807229313">如要共用資料夾，請在「檔案」應用程式中的資料夾上按一下滑鼠右鍵，然後選取 [與 Parallels Desktop 共用]。</translation>
 <translation id="4065876735068446555">目前使用的網路 (<ph name="NETWORK_ID" />) 可能會要求您造訪登入網頁。</translation>
 <translation id="4066207411788646768">如要查看網路中的可用印表機，請檢查你的連線狀態</translation>
-<translation id="4068506536726151626">這個網頁包含來自下列網站的元素，且這些元素正在追蹤你的位置：</translation>
 <translation id="4068776064906523561">已儲存的指紋</translation>
 <translation id="407173827865827707">點擊時</translation>
 <translation id="4074900173531346617">電子郵件簽署者憑證</translation>
@@ -3205,7 +3198,6 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> 要求與「<ph name="EXTENSION_NAME" />」擴充功能通訊</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4918221908152712722">安裝「<ph name="APP_NAME" />」(無須下載)</translation>
-<translation id="4920887663447894854">下列網站已遭封鎖，無法在你瀏覽此網頁時追蹤你的位置：</translation>
 <translation id="4921290200821452703">給家長的學校帳戶資訊</translation>
 <translation id="4921348630401250116">文字轉語音</translation>
 <translation id="49226369361073053">{0,plural, =0{請立即更新裝置}=1{請在 1 秒內更新裝置}other{請在 # 秒內更新裝置}}</translation>
@@ -3283,7 +3275,6 @@
 <translation id="5027562294707732951">新增擴充功能</translation>
 <translation id="5029568752722684782">清除複本</translation>
 <translation id="5033266061063942743">幾何形狀</translation>
-<translation id="5033370009438029887">停用微光模式</translation>
 <translation id="5036662165765606524">禁止任何網站自動下載多個檔案</translation>
 <translation id="5037676449506322593">全選</translation>
 <translation id="5038022729081036555">你明天可以使用 <ph name="TIME_LIMIT" />。</translation>
@@ -3960,7 +3951,6 @@
 <translation id="5865508026715185451">「<ph name="APP_NAME" />」即將暫停</translation>
 <translation id="586567932979200359">你正在透過磁碟映像執行 <ph name="PRODUCT_NAME" />。你可以直接在電腦上安裝程式，往後無需透過磁碟映像即可直接執行，而且能隨時使用最新的版本。</translation>
 <translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
-<translation id="5866557323934807206">清除這些設定 (下次造訪時不使用這些設定)</translation>
 <translation id="5866840822086176774">極強</translation>
 <translation id="5867841422488265304">搜尋或輸入網址</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
@@ -4245,7 +4235,6 @@
 <translation id="6225475702458870625">可透過 <ph name="PHONE_NAME" /> 使用數據連線</translation>
 <translation id="6226777517901268232">私密金鑰檔案 (選填)</translation>
 <translation id="6227280783235722609">擴充功能</translation>
-<translation id="6228691855869374890">這個網站可完整控制 MIDI 裝置。</translation>
 <translation id="6229849828796482487">中斷與 Wi-Fi 網路的連線</translation>
 <translation id="6229890768313448549">無法載入《Google Play 服務條款》，請重試。</translation>
 <translation id="6231881193380278751">在網址中加入查詢間距的參數，設定自動重新整理網頁的時間：chrome://device-log/?refresh=&lt;秒數&gt;</translation>
@@ -4399,7 +4388,6 @@
 <translation id="6412931879992742813">新增無痕式視窗</translation>
 <translation id="641469293210305670">安裝更新內容和應用程式</translation>
 <translation id="6414888972213066896">你已詢問家長是否同意你造訪這個網站</translation>
-<translation id="6415659939354280526">選擇微光模式來源</translation>
 <translation id="6415900369006735853">透過手機連上網際網路</translation>
 <translation id="6416743254476733475">請透過電腦允許或封鎖相關要求。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
@@ -5343,7 +5331,6 @@
 <translation id="7616214729753637086">正在註冊裝置…</translation>
 <translation id="7617263010641145920">開啟 Play 商店</translation>
 <translation id="7617366389578322136">正在連線至「<ph name="DEVICE_NAME" />」</translation>
-<translation id="761763866592998929">微光模式</translation>
 <translation id="7621382409404463535">系統無法儲存裝置設定。</translation>
 <translation id="7622114377921274169">充電中。</translation>
 <translation id="7622903810087708234">密碼詳細資料</translation>
@@ -5587,7 +5574,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">查看帳戶</translation>
 <translation id="7882358943899516840">供應商類型</translation>
-<translation id="78851824530736377">開啟微光模式</translation>
 <translation id="7885253890047913815">最近用過的印表機</translation>
 <translation id="7887334752153342268">複製</translation>
 <translation id="7887864092952184874">已配對藍牙滑鼠</translation>

@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "printing/common/metafile_utils.h"
@@ -39,6 +38,8 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   //              comments before InitFromData()'s implementation.
   MetafileSkia();
   MetafileSkia(mojom::SkiaDocumentType type, int document_cookie);
+  MetafileSkia(const MetafileSkia&) = delete;
+  MetafileSkia& operator=(const MetafileSkia&) = delete;
   ~MetafileSkia() override;
 
   // Metafile methods.
@@ -135,8 +136,6 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   std::unique_ptr<MetafileSkiaData> data_;
 
   ui::AXTreeUpdate accessibility_tree_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetafileSkia);
 };
 
 }  // namespace printing

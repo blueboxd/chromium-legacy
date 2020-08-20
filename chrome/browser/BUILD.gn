@@ -2961,7 +2961,6 @@ static_library("browser") {
       ":usage_stats_proto",
       "//chrome/android:jni_headers",
       "//chrome/android/modules/extra_icu/provider:native",
-      "//chrome/browser/android/thin_webview/internal",
       "//chrome/browser/android/webapk:proto",
       "//chrome/browser/flags:flags_android",
       "//chrome/browser/notifications/chime/android",
@@ -3012,6 +3011,7 @@ static_library("browser") {
       "//components/signin/internal/identity_manager",  # cf android / signin /
                                                         # DEPS
       "//components/subresource_filter/android",
+      "//components/thin_webview/internal",
       "//components/viz/common",
       "//ipc:param_traits",
       "//media/mojo/clients",

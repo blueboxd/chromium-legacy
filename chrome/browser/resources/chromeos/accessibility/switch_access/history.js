@@ -45,6 +45,7 @@ class FocusHistory {
       // No ancestors, cannot create stack.
       return false;
     }
+    const cache = new SACache();
     // Create a list of ancestors.
     const ancestorStack = [node];
     while (node.parent) {
@@ -54,7 +55,7 @@ class FocusHistory {
 
     let group = DesktopNode.build(ancestorStack.pop());
     const firstAncestor = ancestorStack[ancestorStack.length - 1];
-    if (!SwitchAccessPredicate.isInterestingSubtree(firstAncestor)) {
+    if (!SwitchAccessPredicate.isInterestingSubtree(firstAncestor, cache)) {
       // If the topmost ancestor (other than the desktop) is entirely
       // uninteresting, we leave the history as is.
       return false;
@@ -63,7 +64,7 @@ class FocusHistory {
     const newDataStack = [];
     while (ancestorStack.length > 0) {
       const candidate = ancestorStack.pop();
-      if (!SwitchAccessPredicate.isInteresting(candidate, group)) {
+      if (!SwitchAccessPredicate.isInteresting(candidate, group, cache)) {
         continue;
       }
 

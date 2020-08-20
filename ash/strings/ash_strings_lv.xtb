@@ -40,6 +40,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Signāla stiprums: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Vienmēr rādīt plauktu</translation>
+<translation id="1333308631814936910">Izveidots savienojums ar ierīci “<ph name="DISPLAY_NAME" />”.</translation>
 <translation id="1341651618736211726">Pārpilde</translation>
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
@@ -519,6 +520,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="6972754398087986839">Sākt darbu</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
+<translation id="6990778048354947307">Tumšais motīvs</translation>
 <translation id="7007983414944123363">Nevarēja verificēt jūsu PIN vai paroli. Mēģiniet vēlreiz.</translation>
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Savienojiet ierīci <ph name="DEVICE_NAME" /> ar tālruni</translation>

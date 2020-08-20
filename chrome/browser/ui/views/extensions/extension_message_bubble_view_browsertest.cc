@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
 }
 
 // Flaky on Mac https://crbug.com/851655
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_TestBubbleClosedAfterExtensionUninstall \
   DISABLED_TestBubbleClosedAfterExtensionUninstall
 #else

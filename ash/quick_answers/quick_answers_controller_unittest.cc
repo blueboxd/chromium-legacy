@@ -66,6 +66,7 @@ class QuickAnswersControllerTest : public AshTestBase {
 
 TEST_F(QuickAnswersControllerTest, ShouldNotShowWhenFeatureNotEligible) {
   controller()->OnEligibilityChanged(false);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kPending);
   controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
                                       kDefaultTitle, {});
 
@@ -74,8 +75,21 @@ TEST_F(QuickAnswersControllerTest, ShouldNotShowWhenFeatureNotEligible) {
   EXPECT_FALSE(ui_controller()->is_showing_quick_answers_view());
 }
 
+TEST_F(QuickAnswersControllerTest, ShouldNotShowWhenClosed) {
+  controller()->OnEligibilityChanged(true);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kClosed);
+  controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
+                                      kDefaultTitle, {});
+
+  // The UI is closed and session is inactive, nothing should be shown.
+  EXPECT_FALSE(ui_controller()->is_showing_user_consent_view());
+  EXPECT_FALSE(ui_controller()->is_showing_quick_answers_view());
+  EXPECT_EQ(controller()->visibility(), QuickAnswersVisibility::kClosed);
+}
+
 TEST_F(QuickAnswersControllerTest, AcceptUserConsent) {
   controller()->OnEligibilityChanged(true);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kPending);
   controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
                                       kDefaultTitle, {});
   // Without user consent, only the user consent view should show.
@@ -88,11 +102,13 @@ TEST_F(QuickAnswersControllerTest, AcceptUserConsent) {
   // quick answer query should show.
   EXPECT_FALSE(ui_controller()->is_showing_user_consent_view());
   EXPECT_TRUE(ui_controller()->is_showing_quick_answers_view());
+  EXPECT_EQ(controller()->visibility(), QuickAnswersVisibility::kVisible);
 }
 
 TEST_F(QuickAnswersControllerTest, UserConsentAlreadyAccpeted) {
   consent_controller()->StartConsent();
   controller()->OnEligibilityChanged(true);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kPending);
   consent_controller()->AcceptConsent(
       chromeos::quick_answers::ConsentInteractionType::kAccept);
   controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
@@ -102,21 +118,25 @@ TEST_F(QuickAnswersControllerTest, UserConsentAlreadyAccpeted) {
   // show.
   EXPECT_FALSE(ui_controller()->is_showing_user_consent_view());
   EXPECT_TRUE(ui_controller()->is_showing_quick_answers_view());
+  EXPECT_EQ(controller()->visibility(), QuickAnswersVisibility::kVisible);
 }
 
 TEST_F(QuickAnswersControllerTest, DismissUserConsentView) {
   controller()->OnEligibilityChanged(true);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kPending);
   controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
                                       kDefaultTitle, {});
   EXPECT_TRUE(ui_controller()->is_showing_user_consent_view());
 
   controller()->DismissQuickAnswers(true);
   EXPECT_FALSE(ui_controller()->is_showing_user_consent_view());
+  EXPECT_EQ(controller()->visibility(), QuickAnswersVisibility::kClosed);
 }
 
 TEST_F(QuickAnswersControllerTest, DismissQuickAnswersView) {
   consent_controller()->StartConsent();
   controller()->OnEligibilityChanged(true);
+  controller()->SetVisibilityForTesting(QuickAnswersVisibility::kPending);
   consent_controller()->AcceptConsent(
       chromeos::quick_answers::ConsentInteractionType::kAccept);
   controller()->MaybeShowQuickAnswers(kDefaultAnchorBoundsInScreen,
@@ -125,6 +145,7 @@ TEST_F(QuickAnswersControllerTest, DismissQuickAnswersView) {
 
   controller()->DismissQuickAnswers(true);
   EXPECT_FALSE(ui_controller()->is_showing_quick_answers_view());
+  EXPECT_EQ(controller()->visibility(), QuickAnswersVisibility::kClosed);
 }
 
 }  // namespace ash

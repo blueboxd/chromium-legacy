@@ -1126,4 +1126,30 @@ TEST_F(MagnificationControllerTest, DragWindow) {
   EXPECT_NE(initial_window_bounds, window->bounds());
 }
 
+// Tests that the magnifier gets updated while drag a window across displays.
+TEST_F(MagnificationControllerTest, DragWindowAcrossDisplays) {
+  UpdateDisplay("0+0-500x500, 500+0-500x500");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  // Create a window and start dragging by grabbing its caption.
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(100, 100, 300, 300));
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(gfx::Point(105, 105));
+  event_generator->PressLeftButton();
+  ASSERT_TRUE(WindowState::Get(window.get())->is_dragged());
+
+  GetMagnificationController()->SetEnabled(true);
+  event_generator->MoveMouseToInHost(gfx::Point(250, 250));
+  EXPECT_FALSE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+
+  // Move the cursor manually since EventGenerator uses a hack to move the
+  // cursor between displays.
+  root_windows[1]->MoveCursorTo(gfx::Point(950, 250));
+  event_generator->MoveMouseToInHost(gfx::Point(950, 250));
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_FALSE(root_windows[1]->layer()->transform().IsIdentity());
+}
+
 }  // namespace ash

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -209,7 +210,7 @@ void PinBackend::SetPinAutoSubmitEnabled(const AccountId& account_id,
                                          BoolCallback did_set) {
   // Immediate false if the PIN length isn't supported, or when the feature
   // isdisabled.
-  if (!IsPinAutosubmitFeatureEnabled() ||
+  if (!features::IsPinAutosubmitFeatureEnabled() ||
       pin.length() > kPinAutosubmitMaxPinLength) {
     PostResponse(std::move(did_set), false);
     return;
@@ -335,7 +336,7 @@ bool PinBackend::ShouldUseCryptohome(const AccountId& account_id) {
 }
 
 int PinBackend::GetExposedPinLength(const AccountId& account_id) {
-  if (!IsPinAutosubmitFeatureEnabled()) {
+  if (!features::IsPinAutosubmitFeatureEnabled()) {
     // Clear the exposed length if the feature was disabled.
     user_manager::known_user::SetUserPinLength(account_id, 0);
     return 0;
@@ -404,7 +405,7 @@ PrefService* PinBackend::PrefService(const AccountId& account_id) {
 
 void PinBackend::UpdatePinAutosubmitOnSet(const AccountId& account_id,
                                           size_t pin_length) {
-  if (!IsPinAutosubmitFeatureEnabled())
+  if (!features::IsPinAutosubmitFeatureEnabled())
     return;
 
   // A PIN is being set when the auto submit feature is present. This user
@@ -429,7 +430,7 @@ void PinBackend::UpdatePinAutosubmitOnSet(const AccountId& account_id,
 }
 
 void PinBackend::UpdatePinAutosubmitOnRemove(const AccountId& account_id) {
-  if (!IsPinAutosubmitFeatureEnabled())
+  if (!features::IsPinAutosubmitFeatureEnabled())
     return;
   user_manager::known_user::SetUserPinLength(account_id, 0);
   PrefService(account_id)->ClearPref(prefs::kPinUnlockAutosubmitEnabled);
@@ -438,7 +439,7 @@ void PinBackend::UpdatePinAutosubmitOnRemove(const AccountId& account_id) {
 void PinBackend::UpdatePinAutosubmitOnSuccessfulTryAuth(
     const AccountId& account_id,
     size_t pin_length) {
-  if (!IsPinAutosubmitFeatureEnabled())
+  if (!features::IsPinAutosubmitFeatureEnabled())
     return;
 
   // Backfill the auto submit preference if the PIN that was authenticated was
@@ -454,8 +455,8 @@ void PinBackend::UpdatePinAutosubmitOnSuccessfulTryAuth(
 
 void PinBackend::PinAutosubmitBackfill(const AccountId& account_id,
                                        size_t pin_length) {
-  if (!IsPinAutosubmitBackfillFeatureEnabled() ||
-      !IsPinAutosubmitFeatureEnabled()) {
+  if (!features::IsPinAutosubmitBackfillFeatureEnabled() ||
+      !features::IsPinAutosubmitFeatureEnabled()) {
     return;
   }
 

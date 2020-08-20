@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">Ցուցադրել Bluetooth-ի կարգավորումները: <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Ազդանշանի հզորությունը՝ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Միշտ ցուցադրել դարակը</translation>
+<translation id="1333308631814936910">Միացված է <ph name="DISPLAY_NAME" /> սարքը</translation>
 <translation id="1341651618736211726">Բացել լրացուցիչ ընտրացանկը</translation>
 <translation id="1346748346194534595">Աջ</translation>
 <translation id="1351937230027495976">Ծալել ընտրացանկը</translation>
@@ -142,7 +143,7 @@
 <translation id="2484513351006226581">Ստեղնաշարի դասավորությունը փոխելու համար սեղմեք <ph name="KEYBOARD_SHORTCUT" />։</translation>
 <translation id="2501920221385095727">Կպչուն ստեղներ</translation>
 <translation id="2509468283778169019">CAPS LOCK-ը միացված է</translation>
-<translation id="2517829236324128850">Ցուցադրել մուգ ռեժիմի կարգավորումները</translation>
+<translation id="2517829236324128850">Ցույց տալ մուգ ռեժիմի կարգավորումները</translation>
 <translation id="2542089167727451762">Հպեք ձեր պրոֆիլի նկարին</translation>
 <translation id="255671100581129685">Google Օգնականը հասանելի չէ հանրային աշխատաշրջանում։</translation>
 <translation id="256712445991462162">Ամրացված խոշորացույց</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">Սկսել աշխատանքը</translation>
 <translation id="6981982820502123353">Մատչելիությունը</translation>
 <translation id="698231206551913481">Այս օգտատիրոջ հետ կապված բոլոր ֆայլերը և տեղային տվյալներն ընդմիշտ կջնջվեն, եթե հեռացնեք այս պրոֆիլը:</translation>
+<translation id="6990778048354947307">Մուգ թեմա</translation>
 <translation id="7007983414944123363">Չհաջողվեց հաստատել ձեր PIN կոդը կամ գաղտնաբառը։ Նորից փորձեք։</translation>
 <translation id="7015766095477679451">Վերադարձեք <ph name="COME_BACK_TIME" />։</translation>
 <translation id="7025533177575372252">Կապեք ձեր <ph name="DEVICE_NAME" /> սարքը ձեր հեռախոսի հետ</translation>

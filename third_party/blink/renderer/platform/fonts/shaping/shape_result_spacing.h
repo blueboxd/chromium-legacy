@@ -42,8 +42,8 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
     return expansion_opportunity_count_;
   }
 
-  // Set letter-spacing, word-spacing, and letter-spacing-override. Uses a Font
-  // argument instead of FontDescription as letter-spacing-override is retrieved
+  // Set letter-spacing, word-spacing, and advance-override. Uses a Font
+  // argument instead of FontDescription as advance-override is retrieved
   // from CSS @font-face, not from style like word-spacing and letter-spacing.
   bool SetSpacing(const Font&);
 
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
                     bool allows_leading_expansion = false,
                     bool allows_trailing_expansion = false);
 
-  // Set letter-spacing, word-spacing, letter-spacing-override and
+  // Set letter-spacing, word-spacing, advance-override and
   // justification. Available only for TextRun.
   void SetSpacingAndExpansion(const Font&);
 
@@ -62,9 +62,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   // The |index| is for the |TextContainerType| given in the constructor.
   // For justification, this function must be called incrementally since it
   // keeps states and counts consumed justification opportunities.
-  float ComputeSpacing(unsigned index,
-                       float letter_spacing_override,
-                       float& offset);
+  float ComputeSpacing(unsigned index, float advance_override, float& offset);
 
  private:
   bool IsAfterExpansion() const { return is_after_expansion_; }

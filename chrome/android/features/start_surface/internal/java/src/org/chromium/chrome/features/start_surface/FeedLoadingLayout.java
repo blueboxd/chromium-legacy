@@ -30,7 +30,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
  */
 public class FeedLoadingLayout extends LinearLayout {
     private static final int CARD_MARGIN_DP = 12;
-    private static final int CARD_PADDING_DP = 15;
+    private static final int CARD_TOP_PADDING_DP = 15;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 72;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP = 48;
     private static final int IMAGE_PLACEHOLDER_SIZE_DP = 92;
@@ -117,7 +117,6 @@ public class FeedLoadingLayout extends LinearLayout {
             LinearLayout parent, boolean isSmallCard, ViewGroup.LayoutParams lp) {
         LinearLayout container = new LinearLayout(mContext);
         container.setLayoutParams(lp);
-        container.setBackgroundResource(R.drawable.hairline_border_card_background_light);
         container.setOrientation(isSmallCard ? HORIZONTAL : VERTICAL);
         ImageView imagePlaceholder = getImagePlaceholder(isSmallCard);
         ImageView textPlaceholder = getTextPlaceholder(isSmallCard);
@@ -130,37 +129,35 @@ public class FeedLoadingLayout extends LinearLayout {
         LinearLayout.LayoutParams imagePlaceholderLp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         ImageView imagePlaceholder = new ImageView(mContext);
-        int imageRadius = mResources.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
-        imagePlaceholder.setImageDrawable(isSmallCard ? getSmallImageDrawable(imageRadius)
-                                                      : getLargeImageDrawable(imageRadius));
+        imagePlaceholder.setImageDrawable(
+                isSmallCard ? getSmallImageDrawable() : getLargeImageDrawable());
         imagePlaceholder.setLayoutParams(imagePlaceholderLp);
         imagePlaceholder.setScaleType(ImageView.ScaleType.FIT_XY);
         return imagePlaceholder;
     }
 
-    private LayerDrawable getSmallImageDrawable(int imageRadius) {
+    private LayerDrawable getSmallImageDrawable() {
         int imageSize = dpToPx(IMAGE_PLACEHOLDER_SIZE_DP);
-        int padding = dpToPx(CARD_PADDING_DP);
-        GradientDrawable[] placeholder = getRectangles(1, imageSize, imageSize, imageRadius, false);
+        int top = dpToPx(CARD_TOP_PADDING_DP);
+        GradientDrawable[] placeholder = getRectangles(1, imageSize, imageSize);
         LayerDrawable layerDrawable = new LayerDrawable(placeholder);
-        layerDrawable.setLayerInset(0, 0, padding, padding,
+        layerDrawable.setLayerInset(0, 0, top, 0,
                 mIsFirstCardDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP)
                                   : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP));
         return layerDrawable;
     }
 
-    private LayerDrawable getLargeImageDrawable(int imageRadius) {
-        GradientDrawable[] placeholder = getRectangles(1, dpToPx(mScreenWidthDp) - mPaddingPx * 2,
-                dpToPx(LARGE_IMAGE_HEIGHT_DP), imageRadius, true);
+    private LayerDrawable getLargeImageDrawable() {
+        GradientDrawable[] placeholder = getRectangles(
+                1, dpToPx(mScreenWidthDp) - mPaddingPx * 2, dpToPx(LARGE_IMAGE_HEIGHT_DP));
         return new LayerDrawable(placeholder);
     }
 
     private ImageView getTextPlaceholder(boolean isSmallCard) {
-        int top = dpToPx(CARD_PADDING_DP);
+        int top = dpToPx(CARD_TOP_PADDING_DP);
         int left = top / 2;
         int height = dpToPx(TEXT_PLACEHOLDER_HEIGHT_DP);
         int width = dpToPx(mScreenWidthDp) - mPaddingPx * 2;
-        int radius = dpToPx(TEXT_PLACEHOLDER_RADIUS_DP);
         int contentHeight = dpToPx(TEXT_CONTENT_HEIGHT_DP);
 
         LinearLayout.LayoutParams textPlaceholderLp = isSmallCard
@@ -169,10 +166,10 @@ public class FeedLoadingLayout extends LinearLayout {
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LayerDrawable layerDrawable = isSmallCard
-                ? getSmallTextDrawable(top, left,
-                        width - dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) - dpToPx(CARD_PADDING_DP), height,
-                        radius, contentHeight)
-                : getLargeTextDrawable(top, left, width, height, radius, contentHeight + 2 * top);
+                ? getSmallTextDrawable(top,
+                        width - dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) - dpToPx(CARD_TOP_PADDING_DP),
+                        height, contentHeight)
+                : getLargeTextDrawable(top, left, width, height, contentHeight + 2 * top);
 
         ImageView textPlaceholder = new ImageView(mContext);
         textPlaceholder.setImageDrawable(layerDrawable);
@@ -181,28 +178,27 @@ public class FeedLoadingLayout extends LinearLayout {
         return textPlaceholder;
     }
 
-    private LayerDrawable getSmallTextDrawable(
-            int top, int left, int width, int height, int radius, int contentHeight) {
-        GradientDrawable[] placeholders = getRectangles(4, width, height, radius, false);
-        int cardHeight = dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) + dpToPx(CARD_PADDING_DP)
+    private LayerDrawable getSmallTextDrawable(int top, int width, int height, int contentHeight) {
+        GradientDrawable[] placeholders = getRectangles(4, width, height);
+        int cardHeight = dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) + dpToPx(CARD_TOP_PADDING_DP)
                 + (mIsFirstCardDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP)
                                      : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP));
         LayerDrawable layerDrawable = new LayerDrawable(placeholders);
         // Title Placeholder
-        layerDrawable.setLayerInset(0, left, top, top, cardHeight - top - height);
+        layerDrawable.setLayerInset(0, 0, top, top, cardHeight - top - height);
         // Content Placeholder
-        layerDrawable.setLayerInset(1, left, (contentHeight - height) / 2 + top, top,
+        layerDrawable.setLayerInset(1, 0, (contentHeight - height) / 2 + top, top,
                 cardHeight - top - (height + contentHeight) / 2);
         layerDrawable.setLayerInset(
-                2, left, top + contentHeight - height, top, cardHeight - top - contentHeight);
+                2, 0, top + contentHeight - height, top, cardHeight - top - contentHeight);
         // Publisher Placeholder
-        layerDrawable.setLayerInset(3, left, cardHeight - top - height, top * 7, top);
+        layerDrawable.setLayerInset(3, 0, cardHeight - top - height, top * 7, top);
         return layerDrawable;
     }
 
     private LayerDrawable getLargeTextDrawable(
-            int top, int left, int width, int height, int radius, int contentHeight) {
-        GradientDrawable[] placeholders = getRectangles(3, width, height, radius, false);
+            int top, int left, int width, int height, int contentHeight) {
+        GradientDrawable[] placeholders = getRectangles(3, width, height);
         LayerDrawable layerDrawable = new LayerDrawable(placeholders);
         layerDrawable.setLayerInset(0, left, top, top, contentHeight - top - height);
         layerDrawable.setLayerInset(
@@ -211,19 +207,14 @@ public class FeedLoadingLayout extends LinearLayout {
         return layerDrawable;
     }
 
-    private GradientDrawable[] getRectangles(
-            int num, int width, int height, int radius, boolean setBottomRadius) {
+    private GradientDrawable[] getRectangles(int num, int width, int height) {
         GradientDrawable[] placeholders = new GradientDrawable[num];
+        int radius = dpToPx(TEXT_PLACEHOLDER_RADIUS_DP);
         for (int i = 0; i < num; i++) {
             placeholders[i] = new GradientDrawable();
             placeholders[i].setShape(GradientDrawable.RECTANGLE);
             placeholders[i].setSize(width, height);
-            if (setBottomRadius) {
-                placeholders[i].setCornerRadii(
-                        new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
-            } else {
-                placeholders[i].setCornerRadius(radius);
-            }
+            placeholders[i].setCornerRadius(radius);
             placeholders[i].setColor(mResources.getColor(R.color.feed_placeholder_color));
         }
         return placeholders;

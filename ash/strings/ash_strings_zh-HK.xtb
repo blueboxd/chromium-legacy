@@ -40,7 +40,7 @@
 <translation id="1302880136325416935">顯示藍牙設定。<ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">訊號強度係 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">永遠顯示檔案櫃</translation>
-<translation id="1333308631814936910">已連結「<ph name="DISPLAY_NAME" />」</translation>
+<translation id="1333308631814936910">已連接「<ph name="DISPLAY_NAME" />」</translation>
 <translation id="1341651618736211726">展開</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">摺埋選單</translation>
@@ -520,6 +520,7 @@
 <translation id="6972754398087986839">開始使用</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="698231206551913481">移除這位使用者後，系統便會永久刪除所有與該使用者相關的檔案和本機數據。</translation>
+<translation id="6990778048354947307">暗色主題</translation>
 <translation id="7007983414944123363">系統無法驗證您的 PIN 或密碼。請再試一次。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 後才可使用。</translation>
 <translation id="7025533177575372252">將 <ph name="DEVICE_NAME" /> 連結至您的手機</translation>

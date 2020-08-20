@@ -429,12 +429,26 @@ void MagnificationController::OnWindowBoundsChanged(
 void MagnificationController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   aura::Window* current_root = target->GetRootWindow();
-  gfx::Rect root_bounds = current_root->bounds();
+  gfx::Point root_location = event->root_location();
 
-  if (root_bounds.Contains(event->root_location())) {
+  if (event->type() == ui::ET_MOUSE_DRAGGED) {
+    auto* screen = display::Screen::GetScreen();
+    const gfx::Point cursor_screen_location = screen->GetCursorScreenPoint();
+
+    auto* window = screen->GetWindowAtScreenPoint(cursor_screen_location);
+    // Update the |current_root| to be the one that contains the cursor
+    // currently. This will make sure the magnifier be activated in the display
+    // that contains the cursor while drag a window across displays.
+    current_root =
+        window ? window->GetRootWindow() : Shell::GetPrimaryRootWindow();
+    root_location = cursor_screen_location;
+    wm::ConvertPointFromScreen(current_root, &root_location);
+  }
+
+  if (current_root->bounds().Contains(root_location)) {
     // This must be before |SwitchTargetRootWindow()|.
     if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
-      point_of_interest_in_root_ = event->root_location();
+      point_of_interest_in_root_ = root_location;
 
     if (current_root != root_window_) {
       DCHECK(current_root);
@@ -445,7 +459,7 @@ void MagnificationController::OnMouseEvent(ui::MouseEvent* event) {
                                   event->type() == ui::ET_MOUSE_DRAGGED;
     if (IsMagnified() && dragged_or_moved &&
         event->pointer_details().pointer_type != ui::EventPointerType::kPen) {
-      OnMouseMove(event->root_location());
+      OnMouseMove(root_location);
     }
   }
 }

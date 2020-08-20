@@ -14,11 +14,16 @@
 
 namespace chrome_test_util {
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
+// Whether or not the fake sync server has already been setup by
+// |SetUpFakeSyncServer()|.
+bool IsFakeSyncServerSetUp();
+
+// Sets up a fake sync server to be used by the ProfileSyncService. Must only be
+// called if |IsFakeSyncServerSetUp()| returns false.
 void SetUpFakeSyncServer();
 
 // Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
+// the real one. Must only be called if |IsFakeSyncServerSetUp()| is true.
 void TearDownFakeSyncServer();
 
 // Starts the sync server. The server should not be running when calling this.

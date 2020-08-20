@@ -36,6 +36,8 @@ const char kNearbySharingPublicCertificateExpirationDictPrefName[] =
     "nearbyshare.public_certificate_expiration_dict";
 const char kNearbySharingPrivateCertificateListPrefName[] =
     "nearbyshare.private_certificate_list";
+const char kNearbySharingSchedulerDownloadPublicCertificatesPrefName[] =
+    "nearby_sharing.scheduler.download_public_certificates";
 
 }  // namespace prefs
 
@@ -72,6 +74,8 @@ void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
       prefs::kNearbySharingPublicCertificateExpirationDictPrefName);
   registry->RegisterListPref(
       prefs::kNearbySharingPrivateCertificateListPrefName);
+  registry->RegisterDictionaryPref(
+      prefs::kNearbySharingSchedulerDownloadPublicCertificatesPrefName);
 }
 
 void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {

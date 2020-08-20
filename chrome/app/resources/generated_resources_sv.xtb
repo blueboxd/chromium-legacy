@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Aktuell version: Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Åtkomst till valfri <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
 <translation id="1509960214886564027">Funktioner kan sluta att fungera på många webbplatser</translation>
-<translation id="1510030919967934016">Sidan har förhindrats från att spåra din plats.</translation>
 <translation id="1510238584712386396">Startprogram</translation>
 <translation id="1510785804673676069">Om du använder en proxyserver kontrollerar du proxyinställningarna eller
     kontaktar nätverksadministratören för att kontrollera att
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Redigera fil</translation>
 <translation id="1698122934742150150">Endast nuvarande inkognitosession</translation>
 <translation id="1700079447639026019">Webbplatser som aldrig kan använda cookies</translation>
-<translation id="1700845716982723710">Inaktivera viloläget</translation>
 <translation id="1701062906490865540">Ta bort personen</translation>
 <translation id="1703331064825191675">Tänk inte mer på dina lösenord</translation>
 <translation id="1704970325597567340">Säkerhetskontrollen kördes den <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Ersätt Linux-appar och Linux-filer med en säkerhetskopia</translation>
 <translation id="1842766183094193446">Vill du aktivera demoläget?</translation>
 <translation id="1846308012215045257">Kontroll-klicka för att köra <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Aktivera viloläget</translation>
 <translation id="1849186935225320012">Den här sidan har fullständig kontroll över MIDI-enheter.</translation>
 <translation id="1850508293116537636">Rotera &amp;medurs</translation>
 <translation id="1852141627593563189">Sök efter skadliga program</translation>
@@ -1174,7 +1171,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2392163307141705938">Du har nått gränsen som din förälder har ställt in för <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktivera</translation>
 <translation id="2393136602862631930">Konfigurera <ph name="APP_NAME" /> på Chromebook</translation>
-<translation id="2394566832561516196">Inställningarna tas bort vid nästa inläsning.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> har registrerats för företagshantering, men har inte skickat tillgångs- och platsinformation. Ange informationen manuellt i administratörskonsolen för enheten.</translation>
 <translation id="2396387085693598316">Administratören blockerar <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Ange den fyrsiffriga pinkoden (0000–9999)</translation>
@@ -1664,7 +1660,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2979639724566107830">Öppna i nytt fönster</translation>
 <translation id="2981113813906970160">Visa stor muspekare</translation>
 <translation id="2985348301114641460">Vill du skicka en begäran om att installera <ph name="EXTENSION_NAME" /> till administratören?</translation>
-<translation id="2986010903908656993">Sidan har blockerats från fullständig kontroll över MIDI-enheter.</translation>
 <translation id="2987620471460279764">Text delad från annan enhet</translation>
 <translation id="2988018669686457659">Renderare i reserv</translation>
 <translation id="2989123969927553766">Scrollningsacceleration för musen</translation>
@@ -2088,7 +2083,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3524965460886318643">Exportera aktivitet</translation>
 <translation id="3526034519184079374">Kan inte läsa eller ändra webbplatsens data</translation>
 <translation id="3527085408025491307">Mapp</translation>
-<translation id="3528033729920178817">Sidan spårar din plats.</translation>
 <translation id="3528498924003805721">Mål för genvägar</translation>
 <translation id="3532273508346491126">Hantera synkronisering</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – ljud av</translation>
@@ -2351,8 +2345,8 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3814529970604306954">Skolkonto</translation>
 <translation id="3816118180265633665">Färger i Chrome</translation>
 <translation id="3817524650114746564">Öppna datorns proxyinställningar</translation>
-<translation id="3817579325494460411">Inte angivet</translation>
-<translation id="3819257035322786455">Säkerhetskopiering</translation>
+<translation id="3817579325494460411">Inte angiven</translation>
+<translation id="3819257035322786455">Säkerhetskopiera</translation>
 <translation id="3819261658055281761">Det gick inte att lagra någon långsiktig API-åtkomsttoken för den här enheten.</translation>
 <translation id="3819800052061700452">&amp;Helskärm</translation>
 <translation id="3820749202859700794">SECG med elliptisk kurva secp521r1 (kallas även NIST P-521)</translation>
@@ -2414,7 +2408,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3881478300875776315">Visa färre rader</translation>
 <translation id="3882165008614329320">Befintlig video från kamera eller fil</translation>
 <translation id="3886446263141354045">Din begäran om att få tillgång till denna webbplats har skickats till <ph name="NAME" /></translation>
-<translation id="3888550877729210209">Antecknar med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3888550877729210209">Anteckna med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Lägg till OpenVPN/L2TP …</translation>
 <translation id="3893536212201235195">Läsa och ändra tillgänglighetsinställningarna</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
@@ -2564,7 +2558,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4061374428807229313">Om du vill dela en mapp högerklickar du på den i appen Filer och väljer Dela med Parallels Desktop.</translation>
 <translation id="4065876735068446555">Nätverket du använder (<ph name="NETWORK_ID" />) kanske kräver att du besöker dess inloggningssida.</translation>
 <translation id="4066207411788646768">Kontrollera anslutningen om du vill se vilka skrivare som är tillgängliga i nätverket</translation>
-<translation id="4068506536726151626">På den här sidan finns komponenter från följande webbplatser som spårar din plats:</translation>
 <translation id="4068776064906523561">Sparade fingeravtryck</translation>
 <translation id="407173827865827707">Vid klick</translation>
 <translation id="4074900173531346617">Certifikat för e-postsignering</translation>
@@ -2630,7 +2623,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="41365691917097717">Om du fortsätter aktiveras felsökning med ADB för Android-appar som du skapar och testar. Observera att den här åtgärden tillåter att Android-appar som inte har verifierats av Google installeras. Du måste återställa enheten till standardinställningarna för att inaktivera detta.</translation>
 <translation id="4138267921960073861">Visa användarnamn och foton på inloggningssidan</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> – ansluten till HID-enhet</translation>
-<translation id="4142052906269098341">Lås upp <ph name="DEVICE_TYPE" /> med telefonen. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
+<translation id="4142052906269098341">Lås upp <ph name="DEVICE_TYPE" /> med mobilen. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="4142518881503042940">Spara identifierade skrivare i profilen eller lägg till en ny skrivare. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Få bättre videokvalitet och spara på batteriet. Videor spelas bara upp på den Cast-kompatibla skärmen.</translation>
 <translation id="4144651632048685784">{COUNT,plural, =1{1 telefonnummer}other{# telefonnummer}}</translation>
@@ -3207,7 +3200,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vill kommunicera med tillägget <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4918221908152712722">Installera <ph name="APP_NAME" /> (ingen nedladdning krävs)</translation>
-<translation id="4920887663447894854">Följande webbplatser har förhindrats att spåra din plats på sidan:</translation>
 <translation id="4921290200821452703">Skolkontoinformation för föräldrar</translation>
 <translation id="4921348630401250116">Text till tal</translation>
 <translation id="49226369361073053">{0,plural, =0{Uppdatera enheten nu}=1{Uppdatera enheten inom 1 sekund}other{Uppdatera enheten inom # sekunder}}</translation>
@@ -3285,7 +3277,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5027562294707732951">Lägg till tillägg</translation>
 <translation id="5029568752722684782">Ta bort kopia</translation>
 <translation id="5033266061063942743">Geometriska former</translation>
-<translation id="5033370009438029887">Inaktivera viloläget</translation>
 <translation id="5036662165765606524">Tillåt inte att någon webbplats laddar ned flera filer automatiskt</translation>
 <translation id="5037676449506322593">Markera alla</translation>
 <translation id="5038022729081036555">Du kan använda den i <ph name="TIME_LIMIT" /> i morgon.</translation>
@@ -3962,7 +3953,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5865508026715185451"><ph name="APP_NAME" /> pausas snart</translation>
 <translation id="586567932979200359">Du kör <ph name="PRODUCT_NAME" /> från diskavbildningen. Om du installerar programmet på din dator kan du köra det utan diskavbildningen och du kan vara säker på att det alltid är uppdaterat.</translation>
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
-<translation id="5866557323934807206">Rensa inställningarna för framtida besök</translation>
 <translation id="5866840822086176774">Mycket stark</translation>
 <translation id="5867841422488265304">Skriv en sökning eller en webbadress</translation>
 <translation id="5869029295770560994">Ok, jag förstår</translation>
@@ -4247,7 +4237,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6225475702458870625">En dataanslutning är tillgänglig via din <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Privat nyckelfil (valfritt)</translation>
 <translation id="6227280783235722609">tillägg</translation>
-<translation id="6228691855869374890">Den här webbplatsen har fullständig kontroll över MIDI-enheter.</translation>
 <translation id="6229849828796482487">Koppla från Wi-Fi-nätverk</translation>
 <translation id="6229890768313448549">Det gick inte att läsa in användarvillkoren för Google Play. Försök igen.</translation>
 <translation id="6231881193380278751">Lägg till en frågeparameter i webbadressen för att automatiskt uppdatera sidan: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6412931879992742813">Nytt inkognitofönster</translation>
 <translation id="641469293210305670">Installera uppdateringar och appar</translation>
 <translation id="6414888972213066896">Du har frågat en förälder om lov att besöka den här webbplatsen.</translation>
-<translation id="6415659939354280526">Välj källa för viloläget</translation>
 <translation id="6415900369006735853">Anslut till internet via mobilen</translation>
 <translation id="6416743254476733475">Tillåt eller blockera på datorn.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -5345,7 +5333,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7616214729753637086">Enheten registreras …</translation>
 <translation id="7617263010641145920">Aktivera Play Butik</translation>
 <translation id="7617366389578322136">Ansluter till <ph name="DEVICE_NAME" /></translation>
-<translation id="761763866592998929">Viloläge</translation>
 <translation id="7621382409404463535">Det gick inte att spara enhetskonfigurationen.</translation>
 <translation id="7622114377921274169">Laddas.</translation>
 <translation id="7622903810087708234">Lösenordsinformation</translation>
@@ -5589,7 +5576,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Visa konto</translation>
 <translation id="7882358943899516840">Leverantörstyp</translation>
-<translation id="78851824530736377">Aktivera viloläget</translation>
 <translation id="7885253890047913815">Senaste platserna</translation>
 <translation id="7887334752153342268">Duplicera</translation>
 <translation id="7887864092952184874">Bluetooth-musen har kopplats</translation>

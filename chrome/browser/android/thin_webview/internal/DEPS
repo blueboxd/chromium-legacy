@@ -1,5 +1,0 @@
-include_rules = [
-  "+cc/layers",
-  "+components/embedder_support/android/delegate/web_contents_delegate_android.h",
-  "+content/public/android/java/src/org/chromium/content_public",
-]

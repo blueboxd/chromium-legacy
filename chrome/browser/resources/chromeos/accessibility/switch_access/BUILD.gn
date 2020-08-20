@@ -27,6 +27,7 @@ run_jsbundler("switch_access_copied_files") {
   sources = [
     "auto_scan_manager.js",
     "background.js",
+    "cache.js",
     "commands.js",
     "event_helper.js",
     "focus_ring_manager.js",
@@ -133,6 +134,7 @@ js_type_check("closure_compile") {
     ":auto_scan_manager",
     ":back_button_node",
     ":background",
+    ":cache",
     ":combo_box_node",
     ":commands",
     ":desktop_node",
@@ -186,6 +188,10 @@ js_library("back_button_node") {
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
   ]
+}
+
+js_library("cache") {
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("combo_box_node") {
@@ -256,6 +262,7 @@ js_library("group_node") {
 
 js_library("history") {
   deps = [
+    ":cache",
     ":desktop_node",
     ":node_wrapper",
     ":switch_access_node",
@@ -338,6 +345,7 @@ js_library("node_wrapper") {
   sources = [ "nodes/node_wrapper.js" ]
   deps = [
     ":back_button_node",
+    ":cache",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
@@ -404,6 +412,7 @@ js_library("switch_access_node") {
 
 js_library("switch_access_predicate") {
   deps = [
+    ":cache",
     ":switch_access_constants",
     ":switch_access_node",
     "../common:automation_predicate",

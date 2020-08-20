@@ -3,6 +3,7 @@
 <translationbundle lang="bn">
 <translation id="1001307489511021749">আপনার Google অ্যাকাউন্ট দিয়ে সাইন-ইন করা সব Chrome OS ডিভাইসে আপনার অ্যাপ, সেটিংস এবং অন্যান্য কাস্টমাইজেশন সিঙ্ক হয়ে যাবে।</translation>
 <translation id="1003088604756913841">নতুন <ph name="APP" /> উইন্ডোতে লিঙ্ক খুলুন</translation>
+<translation id="1003363546227723021">আপনার স্ক্রিন ব্যবহার না হলে ফটো, সময়, আবহাওয়া এবং মিডিয়া সম্পর্কিত তথ্য দেখুন</translation>
 <translation id="1004218526896219317">অ্যাক্সেস করতে পারে এমন সাইট</translation>
 <translation id="1005274289863221750">আপনার মাইক্রোফোন ও ক্যামেরা ব্যবহার করুন</translation>
 <translation id="1005333234656240382">ADB ডিবাগিং চালু করতে চান?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="1110155001042129815">অপেক্ষা করুন</translation>
 <translation id="1112420131909513020">ব্যাকগ্রাউন্ড ট্যাব ব্লুটুথ ব্যবহার করছে</translation>
+<translation id="1113892970288677790">আর্টওয়ার্ক ও ছবির সংগ্রহ বেছে নিন</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">ডায়মন্ড</translation>
 <translation id="1114335938027186412">আপনার কম্পিউটারে একটি  বিশ্বস্ত প্ল্যাটফর্ম মডিউল (TPM) নিরাপত্তা ডিভাইস রয়েছে, যা Chrome OS এ অনেকগুলি জটিল সুরক্ষা বৈশিষ্ট্য প্রয়োগ করতে ব্যবহৃত হয়। আরও জানতে Chromebook সহায়তা কেন্দ্রে : https://support.google.com/chromebook/?p=tpm যান</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">সবচেয়ে দ্রুত</translation>
 <translation id="1225177025209879837">অনুরোধ প্রক্রিয়াকরণ হচ্ছে...</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" এর সাথে কানেক্ট করার সময় যাচাই করা যায়নি৷</translation>
+<translation id="1230417814058465809">'স্ট্যান্ডার্ড সুরক্ষা' ফিচারটি চালু করা আছে। আরও উন্নত নিরাপত্তার জন্য 'স্ট্যান্ডার্ড সুরক্ষা' ফিচারটি চালু করুন।</translation>
 <translation id="1231733316453485619">সিঙ্ক চালু করবেন?</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1233497634904001272">অনুরোধটি সম্পূর্ণ করার জন্য নিরাপত্তা কী আবার স্পর্শ করুন।</translation>
@@ -307,7 +310,7 @@
 <translation id="1361164813881551742">নিজে যোগ করুন</translation>
 <translation id="1361655923249334273">অব্যবহৃত</translation>
 <translation id="1361872463926621533">চালু করার সময় সাউন্ড চালান</translation>
-<translation id="1362865166188278099">মেকানিকাল সমস্যা হয়েছে। প্রিন্টারটি চেক করুন</translation>
+<translation id="1362865166188278099">যান্ত্রিক সমস্যা হয়েছে। প্রিন্টারটি চেক করুন</translation>
 <translation id="1363585519747660921">ইউএসবি প্রিন্টার কনফিগার করা প্রয়োজন</translation>
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" /> আপনার <ph name="BEGIN_LINK" />ব্রাউজার ম্যানেজ করে<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">আপনার <ph name="DEVICE_TYPE" />-এ Linux টুল, এডিটর, এবং IDEs চালান। &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
@@ -322,7 +325,7 @@
 <translation id="1380028686461971526">নেটওয়ার্কে অটোমেটিক কানেক্ট করুন</translation>
 <translation id="1380436189840894976">যেকোনও প্রকারে ছদ্মবেশী মোড থেকে বেরিয়ে আসতে চান?</translation>
 <translation id="1383861834909034572">সম্পন্ন হলে খোলে</translation>
-<translation id="1383876407941801731">খুঁজুন</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386387014181100145">আপনি কেমন আছেন৷</translation>
 <translation id="1386791642444521222">সিম চালু করুন</translation>
 <translation id="138784436342154190">ডিফল্ট শুরুর পৃষ্ঠা পুনরুদ্ধার করবেন?</translation>
@@ -429,7 +432,6 @@
 <translation id="1508575541972276599">বর্তমান ভার্সন হল Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">USB এর মাধ্যমে যেকোনো <ph name="DEVICE_NAME_AND_VENDOR" /> অ্যাক্সেস করুন</translation>
 <translation id="1509960214886564027">একাধিক সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
-<translation id="1510030919967934016">এই পৃষ্ঠাটি আপনার লোকেশন নির্ণয় করা থেকে অবরুদ্ধ করা আছে৷</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="1510785804673676069">যদি আপনি একটি প্রক্সি সার্ভার ব্যবহার করেন, তাহলে আপনার প্রক্সি সেটিংস পরীক্ষা করুন 
 অথবা প্রক্সি সার্ভারটি কাজ করছে কিনা সে বিষয়ে নিশ্চিত হতে আপনার নেটওয়ার্ক 
@@ -599,7 +601,6 @@
 <translation id="1697686431566694143">ফাইল এডিট করতে পারবে</translation>
 <translation id="1698122934742150150">শুধুমাত্র বর্তমান ছদ্মবেশী সেশন</translation>
 <translation id="1700079447639026019">এমন সাইট যা কখনও কুকি ব্যবহার করে না</translation>
-<translation id="1700845716982723710">অ্যাম্বিয়েন্ট মোড বন্ধ করুন</translation>
 <translation id="1701062906490865540">এই ব্যক্তিকে সরান</translation>
 <translation id="1703331064825191675">আপনার পাসওয়ার্ড সম্পর্কে কখনও চিন্তা করবেন না</translation>
 <translation id="1704970325597567340"><ph name="DATE" />-তে নিরাপত্তা সংক্রান্ত পরীক্ষা চালানো হয়েছে</translation>
@@ -728,7 +729,6 @@
 <translation id="184273675144259287">আপনার Linux অ্যাপ ও ফাইল পুরনো ব্যাক-আপ দিয়ে প্রতিস্থাপিত করুন</translation>
 <translation id="1842766183094193446">আপনি কি ডেমো মোড চালু করতে চান?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> চালানোর জন্য Control-ক্লিক করুন</translation>
-<translation id="184715642345428649">অ্যাম্বিয়েন্ট মোড চালু করুন</translation>
 <translation id="1849186935225320012">এই পৃষ্ঠাটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="1850508293116537636">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1852141627593563189">ক্ষতিকর সফ্টওয়্যার খুঁজুন</translation>
@@ -1171,7 +1171,6 @@
 <translation id="2392163307141705938"><ph name="IDS_SHORT_PRODUCT_NAME" />-এর জন্য আপনার অভিভাবক যে সময়সীমা সেট করেছেন তা পার হয়ে গেছে।</translation>
 <translation id="2392369802118427583">সক্রিয় করুন</translation>
 <translation id="2393136602862631930">আপনার Chromebook-এ <ph name="APP_NAME" /> সেট-আপ করুন</translation>
-<translation id="2394566832561516196">পরবর্তী রিলোডে সেটিংস সাফ করা হবে৷</translation>
 <translation id="2395616325548404795">আপনার <ph name="DEVICE_TYPE" /> কে এন্টারপ্রাইজ পরিচালনার জন্য সফলভাবে নথিভুক্ত করা হয়েছে, কিন্তু এর সম্পদ এবং অবস্থানের তথ্য পাঠানো ব্যর্থ হয়েছে৷ অনুগ্রহ করে এই ডিভাইসের জন্য আপনার অ্যাডমিন কনসোল থেকে নিজে এই তথ্য লিখুন৷</translation>
 <translation id="2396387085693598316">আপনার অ্যাডমিন "<ph name="EXTENSION_NAME" />" ব্লক করে দিয়েছেন</translation>
 <translation id="2396783860772170191">৪ সংখ্যার পিন লিখুন (০০০০-৯৯৯৯)</translation>
@@ -1252,6 +1251,7 @@
 <translation id="249113932447298600">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইসটি এই মুহুর্তে সমর্থিত নয়৷</translation>
 <translation id="2492461744635776704">সার্টিফিকেট স্বাক্ষর করার অনুরোধ তৈরি করা হচ্ছে</translation>
 <translation id="249303669840926644">নিবন্ধন সম্পূর্ণ করতে পারেনি</translation>
+<translation id="2493126929778606526">আপনার সেরা ফটোগুলি অটোমেটিক বেছে নেওয়া হয়</translation>
 <translation id="2495777824269688114">আরও বৈশিষ্ট্যের বিষয়ে জানুন অথবা উত্তর পান। সাহায্যের জন্য "?" বোতামটি বেছে নিন।</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2497229222757901769">মাউসের গতি</translation>
@@ -1344,6 +1344,7 @@
 <translation id="2604255671529671813">নেটওয়ার্ক সংযোগে সমস্যা</translation>
 <translation id="2606246518223360146">ডেটা লিঙ্ক করুন</translation>
 <translation id="2607101320794533334">বিষয় সর্বজনীন কী তথ্য</translation>
+<translation id="2607968157341167679">কোনও অ্যালবাম নেই। <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />-এ একটি অ্যালবাম তৈরি করুন।</translation>
 <translation id="2609896558069604090">শর্টকাটগুলি তৈরি করুন...</translation>
 <translation id="2610157865375787051">স্লীপ মোড</translation>
 <translation id="2610260699262139870">A&amp;ctual Size</translation>
@@ -1372,7 +1373,7 @@
 <translation id="2636625531157955190">Chrome এই ইমেজটি অ্যাক্সেস করতে পারে না৷</translation>
 <translation id="2637400434494156704">ভুল পিন। আপনি আর একবার চেষ্টা করতে পারবেন।</translation>
 <translation id="2638662041295312666">সাইন-ইন স্ক্রিনের ছবি</translation>
-<translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> অ্যালবাম বেছে নেওয়া হয়েছে</translation>
+<translation id="2640549051766135490">বেছে নেওয়া অ্যালবাম: <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="264083724974021997">আপনার ফোনে কানেক্ট করুন - ডায়ালগ</translation>
 <translation id="2641065435954454414">ডাউনলোড করার প্রস্তুতি চলছে</translation>
 <translation id="2642111877055905627">ফুটবল</translation>
@@ -1480,6 +1481,7 @@
 <translation id="2762441749940182211">ক্যামেরার ব্যবহার ব্লক করা হয়েছে</translation>
 <translation id="2764786626780673772">VPN-এর বিবরণ</translation>
 <translation id="2765217105034171413">ক্ষুদ্র</translation>
+<translation id="2765729904637714153">আপনার প্রিয় স্মৃতিগুলি রোমন্থন করুন। অ্যালবাম যোগ ও এডিট করতে, <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />-এ যান।</translation>
 <translation id="2766006623206032690">প্র&amp;তিলেপন করুন ও যান</translation>
 <translation id="2766161002040448006">কোনও অভিভাবককে বলুন</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> <ph name="FILENAME" /> এডিট করতে পারবে যতক্ষণ না আপনি এই সাইটের জন্য সব ট্যাব বন্ধ করে দিচ্ছেন</translation>
@@ -1578,7 +1580,7 @@
 <translation id="2876336351874743617">আঙ্গুল ২</translation>
 <translation id="2876369937070532032">নিরাপত্তা সংক্রান্ত কোনও ঝুঁকি থাকলে, আপনার দেখা কিছু পৃষ্ঠার ইউআরএল Google-কে পাঠায়</translation>
 <translation id="2878782256107578644">স্ক্যান করা হচ্ছে, এখনই খুলতে চান?</translation>
-<translation id="2878889940310164513">'মোবাইল নেটওয়ার্ক' যোগ করুন...</translation>
+<translation id="2878889940310164513">মোবাইল নেটওয়ার্ক সেট আপ করুন...</translation>
 <translation id="288042212351694283">আপনার ইউনিভার্সাল ২য় ফ্যাক্টর ডিভাইসগুলির অ্যাক্সেস রয়েছে</translation>
 <translation id="2880660355386638022">উইন্ডো প্লেসমেন্ট</translation>
 <translation id="2881076733170862447">যখন আপনি এক্সটেনশনে ক্লিক করেন</translation>
@@ -1657,7 +1659,6 @@
 <translation id="2979639724566107830">নতুন উইন্ডোতে খুলুন</translation>
 <translation id="2981113813906970160">বড় মাউস কার্সার দেখান</translation>
 <translation id="2985348301114641460">আপনার অ্যাডমিনিস্ট্রেটরকে "<ph name="EXTENSION_NAME" />" ইনস্টল করবার জন্য অনুরোধ পাঠাবেন?</translation>
-<translation id="2986010903908656993">MIDI ডিভাইসগুলির সম্পূর্ণ নিয়ন্ত্রণ থেকে এই পৃষ্ঠাটিকে অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="2987620471460279764">অন্য ডিভাইস থেকে টেক্সট শেয়ার করা হয়েছে</translation>
 <translation id="2988018669686457659">অতিরিক্ত রেন্ডারার</translation>
 <translation id="2989123969927553766">মাউস স্ক্রল করার অ্যাক্সিলারেশন</translation>
@@ -1703,7 +1704,7 @@
 <translation id="3029466929721441205">শেল্ফে স্টাইলাস টুল দেখুন</translation>
 <translation id="3031417829280473749">এজেন্ট X</translation>
 <translation id="3031557471081358569">আমদানির জন্য আইটেম বেছে নিন:</translation>
-<translation id="3036327949511794916">এই <ph name="DEVICE_TYPE" />টির ফেরত দেওয়ার সময়সীমা পেরিয়ে গেছে।</translation>
+<translation id="3036327949511794916">এই <ph name="DEVICE_TYPE" /> ফেরত দেওয়ার সময়সীমা পেরিয়ে গেছে।</translation>
 <translation id="3036546437875325427">Flash সক্ষম করুন</translation>
 <translation id="3037754279345160234">ডোমেনে যোগ করার জন্য প্রয়োজনীয় কনফিগারেশন পার্স করা যাচ্ছে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="3038612606416062604">নিজ হাতে একটি প্রিন্টার যোগ করুন</translation>
@@ -2081,7 +2082,6 @@
 <translation id="3524965460886318643">এক্সপোর্ট অ্যাক্টিভিটি</translation>
 <translation id="3526034519184079374">সাইটের ডেটা পড়তে বা পরিবর্তন করতে পারে না</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
-<translation id="3528033729920178817">এই পৃষ্ঠাটি আপনার লোকেশন নির্ণয় করছে৷</translation>
 <translation id="3528498924003805721">শর্টকাট লক্ষ্যগুলি</translation>
 <translation id="3532273508346491126">সিঙ্ক ম্যানেজমেন্ট</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - অডিও মিউট রয়েছে</translation>
@@ -2112,6 +2112,7 @@
 <translation id="3566325075220776093">এই ডিভাইস থেকে</translation>
 <translation id="3566721612727112615">কোনো সাইট যোগ করা হয়নি</translation>
 <translation id="3569382839528428029">আপনি কি <ph name="APP_NAME" /> এর দ্বারা আপনার স্ক্রিন শেয়ার করতে চান?</translation>
+<translation id="3569407787324516067">স্ক্রিন সেভার</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> নিচে উল্লেখ করা ফাইল এবং ফোল্ডারগুলি দেখতে পারবে</translation>
 <translation id="3571734092741541777">সেট-আপ</translation>
 <translation id="3574210789297084292">সাইন-ইন করুন</translation>
@@ -2182,7 +2183,7 @@
 <translation id="3640214691812501263"><ph name="USER_NAME" /> এর জন্য "<ph name="EXTENSION_NAME" />" জুড়বেন?</translation>
 <translation id="3640613767643722554">অ্যাসিস্ট্যান্টকে আপনার ভয়েস চিনতে শেখান</translation>
 <translation id="3645372836428131288">আঙ্গুলের ছাপের বিভিন্ন অংশ ক্যাপচার করতে একটু এদিক-ওদিক সরান৷</translation>
-<translation id="3647998456578545569">{COUNT,plural, =1{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> পাওয়া গেছে}one{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> পাওয়া গেছে}other{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> পাওয়া গেছে}}</translation>
+<translation id="3647998456578545569">{COUNT,plural, =1{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> এসেছে}one{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> এসেছে}other{<ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> এসেছে}}</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> শনাক্ত হয়েছে</translation>
 <translation id="3649138363871392317">ফটো তোলা হয়েছে</translation>
 <translation id="3649505501900178324">আপডেট করতে ডিভাইস রিস্টার্ট করুন</translation>
@@ -2260,6 +2261,7 @@
 <translation id="3727148787322499904">এই সেটিং পরিবর্তন করা হলে শেয়ার করা সব নেটওয়ার্ক প্রভাবিত হবে</translation>
 <translation id="3727187387656390258">পপআপ সংবীক্ষণ</translation>
 <translation id="372722114124766626">মাত্র একবার</translation>
+<translation id="3728188878314831180">আপনার ফোনের মিরর বিজ্ঞপ্তি</translation>
 <translation id="3728681439294129328">নেটওয়ার্ক অ্যাড্রেস কনফিগার করুন</translation>
 <translation id="3729303374699765035">কাছাকাছি ব্লুটুথ ডিভাইস আছে কিনা তা কোনও সাইট খুঁজতে চাইলে আমাকে জিজ্ঞাসা করুন</translation>
 <translation id="3729506734996624908">অনুমোদিত সাইট</translation>
@@ -2554,7 +2556,6 @@
 <translation id="4061374428807229313">শেয়ার করতে, Files অ্যাপের কোনও ফোল্ডারের উপর রাইট-ক্লিক করুন এবং "Parallels Desktop-এর সাথে শেয়ার করুন" বিকল্পটি বেছে নিন।</translation>
 <translation id="4065876735068446555">আপনি যে নেটওয়ার্কটি <ph name="NETWORK_ID" /> ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ-ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="4066207411788646768">আপনার নেটওয়ার্কে থাকা প্রিন্টারগুলি দেখতে ইন্টারনেট কানেকশন চেক করুন</translation>
-<translation id="4068506536726151626">এই পৃষ্ঠাতে নিম্নলিখিত সাইটগুলি থেকে এমন উপাদান রয়েছে যা আপনার লোকেশন নির্ধারণ করে:</translation>
 <translation id="4068776064906523561">সংরক্ষিত আঙ্গুলের ছাপগুলি</translation>
 <translation id="407173827865827707">ক্লিক করা হলে</translation>
 <translation id="4074900173531346617">ইমেল স্বাক্ষরকারী সার্টিফিকেট</translation>
@@ -2999,7 +3000,7 @@
 <translation id="4651484272688821107">ডেমো মোড রিসোর্স সহ অনলাইন কম্পোনেন্ট লোড করা যায়নি।</translation>
 <translation id="4652935475563630866">ক্যামেরা সেটিংয়ে পরিবর্তন করতে হলে, Parallels Desktop আবার লঞ্চ করতে হবে। আগে কাজ চালিয়ে যাওয়ার জন্য, Parallels Desktop আবার লঞ্চ করুন।</translation>
 <translation id="4653405415038586100">Linux কনফিগার করার সময় কোনও সমস্যা হয়েছে</translation>
-<translation id="4657810666108475055">ট্যাবের সার্চ</translation>
+<translation id="4657810666108475055">ট্যাব সার্চ করার বিকল্প</translation>
 <translation id="465878909996028221">ব্রাউজার রিডাইরেক্টের জন্য শুধুমাত্র http, https ও ফাইল প্রটোকল কাজ করে।</translation>
 <translation id="4659077111144409915">প্রাথমিক অ্যাকাউন্ট</translation>
 <translation id="4660476621274971848">"<ph name="EXPECTED_VERSION" />" ভার্সনটি হওয়া উচিত ছিল, কিন্তু ভার্সনটি হল "<ph name="NEW_ID" />"</translation>
@@ -3197,7 +3198,6 @@
 <translation id="4918021164741308375">"<ph name="EXTENSION_NAME" />" এক্সটেনশন দ্বারা <ph name="ORIGIN" /> যোগাযোগ করতে চায়</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> ইনস্টল করুন (ডাউনলোডের প্রয়োজন নেই)</translation>
-<translation id="4920887663447894854">এই পৃষ্ঠাতে আপনার লোকেশন নির্ধারণ করার জন্য নিম্নলিখিত সাইটগুলি অবরুদ্ধ করা হয়েছে:</translation>
 <translation id="4921290200821452703">অভিভাবকদের জন্য স্কুল অ্যাকাউন্ট সম্পর্কিত তথ্য</translation>
 <translation id="4921348630401250116">টেক্সট-টু-স্পিচ</translation>
 <translation id="49226369361073053">{0,plural, =0{এখনই ডিভাইস আপডেট করুন}=1{১ সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}one{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}other{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}}</translation>
@@ -3275,7 +3275,6 @@
 <translation id="5027562294707732951">এক্সটেনশন যোগ করুন</translation>
 <translation id="5029568752722684782">কপি সাফ করুন</translation>
 <translation id="5033266061063942743">জ্যামিতিক আকৃতি</translation>
-<translation id="5033370009438029887">অ্যাম্বিয়েন্ট মোড বন্ধ করুন</translation>
 <translation id="5036662165765606524">কোনো সাইটকে অটোমেটিক একাধিক ফাইল ডাউনলোড করার জন্য মঞ্জুরি দেবেন না</translation>
 <translation id="5037676449506322593">সকল বেছে নিন</translation>
 <translation id="5038022729081036555">তুমি আগামীকাল এটি <ph name="TIME_LIMIT" /> ব্যবহার করতে পারবে।</translation>
@@ -3953,7 +3952,6 @@
 <translation id="5865508026715185451"><ph name="APP_NAME" /> শীঘ্রই পজ করা হবে</translation>
 <translation id="586567932979200359">আপনি <ph name="PRODUCT_NAME" /> থেকে এটির ডিস্ক ছবি চালাচ্ছেন৷ এটিকে আপনার কম্পিউটারে ইনস্টল করা হলে তা ডিস্ক ছবি ছাড়াই এটিকে চালাতে দেয় এবং এটিকে আপ টু ডেট আছে কিনা তা নিশ্চিত করে৷</translation>
 <translation id="5865733239029070421">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট নিজে থেকেই Google-কে পাঠায়</translation>
-<translation id="5866557323934807206">ভবিষ্যতের ভিজিটগুলির জন্য এই সেটিংস সাফ করুন </translation>
 <translation id="5866840822086176774">খুব জোরালো</translation>
 <translation id="5867841422488265304">ওয়েব ঠিকানা খুঁজুন বা লিখুন</translation>
 <translation id="5869029295770560994">ঠিক আছে, বুঝেছি</translation>
@@ -4239,7 +4237,6 @@
 <translation id="6225475702458870625">আপনার <ph name="PHONE_NAME" /> থেকে ডেটা সংযোগ পাওয়া যাচ্ছে</translation>
 <translation id="6226777517901268232">ব্যক্তিগত কী ফাইল (ঐচ্ছিক)</translation>
 <translation id="6227280783235722609">এক্সটেনশন</translation>
-<translation id="6228691855869374890">এই সাইটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="6229849828796482487">ওয়াই-ফাই নেটওয়ার্ক ডিসকানেক্ট করুন</translation>
 <translation id="6229890768313448549">Google Play পরিষেবার শর্তাদি লোড করা যাবে না। পুনরায় চেষ্টা করুন।</translation>
 <translation id="6231881193380278751">পৃষ্ঠাটি অটো-রিফ্রেশ করতে URL-এ কোনো কোয়েরি param যোগ করুন: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4393,7 +4390,6 @@
 <translation id="6412931879992742813">নতুন ছদ্মবেশী উইন্ডো</translation>
 <translation id="641469293210305670">অ্যাপ ও আপডেটগুলি ইনস্টল করুন</translation>
 <translation id="6414888972213066896">এই পৃষ্ঠাটিতে যাওয়া ঠিক হবে কিনা সেই বিষয়ে আপনি আপনার অভিভাবকের অনুমতি নিন৷</translation>
-<translation id="6415659939354280526">অ্যাম্বিয়েন্ট মোডের সোর্স বেছে নিন</translation>
 <translation id="6415900369006735853">আপনার ফোনের মাধ্যমে ইন্টারনেটে কানেক্ট করুন</translation>
 <translation id="6416743254476733475">আপনার কম্পিউটারে অনুমতি দিন বা ব্লক করুন।</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -4710,6 +4706,7 @@
 <translation id="6824584962142919697">&amp;এলিমেন্ট ইন্সপেক্ট করুন</translation>
 <translation id="6825184156888454064">নাম অনুসারে সাজান</translation>
 <translation id="6826872289184051766">USB এর মাধ্যমে যাচাই করুন</translation>
+<translation id="6827623133556594466">Google Cloud Print, ৩১ ডিসেম্বরের পরে আর কাজ করবে না। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">সাইন-ইনকে নিম্নলিখিত ব্যবহারকারীদের মধ্যে সীমাবদ্ধ রাখুন:</translation>
 <translation id="6828182567531805778">আপনার ডেটা সিঙ্ক করতে পাসফ্রেজ লিখুন</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5328,6 +5325,7 @@
 <translation id="7605594153474022051">সিঙ্ক কাজ করছে না</translation>
 <translation id="7606992457248886637">কর্তৃপক্ষ</translation>
 <translation id="7607002721634913082">বিরত রয়েছে</translation>
+<translation id="7608810328871051088">Android সেটিংস</translation>
 <translation id="7609148976235050828">ইন্টারনেটে কানেক্ট করে আবার চেষ্টা করুন।</translation>
 <translation id="7614260613810441905">কোনও সাইট আপনার ডিভাইসে থাকা ফাইল বা ফোল্ডার এডিট করতে চাইলে অনুমতি নিতে বলুন (সাজেস্ট করা হয়েছে)</translation>
 <translation id="761530003705945209">Google Drive-এ ব্যাক-আপ নিন। যেকোনও সময় সহজেই ডেটা রিস্টোর করুন অথবা অন্য ডিভাইস ব্যবহার করুন। আপনার ব্যাক-আপে অ্যাপ ডেটা থাকে। আপনার ব্যাক-আপ ডেটা Google-এ আপলোড করা হয় এবং আপনার Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হয়।</translation>
@@ -5335,7 +5333,6 @@
 <translation id="7616214729753637086">ডিভাইস নথিভুক্ত করা হচ্ছে...</translation>
 <translation id="7617263010641145920">Play Store অ্যাপ চালু করুন</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" এ সংযুক্ত হচ্ছে</translation>
-<translation id="761763866592998929">অ্যাম্বিয়েন্ট মোড</translation>
 <translation id="7621382409404463535">সিস্টেমটি ডিভাইস কনফিগারেশন সেভ করতে পারেনি।</translation>
 <translation id="7622114377921274169">চার্জ হচ্ছে।</translation>
 <translation id="7622903810087708234">পাসওয়ার্ডের বিবরণ</translation>
@@ -5358,7 +5355,7 @@
 <translation id="7643932971554933646">সাইটকে এই ফাইল পড়ার অনুমতি দেবেন?</translation>
 <translation id="7644543211198159466">রঙ ও থিম</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (মালিক)</translation>
-<translation id="7645300866575922143">'মোবাইল নেটওয়ার্ক' আইকন যোগ করুন</translation>
+<translation id="7645300866575922143">মোবাইল নেটওয়ার্ক সেট আপ করুন</translation>
 <translation id="7645681574855902035">Linux ব্যাক-আপ বাতিল করা হচ্ছে</translation>
 <translation id="7646772052135772216">পাসওয়ার্ড সিঙ্ক ফিচার কাজ করছে না</translation>
 <translation id="7647403192093989392">সাম্প্রতিক কোনও অ্যাক্টিভিটি নেই</translation>
@@ -5578,7 +5575,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">আ্যাকাউন্ট দেখুন</translation>
 <translation id="7882358943899516840">পরিষেবা প্রদানকারীর ধরন</translation>
-<translation id="78851824530736377">অ্যাম্বিয়েন্ট মোড চালু করুন</translation>
 <translation id="7885253890047913815">সাম্প্রতিক গন্তব্যস্থল</translation>
 <translation id="7887334752153342268">ডুপ্লিকেট</translation>
 <translation id="7887864092952184874">ব্লুটুথ মাউস যুক্ত হয়েছে</translation>
@@ -5855,6 +5851,7 @@
 <translation id="8225753906568652947">আপনার অফার রিডিম করুন</translation>
 <translation id="8226222018808695353">নিষিদ্ধ</translation>
 <translation id="8226619461731305576">অপেক্ষমাণ</translation>
+<translation id="8226628635270268143">আপনার পছন্দের ফটো ও অ্যালবাম বাছুন</translation>
 <translation id="8226742006292257240">আপনার কম্পিউটারে অ্যাসাইন করা হয়েছে এমন এলোমেলোভাবে জেনারেট হওয়া TPM পাসওয়ার্ডটি নিচে:</translation>
 <translation id="8227119283605456246">ফাইল সংযুক্ত করুন</translation>
 <translation id="8229943166551236192">ডিভাইসের ডেটা ২৪ ঘণ্টার মধ্যে মুছে যাবে</translation>
@@ -6353,6 +6350,7 @@
 <translation id="882854468542856424">কোনও সাইটকে কাছাকাছি ব্লুটুথ ডিভাইস আছে কিনা তা খোঁজার অনুমতি দেবেন না</translation>
 <translation id="8828933418460119530">ডিএনএস নাম</translation>
 <translation id="883062543841130884">প্রতিস্থাপন</translation>
+<translation id="8830779999439981481">আপডেট প্রয়োগ করতে রিস্টার্ট করা হচ্ছে</translation>
 <translation id="8830796635868321089">বর্তমান প্রক্সি সেটিংস ব্যবহার করে আপডেট চেক ব্যর্থ হয়েছে৷ অনুগ্রহ করে আপনার <ph name="PROXY_SETTINGS_LINK_START" />প্রক্সি সেটিংস<ph name="PROXY_SETTINGS_LINK_END" /> অ্যাডজাস্ট করুন৷</translation>
 <translation id="8831140208248705279">আপনার <ph name="DEVICE_TYPE" /> ও Android ফোন একসাথে ভাল কাজ করে। এগুলি কানেক্ট করুন যাতে আপনার কম্পিউটার থেকে টেক্সট পাঠাতে, ইন্টারনেট কানেকশন শেয়ার করতে এবং ফোনের সাহায্যে <ph name="DEVICE_TYPE" /> আনলক করতে পারেন। <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">নেটওয়ার্ক কনফিগারেশন <ph name="USER_EMAIL" /> দ্বারা নিয়ন্ত্রিত।</translation>

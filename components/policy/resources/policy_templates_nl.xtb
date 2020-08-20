@@ -1354,19 +1354,6 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de grote muisaanwijzer in eerste instantie uitgeschakeld op het inlogscherm, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
-<translation id="3028252110534040170">Dit biedt configuraties voor zakelijke printers.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. De indeling is hetzelfde als de <ph name="PRINTERS_POLICY_NAME" />-woordenlijst, met een extra verplicht ID- of GUID-veld per printer voor de toelatings- of blokkeringslijst.
-
-      Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON. Naar schatting wordt een bestand met ongeveer 21.000 printers gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. Het wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
-
-      Als dit beleid is ingesteld, downloadt <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties en worden printers beschikbaar in overeenstemming met <ph name="PRINTERS_BULK_ACCESS_MODE" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> en <ph name="PRINTERS_BULK_BLOCKLIST" />.
-
-      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen. Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3033660238345063904">Je kunt hier de URL van de proxyserver specificeren.
 
@@ -1673,11 +1660,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="3540935459049973317">Tijdslimieten per app</translation>
-<translation id="3543579213273969284">Als je het beleid inschakelt, respecteert HTTP-verificatie goedkeuring door het KDC-beleid. Met andere woorden: <ph name="PRODUCT_NAME" /> delegeert inloggegevens alleen als het KDC <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket. Zie RFC 5896 (https://tools.ietf.org/html/rfc5896.html). De service moet overeenkomen met <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
-
-      Als je het beleid uitschakelt of niet instelt, wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> gerespecteerd.
-
-      Op <ph name="MS_WIN_NAME" /> wordt het KDC-beleid altijd gerespecteerd.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3550122827225052130">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
@@ -1911,12 +1893,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Dit beleid is alleen van kracht als de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> voor <ph name="PRODUCT_NAME" />.
       Dit beleid is altijd van kracht voor <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3898195424714621181">Hiermee wordt beheerd welke printers uit <ph name="PRINTERS_BULK_CONFIGURATION" /> beschikbaar zijn voor gebruikers.
-
-      Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als <ph name="PRINTERS_ALLOW_ALL" /> is geselecteerd, worden alle printers weergegeven. Als <ph name="PRINTERS_BLOCKLIST" /> is geselecteerd, wordt <ph name="PRINTERS_BULK_BLOCKLIST" /> gebruikt om de toegang tot de opgegeven printers te beperken. Als <ph name="PRINTERS_ALLOWLIST" /> is geselecteerd, geeft <ph name="PRINTERS_BULK_ALLOWLIST" /> alleen de printers aan die kunnen worden geselecteerd.
-
-      Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
-      </translation>
 <translation id="3898795800259311780">Screenshots toestaan of weigeren</translation>
 <translation id="3907683835264956726">Schakelt online inloggen van gebruikers op een vergrendelscherm in. Als het beleid wordt ingesteld op True, wordt online opnieuw verifiëren op een vergrendelscherm geactiveerd door <ph name="POLICY" />.
       Opnieuw verifiëren wordt onmiddellijk afgedwongen als het vergrendelscherm actief is, of de volgende keer dat een gebruiker het scherm vergrendelt nadat aan deze voorwaarde is voldaan.
@@ -2199,12 +2175,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als je het beleid uitschakelt of niet instelt, kunnen gebruikers bestanden overzetten naar Drive via een mobiele verbinding.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4261820385751181068">Taal voor inlogscherm van apparaat</translation>
-<translation id="427220754384423013">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn voor de gebruiker alleen de printers beschikbaar met ID's die overeenkomen met de waarden in dit beleid. De ID's moeten overeenkomen met het ID- of GUID- veld in het bestand dat is opgegeven in <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="4285674129118156176">Toestaan dat niet-gelieerde gebruikers ARC gebruiken</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">Toegewezen MAC-adres van dock van apparaat</translation>
@@ -2809,22 +2779,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5272684451155669299">Als dit beleid is ingesteld op 'True', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bevestigen aan de privacy-CA via de <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> met <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Als dit beleid is ingesteld op 'False' of niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
-<translation id="5273333167497341402">Biedt configuraties voor bedrijfsprinters die aan apparaten zijn gekoppeld.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten.  De indeling is hetzelfde als de NativePrinters-woordenlijst, met een extra verplicht ID- of GUID-veld per printer voor de toelatings- of blokkeringslijst.
-
-      Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON.  Naar schatting wordt een bestand met ongeveer 21.000 printers gecodeerd als een bestand van 5 MB.  De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. Deze wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
-
-      Als dit beleid is ingesteld, downloadt <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties en worden printers beschikbaar in overeenstemming met <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> en <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen.  Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
-
-      Dit beleid is een aanvulling op <ph name="BULK_PRINTERS_POLICY" />.
-
-      Als dit beleid niet is ingesteld, zijn er geen apparaatprinters en worden de andere beleidsregels '<ph name="DEVICE_PRINTERS_POLICY_PATTERN" />' genegeerd.
-      </translation>
 <translation id="5273744932022326215">De toegankelijkheidsfunctie voor cursormarkering op het inlogscherm inschakelen.
 
           Als dit beleid is ingesteld op True, is cursormarkering altijd ingeschakeld op het inlogscherm.
@@ -3252,17 +3206,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5775235485119094648">Laad de batterij op wanneer de lading zich binnen een bepaald bereik bevindt.</translation>
 <translation id="5776485039795852974">Altijd goedkeuring vragen wanneer een site bureaubladmeldingen wil weergeven</translation>
 <translation id="5783009211970309878">Kop- en voetteksten afdrukken</translation>
-<translation id="5783576706065107606">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te versturen zonder <ph name="CORS" />-controle.
-
-      Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uitgelegd in <ph name="WEB_REQUEST_API_MANUAL" />.
-
-      Als deze lijst is ingesteld voor headernamen van <ph name="HTTP" />-verzoeken, negeert de <ph name="CORS" />-controle de vermelde headers om de beperking voor extensies in te schakelen.
-
-      Als deze lijst niet is ingesteld, worden beide beperkingen (zoals hierboven uitgelegd) niet toegepast.
-
-      Ga naar <ph name="CORS_HELP_URL" /> voor meer informatie over <ph name="CORS" />.
-
-      Het was aangekondigd dat dit beleid zou worden verwijderd in <ph name="PRODUCT_NAME" /> versie 82, maar dit plan is gewijzigd. Het beleid wordt nu verwijderd in versie 84.</translation>
 <translation id="5790763087505467169">Minder meldingen voor automatisch starten van beheerde gastsessies</translation>
 <translation id="5806128552675651249">Alleen afdrukken zonder achtergrondbeelden toestaan</translation>
 <translation id="5809210507920527553">Beheert instellingen voor de Linux-container (Crostini).</translation>
@@ -3326,17 +3269,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als deze instelling is uitgeschakeld of niet is ingesteld, wordt de standaarddomeinnaam voor het TalkGadget ('chromoting-host.talkgadget.google.com') gebruikt voor alle hosts.
 
           Deze beleidsinstelling is niet van toepassing op clients voor externe toegang. Deze clients gebruiken altijd 'chromoting-client.talkgadget.google.com' om toegang tot het TalkGadget te krijgen.</translation>
-<translation id="5888171512889380367">Gebruik de verouderde <ph name="CORS" />-implementatie in plaats van de nieuwe <ph name="CORS" />.
-
-      Als deze instelling is ingesteld op True, wordt de verouderde implementatie gebruikt die zou moeten werken met eerdere versies.
-
-      Als deze instelling is ingesteld op False of niet is ingesteld, wordt de nieuwe implementatie gebruikt die mogelijk ondernemingsspecifieke compatibiliteitsproblemen kan veroorzaken.
-
-      Dit beleid wordt na een aantal mijlpalen verwijderd.
-
-      Ga naar <ph name="CORS_HELP_URL" /> voor meer informatie over <ph name="CORS" />.
-
-      Het was aangekondigd dat dit beleid zou worden verwijderd in <ph name="PRODUCT_NAME" /> versie 82, maar dit plan is gewijzigd. Het beleid wordt nu verwijderd in versie 84.</translation>
 <translation id="5890063326284543943">Gebruik van de Serial API beheren</translation>
 <translation id="5893553533827140852">Als deze instelling is ingeschakeld, worden gnubby-verificatieverzoeken verzonden via een proxy met een externe hostverbinding.
 
@@ -3672,21 +3604,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6468980648680553776">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configureer de lijst met domeinen waar Safe Browsing geen waarschuwingen activeert.</translation>
 <translation id="647698599569353771">Sta toe dat 'Dichtbij delen' wordt ingeschakeld.</translation>
-<translation id="6480487102627517146">Dit biedt configuraties voor zakelijke printers.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten.  De indeling is hetzelfde als de NativePrinters-woordenlijst, met een extra verplicht ID- of GUID-veld per printer voor de toelatings- of blokkeringslijst.
-
-      Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON.  Naar schatting wordt een bestand met ongeveer 21.000 printers gecodeerd als een bestand van 5 MB.  De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. Het wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
-
-      Als dit beleid is ingesteld, downloadt <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties en worden printers beschikbaar in overeenstemming met <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> en <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen.  Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
-
-      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="PRINTERS_BULK_CONFIGURATION" />.</translation>
 <translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
 <translation id="6491872498385040936">Dit beleid is beëindigd. Overweeg <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> te gebruiken, dat voorrang krijgt op dit beleid en waarmee gedetailleerdere afstelling kan plaatsvinden.
 
@@ -3891,24 +3808,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als het beleid is ingesteld op False of niet is ingesteld, is <ph name="PLUGIN_VM_NAME" /> niet ingeschakeld voor de gebruiker.
       Als het beleid is ingesteld op True, is <ph name="PLUGIN_VM_NAME" /> ingeschakeld voor de gebruiker, op voorwaarde dat de andere instellingen dit ook toestaan. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> en <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> moeten zijn ingesteld op True en <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> of <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> moet zijn ingesteld voordat <ph name="PLUGIN_VM_NAME" /> kan worden ingesteld.</translation>
-<translation id="6741496055862838205">Biedt configuraties voor bedrijfsprinters die aan apparaten zijn gekoppeld.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten.  De indeling is hetzelfde als de NativePrinters-woordenlijst, met een extra verplicht ID- of GUID-veld per printer voor de toelatings- of blokkeringslijst.
-
-      Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON.  Naar schatting wordt een bestand met ongeveer 21.000 printers gecodeerd als een bestand van 5 MB.  De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. Deze wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
-
-      Als dit beleid is ingesteld, downloadt <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties en worden printers beschikbaar in overeenstemming met <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> en <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen.  Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
-
-      Dit beleid is een aanvulling op <ph name="BULK_PRINTERS_POLICY" />.
-
-      Als dit beleid niet is ingesteld, zijn er geen apparaatprinters en worden de andere beleidsregels '<ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" />' genegeerd.
-
-      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="DEVICE_PRINTERS" />.
-      </translation>
 <translation id="6752711782954612641">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is ingeschakeld en je <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> instelt, worden de parameters gespecificeerd als een URL wordt gezocht via POST. Deze bestaan uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter is (zoals <ph name="SEARCH_TERM_MARKER" />), wordt deze vervangen door de echte zoektermen.
 
       Als je <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> niet instelt, worden zoekopdrachten gestuurd met de GET-methode.</translation>
@@ -4714,14 +4613,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'True', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'False' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="7933141401888114454">Maken van bewaakte gebruikers inschakelen</translation>
 <translation id="793473937901685727">Certificaatbeschikbaarheid instellen voor ARC-apps</translation>
-<translation id="7935338931503001902">Hiermee wordt beheerd welke printers uit <ph name="BULK_PRINTERS_POLICY" /> beschikbaar zijn voor gebruikers.
-
-      Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als <ph name="PRINTERS_ALLOW_ALL" /> is geselecteerd, worden alle printers weergegeven. Als <ph name="PRINTERS_BLACKLIST" /> is geselecteerd, wordt <ph name="BULK_PRINTERS_BLACKLIST" /> gebruikt om de toegang tot de opgegeven printers te beperken.  Als <ph name="PRINTERS_WHITELIST" /> is geselecteerd, geeft <ph name="BULK_PRINTERS_WHITELIST" /> alleen de printers aan die kunnen worden geselecteerd.
-
-      Als dit beleid niet is ingesteld, wordt uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
-
-      Dit beleid is verouderd. Gebruik in plaats daarvan <ph name="PRINTERS_BULK_ACCESS_MODE" />.
-      </translation>
 <translation id="7937491150792971922">Lijstbeleidsregels voor installatie van extensies van meerdere bronnen samenvoegen</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
@@ -5174,12 +5065,6 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="858309738002328421">Grote bestandsuploads blokkeren</translation>
 <translation id="8584279193368801689">Beperkt de modus voor afdrukken met pincode. Als het beleid niet is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd. Houd er rekening mee dat de functie voor afdrukken met pincode alleen is ingeschakeld voor printers die het protocol IPPS, HTTPS, USB of IPP-over-USB gebruiken.</translation>
 <translation id="8585558195682146109">Gebruikersdownloads sturen om te laten scannen</translation>
-<translation id="8586528890725660268">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_BLACKLIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld. De ID's moeten overeenkomen met het ID- of GUID-veld in het bestand dat is opgegeven in <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8591713876665299827">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 

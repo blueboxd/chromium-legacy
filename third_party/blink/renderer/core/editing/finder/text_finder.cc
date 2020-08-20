@@ -828,7 +828,8 @@ void TextFinder::FireBeforematchEvent(
     return;
   }
 
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled()) {
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+          GetFrame()->GetDocument()->GetExecutionContext())) {
     Element* beforematch_element = GetBeforematchElement(*context->range);
     // Note that we don't check the `range.EndPosition()` since we just activate
     // the beginning of the range. In find-in-page cases, the end position is

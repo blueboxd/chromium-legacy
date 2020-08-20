@@ -18,7 +18,10 @@ js_type_check("closure_compile") {
     ":nearby_http_browser_proxy",
     ":nearby_internals",
     ":nearby_logs_browser_proxy",
+    ":nearby_ui_trigger_browser_proxy",
     ":types",
+    ":ui_trigger_list_object",
+    ":ui_trigger_tab",
   ]
 }
 
@@ -33,7 +36,10 @@ js_library("nearby_internals") {
     ":nearby_contact_browser_proxy",
     ":nearby_http_browser_proxy",
     ":nearby_logs_browser_proxy",
+    ":nearby_ui_trigger_browser_proxy",
     ":types",
+    ":ui_trigger_list_object",
+    ":ui_trigger_tab",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
   ]
@@ -89,6 +95,30 @@ js_library("http_message_object") {
   ]
 }
 
+js_library("nearby_ui_trigger_browser_proxy") {
+  deps = [
+    ":types",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("ui_trigger_tab") {
+  deps = [
+    ":nearby_ui_trigger_browser_proxy",
+    ":types",
+    ":ui_trigger_list_object",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("ui_trigger_list_object") {
+  deps = [
+    ":nearby_ui_trigger_browser_proxy",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("types") {
 }
 
@@ -129,5 +159,7 @@ html_to_js("web_components") {
     "logging_tab.js",
     "nearby_internals.js",
     "shared_style.js",
+    "ui_trigger_list_object.js",
+    "ui_trigger_tab.js",
   ]
 }

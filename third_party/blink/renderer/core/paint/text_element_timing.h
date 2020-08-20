@@ -29,6 +29,8 @@ class CORE_EXPORT TextElementTiming final
   static const char kSupplementName[];
 
   explicit TextElementTiming(LocalDOMWindow&);
+  TextElementTiming(const TextElementTiming&) = delete;
+  TextElementTiming& operator=(const TextElementTiming&) = delete;
 
   static TextElementTiming& From(LocalDOMWindow&);
 
@@ -53,8 +55,6 @@ class CORE_EXPORT TextElementTiming final
   void Trace(Visitor* visitor) const override;
 
   Member<WindowPerformance> performance_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextElementTiming);
 };
 
 }  // namespace blink

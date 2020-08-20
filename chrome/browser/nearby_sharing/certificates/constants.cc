@@ -26,3 +26,5 @@ const size_t kNearbyShareMaxNumMetadataEncryptionKeySaltGenerationRetries = 128;
 const char kNearbyShareSenderVerificationPrefix = 0x01;
 const char kNearbyShareReceiverVerificationPrefix = 0x02;
 const size_t kNearbyShareCertificateStorageMaxNumInitializeAttempts = 3;
+const base::TimeDelta kNearbySharePublicCertificateDownloadPeriod =
+    base::TimeDelta::FromHours(12);

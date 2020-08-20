@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -144,8 +146,8 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
     auto installed_scripts_manager_params =
         std::make_unique<WebServiceWorkerInstalledScriptsManagerParams>(
             std::move(installed_scripts_info->installed_urls),
-            installed_scripts_info->manager_receiver.PassPipe(),
-            installed_scripts_info->manager_host_remote.PassPipe());
+            std::move(installed_scripts_info->manager_receiver),
+            std::move(installed_scripts_info->manager_host_remote));
     installed_scripts_manager_ =
         std::make_unique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager_params),

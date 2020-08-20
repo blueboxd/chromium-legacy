@@ -10,8 +10,16 @@
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 namespace ash {
@@ -28,15 +36,18 @@ class HoldingSpaceKeyedService : public KeyedService {
       delete;
   ~HoldingSpaceKeyedService() override;
 
-  // Adds a text item to the service's holding space model.
-  // |text|: The item's text value.
-  void AddTextItem(const base::string16& text);
+  // Adds a screenshot item backed by the provided absolute file path.
+  // The path is expected to be under a mount point path recognized by the file
+  // manager app (otherwise, the item will be dropped silently).
+  void AddScreenshot(const base::FilePath& screenshot_path,
+                     const gfx::ImageSkia& image);
 
   const HoldingSpaceModel* model_for_testing() const {
     return &holding_space_model_;
   }
 
  private:
+  content::BrowserContext* const browser_context_;
   HoldingSpaceModel holding_space_model_;
 };
 

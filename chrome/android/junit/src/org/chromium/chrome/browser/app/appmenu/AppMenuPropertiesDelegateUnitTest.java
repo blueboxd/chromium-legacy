@@ -294,6 +294,38 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     @Test
     @Config(qualifiers = "sw320dp")
+    public void testPageMenuItems_Phone_RegularPage_regroup() {
+        setUpMocksForPageMenu();
+        when(mTab.getUrlString()).thenReturn("https://google.com");
+        when(mTab.isNativePage()).thenReturn(false);
+        doReturn(true)
+                .when(mAppMenuPropertiesDelegate)
+                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowTranslateMenuItem(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowRegroupedMenu();
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowUpdateMenuItem();
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowMoveToOtherWindow();
+        doReturn(R.string.menu_add_to_homescreen)
+                .when(mAppMenuPropertiesDelegate)
+                .getAddToHomeScreenTitle();
+
+        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {R.id.icon_row_menu_id, R.id.update_menu_id,
+                R.id.move_to_other_window_menu_id, R.id.new_tab_menu_id,
+                R.id.new_incognito_tab_menu_id, R.id.divider_line_id, R.id.open_history_menu_id,
+                R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
+                R.id.divider_line_id, R.id.share_row_menu_id, R.id.paint_preview_show_id,
+                R.id.find_in_page_id, R.id.translate_id, R.id.add_to_homescreen_id,
+                R.id.request_desktop_site_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
+                R.id.help_id};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
     public void testOverviewMenuItems_Phone() {
         setUpMocksForOverviewMenu();
         when(mIncognitoTabModel.getCount()).thenReturn(0);

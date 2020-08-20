@@ -45,7 +45,6 @@ class ComputedStyle;
 class Element;
 class File;
 class FontDescription;
-class HTMLInputElement;
 class LengthSize;
 class LocalFrame;
 class Node;
@@ -63,10 +62,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   static LayoutTheme& GetTheme();
 
   virtual ThemePainter& Painter() = 0;
-
-  // This function is called after associated WebThemeEngine instance
-  // was replaced. This is called only in tests.
-  virtual void DidChangeThemeEngine() {}
 
   static void SetSizeIfAuto(ComputedStyle&, const IntSize&);
   // Sets the minimum size to |part_size| or |min_part_size| as appropriate
@@ -110,10 +105,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                            ControlState) const;
 
   bool ShouldDrawDefaultFocusRing(const Node*, const ComputedStyle&) const;
-
-  // A method asking if the theme's controls actually care about redrawing when
-  // hovered.
-  virtual bool SupportsHover(const ComputedStyle&) const { return false; }
 
   // A method asking if the platform is able to show a calendar picker for a
   // given input type.
@@ -178,8 +169,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void SystemFont(CSSValueID system_font_id, FontDescription&);
   virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
-  virtual int MinimumMenuListSize(const ComputedStyle&) const { return 0; }
-
   virtual void AdjustSliderThumbSize(ComputedStyle&) const;
 
   virtual int PopupInternalPaddingStart(const ComputedStyle&) const {
@@ -193,8 +182,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
     return 0;
   }
 
-  virtual void AdjustProgressBarBounds(ComputedStyle& style) const {}
-
   // Returns size of one slider tick mark for a horizontal track.
   // For vertical tracks we rotate it and use it. i.e. Width is always length
   // along the track.
@@ -202,69 +189,20 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Returns the distance of slider tick origin from the slider track center.
   virtual int SliderTickOffsetFromTrackCenter() const = 0;
 
-  virtual bool ShouldHaveSpinButton(HTMLInputElement*) const;
-
   // Functions for <select> elements.
   virtual bool DelegatesMenuListRendering() const;
   // This function has no effect for LayoutThemeAndroid, of which
   // DelegatesMenuListRendering() always returns true.
   void SetDelegatesMenuListRenderingForTesting(bool flag);
   virtual bool PopsMenuByArrowKeys() const { return false; }
-  virtual bool PopsMenuBySpaceKey() const { return false; }
   virtual bool PopsMenuByReturnKey() const { return false; }
   virtual bool PopsMenuByAltDownUpOrF4Key() const { return false; }
 
   virtual String DisplayNameForFile(const File& file) const;
 
-  virtual bool ShouldOpenPickerWithF4Key() const;
-
   virtual bool SupportsSelectionForegroundColors() const { return true; }
 
-  virtual bool IsModalColorChooser() const { return true; }
-
   virtual bool ShouldUseFallbackTheme(const ComputedStyle&) const;
-
-  // Methods used to adjust the ComputedStyles of controls.
-
-  // The font description result should have a zoomed font size.
-  virtual FontDescription ControlFont(ControlPart,
-                                      const FontDescription& font_description,
-                                      float /*zoomFactor*/) const {
-    return font_description;
-  }
-
-  // The size here is in zoomed coordinates already.  If a new size is returned,
-  // it also needs to be in zoomed coordinates.
-  virtual LengthSize GetControlSize(ControlPart,
-                                    const FontDescription&,
-                                    const LengthSize& zoomed_size,
-                                    float /*zoomFactor*/) const {
-    return zoomed_size;
-  }
-
-  // Returns the minimum size for a control in zoomed coordinates.
-  virtual LengthSize MinimumControlSize(ControlPart,
-                                        const FontDescription&,
-                                        float /*zoomFactor*/,
-                                        const ComputedStyle& style) const {
-    return LengthSize(Length::Fixed(0), Length::Fixed(0));
-  }
-
-  // Allows the theme to modify the existing padding/border.
-  virtual LengthBox ControlPadding(ControlPart,
-                                   const FontDescription&,
-                                   const Length& zoomed_box_top,
-                                   const Length& zoomed_box_right,
-                                   const Length& zoomed_box_bottom,
-                                   const Length& zoomed_box_left,
-                                   float zoom_factor) const;
-  virtual LengthBox ControlBorder(ControlPart,
-                                  const FontDescription&,
-                                  const LengthBox& zoomed_box,
-                                  float zoom_factor) const;
-
-  // Whether or not whitespace: pre should be forced on always.
-  virtual bool ControlRequiresPreWhiteSpace(ControlPart) const { return false; }
 
   // Adjust style as per platform selection.
   virtual void AdjustControlPartStyle(ComputedStyle&);
@@ -289,8 +227,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color PlatformInactiveListBoxSelectionForegroundColor(
       WebColorScheme color_scheme) const;
 
-  virtual bool ThemeDrawsFocusRing(const ComputedStyle&) const = 0;
-
   // Methods for each appearance value.
   virtual void AdjustCheckboxStyle(ComputedStyle&) const;
   virtual void SetCheckboxSize(ComputedStyle&) const {}
@@ -313,16 +249,11 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
  public:
   // Methods for state querying
-  static ControlStates ControlStatesForNode(const Node*, const ComputedStyle&);
-  static bool IsActive(const Node*);
   static bool IsChecked(const Node*);
   static bool IsIndeterminate(const Node*);
   static bool IsEnabled(const Node*);
-  static bool IsFocused(const Node*);
   static bool IsPressed(const Node*);
-  static bool IsSpinUpButtonPartPressed(const Node*);
   static bool IsHovered(const Node*);
-  static bool IsSpinUpButtonPartHovered(const Node*);
   static bool IsReadOnlyControl(const Node*);
 
  protected:

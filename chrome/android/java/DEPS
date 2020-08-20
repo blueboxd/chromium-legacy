@@ -2,7 +2,6 @@ include_rules = [
   "-chrome/android/features/keyboard_accessory/internal",
 
   "+chrome/browser/android/lifecycle",
-  "+chrome/browser/android/thin_webview/java",
   "+chrome/browser/privacy",
   "+chrome/browser/profiles/android/java",
   "+chrome/browser/share/android",
@@ -49,6 +48,7 @@ include_rules = [
   "+components/security_state/content/android/java",
   "+components/sync/android/java/src/org/chromium/components/sync",
   "+components/query_tiles/android/java",
+  "+components/thin_webview/java",
 
   "-content/public/android",
   "+content/public/android/java/src/org/chromium/content_public",

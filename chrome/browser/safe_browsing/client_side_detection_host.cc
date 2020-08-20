@@ -25,6 +25,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
@@ -126,6 +127,12 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       DontClassifyForPhishing(NO_CLASSIFY_WHITELISTED_BY_POLICY);
     }
 
+    // If the tab has a delayed warning, ignore this second verdict. We don't
+    // want to immediately undelay a page that's already blocked as phishy.
+    if (SafeBrowsingUserInteractionObserver::FromWebContents(web_contents_)) {
+      DontClassifyForPhishing(NO_CLASSIFY_HAS_DELAYED_WARNING);
+    }
+
     // We lookup the csd-whitelist before we lookup the cache because
     // a URL may have recently been whitelisted.  If the URL matches
     // the csd-whitelist we won't start phishing classification.  The
@@ -169,6 +176,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     NO_CLASSIFY_SCHEME_NOT_SUPPORTED = 11,
     NO_CLASSIFY_WHITELISTED_BY_POLICY = 12,
     CLASSIFY = 13,
+    NO_CLASSIFY_HAS_DELAYED_WARNING = 14,
 
     NO_CLASSIFY_MAX  // Always add new values before this one.
   };

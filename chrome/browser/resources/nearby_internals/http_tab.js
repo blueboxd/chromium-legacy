@@ -94,6 +94,6 @@ Polymer({
    * @private
    */
   onHttpMessageAdded_(message) {
-    this.httpMessageList_.unshift(message);
+    this.unshift('httpMessageList_', message);
   },
 });

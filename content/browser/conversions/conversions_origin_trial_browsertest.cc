@@ -35,11 +35,9 @@ namespace {
 constexpr char kBaseDataDir[] = "content/test/data/conversions/";
 }
 
-class ConversionsOriginTrialBrowserTest : public ContentBrowserTest {
+class ConversionsOriginTrialBrowserTestBase : public ContentBrowserTest {
  public:
-  ConversionsOriginTrialBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
-  }
+  ConversionsOriginTrialBrowserTestBase() = default;
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -63,9 +61,29 @@ class ConversionsOriginTrialBrowserTest : public ContentBrowserTest {
   WebContents* web_contents() { return shell()->web_contents(); }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
+
+class ConversionsOriginTrialBrowserTest
+    : public ConversionsOriginTrialBrowserTestBase {
+ public:
+  ConversionsOriginTrialBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
+                       OriginTrialEnabled_FeatureDetected) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/impression_with_origin_trial.html")));
+
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "document.featurePolicy.features().includes('"
+                         "conversion-measurement')"));
+}
 
 IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
                        OriginTrialEnabled_ImpressionRegistered) {
@@ -102,5 +120,26 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
 // TODO(johnidel): Add tests that exercise the conversion side logic as well.
 // This requires also using an embedded test server because the
 // UrlLoadInterceptor cannot properly redirect the conversion pings.
+
+class ConversionsOriginTrialNoBrowserFeatureBrowserTest
+    : public ConversionsOriginTrialBrowserTestBase {
+ public:
+  ConversionsOriginTrialNoBrowserFeatureBrowserTest() {
+    feature_list_.InitAndDisableFeature(features::kConversionMeasurement);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialNoBrowserFeatureBrowserTest,
+                       BrowserSideLogicNotEnabled_FeatureNotDetected) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/impression_with_origin_trial.html")));
+
+  EXPECT_EQ(false, EvalJs(shell(),
+                          "document.featurePolicy.features().includes('"
+                          "conversion-measurement')"));
+}
 
 }  // namespace content

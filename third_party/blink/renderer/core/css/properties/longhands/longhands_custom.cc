@@ -5987,17 +5987,14 @@ const CSSValue* ContentVisibility::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  auto id = range.Peek().Id();
-  if (id == CSSValueID::kHiddenMatchable &&
-      !RuntimeEnabledFeatures::CSSContentVisibilityHiddenMatchableEnabled()) {
+  if (range.Peek().Id() == CSSValueID::kHiddenMatchable &&
+      !RuntimeEnabledFeatures::CSSContentVisibilityHiddenMatchableEnabled(
+          context.GetExecutionContext())) {
     return nullptr;
   }
-  if (!css_parsing_utils::IdentMatches<CSSValueID::kVisible, CSSValueID::kAuto,
-                                       CSSValueID::kHidden,
-                                       CSSValueID::kHiddenMatchable>(id)) {
-    return nullptr;
-  }
-  return css_parsing_utils::ConsumeIdent(range);
+  return css_parsing_utils::ConsumeIdent<CSSValueID::kVisible,
+                                         CSSValueID::kAuto, CSSValueID::kHidden,
+                                         CSSValueID::kHiddenMatchable>(range);
 }
 
 const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,

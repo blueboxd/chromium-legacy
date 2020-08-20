@@ -542,6 +542,7 @@ class V8TestObject {
   CORE_EXPORT static void MeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyMethodWithMeasureMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyMethodWithMeasureAsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectBooleanMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CeReactionsNotOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CeReactionsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void DeprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

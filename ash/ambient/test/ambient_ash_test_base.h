@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/public/cpp/test/test_ambient_client.h"
@@ -20,6 +21,7 @@
 
 namespace ash {
 
+class AmbientAccessTokenController;
 class AmbientContainerView;
 class AmbientPhotoController;
 class MediaStringView;
@@ -102,6 +104,8 @@ class AmbientAshTestBase : public AshTestBase {
 
   // Returns the top-level view which contains all the ambient components.
   AmbientContainerView* container_view();
+
+  AmbientAccessTokenController* token_controller();
 
   void FetchTopics();
 

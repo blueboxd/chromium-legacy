@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/combobox_model.h"
@@ -31,6 +32,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/combobox_test_api.h"
+#include "ui/views/test/test_ax_event_observer.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -822,6 +824,22 @@ TEST_F(ComboboxTest, MenuModel) {
   EXPECT_EQ(ASCIIToUTF16("JELLY"), menu_model->GetLabelAt(1));
 
   EXPECT_TRUE(menu_model->IsVisibleAt(0));
+}
+
+// Verifies setting the tooltip text will call NotifyAccessibilityEvent.
+TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
+  InitCombobox(nullptr);
+  base::string16 test_tooltip_text = ASCIIToUTF16("Test Tooltip Text");
+  test::TestAXEventObserver observer;
+  EXPECT_EQ(0, observer.text_changed_event_count());
+  combobox_->SetTooltipText(test_tooltip_text);
+  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(test_tooltip_text, combobox_->GetAccessibleName());
+  ui::AXNodeData data;
+  combobox_->GetAccessibleNodeData(&data);
+  const std::string& name =
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  EXPECT_EQ(test_tooltip_text, ASCIIToUTF16(name));
 }
 
 namespace {

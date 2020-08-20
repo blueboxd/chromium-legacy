@@ -62,7 +62,7 @@ void InitializeInputMethodForTesting() {
   LinuxInputMethodContextFactory::SetInstance(
       g_linux_input_method_context_factory_for_testing);
 #elif defined(OS_WIN)
-  TSFBridge::Initialize();
+  TSFBridge::InitializeForTesting();
 #endif
 }
 

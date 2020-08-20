@@ -34,7 +34,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
@@ -112,6 +111,25 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
 
     /** Whether an Activity is available to capture audio. */
     private boolean mSupportsAudioCapture;
+
+    /** A delegate for the photo picker. */
+    private static PhotoPickerDelegate sPhotoPickerDelegate;
+
+    /**
+     * Allows setting a delegate to override the default Android stock photo picker.
+     * @param delegate A {@link PhotoPickerDelegate} instance.
+     */
+    public static void setPhotoPickerDelegate(PhotoPickerDelegate delegate) {
+        sPhotoPickerDelegate = delegate;
+    }
+
+    /**
+     * Called when the photo picker dialog has been dismissed.
+     */
+    public static void onPhotoPickerDismissed() {
+        if (sPhotoPickerDelegate == null) return;
+        sPhotoPickerDelegate.onPhotoPickerDismissed();
+    }
 
     SelectFileDialog(long nativeSelectFileDialog) {
         mNativeSelectFileDialog = nativeSelectFileDialog;
@@ -261,12 +279,10 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
             if (mWindowAndroid.showIntent(soundRecorder, this, R.string.low_memory_error)) return;
         }
 
-        Activity activity = mWindowAndroid.getActivity().get();
-
         // Use the new photo picker, if available.
         List<String> imageMimeTypes = convertToSupportedPhotoPickerTypes(mFileTypes);
         if (shouldUsePhotoPicker()
-                && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
+                && showPhotoPicker(mWindowAndroid, this, mAllowMultiple, imageMimeTypes)) {
             return;
         }
 
@@ -327,7 +343,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
      */
     private boolean shouldUsePhotoPicker() {
         List<String> mediaMimeTypes = convertToSupportedPhotoPickerTypes(mFileTypes);
-        return !captureImage() && mediaMimeTypes != null && UiUtils.shouldShowPhotoPicker()
+        return !captureImage() && mediaMimeTypes != null && shouldShowPhotoPicker()
                 && mWindowAndroid.getActivity().get() != null;
     }
 
@@ -345,7 +361,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         for (String type : fileTypes) {
             String mimeType = ensureMimeType(type);
             if (!mimeType.startsWith("image/")) {
-                if (!UiUtils.photoPickerSupportsVideo() || !mimeType.startsWith("video/")) {
+                if (!photoPickerSupportsVideo() || !mimeType.startsWith("video/")) {
                     return null;
                 }
             }
@@ -826,6 +842,23 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
 
     private void recordImageCountHistogram(int count) {
         RecordHistogram.recordCount100Histogram("Android.SelectFileDialogImgCount", count);
+    }
+
+    private static boolean shouldShowPhotoPicker() {
+        return sPhotoPickerDelegate != null;
+    }
+
+    private static boolean photoPickerSupportsVideo() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
+        if (!shouldShowPhotoPicker()) return false;
+        return sPhotoPickerDelegate.supportsVideos();
+    }
+
+    private static boolean showPhotoPicker(WindowAndroid windowAndroid,
+            PhotoPickerListener listener, boolean allowMultiple, List<String> mimeTypes) {
+        if (sPhotoPickerDelegate == null) return false;
+        sPhotoPickerDelegate.showPhotoPicker(windowAndroid, listener, allowMultiple, mimeTypes);
+        return true;
     }
 
     @VisibleForTesting

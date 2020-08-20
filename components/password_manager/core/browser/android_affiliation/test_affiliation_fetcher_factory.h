@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_TEST_AFFILIATION_FETCHER_FACTORY_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_TEST_AFFILIATION_FETCHER_FACTORY_H_
 
-#include <vector>
+#include "base/memory/scoped_refptr.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -13,6 +13,7 @@ class SharedURLLoaderFactory;
 
 namespace password_manager {
 
+class AffiliationFetcherInterface;
 class AffiliationFetcherDelegate;
 
 // Interface for a factory to be used by AffiliationFetcher::Create() in tests
@@ -21,15 +22,20 @@ class AffiliationFetcherDelegate;
 // The factory is registered with AffiliationFetcher::SetFactoryForTesting().
 class TestAffiliationFetcherFactory {
  public:
+  TestAffiliationFetcherFactory(const TestAffiliationFetcherFactory&) = delete;
+  TestAffiliationFetcherFactory& operator=(
+      const TestAffiliationFetcherFactory&) = delete;
+
   // Constructs a fetcher to retrieve affiliations for each facet in |facet_ids|
   // using the specified |url_loader_factory|, and will provide the results
   // to the |delegate| on the same thread that creates the instance.
-  virtual AffiliationFetcher* CreateInstance(
+  virtual AffiliationFetcherInterface* CreateInstance(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AffiliationFetcherDelegate* delegate) = 0;
 
  protected:
-  virtual ~TestAffiliationFetcherFactory() {}
+  TestAffiliationFetcherFactory() = default;
+  virtual ~TestAffiliationFetcherFactory() = default;
 };
 
 }  // namespace password_manager

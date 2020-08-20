@@ -11,6 +11,7 @@
 
 @protocol PopupMenuLongPressDelegate;
 @protocol TabStripPresentation;
+@class ViewRevealingVerticalPanHandler;
 class Browser;
 
 // Controller class for the tabstrip.  Manages displaying tabs and keeping the
@@ -31,6 +32,9 @@ class Browser;
 
 // Used to check if the tabstrip is visible before starting an animation.
 @property(nonatomic, assign) id<TabStripPresentation> presentationProvider;
+
+// Pan gesture handler for the tab strip.
+@property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
 // Designated initializer, |dispatcher| is not retained.
 - (instancetype)initWithBrowser:(Browser*)browser

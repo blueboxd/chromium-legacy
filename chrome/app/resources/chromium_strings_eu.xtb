@@ -118,7 +118,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="5416696090975899932">Chromium-ek ezin du erakutsi inprimatze-aurrebista PDF dokumentuen ikustaile integratua falta bada.</translation>
 <translation id="5427571867875391349">Ezarri Chromium arakatzaile lehenetsi gisa</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
-<translation id="544968170749360982">Beste kontu batekin hasi duzu saioa <ph name="EXISTING_USER" /> erabiltzailearen eremuan. Datuak bereiz gordetzeko <ph name="NEW_USER" /> erabiltzailearentzat Chromium-eko eremu bat sortu nahi duzu?</translation>
+<translation id="544968170749360982">Beste kontu batekin hasi duzu saioa <ph name="EXISTING_USER" /> erabiltzailearen eremuan. <ph name="NEW_USER" /> erabiltzailearentzat Chromium-eko eremu bat sortu nahi duzu datuak bereiz gordetzeko?</translation>
 <translation id="5479196819031988440">Chromium sistema eragileak ezin du ireki orri hau.</translation>
 <translation id="5480860683791598150">Chromium-ek zure kokapena webgune honekin partekatzeko baimena behar du</translation>
 <translation id="549669000822060376">Itxaron Chromium-ek sistemaren azken eguneratzeak instalatu arte.</translation>
@@ -141,7 +141,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="608189560609172163">Saio-hasieraren errore bat dela-eta, Chromium arakatzaileak ezin izan ditu sinkronizatu zure datuak.</translation>
 <translation id="6096348254544841612">Pertsonalizatu eta kontrolatu Chromium. Eguneratze bat erabilgarri dago.</translation>
 <translation id="6120345080069858279">Chromium-ek Google-ko kontuan gordeko du pasahitz hau. Ez duzu gogoratu beharko.</translation>
-<translation id="6128834065531097268">Laneko kontu batekin hasi duzu saioa <ph name="EXISTING_USER" /> erabiltzailearen eremuan. Datuak bereiz gordetzeko <ph name="WORK_DOMAIN" /> domeinurako Chromium-eko eremu bat sortu nahi duzu?</translation>
+<translation id="6128834065531097268">Laneko kontu batekin hasi duzu saioa <ph name="EXISTING_USER" /> erabiltzailearen eremuan. <ph name="WORK_DOMAIN" /> domeinurako Chromium-eko eremu bat sortu nahi duzu datuak bereiz gordetzeko?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> arriskutsua da; horregatik, blokeatu egin du Chromium-ek.</translation>
 <translation id="6134968993075716475">Arakatze segurua desaktibatuta dago. Aktibatzea gomendatzen du Chromium-ek.</translation>
 <translation id="6212496753309875659">Ordenagailuak Chromium arakatzailearen bertsio berriagoa du. Softwareak ez badu funtzionatzean, desinstalatu Chromium eta saiatu berriro.</translation>
@@ -203,7 +203,7 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="7561906087460245826">Halaber, garbitu Chromium-eko datuak (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ezarpenen bat orri honetan agertzen ez bada, bila ezazu <ph name="LINK_BEGIN" />
       Chromium-en sistema eragilearen ezarpenetan.<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Laneko kontu batekin hasi duzu saioa. Datu pertsonalak bereiz gordetzeko <ph name="NEW_USER" /> erabiltzailearentzat Chromium-eko eremu bat sortu nahi duzu?</translation>
+<translation id="7607142834923530546">Laneko kontu batekin hasi duzu saioa. <ph name="NEW_USER" /> erabiltzailearentzat Chromium-eko eremu bat sortu nahi duzu datu pertsonalak bereiz gordetzeko?</translation>
 <translation id="761356813943268536">Chromium kamera eta mikrofonoa erabiltzen ari da.</translation>
 <translation id="7617377681829253106">Chromium hobetu egin dugu</translation>
 <translation id="7628001322379820951">Chromium-ek software kaltegarria aurkitu du ordenagailuan</translation>

@@ -942,11 +942,11 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2435052056904485763">Liste d'autorisation des serveurs de délégation Kerberos</translation>
-<translation id="2439793457499023062">Si cette règle n'est pas configurée et si l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Ce dernier peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la confidentialité dans Google Chrome.
+<translation id="2439793457499023062">Si cette règle n'est pas configurée et que l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Celui-ci peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la protection de la vie privée dans Google Chrome.
 
-      Si cette règle est désactivée et si Chrome Cleanup détecte des logiciels indésirables, aucune métadonnée sur l'analyse n'est envoyée à Google, quelle que soit la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage ne sont pas transmis à Google, et l'utilisateur n'a pas non plus la possibilité de le faire.
+      Si cette règle est désactivée et que Chrome Cleanup détecte des logiciels indésirables, aucune métadonnée sur l'analyse n'est envoyée à Google, quelle que soit la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage ne sont pas transmis à Google, et l'utilisateur n'a pas non plus la possibilité de le faire.
 
-      Si cette règle est activée et si Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées sur l'analyse conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage sont transmis à Google, et l'utilisateur n'a pas la possibilité d'empêcher cette transmission.
+      Si cette règle est activée et que Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées sur l'analyse conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés.  Les résultats du nettoyage sont transmis à Google, et l'utilisateur n'a pas la possibilité d'empêcher cette transmission.
 
       Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome.</translation>
 <translation id="2440773021691931148">Envoie des rapports sur les statistiques et identifiants matériels associés à l'alimentation.
@@ -1461,6 +1461,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="3192902750888034827">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> vous permet de spécifier l'URL du moteur de recherche utilisé pour afficher une page Nouvel onglet.
 
       Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> n'est pas configurée, aucune page Nouvel onglet n'est proposée.</translation>
+<translation id="3195103497550111266">Si cette règle est définie sur <ph name="DEVICE_LTS_TAG_VALUE" />, l'appareil est autorisé à recevoir les mises à jour LTS (Long Term Support, support à long terme).</translation>
 <translation id="3196585866522778760">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est mise en œuvre (lorsque l'appareil fonctionne sur batterie).
@@ -1477,6 +1478,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="322359555555487980">Déterminer la disponibilité des variantes de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="3240609035816615922">Règle d'accès à la configuration des imprimantes.</translation>
+<translation id="324062325008698789">Configurer une liste d'imprimantes</translation>
 <translation id="3240655340884151271">Adresse MAC de la carte d'interface réseau intégrée de la station d'accueil</translation>
 <translation id="3242756958360374888">Contient une liste de schémas utilisés pour contrôler la visibilité des comptes dans <ph name="PRODUCT_NAME" />.
 
@@ -1686,11 +1688,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3540935459049973317">Restrictions temporelles spécifiques à chaque application</translation>
-<translation id="3543579213273969284">Si cette règle est activée, le système d'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, <ph name="PRODUCT_NAME" /> ne délègue les identifiants que si la règle KDC indique <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Consultez le document RFC 5896 sur https://tools.ietf.org/html/rfc5896.html. Le service doit correspondre à la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
-
-      Si cette règle est désactivée, la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> est respectée.
-
-      Sous <ph name="MS_WIN_NAME" />, la règle KDC est toujours respectée.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3550122827225052130">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
 
@@ -1709,13 +1706,13 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554498762428140109">Activer le recouvrement par la fenêtre native</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
-<translation id="3562741878192828370">Liste des types de fichier à ouvrir automatiquement après leur téléchargement. Les extensions de votre liste doivent être spécifiées sans le séparateur qui les précède (par exemple, indiquez "txt" et non ".txt").
+<translation id="3562741878192828370">Permet d'établir la liste des types de fichiers à ouvrir automatiquement une fois téléchargés. Les extensions de la liste doivent être spécifiées sans le séparateur qui les précède (par exemple, indiquez "txt" et non ".txt").
 
-      Les fichiers des types à ouvrir automatiquement restent sujets aux vérifications de navigation sécurisée, en cas d'activation, et ne seront ouverts que s'ils satisfont à ces critères.
+      Les fichiers définis comme devant être ouverts automatiquement restent soumis aux vérifications de navigation sécurisée, si activée, et ne seront pas ouverts en cas d'échec aux contrôles.
 
-      Si cette règle n'est pas définie, seuls les fichiers des types précédemment spécifiés par l'utilisateur s'ouvriront automatiquement après leur téléchargement.
+      Si cette règle n'est pas définie, seuls les fichiers des types précédemment spécifiés par l'utilisateur s'ouvriront automatiquement une fois téléchargés.
 
-      Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome. Sur <ph name="MAC_OS_NAME" />, cette fonctionnalité n'est disponible que pour les instances gérée via MDM ou associées à un domaine via MCX.</translation>
+      Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome. Sur <ph name="MAC_OS_NAME" />, cette fonctionnalité n'est disponible que pour les instances gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="356579196325389849">Les utilisateurs peuvent configurer la version disponible de Chrome OS</translation>
 <translation id="3575011234198230041">Authentification HTTP</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
@@ -2207,12 +2204,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si cette règle est désactivée ou qu'elle n'est pas configurée, les utilisateurs peuvent transférer des fichiers vers Google Drive même s'ils sont connectés à un réseau mobile.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4261820385751181068">Paramètres régionaux de l'écran de connexion de l'appareil</translation>
-<translation id="427220754384423013">Indique les imprimantes auxquelles un utilisateur a accès.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si cette règle est appliquée, seules les imprimantes dont l'ID correspond aux valeurs de la règle sont à la disposition de l'utilisateur. Les ID doivent correspondre aux champs "id" ou "guid" du fichier spécifié dans <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="4285674129118156176">Autoriser les utilisateurs non affiliés à utiliser ARC</translation>
 <translation id="4311195029067684288">Complet</translation>
 <translation id="4313767483634435271">Adresse MAC de la station d'accueil désignée de l'appareil</translation>
@@ -2818,22 +2809,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
 <translation id="5272684451155669299">Si cette règle est définie sur "true", l'utilisateur peut utiliser le matériel sur des appareils Chrome afin d'attester, à distance, de son identité auprès de l'autorité de certification de la confidentialité par le biais de l'API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> à l'aide de la fonction <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Si cette règle est définie sur "false", ou si vous ne l'avez pas définie, les appels vers l'API échouent, et un code d'erreur est renvoyé.</translation>
-<translation id="5273333167497341402">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
-
-      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
-
-      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de valider l'intégrité des données téléchargées.
-
-      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé chaque fois que l'URL ou le hachage seront modifiés.
-
-      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> et <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Cette règle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
-
-      Elle vient en complément de la règle <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si cette règle n'est pas configurée, aucune imprimante associée à un appareil n'est affichée, et les autres règles <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
-      </translation>
 <translation id="5273744932022326215">Permet d'activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur sur l'écran de connexion.
 
           Si cette règle est définie sur "True", la mise en surbrillance du curseur est toujours activée sur l'écran de connexion.
@@ -2971,6 +2946,16 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
       Si la règle n'est pas définie, l'utilisateur peut choisir l'image de l'avatar qui le représente dans l'écran de connexion.</translation>
+<translation id="5431392643649571773">Lorsque cette règle est activée, la fonctionnalité <ph name="PRODUCT_NAME" /> permet d'utiliser le cache amélioré. Si l'utilisateur change de page, celle qui est quittée peut être conservée en l'état (arborescence de documents, script, etc.) dans le cache amélioré. Par exemple, si l'utilisateur retourne sur cette page, celle-ci peut ainsi être restaurée à partir de ce cache et affichée telle qu'elle était avant sa mise en cache.
+
+          Toutefois, cette fonctionnalité peut entraîner des dysfonctionnements pour certains sites Web qui ne s'attendent pas à ce que leurs pages soient mises en cache, en particulier ceux qui reposent sur le déclenchement de l'événement "<ph name="UNLOAD_HANDLER_NAME" />" en cas de changement de page. L'événement "<ph name="UNLOAD_HANDLER_NAME" />" ne se déclenche pas si la page concernée est stockée dans le cache amélioré.
+
+          Si cette règle est activée ou qu'elle n'est pas configurée,
+
+          la fonctionnalité <ph name="PRODUCT_NAME" /> est activée.
+
+          Si cette règle est désactivée, cette fonctionnalité est désactivée de façon forcée.
+          </translation>
 <translation id="5437214086679373363">Permet de déterminer si les utilisateurs sont autorisés ou non à importer ou à télécharger des fichiers protégés par un mot de passe lorsqu'une analyse est requise.  Cette restriction ne s'applique qu'aux fichiers nécessitant une analyse conformément à <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et aux règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
 
       Si cette règle est définie sur "Aucun", <ph name="PRODUCT_NAME" /> empêche l'utilisateur d'importer ou de télécharger des fichiers protégés par un mot de passe.
@@ -3251,17 +3236,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5775235485119094648">Recharge de la batterie tant que le niveau de charge défini n'est pas atteint.</translation>
 <translation id="5776485039795852974">Demander confirmation chaque fois qu'un site veut afficher des notifications sur le bureau</translation>
 <translation id="5783009211970309878">Imprimer les en-têtes et les pieds de page</translation>
-<translation id="5783576706065107606">Atténuer les vérifications <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />, ce qui permet aux extensions de conserver un comportement compatible, et à <ph name="PRODUCT_NAME" /> d'envoyer les en-têtes spécifiés sans vérifications <ph name="CORS" />.
-
-      Si la liste est vide, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de l'<ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué à la page <ph name="WEB_REQUEST_API_MANUAL" />).
-
-      Si la liste contient des en-têtes de requêtes <ph name="HTTP" />, ces en-têtes sont ignorés lors des contrôles <ph name="CORS" />. Les contrôles sont en outre atténués pour les extensions.
-
-      Si cette liste n'est pas configurée, les deux mesures d'atténuation ci-dessous ne sont pas appliquées.
-
-      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
-
-      Notez que cette règle était programmée pour être supprimée dans la version 82 de <ph name="PRODUCT_NAME" />, mais que sa suppression a été finalement reportée à la version 84.</translation>
 <translation id="5790763087505467169">Réduire les notifications de lancement automatique des sessions Invité gérées</translation>
 <translation id="5806128552675651249">Autoriser l'impression uniquement sans images de fond</translation>
 <translation id="5809210507920527553">Contrôle les paramètres du conteneur Linux (Crostini).</translation>
@@ -3325,17 +3299,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           En cas de désactivation ou de non-configuration de ce paramètre, le nom de domaine TalkGadget par défaut ("chromoting-host.talkgadget.google.com") est utilisé pour tous les hôtes.
 
           Les clients d'accès à distance ne sont pas concernés par la configuration de cette règle. Ils utilisent toujours "chromoting-client.talkgadget.google.com" pour accéder à TalkGadget.</translation>
-<translation id="5888171512889380367">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> plutôt que la nouvelle mise en œuvre de <ph name="CORS" />.
-
-      Si cette règle est définie sur "True", l'ancienne mise en œuvre doit être compatible avec les versions précédentes.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la nouvelle mise en œuvre utilisée peut causer des problèmes de compatibilité spécifiques à l'entreprise.
-
-      Cette règle sera supprimée après quelques versions intermédiaires.
-
-      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
-
-      Notez que cette règle était programmée pour être supprimée dans la version 82 de <ph name="PRODUCT_NAME" />, mais que sa suppression a été finalement reportée à la version 84.</translation>
 <translation id="5890063326284543943">Contrôler l'utilisation de l'API Serial</translation>
 <translation id="5893553533827140852">Si ce paramètre est activé, les demandes d'authentification gnubby seront envoyées par un proxy via une connexion hôte à distance.
 
@@ -3876,24 +3839,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas activé pour cet appareil.
       Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil à condition que les autres paramètres l'y autorisent aussi. Les règles <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> et <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> doivent être définies sur "True", et <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ou <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> doivent être configurés de sorte à permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
-<translation id="6741496055862838205">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
-
-      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste d'autorisation ou de blocage.
-
-      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
-
-      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé chaque fois que l'URL ou le hachage seront modifiés.
-
-      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> et <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Cette règle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
-
-      Elle vient en complément de la règle <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si cette règle n'est pas configurée, aucune imprimante associée à un appareil n'est affichée, et les autres règles <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
-
-      Cette règle étant obsolète, veuillez utiliser la règle <ph name="DEVICE_PRINTERS" /> à la place.
-      </translation>
 <translation id="6752711782954612641">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> vous permet de définir les paramètres d'une recherche d'URL à l'aide de la méthode POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur correspond à un paramètre modèle, comme <ph name="SEARCH_TERM_MARKER" />, elle est remplacée par des termes de recherches réels.
 
       Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> n'est pas configurée, les requêtes de recherche sont envoyées à l'aide de la méthode GET.</translation>
@@ -4391,6 +4336,24 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="749556411189861380">Indiquer la version du système d'exploitation et du micrologiciel des appareils inscrits.
 
       Si ce paramètre n'est pas défini, ou s'il est défini sur "True", la version du système d'exploitation et celle du micrologiciel sont régulièrement communiquées par les appareils inscrits. Si ce paramètre est défini sur "False", ces informations ne sont pas transmises.</translation>
+<translation id="7504111874944876852">Permet de configurer une liste d'imprimantes.
+
+      Cette règle offre la possibilité aux administrateurs de proposer
+
+      des configurations d'imprimantes à leurs utilisateurs.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre, qui peuvent être personnalisées pour faciliter la sélection de l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> visent à aider les utilisateurs finaux à identifier rapidement une imprimante. Ces chaînes correspondent respectivement au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client (cette chaîne doit inclure les éléments <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> et <ph name="URI_QUEUE" />). <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes <ph name="ZEROCONF_DISCOVERY" /> en double.
+
+      Soit <ph name="PRINTER_EFFECTIVE_MODEL" /> doit contenir le nom de l'imprimante, soit <ph name="PRINTER_AUTOCONF" /> doit être défini sur "True". Toute imprimante avec ces deux propriétés ou sans aucune propriété est ignorée.
+
+      La configuration d'une imprimante est effectuée lors de sa première utilisation.  Les fichiers PPD ne sont pas téléchargés tant que l'imprimante ne sert pas.  Par la suite, les fichiers PPD utilisés fréquemment sont mis en cache.
+
+      Cette règle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Pour les appareils gérés par Active Directory, cette règle permet l'expansion de <ph name="MACHINE_NAME_VARIABLE" /> en fonction du nom de machine Active Directory ou de l'une de ses sous-chaînes. Par exemple, si le nom de machine est <ph name="MACHINE_NAME_EXAMPLE" />, alors <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> est remplacé par les quatre caractères suivant la sixième position, soit <ph name="MACHINE_NAME_PART_EXAMPLE" />. Notez que la numérotation des positions commence à zéro.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="PRINTERS_POLICY_NAME" /> à la place.
+      </translation>
 <translation id="7506745375479451616">Permet de spécifier la commande à utiliser pour ouvrir les URL dans <ph name="PRODUCT_NAME" /> lors du changement de navigateur depuis <ph name="IE_PRODUCT_NAME" />. Cette règle peut être définie sur le chemin d'accès à un fichier exécutable ou sur <ph name="PRODUCT_NAME_PLACEHOLDER" /> pour détecter automatiquement l'emplacement d'installation de <ph name="PRODUCT_NAME" />.
 
       Si cette règle n'est pas configurée, <ph name="IE_PRODUCT_NAME" /> détecte automatiquement le chemin d'accès au fichier exécutable de <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> depuis Internet Explorer.
@@ -4637,6 +4600,9 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7846952520291088817">URL pour lesquelles les candidats WebRTC ICE affichent les adresses IP locales</translation>
 <translation id="7848641140449742406">Paramètres de l'OS</translation>
+<translation id="7850846808758624237">Si cette règle est activée, la page d'accueil configurée dans le précédent navigateur par défaut sera importée lors de la première exécution. Si cette règle est désactivée ou qu'elle n'est pas configurée, la page d'accueil n'est pas importée lors de la première exécution.
+
+      Les utilisateurs peuvent ouvrir une boîte de dialogue d'importation. La case correspondant à la page d'accueil sera cochée ou non selon la configuration de cette règle.</translation>
 <translation id="7863947545897944083">Permet d'activer la fonctionnalité d'accessibilité de contraste élevé sur l'écran de connexion.
 
           Si cette règle est définie sur "True", le contraste élevé est toujours activé sur l'écran de connexion.
@@ -5131,12 +5097,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="858309738002328421">Bloquer l'importation de fichiers volumineux</translation>
 <translation id="8584279193368801689">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, HTTPS, USB ou IPP sur USB.</translation>
 <translation id="8585558195682146109">Envoyer les téléchargements des utilisateurs pour analyse</translation>
-<translation id="8586528890725660268">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_BLACKLIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si cette règle est appliquée, toutes les imprimantes sont mises à la disposition de l'utilisateur excepté pour les ID répertoriés dans cette règle. Les ID doivent correspondre aux champs "id" ou "guid" du fichier spécifié dans <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8591713876665299827">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
@@ -5333,6 +5293,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si la règle est définie sur "False" ou n'est pas définie, les états liés aux affichages et aux graphiques ne sont pas transmis. Si elle est définie sur "True", ils sont envoyés.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Autoriser les utilisateurs à gérer les certificats CA installés.</translation>
+<translation id="8919369436496201075">Autoriser l'appareil à recevoir des mises à jour LTS</translation>
 <translation id="8927015246639044346">Permet d'établir la liste des formats d'URL pour lesquels il n'est pas nécessaire de vérifier si les fichiers importés, les données collées à partir du presse-papiers ou les données glissées-déposées respectent bien les règles de protection des données sensibles.  Cette règle ne s'applique que si la règle <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> est activée.
 
       Si cette règle n'est pas configurée ou qu'aucun format d'URL n'est indiqué dans la liste, l'intégralité du contenu est vérifiée pour déterminer si les règles de protection des données sensibles sont bien respectées.

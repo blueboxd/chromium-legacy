@@ -5026,7 +5026,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (!params->opener_suppressed && GetMainFrame()->coop_reporter()) {
     main_frame->set_coop_reporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
-            GetProcess()->GetStoragePartition(), this, GetLastCommittedURL(),
+            GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
             popup_coop));
   }
 
@@ -8371,29 +8371,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter =
       navigation_request->TakeCoepReporter();
   std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter =
-      navigation_request->TakeCoopReporter();
-
-  // If this navigation had a COOP BrowsingInstance swap that severed an opener,
-  // and we have a reporter on the page we're going to, report it here.
-  const CrossOriginOpenerPolicyStatus& coop_status =
-      navigation_request->coop_status();
-  if (coop_status.had_opener() && coop_reporter) {
-    if (coop_status.require_browsing_instance_swap()) {
-      coop_reporter->QueueOpenerBreakageReport(
-          coop_reporter->GetPreviousDocumentUrlForReporting(
-              navigation_request->GetRedirectChain(),
-              navigation_request->common_params().referrer->url),
-          false /* is_reported_from_document */, false /* is_report_only */);
-    }
-
-    if (coop_status.virtual_browsing_instance_swap()) {
-      coop_reporter->QueueOpenerBreakageReport(
-          coop_reporter->GetPreviousDocumentUrlForReporting(
-              navigation_request->GetRedirectChain(),
-              navigation_request->common_params().referrer->url),
-          false /* is_reported_from_document */, true /* is_report_only */);
-    }
-  }
+      navigation_request->coop_status().TakeCoopReporter();
 
   network::mojom::ContentSecurityPolicyPtr required_csp =
       navigation_request->TakeRequiredCSP();

@@ -45,6 +45,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void CloseTab(int32_t tab_id) override;
   void GetProfileTabs(GetProfileTabsCallback callback) override;
   void GetTabGroups(GetTabGroupsCallback callback) override;
+  void ShowFeedbackPage() override;
   void SwitchToTab(
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
 

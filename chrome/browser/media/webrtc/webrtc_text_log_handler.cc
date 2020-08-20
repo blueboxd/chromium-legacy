@@ -40,7 +40,7 @@
 #include "net/base/network_interfaces.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/linux_util.h"
 #include "base/task/thread_pool.h"
 #endif
@@ -410,7 +410,7 @@ void WebRtcTextLogHandler::SetWebAppId(int web_app_id) {
 void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
     GenericDoneCallback callback,
     const base::Optional<net::NetworkInterfaceList>& networks) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Hop to a background thread to get the distro string, which can block.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&base::GetLinuxDistro),
@@ -455,7 +455,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
   LogToCircularBuffer(base::SysInfo::OperatingSystemName() + " " +
                       base::SysInfo::OperatingSystemVersion() + " " +
                       base::SysInfo::OperatingSystemArchitecture());
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   { LogToCircularBuffer("Linux distribution: " + linux_distro); }
 #endif
 

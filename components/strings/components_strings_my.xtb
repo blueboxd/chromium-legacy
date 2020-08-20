@@ -954,7 +954,7 @@
 <translation id="4926049483395192435">ဖေါ်ပြပေးရန် လိုသည်။</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> က ဆိုထားသည်မှာ</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
-<translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ ရှာဖွေရန် Tab ကိုနှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
+<translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Tab ကိုနှိပ်ပြီးနောက် Enter နှိပ်၍ ရှာဖွေပါ</translation>
 <translation id="4930153903256238152">သိုလှောင်နိုင်မှု မြင့်သည်</translation>
 <translation id="4943872375798546930">ရလဒ်မရှိပါ</translation>
 <translation id="4950898438188848926">တဘ်ပြောင်းရန်ခလုတ်၊ ပွင့်နေသောတဘ် <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> သို့ ပြောင်းရန် Enter ကို နှိပ်ပါ</translation>

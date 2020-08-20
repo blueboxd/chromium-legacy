@@ -457,7 +457,7 @@
 <translation id="4662373422909645029">ကိန်းဂဏန်းများ မပါဝင်ရပါ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> စာညှပ် တွေ့ရှိပါသည်</translation>
 <translation id="4665282149850138822"><ph name="NAME" />ကို သင်၏ ပင်မ မျက်နှာပြင်သို့ ထည့်ပေးခဲ့သည်</translation>
-<translation id="4668347365065281350">ကွတ်ကီးများနှင့် အခြား ဆိုက်တွင်းသိမ်းထားသောဒေတာ အပါအဝင် ဝဘ်ဆိုက်များက သိမ်းထားသည့်ဒေတာအားလုံး</translation>
+<translation id="4668347365065281350">ကွတ်ကီးများနှင့် စက်အတွင်း သိမ်းထားသော အခြားဒေတာအပါအဝင် ဝဘ်ဆိုက်များက သိမ်းထားသည့်ဒေတာအားလုံး</translation>
 <translation id="4684427112815847243">အားလုံး စင့်ခ်ရန်</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ခု}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ခု}}</translation>
 <translation id="4696983787092045100">'သင့်ကိရိယာများ' သို့ စာတိုပို့ရန်</translation>

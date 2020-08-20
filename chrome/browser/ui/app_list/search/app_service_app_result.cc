@@ -8,6 +8,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -161,6 +162,12 @@ void AppServiceAppResult::Launch(int event_flags,
 
   if (id() == chromeos::default_web_apps::kHelpAppId &&
       query_url().has_value()) {
+    // This matches the logging of the release notes app in
+    // chrome/browser/apps/app_service/built_in_chromeos_apps.cc.
+    // TODO(carpenterr): Have more consistent logging of the places Help App can
+    // be opened to/from.
+    base::RecordAction(
+        base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
     proxy->LaunchAppWithUrl(app_id(), event_flags, query_url().value(),
                             launch_source, controller()->GetAppListDisplayId());
     return;

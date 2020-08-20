@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_deleters.h"
@@ -21,6 +20,8 @@ namespace printing {
 class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
  public:
   explicit PrintingContextChromeos(Delegate* delegate);
+  PrintingContextChromeos(const PrintingContextChromeos&) = delete;
+  PrintingContextChromeos& operator=(const PrintingContextChromeos&) = delete;
   ~PrintingContextChromeos() override;
 
   // PrintingContext implementation.
@@ -52,8 +53,6 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   std::vector<ScopedCupsOption> cups_options_;
   bool send_user_info_;
   std::string username_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextChromeos);
 };
 
 }  // namespace printing

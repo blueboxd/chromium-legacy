@@ -294,17 +294,12 @@ LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
   return new LayoutTextControlSingleLine(&GetElement());
 }
 
-bool TextFieldInputType::ShouldHaveSpinButton() const {
-  return LayoutTheme::GetTheme().ShouldHaveSpinButton(&GetElement());
-}
-
 void TextFieldInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
   ShadowRoot* shadow_root = GetElement().UserAgentShadowRoot();
   DCHECK(!shadow_root->HasChildren());
 
-  Document& document = GetElement().GetDocument();
-  bool should_have_spin_button = ShouldHaveSpinButton();
+  bool should_have_spin_button = GetElement().IsSteppable();
   bool should_have_data_list_indicator = GetElement().HasValidDataListOptions();
   bool creates_container = should_have_spin_button ||
                            should_have_data_list_indicator || NeedsContainer();
@@ -315,6 +310,7 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
+  Document& document = GetElement().GetDocument();
   auto* container = MakeGarbageCollected<HTMLDivElement>(document);
   container->SetIdAttribute(shadow_element_names::TextFieldContainer());
   container->SetShadowPseudoId(

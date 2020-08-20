@@ -744,15 +744,13 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
          (browser_context->IsOffTheRecord() &&
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
-  const ukm::SourceId ukm_source_id =
-      web_contents ? ukm::GetSourceIdForWebContentsDocument(web_contents)
-                   : ukm::kInvalidSourceId;
+  const int frame_id = frame ? frame->GetRoutingID() : MSG_ROUTING_NONE;
   WebRequestProxyingURLLoaderFactory::StartProxying(
-      browser_context, is_navigation ? -1 : render_process_id,
+      browser_context, is_navigation ? -1 : render_process_id, frame_id,
       &request_id_generator_, std::move(navigation_ui_data),
       std::move(navigation_id), std::move(proxied_receiver),
       std::move(target_factory_remote), std::move(header_client_receiver),
-      proxies_.get(), type, ukm_source_id);
+      proxies_.get(), type);
   return true;
 }
 

@@ -37,6 +37,7 @@
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
+#include "components/omnibox/browser/omnibox_pedal_concepts.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -714,6 +715,8 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
 void OmniboxEditModel::ExecutePedal(const AutocompleteMatch& match,
                                     base::TimeTicks match_selection_timestamp) {
   CHECK(match.pedal);
+  base::UmaHistogramEnumeration("Omnibox.SuggestionUsed.Pedal",
+                                match.pedal->id(), OmniboxPedalId::TOTAL_COUNT);
   {
     // This block resets omnibox to unedited state and closes popup, which
     // may not seem necessary in cases of navigation but makes sense for

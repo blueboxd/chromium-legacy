@@ -102,8 +102,14 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
       } else {
         displays_.push_back(std::make_unique<DrmDisplay>(screen_manager_, drm));
       }
-      params_list.push_back(
-          displays_.back()->Update(display_info.get(), device_index));
+
+      auto display_snapshot =
+          displays_.back()->Update(display_info.get(), device_index);
+      if (display_snapshot) {
+        params_list.push_back(std::move(display_snapshot));
+      } else {
+        displays_.pop_back();
+      }
     }
     device_index++;
   }

@@ -5134,7 +5134,7 @@
       runtime_flag: "CSSFontMetricsOverride",
     },
     {
-      name: "letter-spacing-override",
+      name: "advance-override",
       is_descriptor: true,
       is_property: false,
       runtime_flag: "CSSFontMetricsOverride",

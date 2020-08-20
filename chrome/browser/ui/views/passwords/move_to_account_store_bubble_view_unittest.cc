@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
@@ -60,13 +59,7 @@ void MoveToAccountStoreBubbleViewTest::TearDown() {
   PasswordBubbleViewTestBase::TearDown();
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_HasTwoButtons DISABLED_HasTwoButtons
-#else
-#define MAYBE_HasTwoButtons HasTwoButtons
-#endif
-TEST_F(MoveToAccountStoreBubbleViewTest, MAYBE_HasTwoButtons) {
+TEST_F(MoveToAccountStoreBubbleViewTest, HasTwoButtons) {
   CreateViewAndShow();
   ASSERT_TRUE(view_->GetOkButton());
   ASSERT_TRUE(view_->GetCancelButton());
@@ -78,13 +71,7 @@ TEST_F(MoveToAccountStoreBubbleViewTest, MAYBE_HasTwoButtons) {
       view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
 }
 
-// Flaky on Windows due to http://crbug.com/968222
-#if defined(OS_WIN)
-#define MAYBE_HasDescription DISABLED_HasDescription
-#else
-#define MAYBE_HasDescription HasDescription
-#endif
-TEST_F(MoveToAccountStoreBubbleViewTest, MAYBE_HasDescription) {
+TEST_F(MoveToAccountStoreBubbleViewTest, HasDescription) {
   CreateViewAndShow();
 
   ASSERT_EQ(view_->children().size(), 2u);

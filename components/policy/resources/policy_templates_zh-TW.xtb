@@ -1345,19 +1345,6 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用大型游標，但使用者隨時可以啟用。</translation>
-<translation id="3028252110534040170">為企業印表機提供設定。
-
-      這項政策可讓你為 <ph name="PRODUCT_OS_NAME" />裝置提供印表機設定。格式與 <ph name="PRINTERS_POLICY_NAME" /> 條目相符，每台印表機還有額外的「id」或「guid」必填欄位，用於允許或封鎖印表機。
-
-      檔案大小不得超過 5 MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
-
-      系統會下載並快取這個檔案，只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載用於設定印表機的檔案，並根據 <ph name="PRINTERS_BULK_ACCESS_MODE" />、<ph name="PRINTERS_BULK_ALLOWLIST" /> 和 <ph name="PRINTERS_BULK_BLOCKLIST" /> 政策提供可用的印表機。
-
-      設好這項政策後，使用者即無法變更或覆寫設定。
-
-      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。</translation>
 <translation id="3030000825273123558">啟用計量回報功能</translation>
 <translation id="3033660238345063904">你可以在這裡指定 Proxy 伺服器的網址。
 
@@ -1662,11 +1649,6 @@
 
       如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="3540935459049973317">個別應用程式的時間限制</translation>
-<translation id="3543579213273969284">如果將這項政策設為啟用，HTTP 驗證會遵循 KDC 政策的核准結果。也就是說，當 KDC 為服務票證設定 <ph name="OK_AS_DELEGATE" /> 時，<ph name="PRODUCT_NAME" /> 會委派憑證。請參閱 RFC 5896，網址為 https://tools.ietf.org/html/rfc5896.html。服務應符合 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 政策。
-
-      如果將這項政策設為停用或不設定，支援平台會忽略 KDC 政策，只遵循 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 政策。
-
-      <ph name="MS_WIN_NAME" /> 一律遵循 KDC 政策。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3550122827225052130">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
@@ -1895,12 +1877,6 @@
 
       如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
-<translation id="3898195424714621181">根據 <ph name="PRINTERS_BULK_CONFIGURATION" /> 政策控管可供使用的印表機。
-
-      這項政策可指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLOCKLIST" />，系統會使用 <ph name="PRINTERS_BULK_BLOCKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_ALLOWLIST" />，<ph name="PRINTERS_BULK_ALLOWLIST" /> 只會指派可選取的印表機。
-
-      如果沒有設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
-      </translation>
 <translation id="3898795800259311780">允許或拒絕螢幕擷取</translation>
 <translation id="3907683835264956726">在螢幕鎖定畫面上啟用線上使用者登入功能。如果將這項政策設為 True，<ph name="POLICY" /> 等政策會觸發螢幕鎖定畫面上的線上重新驗證功能。
       當使用者停留在螢幕鎖定畫面上，或下次在符合條件後鎖定螢幕時，系統會立即強制執行重新驗證。
@@ -2187,12 +2163,6 @@
       如果將這項政策設為停用或不設定，使用者可在使用行動網路連線時，將檔案傳輸至雲端硬碟。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">裝置登入畫面語言代碼</translation>
-<translation id="427220754384423013">指定哪些印表機是可以使用的。
-
-      只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，這項政策才有作用。
-
-      一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，且 ID 必須和 <ph name="BULK_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
-      </translation>
 <translation id="4285674129118156176">允許無關聯的使用者使用 ARC</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">裝置的指定座架 MAC 位址</translation>
@@ -2789,22 +2759,6 @@
 <translation id="5272684451155669299">如果設為 true，使用者就可以使用 Chrome 裝置上的硬體，從遠端透過 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> (使用 <ph name="CHALLENGE_USER_KEY_FUNCTION" />) 向隱私權 CA 證明身分。
 
           如果設為 false 或未設定，API 呼叫作業將會失敗，並傳回錯誤代碼。</translation>
-<translation id="5273333167497341402">為繫結至裝置的企業印表機提供設定。
-
-      這項政策可讓你為 <ph name="PRODUCT_OS_NAME" />裝置提供印表機設定。格式與 NativePrinters 條目相符，每台印表機還有額外的「id」或「guid」必填欄位，用於將印表機加入許可清單或列入黑名單。
-
-      檔案大小不得超過 5MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
-
-      系統會下載並快取這個檔案，只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載用於設定印表機的檔案，並按照 <ph name="DEVICE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_ALLOWLIST" /> 和 <ph name="DEVICE_PRINTERS_BLOCKLIST" /> 政策提供可用的印表機。
-
-      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。
-
-      這項政策是用來補充 <ph name="BULK_PRINTERS_POLICY" />。
-
-      如果不設定這項政策，系統將不會提供任何裝置印表機，並且會忽略其他 <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> 政策。
-      </translation>
 <translation id="5273744932022326215">在登入畫面上啟用游標醒目顯示無障礙功能。
 
           如果將這項政策設為 True，系統將一律在登入畫面上啟用游標醒目顯示功能。
@@ -3229,17 +3183,6 @@
 <translation id="5775235485119094648">當電量位於特定範圍內時進行充電。</translation>
 <translation id="5776485039795852974">每當網站要顯示桌面通知時詢問我</translation>
 <translation id="5783009211970309878">列印頁首和頁尾</translation>
-<translation id="5783576706065107606">在新版 <ph name="CORS" /> 模式中啟用緩和措施來放寬 <ph name="CORS" /> 檢查標準，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
-
-      如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
-
-      如果在這份清單中納入 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並針對擴充功能啟用緩和措施。
-
-      如果未設定這份清單，則不會套用上述兩種緩和措施。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
-
-      請注意，我們之前宣布將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除這項政策，但計畫有所變更，改為在第 84 版中移除。</translation>
 <translation id="5790763087505467169">減少顯示受管理訪客工作階段的自動啟動通知</translation>
 <translation id="5806128552675651249">只允許不使用背景圖形的列印模式</translation>
 <translation id="5809210507920527553">控管 Linux 容器 (Crostini) 的設定。</translation>
@@ -3303,17 +3246,6 @@
           如果你停用這項設定或並未進行設置，則所有主機都會使用 TalkGadget 預設網域名稱 (「chromoting-host.talkgadget.google.com」)。
 
           遠端存取用戶端不受這項政策設定所影響，而會一律採用「chromoting-client.talkgadget.google.com」來存取 TalkGadget。</translation>
-<translation id="5888171512889380367">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" />。
-
-     如果將這項政策設為 True，系統會使用舊版模式，該模式應與先前的版本相容。
-
-      如果將這項政策設為 False 或不予設定，系統會使用新版模式，這可能會導致企業特定的相容性問題。
-
-      這項政策將在日後的版本中移除。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
-
-      請注意，我們之前宣布將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除這項政策，但計畫有所變更，改為在第 84 版中移除。</translation>
 <translation id="5890063326284543943">控管 Serial API 的使用</translation>
 <translation id="5893553533827140852">啟用這項設定時，系統將透過遠端主機連線以 Proxy 處理 gnubby 驗證要求。
 
@@ -3650,21 +3582,6 @@
 <translation id="6468980648680553776">這項政策已遭到淘汰，請改用 RemoteAccessHostClientDomainList。</translation>
 <translation id="6473623140202114570">設定安全瀏覽功能在哪些網域中不會觸發警告。</translation>
 <translation id="647698599569353771">允許啟用鄰近分享功能。</translation>
-<translation id="6480487102627517146">為企業印表機提供設定。
-
-      這項政策可讓你為 <ph name="PRODUCT_OS_NAME" />裝置提供印表機設定。格式與 NativePrinters 條目相符，每台印表機還有額外的「id」或「guid」必填欄位，用於將印表機加入許可清單或列入黑名單。
-
-      檔案大小不得超過 5 MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
-
-      系統會下載並快取這個檔案，只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載用於設定印表機的檔案，並按照 <ph name="BULK_PRINTERS_ACCESS_MODE" />、<ph name="BULK_PRINTERS_WHITELIST" /> 和 <ph name="BULK_PRINTERS_BLACKLIST" /> 政策提供可用的印表機。
-
-      設好這項政策後，使用者即無法變更或覆寫設定。
-
-      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。
-
-      這項政策已遭淘汰，請改用 <ph name="PRINTERS_BULK_CONFIGURATION" />。</translation>
 <translation id="6491139795995924304">允許在裝置上使用藍牙功能</translation>
 <translation id="6491872498385040936">這項政策已遭到淘汰。建議你使用 <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> 來覆寫這項政策，即可進一步微調各項設定。
 
@@ -3867,24 +3784,6 @@
 
       如果將這項政策設為 False 或不設定，系統不會為使用者啟用 <ph name="PLUGIN_VM_NAME" />。
       如果設為 True，在其他相關設定也允許這項操作的情況下，系統會為使用者啟用 <ph name="PLUGIN_VM_NAME" />。為了讓 <ph name="PLUGIN_VM_NAME" /> 順利執行，你必須將 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 和 <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> 設為 True，並設定 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />。</translation>
-<translation id="6741496055862838205">為繫結至裝置的企業印表機提供設定。
-
-      這項政策可讓你為 <ph name="PRODUCT_OS_NAME" />裝置提供印表機設定。格式與 NativePrinters 條目相符，每台印表機還有額外的「id」或「guid」必填欄位，用於將印表機加入許可清單或列入黑名單。
-
-      檔案大小不得超過 5 MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
-
-      系統會下載並快取這個檔案，只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載用於設定印表機的檔案，並按照 <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_ALLOWLIST" /> 和 <ph name="DEVICE_PRINTERS_BLOCKLIST" /> 政策提供可用的印表機。
-
-      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。
-
-      這項政策是用來補充 <ph name="BULK_PRINTERS_POLICY" />。
-
-      如果不設定這項政策，系統將不會提供任何裝置印表機，並且會忽略其他 <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> 政策。
-
-      這項政策已遭淘汰，請改用 <ph name="DEVICE_PRINTERS" />。
-      </translation>
 <translation id="6752711782954612641">如果已啟用 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 政策，你可以設定 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> 政策來指定使用 POST 搜尋網址時的參數。設定值由名稱和值的組合所構成 (以半形逗號分隔多個設定值)。如果值為範本參數 (例如 <ph name="SEARCH_TERM_MARKER" />)，實際的搜尋字詞資料會取代該參數。
 
       如果未設定 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> 政策，系統會使用 GET 方法傳送搜尋要求。</translation>
@@ -4682,14 +4581,6 @@
 <translation id="793134539373873765">指定是否使用 P2P 更新裝載作業系統。如果設為 True，裝置將會在 LAN 上共用並嘗試使用更新裝載，藉此降低網際網路頻寬用量及減輕壅塞。如果 LAN 上未提供更新裝載，裝置將回歸至更新伺服器進行下載。如果設為 False 或未設定，則不會使用 P2P。</translation>
 <translation id="7933141401888114454">啟用建立受監管使用者的功能</translation>
 <translation id="793473937901685727">設定 ARC 應用程式的憑證可用性</translation>
-<translation id="7935338931503001902">根據 <ph name="BULK_PRINTERS_POLICY" /> 政策控管可供使用的印表機。
-
-      這項政策可指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機；如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權；如果選取 <ph name="PRINTERS_WHITELIST" />，則 <ph name="BULK_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
-
-      如果不設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
-
-      這項政策已遭淘汰，請改用 <ph name="PRINTERS_BULK_ACCESS_MODE" />。
-      </translation>
 <translation id="7937491150792971922">合併多個來源的擴充功能安裝清單政策</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
@@ -5136,12 +5027,6 @@
 <translation id="858309738002328421">禁止上傳大型檔案</translation>
 <translation id="8584279193368801689">限制 PIN 碼列印模式。如果不設定這項政策，系統會視為未設限制。如果設定的模式不適用，系統會忽略這項政策。請注意，印表機使用的通訊協定必須是 IPPS、HTTPS、USB 或 IPP 型 USB 的其中一種，才能啟用 PIN 碼列印功能。</translation>
 <translation id="8585558195682146109">傳送使用者下載內容以供掃描</translation>
-<translation id="8586528890725660268">指定哪些印表機是禁止使用的。
-
-      只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_BLACKLIST" /> 的情況下，這項政策才有作用。
-
-      一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。ID 必須和 <ph name="BULK_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
-      </translation>
 <translation id="8587229956764455752">允許建立新的使用者帳戶</translation>
 <translation id="8591713876665299827">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 

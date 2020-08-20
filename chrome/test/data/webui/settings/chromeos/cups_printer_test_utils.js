@@ -10,7 +10,8 @@ cr.define('cups_printer_test_util', function() {
    * @return {!CupsPrinterInfo}
    * @private
    */
-  function createCupsPrinterInfo(printerName, printerAddress, printerId) {
+  /* #export */ function createCupsPrinterInfo(
+      printerName, printerAddress, printerId) {
     const printer = {
       ppdManufacturer: '',
       ppdModel: '',
@@ -43,7 +44,7 @@ cr.define('cups_printer_test_util', function() {
    * @param {string} printerType
    * @return {!PrinterListEntry}
    */
-  function createPrinterListEntry(
+  /* #export */ function createPrinterListEntry(
       printerName, printerAddress, printerId, printerType) {
     const entry = {
       printerInfo: {
@@ -79,12 +80,12 @@ cr.define('cups_printer_test_util', function() {
    * @return {!Array<!HTMLElement>}
    * @private
    */
-  function getPrinterEntries(printersElement) {
+  /* #export */ function getPrinterEntries(printersElement) {
     const entryList = printersElement.$$('#printerEntryList');
     return entryList.querySelectorAll(
         'settings-cups-printers-entry:not([hidden])');
   }
-
+  // #cr_define_end
   return {
     createCupsPrinterInfo: createCupsPrinterInfo,
     getPrinterEntries: getPrinterEntries,

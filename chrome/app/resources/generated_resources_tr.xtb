@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Geçerli sürüm: Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">USB üzerinden herhangi bir <ph name="DEVICE_NAME_AND_VENDOR" /> cihazına erişme</translation>
 <translation id="1509960214886564027">Birçok sitedeki özellikler bozulabilir</translation>
-<translation id="1510030919967934016">Bu sayfanın konumunuzu izlemesi engellendi.</translation>
 <translation id="1510238584712386396">Başlatıcı</translation>
 <translation id="1510785804673676069">Bir proxy sunucusu kullanıyorsanız, proxy ayarlarınızı kontrol edin veya
         proxy sunucunuzun çalıştığını kontrol etmek için ağ yöneticinize
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Dosyayı düzenle</translation>
 <translation id="1698122934742150150">Yalnızca geçerli gizli oturum</translation>
 <translation id="1700079447639026019">Hiçbir zaman çerez kullanamayan siteler</translation>
-<translation id="1700845716982723710">Ambiyans modunu kapat</translation>
 <translation id="1701062906490865540">Bu kişiyi kaldır</translation>
 <translation id="1703331064825191675">Şifreleriniz için hiç kaygılanmayın</translation>
 <translation id="1704970325597567340">Güvenlik kontrolü şu tarihte çalıştırıldı: <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Linux uygulamalarınızı ve dosyalarınızı önceki bir yedek ile değiştirme</translation>
 <translation id="1842766183094193446">Demo modunu etkinleştirmek istediğinizden emin misiniz?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> eklentisini çalıştırmak için Control tuşuyla birlikte tıklayın</translation>
-<translation id="184715642345428649">Ambiyans modunu etkinleştir</translation>
 <translation id="1849186935225320012">Bu sayfa MIDI cihazları üzerinde tam denetime sahip.</translation>
 <translation id="1850508293116537636">Saat &amp;yönünde döndür</translation>
 <translation id="1852141627593563189">Zararlı yazılım bulma</translation>
@@ -1174,7 +1171,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2392163307141705938">Ebeveyninizin <ph name="IDS_SHORT_PRODUCT_NAME" /> için belirlediği süre sınırına ulaştınız.</translation>
 <translation id="2392369802118427583">Etkinleştir</translation>
 <translation id="2393136602862631930"><ph name="APP_NAME" /> uygulamasını Chromebook'unuzda kurun</translation>
-<translation id="2394566832561516196">Ayarlar, sonraki yeniden yüklemede silinecektir.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> cihazınız kurumsal yönetim için başarıyla kaydettirildi, ancak öğe ve konum bilgilerini gönderemedi. Lütfen bu cihaza ilişkin bu bilgileri Yönetici konsolunuzdan manuel olarak girin.</translation>
 <translation id="2396387085693598316">Yöneticiniz "<ph name="EXTENSION_NAME" />" uzantısını engelledi</translation>
 <translation id="2396783860772170191">4 basamaklı PIN'i girin (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2979639724566107830">Yeni pencerede aç</translation>
 <translation id="2981113813906970160">Büyük fare imleci göster</translation>
 <translation id="2985348301114641460">"<ph name="EXTENSION_NAME" />" öğesini yüklemesi için yöneticinize istek gönderilsin mi?</translation>
-<translation id="2986010903908656993">Bu sayfanın MIDI cihazları üzerinde tam denetime sahip olması engellendi.</translation>
 <translation id="2987620471460279764">Başka cihazdan paylaşılan metin</translation>
 <translation id="2988018669686457659">Yedek Oluşturucu</translation>
 <translation id="2989123969927553766">Fare kaydırma hızlandırması</translation>
@@ -2088,7 +2083,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3524965460886318643">Etkinlikleri Dışa Aktar</translation>
 <translation id="3526034519184079374">Sitenin Verileri Okunamıyor veya Değiştirilemiyor</translation>
 <translation id="3527085408025491307">Klasör</translation>
-<translation id="3528033729920178817">Bu sayfa konumunuzu izliyor.</translation>
 <translation id="3528498924003805721">Kısayol hedefleri</translation>
 <translation id="3532273508346491126">Senkronizasyon yönetimi</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Ses kapatıldı</translation>
@@ -2564,7 +2558,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4061374428807229313">Paylaşmak için Dosyalar uygulamasındaki bir klasörü sağ tıklayıp ardından "Parallels Desktop ile paylaş"ı seçin.</translation>
 <translation id="4065876735068446555">Kullandığınız ağ (<ph name="NETWORK_ID" />) bir giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="4066207411788646768">Ağınızdaki kullanılabilir yazıcıları görmek için lütfen bağlantınızı kontrol edin</translation>
-<translation id="4068506536726151626">Bu sayfa, konumunuzu izleyen şu sitelerden öğeler içeriyor:</translation>
 <translation id="4068776064906523561">Kayıtlı parmak izleri</translation>
 <translation id="407173827865827707">Tıklandığında</translation>
 <translation id="4074900173531346617">E-posta İmza Sahibi Sertifikası</translation>
@@ -3207,7 +3200,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" />, "<ph name="EXTENSION_NAME" />" uzantısıyla iletişim kurmak istiyor</translation>
 <translation id="4918086044614829423">Kabul et</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> uygulamasını yükleyin (indirmek gerekmez)</translation>
-<translation id="4920887663447894854">Aşağıdaki sitelerin bu sayfadaki konumunuzu izlemesi engellendi:</translation>
 <translation id="4921290200821452703">Ebeveynler için okul hesap bilgileri</translation>
 <translation id="4921348630401250116">Metin okuma</translation>
 <translation id="49226369361073053">{0,plural, =0{Cihazı şimdi güncelleyin}=1{Cihazı 1 saniye içinde güncelleyin}other{Cihazı # saniye içinde güncelleyin}}</translation>
@@ -3285,7 +3277,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5027562294707732951">Uzantı ekle</translation>
 <translation id="5029568752722684782">Kopyayı temizle</translation>
 <translation id="5033266061063942743">Geometrik şekiller</translation>
-<translation id="5033370009438029887">Ambiyans modunu devre dışı bırak</translation>
 <translation id="5036662165765606524">Hiçbir sitenin otomatik olarak birden fazla dosya indirmesine izin verme</translation>
 <translation id="5037676449506322593">Tümünü Seç</translation>
 <translation id="5038022729081036555">Bu uygulamayı yarın <ph name="TIME_LIMIT" /> kullanabilirsiniz.</translation>
@@ -3963,7 +3954,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> yakında duraklatılacak</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> programını disk görüntüsünden çalıştırıyorsunuz. Bu ürünü bilgisayarınıza kurduğunuzda, disk görüntüsü olmadan çalıştırabilir ve her zaman güncel olacağından emin olabilirsiniz.</translation>
 <translation id="5865733239029070421">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir</translation>
-<translation id="5866557323934807206">Gelecekteki ziyaretlerde bu ayarları temizle</translation>
 <translation id="5866840822086176774">Çok güçlü</translation>
 <translation id="5867841422488265304">Web adresini arayın veya yazın</translation>
 <translation id="5869029295770560994">Tamam, Anladım</translation>
@@ -4248,7 +4238,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6225475702458870625"><ph name="PHONE_NAME" /> telefonunuzdan veri bağlantısı yapılabilir</translation>
 <translation id="6226777517901268232">Özel anahtar dosyası (isteğe bağlı)</translation>
 <translation id="6227280783235722609">uzantı</translation>
-<translation id="6228691855869374890">Bu site MIDI cihazları üzerinde tam denetime sahip.</translation>
 <translation id="6229849828796482487">Kablosuz ağ bağlantısını kes</translation>
 <translation id="6229890768313448549">Google Play Hizmet Şartları yüklenemiyor. Lütfen tekrar deneyin.</translation>
 <translation id="6231881193380278751">Sayfayı otomatik yenilemek için URL'ye bir sorgu parametresi ekleyin: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4402,7 +4391,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6412931879992742813">Yeni gizli pencere</translation>
 <translation id="641469293210305670">Güncellemeleri ve Uygulamaları Yükle</translation>
 <translation id="6414888972213066896">Ebeveyninize bu siteyi ziyaret etmenizin uygun olup olmadığını sordunuz</translation>
-<translation id="6415659939354280526">Ambiyans modu kaynağını seç</translation>
 <translation id="6415900369006735853">Telefonunuz üzerinden internete bağlanın</translation>
 <translation id="6416743254476733475">Bilgisayarınızda izin verin veya engelleyin.</translation>
 <translation id="6417265370957905582">Google Asistan</translation>
@@ -5346,7 +5334,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7616214729753637086">Cihaz kaydediliyor...</translation>
 <translation id="7617263010641145920">Play Store'u aç</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" cihazına bağlanıyor</translation>
-<translation id="761763866592998929">Ambiyans modu</translation>
 <translation id="7621382409404463535">Sistem cihaz yapılandırmasını kaydedemedi.</translation>
 <translation id="7622114377921274169">Şarj oluyor.</translation>
 <translation id="7622903810087708234">Şifre ayrıntıları</translation>
@@ -5589,7 +5576,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Hesabı Görüntüle</translation>
 <translation id="7882358943899516840">Sağlayıcı türü</translation>
-<translation id="78851824530736377">Ambiyans modunu aç</translation>
 <translation id="7885253890047913815">En Son Hedefler</translation>
 <translation id="7887334752153342268">Yinele</translation>
 <translation id="7887864092952184874">Bluetooth fare eşlendi</translation>

@@ -7425,6 +7425,55 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                   "Referer: http://a.com:.*/form_that_posts_cross_site.html"));
 }
 
+// Test that verifies that Content-Type http header is correctly sent
+// to the final destination of a cross-site POST with a few redirects thrown in.
+// Test for https://crbug.com/860546.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       ContentTypeHeaderAfterRedirectAndRefresh) {
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).  Using 307 (rather than
+  // 302) redirection is important to preserve the HTTP method and POST body.
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Submit the form.  The page submitting the form is at 0, and will
+  // go through 307 redirects from 1 -> 2 and 2 -> 3:
+  // 0. http://a.com:.../form_that_posts_cross_site.html
+  // 1. http://a.com:.../cross-site-307/i.com/cross-site-307/x.com/echoall
+  // 2. http://i.com:.../cross-site-307/x.com/echoall
+  // 3. http://x.com:.../echoall/
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(
+      ExecJs(shell(), "document.getElementById('text-form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+
+  // Get the http request headers.
+  std::string headers =
+      EvalJs(shell(), "document.getElementsByTagName('pre')[1].innerText")
+          .ExtractString();
+
+  // Verify the Content-Type header.
+  EXPECT_THAT(headers, ::testing::HasSubstr(
+                           "Content-Type: application/x-www-form-urlencoded"));
+
+  // Reload the page.
+  TestNavigationObserver reload_observer(shell()->web_contents(), 1);
+  ASSERT_TRUE(ExecJs(shell(), "location.reload()"));
+  reload_observer.Wait();
+
+  // Re-verify the Content-Type header.
+  headers = EvalJs(shell(), "document.getElementsByTagName('pre')[1].innerText")
+                .ExtractString();
+  EXPECT_THAT(headers, ::testing::HasSubstr(
+                           "Content-Type: application/x-www-form-urlencoded"));
+}
+
 // Check that the favicon is not cleared for same document navigations.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SameDocumentNavigationDoesNotClearFavicon) {

@@ -16,7 +16,7 @@ namespace {
 const char* kTestGaiaId = "0123456789";
 
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
-    base::TimeDelta::FromHours(1);
+    base::TimeDelta::FromSeconds(60);
 
 }  // namespace
 
@@ -60,6 +60,10 @@ void TestAmbientClient::IssueAccessToken(const std::string& access_token,
         .Run(kTestGaiaId, access_token,
              base::Time::Now() + kDefaultTokenExpirationDelay);
   }
+}
+
+bool TestAmbientClient::ShouldUseProdServer() {
+  return false;
 }
 
 bool TestAmbientClient::IsAccessTokenRequestPending() const {

@@ -62,9 +62,9 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
 
   // Create a printer with a connection defined by |http| and |dest|.
   CupsPrinter(http_t* http, ScopedDestination dest);
-
   CupsPrinter(CupsPrinter&& printer);
-
+  CupsPrinter(const CupsPrinter&) = delete;
+  CupsPrinter& operator=(const CupsPrinter&) = delete;
   ~CupsPrinter() override;
 
   // Returns true if this is the default printer
@@ -153,8 +153,6 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
 
   // opaque object containing printer attributes and options
   mutable ScopedDestInfo dest_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(CupsPrinter);
 };
 
 }  // namespace printing

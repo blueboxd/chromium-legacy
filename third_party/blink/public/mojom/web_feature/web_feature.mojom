@@ -2673,7 +2673,6 @@ enum WebFeature {
   kV8Window_ShowOpenFilePicker_Method = 3340,
   kV8Window_ShowSaveFilePicker_Method = 3341,
   kV8Window_ShowDirectoryPicker_Method = 3342,
-  kV8Window_GetOriginPrivateDirectory_Method = 3343,
   kRTCConstraintEnableRtpDataChannelsTrue = 3344,
   kRTCConstraintEnableRtpDataChannelsFalse = 3345,
   kNativeFileSystemDragAndDrop = 3346,
@@ -2755,6 +2754,8 @@ enum WebFeature {
   kBCPWritableAuxiliaries = 3425,
   kTextAlignSpecifiedToLegend = 3426,
   kV8Document_FragmentDirective_AttributeGetter = 3427,
+  kV8StorageManager_GetDirectory_Method = 3428,
+  kBeforematchHandlerRegistered = 3429,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

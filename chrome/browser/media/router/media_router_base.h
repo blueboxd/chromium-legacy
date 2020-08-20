@@ -49,9 +49,6 @@ class MediaRouterBase : public MediaRouter {
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
   base::Value GetLogs() const override;
 #endif  // !defined(OS_ANDROID)
-  void RegisterRemotingSource(SessionID tab_id,
-                              CastRemotingConnector* remoting_source) override;
-  void UnregisterRemotingSource(SessionID tab_id) override;
   base::Value GetState() const override;
   void GetProviderState(
       MediaRouteProviderId provider_id,
@@ -93,12 +90,6 @@ class MediaRouterBase : public MediaRouter {
       MediaRoute::Id,
       std::unique_ptr<PresentationConnectionStateChangedCallbacks>>
       presentation_connection_state_callbacks_;
-
-  // Stores CastRemotingConnectors that can be connected to the MediaRemoter
-  // for media remoting when MediaRemoter is started. The map uses the tab ID
-  // as the key.
-  std::unordered_map<SessionID, CastRemotingConnector*, SessionID::Hasher>
-      remoting_sources_;
 
  private:
   friend class MediaRouterBaseTest;

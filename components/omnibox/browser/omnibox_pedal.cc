@@ -98,8 +98,8 @@ void OmniboxPedal::SynonymGroup::AddSynonym(OmniboxPedal::Tokens&& synonym) {
 
 // =============================================================================
 
-OmniboxPedal::OmniboxPedal(LabelStrings strings, GURL url)
-    : strings_(strings), url_(url) {}
+OmniboxPedal::OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url)
+    : id_(id), strings_(strings), url_(url) {}
 
 OmniboxPedal::~OmniboxPedal() {}
 

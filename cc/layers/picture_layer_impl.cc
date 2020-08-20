@@ -272,7 +272,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     // Validate that the tile and bounds size are always within one pixel.
     PictureLayerTiling* high_res =
         tilings_->FindTilingWithResolution(HIGH_RESOLUTION);
-    if (high_res) {
+    if (raster_contents_scale_ >= 1.f && high_res) {
       const float epsilon = 1.f;
       gfx::SizeF scaled_tiling_size(high_res->tiling_size());
       scaled_tiling_size.Scale(1 / raster_contents_scale_);
@@ -1091,6 +1091,11 @@ void PictureLayerImpl::SetDirectlyCompositedImageSize(
 }
 
 bool PictureLayerImpl::ShouldDirectlyCompositeImage(float raster_scale) const {
+  // Even if there are minor rendering differences, we want to apply directly
+  // compositing images in cases where doing so is going to save memory.
+  if (raster_scale < 0.1f)
+    return true;
+
   // If the results of scaling the bounds by the expected raster scale
   // would end up with a content rect whose width/height are more than one
   // pixel different from the layer bounds, don't directly composite the image

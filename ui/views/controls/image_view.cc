@@ -99,6 +99,7 @@ void ImageView::SetAccessibleName(const base::string16& accessible_name) {
 
   accessible_name_ = accessible_name;
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 const base::string16& ImageView::GetAccessibleName() const {

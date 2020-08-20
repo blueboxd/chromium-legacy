@@ -361,7 +361,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
        base::fuchsia::OpenDirectory(nested_data_path).TakeChannel().release()});
 #endif  // defined(OS_FUCHSIA)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // To prevent accidental privilege sharing to an untrusted child, processes
   // are started with PR_SET_NO_NEW_PRIVS. Do not set that here, since this
   // new child will be privileged and trusted.
@@ -561,7 +561,7 @@ ChildProcessResults DoLaunchChildTestProcess(
 #if !defined(OS_FUCHSIA)
   options.new_process_group = true;
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   options.kill_on_parent_death = true;
 #endif
 
@@ -1464,8 +1464,12 @@ bool TestLauncher::Init(CommandLine* command_line) {
   results_tracker_.AddGlobalTag("OS_IOS");
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   results_tracker_.AddGlobalTag("OS_LINUX");
+#endif
+
+#if defined(OS_CHROMEOS)
+  results_tracker_.AddGlobalTag("OS_CHROMEOS");
 #endif
 
 #if defined(OS_MAC)

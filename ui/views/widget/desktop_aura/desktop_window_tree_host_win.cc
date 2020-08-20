@@ -737,10 +737,6 @@ int DesktopWindowTreeHostWin::GetInitialShowState() const {
   return CanActivate() ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE;
 }
 
-bool DesktopWindowTreeHostWin::WillProcessWorkAreaChange() const {
-  return GetWidget()->widget_delegate()->WillProcessWorkAreaChange();
-}
-
 int DesktopWindowTreeHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
   gfx::Point dip_position =

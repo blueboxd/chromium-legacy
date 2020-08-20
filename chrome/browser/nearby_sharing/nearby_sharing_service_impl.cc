@@ -33,6 +33,7 @@
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/idle/idle.h"
@@ -132,8 +133,13 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
               prefs,
               http_client_factory_.get())),
       contact_manager_(NearbyShareContactManagerImpl::Factory::Create()),
-      certificate_manager_(
-          NearbyShareCertificateManagerImpl::Factory::Create()) {
+      certificate_manager_(NearbyShareCertificateManagerImpl::Factory::Create(
+          local_device_data_manager_.get(),
+          prefs,
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetProtoDatabaseProvider(),
+          profile->GetPath(),
+          http_client_factory_.get())) {
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
 

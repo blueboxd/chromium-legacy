@@ -57,14 +57,23 @@ class SecurePaymentConfirmationDialogViewTest
   void ExpectViewMatchesModel() {
     ASSERT_NE(test_delegate_->dialog_view(), nullptr);
 
-    EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_BUTTON_LABEL),
+    EXPECT_EQ(model_.verify_button_label(),
               test_delegate_->dialog_view()->GetDialogButtonLabel(
                   ui::DIALOG_BUTTON_OK));
 
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CANCEL),
+    EXPECT_EQ(model_.cancel_button_label(),
               test_delegate_->dialog_view()->GetDialogButtonLabel(
                   ui::DIALOG_BUTTON_CANCEL));
+
+    EXPECT_TRUE(test_delegate_->dialog_view()->GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON));
+
+    EXPECT_EQ(
+        model_.progress_bar_visible(),
+        test_delegate_->dialog_view()
+            ->GetViewByID(
+                SecurePaymentConfirmationDialogView::DialogViewID::PROGRESS_BAR)
+            ->GetVisible());
   }
 
   void ClickAcceptAndWait() {
@@ -155,6 +164,36 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
   CreateModel();
 
   InvokeSecurePaymentConfirmationUI();
+
+  ExpectViewMatchesModel();
+
+  CloseDialogAndWait();
+}
+
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
+                       ProgressBarVisible) {
+  CreateModel();
+  model_.set_progress_bar_visible(true);
+
+  InvokeSecurePaymentConfirmationUI();
+
+  ExpectViewMatchesModel();
+
+  CloseDialogAndWait();
+}
+
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
+                       ShowProgressBar) {
+  CreateModel();
+
+  ASSERT_FALSE(model_.progress_bar_visible());
+
+  InvokeSecurePaymentConfirmationUI();
+
+  ExpectViewMatchesModel();
+
+  model_.set_progress_bar_visible(true);
+  test_delegate_->dialog_view()->OnModelUpdated();
 
   ExpectViewMatchesModel();
 

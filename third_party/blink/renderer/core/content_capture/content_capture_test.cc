@@ -470,6 +470,9 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSentContentCount, 0u);
 
+  histograms.ExpectTotalCount(
+      ContentCaptureTaskHistogramReporter::kTaskDelayInMs, 1u);
+
   // The task stops before sends the captured content out.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
@@ -515,6 +518,10 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kSentContentCount, 0u);
 
+  // Verify retry task won't count to TaskDelay metrics.
+  histograms.ExpectTotalCount(
+      ContentCaptureTaskHistogramReporter::kTaskDelayInMs, 1u);
+
   // Create a node and run task until it stops.
   CreateTextNodeAndNotifyManager();
   GetContentCaptureTask()->SetTaskStopState(
@@ -542,6 +549,10 @@ TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   // Verify total content has been sent.
   histograms.ExpectBucketCount(
       ContentCaptureTaskHistogramReporter::kSentContentCount, 9u, 1u);
+
+  // Verify TaskDelay was recorded again for node change.
+  histograms.ExpectTotalCount(
+      ContentCaptureTaskHistogramReporter::kTaskDelayInMs, 2u);
 }
 
 TEST_P(ContentCaptureTest, RescheduleTask) {

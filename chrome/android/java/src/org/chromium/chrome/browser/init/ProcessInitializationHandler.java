@@ -93,10 +93,12 @@ import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.ContactsPickerListener;
-import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.PhotoPickerDelegate;
+import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.SelectFileDialog;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -213,14 +215,16 @@ public class ProcessInitializationHandler {
         Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
-            UiUtils.setPhotoPickerDelegate(new UiUtils.PhotoPickerDelegate() {
+            SelectFileDialog.setPhotoPickerDelegate(new PhotoPickerDelegate() {
                 private PhotoPickerDialog mDialog;
 
                 @Override
-                public void showPhotoPicker(Context context, PhotoPickerListener listener,
-                        boolean allowMultiple, List<String> mimeTypes) {
-                    mDialog = new PhotoPickerDialog(context, context.getContentResolver(), listener,
-                            allowMultiple, mimeTypes);
+                public void showPhotoPicker(WindowAndroid windowAndroid,
+                        PhotoPickerListener listener, boolean allowMultiple,
+                        List<String> mimeTypes) {
+                    mDialog = new PhotoPickerDialog(windowAndroid,
+                            windowAndroid.getContext().get().getContentResolver(), listener,
+                            allowMultiple, mimeTypes, new VrModeProviderImpl());
                     mDialog.getWindow().getAttributes().windowAnimations =
                             R.style.PickerDialogAnimation;
                     mDialog.show();

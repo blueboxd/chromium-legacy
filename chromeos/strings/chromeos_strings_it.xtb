@@ -45,7 +45,7 @@
 <translation id="445059817448385655">Vecchia password</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> di <ph name="TOTAL_PAGE_NUMBER" />. Premi Invio per annullare il processo di stampa.</translation>
 <translation id="467510802200863975">Le password non corrispondono</translation>
-<translation id="4691278870498629773">Operazione interrotta - Cassetto mancante</translation>
+<translation id="4691278870498629773">Operazione interrotta - Vassoio mancante</translation>
 <translation id="4731797938093519117">Accesso genitore</translation>
 <translation id="4773299976671772492">Interrotta</translation>
 <translation id="4808449224298348341">Processo di stampa <ph name="DOCUMENT_TITLE" /> annullato</translation>
@@ -72,7 +72,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="6517239166834772319">Esplora</translation>
 <translation id="6564646048574748301">Operazione non riuscita - Stampante non raggiungibile</translation>
 <translation id="6643016212128521049">Cancella</translation>
-<translation id="6747215703636344499">Operazione interrotta - Cassetto di uscita pieno</translation>
+<translation id="6747215703636344499">Operazione interrotta - Vassoio di uscita pieno</translation>
 <translation id="7162487448488904999">Galleria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Questa azione è gestita dall'amministratore</translation>

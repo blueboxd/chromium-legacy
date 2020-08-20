@@ -31,6 +31,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prerender/browser/prerender_manager.h"
 #include "components/prerender/common/prerender_url_loader_throttle.h"
+#include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -654,6 +655,15 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
       base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));
+
+  std::unique_ptr<security_interstitials::InsecureFormNavigationThrottle>
+      insecure_form_throttle = security_interstitials::
+          InsecureFormNavigationThrottle::MaybeCreateNavigationThrottle(
+              handle, std::make_unique<WebLayerSecurityBlockingPageFactory>(),
+              nullptr);
+  if (insecure_form_throttle) {
+    throttles.push_back(std::move(insecure_form_throttle));
+  }
 
 #if defined(OS_ANDROID)
   if (handle->IsInMainFrame()) {

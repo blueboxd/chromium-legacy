@@ -50,7 +50,7 @@ class AudioManager;
 class AudioSystem;
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 class DeviceMonitorLinux;
 #endif
 class UserInputMonitor;
@@ -377,7 +377,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MAC)
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;

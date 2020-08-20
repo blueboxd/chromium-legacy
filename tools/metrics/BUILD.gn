@@ -2,11 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-action("histograms_xml") {
+import("//build/config/python.gni")
+
+# TODO(crbug.com/1118214) - Make work under Python 3.
+python2_action("histograms_xml") {
   script = "histograms/merge_xml.py"
   output = "$root_out_dir/histograms.xml"
   outputs = [ output ]
-  args = ["--output", rebase_path(output, root_build_dir)]
+  args = [
+    "--output",
+    rebase_path(output, root_build_dir),
+  ]
 }
 
 copy("actions_xml") {

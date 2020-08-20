@@ -45,7 +45,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_SCROLLABLE_AREA_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
@@ -75,13 +74,15 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 
  public:
   PaintLayerScrollableAreaRareData();
+  PaintLayerScrollableAreaRareData(const PaintLayerScrollableAreaRareData&) =
+      delete;
+  PaintLayerScrollableAreaRareData& operator=(
+      const PaintLayerScrollableAreaRareData&) = delete;
 
   StickyConstraintsMap sticky_constraints_map_;
   base::Optional<cc::SnapContainerData> snap_container_data_;
   bool snap_container_data_needs_update_ = true;
   bool needs_resnap_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerScrollableAreaRareData);
 };
 
 // PaintLayerScrollableArea represents the scrollable area of a LayoutBox.

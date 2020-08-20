@@ -29,9 +29,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -41,13 +45,15 @@ namespace blink {
 
 class ExceptionState;
 class ScriptState;
+class IndexedDBDatabaseCallbacksImpl;
+class WebIDBCallbacks;
 
 class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   IDBFactory();
-  IDBFactory(std::unique_ptr<WebIDBFactory>);
+  ~IDBFactory() override;
 
   // Implement the IDBFactory IDL
   IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);
@@ -71,8 +77,12 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
 
   ScriptPromise GetDatabaseInfo(ScriptState*, ExceptionState&);
 
+  void SetFactoryForTesting(mojo::Remote<mojom::blink::IDBFactory> factory);
+
  private:
-  WebIDBFactory* GetFactory(ExecutionContext* execution_context);
+  // Lazy initialize the mojo pipe to the back end.
+  mojo::Remote<mojom::blink::IDBFactory>& GetFactory(
+      ExecutionContext* execution_context);
 
   IDBOpenDBRequest* OpenInternal(ScriptState*,
                                  const String& name,
@@ -87,7 +97,17 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   bool AllowIndexedDB(ScriptState* script_state);
   bool CachedAllowIndexedDB(ScriptState* script_state);
 
-  std::unique_ptr<WebIDBFactory> web_idb_factory_;
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
+      std::unique_ptr<WebIDBCallbacks> callbacks);
+  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
+  GetDatabaseCallbacksProxy(
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
+  mojo::PendingRemote<mojom::blink::ObservedFeature> GetObservedFeature();
+
+  mojo::Remote<mojom::blink::IDBFactory> factory_;
+  mojo::Remote<mojom::blink::FeatureObserver> feature_observer_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   base::Optional<bool> cached_allowed_;
 };
 

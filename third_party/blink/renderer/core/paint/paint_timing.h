@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
@@ -36,6 +35,8 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   static const char kSupplementName[];
 
   explicit PaintTiming(Document&);
+  PaintTiming(const PaintTiming&) = delete;
+  PaintTiming& operator=(const PaintTiming&) = delete;
   virtual ~PaintTiming() = default;
 
   static PaintTiming& From(Document&);
@@ -245,8 +246,6 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   FRIEND_TEST_ALL_PREFIXES(
       FirstMeaningfulPaintDetectorTest,
       ProvisionalTimestampChangesAfterNetworkQuietWithOutstandingSwapPromise);
-
-  DISALLOW_COPY_AND_ASSIGN(PaintTiming);
 };
 
 }  // namespace blink

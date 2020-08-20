@@ -150,6 +150,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
     @Override
     public int getAppMenuLayoutId() {
+        if (shouldShowRegroupedMenu()) {
+            return R.menu.main_menu_regroup;
+        }
         return R.menu.main_menu;
     }
 
@@ -159,6 +162,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         customViewBinders.add(new UpdateMenuItemViewBinder());
         customViewBinders.add(new ManagedByMenuItemViewBinder());
         customViewBinders.add(new IncognitoMenuItemViewBinder());
+        customViewBinders.add(new DividerLineMenuItemViewBinder());
         return customViewBinders;
     }
 
@@ -331,6 +335,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 // main_menu.xml contains multiple items with the same id in different groups
                 // e.g.: menu_new_incognito_tab.
                 item.setEnabled(isIncognitoEnabled());
+            }
+
+            if (item.getItemId() == R.id.divider_line_id) {
+                item.setEnabled(false);
             }
 
             int itemGroupId = item.getGroupId();
@@ -580,6 +588,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     @Override
+    public int getGroupDividerId() {
+        return R.id.divider_line_id;
+    }
+
+    @Override
     public boolean shouldShowFooter(int maxMenuHeight) {
         return true;
     }
@@ -598,6 +611,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @Override
     public boolean shouldShowIconBeforeItem() {
         return false;
+    }
+
+    @Override
+    public boolean shouldShowRegroupedMenu() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP);
     }
 
     /**

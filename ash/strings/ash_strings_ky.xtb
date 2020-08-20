@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">Bluetooth жөндөөлөрүн көрсөтүү. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Сигналдын күчү <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Ар дайым текчени көрсөтүү</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> туташты</translation>
 <translation id="1341651618736211726">Кошумча</translation>
 <translation id="1346748346194534595">Оң</translation>
 <translation id="1351937230027495976">Менюну жыйыштыруу</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">Баштоо</translation>
 <translation id="6981982820502123353">Атайын мүмкүн-төр</translation>
 <translation id="698231206551913481">Колдонуучуга тийиштүү бардык файлдар менен жергиликтүү дайындар көзөмөлдөнгөн колдонуучу чыгарылып салынганда биротоло жок болот.</translation>
+<translation id="6990778048354947307">Күңүрт тема</translation>
 <translation id="7007983414944123363">PIN кодуңуз же сырсөзүңүз ырасталган жок. Кайра аракет кылыңыз.</translation>
 <translation id="7015766095477679451">Саат <ph name="COME_BACK_TIME" /> болгондо кайтып келиңиз.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> түзмөгүңүздү телефонуңузга туташтырыңыз</translation>

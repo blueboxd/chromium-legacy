@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
@@ -199,14 +198,6 @@ class MediaRouter : public KeyedService {
   // Returns logs collected from Media Router components.
   virtual base::Value GetLogs() const = 0;
 #endif  // !defined(OS_ANDROID)
-
-  // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a
-  // given |tab_id|, only one CastRemotingConnector can be registered. The
-  // registered CastRemotingConnector should be removed before it is destroyed.
-  virtual void RegisterRemotingSource(
-      SessionID tab_id,
-      CastRemotingConnector* remoting_source) = 0;
-  virtual void UnregisterRemotingSource(SessionID tab_id) = 0;
 
   // Returns media router state as a JSON string represented by base::Value.
   // Includes known sinks and sink compatibility with media sources.

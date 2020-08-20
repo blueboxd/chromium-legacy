@@ -70,7 +70,8 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   if (!is_eligible_)
     return;
 
-  is_session_active_ = true;
+  if (visibility_ == QuickAnswersVisibility::kClosed)
+    return;
 
   // Cache anchor-bounds and query.
   anchor_bounds_ = anchor_bounds;
@@ -89,6 +90,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   } else if (!MaybeShowUserConsent(base::string16(), base::string16())) {
     // Text annotator is not enabled and consent view is not showing, shows
     // quick answers view with placeholder and send the request.
+    visibility_ = QuickAnswersVisibility::kVisible;
     quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds, title_,
                                                          query_);
     quick_answers_client_->SendRequest(request);
@@ -96,7 +98,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 }
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
-  is_session_active_ = false;
+  visibility_ = QuickAnswersVisibility::kClosed;
   MaybeDismissQuickAnswersConsent();
   bool closed = quick_answers_ui_controller_->CloseQuickAnswersView();
   quick_answers_client_->OnQuickAnswersDismissed(
@@ -111,6 +113,9 @@ QuickAnswersControllerImpl::GetQuickAnswersDelegate() {
 
 void QuickAnswersControllerImpl::OnQuickAnswerReceived(
     std::unique_ptr<QuickAnswer> quick_answer) {
+  if (visibility_ != QuickAnswersVisibility::kVisible)
+    return;
+
   if (quick_answer) {
     if (quick_answer->title.empty()) {
       quick_answer->title.push_back(
@@ -140,6 +145,9 @@ void QuickAnswersControllerImpl::OnEligibilityChanged(bool eligible) {
 }
 
 void QuickAnswersControllerImpl::OnNetworkError() {
+  if (visibility_ != QuickAnswersVisibility::kVisible)
+    return;
+
   // Notify quick_answers_ui_controller_ to show retry UI.
   quick_answers_ui_controller_->ShowRetry();
 }
@@ -156,7 +164,7 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
     return;
   }
 
-  if (!is_session_active_)
+  if (visibility_ == QuickAnswersVisibility::kClosed)
     return;
 
   query_ = processed_request.preprocessed_output.query;
@@ -167,6 +175,7 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
           base::UTF8ToUTF16(
               processed_request.preprocessed_output.intent_text))) {
     if (!quick_answers_ui_controller_->is_showing_quick_answers_view()) {
+      visibility_ = QuickAnswersVisibility::kVisible;
       quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds_,
                                                            title_, query_);
     }
@@ -190,8 +199,14 @@ void QuickAnswersControllerImpl::OnQuickAnswerClick() {
 
 void QuickAnswersControllerImpl::UpdateQuickAnswersAnchorBounds(
     const gfx::Rect& anchor_bounds) {
+  if (visibility_ != QuickAnswersVisibility::kVisible)
+    return;
   anchor_bounds_ = anchor_bounds;
   quick_answers_ui_controller_->UpdateQuickAnswersBounds(anchor_bounds);
+}
+
+void QuickAnswersControllerImpl::SetPendingShowQuickAnswers() {
+  visibility_ = QuickAnswersVisibility::kPending;
 }
 
 void QuickAnswersControllerImpl::OnUserConsentGranted() {
@@ -200,8 +215,7 @@ void QuickAnswersControllerImpl::OnUserConsentGranted() {
       chromeos::quick_answers::ConsentInteractionType::kAccept);
 
   // Display Quick-Answer for the cached query when user consents.
-  if (is_session_active_)
-    MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
+  MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
 }
 
 void QuickAnswersControllerImpl::OnConsentSettingsRequestedByUser() {

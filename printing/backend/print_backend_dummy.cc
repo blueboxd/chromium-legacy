@@ -8,7 +8,6 @@
 
 #include "printing/backend/print_backend.h"
 
-#include "base/macros.h"
 #include "base/values.h"
 
 namespace printing {
@@ -17,6 +16,8 @@ class DummyPrintBackend : public PrintBackend {
  public:
   explicit DummyPrintBackend(const std::string& locale)
       : PrintBackend(locale) {}
+  DummyPrintBackend(const DummyPrintBackend&) = delete;
+  DummyPrintBackend& operator=(const DummyPrintBackend&) = delete;
 
   bool EnumeratePrinters(PrinterList* printer_list) override { return false; }
 
@@ -49,8 +50,6 @@ class DummyPrintBackend : public PrintBackend {
 
  private:
   ~DummyPrintBackend() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyPrintBackend);
 };
 
 // static

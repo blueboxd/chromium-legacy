@@ -7,7 +7,6 @@
 
 #import <ApplicationServices/ApplicationServices.h>
 
-#include "base/macros.h"
 #include "printing/page_range.h"
 
 namespace printing {
@@ -17,12 +16,14 @@ class PrintSettings;
 // Initializes a PrintSettings object from the provided device context.
 class PRINTING_EXPORT PrintSettingsInitializerMac {
  public:
+  PrintSettingsInitializerMac() = delete;
+  PrintSettingsInitializerMac(const PrintSettingsInitializerMac&) = delete;
+  PrintSettingsInitializerMac& operator=(const PrintSettingsInitializerMac&) =
+      delete;
+
   static void InitPrintSettings(PMPrinter printer,
                                 PMPageFormat page_format,
                                 PrintSettings* print_settings);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PrintSettingsInitializerMac);
 };
 
 }  // namespace printing

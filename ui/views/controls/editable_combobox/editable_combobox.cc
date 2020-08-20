@@ -44,6 +44,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/combobox/combobox_util.h"
+#include "ui/views/controls/combobox/empty_combobox_model.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -301,6 +302,9 @@ class EditableCombobox::EditableComboboxPreTargetHandler
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxPreTargetHandler);
 };
 
+EditableCombobox::EditableCombobox()
+    : EditableCombobox(std::make_unique<internal::EmptyComboboxModel>()) {}
+
 EditableCombobox::EditableCombobox(
     std::unique_ptr<ui::ComboboxModel> combobox_model,
     const bool filter_on_edit,
@@ -310,16 +314,13 @@ EditableCombobox::EditableCombobox(
     const int text_style,
     const bool display_arrow)
     : textfield_(new Textfield()),
-      combobox_model_(std::move(combobox_model)),
-      menu_model_(
-          std::make_unique<EditableComboboxMenuModel>(this,
-                                                      combobox_model_.get(),
-                                                      filter_on_edit,
-                                                      show_on_empty)),
       text_context_(text_context),
       text_style_(text_style),
       type_(type),
+      filter_on_edit_(filter_on_edit),
+      show_on_empty_(show_on_empty),
       showing_password_text_(type != Type::kPassword) {
+  SetModel(std::move(combobox_model));
   observer_.Add(textfield_);
   textfield_->set_controller(this);
   textfield_->SetFontList(GetFontList());
@@ -339,6 +340,13 @@ EditableCombobox::EditableCombobox(
 EditableCombobox::~EditableCombobox() {
   CloseMenu();
   textfield_->set_controller(nullptr);
+}
+
+void EditableCombobox::SetModel(std::unique_ptr<ui::ComboboxModel> model) {
+  CloseMenu();
+  combobox_model_.swap(model);
+  menu_model_ = std::make_unique<EditableComboboxMenuModel>(
+      this, combobox_model_.get(), filter_on_edit_, show_on_empty_);
 }
 
 const base::string16& EditableCombobox::GetText() const {

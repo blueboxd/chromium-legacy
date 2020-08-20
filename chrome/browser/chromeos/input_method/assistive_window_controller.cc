@@ -15,8 +15,10 @@
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -123,10 +125,16 @@ void AssistiveWindowController::OnWidgetClosing(views::Widget* widget) {
   }
 }
 
+// TODO(crbug/1119570): Update AcceptSuggestion signature (either use
+// announce_string, or no string)
 void AssistiveWindowController::AcceptSuggestion(
     const base::string16& suggestion) {
-  tts_handler_->Announce(base::StringPrintf(
-      "%s inserted.", base::UTF16ToUTF8(suggestion).c_str()));
+  if (window_.type == ui::ime::AssistiveWindowType::kEmojiSuggestion) {
+    tts_handler_->Announce(
+        l10n_util::GetStringUTF8(IDS_SUGGESTION_EMOJI_SUGGESTED));
+  } else {
+    tts_handler_->Announce(l10n_util::GetStringUTF8(IDS_SUGGESTION_INSERTED));
+  }
   HideSuggestion();
 }
 
@@ -211,7 +219,7 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
         InitUndoWindow();
       if (window.visible) {
         undo_window_->SetAnchorRect(bounds_.autocorrect.IsEmpty()
-                                        ? bounds_.caret 
+                                        ? bounds_.caret
                                         : bounds_.autocorrect);
         undo_window_->Show();
       } else {

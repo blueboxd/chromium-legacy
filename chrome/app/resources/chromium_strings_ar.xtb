@@ -28,7 +28,7 @@
 <translation id="2294245788148774212">‏اختياري: يمكنك المساعدة في تحسين ميزات نظام التشغيل Chromium وأدائه من خلال إرسال بيانات التشخيص والاستخدام تلقائيًا إلى Google.</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2396765026452590966">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chromium.</translation>
-<translation id="2442081746662839303">‏هل تريد إنشاء ملف شخصي جديد على Chromium space للمستخدم <ph name="NEW_USER" />؟</translation>
+<translation id="2442081746662839303">‏هل تريد إنشاء ملف شخصي جديد على Chromium للمستخدم <ph name="NEW_USER" />؟</translation>
 <translation id="2483889755041906834">‏في Chromium</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2527042973354814951">‏إعادة تشغيل Chromium لتفعيل <ph name="PLUGIN_NAME" /></translation>
@@ -106,7 +106,7 @@
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>
 <translation id="4994636714258228724">‏إضافة نفسك إلى Chromium</translation>
-<translation id="5053724573690775822">‏هل تريد إنشاء ملف شخصي جديد للعمل على Chromium؟</translation>
+<translation id="5053724573690775822">‏هل تريد إنشاء مساحة عمل جديدة على Chromium؟</translation>
 <translation id="5224391634244552924">‏ما مِن كلمات مرور محفوظة. لا يستطيع Chromium التحقُّق من كلمات المرور إلا عند حفظها.</translation>
 <translation id="5277894862589591112">‏لتطبيق التغييرات، يُرجى إعادة تشغيل Chromium</translation>
 <translation id="5358375970380395591">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
@@ -116,7 +116,7 @@
 <translation id="5416696090975899932">‏يتعذر على Chromium عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
 <translation id="5427571867875391349">‏تعيين Chromium المتصفح التلقائي</translation>
 <translation id="5438241569118040789">‏<ph name="PAGE_TITLE" /> - الإصدار التجريبي من Chromium</translation>
-<translation id="544968170749360982">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب جديد. هل تريد إنشاء ملف شخصي جديد على Chromium space للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك منفصلة؟</translation>
+<translation id="544968170749360982">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب جديد. هل تريد إنشاء ملف شخصي جديد على Chromium للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك منفصلة؟</translation>
 <translation id="5479196819031988440">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
@@ -139,7 +139,7 @@
 <translation id="608189560609172163">‏تعذر على Chromium مزامنة البيانات نظرًا لحدوث خطأ أثناء تسجيل الدخول.</translation>
 <translation id="6096348254544841612">‏تخصيص Chromium والتحكُّم فيه. هناك تحديث متوفر.</translation>
 <translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google ولن تحتاج تذكّرها.</translation>
-<translation id="6128834065531097268">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chromium space للمستخدم <ph name="WORK_DOMAIN" /> حتى تُبقي بياناتك منفصلة؟</translation>
+<translation id="6128834065531097268">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chromium للنطاق <ph name="WORK_DOMAIN" /> حتى تُبقي بياناتك منفصلة؟</translation>
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="6134968993075716475">‏تم إيقاف "التصفّح الآمن" ويقترح متصفّح Chrome تفعيله.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، يُرجى إزالة Chromium وإعادة المحاولة.</translation>
@@ -201,7 +201,7 @@
 <translation id="7561906087460245826">‏محو البيانات من Chromium أيضًا (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">‏في حال عدم عرض إعداد على هذه الصفحة، انتقل إلى <ph name="LINK_BEGIN" />
     إعدادات نظام التشغيل Chromium<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">‏لقد سجَّلت الدخول باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chromium space للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك الشخصية منفصلة؟</translation>
+<translation id="7607142834923530546">‏لقد سجَّلت الدخول باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chromium للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك الشخصية منفصلة؟</translation>
 <translation id="761356813943268536">‏يستخدم Chromium الكاميرا والميكروفون.</translation>
 <translation id="7617377681829253106">‏Chromium أصبح أفضل</translation>
 <translation id="7628001322379820951">‏عثر متصفّح Chromium على برنامج ضارّ على جهاز الكمبيوتر.</translation>

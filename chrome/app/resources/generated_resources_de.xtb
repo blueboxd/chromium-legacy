@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="1001307489511021749">Ihre Apps, Einstellungen und anderen Anpassungen werden auf allen Chrome OS-Geräten synchronisiert, auf denen Sie mit Ihrem Google-Konto angemeldet sind.</translation>
 <translation id="1003088604756913841">Link in neuem <ph name="APP" />-Fenster öffnen</translation>
+<translation id="1003363546227723021">Wenn der Bildschirm inaktiv ist, können Sie sich Fotos, die Zeit sowie Wetter- und Medieninformationen anzeigen lassen</translation>
 <translation id="1004218526896219317">Websitezugriff</translation>
 <translation id="1005274289863221750">Ihr Mikrofon und Ihre Kamera verwenden</translation>
 <translation id="1005333234656240382">ADB-Fehlerbehebung aktivieren?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Anhalten</translation>
 <translation id="1110155001042129815">Warten</translation>
 <translation id="1112420131909513020">Tab im Hintergrund verwendet Bluetooth</translation>
+<translation id="1113892970288677790">Kunstwerke und Bilder auswählen</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Raute</translation>
 <translation id="1114335938027186412">Ihr Computer enthält einen TPM-Sicherheitschip (Trusted Platform Module), über den viele wichtige Sicherheitsfunktionen in Chrome OS implementiert sind. Weitere Informationen dazu finden Sie in der Chromebook-Hilfe unter https://support.google.com/chromebook/?p=tpm.</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Schnellste</translation>
 <translation id="1225177025209879837">Ihre Anfrage wird verarbeitet...</translation>
 <translation id="1227507814927581609">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" ist ein Authentifizierungsfehler aufgetreten.</translation>
+<translation id="1230417814058465809">Standardschutz ist aktiviert. Der erweiterte Schutz bietet noch mehr Sicherheit.</translation>
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="1232569758102978740">Unbenannt</translation>
 <translation id="1233497634904001272">Tippen Sie noch einmal auf Ihren Sicherheitsschlüssel, um die Anfrage abzuschließen.</translation>
@@ -429,7 +432,6 @@
 <translation id="1508575541972276599">Aktuell verwenden Sie Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Auf <ph name="DEVICE_NAME_AND_VENDOR" /> per USB zugreifen</translation>
 <translation id="1509960214886564027">Funktionen auf vielen Websites funktionieren möglicherweise nicht mehr</translation>
-<translation id="1510030919967934016">Diese Seite darf Ihren Standort nicht verfolgen.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1510785804673676069">Wenn Sie einen Proxy-Server verwenden, überprüfen Sie Ihre Proxy-Einstellungen oder erkundigen Sie sich bei Ihrem Netzwerkadministrator, ob der Proxy-Server funktioniert. Wenn Sie keinen Proxy-Server verwenden möchten, ändern Sie Ihre <ph name="LINK_START" />Proxy-Einstellungen<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">Auf diesem Sicherheitsschlüssel können keine Anmeldedaten gespeichert werden</translation>
@@ -596,7 +598,6 @@
 <translation id="1697686431566694143">Datei bearbeiten</translation>
 <translation id="1698122934742150150">Nur aktuelle Inkognitositzung</translation>
 <translation id="1700079447639026019">Websites, die nie Cookies verwenden dürfen</translation>
-<translation id="1700845716982723710">Inaktivmodus deaktivieren</translation>
 <translation id="1701062906490865540">Diese Person entfernen</translation>
 <translation id="1703331064825191675">Sie müssen sich keine Sorgen mehr um Ihre Passwörter machen</translation>
 <translation id="1704970325597567340">Der Sicherheitscheck wurde am <ph name="DATE" /> durchgeführt</translation>
@@ -725,7 +726,6 @@
 <translation id="184273675144259287">Linux-Apps und -Dateien durch eine vorherige Sicherung ersetzen</translation>
 <translation id="1842766183094193446">Möchten Sie den Demomodus wirklich aktivieren?</translation>
 <translation id="1846308012215045257">Zum Ausführen von <ph name="PLUGIN_NAME" /> die Strg-Taste drücken und mit der Maus klicken</translation>
-<translation id="184715642345428649">Inaktivmodus aktivieren</translation>
 <translation id="1849186935225320012">Diese Seite hat vollständige Kontrolle über MIDI-Geräte.</translation>
 <translation id="1850508293116537636">Im &amp;Uhrzeigersinn drehen</translation>
 <translation id="1852141627593563189">Schädliche Software finden</translation>
@@ -1168,7 +1168,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2392163307141705938">Du hast das Zeitlimit erreicht, das deine Eltern für <ph name="IDS_SHORT_PRODUCT_NAME" /> festgelegt haben.</translation>
 <translation id="2392369802118427583">Aktivieren</translation>
 <translation id="2393136602862631930"><ph name="APP_NAME" /> auf dem Chromebook einrichten</translation>
-<translation id="2394566832561516196">Die Einstellungen werden bei der nächsten Aktualisierung gelöscht.</translation>
 <translation id="2395616325548404795">Ihr <ph name="DEVICE_TYPE" /> wurde erfolgreich für die Unternehmensverwaltung angemeldet, aber es wurden keine Geräte- und Standortinformationen gesendet. Bitte geben Sie diese Informationen für das Gerät manuell über Ihre Admin-Konsole ein.</translation>
 <translation id="2396387085693598316">Ihr Administrator hat "<ph name="EXTENSION_NAME" />" blockiert</translation>
 <translation id="2396783860772170191">Geben Sie die 4-stellige PIN ein (0000–9999)</translation>
@@ -1249,6 +1248,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="249113932447298600">Das Gerät <ph name="DEVICE_LABEL" /> wird derzeit nicht unterstützt.</translation>
 <translation id="2492461744635776704">Zertifikatssignaturanfrage wird vorbereitet</translation>
 <translation id="249303669840926644">Registrierung konnte nicht abgeschlossen werden</translation>
+<translation id="2493126929778606526">Meine besten automatisch ausgewählten Fotos</translation>
 <translation id="2495777824269688114">Lernen Sie weitere Funktionen kennen oder erhalten Sie Antworten auf Ihre Fragen. Wählen Sie "?", um die Hilfe aufzurufen.</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2497229222757901769">Mausgeschwindigkeit</translation>
@@ -1341,6 +1341,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2604255671529671813">Fehler bei der Netzwerkverbindung</translation>
 <translation id="2606246518223360146">Daten verknüpfen</translation>
 <translation id="2607101320794533334">Informationen zum öffentlichen Schlüssel des Antragstellers</translation>
+<translation id="2607968157341167679">Keine Alben. Ein Album in <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" /> erstellen.</translation>
 <translation id="2609896558069604090">Verknüpfungen erstellen...</translation>
 <translation id="2610157865375787051">Ruhezustand</translation>
 <translation id="2610260699262139870">T&amp;atsächliche Größe</translation>
@@ -1477,7 +1478,8 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2762441749940182211">Kamera blockiert</translation>
 <translation id="2764786626780673772">VPN-Details</translation>
 <translation id="2765217105034171413">Klein</translation>
-<translation id="2766006623206032690">Einfügen und &amp;fortfahren</translation>
+<translation id="2765729904637714153">Die schönsten Erinnerungen immer vor Augen. Wenn Sie Alben hinzufügen oder bearbeiten möchten, gehen Sie zu <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
+<translation id="2766006623206032690">Einfügen und &amp;aufrufen</translation>
 <translation id="2766161002040448006">Elternteil fragen</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> kann dann <ph name="FILENAME" /> bearbeiten, solange Tabs dieser Website geöffnet sind</translation>
 <translation id="276969039800130567">Angemeldet als <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -1654,7 +1656,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2979639724566107830">In neuem Fenster öffnen</translation>
 <translation id="2981113813906970160">Großen Cursor verwenden</translation>
 <translation id="2985348301114641460">Anfrage zum Installieren von "<ph name="EXTENSION_NAME" />" an Ihren Administrator senden?</translation>
-<translation id="2986010903908656993">Dieser Seite wurde keine vollständige Kontrolle über MIDI-Geräte gewährt.</translation>
 <translation id="2987620471460279764">Text, der über ein anderes Gerät geteilt wurde</translation>
 <translation id="2988018669686457659">Verfügbarer Renderer</translation>
 <translation id="2989123969927553766">Scroll-Beschleunigung für Maus</translation>
@@ -2078,7 +2079,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3524965460886318643">Aktivitäten exportieren</translation>
 <translation id="3526034519184079374">Daten der Website können nicht gelesen oder geändert werden</translation>
 <translation id="3527085408025491307">Ordner</translation>
-<translation id="3528033729920178817">Diese Seite verfolgt Ihren Standort.</translation>
 <translation id="3528498924003805721">Verknüpfungsziele</translation>
 <translation id="3532273508346491126">Synchronisierungsverwaltung</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – stummgeschaltet</translation>
@@ -2109,6 +2109,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3566325075220776093">Von diesem Gerät</translation>
 <translation id="3566721612727112615">Keine Websites hinzugefügt</translation>
 <translation id="3569382839528428029">Soll <ph name="APP_NAME" /> Ihren Bildschirm freigeben?</translation>
+<translation id="3569407787324516067">Bildschirmschoner</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> darf die folgenden Dateien und Ordner aufrufen</translation>
 <translation id="3571734092741541777">Einrichten</translation>
 <translation id="3574210789297084292">Anmelden</translation>
@@ -2257,6 +2258,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3727148787322499904">Änderungen dieser Einstellung wirken sich auf alle freigegebenen Netzwerke aus</translation>
 <translation id="3727187387656390258">Pop-up prüfen</translation>
 <translation id="372722114124766626">Nur einmal</translation>
+<translation id="3728188878314831180">Benachrichtigungen vom Smartphone spiegeln</translation>
 <translation id="3728681439294129328">Netzwerkadresse konfigurieren</translation>
 <translation id="3729303374699765035">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte</translation>
 <translation id="3729506734996624908">Erlaubte Websites</translation>
@@ -2552,7 +2554,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4061374428807229313">Wenn Sie einen Ordner freigeben möchten, rechtsklicken Sie in der App "Dateien" darauf und wählen Sie dann "Teilen mit Parallels Desktop" aus.</translation>
 <translation id="4065876735068446555">Eventuell müssen Sie die Anmeldeseite des verwendeten Netzwerks (<ph name="NETWORK_ID" />) aufrufen.</translation>
 <translation id="4066207411788646768">Stellen Sie eine Internetverbindung her, damit Sie verfügbare Drucker im Netzwerk sehen können</translation>
-<translation id="4068506536726151626">Diese Seite enthält Elemente von folgenden Websites, die Ihren Standort nachverfolgen:</translation>
 <translation id="4068776064906523561">Gespeicherte Fingerabdrücke</translation>
 <translation id="407173827865827707">Bei Klick</translation>
 <translation id="4074900173531346617">Zertifikat für E-Mail-Signaturen</translation>
@@ -3083,7 +3084,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4788092183367008521">Bitte überprüfen Sie die Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> Foto(s)</translation>
 <translation id="4791037424585594169">(UDP)</translation>
-<translation id="4792711294155034829">&amp;Probleme melden...</translation>
+<translation id="4792711294155034829">&amp;Problem melden...</translation>
 <translation id="4794810983896241342">Updates werden von <ph name="BEGIN_LINK" />Ihrem Administrator<ph name="END_LINK" /> verwaltet</translation>
 <translation id="479536056609751218">Webseite, nur HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-Protokolle<ph name="END_LINK" /> anhängen (Google-intern)</translation>
@@ -3195,7 +3196,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> möchte mit der Erweiterung "<ph name="EXTENSION_NAME" />" kommunizieren.</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> installieren (kein Download erforderlich)</translation>
-<translation id="4920887663447894854">Die folgenden Websites dürfen Ihren Standort auf dieser Seite nicht verfolgen:</translation>
 <translation id="4921290200821452703">Informationen für Eltern zum Konto einer Bildungseinrichtung</translation>
 <translation id="4921348630401250116">Sprachausgabe</translation>
 <translation id="49226369361073053">{0,plural, =0{Gerät jetzt neu starten}=1{Gerät innerhalb von 1 Sekunde neu starten}other{Gerät innerhalb von # Sekunden neu starten}}</translation>
@@ -3273,9 +3273,8 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5027562294707732951">Erweiterung hinzufügen</translation>
 <translation id="5029568752722684782">Kopie löschen</translation>
 <translation id="5033266061063942743">Geometrische Formen</translation>
-<translation id="5033370009438029887">Inaktivmodus deaktivieren</translation>
 <translation id="5036662165765606524">Keiner Website gestatten, automatisch mehrere Dateien herunterzuladen</translation>
-<translation id="5037676449506322593">Alle auswählen</translation>
+<translation id="5037676449506322593">Alles auswählen</translation>
 <translation id="5038022729081036555">Morgen kannst du die App wieder <ph name="TIME_LIMIT" /> lang nutzen.</translation>
 <translation id="5038863510258510803">Wird aktiviert...</translation>
 <translation id="5039696241953571917">Sie können gespeicherte Passwörter in Ihrem Google-Konto ansehen und verwalten</translation>
@@ -3838,7 +3837,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5727728807527375859">Erweiterungen, Apps und Designs können Ihren Computer beschädigen. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
 <translation id="5728450728039149624">Optionen für die Smart Lock-Displaysperre</translation>
 <translation id="5729712731028706266">&amp;Ansicht</translation>
-<translation id="5731247495086897348">Einfügen und &amp;fortfahren</translation>
+<translation id="5731247495086897348">Einfügen und &amp;aufrufen</translation>
 <translation id="5732392974455271431">Deine Eltern können die Blockierung aufheben</translation>
 <translation id="5734362860645681824">Kommunikation</translation>
 <translation id="5734697361979786483">Dateifreigabe hinzufügen</translation>
@@ -3950,7 +3949,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> wird bald pausiert</translation>
 <translation id="586567932979200359">Sie führen <ph name="PRODUCT_NAME" /> vom Datenträgerabbild aus. Wenn Sie den Browser auf Ihrem Computer installieren, wird er ohne Datenträgerabbild ausgeführt und immer automatisch aktualisiert.</translation>
 <translation id="5865733239029070421">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
-<translation id="5866557323934807206">Diese Einstellungen für künftige Besuche löschen</translation>
 <translation id="5866840822086176774">Sehr stark</translation>
 <translation id="5867841422488265304">Suchbegriff oder Webadresse eingeben</translation>
 <translation id="5869029295770560994">Ok</translation>
@@ -4235,7 +4233,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6225475702458870625">Datenverbindung von Ihrem <ph name="PHONE_NAME" /> verfügbar</translation>
 <translation id="6226777517901268232">Datei mit privatem Schlüssel (optional)</translation>
 <translation id="6227280783235722609">Erweiterung</translation>
-<translation id="6228691855869374890">Diese Website hat vollständige Kontrolle über MIDI-Geräte.</translation>
 <translation id="6229849828796482487">WLAN-Verbindung trennen</translation>
 <translation id="6229890768313448549">Fehler beim Laden der Google Play-Nutzungsbedingungen. Bitte versuchen Sie es erneut.</translation>
 <translation id="6231881193380278751">Abfrageparameter in URL zum automatischen Aktualisieren der Seite hinzufügen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4389,7 +4386,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6412931879992742813">Neues Inkognitofenster</translation>
 <translation id="641469293210305670">Updates und Apps installieren</translation>
 <translation id="6414888972213066896">Du hast ein Elternteil gefragt, ob du diese Website besuchen darfst</translation>
-<translation id="6415659939354280526">Quelle für Inaktivmodus wählen</translation>
 <translation id="6415900369006735853">Internetverbindung über Ihr Smartphone herstellen</translation>
 <translation id="6416743254476733475">Wechseln Sie auf den Computer, um sie zuzulassen oder zu blockieren.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -4706,6 +4702,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6824584962142919697">&amp;Elemente untersuchen</translation>
 <translation id="6825184156888454064">Nach Name sortieren</translation>
 <translation id="6826872289184051766">Über USB bestätigen</translation>
+<translation id="6827623133556594466">Google Cloud Print wird ab dem 1. Januar nicht mehr unterstützt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Anmeldung auf die folgenden Nutzer beschränken:</translation>
 <translation id="6828182567531805778">Geben Sie die Passphrase ein, um Ihre Daten zu synchronisieren</translation>
 <translation id="682871081149631693">QuickFix-Build</translation>
@@ -5324,6 +5321,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7605594153474022051">Synchronisierung funktioniert nicht</translation>
 <translation id="7606992457248886637">Zertifizierungsstellen</translation>
 <translation id="7607002721634913082">Angehalten</translation>
+<translation id="7608810328871051088">Android-Einstellungen</translation>
 <translation id="7609148976235050828">Stellen Sie eine Internetverbindung her und versuchen Sie es dann noch einmal.</translation>
 <translation id="7614260613810441905">Nachfragen, wenn eine Website Dateien oder Ordner auf meinem Gerät bearbeiten möchte (empfohlen)</translation>
 <translation id="761530003705945209">In Google Drive sichern. Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. In Ihrer Sicherung sind auch App-Daten enthalten. Ihre Sicherungen werden an Google gesendet und mit dem Passwort Ihres Google-Kontos verschlüsselt.</translation>
@@ -5331,7 +5329,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7616214729753637086">Gerät wird registriert…</translation>
 <translation id="7617263010641145920">Play Store aktivieren</translation>
 <translation id="7617366389578322136">Verbindung zu "<ph name="DEVICE_NAME" />" wird hergestellt</translation>
-<translation id="761763866592998929">Inaktivmodus</translation>
 <translation id="7621382409404463535">Das System konnte die Gerätekonfiguration nicht speichern.</translation>
 <translation id="7622114377921274169">Wird aufgeladen.</translation>
 <translation id="7622903810087708234">Passwortdetails</translation>
@@ -5575,7 +5572,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Konto anzeigen</translation>
 <translation id="7882358943899516840">Providertyp</translation>
-<translation id="78851824530736377">Inaktivmodus einschalten</translation>
 <translation id="7885253890047913815">Letzte Ziele</translation>
 <translation id="7887334752153342268">Duplizieren</translation>
 <translation id="7887864092952184874">Bluetooth-Maus ist gekoppelt</translation>
@@ -5852,6 +5848,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8225753906568652947">Meine Angebote einlösen</translation>
 <translation id="8226222018808695353">Unzulässig</translation>
 <translation id="8226619461731305576">Warteschlange</translation>
+<translation id="8226628635270268143">Hier können Sie Ihre bevorzugten Fotos und Alben auswählen</translation>
 <translation id="8226742006292257240">Hier ist das zufällig generierte TPM-Passwort, das Ihrem Computer zugewiesen wurde:</translation>
 <translation id="8227119283605456246">Datei anhängen</translation>
 <translation id="8229943166551236192">Die Gerätedaten werden in 24 Stunden gelöscht</translation>
@@ -6027,7 +6024,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8447409163267621480">Entweder Strg oder Alt integrieren</translation>
 <translation id="8448729345478502352">Die Elemente auf dem Bildschirm vergrößern oder verkleinern</translation>
-<translation id="8449008133205184768">Einfügen und Formatvorlage anpassen</translation>
+<translation id="8449008133205184768">Einsetzen und Stil anpassen</translation>
 <translation id="8449036207308062757">Speicherplatz verwalten</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8455026683977728932">Fehler bei der Aktivierung der ADB-Illustration</translation>
@@ -6350,6 +6347,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="882854468542856424">Websites dürfen nie nach Bluetooth-Geräten in der Nähe suchen</translation>
 <translation id="8828933418460119530">DNS-Name</translation>
 <translation id="883062543841130884">Ersetzungen</translation>
+<translation id="8830779999439981481">Neustart läuft, um Updates anzuwenden</translation>
 <translation id="8830796635868321089">Mit den aktuellen Proxyeinstellungen ist bei der Suche nach Updates ein Fehler aufgetreten. Passen Sie Ihre <ph name="PROXY_SETTINGS_LINK_START" />Proxyeinstellungen<ph name="PROXY_SETTINGS_LINK_END" /> an.</translation>
 <translation id="8831140208248705279">Zusammen funktionieren "<ph name="DEVICE_TYPE" />" und Ihr Android-Smartphone noch besser. Sie können die beiden Geräte miteinander verbinden, um SMS von Ihrem Computer zu senden, die Internetverbindung zu teilen und "<ph name="DEVICE_TYPE" />" mit Ihrem Smartphone zu entsperren.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Die Netzwerkkonfiguration wird von <ph name="USER_EMAIL" /> festgelegt.</translation>
@@ -6659,7 +6657,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="923467487918828349">Alle anzeigen</translation>
 <translation id="929117907539171075">Offlinedaten in der installierten App werden auch gelöscht</translation>
 <translation id="930268624053534560">Detaillierter Zeitstempel</translation>
-<translation id="932327136139879170">Privat</translation>
+<translation id="932327136139879170">Startseite</translation>
 <translation id="932508678520956232">Druckvorgang konnte nicht gestartet werden.</translation>
 <translation id="933427034780221291">{NUM_FILES,plural, =1{Diese Datei ist zu groß für eine Sicherheitsprüfung. Sie können Dateien mit einer Größe von bis zu 50 MB hochladen.}other{Einige dieser Dateien sind zu groß für eine Sicherheitsprüfung. Sie können Dateien mit einer Größe von bis zu 50 MB hochladen.}}</translation>
 <translation id="93343527085570547">Auf der <ph name="BEGIN_LINK1" />Seite "Rechtliche Hinweise"<ph name="END_LINK1" /> haben Sie die Möglichkeit, die Änderung von Inhalten aus rechtlichen Gründen zu beantragen. Möglicherweise werden bestimmte Konto- und Systeminformationen an Google gesendet. Mithilfe der von Ihnen übermittelten Daten können wir unter Einhaltung unserer <ph name="BEGIN_LINK2" />Datenschutzerklärung<ph name="END_LINK2" /> und <ph name="BEGIN_LINK3" />Nutzungsbedingungen<ph name="END_LINK3" /> technische Probleme lösen und unsere Dienste verbessern.</translation>

@@ -270,7 +270,7 @@ bool CreateSentinel() {
 
 // -- Platform-specific functions --
 
-#if !defined(OS_LINUX) && !defined(OS_BSD)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_BSD)
 bool IsOrganicFirstRun() {
   std::string brand;
   google_brand::GetBrand(&brand);

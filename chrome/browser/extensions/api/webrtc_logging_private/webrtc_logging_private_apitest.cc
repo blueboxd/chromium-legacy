@@ -102,8 +102,8 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 
 class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
  protected:
-  void SetUp() override {
-    extensions::ExtensionApiTest::SetUp();
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
 

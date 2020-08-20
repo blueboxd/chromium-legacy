@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addWebUIListener, addSingletonGetter, removeWebUIListener} from 'chrome://resources/js/cr.m.js';
+// #import {WebUIListener} from 'chrome://resources/js/cr.m.js';
+// #import {CupsPrintersBrowserProxyImpl, CupsPrintersList, CupsPrinterInfo} from './cups_printers_browser_proxy.m.js';
+// #import {findDifference} from './cups_printer_dialog_util.m.js';
+// #import {PrinterType, PrinterListEntry} from './cups_printer_types.m.js';
+// clang-format on
+
 /**
  * Function which provides the client with metadata about a change
  * to a list of saved printers. The first parameter is the updated list of
@@ -27,7 +35,7 @@ cr.define('settings.printing', function() {
    * printers and notifies observers of any applicable changes to either printer
    * lists.
    */
-  class CupsPrintersEntryManager {
+  /* #export */ class CupsPrintersEntryManager {
     constructor() {
       /** @private {!Array<!PrinterListEntry>} */
       this.savedPrinters_ = [];

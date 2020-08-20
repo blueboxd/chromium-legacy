@@ -11,7 +11,7 @@
 #include "base/allocator/winheap_stubs_win.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <malloc.h>
 #endif
 
@@ -27,8 +27,8 @@ bool IsAllocatorInitialized() {
   // Set by allocator_shim_override_ucrt_symbols_win.h when the
   // shimmed _set_new_mode() is called.
   return g_is_win_shim_layer_initialized;
-#elif defined(OS_LINUX) && BUILDFLAG(USE_TCMALLOC) && \
-    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(USE_TCMALLOC) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 // From third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h.
 // TODO(primiano): replace with an include once base can depend on allocator.
 #define TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC 0xbeef42

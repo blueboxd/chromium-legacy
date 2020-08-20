@@ -43,7 +43,7 @@
 <translation id="1375321115329958930">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="1377255359165588604">સમન્વયન એ કામ કરવાનું બંધ કરી દીધું છે.</translation>
 <translation id="1377321085342047638">કાર્ડ નંબર</translation>
-<translation id="1383876407941801731">શોધ</translation>
+<translation id="1383876407941801731">શોધો</translation>
 <translation id="1389974829397082527">અહીં કોઈ બુકમાર્ક્સ નથી</translation>
 <translation id="1400642268715879018">છેલ્લા 4 અઠવાડિયા</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
@@ -442,6 +442,7 @@
 <translation id="6125339936101702016"><ph name="COMPANY" /> દ્વારા મેનેજ કરવામાં આવે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">આઇટમ દૂર કરી</translation>
 <translation id="6136914049981179737">સેકંડ પહેલાં</translation>
+<translation id="6144589619057374135">છૂપા મોડમાં ${url} ખોલો</translation>
 <translation id="616831107264507309">પછીથી વાંચો</translation>
 <translation id="6177442314419606057">Chromeમાં શોધો</translation>
 <translation id="6184086493125982861">ટૅબ્સ બતાવો</translation>

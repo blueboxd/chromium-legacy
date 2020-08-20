@@ -21,7 +21,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Ожидание скачивания 1 файла…}one{Ожидание скачивания # файла…}few{Ожидание скачивания # файлов…}many{Ожидание скачивания # файлов…}other{Ожидание скачивания # файла…}}</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
 <translation id="1146678959555564648">Войти в режим VR</translation>
-<translation id="1154704303112745282">Страница недоступна в офлайн-режиме: <ph name="VIOLATED_URL" /></translation>
+<translation id="1154704303112745282">Страница недоступна в офлайн-режиме: <ph name="VIOLATED_URL" />.</translation>
 <translation id="116280672541001035">Использовано</translation>
 <translation id="1171770572613082465">Чтобы перейти к списку популярных сайтов, нажмите кнопку "Топ сайтов"</translation>
 <translation id="1173894706177603556">Переименовать</translation>
@@ -364,7 +364,7 @@
 <translation id="3892148308691398805">Копировать текст</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
-<translation id="3908308510347173149">Обновить программное обеспечение устройства "<ph name="PRODUCT_NAME" />"</translation>
+<translation id="3908308510347173149">Обновить: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3909763690984331376">Проверка безопасности <ph name="BEGIN_NEW" />Новое<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Загрузка данных из Интернета…</translation>
 <translation id="3924911262913579434">Включен режим "<ph name="SAFE_BROWSING_MODE" />"</translation>
@@ -596,7 +596,7 @@
 <translation id="568275469169136466">Для временного доступа</translation>
 <translation id="5683547024293500885">Не удалось проверить наличие обновлений в Chrome.</translation>
 <translation id="5686790454216892815">Имя файла слишком длинное.</translation>
-<translation id="5687809546194252819">После перезапуска на устройстве "<ph name="APP_NAME" />" будет использоваться выбранный язык (<ph name="LANGUAGE" />).</translation>
+<translation id="5687809546194252819">После перезапуска в приложении "<ph name="APP_NAME" />" будет использоваться выбранный язык (<ph name="LANGUAGE" />).</translation>
 <translation id="5694049548840660018">Быстрый переход к стартовой странице</translation>
 <translation id="569536719314091526">Чтобы перевести эту страницу на какой-либо язык, нажмите кнопку "Ещё"</translation>
 <translation id="5696597120588531049">Chrome поможет обеспечить защиту от утечки данных, подозрительных сайтов и других проблем с безопасностью.</translation>
@@ -700,7 +700,7 @@
 <translation id="6395288395575013217">ССЫЛКА</translation>
 <translation id="6397616442223433927">Подключение восстановлено</translation>
 <translation id="6398765197997659313">Обычный режим</translation>
-<translation id="6402652558933147609"><ph name="ERROR_CODE" />: <ph name="VIOLATED_URL" /></translation>
+<translation id="6402652558933147609"><ph name="ERROR_CODE" />: <ph name="VIOLATED_URL" />.</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6412673304250309937">Сверяет URL со списком небезопасных сайтов в Chrome. Кроме того, если вы скачаете вредоносный файл или сайт попытается похитить ваш пароль, Chrome может отправить URL с образцами контента на проверку с помощью Безопасного просмотра.</translation>

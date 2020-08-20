@@ -492,7 +492,7 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
     }
     dns_config->nameservers.push_back(ipe);
   }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   static_assert(std::extent<decltype(res.nsaddr_list)>() >= MAXNS &&
                     std::extent<decltype(res._u._ext.nsaddrs)>() >= MAXNS,
                 "incompatible libresolv res_state");
@@ -517,7 +517,8 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
       return CONFIG_PARSE_POSIX_BAD_ADDRESS;
     dns_config->nameservers.push_back(ipe);
   }
-#else   // !(defined(OS_LINUX) || defined(OS_APPLE) || defined(OS_FREEBSD))
+#else   // !(defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE) ||
+        // defined(OS_FREEBSD))
   DCHECK_LE(res.nscount, MAXNS);
   for (int i = 0; i < res.nscount; ++i) {
     IPEndPoint ipe;

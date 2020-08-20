@@ -59,11 +59,6 @@ LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
-bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
-  // This causes Blink to draw the focus rings for us.
-  return false;
-}
-
 Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
                                       WebColorScheme color_scheme) const {
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
@@ -244,14 +239,6 @@ bool LayoutThemeDefault::PopsMenuByReturnKey() const {
   return true;
 }
 
-bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
-  return true;
-}
-
-bool LayoutThemeDefault::SupportsHover(const ComputedStyle& style) const {
-  return true;
-}
-
 Color LayoutThemeDefault::PlatformFocusRingColor() const {
   constexpr Color focus_ring_color(0xFFE59700);
   return focus_ring_color;
@@ -264,10 +251,6 @@ void LayoutThemeDefault::SystemFont(CSSValueID system_font_id,
                                     AtomicString& font_family) const {
   LayoutThemeFontProvider::SystemFont(system_font_id, font_slope, font_weight,
                                       font_size, font_family);
-}
-
-int LayoutThemeDefault::MinimumMenuListSize(const ComputedStyle& style) const {
-  return 0;
 }
 
 // Return a rectangle that has the same center point as |original|, but with a
@@ -374,11 +357,6 @@ float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
   }
   cached_menu_list_arrow_padding_size_ = size;
   return size;
-}
-
-void LayoutThemeDefault::DidChangeThemeEngine() {
-  cached_menu_list_arrow_zoom_level_ = 0;
-  cached_menu_list_arrow_padding_size_ = 0;
 }
 
 int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,

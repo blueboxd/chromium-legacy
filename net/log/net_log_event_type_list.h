@@ -2037,6 +2037,9 @@ EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_SENT)
 //   }
 EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_RESUMED)
 
+// QUIC with TLS gets 0-RTT rejected.
+EVENT_TYPE(QUIC_SESSION_ZERO_RTT_REJECTED)
+
 // A QUIC connection received a PUSH_PROMISE frame.  The following
 // parameters are attached:
 //   {

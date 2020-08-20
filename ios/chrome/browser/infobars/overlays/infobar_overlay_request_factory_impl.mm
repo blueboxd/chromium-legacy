@@ -25,9 +25,6 @@ using save_card_infobar_overlays::SaveCardBannerRequestConfig;
 using save_card_infobar_overlays::SaveCardModalRequestConfig;
 
 InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
-  // Create the factory helpers for the supported infobar types.
-  // TODO(crbug.com/1030357): Add factory helpers for other infobar and overlay
-  // types.
   SetUpFactories(InfobarType::kInfobarTypePasswordSave,
                  CreateFactory<SavePasswordInfobarBannerOverlayRequestConfig>(),
                  /*detail_sheet_factory=*/nullptr,
@@ -58,12 +55,9 @@ InfobarOverlayRequestFactoryImpl::CreateInfobarRequest(
     InfobarOverlayType type) {
   DCHECK(infobar);
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
-  // TODO(crbug.com/1030357): This factory should DCHECK that |factory| is
-  // non-null after all existing infobars have been converted to using overlays.
-  // Early return in the interim to prevent crashing while the remaining
-  // infobars are being converted.
   FactoryHelper* factory = factory_storages_[infobar_ios->infobar_type()][type];
-  return factory ? factory->CreateInfobarRequest(infobar_ios) : nullptr;
+  DCHECK(factory);
+  return factory->CreateInfobarRequest(infobar_ios);
 }
 
 void InfobarOverlayRequestFactoryImpl::SetUpFactories(

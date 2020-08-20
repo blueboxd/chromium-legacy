@@ -46,7 +46,7 @@ std::string SubstituteInstallParam(std::string str,
 
 std::unique_ptr<TemplateURLData> ConvertSearchProvider(
     PrefService* prefs,
-    const ChromeSettingsOverrides::Search_provider& search_provider,
+    const ChromeSettingsOverrides::SearchProvider& search_provider,
     const std::string& install_parameter) {
   std::unique_ptr<TemplateURLData> data;
   if (search_provider.prepopulated_id) {

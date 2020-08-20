@@ -175,7 +175,8 @@ const char kAppCacheName[] = "AppCache web API and browser backend";
 const char kAppCacheDescription[] =
     "When disabled, turns off all AppCache code so that developers "
     "can test that their code works properly in the future when AppCache "
-    "has been removed.";
+    "has been removed.  If disabled, this will also delete any AppCache data "
+    "from profile directories.";
 
 const char kDnsHttpssvcName[] = "Support for HTTPSSVC records in DNS.";
 const char kDnsHttpssvcDescription[] =
@@ -1547,6 +1548,12 @@ const char kOmniboxLocalEntitySuggestionsDescription[] =
     "Enables location specific suggestions displayed with images and enhanced "
     "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
     "will also enable #omnibox-rich-entity-suggestions.";
+
+const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
+    "Omnibox Trending Zero Prefix Suggestions";
+const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[] =
+    "Enables trending zero prefix suggestions for signed-in users with no or "
+    "insufficient search history.";
 
 const char kOmniboxRichAutocompletionName[] = "Omnibox Rich Autocompletion";
 const char kOmniboxRichAutocompletionDescription[] =
@@ -3180,6 +3187,11 @@ const char kTabbedAppOverflowMenuIconsName[] =
 const char kTabbedAppOverflowMenuIconsDescription[] =
     "If enabled, shows icon in front of each overflow menu item.";
 
+const char kTabbedAppOverflowMenuRegroupName[] =
+    "Android tabbed app overflow menu Regroup";
+const char kTabbedAppOverflowMenuRegroupDescription[] =
+    "If enabled, regroup overflow menu items.";
+
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -4332,6 +4344,12 @@ const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] =
     "Always show virtual keyboard regardless of having a physical keyboard "
     "present";
+
+const char kWifiSyncAndroidName[] =
+    "Sync Wi-Fi network configurations with Android";
+const char kWifiSyncAndroidDescription[] =
+    "Enables the option to sync Wi-Fi network configurations between Chrome OS "
+    "devices and a connected Android phone";
 
 const char kZeroCopyVideoCaptureName[] = "Enable Zero-Copy Video Capture";
 const char kZeroCopyVideoCaptureDescription[] =

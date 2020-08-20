@@ -9,10 +9,6 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace gfx {
-struct VectorIcon;
-}
-
 namespace payments {
 
 // The data model for the secure payment confirmation flow. Owned by the
@@ -27,12 +23,6 @@ class SecurePaymentConfirmationModel {
       delete;
   SecurePaymentConfirmationModel& operator=(
       const SecurePaymentConfirmationModel& other) = delete;
-
-  // The header icon to be displayed, e.g. a fingerprint icon.
-  const gfx::VectorIcon* header_icon() const { return header_icon_; }
-  void set_header_icon(const gfx::VectorIcon* header_icon) {
-    header_icon_ = header_icon;
-  }
 
   // Title, e.g. "Use TouchID to verify and complete your purchase?"
   const base::string16& title() const { return title_; }
@@ -129,8 +119,6 @@ class SecurePaymentConfirmationModel {
   base::WeakPtr<SecurePaymentConfirmationModel> GetWeakPtr();
 
  private:
-  const gfx::VectorIcon* header_icon_ = nullptr;
-
   base::string16 title_;
 
   base::string16 merchant_label_;

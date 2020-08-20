@@ -22,7 +22,7 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <signal.h>
 #endif
 
@@ -37,7 +37,7 @@ class CrashReportDatabase;
 
 namespace crash_reporter {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // TODO(jperaza): Remove kEnableCrashpad and IsCrashpadEnabled() when Crashpad
 // is fully enabled on Linux.
 extern const char kEnableCrashpad[];
@@ -151,11 +151,11 @@ void RequestSingleCrashUpload(const std::string& local_id);
 
 void DumpWithoutCrashing();
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Logs message and immediately crashes the current process without triggering a
 // crash dump.
 void CrashWithoutDumping(const std::string& message);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 // Returns the Crashpad database path, only valid in the browser.
 base::FilePath GetCrashpadDatabasePath();
@@ -193,7 +193,7 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client);
 void AllowMemoryRange(void* begin, size_t size);
 #endif  // OS_ANDROID
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Install a handler that gets a chance to handle faults before Crashpad. This
 // is used by V8 for trap-based bounds checks.
 void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*));
@@ -201,7 +201,7 @@ void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*));
 // Gets the socket and process ID of the Crashpad handler connected to this
 // process, valid if this function returns `true`.
 bool GetHandlerSocket(int* sock, pid_t* pid);
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 namespace internal {
 

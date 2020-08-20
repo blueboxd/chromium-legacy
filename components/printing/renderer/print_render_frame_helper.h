@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -74,6 +73,8 @@ class FrameReference {
  public:
   explicit FrameReference(blink::WebLocalFrame* frame);
   FrameReference();
+  FrameReference(const FrameReference&) = delete;
+  FrameReference& operator=(const FrameReference&) = delete;
   ~FrameReference();
 
   void Reset(blink::WebLocalFrame* frame);
@@ -84,8 +85,6 @@ class FrameReference {
  private:
   blink::WebView* view_;
   blink::WebLocalFrame* frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameReference);
 };
 
 // PrintRenderFrameHelper handles most of the printing grunt work for
@@ -122,6 +121,8 @@ class PrintRenderFrameHelper
 
   PrintRenderFrameHelper(content::RenderFrame* render_frame,
                          std::unique_ptr<Delegate> delegate);
+  PrintRenderFrameHelper(const PrintRenderFrameHelper&) = delete;
+  PrintRenderFrameHelper& operator=(const PrintRenderFrameHelper&) = delete;
   ~PrintRenderFrameHelper() override;
 
   // Minimum valid value for scaling. Since scaling is originally an integer
@@ -475,6 +476,8 @@ class PrintRenderFrameHelper
   class PrintPreviewContext {
    public:
     PrintPreviewContext();
+    PrintPreviewContext(const PrintPreviewContext&) = delete;
+    PrintPreviewContext& operator=(const PrintPreviewContext&) = delete;
     ~PrintPreviewContext();
 
     // Initializes the print preview context. Need to be called to set
@@ -619,13 +622,13 @@ class PrintRenderFrameHelper
     enum PrintPreviewErrorBuckets error_ = PREVIEW_ERROR_NONE;
 
     State state_ = UNINITIALIZED;
-
-    DISALLOW_COPY_AND_ASSIGN(PrintPreviewContext);
   };
 
   class ScriptingThrottler {
    public:
     ScriptingThrottler();
+    ScriptingThrottler(const ScriptingThrottler&) = delete;
+    ScriptingThrottler& operator=(const ScriptingThrottler&) = delete;
 
     // Returns false if script initiated printing occurs too often.
     bool IsAllowed(blink::WebLocalFrame* frame);
@@ -637,7 +640,6 @@ class PrintRenderFrameHelper
    private:
     base::Time last_print_;
     int count_ = 0;
-    DISALLOW_COPY_AND_ASSIGN(ScriptingThrottler);
   };
 
   ScriptingThrottler scripting_throttler_;
@@ -665,8 +667,6 @@ class PrintRenderFrameHelper
   mojo::AssociatedRemote<mojom::PrintManagerHost> print_manager_host_;
 
   base::WeakPtrFactory<PrintRenderFrameHelper> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelper);
 };
 
 }  // namespace printing

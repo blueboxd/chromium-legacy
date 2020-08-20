@@ -47,8 +47,7 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
           (cable_data_.has_value() || qr_generator_key_.has_value())) {
         return std::make_unique<FidoCableDiscovery>(
             cable_data_.value_or(std::vector<CableDiscoveryData>()),
-            qr_generator_key_, cable_pairing_callback_,
-            /*network_context=*/nullptr);
+            qr_generator_key_, cable_pairing_callback_, network_context_);
       }
       return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:
@@ -85,6 +84,11 @@ void FidoDiscoveryFactory::set_cable_data(
 void FidoDiscoveryFactory::set_usb_device_manager(
     mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager) {
   usb_device_manager_.emplace(std::move(usb_device_manager));
+}
+
+void FidoDiscoveryFactory::set_network_context(
+    network::mojom::NetworkContext* network_context) {
+  network_context_ = network_context;
 }
 
 void FidoDiscoveryFactory::set_cable_pairing_callback(

@@ -343,6 +343,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('\n')
                 sb.append('  # Reduce binary size. https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
+                sb.append('\n')
+                sb.append('  # Material Design is pulled in via Doubledown, thus this target should not\n')
+                sb.append('  # be directly depended on. Please use :material_design_java instead.\n')
+                sb.append('  visibility = [ ":*" ]\n')
                 break
             case 'com_android_support_support_annotations':
                 sb.append('  # https://crbug.com/989505\n')
@@ -443,6 +447,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  ignore_manifest = true\n')
                 break
             case 'com_google_protobuf_protobuf_javalite':
+                sb.append('  # Protobuf runtime is pulled in via Doubledown, thus this target should not\n')
+                sb.append('  # be directly depended on. Please use :protobuf_lite_runtime_java instead.\n')
+                sb.append('  visibility = [ ":*" ]\n')
+                sb.append('\n')
                 sb.append('  # Prebuilt protos in the runtime library.\n')
                 sb.append('  # If you want to use these protos, you should create a proto_java_library\n')
                 sb.append('  # target for them. See crbug.com/1103399 for discussion.\n')

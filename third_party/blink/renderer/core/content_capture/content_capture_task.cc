@@ -228,6 +228,8 @@ bool ContentCaptureTask::RunInternal() {
 void ContentCaptureTask::Run(TimerBase*) {
   TRACE_EVENT0("content_capture", "RunTask");
   task_delay_->IncreaseDelayExponent();
+  if (histogram_reporter_)
+    histogram_reporter_->OnTaskRun();
   if (!RunInternal()) {
     ScheduleInternal(ScheduleReason::kRetryTask);
   }

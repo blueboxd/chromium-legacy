@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/button.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,8 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/layout.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -34,6 +37,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/test/test_ax_event_observer.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
@@ -250,7 +254,6 @@ class ButtonTest : public ViewsTestBase {
   TestButton* button_;
   std::unique_ptr<TestButtonObserver> button_observer_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
   DISALLOW_COPY_AND_ASSIGN(ButtonTest);
 };
 
@@ -954,6 +957,21 @@ TEST_F(ButtonTest, SetStateNotifiesObserver) {
   button()->SetState(Button::STATE_NORMAL);
   EXPECT_TRUE(button_observer()->state_changed());
   EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
+}
+
+// Verifies setting the tooltip text will call NotifyAccessibilityEvent.
+TEST_F(ButtonTest, SetTooltipTextNotifiesAccessibilityEvent) {
+  base::string16 test_tooltip_text = base::ASCIIToUTF16("Test Tooltip Text");
+  test::TestAXEventObserver observer;
+  EXPECT_EQ(0, observer.text_changed_event_count());
+  button()->SetTooltipText(test_tooltip_text);
+  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(test_tooltip_text, button()->GetTooltipText(gfx::Point()));
+  ui::AXNodeData data;
+  button()->GetAccessibleNodeData(&data);
+  const std::string& name =
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  EXPECT_EQ(test_tooltip_text, base::ASCIIToUTF16(name));
 }
 
 }  // namespace views

@@ -431,6 +431,7 @@ mojom("mojo_bindings") {
   disable_variants = true
 
   sources = [
+    "agent_scheduling_group.mojom",
     "associated_interfaces.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",

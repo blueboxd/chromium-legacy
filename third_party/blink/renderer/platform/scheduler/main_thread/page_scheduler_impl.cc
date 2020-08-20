@@ -323,6 +323,32 @@ void PageSchedulerImpl::SetPageFrozenImpl(
 void PageSchedulerImpl::SetPageBackForwardCached(
     bool is_in_back_forward_cache) {
   is_stored_in_back_forward_cache_ = is_in_back_forward_cache;
+
+  if (!is_stored_in_back_forward_cache_) {
+    set_ipc_posted_handler_task_.Cancel();
+    for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+      frame_scheduler->DetachOnIPCTaskPostedWhileInBackForwardCacheHandler();
+    }
+    stored_in_back_forward_cache_timestamp_ = base::TimeTicks();
+  } else {
+    stored_in_back_forward_cache_timestamp_ =
+        main_thread_scheduler_->tick_clock()->NowTicks();
+
+    // Incorporate a delay of 15 seconds to allow for caching operations to
+    // complete before tasks are logged.
+    set_ipc_posted_handler_task_ = PostDelayedCancellableTask(
+        *main_thread_scheduler_->ControlTaskRunner(), FROM_HERE,
+        base::BindRepeating(&PageSchedulerImpl::SetUpIPCTaskDetection,
+                            GetWeakPtr()),
+        base::TimeDelta::FromSeconds(15));
+  }
+}
+
+void PageSchedulerImpl::SetUpIPCTaskDetection() {
+  DCHECK(is_stored_in_back_forward_cache_);
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->SetOnIPCTaskPostedWhileInBackForwardCacheHandler();
+  }
 }
 
 void PageSchedulerImpl::SetKeepActive(bool keep_active) {

@@ -18,7 +18,8 @@ class PrerenderTag : public WebContentsTag {
   ~PrerenderTag() override;
 
   // task_manager::WebContentsTag:
-  PrerenderTask* CreateTask(WebContentsTaskProvider*) const override;
+  std::unique_ptr<RendererTask> CreateTask(
+      WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

@@ -19,7 +19,8 @@ class PortalTag : public WebContentsTag {
   ~PortalTag() override;
 
   // task_manager::WebContentsTag:
-  PortalTask* CreateTask(WebContentsTaskProvider* task_provider) const override;
+  std::unique_ptr<RendererTask> CreateTask(
+      WebContentsTaskProvider* task_provider) const override;
 
  private:
   friend class WebContentsTags;

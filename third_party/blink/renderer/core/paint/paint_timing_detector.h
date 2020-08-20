@@ -270,6 +270,10 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   // the object helps keeping the lifetime of |reset_top_| and |data_| to the
   // appropriate scope.
   ScopedPaintTimingDetectorBlockPaintHook() {}
+  ScopedPaintTimingDetectorBlockPaintHook(
+      const ScopedPaintTimingDetectorBlockPaintHook&) = delete;
+  ScopedPaintTimingDetectorBlockPaintHook& operator=(
+      const ScopedPaintTimingDetectorBlockPaintHook&) = delete;
 
   void EmplaceIfNeeded(const LayoutBoxModelObject&,
                        const PropertyTreeStateOrAlias&);
@@ -305,8 +309,6 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   };
   base::Optional<Data> data_;
   static ScopedPaintTimingDetectorBlockPaintHook* top_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
 };
 
 // static

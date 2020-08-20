@@ -1372,19 +1372,6 @@ Esta política solo se puede establecer en la Consola del administrador de Googl
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, el cursor grande estará inicialmente inhabilitado en la pantalla de acceso, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="3028252110534040170">Proporciona configuraciones para impresoras empresariales.
-
-      Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario <ph name="PRINTERS_POLICY_NAME" />, con un campo adicional "id" o "guid" obligatorio por impresora para permitir o bloquear.
-
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON. Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras. El hash criptográfico se usa para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="PRINTERS_BULK_ACCESS_MODE" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> y <ph name="PRINTERS_BULK_BLOCKLIST" />.
-
-      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
-
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
 <translation id="3033660238345063904">Puedes especificar la URL del servidor proxy aquí.
 
@@ -1691,11 +1678,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3540935459049973317">Límites de tiempo por app</translation>
-<translation id="3543579213273969284">Si habilitas esta política, la autenticación HTTP respetará la aprobación de la política de KDC, es decir, <ph name="PRODUCT_NAME" /> delegará credenciales si KDC establece <ph name="OK_AS_DELEGATE" /> en un ticket de servicio. Consulta el RFC 5896 (https://tools.ietf.org/html/rfc5896.html). El servicio debería coincidir con la política <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
-
-      Si inhabilitas la política o no la estableces, se ignorará la política de KDC en las plataformas admitidas y solo se respetará la política <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
-
-      En <ph name="MS_WIN_NAME" />, siempre se respeta la política de KDC.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3550122827225052130">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
@@ -1929,12 +1911,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Esta política solo será válida si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> para <ph name="PRODUCT_NAME" />.
       Esta política siempre será válida para <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3898195424714621181">Controla a qué impresoras de <ph name="PRINTERS_BULK_CONFIGURATION" /> pueden acceder los usuarios.
-
-      Designa la política de acceso que se usa para la configuración de impresoras en lote. Si seleccionas <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si seleccionas <ph name="PRINTERS_BLOCKLIST" />, se usará <ph name="PRINTERS_BULK_BLOCKLIST" /> para restringir el acceso a las impresoras especificadas.  Si seleccionas <ph name="PRINTERS_ALLOWLIST" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> designará solo las impresoras que se pueden seleccionar.
-
-      Si no estableces esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
-      </translation>
 <translation id="3898795800259311780">Permite o rechaza la captura de pantalla</translation>
 <translation id="3907683835264956726">Permite el acceso de usuarios en línea cuando están en una pantalla de bloqueo. Si estableces la política como verdadera, la reautenticación en línea en la pantalla de bloqueo se activará, por ejemplo, mediante la política <ph name="POLICY" />.
       Después de que se cumpla la condición, la reautenticación se aplicará de manera forzosa y de inmediato cuando un usuario esté en la pantalla de acceso o la próxima vez que bloquee la pantalla.
@@ -2219,12 +2195,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si inhabilitas la política o no la estableces, los usuarios podrán transferir archivos a Drive por conexión móvil.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional de la pantalla de acceso del dispositivo</translation>
-<translation id="427220754384423013">Especifica las impresoras que puede utilizar el usuario.
-
-      Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si se usa esta política, el usuario solo podrá acceder a las impresoras con ID que coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="4285674129118156176">Permitir que los usuarios no afiliados usen ARC</translation>
 <translation id="4311195029067684288">"Full"</translation>
 <translation id="4313767483634435271">Dirección MAC designada para el conector del dispositivo</translation>
@@ -2822,22 +2792,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5272684451155669299">Si la política se establece como verdadera, el usuario podrá usar el hardware en los dispositivos de Chrome para verificar su identidad de forma remota ante la CA de privacidad mediante la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> con la función <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Si se establece como falsa o no se establece, las llamadas a la API fallarán y se mostrará un código de error.</translation>
-<translation id="5273333167497341402">Proporciona configuraciones para las impresoras empresariales vinculadas a dispositivos.
-
-      Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo adicional "id" o "guid" obligatorio por impresora para la lista de elementos permitidos o bloqueados.
-
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON.  Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras.  El hash criptográfico se usa para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> y <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales.  Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
-
-      Esta política se suma a la política <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si no estableces esta política, no habrá impresoras asociadas a dispositivos y se ignorarán las demás políticas <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.
-      </translation>
 <translation id="5273744932022326215">Habilita la función de accesibilidad de resaltar el cursor en la pantalla de acceso.
 
           Si se establece esta política como verdadera, la función de resaltar el cursor estará siempre habilitada en la pantalla de acceso.
@@ -3258,17 +3212,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5775235485119094648">Cargar la batería mientras está en un rango fijo</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
 <translation id="5783009211970309878">Imprimir encabezados y pies de página</translation>
-<translation id="5783576706065107606">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />, lo que permite que las extensiones mantengan su compatibilidad y que <ph name="PRODUCT_NAME" /> envíe encabezados específicos sin la necesidad de comprobaciones de <ph name="CORS" />.
-
-      Si se establece esta lista como vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> para <ph name="PRODUCT_NAME" /> 79, como se explica en el <ph name="WEB_REQUEST_API_MANUAL" />.
-
-      Si se establece que en esta lista <ph name="HTTP" /> solicita nombres de encabezado, la inspección de <ph name="CORS" /> ignorará los encabezados enumerados y habilitará la mitigación para las extensiones.
-
-      Si no se establece, no se aplicarán las mitigaciones que se explicaron anteriormente.
-
-      Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
-
-      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />; sin embargo, se quitará en la versión 84, según la nueva planificación.</translation>
 <translation id="5790763087505467169">Reducir la cantidad de notificaciones de inicio automático de la sesión de invitado administrada</translation>
 <translation id="5806128552675651249">Habilitar la impresión solo sin los gráficos de fondo</translation>
 <translation id="5809210507920527553">Controla la configuración para el contenedor de Linux (Crostini).</translation>
@@ -3332,17 +3275,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
           Si esta configuración está inhabilitada o no está establecida, el nombre de dominio de TalkGadget predeterminado ("chromoting-host.talkgadget.google.com") se utilizará para todos los hosts.
 
           La configuración de esta política no afecta a los clientes de acceso remoto. Ellos siempre utilizarán "chromoting-client.talkgadget.google.com" para acceder a TalkGadget.</translation>
-<translation id="5888171512889380367">Utiliza la implementación heredada de <ph name="CORS" /> en lugar de la nueva implementación de <ph name="CORS" />.
-
-      Si se establece esta configuración como verdadera, se utilizará la implementación heredada, la cual debe ser compatible con las versiones anteriores.
-
-      Si se establece como falsa o no se establece, se utilizará la nueva implementación; es posible que esto genere problemas de compatibilidad específicos en la empresa.
-
-      Después de algunos hitos, se quitará esta política.
-
-      Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
-
-      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />; sin embargo, se quitará en la versión 84, según la nueva planificación.</translation>
 <translation id="5890063326284543943">Controla el uso de la API de Serial</translation>
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
@@ -3682,21 +3614,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 <translation id="6468980648680553776">Esta política es obsoleta. Usa la política RemoteAccessHostClientDomainList en su lugar.</translation>
 <translation id="6473623140202114570">Configura la lista de dominios donde la Navegación segura no activa advertencias.</translation>
 <translation id="647698599569353771">Permite habilitar Compartir con Nearby.</translation>
-<translation id="6480487102627517146">Proporciona configuraciones para impresoras empresariales.
-
-      Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo adicional "id" o "guid" obligatorio por impresora para la lista de elementos permitidos o bloqueados.
-
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON.  Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras.  El hash criptográfico se usa para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> y <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
-
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales.  Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
-
-      Esta política dejó de estar disponible; usa la política <ph name="PRINTERS_BULK_CONFIGURATION" /> en su lugar.</translation>
 <translation id="6491139795995924304">Permitir Bluetooth en el dispositivo</translation>
 <translation id="6491872498385040936">Esta política es obsoleta. Considera usar <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />, que anula esta política y te permite implementar una configuración más detallada.
 
@@ -3902,24 +3819,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Si estableces el valor "False" para la política, o no la configuras, no se habilitará <ph name="PLUGIN_VM_NAME" /> para este usuario.
       Si estableces el valor "True", se habilitará <ph name="PLUGIN_VM_NAME" /> para el usuario, siempre y cuando lo permitan otras opciones de configuración. Para ejecutar <ph name="PLUGIN_VM_NAME" />, se debe establecer el valor "True" para <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" />, y se deben configurar las políticas <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />.</translation>
-<translation id="6741496055862838205">Proporciona configuraciones para las impresoras empresariales vinculadas a dispositivos.
-
-      Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo adicional "id" o "guid" obligatorio por impresora para la lista de elementos permitidos o bloqueados.
-
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON.  Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras.  El hash criptográfico se usa para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> y <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
-
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales.  Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
-
-      Esta política se suma a la política <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si no estableces esta política, no habrá impresoras asociadas a dispositivos y se ignorarán las demás políticas <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" />.
-
-      Esta política es obsoleta; usa la política <ph name="DEVICE_PRINTERS" /> en su lugar.
-      </translation>
 <translation id="6752711782954612641">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> especificará los parámetros para la búsqueda de una URL con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se reemplazará por datos de términos de búsqueda reales.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />, se enviarán solicitudes de búsqueda con el método GET.</translation>
@@ -4723,14 +4622,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="793134539373873765">Especifica si se debe utilizar la conexión P2P para cargas de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas de actualizaciones en la red LAN, y reducirán de forma potencial la congestión y el uso del ancho de banda de Internet. Si la carga de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilita la creación de usuarios supervisados.</translation>
 <translation id="793473937901685727">Establecer la disponibilidad de certificados para apps de ARC</translation>
-<translation id="7935338931503001902">Controla a qué impresoras de <ph name="BULK_PRINTERS_POLICY" /> pueden acceder los usuarios.
-
-      Designa la política de acceso que se usa para la configuración de impresoras en lote. Si seleccionas <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si seleccionas <ph name="PRINTERS_BLACKLIST" />, se usará <ph name="BULK_PRINTERS_BLACKLIST" /> para restringir el acceso a las impresoras especificadas.  Si seleccionas <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> designará solo las impresoras que se pueden seleccionar.
-
-      Si no estableces esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
-
-      Esta política es obsoleta; usa la política <ph name="PRINTERS_BULK_ACCESS_MODE" /> en su lugar.
-      </translation>
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
@@ -5203,12 +5094,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="858309738002328421">Bloquear la carga de archivos grandes</translation>
 <translation id="8584279193368801689">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que solo se habilitará la función de impresión con PIN para impresoras que usen uno de los siguientes protocolos: IPPS, HTTPS, USB o IPP por USB.</translation>
 <translation id="8585558195682146109">Analizar las descargas del usuario</translation>
-<translation id="8586528890725660268">Especifica las impresoras que no puede utilizar el usuario.
-
-      Esta política solo se usa si se elige <ph name="PRINTERS_BLACKLIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si se usa esta política, se proporcionarán todas las impresoras al usuario, excepto aquellas con un ID que se enumere en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8591713876665299827">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 

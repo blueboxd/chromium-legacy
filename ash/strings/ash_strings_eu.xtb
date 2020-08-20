@@ -142,7 +142,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2484513351006226581">Teklatuaren diseinua aldatzeko, sakatu <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">Tekla itsaskorrak</translation>
 <translation id="2509468283778169019">BLOK MAIUS aktibatuta dago</translation>
-<translation id="2517829236324128850">Erakutsi modu iluneko ezarpenak</translation>
+<translation id="2517829236324128850">Erakutsi modu ilunaren ezarpenak</translation>
 <translation id="2542089167727451762">Sakatu profileko irudia</translation>
 <translation id="255671100581129685">Google-ren Laguntzailea ez dago erabilgarri saio publikoetan.</translation>
 <translation id="256712445991462162">ainguratutako lupa</translation>
@@ -520,6 +520,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6972754398087986839">Hasi erabiltzen</translation>
 <translation id="6981982820502123353">Erabilerraztasuna</translation>
 <translation id="698231206551913481">Erabiltzailea kentzen denean, harekin erlazionatutako fitxategi eta gailuko datu guztiak betiko ezabatuko dira.</translation>
+<translation id="6990778048354947307">Gai iluna</translation>
 <translation id="7007983414944123363">Ezin izan da egiaztatu PIN kodea edo pasahitza. Saiatu berriro.</translation>
 <translation id="7015766095477679451">Itzuli ordu honetan: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Konektatu <ph name="DEVICE_NAME" /> telefonoarekin</translation>
@@ -598,7 +599,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7933084174919150729">Profil nagusian soilik erabil daiteke Google-ren Laguntzailea.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> eta <ph name="SECOND_PARENT_EMAIL" /> kontuen bidez kudeatzen da kontu hau</translation>
 <translation id="7955885781510802139">Kontraste handiko modua</translation>
-<translation id="7977639574084142279">Itzali</translation>
+<translation id="7977639574084142279">Desaktibatuta</translation>
 <translation id="7977927628060636163">Sare mugikorren bila…</translation>
 <translation id="7980780401175799550">Probatu Chrome OS sisteman nabigatzeko modu berriak</translation>
 <translation id="7982789257301363584">Sarea</translation>

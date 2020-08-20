@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">A versão atual é Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Acessar qualquer <ph name="DEVICE_NAME_AND_VENDOR" /> por USB</translation>
 <translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
-<translation id="1510030919967934016">Esta página foi impedida de rastrear o seu local.</translation>
 <translation id="1510238584712386396">Iniciador</translation>
 <translation id="1510785804673676069">Se você estiver usando um servidor proxy, verifique suas configurações de proxy ou 
      entre em contato com o administrador da rede para certificar-se de que o 
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Editar arquivo</translation>
 <translation id="1698122934742150150">Apenas a sessão anônima atual</translation>
 <translation id="1700079447639026019">Sites que nunca podem usar cookies</translation>
-<translation id="1700845716982723710">Desativar o Modo ambiente</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
 <translation id="1703331064825191675">Nunca se preocupe com suas senhas</translation>
 <translation id="1704970325597567340">A "confirmação de segurança" foi executada em <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Substituir seus apps e arquivos do Linux por um backup anterior</translation>
 <translation id="1842766183094193446">Tem certeza de que quer ativar o modo de demonstração?</translation>
 <translation id="1846308012215045257">Aperte Ctrl e clique para executar o plug-in <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Ativar o Modo ambiente</translation>
 <translation id="1849186935225320012">Esta página tem controle total de dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Girar no &amp;sentido horário</translation>
 <translation id="1852141627593563189">Encontrar software nocivo</translation>
@@ -1174,7 +1171,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2392163307141705938">Você atingiu o limite de tempo que seu pai/mãe definiu para <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Ativar</translation>
 <translation id="2393136602862631930">Configure o <ph name="APP_NAME" /> no seu Chromebook</translation>
-<translation id="2394566832561516196">As configurações serão apagadas na próxima atualização.</translation>
 <translation id="2395616325548404795">Seu <ph name="DEVICE_TYPE" /> foi registrado para o gerenciamento empresarial, mas as informações de localização e recurso não foram enviadas. Forneça essas informações manualmente no Admin Console do dispositivo.</translation>
 <translation id="2396387085693598316">Seu administrador bloqueou a extensão <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Insira o PIN de quatro dígitos (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2979639724566107830">Abrir em uma nova janela</translation>
 <translation id="2981113813906970160">Mostrar cursor grande do mouse</translation>
 <translation id="2985348301114641460">Enviar uma solicitação ao administrador para instalar "<ph name="EXTENSION_NAME" />"?</translation>
-<translation id="2986010903908656993">O controle total de dispositivos MIDI foi bloqueado nesta página.</translation>
 <translation id="2987620471460279764">Texto compartilhado de outro dispositivo</translation>
 <translation id="2988018669686457659">Renderizador reserva</translation>
 <translation id="2989123969927553766">Aceleração de rolagem do mouse</translation>
@@ -2089,7 +2084,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3524965460886318643">Exportar atividades</translation>
 <translation id="3526034519184079374">Não é possível ler ou alterar dados do site</translation>
 <translation id="3527085408025491307">Pasta</translation>
-<translation id="3528033729920178817">Esta página está rastreando o seu local.</translation>
 <translation id="3528498924003805721">Alvos dos atalhos</translation>
 <translation id="3532273508346491126">Gerenciamento de sincronização</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Áudio desativado</translation>
@@ -2565,7 +2559,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4061374428807229313">Para compartilhar, clique com o botão direito em uma pasta no app Arquivos e selecione "Compartilhar com o Parallels Desktop".</translation>
 <translation id="4065876735068446555">A rede que você está usando (<ph name="NETWORK_ID" />) pode exigir que você visite a página de login.</translation>
 <translation id="4066207411788646768">Verifique sua conexão para ver as impressoras disponíveis na sua rede</translation>
-<translation id="4068506536726151626">Esta página contém elementos dos seguintes sites que estão rastreando o seu local:</translation>
 <translation id="4068776064906523561">Impressões digitais salvas</translation>
 <translation id="407173827865827707">Ao clicar</translation>
 <translation id="4074900173531346617">Certificado do signatário do e-mail</translation>
@@ -3208,7 +3201,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4918021164741308375"><ph name="ORIGIN" /> deseja se comunicar com a extensão "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4918221908152712722">Instale o <ph name="APP_NAME" /> (nenhum download é necessário)</translation>
-<translation id="4920887663447894854">Os seguintes sites foram impedidos de rastrear o seu local nesta página:</translation>
 <translation id="4921290200821452703">Informações da conta escolar para o pai/mãe</translation>
 <translation id="4921348630401250116">Conversão de texto em voz</translation>
 <translation id="49226369361073053">{0,plural, =0{Atualize o dispositivo agora}=1{Atualize o dispositivo em 1 segundo}one{Atualize o dispositivo em # segundo}other{Atualize o dispositivo em # segundos}}</translation>
@@ -3286,7 +3278,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5027562294707732951">Adicionar extensão</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="5033266061063942743">Formas geométricas</translation>
-<translation id="5033370009438029887">Desativar o Modo ambiente</translation>
 <translation id="5036662165765606524">Não permitir que nenhum site faça download de vários arquivos automaticamente</translation>
 <translation id="5037676449506322593">Selecionar tudo</translation>
 <translation id="5038022729081036555">Você poderá usá-lo amanhã por <ph name="TIME_LIMIT" />.</translation>
@@ -3964,7 +3955,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5865508026715185451">O app <ph name="APP_NAME" /> será pausado em breve</translation>
 <translation id="586567932979200359">Você está executando o <ph name="PRODUCT_NAME" /> a partir de uma imagem de disco. Instalá-lo no computador permite executá-lo sem a imagem de disco e garante que ele se manterá atualizado.</translation>
 <translation id="5865733239029070421">Envia estatísticas de uso e relatórios de erros automaticamente para o Google</translation>
-<translation id="5866557323934807206">Limpar estas configurações para visitas futuras</translation>
 <translation id="5866840822086176774">Muito forte</translation>
 <translation id="5867841422488265304">Pesquisar ou digitar endereço da Web</translation>
 <translation id="5869029295770560994">Ok, entendi</translation>
@@ -4250,7 +4240,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6225475702458870625">Conexão de dados disponível a partir do seu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Arquivo de chaves particulares (opcional)</translation>
 <translation id="6227280783235722609">extensão</translation>
-<translation id="6228691855869374890">Este site tem controle total de dispositivos MIDI.</translation>
 <translation id="6229849828796482487">Desconectar rede Wi-Fi</translation>
 <translation id="6229890768313448549">Não é possível carregar os Termos de Serviço do Google Play. Tente novamente.</translation>
 <translation id="6231881193380278751">Adicionar um parâmetro de consulta no URL para atualizar automaticamente a página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4404,7 +4393,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6412931879992742813">Nova janela anônima</translation>
 <translation id="641469293210305670">Instalar atualizações e apps</translation>
 <translation id="6414888972213066896">Você perguntou ao seu responsável se pode visitar este site</translation>
-<translation id="6415659939354280526">Escolher fonte do Modo ambiente</translation>
 <translation id="6415900369006735853">Conecte-se à internet pelo smartphone</translation>
 <translation id="6416743254476733475">Permita ou bloqueie no seu computador.</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
@@ -5348,7 +5336,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617263010641145920">Ativar a Play Store</translation>
 <translation id="7617366389578322136">Conectando-se a "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">Modo ambiente</translation>
 <translation id="7621382409404463535">Falha do sistema ao salvar a configuração do dispositivo.</translation>
 <translation id="7622114377921274169">Carregando.</translation>
 <translation id="7622903810087708234">Detalhes da senha</translation>
@@ -5592,7 +5579,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Visualizar conta</translation>
 <translation id="7882358943899516840">Tipo de provedor</translation>
-<translation id="78851824530736377">Ativar o Modo ambiente</translation>
 <translation id="7885253890047913815">Destinos recentes</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth pareado</translation>

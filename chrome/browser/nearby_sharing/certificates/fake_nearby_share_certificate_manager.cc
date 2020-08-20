@@ -12,7 +12,13 @@ FakeNearbyShareCertificateManager::Factory::Factory() = default;
 FakeNearbyShareCertificateManager::Factory::~Factory() = default;
 
 std::unique_ptr<NearbyShareCertificateManager>
-FakeNearbyShareCertificateManager::Factory::CreateInstance() {
+FakeNearbyShareCertificateManager::Factory::CreateInstance(
+    NearbyShareLocalDeviceDataManager* local_device_data_manager,
+    PrefService* pref_service,
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& profile_path,
+    NearbyShareClientFactory* client_factory,
+    base::Clock* clock) {
   auto instance = std::make_unique<FakeNearbyShareCertificateManager>();
   instances_.push_back(instance.get());
 

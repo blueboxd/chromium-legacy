@@ -162,6 +162,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
      *                              Can be {@code null} if no item should be highlighted.  Note that
      *                              {@code 0} is dedicated to custom menu items and can be declared
      *                              by external apps.
+     * @param groupDividerResourceId     The resource id of divider menu items. This will be used to
+     *         determine the number of dividers that appear in the menu.
      * @param circleHighlightItem   Whether the highlighted item should use a circle highlight or
      *                              not.
      * @param showFromBottom        Whether the appearance animation should run from the bottom up.
@@ -169,7 +171,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
      */
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
-            @IdRes int footerResourceId, @IdRes int headerResourceId, Integer highlightedItemId,
+            @IdRes int footerResourceId, @IdRes int headerResourceId,
+            @IdRes int groupDividerResourceId, Integer highlightedItemId,
             boolean circleHighlightItem, boolean showFromBottom,
             @Nullable List<CustomViewBinder> customViewBinders) {
         mPopup = new PopupWindow(context);
@@ -228,11 +231,15 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
 
         // Extract visible items from the Menu.
         int numItems = mMenu.size();
+        int numGroupDivider = 0;
         List<MenuItem> menuItems = new ArrayList<MenuItem>();
         for (int i = 0; i < numItems; ++i) {
             MenuItem item = mMenu.getItem(i);
             if (item.isVisible()) {
                 menuItems.add(item);
+                if (item.getItemId() == groupDividerResourceId) {
+                    numGroupDivider++;
+                }
             }
         }
 
@@ -265,8 +272,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         // See crbug.com/761726.
         mListView.setAdapter(mAdapter);
 
-        int popupHeight = setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight,
-                sizingPadding, footerHeight, headerHeight, anchorView);
+        int popupHeight = setMenuHeight(menuItems.size() - numGroupDivider, visibleDisplayFrame,
+                screenHeight, sizingPadding, footerHeight, headerHeight, anchorView);
         int[] popupPosition = getPopupPosition(mTempLocation, mIsByPermanentButton,
                 mNegativeSoftwareVerticalOffset, mNegativeVerticalOffsetNotTopAnchored,
                 mCurrentScreenRotation, visibleDisplayFrame, sizingPadding, anchorView, popupWidth,
@@ -453,6 +460,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         if (mAdapter != null) mAdapter.notifyDataSetChanged();
     }
 
+    // TODO(crbug.com/1114611): Calculate app menu height by each items height since custom menu
+    // item may have different height than |mItemRowHeight|.
     private int setMenuHeight(int numMenuItems, Rect appDimensions, int screenHeight, Rect padding,
             int footerHeight, int headerHeight, View anchorView) {
         int menuHeight;

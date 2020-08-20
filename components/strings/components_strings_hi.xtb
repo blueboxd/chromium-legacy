@@ -225,7 +225,7 @@
 <translation id="1783075131180517613">कृपया अपना सिंक 'पासफ्रेज़' अपडेट करें.</translation>
 <translation id="1787142507584202372">  खोले गए टैब, यहां दिखाई देंगे</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />, एक से ज़्यादा कार्रवाइयां उपलब्ध हैं, एक-एक करने उन पर जाने के लिए Tab दबाएं</translation>
+<translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />, एक से ज़्यादा कार्रवाइयां उपलब्ध हैं, एक-एक करके उन पर जाने के लिए Tab दबाएं</translation>
 <translation id="1800473098294731951">बी9</translation>
 <translation id="1803264062614276815">कार्ड के मालिक का नाम</translation>
 <translation id="1807528111851433570">स्टार्ट शीट</translation>
@@ -1821,6 +1821,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> को लोड होने में बहुत ज़्यादा समय लगा.</translation>
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
+<translation id="8507227106804027148">कमांड लाइन</translation>
 <translation id="8508648098325802031">सर्च आइकॉन</translation>
 <translation id="8522552481199248698">Chrome से आप अपने Google खाते की सुरक्षा कर सकते हैं और अपना पासवर्ड बदल सकते हैं.</translation>
 <translation id="8530813470445476232">Chrome की सेटिंग में अपना ब्राउज़िंग इतिहास, कुकी, कैश मेमोरी वगैरह मिटाएं</translation>

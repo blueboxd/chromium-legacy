@@ -21473,6 +21473,7 @@ Called by update_document_policy_enum.py.-->
   <int value="777" label="FileSystemWriteAskForUrls"/>
   <int value="778" label="FileSystemWriteBlockedForUrls"/>
   <int value="779" label="PrintersBulkBlocklist"/>
+  <int value="780" label="PrintersBulkAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28817,6 +28818,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3425" label="BCPWritableAuxiliaries"/>
   <int value="3426" label="TextAlignSpecifiedToLegend"/>
   <int value="3427" label="V8Document_FragmentDirective_AttributeGetter"/>
+  <int value="3428" label="V8StorageManager_GetDirectory_Method"/>
+  <int value="3429" label="BeforematchHandlerRegistered"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33314,6 +33317,9 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="GoogleUpdateNotificationLaunchEvent">
+  <obsolete>
+    Removed 08/2020
+  </obsolete>
   <int value="0" label="Start"/>
   <int value="1" label="Start activity failed"/>
 </enum>
@@ -42675,11 +42681,14 @@ from previous Chrome versions.
   <int value="589394614" label="OmniboxSuggestionButtonRow:enabled"/>
   <int value="589924262" label="CryptAuthV2DeviceActivityStatus:enabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
+  <int value="592414224"
+      label="OmniboxTrendingZeroPrefixSuggestionsOnNTP:enabled"/>
   <int value="593707592" label="disable-network-portal-notification"/>
   <int value="594756372" label="MyFilesVolume:disabled"/>
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>
+  <int value="597542937" label="TabbedAppOverflowMenuRegroup:enabled"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="598926697" label="VrLaunchIntent:disabled"/>
   <int value="600037637" label="AndroidSigninPromos:enabled"/>
@@ -43110,6 +43119,8 @@ from previous Chrome versions.
   <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
   <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
+  <int value="1057741107"
+      label="OmniboxTrendingZeroPrefixSuggestionsOnNTP:disabled"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
   <int value="1059007599" label="enable-gpu-appcontainer"/>
   <int value="1059283439"
@@ -43486,6 +43497,7 @@ from previous Chrome versions.
   <int value="1436454450" label="InterestFeedV2:disabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
+  <int value="1441978318" label="WifiSyncAndroid:disabled"/>
   <int value="1442129147"
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
@@ -43510,6 +43522,7 @@ from previous Chrome versions.
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
   <int value="1461581256" label="MovablePartialScreenshot:enabled"/>
   <int value="1464028544" label="WinUseHybridSpellChecker:disabled"/>
+  <int value="1464610065" label="TabbedAppOverflowMenuRegroup:disabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
@@ -44051,6 +44064,7 @@ from previous Chrome versions.
   <int value="2018386804" label="IPH_ReopenTab:disabled"/>
   <int value="2018956925" label="UseAAudioDriver:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
+  <int value="2022294878" label="WifiSyncAndroid:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
@@ -45587,7 +45601,7 @@ Called by update_use_counter_css.py.-->
   <int value="671" label="scrollbar-gutter"/>
   <int value="672" label="ascent-override"/>
   <int value="673" label="descent-override"/>
-  <int value="674" label="letter-spacing-override"/>
+  <int value="674" label="advance-override"/>
   <int value="675" label="line-gap-override"/>
 </enum>
 
@@ -62316,6 +62330,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="SCHEME_NOT_SUPPORTED"/>
   <int value="12" label="WHITELISTED_BY_POLICY"/>
   <int value="13" label="CLASSIFY"/>
+  <int value="14" label="NO_CLASSIFY_HAS_DELAYED_WARNING"/>
 </enum>
 
 <enum name="SBClientDownloadCheckDownloadStats">
@@ -67938,6 +67953,19 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Voice"/>
   <int value="6" label="Calculator"/>
   <int value="7" label="Favicon"/>
+</enum>
+
+<enum name="SuggestionPedalType">
+  <summary>
+    Type of pedal shown or selected in the omnibox suggestion list.
+  </summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Clear browsing data"/>
+  <int value="2" label="Manage passwords"/>
+  <int value="3" label="Update credit card"/>
+  <int value="4" label="Launch incognito"/>
+  <int value="5" label="Translate"/>
+  <int value="6" label="Update Chrome"/>
 </enum>
 
 <enum name="SuggestionsResponseState">

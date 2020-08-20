@@ -86,7 +86,8 @@ class ASH_EXPORT AmbientController
   void UpdateUiMode(AmbientUiMode ui_mode);
 
   void RequestAccessToken(
-      AmbientAccessTokenController::AccessTokenCallback callback);
+      AmbientAccessTokenController::AccessTokenCallback callback,
+      bool may_refresh_token_on_lock = false);
 
   AmbientBackendModel* GetAmbientBackendModel();
 
@@ -137,6 +138,10 @@ class ASH_EXPORT AmbientController
 
   AmbientContainerView* get_container_view_for_testing() {
     return container_view_;
+  }
+
+  AmbientAccessTokenController* access_token_controller_for_testing() {
+    return &access_token_controller_;
   }
 
   // Owned by |RootView| of its parent widget.

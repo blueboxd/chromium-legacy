@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
 
@@ -123,6 +124,15 @@ void TabSearchPageHandler::GetTabGroups(GetTabGroupsCallback callback) {
   // TODO(crbug.com/1096120): Implement this when we can get theme color from
   // browser
   NOTIMPLEMENTED();
+}
+
+void TabSearchPageHandler::ShowFeedbackPage() {
+  chrome::ShowFeedbackPage(browser_,
+                           chrome::FeedbackSource::kFeedbackSourceTabSearch,
+                           std::string() /* description_template */,
+                           std::string() /* description_placeholder_text */,
+                           std::string("FromTabSearch") /* category_tag */,
+                           std::string() /* extra_diagnostics */);
 }
 
 void TabSearchPageHandler::SwitchToTab(

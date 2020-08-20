@@ -8,6 +8,7 @@
 <translation id="1019413721762100891">निष्क्रिय छ</translation>
 <translation id="1021110881106174305">स्वीकार गरिएका कार्डहरू</translation>
 <translation id="1021753677514347426">तपाईं वा अरू कसैले तपाईंको यन्त्रमा प्रमाणपत्र स्थापना गरेका कारण यस्तो समस्या आउँछ। उक्त प्रमाणपत्र नेटवर्कहरूको निगरानी गर्न र अवरोध गर्न प्रयोग गरिने भनी चिनिन्छ Chromium ले यसलाई विश्वास गर्दैन। विद्यालय वा कम्पनीको नेटवर्क जस्ता केही स्थानका हकमा निगरानी गरिने कार्य वैध नै मानिन्छ र तपाईंले त्यस्ता निगरानीलाई रोक्न नसक्ने भए तापनि Chromium तपाईं त्यसबारे जानकार रहनुहोस् भन्ने चाहन्छ। वेबमाथि पहुँच गर्न सक्ने जुनसुकै ब्राउजर वा एपमाथि निगरानी हुन सक्छ।</translation>
+<translation id="1024111578869940408">आक्रमणकारीहरू कहिलेकाहीँ वेब ठेगानाको नाममा स्पष्ट नदेखिने परिवर्तनहरू गरी नक्कली साइट सिर्जना गर्छन्।</translation>
 <translation id="1030706264415084469"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा ठुलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1032854598605920125">घडीको दिशामा घुमाउनुहोस्</translation>
 <translation id="1036348656032585052">निस्कृय पार्नुहोस्</translation>
@@ -198,6 +199,7 @@
 <translation id="1717494416764505390">मेलबक्स ३</translation>
 <translation id="1718029547804390981">कागजात एनोटेसन गर्नै नमिल्ने गरी ठुलो छ</translation>
 <translation id="1721424275792716183">* क्षेत्र आवश्यक छ</translation>
+<translation id="1724638245199909652">स्थानीय फन्टमाथिको पहुँच</translation>
 <translation id="1727741090716970331">कार्डको मान्य नम्बर थप्नुहोस्</translation>
 <translation id="1728677426644403582">तपाईं एउटा वेब पृष्ठको स्रोत हेर्दै हुनुहुन्छ</translation>
 <translation id="173080396488393970">यस प्रकारको कार्डलाई समर्थन छैन</translation>
@@ -419,6 +421,7 @@
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">सबैभन्दा मिल्ने</translation>
+<translation id="2688969097326701645">अँ, जारी राख्नुहोस्</translation>
 <translation id="2691924980723297736">सुरक्षासम्बन्धी चेतावनी</translation>
 <translation id="2699302886720511147">स्वीकार गरिने कार्डहरू</translation>
 <translation id="2701514975700770343">तलतिर फर्केको</translation>
@@ -512,6 +515,7 @@
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />सुरक्षित DNS कन्फिगुरेसनको जाँच गर्दै<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">तपाईंलाई यस पृष्ठ हेर्न अधिकार छैन।</translation>
 <translation id="3113284927548439113">तेस्रो सिफ्ट</translation>
+<translation id="3115874930288085374"><ph name="ENROLLMENT_DOMAIN" /> का अनुसार तपाईंले आफ्ना डेटा ब्याकअप गरी यो <ph name="DEVICE_TYPE" /> फिर्ता गर्नु पर्ने हुन्छ।</translation>
 <translation id="3116158981186517402">लेमिनेसन गर्नुहोस्</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />जडान सम्बन्धी निदान चलाएर हेर्नुहोस्<ph name="END_LINK" />।</translation>
@@ -1484,6 +1488,7 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ले सुरक्षा मानहरूको पालना गर्दैन।</translation>
 <translation id="7210993021468939304">कन्टेनर भित्र Linux का क्रियाकलाप हेर्न र कन्टेनरभित्र Linux एपहरू स्थापना गर्न र चलाउन सक्छ</translation>
 <translation id="721197778055552897">यो समस्याको बारे <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" />।</translation>
+<translation id="7214062855724067749">आफ्नो कम्प्युटरमा इन्स्टल गरिएका फन्ट प्रयोग गरी उन्नत टाइपोग्राफी बनाउनुहोस्</translation>
 <translation id="7217745192097460130">आफ्नो खरिद पुष्टि तथा पूरा गर्न Touch ID प्रयोग गर्ने हो?</translation>
 <translation id="7219179957768738017">जडानले <ph name="SSL_VERSION" /> प्रयोग गर्छ।</translation>
 <translation id="7220786058474068424">प्रशोधन गर्दै</translation>
@@ -1815,6 +1820,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ले प्रतिक्रिया दिन निकै लामो समय लियो।</translation>
 <translation id="8503559462189395349">Chrome का पासवर्डहरू</translation>
 <translation id="8503813439785031346">एक-पटके पाठ सन्देश</translation>
+<translation id="8507227106804027148">कमान्ड लाइन</translation>
 <translation id="8508648098325802031">खोज आइकन</translation>
 <translation id="8522552481199248698">Chrome ले तपाईंलाई आफ्नो Google खाता सुरक्षित गर्न र आफ्नो पासवर्ड बदल्न मद्दत गर्न सक्छ।</translation>
 <translation id="8530813470445476232">Chrome का सेटिङमा गई आफ्नो ब्राउजिङ इतिहास, कुकी, क्यास र अन्य डेटा मेटाउनुहोस्</translation>

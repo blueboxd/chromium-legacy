@@ -344,6 +344,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool allow_server_migration() const { return params_.allow_server_migration; }
 
+  // Returns true is gQUIC 0-RTT is disabled from quic_context.
+  bool gquic_zero_rtt_disabled() const {
+    return params_.disable_gquic_zero_rtt;
+  }
+
   void set_is_quic_known_to_work_on_current_network(
       bool is_quic_known_to_work_on_current_network);
 

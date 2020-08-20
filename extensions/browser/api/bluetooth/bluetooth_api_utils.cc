@@ -16,7 +16,7 @@ namespace bluetooth = extensions::api::bluetooth;
 using bluetooth::VendorIdSource;
 using device::BluetoothDevice;
 using device::BluetoothDeviceType;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 using device::BluetoothTransport;
 #endif
 
@@ -90,7 +90,7 @@ bool ConvertDeviceTypeToApi(const BluetoothDeviceType& input,
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool ConvertTransportToApi(const BluetoothTransport& input,
                            bluetooth::Transport* output) {
   switch (input) {
@@ -166,7 +166,7 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
     out->battery_percentage.reset();
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   ConvertTransportToApi(device.GetType(), &(out->transport));
 #endif
 }

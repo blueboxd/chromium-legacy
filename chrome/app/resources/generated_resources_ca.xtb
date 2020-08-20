@@ -3,7 +3,7 @@
 <translationbundle lang="ca">
 <translation id="1001307489511021749">Les teves aplicacions, opcions de configuració i altres personalitzacions se sincronitzaran en tots els dispositius Chrome OS en què hagis iniciat la sessió amb el teu Compte de Google.</translation>
 <translation id="1003088604756913841">Obre l'enllaç en una nova finestra de l'aplicació <ph name="APP" /></translation>
-<translation id="1003363546227723021">Quan la pantalla està inactiva, mostra fotos, l'hora, el temps i contingut multimèdia</translation>
+<translation id="1003363546227723021">Quan la pantalla està inactiva, mostra fotos, l'hora, el temps i informació multimèdia</translation>
 <translation id="1004218526896219317">Accés al lloc web</translation>
 <translation id="1005274289863221750">Utilitzar el micròfon i la càmera</translation>
 <translation id="1005333234656240382">Vols activar la depuració d'ADB?</translation>
@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">La versió actual és Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Accediu a qualsevol dispositiu <ph name="DEVICE_NAME_AND_VENDOR" /> mitjançant USB</translation>
 <translation id="1509960214886564027">Pot ser que les funcions de molts llocs web no funcionin</translation>
-<translation id="1510030919967934016">Aquesta pàgina ha bloquejat el seguiment de la vostra ubicació.</translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
 <translation id="1510785804673676069">Si utilitzeu un servidor intermediari, comproveu-ne la configuració o
     contacteu amb l'administrador de la xarxa per comprovar que el servidor
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Edita el fitxer</translation>
 <translation id="1698122934742150150">Només la sessió d'incògnit actual</translation>
 <translation id="1700079447639026019">Llocs web que mai no poden fer servir galetes</translation>
-<translation id="1700845716982723710">Desactiva el mode ambient</translation>
 <translation id="1701062906490865540">Suprimeix aquesta persona</translation>
 <translation id="1703331064825191675">No et preocupis mai per les teves contrasenyes</translation>
 <translation id="1704970325597567340">Es va executar una comprovació de seguretat el dia <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Substitueix els fitxers i les aplicacions de Linux per una còpia de seguretat anterior</translation>
 <translation id="1842766183094193446">Confirmes que vols activar el mode de demostració?</translation>
 <translation id="1846308012215045257">Prem Ctrl+clic per executar <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Activa el mode ambient</translation>
 <translation id="1849186935225320012">Aquesta pàgina té un control total dels dispositius MIDI.</translation>
 <translation id="1850508293116537636">Gira en el sentit de les &amp;agulles del rellotge</translation>
 <translation id="1852141627593563189">Cerca programari maliciós</translation>
@@ -1174,7 +1171,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2392163307141705938">Has arribat al límit de temps que els teus pares han definit per a <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activa</translation>
 <translation id="2393136602862631930">Configura <ph name="APP_NAME" /> al Chromebook</translation>
-<translation id="2394566832561516196">La configuració s'esborrarà en tornar a carregar.</translation>
 <translation id="2395616325548404795">El teu dispositiu <ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial, però no ha pogut enviar la informació d'elements i d'ubicació. Introdueix aquesta informació manualment a la consola d'administració del dispositiu.</translation>
 <translation id="2396387085693598316">L'administrador ha bloquejat <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Introdueix un PIN de 4 dígits (0000-9999)</translation>
@@ -1663,7 +1659,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2979639724566107830">Obre-ho en una finestra nova</translation>
 <translation id="2981113813906970160">Mostra el cursor del ratolí gran</translation>
 <translation id="2985348301114641460">Vols enviar una sol·licitud a l'administrador per instal·lar "<ph name="EXTENSION_NAME" />"?</translation>
-<translation id="2986010903908656993">S'ha bloquejat el control total d'aquesta pàgina sobre els dispositius MIDI.</translation>
 <translation id="2987620471460279764">Text compartit d'un altre dispositiu</translation>
 <translation id="2988018669686457659">Renderitzador de reserva</translation>
 <translation id="2989123969927553766">Acceleració de desplaçament del ratolí</translation>
@@ -2087,7 +2082,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3524965460886318643">Exporta les activitats</translation>
 <translation id="3526034519184079374">No es poden llegir o canviar les dades del lloc web</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3528033729920178817">Aquesta pàgina fa el seguiment de la vostra ubicació.</translation>
 <translation id="3528498924003805721">Dreceres</translation>
 <translation id="3532273508346491126">Gestió de la sincronització</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" />: l'àudio està desactivat</translation>
@@ -2267,7 +2261,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3727148787322499904">Els canvis en aquesta opció de configuració afectaran totes les xarxes compartides</translation>
 <translation id="3727187387656390258">Inspecciona l'element emergent</translation>
 <translation id="372722114124766626">Només una vegada</translation>
-<translation id="3728188878314831180">Projecta notificacions des del telèfon</translation>
+<translation id="3728188878314831180">Mostra notificacions del telèfon</translation>
 <translation id="3728681439294129328">Configura l'adreça de la xarxa</translation>
 <translation id="3729303374699765035">Pregunta'm quan un lloc web vulgui descobrir dispositius Bluetooth propers</translation>
 <translation id="3729506734996624908">Llocs web permesos</translation>
@@ -2562,7 +2556,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4061374428807229313">Per compartir una carpeta de l'aplicació Fitxers, fes-hi clic amb el botó dret i selecciona Comparteix amb Parallels Desktop.</translation>
 <translation id="4065876735068446555">És possible que la xarxa que esteu fent servir (<ph name="NETWORK_ID" />) sol·liciti que en visiteu la pàgina d'inici de sessió.</translation>
 <translation id="4066207411788646768">Comprova la connexió per veure les impressores disponibles a la xarxa</translation>
-<translation id="4068506536726151626">Aquesta pàgina conté elements dels llocs següents que fan un seguiment de la teva ubicació:</translation>
 <translation id="4068776064906523561">Empremtes digitals desades</translation>
 <translation id="407173827865827707">En fer clic</translation>
 <translation id="4074900173531346617">Certificat del signant del correu electrònic</translation>
@@ -3205,7 +3198,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4918021164741308375"><ph name="ORIGIN" /> es vol comunicar amb l'extensió "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4918221908152712722">Instal·la l'aplicació <ph name="APP_NAME" /> (no cal que la baixis)</translation>
-<translation id="4920887663447894854">Els llocs següents han bloquejat el seguiment de la vostra ubicació en aquesta pàgina:</translation>
 <translation id="4921290200821452703">Informació per als pares sobre el compte de centre educatiu</translation>
 <translation id="4921348630401250116">Text a parla</translation>
 <translation id="49226369361073053">{0,plural, =0{Actualitza el dispositiu ara}=1{Actualitza el dispositiu en 1 segon}other{Actualitza el dispositiu en # segons}}</translation>
@@ -3283,7 +3275,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5027562294707732951">Afegeix l'extensió</translation>
 <translation id="5029568752722684782">Esborra la còpia</translation>
 <translation id="5033266061063942743">Formes geomètriques</translation>
-<translation id="5033370009438029887">Desactiva el mode ambient</translation>
 <translation id="5036662165765606524">No permetis que cap lloc baixi diversos fitxers automàticament</translation>
 <translation id="5037676449506322593">Selecciona-ho tot</translation>
 <translation id="5038022729081036555">Demà podràs utilitzar-la durant <ph name="TIME_LIMIT" />.</translation>
@@ -3962,7 +3953,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> aviat es posarà en pausa</translation>
 <translation id="586567932979200359">Esteu executant <ph name="PRODUCT_NAME" /> des de la imatge de disc. Si instal·leu l'aplicació a l'equip, podreu executar-la sense la imatge de disc i es mantindrà actualitzada.</translation>
 <translation id="5865733239029070421">Envia automàticament a Google estadístiques d'ús i informes d'error</translation>
-<translation id="5866557323934807206">Esborra aquesta configuració per a visites futures</translation>
 <translation id="5866840822086176774">Molt forta</translation>
 <translation id="5867841422488265304">Cerca o escriu l'adreça web</translation>
 <translation id="5869029295770560994">D'acord</translation>
@@ -4247,7 +4237,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6225475702458870625">Connexió de dades disponible des del teu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Fitxer de clau privada (opcional)</translation>
 <translation id="6227280783235722609">extensió</translation>
-<translation id="6228691855869374890">Aquest lloc té un control complet dels dispositius MIDI.</translation>
 <translation id="6229849828796482487">Desconnecta la xarxa Wi‑Fi</translation>
 <translation id="6229890768313448549">Les Condicions del servei de Google Play no es poden carregar. Torna-ho a provar.</translation>
 <translation id="6231881193380278751">Afegiu un paràmetre de consulta a l'URL per actualitzar la pàgina de manera automàtica: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="641469293210305670">Instal·la actualitzacions i aplicacions</translation>
 <translation id="6414888972213066896">Has demanat permís als teus pares per visitar aquest lloc web</translation>
-<translation id="6415659939354280526">Tria la font del mode ambient</translation>
 <translation id="6415900369006735853">Connecta't a Internet a través del telèfon</translation>
 <translation id="6416743254476733475">Permet o bloqueja a l'ordinador.</translation>
 <translation id="6417265370957905582">Assistent de Google</translation>
@@ -5345,7 +5333,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7616214729753637086">S'està registrant el dispositiu...</translation>
 <translation id="7617263010641145920">Activa Play Store</translation>
 <translation id="7617366389578322136">S'està connectant al dispositiu <ph name="DEVICE_NAME" /></translation>
-<translation id="761763866592998929">Mode ambient</translation>
 <translation id="7621382409404463535">El sistema no ha pogut desar la configuració del dispositiu.</translation>
 <translation id="7622114377921274169">S'està carregant.</translation>
 <translation id="7622903810087708234">Detalls de la contrasenya</translation>
@@ -5589,7 +5576,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Mostra el compte</translation>
 <translation id="7882358943899516840">Tipus de proveïdor</translation>
-<translation id="78851824530736377">Activa el mode ambient</translation>
 <translation id="7885253890047913815">Destinacions recents</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="7887864092952184874">Ratolí Bluetooth vinculat</translation>

@@ -39,9 +39,6 @@
 // opened before calling this method.
 + (void)tapSettingsLink;
 
-// Deprecated. Use |tapSigninConfirmationDialog|.
-+ (void)confirmSigninConfirmationDialog;
-
 // Taps the sign in confirmation page, scrolls first to make the OK button
 // visible on short devices (e.g. iPhone 5s).
 + (void)tapSigninConfirmationDialog;

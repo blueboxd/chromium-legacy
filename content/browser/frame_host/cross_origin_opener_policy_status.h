@@ -12,14 +12,18 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
+class CrossOriginOpenerPolicyReporter;
 class FrameTreeNode;
+class StoragePartition;
 
 // Groups information used to apply COOP during navigations. This class will be
 // used to trigger a number of mechanisms such as BrowsingInstance switch or
 // reporting.
 class CrossOriginOpenerPolicyStatus {
  public:
-  explicit CrossOriginOpenerPolicyStatus(FrameTreeNode* frame_tree_node);
+  CrossOriginOpenerPolicyStatus(
+      FrameTreeNode* frame_tree_node,
+      const base::Optional<url::Origin>& intiator_origin);
   ~CrossOriginOpenerPolicyStatus();
 
   // Called after receiving a network response. Returns a BlockedByResponse
@@ -27,7 +31,8 @@ class CrossOriginOpenerPolicyStatus {
   base::Optional<network::mojom::BlockedByResponseReason> EnforceCOOP(
       network::mojom::URLResponseHead* response_head,
       const url::Origin& response_origin,
-      const GURL& response_url);
+      const GURL& response_url,
+      const GURL& response_referrer_url);
 
   // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
   // "BrowsingContext group" swap:
@@ -41,14 +46,6 @@ class CrossOriginOpenerPolicyStatus {
     return require_browsing_instance_swap_;
   }
 
-  // As detailed in
-  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#browsing-context-changes:
-  // Set to true when the Cross-Origin-Opener-Policy-Report-Only value of the
-  // involved documents would cause a browsing context group swap.
-  bool virtual_browsing_instance_swap() const {
-    return virtual_browsing_instance_swap_;
-  }
-
   // The virtual browsing context group of the document to commit. Initially,
   // the navigation inherits the virtual browsing context group of the current
   // document. Updated when the report-only COOP of a response would result in
@@ -56,11 +53,6 @@ class CrossOriginOpenerPolicyStatus {
   int virtual_browsing_context_group() const {
     return virtual_browsing_context_group_;
   }
-
-  // When a page has a reachable opener and COOP triggers a browsing instance
-  // swap we sever the window.open relationship. This is one of the cases that
-  // can be reported using the COOP reporting API.
-  bool had_opener() const { return had_opener_; }
 
   // This is used to warn developer a COOP header has been ignored, because
   // the origin was not trustworthy.
@@ -76,18 +68,34 @@ class CrossOriginOpenerPolicyStatus {
     return current_coop_;
   }
 
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> TakeCoopReporter();
+
+  // Called when a RenderFrameHost has been created to use its process's
+  // storage partition. Until then, the reporter uses the current process
+  // storage partition.
+  void UpdateReporterStoragePartition(StoragePartition* storage_partition);
+
  private:
   // Make sure COOP is relevant or clear the COOP headers.
   void SanitizeCoopHeaders(const GURL& response_url,
                            const url::Origin& response_origin,
                            network::mojom::URLResponseHead* response_head);
 
+  // Creates a reporter based on reporting parameters specified by |coop|.
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> CreateCoopReporterIfNeeded(
+      const network::CrossOriginOpenerPolicy& coop,
+      const GURL& url);
+
   // Tracks the FrameTreeNode in which this navigation is taking place.
   const FrameTreeNode* frame_tree_node_;
 
   bool require_browsing_instance_swap_ = false;
-  bool virtual_browsing_instance_swap_ = false;
+
   int virtual_browsing_context_group_;
+
+  // When a page has a reachable opener and COOP triggers a browsing instance
+  // swap we sever the window.open relationship. This is one of the cases that
+  // can be reported using the COOP reporting API.
   const bool had_opener_;
 
   // Whether this is the first navigation happening in the browsing context.
@@ -102,6 +110,26 @@ class CrossOriginOpenerPolicyStatus {
   // After receiving any kind of response, including redirects, it is the origin
   // of the last response.
   url::Origin current_origin_;
+
+  // The current URL, to use for reporting. At the beginning of the navigation,
+  // it is the URL of the current document. After receiving any kind of
+  // response, including redirects, it is the URL of the last response.
+  GURL current_url_;
+
+  // Indicates whether to use the reporter in the current RenderFrameHost to
+  // send a report for a navigation away from a current response. If false, the
+  // |coop_reporter| field from this CrossOriginOpenerPolicyStatus should be
+  // used instead.
+  bool use_current_document_coop_reporter_ = true;
+
+  // The reporter currently in use by COOP.
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;
+
+  // Whether the current context tracked by this CrossOriginOpenerPolicy is the
+  // source of the current navigation. This is updated every time we receive a
+  // redirect, as redirects are considered the source of the navigation to the
+  // next URL.
+  bool is_navigation_source_;
 };
 
 }  // namespace content

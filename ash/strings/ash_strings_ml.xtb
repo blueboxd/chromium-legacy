@@ -40,10 +40,11 @@
 <translation id="1302880136325416935">Bluetooth ക്രമീകരണം കാണിക്കുക. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">എല്ലായ്‌പ്പോഴും ഷെല്‍ഫ് കാണിക്കുക</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="1341651618736211726">ഓവര്‍ഫ്ലോ</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="1351937230027495976">മെനു ചുരുക്കുക</translation>
-<translation id="1383876407941801731">തിരയുക</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1391102559483454063">ഓണാണ്</translation>
 <translation id="1419738280318246476">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കുന്നതിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="1420408895951708260">നൈറ്റ് ലൈറ്റ് മാറ്റുക. <ph name="STATE_TEXT" /></translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">ആരംഭിക്കാം</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="698231206551913481">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുമ്പോൾ അതോടൊപ്പം അയാളുമായി ബന്ധപ്പെട്ട എല്ലാ ഫയലുകളും പ്രാദേശിക വിവരങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കപ്പെടും.</translation>
+<translation id="6990778048354947307">ഇരുണ്ട തീം</translation>
 <translation id="7007983414944123363">നിങ്ങളുടെ പിൻ അല്ലെങ്കിൽ പാസ്‌വേഡ് പരിശോധിച്ചുറപ്പിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
 <translation id="7025533177575372252">നിങ്ങളുടെ ഫോണുമായി <ph name="DEVICE_NAME" /> കണക്‌റ്റ് ചെയ്യുക</translation>

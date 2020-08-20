@@ -14,6 +14,10 @@ namespace prefs {
 // successfully by the user.
 extern const char kKaleidoscopeFirstRunCompleted[];
 
+// Stores true if the user has consented to us selecting Media Feeds for display
+// automatically.
+extern const char kKaleidoscopeAutoSelectMediaFeeds[];
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs

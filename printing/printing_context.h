@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -46,6 +45,8 @@ class PRINTING_EXPORT PrintingContext {
     FAILED,
   };
 
+  PrintingContext(const PrintingContext&) = delete;
+  PrintingContext& operator=(const PrintingContext&) = delete;
   virtual ~PrintingContext();
 
   // Callback of AskUserForSettings, used to notify the PrintJobWorker when
@@ -155,9 +156,6 @@ class PRINTING_EXPORT PrintingContext {
 
   // The job id for the current job. The value is 0 if no jobs are active.
   int job_id_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
 
 }  // namespace printing

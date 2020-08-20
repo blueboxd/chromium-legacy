@@ -70,16 +70,16 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
   return urls;
 }
 
-std::unique_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
+std::unique_ptr<ChromeSettingsOverrides::SearchProvider> ParseSearchEngine(
     ChromeSettingsOverrides* overrides,
     base::string16* error) {
   if (!overrides->search_provider)
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   if (!CreateManifestURL(overrides->search_provider->search_url)) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         overrides->search_provider->search_url);
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   }
   if (overrides->search_provider->prepopulated_id)
     return std::move(overrides->search_provider);
@@ -109,7 +109,7 @@ std::unique_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         *overrides->search_provider->favicon_url);
-    return std::unique_ptr<ChromeSettingsOverrides::Search_provider>();
+    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
   }
   return std::move(overrides->search_provider);
 }

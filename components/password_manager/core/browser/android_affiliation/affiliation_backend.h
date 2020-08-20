@@ -40,7 +40,7 @@ class PendingSharedURLLoaderFactory;
 namespace password_manager {
 
 class AffiliationDatabase;
-class AffiliationFetcher;
+class AffiliationFetcherInterface;
 class AffiliationFetchThrottler;
 class FacetManager;
 
@@ -151,7 +151,7 @@ class AffiliationBackend : public FacetManagerHost,
   const base::TickClock* tick_clock_;
 
   std::unique_ptr<AffiliationDatabase> cache_;
-  std::unique_ptr<AffiliationFetcher> fetcher_;
+  std::unique_ptr<AffiliationFetcherInterface> fetcher_;
   std::unique_ptr<AffiliationFetchThrottler> throttler_;
 
   base::Time construction_time_;

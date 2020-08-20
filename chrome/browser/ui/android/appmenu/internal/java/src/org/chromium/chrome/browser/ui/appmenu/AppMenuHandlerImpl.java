@@ -222,8 +222,8 @@ class AppMenuHandlerImpl
             headerResourceId = mDelegate.getHeaderResourceId();
         }
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
-                footerResourceId, headerResourceId, mHighlightMenuId, mCircleHighlight,
-                showFromBottom, mDelegate.getCustomViewBinders());
+                footerResourceId, headerResourceId, mDelegate.getGroupDividerId(), mHighlightMenuId,
+                mCircleHighlight, showFromBottom, mDelegate.getCustomViewBinders());
         mAppMenuDragHelper.onShow(startDragging);
         clearMenuHighlight();
         RecordUserAction.record("MobileMenuShow");

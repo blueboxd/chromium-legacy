@@ -431,21 +431,27 @@ String Locale::ConvertFromLocalizedNumber(const String& localized) {
   builder.ReserveCapacity(input.length());
   if (is_negative)
     builder.Append('-');
+  unsigned num_decimal_separators = 0;
   for (unsigned i = start_index; i < end_index;) {
     unsigned symbol_index = MatchedDecimalSymbolIndex(input, i);
     if (symbol_index >= kDecimalSymbolsSize)
       return input;
-    if (symbol_index == kDecimalSeparatorIndex)
+    if (symbol_index == kDecimalSeparatorIndex) {
+      num_decimal_separators++;
       builder.Append('.');
-    else if (symbol_index == kGroupSeparatorIndex)
+    } else if (symbol_index == kGroupSeparatorIndex) {
       return input;
-    else
+    } else {
       builder.Append(static_cast<UChar>('0' + symbol_index));
+    }
   }
   String converted = builder.ToString();
   // Ignore trailing '.', but will reject '.'-only string later.
-  if (converted.length() >= 2 && converted[converted.length() - 1] == '.')
-    converted = converted.Left(converted.length() - 1);
+  if (converted.length() >= 2 && converted[converted.length() - 1] == '.') {
+    // Leave it if there are two decimal separators since that's invalid.
+    if (num_decimal_separators < 2)
+      converted = converted.Left(converted.length() - 1);
+  }
   return converted;
 }
 

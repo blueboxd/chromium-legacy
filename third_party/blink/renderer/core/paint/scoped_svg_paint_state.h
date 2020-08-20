@@ -26,7 +26,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
@@ -84,6 +83,9 @@ class SVGFilterRecordingContext {
 
  public:
   explicit SVGFilterRecordingContext(const PaintInfo&);
+  SVGFilterRecordingContext(const SVGFilterRecordingContext&) = delete;
+  SVGFilterRecordingContext& operator=(const SVGFilterRecordingContext&) =
+      delete;
   ~SVGFilterRecordingContext();
 
   const PaintInfo& GetPaintInfo() const { return paint_info_; }
@@ -93,7 +95,6 @@ class SVGFilterRecordingContext {
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
   PaintInfo paint_info_;
-  DISALLOW_COPY_AND_ASSIGN(SVGFilterRecordingContext);
 };
 
 class ScopedSVGPaintState {

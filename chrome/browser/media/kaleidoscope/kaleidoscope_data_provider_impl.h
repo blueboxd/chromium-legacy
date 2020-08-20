@@ -50,6 +50,12 @@ class KaleidoscopeDataProviderImpl
   void GetShouldShowFirstRunExperience(
       GetShouldShowFirstRunExperienceCallback cb) override;
   void SetFirstRunExperienceCompleted() override;
+  void GetAllMediaFeeds(GetAllMediaFeedsCallback cb) override;
+  void SetMediaFeedsConsent(
+      bool accepted_media_feeds,
+      bool accepted_auto_select_media_feeds,
+      const std::vector<int64_t>& enabled_feed_ids,
+      const std::vector<int64_t>& disabled_feed_ids) override;
   void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;
   void SendFeedback() override;
 

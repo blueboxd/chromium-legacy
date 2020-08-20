@@ -196,7 +196,7 @@
 #if defined(OS_WIN)
 #include "media/device_monitors/system_message_window_win.h"
 #include "sandbox/win/src/process_mitigations.h"
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 #include "media/device_monitors/device_monitor_udev.h"
 #elif defined(OS_MAC)
 #include "media/device_monitors/device_monitor_mac.h"
@@ -1280,7 +1280,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(OS_WIN)
   system_message_window_.reset(new media::SystemMessageWindowWin);
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();
 #elif defined(OS_MAC)
   // On Mac, the audio task runner must belong to the main thread.

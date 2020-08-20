@@ -114,6 +114,10 @@
     "includes": [1300],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
+    "structures": [1360],
+  },
+  "chrome/browser/resources/chromeos/multidevice_internals/multidevice_internals_resources.grd": {
+    "includes": [1370],
     "structures": [1380],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {

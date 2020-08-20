@@ -223,10 +223,7 @@ std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBackingScopedHardwareBufferFenceSync::ProduceGLTexture(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-  // This backing do not support GL Texture representation directly. It only
-  // supports GL representation via Skia.
-  NOTREACHED();
-  return nullptr;
+  return GenGLTextureRepresentation(manager, tracker);
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
@@ -264,18 +261,26 @@ SharedImageBackingScopedHardwareBufferFenceSync::ProduceSkia(
 
   DCHECK(context_state->GrContextIsGL());
 
+  auto gl_representation = GenGLTextureRepresentation(manager, tracker);
+  if (!gl_representation)
+    return nullptr;
+  return SharedImageRepresentationSkiaGL::Create(std::move(gl_representation),
+                                                 std::move(context_state),
+                                                 manager, this, tracker);
+}
+
+std::unique_ptr<SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync>
+SharedImageBackingScopedHardwareBufferFenceSync::GenGLTextureRepresentation(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker) {
   auto* texture =
       GenGLTexture(scoped_hardware_buffer_->buffer(), GL_TEXTURE_EXTERNAL_OES,
                    color_space(), size(), estimated_size(), ClearedRect());
   if (!texture)
     return nullptr;
-  auto gl_representation = std::make_unique<
+  return std::make_unique<
       SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync>(
       manager, this, tracker, texture);
-
-  return SharedImageRepresentationSkiaGL::Create(std::move(gl_representation),
-                                                 std::move(context_state),
-                                                 manager, this, tracker);
 }
 
 }  // namespace gpu

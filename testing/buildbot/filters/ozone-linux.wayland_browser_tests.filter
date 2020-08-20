@@ -13,10 +13,8 @@
 -ExtensionDialogTest.TextInputViaKeyEvent
 -ExternalProtocolDialogBrowserTest.TestFocus
 -FolderUploadConfirmationViewTest.InitiallyFocusesCancel
--All/OmniboxPopupContentsViewTest.ClickOmnibox/0
--All/OmniboxPopupContentsViewTest.ClickOmnibox/1
--All/OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground/0
--All/OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground/1
+-OmniboxPopupContentsViewTest.ClickOmnibox
+-OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground
 -OutOfProcessPPAPITest.FlashClipboard
 -PPAPINaClNewlibTest.TrueTypeFont
 -PPAPINaClPNaClNonSfiTest.TrueTypeFont

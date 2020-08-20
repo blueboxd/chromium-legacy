@@ -9,6 +9,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/logging.h"
+#include "base/system/sys_info.h"
+#include "chromeos/memory/pressure/system_memory_pressure_evaluator.h"
+#endif
+
 ChromeBrowserMainExtraPartsMemory::ChromeBrowserMainExtraPartsMemory() = default;
 
 ChromeBrowserMainExtraPartsMemory::~ChromeBrowserMainExtraPartsMemory() =
@@ -16,11 +22,27 @@ ChromeBrowserMainExtraPartsMemory::~ChromeBrowserMainExtraPartsMemory() =
 
 void ChromeBrowserMainExtraPartsMemory::PostBrowserStart() {
   // The MemoryPressureMonitor might not be available in some tests.
-  if (base::MemoryPressureMonitor::Get() &&
-      memory::EnterpriseMemoryLimitPrefObserver::PlatformIsSupported()) {
-    memory_limit_pref_observer_ =
-        std::make_unique<memory::EnterpriseMemoryLimitPrefObserver>(
-            g_browser_process->local_state());
+  if (base::MemoryPressureMonitor::Get()) {
+    if (memory::EnterpriseMemoryLimitPrefObserver::PlatformIsSupported()) {
+      memory_limit_pref_observer_ =
+          std::make_unique<memory::EnterpriseMemoryLimitPrefObserver>(
+              g_browser_process->local_state());
+    }
+
+#if defined(OS_CHROMEOS)
+    if (chromeos::memory::SystemMemoryPressureEvaluator::
+            SupportsKernelNotifications()) {
+      cros_evaluator_ =
+          std::make_unique<chromeos::memory::SystemMemoryPressureEvaluator>(
+              static_cast<util::MultiSourceMemoryPressureMonitor*>(
+                  base::MemoryPressureMonitor::Get())
+                  ->CreateVoter());
+    } else {
+      LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+          << "No MemoryPressureMonitor created because the kernel does not "
+             "have support.";
+    }
+#endif
   }
 }
 
@@ -29,4 +51,8 @@ void ChromeBrowserMainExtraPartsMemory::PostMainMessageLoopRun() {
   // is destroyed, as the observer's PrefChangeRegistrar's destructor uses the
   // pref_service.
   memory_limit_pref_observer_.reset();
+
+#if defined(OS_CHROMEOS)
+  cros_evaluator_.reset();
+#endif
 }

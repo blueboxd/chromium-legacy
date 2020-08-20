@@ -29,6 +29,10 @@
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_drawer/cr_drawer.m.js"
          use_base_dir="false"
          type="BINDATA" />
+  <include name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_expand_button/cr_expand_button.m.js"
+         use_base_dir="false"
+         type="BINDATA" />
   <include name="IDR_CR_ELEMENTS_CR_FINGERPRINT_ICON_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_icon.m.js"
          use_base_dir="false"
@@ -37,8 +41,8 @@
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js"
          use_base_dir="false"
          type="BINDATA" />
-  <include name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_M_JS"
-         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_expand_button/cr_expand_button.m.js"
+  <include name="IDR_CR_ELEMENTS_CR_GRID_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_grid/cr_grid.js"
          use_base_dir="false"
          type="BINDATA" />
   <include name="IDR_CR_ELEMENTS_CR_ICON_BUTTON_M_JS"

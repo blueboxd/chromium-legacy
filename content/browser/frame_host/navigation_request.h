@@ -72,7 +72,6 @@ namespace content {
 
 class AppCacheNavigationHandle;
 class CrossOriginEmbedderPolicyReporter;
-class CrossOriginOpenerPolicyReporter;
 class WebBundleHandleTracker;
 class WebBundleNavigationInfo;
 class FrameNavigationEntry;
@@ -625,12 +624,8 @@ class CONTENT_EXPORT NavigationRequest
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
   }
-  CrossOriginOpenerPolicyReporter* coop_reporter() {
-    return coop_reporter_.get();
-  }
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> TakeCoepReporter();
-  std::unique_ptr<CrossOriginOpenerPolicyReporter> TakeCoopReporter();
 
   // Returns UKM SourceId for the page we are navigating away from.
   // Equal to GetRenderFrameHost()->GetPageUkmSourceId() for subframe
@@ -1025,7 +1020,6 @@ class CONTENT_EXPORT NavigationRequest
   void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
 
   void CreateCoepReporter(StoragePartition* storage_partition);
-  void CreateCoopReporter(StoragePartition* storage_partition);
 
   base::Optional<network::mojom::BlockedByResponseReason> EnforceCOEP();
 
@@ -1394,7 +1388,6 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::ContentSecurityPolicyPtr required_csp_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
-  std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;
 
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 

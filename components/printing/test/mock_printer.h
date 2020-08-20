@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/printing/common/print.mojom-forward.h"
@@ -31,6 +30,8 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   MockPrinterPage(const void* source_data,
                   uint32_t source_size,
                   const printing::Image& image);
+  MockPrinterPage(const MockPrinterPage&) = delete;
+  MockPrinterPage& operator=(const MockPrinterPage&) = delete;
 
   int width() const { return image_.size().width(); }
   int height() const { return image_.size().height(); }
@@ -45,8 +46,6 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   uint32_t source_size_;
   std::unique_ptr<uint8_t[]> source_data_;
   printing::Image image_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPrinterPage);
 };
 
 // A class which implements a pseudo-printer object used by the RenderViewTest
@@ -66,6 +65,8 @@ class MockPrinter {
   };
 
   MockPrinter();
+  MockPrinter(const MockPrinter&) = delete;
+  MockPrinter& operator=(const MockPrinter&) = delete;
   ~MockPrinter();
 
   // Functions that changes settings of a pseudo printer.
@@ -158,8 +159,6 @@ class MockPrinter {
   bool use_invalid_settings_;
 
   std::vector<scoped_refptr<MockPrinterPage>> pages_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPrinter);
 };
 
 #endif  // COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_

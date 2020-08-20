@@ -52,6 +52,12 @@ void VideoFrameValidator::Destroy() {
   DCHECK_EQ(0u, num_frames_validating_);
 }
 
+void VideoFrameValidator::PrintMismatchedFramesInfo() const {
+  base::AutoLock auto_lock(frame_validator_lock_);
+  for (const auto& mismatched_frame_info : mismatched_frames_)
+    mismatched_frame_info->Print();
+}
+
 size_t VideoFrameValidator::GetMismatchedFramesCount() const {
   base::AutoLock auto_lock(frame_validator_lock_);
   return mismatched_frames_.size();
@@ -86,19 +92,26 @@ void VideoFrameValidator::ProcessVideoFrame(
 }
 
 bool VideoFrameValidator::WaitUntilDone() {
-  base::AutoLock auto_lock(frame_validator_lock_);
-  while (num_frames_validating_ > 0) {
-    frame_validator_cv_.Wait();
+  {
+    base::AutoLock auto_lock(frame_validator_lock_);
+    while (num_frames_validating_ > 0) {
+      frame_validator_cv_.Wait();
+    }
+
+    if (corrupt_frame_processor_ && !corrupt_frame_processor_->WaitUntilDone())
+      return false;
   }
 
-  if (corrupt_frame_processor_ && !corrupt_frame_processor_->WaitUntilDone())
-    return false;
-
-  if (mismatched_frames_.size() > 0u) {
-    LOG(ERROR) << mismatched_frames_.size() << " frames failed to validate.";
+  if (!Passed()) {
+    LOG(ERROR) << GetMismatchedFramesCount() << " frames failed to validate.";
+    PrintMismatchedFramesInfo();
     return false;
   }
   return true;
+}
+
+bool VideoFrameValidator::Passed() const {
+  return GetMismatchedFramesCount() == 0u;
 }
 
 void VideoFrameValidator::ProcessVideoFrameTask(
@@ -328,9 +341,11 @@ struct PSNRVideoFrameValidator::PSNRMismatchedFrameInfo
 std::unique_ptr<PSNRVideoFrameValidator> PSNRVideoFrameValidator::Create(
     const GetModelFrameCB& get_model_frame_cb,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    ValidationMode validation_mode,
     double tolerance) {
   auto video_frame_validator = base::WrapUnique(new PSNRVideoFrameValidator(
-      get_model_frame_cb, std::move(corrupt_frame_processor), tolerance));
+      get_model_frame_cb, std::move(corrupt_frame_processor), validation_mode,
+      tolerance));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize PSNRVideoFrameValidator.";
     return nullptr;
@@ -342,10 +357,12 @@ std::unique_ptr<PSNRVideoFrameValidator> PSNRVideoFrameValidator::Create(
 PSNRVideoFrameValidator::PSNRVideoFrameValidator(
     const GetModelFrameCB& get_model_frame_cb,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    ValidationMode validation_mode,
     double tolerance)
     : VideoFrameValidator(std::move(corrupt_frame_processor)),
       get_model_frame_cb_(get_model_frame_cb),
-      tolerance_(tolerance) {}
+      tolerance_(tolerance),
+      validation_mode_(validation_mode) {}
 
 PSNRVideoFrameValidator::~PSNRVideoFrameValidator() = default;
 
@@ -361,6 +378,24 @@ PSNRVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   if (psnr < tolerance_)
     return std::make_unique<PSNRMismatchedFrameInfo>(frame_index, psnr);
   return nullptr;
+}
+
+bool PSNRVideoFrameValidator::Passed() const {
+  if (validation_mode_ == ValidationMode::kThreshold)
+    return GetMismatchedFramesCount() == 0u;
+  if (psnr_.empty())
+    return true;
+
+  double average = 0;
+  for (const auto& psnr : psnr_) {
+    average += psnr.second;
+  }
+  average /= psnr_.size();
+  if (average < tolerance_) {
+    LOG(ERROR) << "Average PSNR is too low: " << average;
+    return false;
+  }
+  return true;
 }
 
 struct SSIMVideoFrameValidator::SSIMMismatchedFrameInfo
@@ -379,9 +414,11 @@ struct SSIMVideoFrameValidator::SSIMMismatchedFrameInfo
 std::unique_ptr<SSIMVideoFrameValidator> SSIMVideoFrameValidator::Create(
     const GetModelFrameCB& get_model_frame_cb,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    ValidationMode validation_mode,
     double tolerance) {
   auto video_frame_validator = base::WrapUnique(new SSIMVideoFrameValidator(
-      get_model_frame_cb, std::move(corrupt_frame_processor), tolerance));
+      get_model_frame_cb, std::move(corrupt_frame_processor), validation_mode,
+      tolerance));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize SSIMVideoFrameValidator.";
     return nullptr;
@@ -393,10 +430,12 @@ std::unique_ptr<SSIMVideoFrameValidator> SSIMVideoFrameValidator::Create(
 SSIMVideoFrameValidator::SSIMVideoFrameValidator(
     const GetModelFrameCB& get_model_frame_cb,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    ValidationMode validation_mode,
     double tolerance)
     : VideoFrameValidator(std::move(corrupt_frame_processor)),
       get_model_frame_cb_(get_model_frame_cb),
-      tolerance_(tolerance) {}
+      tolerance_(tolerance),
+      validation_mode_(validation_mode) {}
 
 SSIMVideoFrameValidator::~SSIMVideoFrameValidator() = default;
 
@@ -412,6 +451,24 @@ SSIMVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   if (ssim < tolerance_)
     return std::make_unique<SSIMMismatchedFrameInfo>(frame_index, ssim);
   return nullptr;
+}
+
+bool SSIMVideoFrameValidator::Passed() const {
+  if (validation_mode_ == ValidationMode::kThreshold)
+    return GetMismatchedFramesCount() == 0u;
+  if (ssim_.empty())
+    return true;
+
+  double average = 0;
+  for (const auto& ssim : ssim_) {
+    average += ssim.second;
+  }
+  average /= ssim_.size();
+  if (average < tolerance_) {
+    LOG(ERROR) << "Average SSIM is too low: " << average;
+    return false;
+  }
+  return true;
 }
 }  // namespace test
 }  // namespace media

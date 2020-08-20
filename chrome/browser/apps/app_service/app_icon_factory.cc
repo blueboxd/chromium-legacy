@@ -189,10 +189,12 @@ gfx::ImageSkia ExtractSubsetForArcImage(const gfx::ImageSkia& image_skia) {
                                 rep.pixel_height() - 2 * padding_height)));
     DCHECK(success);
 
-    // Resize |rep| to size_hint_in_dip * rep.scale().
+    // Resize |rep| to roundf(size_hint_in_dip * rep.scale()), to keep
+    // consistency with ArcAppIconDescriptor::GetSizeInPixels.
     const SkBitmap resized = skia::ImageOperations::Resize(
         dst, skia::ImageOperations::RESIZE_LANCZOS3,
-        image_skia.width() * rep.scale(), image_skia.height() * rep.scale());
+        roundf(image_skia.width() * rep.scale()),
+        roundf(image_skia.height() * rep.scale()));
     subset_image.AddRepresentation(gfx::ImageSkiaRep(resized, rep.scale()));
   }
   return subset_image;
@@ -312,17 +314,29 @@ void LoadCompressedDataFromExtension(
 base::Optional<IconPurpose> GetIconPurpose(
     const std::string& web_app_id,
     const web_app::AppIconManager& icon_manager,
-    int icon_size_in_px) {
+    int size_hint_in_dip) {
+  // Get the max supported pixel size.
+  int max_icon_size_in_px = 0;
+  for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+    const gfx::Size icon_size_in_px =
+        gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip, size_hint_in_dip),
+                                ui::GetScaleForScaleFactor(scale_factor));
+    DCHECK_EQ(icon_size_in_px.width(), icon_size_in_px.height());
+    if (max_icon_size_in_px < icon_size_in_px.width()) {
+      max_icon_size_in_px = icon_size_in_px.width();
+    }
+  }
+
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
       icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
-                                   icon_size_in_px)) {
+                                   max_icon_size_in_px)) {
     return base::make_optional(IconPurpose::MASKABLE);
   }
 #endif
 
   if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
-                                   icon_size_in_px)) {
+                                   max_icon_size_in_px)) {
     return base::make_optional(IconPurpose::ANY);
   }
 
@@ -453,7 +467,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void CompleteWithImageSkia(gfx::ImageSkia image);
 
-  void OnReadWebAppIcon(IconPurpose purpose, const SkBitmap& bitmap);
+  void OnReadWebAppIcon(std::map<int, SkBitmap> icon_bitmaps);
 
   void MaybeLoadFallbackOrCompleteEmpty();
 
@@ -569,15 +583,32 @@ void IconLoadingPipeline::LoadWebAppIcon(
         icon_effects_ &= ~apps::IconEffects::kCrOsStandardMask;
       }
       FALLTHROUGH;
-    case apps::mojom::IconType::kStandard:
+    case apps::mojom::IconType::kStandard: {
       // If |icon_effects| are requested, we must always load the
       // uncompressed image to apply the icon effects, and then re-encode the
       // image if the compressed icon is requested.
-      icon_manager.ReadSmallestIcon(
-          web_app_id, {*icon_purpose_to_read}, icon_size_in_px_,
+      std::vector<int> icon_pixel_sizes;
+      for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+        auto size_and_purpose = icon_manager.FindIconMatchBigger(
+            web_app_id, {*icon_purpose_to_read},
+            gfx::ScaleToFlooredSize(
+                gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
+                ui::GetScaleForScaleFactor(scale_factor))
+                .width());
+        DCHECK(size_and_purpose.has_value());
+        if (!base::Contains(icon_pixel_sizes, size_and_purpose->size_px)) {
+          icon_pixel_sizes.emplace_back(size_and_purpose->size_px);
+        }
+      }
+      DCHECK(!icon_pixel_sizes.empty());
+
+      icon_manager.ReadIcons(
+          web_app_id, *icon_purpose_to_read, icon_pixel_sizes,
           base::BindOnce(&IconLoadingPipeline::OnReadWebAppIcon,
                          base::WrapRefCounted(this)));
+
       return;
+    }
     case apps::mojom::IconType::kUnknown:
       MaybeLoadFallbackOrCompleteEmpty();
       return;
@@ -901,16 +932,41 @@ void IconLoadingPipeline::CompleteWithImageSkia(gfx::ImageSkia image) {
 }
 
 // Callback for reading uncompressed web app icons.
-void IconLoadingPipeline::OnReadWebAppIcon(IconPurpose purpose,
-                                           const SkBitmap& bitmap) {
-  if (bitmap.isNull()) {
+void IconLoadingPipeline::OnReadWebAppIcon(
+    std::map<int, SkBitmap> icon_bitmaps) {
+  if (icon_bitmaps.empty()) {
     MaybeApplyEffectsAndComplete(gfx::ImageSkia());
     return;
   }
-  // TODO (nancylingwang): Apply icon effects if needed here.
-  // if (bitmap.width() != icon_size_in_px_) resize is needed.
-  // bool is_maskable = purpose == IconPurpose::MASKABLE;
-  MaybeApplyEffectsAndComplete(SkBitmapToImageSkia(bitmap, icon_scale_));
+
+  gfx::ImageSkia image_skia;
+  auto it = icon_bitmaps.begin();
+  for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+    float icon_scale = ui::GetScaleForScaleFactor(scale_factor);
+    int icon_size_in_px =
+        gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
+                                icon_scale)
+            .width();
+
+    while (it != icon_bitmaps.end() && it->first < icon_size_in_px) {
+      ++it;
+    }
+
+    DCHECK(it != icon_bitmaps.end());
+    SkBitmap bitmap = it->second;
+
+    // Resize |bitmap| to match |icon_scale|.
+    if (bitmap.width() != icon_size_in_px) {
+      bitmap = skia::ImageOperations::Resize(
+          bitmap, skia::ImageOperations::RESIZE_LANCZOS3, icon_size_in_px,
+          icon_size_in_px);
+    }
+
+    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, icon_scale));
+  }
+  DCHECK_EQ(image_skia.image_reps().size(),
+            ui::GetSupportedScaleFactors().size());
+  MaybeApplyEffectsAndComplete(image_skia);
 }
 
 void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {

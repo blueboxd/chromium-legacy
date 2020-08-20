@@ -23,6 +23,16 @@ class QuickAnswersConsent;
 namespace ash {
 class QuickAnswersUiController;
 
+enum class QuickAnswersVisibility {
+  // Quick Answers UI is hidden and the previous session has finished.
+  kClosed = 0,
+  // Quick Answers session is initializing and the UI will be shown when the
+  // context is ready.
+  kPending = 1,
+  // Quick Answers UI is visible.
+  kVisible = 2,
+};
+
 // Implementation of QuickAnswerController. It fetches quick answers
 // result via QuickAnswersClient and manages quick answers UI.
 class ASH_EXPORT QuickAnswersControllerImpl
@@ -50,6 +60,8 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   // Update the bounds of the anchor view.
   void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds) override;
+
+  void SetPendingShowQuickAnswers() override;
 
   chromeos::quick_answers::QuickAnswersDelegate* GetQuickAnswersDelegate()
       override;
@@ -84,9 +96,15 @@ class ASH_EXPORT QuickAnswersControllerImpl
     return quick_answers_ui_controller_.get();
   }
 
+  QuickAnswersVisibility visibility() const { return visibility_; }
+
   chromeos::quick_answers::QuickAnswersConsent*
   GetConsentControllerForTesting() {
     return consent_controller_.get();
+  }
+
+  void SetVisibilityForTesting(QuickAnswersVisibility visibility) {
+    visibility_ = visibility;
   }
 
  private:
@@ -124,8 +142,7 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // The last received QuickAnswer from client.
   std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
 
-  // If currently there is an active quick answers session.
-  bool is_session_active_ = false;
+  QuickAnswersVisibility visibility_ = QuickAnswersVisibility::kClosed;
 };
 
 }  // namespace ash

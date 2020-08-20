@@ -209,6 +209,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
     &kTabbedAppOverflowMenuIcons,
+    &kTabbedAppOverflowMenuRegroup,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
     &kTrustedWebActivityLocationDelegation,
@@ -614,6 +615,9 @@ const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
 
 const base::Feature kTabbedAppOverflowMenuIcons{
     "TabbedAppOverflowMenuIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTabbedAppOverflowMenuRegroup{
+    "TabbedAppOverflowMenuRegroup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTestDefaultDisabled{"TestDefaultDisabled",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

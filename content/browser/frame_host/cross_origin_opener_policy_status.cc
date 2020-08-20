@@ -79,7 +79,8 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
 }  // namespace
 
 CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
-    FrameTreeNode* frame_tree_node)
+    FrameTreeNode* frame_tree_node,
+    const base::Optional<url::Origin>& initiator_origin)
     : frame_tree_node_(frame_tree_node),
       virtual_browsing_context_group_(frame_tree_node->current_frame_host()
                                           ->virtual_browsing_context_group()),
@@ -88,7 +89,25 @@ CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
       current_coop_(
           frame_tree_node->current_frame_host()->cross_origin_opener_policy()),
       current_origin_(
-          frame_tree_node->current_frame_host()->GetLastCommittedOrigin()) {}
+          frame_tree_node->current_frame_host()->GetLastCommittedOrigin()),
+      current_url_(
+          frame_tree_node->current_frame_host()->GetLastCommittedURL()),
+      is_navigation_source_(initiator_origin.has_value() &&
+                            initiator_origin->IsSameOriginWith(
+                                frame_tree_node->current_frame_host()
+                                    ->GetLastCommittedOrigin())) {
+  // Use the URL of the opener for reporting purposes when doing an initial
+  // navigation in a popup.
+  // Note: the origin check is there to avoid leaking the URL of an opener that
+  // navigated in the meantime.
+  if (is_initial_navigation_ && frame_tree_node_->opener() &&
+      frame_tree_node_->opener()
+              ->current_frame_host()
+              ->GetLastCommittedOrigin() == current_origin_) {
+    current_url_ =
+        frame_tree_node_->opener()->current_frame_host()->GetLastCommittedURL();
+  }
+}
 
 CrossOriginOpenerPolicyStatus::~CrossOriginOpenerPolicyStatus() = default;
 
@@ -96,7 +115,8 @@ base::Optional<network::mojom::BlockedByResponseReason>
 CrossOriginOpenerPolicyStatus::EnforceCOOP(
     network::mojom::URLResponseHead* response_head,
     const url::Origin& response_origin,
-    const GURL& response_url) {
+    const GURL& response_url,
+    const GURL& response_referrer_url) {
   SanitizeCoopHeaders(response_url, response_origin, response_head);
   network::mojom::ParsedHeaders* parsed_headers =
       response_head->parsed_headers.get();
@@ -123,6 +143,13 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
         kCoopSandboxedIFrameCannotNavigateToCoopPage;
   }
 
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> response_reporter =
+      CreateCoopReporterIfNeeded(response_coop, response_url);
+  CrossOriginOpenerPolicyReporter* previous_reporter =
+      use_current_document_coop_reporter_
+          ? frame_tree_node_->current_frame_host()->coop_reporter()
+          : coop_reporter_.get();
+
   bool cross_origin_policy_swap =
       ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
           current_coop_.value, current_origin_, is_initial_navigation_,
@@ -147,15 +174,62 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
           current_coop_.report_only_value, current_origin_,
           is_initial_navigation_, response_coop.value, response_origin);
 
-  if (cross_origin_policy_swap)
+  if (cross_origin_policy_swap) {
     require_browsing_instance_swap_ = true;
 
-  if (report_only_coop_swap && (navigating_to_report_only_coop_swap ||
-                                navigating_from_report_only_coop_swap)) {
-    virtual_browsing_instance_swap_ = true;
+    // If this response's COOP causes a BrowsingInstance swap that severs an
+    // opener, report this to the previous COOP reporter and/or the COOP
+    // reporter of the response if they exist.
+    // TODO(clamy): This is not correct. We should be sending a report if there
+    // is any other top-level browsing context in the browsing context group,
+    // and not only when the browsing context has an opener. Otherwise, we
+    // would not emit a report when the opener of a window has a bcg switch.
+    if (had_opener_) {
+      if (response_reporter) {
+        response_reporter->QueueNavigationToCOOPReport(
+            current_url_, response_referrer_url,
+            current_origin_.IsSameOriginWith(response_origin),
+            false /* is_report_only */);
+      }
+
+      if (previous_reporter) {
+        previous_reporter->QueueNavigationAwayFromCOOPReport(
+            response_url, is_navigation_source_,
+            current_origin_.IsSameOriginWith(response_origin),
+            false /* is_report_only */);
+      }
+    }
   }
 
-  if (require_browsing_instance_swap_ || virtual_browsing_instance_swap_) {
+  bool virtual_browsing_instance_swap =
+      report_only_coop_swap && (navigating_to_report_only_coop_swap ||
+                                navigating_from_report_only_coop_swap);
+  if (virtual_browsing_instance_swap) {
+    // If this response's report-only COOP would cause a BrowsingInstance swap
+    // that would sever an opener, report this to the previous COOP reporter
+    // and/or the COOP reporter of the response if they exist.
+    // TODO(clamy): This is not correct. We should be sending a report if there
+    // is any other top-level browsing context in the browsing context group,
+    // and not only when the browsing context has an opener. Otherwise, we
+    // would not emit a report when the opener of a window has a bcg switch.
+    if (had_opener_) {
+      if (response_reporter) {
+        response_reporter->QueueNavigationToCOOPReport(
+            current_url_, response_referrer_url,
+            current_origin_.IsSameOriginWith(response_origin),
+            true /* is_report_only */);
+      }
+
+      if (previous_reporter) {
+        previous_reporter->QueueNavigationAwayFromCOOPReport(
+            response_url, is_navigation_source_,
+            current_origin_.IsSameOriginWith(response_origin),
+            true /* is_report_only */);
+      }
+    }
+  }
+
+  if (require_browsing_instance_swap_ || virtual_browsing_instance_swap) {
     virtual_browsing_context_group_ =
         CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
   }
@@ -164,8 +238,29 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
   // response, now that it has been taken into account.
   current_coop_ = response_coop;
   current_origin_ = response_origin;
+  current_url_ = response_url;
+  coop_reporter_ = std::move(response_reporter);
+
+  // Once a response has been received, reports will be sent to the reporter of
+  // the last response received.
+  use_current_document_coop_reporter_ = false;
+
+  // Any subsequent response means this response was a redirect, and the source
+  // of the navigation to the subsequent response.
+  is_navigation_source_ = true;
 
   return base::nullopt;
+}
+
+std::unique_ptr<CrossOriginOpenerPolicyReporter>
+CrossOriginOpenerPolicyStatus::TakeCoopReporter() {
+  return std::move(coop_reporter_);
+}
+
+void CrossOriginOpenerPolicyStatus::UpdateReporterStoragePartition(
+    StoragePartition* storage_partition) {
+  if (coop_reporter_)
+    coop_reporter_->set_storage_partition(storage_partition);
 }
 
 // We blank out the COOP headers in a number of situations.
@@ -219,6 +314,32 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
     coop.report_only_value =
         network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
   }
+}
+
+std::unique_ptr<CrossOriginOpenerPolicyReporter>
+CrossOriginOpenerPolicyStatus::CreateCoopReporterIfNeeded(
+    const network::CrossOriginOpenerPolicy& coop,
+    const GURL& url) {
+  // If the main document hasn't specified any network report endpoint(s),
+  // then it is likely not interested in receiving:
+  // 1. Network reports (for obvious reasons).
+  // 2. ReportingObserver's reports.
+  // 3. Devtools warnings.
+  //
+  // Not creating a COOP reporter currently prevents all of these.
+  //
+  // TODO(arthursonzogni): Reconsider this decision later, developers might be
+  // interested in (2) and (3), despite not being interested in (1).
+  if (!coop.reporting_endpoint && !coop.report_only_reporting_endpoint) {
+    return nullptr;
+  }
+
+  DCHECK(frame_tree_node_->IsMainFrame());
+  return std::make_unique<CrossOriginOpenerPolicyReporter>(
+      frame_tree_node_->current_frame_host()
+          ->GetProcess()
+          ->GetStoragePartition(),
+      url, coop);
 }
 
 }  // namespace content

@@ -129,6 +129,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Returns connection's overall packet loss rate in fraction.
   float ReceivedPacketLossRate() const;
 
+  void OnZeroRttRejected() override;
+
  private:
   // Do a factory get for a histogram to record a 6-packet loss-sequence as a
   // sample. The histogram will record the 64 distinct possible combinations.

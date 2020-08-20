@@ -61,6 +61,19 @@ os_settings_namespace_rewrites = settings_namespace_rewrites +
                                    "settings.ValidateKerberosConfigResult|ValidateKerberosConfigResult",
                                    "settings.WallpaperBrowserProxy|WallpaperBrowserProxy",
                                    "smb_shares.SmbBrowserProxy|SmbBrowserProxy",
+                                   "settings.CupsPrintersBrowserProxy|CupsPrintersBrowserProxy",
+                                   "settings.CupsPrintersBrowserProxyImpl|CupsPrintersBrowserProxyImpl",
+                                   "settings.printing.alphabeticalSort|alphabeticalSort",
+                                   "settings.printing.CupsPrintersEntryManager|CupsPrintersEntryManager",
+                                   "settings.printing.matchesSearchTerm|matchesSearchTerm",
+                                   "settings.printing.sortPrinters|sortPrinters",
+                                   "settings.printing.findDifference|findDifference",
+                                   "settings.printing.getBaseName|getBaseName",
+                                   "settings.printing.getErrorText|getErrorText",
+                                   "settings.printing.isNetworkProtocol|isNetworkProtocol",
+                                   "settings.printing.isNameAndAddressValid|isNameAndAddressValid",
+                                   "settings.printing.isPPDInfoValid|isPPDInfoValid",
+                                   "settings.printing.getPrintServerErrorText|getPrintServerErrorText",
                                  ]
 
 os_settings_auto_imports = settings_auto_imports +
@@ -96,9 +109,17 @@ os_settings_auto_imports = settings_auto_imports +
                              "chrome/browser/resources/settings/route.html|routes",
                              "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
                              "ui/webui/resources/html/assert.html|assert,assertNotReached",
-                             "ui/webui/resources/html/cr.html|sendWithPromise",
+                             "ui/webui/resources/html/cr.html|sendWithPromise,removeWebUIListener,addWebUIListener,WebUIListener",
                              "ui/webui/resources/html/icon.html|getImage",
                              "ui/webui/resources/html/polymer.html|afterNextRender,Polymer,html,flush",
+                             "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printers_browser_proxy.html|CupsPrintersBrowserProxy,CupsPrintersBrowserProxyImpl,CupsPrinterInfo,PrinterSetupResult,CupsPrintersList,PrinterPpdMakeModel,ManufacturersInfo,ModelsInfo,PrintServerResult,PrinterMakeModel",
+                             "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printers_entry_list_behavior.html|CupsPrintersEntryListBehavior",
+                             "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printers_entry_manager.html|CupsPrintersEntryManager",
+                             "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printer_dialog_util.html|sortPrinters,matchesSearchTerm,getBaseName,getErrorText,isNetworkProtocol,isNameAndAddressValid,isPPDInfoValid,getPrintServerErrorText",
+                             "ui/webui/resources/html/list_property_update_behavior.html|ListPropertyUpdateBehavior",
+                             "ui/webui/resources/html/web_ui_listener_behavior.html|WebUIListenerBehavior",
+                             "ui/webui/resources/cr_components/chromeos/network/network_listener_behavior.html|NetworkListenerBehavior",
+                             "chrome/browser/resources/settings/chromeos/os_printing_page/cups_printer_types.html|PrinterListEntry,PrinterType",
                            ]
 
 os_settings_migrated_imports = settings_migrated_imports

@@ -22,8 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ReadFromDocument) {
 class CookiesApiTest : public ExtensionApiTest,
                        public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    ExtensionApiTest::SetUp();
+  CookiesApiTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker)

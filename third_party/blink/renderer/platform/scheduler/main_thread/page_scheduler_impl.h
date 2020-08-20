@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -62,10 +63,14 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
   void SetPageBackForwardCached(bool) override;
+  bool IsStoredInBackForwardCache() { return is_stored_in_back_forward_cache_; }
   void SetKeepActive(bool) override;
   bool IsMainFrameLocal() const override;
   void SetIsMainFrameLocal(bool is_local) override;
   void OnLocalMainFrameNetworkAlmostIdle() override;
+  base::TimeTicks GetStoredInBackForwardCacheTimestamp() {
+    return stored_in_back_forward_cache_timestamp_;
+  }
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       FrameScheduler::Delegate* delegate,
@@ -128,7 +133,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   PageLifecycleState GetPageLifecycleState() const;
 
-  // Generally UKMs are asssociated with the main frame of a page, but the
+  void SetUpIPCTaskDetection();
+
+  // Generally UKMs are associated with the main frame of a page, but the
   // implementation allows to request a recorder from any local frame with
   // the same result (e.g. for OOPIF support), therefore we need to select
   // any frame here.
@@ -327,6 +334,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   const base::TimeDelta delay_for_background_and_network_idle_tab_freezing_;
 
   bool is_stored_in_back_forward_cache_ = false;
+  TaskHandle set_ipc_posted_handler_task_;
+  base::TimeTicks stored_in_back_forward_cache_timestamp_;
 
   std::unique_ptr<PageLifecycleStateTracker> page_lifecycle_state_tracker_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_{this};

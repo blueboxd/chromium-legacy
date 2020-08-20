@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -30,7 +31,15 @@ class ASH_EXPORT AmbientAccessTokenController {
       delete;
   ~AmbientAccessTokenController();
 
-  void RequestAccessToken(AccessTokenCallback callback);
+  // The caller will pass in a preference |may_refresh_token_on_lock| whether
+  // to refresh token on lock screen when it expires. In current implementation,
+  // the AmbientController will request token once the screen is locked. This is
+  // allowed (We could make the request before screen is locked, then the logic
+  // in AmbientAccessTokenController could be simpler, i.e. just check if the
+  // lock screen is on or not). Future requests on lock screen can not refresh
+  // token if it expires.
+  void RequestAccessToken(AccessTokenCallback callback,
+                          bool may_refresh_token_on_lock = false);
 
  private:
   friend class AmbientAshTestBase;
@@ -43,6 +52,8 @@ class ASH_EXPORT AmbientAccessTokenController {
   void NotifyAccessTokenRefreshed();
   void RunCallback(AccessTokenCallback callback);
 
+  void SetTokenUsageBufferForTesting(base::TimeDelta time);
+
   std::string gaia_id_;
   std::string access_token_;
 
@@ -51,6 +62,9 @@ class ASH_EXPORT AmbientAccessTokenController {
 
   // True if has already sent access token request and waiting for result.
   bool has_pending_request_ = false;
+
+  // The buffer time to use the access token.
+  base::TimeDelta token_usage_time_buffer_ = kTokenUsageTimeBuffer;
 
   base::OneShotTimer token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;

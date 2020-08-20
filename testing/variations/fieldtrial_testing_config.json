@@ -1381,25 +1381,6 @@
             ]
         }
     ],
-    "ContextMenuSearchWithGoogleLensMultiArm": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextMenuSearchWithGoogleLensActivateSearchByImageTextDisabled",
-                    "params": {
-                        "minAgsaVersionName": "10.65",
-                        "useSearchByImageText": "false"
-                    },
-                    "enable_features": [
-                        "ContextMenuSearchWithGoogleLens"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualSearch": [
         {
             "platforms": [
@@ -2839,6 +2820,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "GlobalMediaControlsPictureInPicture"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GoogleLensShoppingSupportedBrowserVersionsMultiArm": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithTextShopSimilarProducts",
+                    "params": {
+                        "lensShopVariation": "ShopSimilarProducts",
+                        "minAgsaVersionNameForShopping": "11.17"
+                    },
+                    "enable_features": [
+                        "ContextMenuEnableLensShoppingAllowlist",
+                        "ContextMenuSearchAndShopWithGoogleLens",
+                        "ContextMenuSearchWithGoogleLens",
+                        "ContextMenuShopWithGoogleLens"
                     ]
                 }
             ]

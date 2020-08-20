@@ -24,8 +24,10 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
     public final CallbackHelper headerInflatedCallback = new CallbackHelper();
     public int footerResourceId;
     public int headerResourceId;
+    public int groupDividerId;
     public boolean enableAppIconRow;
     public boolean iconBeforeItem;
+    public boolean regroupedMenu;
 
     @Override
     public void destroy() {}
@@ -85,6 +87,11 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
     }
 
     @Override
+    public int getGroupDividerId() {
+        return groupDividerId;
+    }
+
+    @Override
     public boolean shouldShowFooter(int maxMenuHeight) {
         return footerResourceId != 0;
     }
@@ -107,5 +114,10 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
     @Override
     public boolean shouldShowIconBeforeItem() {
         return iconBeforeItem;
+    }
+
+    @Override
+    public boolean shouldShowRegroupedMenu() {
+        return regroupedMenu;
     }
 }

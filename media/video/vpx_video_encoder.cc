@@ -28,8 +28,6 @@ Status SetUpVpxConfig(const VideoEncoder::Options& opts,
 
   if (opts.threads.has_value())
     config->g_threads = opts.threads.value();
-  config->g_w = opts.width;
-  config->g_h = opts.height;
 
   // Insert keyframes at will with a given max interval
   if (opts.keyframe_interval.has_value()) {
@@ -38,12 +36,19 @@ Status SetUpVpxConfig(const VideoEncoder::Options& opts,
     config->kf_max_dist = opts.keyframe_interval.value();
   }
 
-  if (opts.bitrate.has_value()) {
+  if (opts.bitrate.has_value() && opts.bitrate.value()) {
     config->rc_end_usage = VPX_CBR;
     config->rc_target_bitrate = opts.bitrate.value() / 1000;
   } else {
     config->rc_end_usage = VPX_VBR;
+    config->rc_target_bitrate = static_cast<double>(opts.width * opts.height) /
+                                config->g_w / config->g_h *
+                                config->rc_target_bitrate;
   }
+
+  config->g_w = opts.width;
+  config->g_h = opts.height;
+
   return Status();
 }
 }  // namespace

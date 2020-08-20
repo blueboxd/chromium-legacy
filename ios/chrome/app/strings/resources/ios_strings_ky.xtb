@@ -442,6 +442,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6125339936101702016"><ph name="COMPANY" /> тарабынан башкарылат. <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Нерсе өчүрүлдү</translation>
 <translation id="6136914049981179737">Секнд мурн</translation>
+<translation id="6144589619057374135">${url} сайтын Жашыруун режимде ачуу</translation>
 <translation id="616831107264507309">Кийинчерээк окуу</translation>
 <translation id="6177442314419606057">Chrome'до издөө</translation>
 <translation id="6184086493125982861">Өтмөктөрдү көрсөтүү</translation>
@@ -604,7 +605,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7939128259257418052">Сырсөздөрдү экспорттоо…</translation>
 <translation id="7947953824732555851">Кабыл алуу жана кирүү</translation>
 <translation id="794799177247607889">Таржымалын жыйноону токтотуу</translation>
-<translation id="7953440832920792856">{COUNT,plural, =0{Уурдалган сырсөздөр жок}=1{{COUNT} уурдалган сырсөз бар}other{{COUNT} уурдалган сырсөз бар}}</translation>
+<translation id="7953440832920792856">{COUNT,plural, =0{Билинип калган сырсөздөр жок}=1{{COUNT} уурдалган сырсөз бар}other{{COUNT} уурдалган сырсөз бар}}</translation>
 <translation id="7961015016161918242">Эч качан</translation>
 <translation id="7966516440812255683">Серептөөнү ыңгайлаштыруу, мисалы, аккаунттан чыгарбоо же арабадагы сатып алган нерселериңизди эстеп калуу үчүн сайттар cookie файлдарын колдоно алышат.
 

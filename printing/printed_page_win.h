@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "printing/metafile.h"
 #include "ui/gfx/geometry/rect.h"
@@ -28,6 +27,8 @@ class PRINTING_EXPORT PrintedPage
               std::unique_ptr<MetafilePlayer> metafile,
               const gfx::Size& page_size,
               const gfx::Rect& page_content_rect);
+  PrintedPage(const PrintedPage&) = delete;
+  PrintedPage& operator=(const PrintedPage&) = delete;
 
   // Getters
   int page_number() const { return page_number_; }
@@ -59,8 +60,6 @@ class PRINTING_EXPORT PrintedPage
 
   // The printable area of the page.
   const gfx::Rect page_content_rect_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintedPage);
 };
 
 }  // namespace printing

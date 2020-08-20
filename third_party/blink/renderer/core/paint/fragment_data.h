@@ -217,6 +217,8 @@ class CORE_EXPORT FragmentData {
 
    public:
     RareData();
+    RareData(const RareData&) = delete;
+    RareData& operator=(const RareData&) = delete;
     ~RareData();
 
     // The following data fields are not fragment specific. Placed here just to
@@ -235,8 +237,6 @@ class CORE_EXPORT FragmentData {
     base::Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;
     std::unique_ptr<FragmentData> next_fragment_;
-
-    DISALLOW_COPY_AND_ASSIGN(RareData);
   };
 
   RareData& EnsureRareData();

@@ -17,7 +17,6 @@ class SecurePaymentConfirmationModelTest : public testing::Test {};
 TEST_F(SecurePaymentConfirmationModelTest, SmokeTest) {
   SecurePaymentConfirmationModel model;
 
-  gfx::VectorIcon header_icon;
   base::string16 title(
       base::UTF8ToUTF16("Use Touch ID to verify and complete your purchase?"));
   base::string16 merchant_label(base::UTF8ToUTF16("Store"));
@@ -29,9 +28,6 @@ TEST_F(SecurePaymentConfirmationModelTest, SmokeTest) {
   base::string16 total_value(base::UTF8ToUTF16("$20.00 USD"));
   base::string16 verify_button_label(base::UTF8ToUTF16("Verify"));
   base::string16 cancel_button_label(base::UTF8ToUTF16("Cancel"));
-
-  model.set_header_icon(&header_icon);
-  EXPECT_EQ(model.header_icon(), &header_icon);
 
   model.set_title(title);
   EXPECT_EQ(title, model.title());

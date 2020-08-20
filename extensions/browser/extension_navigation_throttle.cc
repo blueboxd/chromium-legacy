@@ -13,10 +13,14 @@
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/url_request_util.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -29,6 +33,66 @@
 #include "ui/base/page_transition_types.h"
 
 namespace extensions {
+
+namespace {
+
+// Whether a navigation to the |platform_app| resource should be blocked in the
+// given |web_contents|.
+bool ShouldBlockNavigationToPlatformAppResource(
+    const Extension* platform_app,
+    content::WebContents* web_contents) {
+  ViewType view_type = GetViewType(web_contents);
+  DCHECK_NE(VIEW_TYPE_INVALID, view_type);
+
+  // Navigation to platform app's background page.
+  if (view_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+    return false;
+
+  // Navigation within an extension dialog, e.g. this is used by ChromeOS file
+  // manager.
+  if (view_type == VIEW_TYPE_EXTENSION_DIALOG)
+    return false;
+
+  // Navigation within an app window. The app window must belong to the
+  // |platform_app|.
+  if (view_type == VIEW_TYPE_APP_WINDOW) {
+    AppWindowRegistry* registry =
+        AppWindowRegistry::Get(web_contents->GetBrowserContext());
+    DCHECK(registry);
+    AppWindow* app_window = registry->GetAppWindowForWebContents(web_contents);
+    DCHECK(app_window);
+    return app_window->extension_id() != platform_app->id();
+  }
+
+  // Navigation within a guest web contents.
+  if (view_type == VIEW_TYPE_EXTENSION_GUEST) {
+    // Platform apps can be embedded by other platform apps using an <appview>
+    // tag.
+    AppViewGuest* app_view = AppViewGuest::FromWebContents(web_contents);
+    if (app_view)
+      return false;
+
+    // Webviews owned by the platform app can embed platform app resources via
+    // "accessible_resources".
+    WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(web_contents);
+    if (web_view_guest)
+      return web_view_guest->owner_host() != platform_app->id();
+
+    // Otherwise, it's a guest view that's neither a webview nor an appview
+    // (such as an extensionoptions view). Disallow.
+    return true;
+  }
+
+  DCHECK(view_type == VIEW_TYPE_BACKGROUND_CONTENTS ||
+         view_type == VIEW_TYPE_COMPONENT ||
+         view_type == VIEW_TYPE_EXTENSION_POPUP ||
+         view_type == VIEW_TYPE_TAB_CONTENTS)
+      << "Unhandled view type: " << view_type;
+
+  return true;
+}
+
+}  // namespace
 
 ExtensionNavigationThrottle::ExtensionNavigationThrottle(
     content::NavigationHandle* navigation_handle)
@@ -139,6 +203,14 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     }
   }
 
+  if (target_extension->is_platform_app() &&
+      ShouldBlockNavigationToPlatformAppResource(target_extension,
+                                                 web_contents)) {
+    RecordExtensionResourceAccessResult(
+        source_id, url, ExtensionResourceAccessResult::kFailure);
+    return content::NavigationThrottle::BLOCK_REQUEST;
+  }
+
   // Navigations with no initiator (e.g. browser-initiated requests) are always
   // considered trusted, and thus allowed.
   //
@@ -192,6 +264,7 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   // Content Security Policy. But CSP is incapable of blocking the
   // chrome-extension scheme. Thus, this case must be handled specially
   // here.
+  // TODO(karandeepb): Investigate if this check can be removed.
   if (target_extension->is_platform_app()) {
     RecordExtensionResourceAccessResult(source_id, url,
                                         ExtensionResourceAccessResult::kCancel);

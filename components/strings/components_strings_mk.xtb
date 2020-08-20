@@ -225,7 +225,7 @@
 <translation id="1783075131180517613">Ажурирајте ја вашата лозинка за синхронизирање.</translation>
 <translation id="1787142507584202372">Отворените картички се појавуваат тука</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />, достапни се повеќе дејства, притиснете Tab за да кружите низ нив</translation>
+<translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />, достапни се повеќе дејства, притискајте Tab за да ги менувате</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Име на сопственикот на картичката</translation>
 <translation id="1807528111851433570">Почетен лист</translation>
@@ -954,7 +954,7 @@
 <translation id="4926049483395192435">Мора да се назначи.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> вели</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
-<translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, потоа Enter за да пребарувате</translation>
+<translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да пребарувате</translation>
 <translation id="4930153903256238152">Голем капацитет</translation>
 <translation id="4943872375798546930">Нема резултати</translation>
 <translation id="4950898438188848926">Копче за префрлање помеѓу картички, притиснете Enter за да се префрлите на отворената картичка, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>

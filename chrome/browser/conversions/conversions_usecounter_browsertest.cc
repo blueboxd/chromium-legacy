@@ -9,6 +9,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,7 +23,9 @@
 // in the Chrome layer, as UseCounter recording is not used with content shell.
 class ConversionsUseCounterBrowsertest : public InProcessBrowserTest {
  public:
-  ConversionsUseCounterBrowsertest() = default;
+  ConversionsUseCounterBrowsertest() {
+    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Sets up the blink runtime feature for ConversionMeasurement.
@@ -41,6 +44,9 @@ class ConversionsUseCounterBrowsertest : public InProcessBrowserTest {
 
  protected:
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ConversionsUseCounterBrowsertest,

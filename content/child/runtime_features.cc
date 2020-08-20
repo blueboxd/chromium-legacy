@@ -343,6 +343,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kEnableOnly},
     {wf::EnableCompositingOptimizations,
      blink::features::kCompositingOptimizations, kUseFeatureState},
+    {wf::EnableConversionMeasurementInfraSupport,
+     features::kConversionMeasurement, kUseFeatureState},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

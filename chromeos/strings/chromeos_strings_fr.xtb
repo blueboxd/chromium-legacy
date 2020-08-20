@@ -9,7 +9,7 @@
 <translation id="150962533380566081">Clé PUK incorrecte.</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="1644574205037202324">Historique</translation>
-<translation id="1662989795263954667">Arrêt - À court d'encre</translation>
+<translation id="1662989795263954667">Tâche suspendue - À court d'encre</translation>
 <translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
 <translation id="1905710495812624430">Vous avez atteint le nombre maximal autorisé de tentatives.</translation>
 <translation id="1930797645656624981">Service de mode de saisie Chrome OS</translation>
@@ -40,17 +40,17 @@
 <translation id="4227825898293920515">Le mot de passe arrive à expiration dans <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Aucune tâche d'impression en cours</translation>
 <translation id="428217921675623177">Les tâches d'impression datant de plus de 90 jours seront supprimées</translation>
-<translation id="4297501883039923494">Arrêt - Erreur inconnue</translation>
+<translation id="4297501883039923494">Tâche suspendue - Erreur inconnue</translation>
 <translation id="4429881212383817840">Le ticket Kerberos arrive bientôt à expiration</translation>
 <translation id="445059817448385655">Ancien mot de passe</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sur <ph name="TOTAL_PAGE_NUMBER" />. Appuyez sur Entrée pour annuler la tâche d'impression.</translation>
 <translation id="467510802200863975">Les mots de passe sont différents</translation>
-<translation id="4691278870498629773">Arrêt - Bac manquant</translation>
+<translation id="4691278870498629773">Tâche suspendue - Bac manquant</translation>
 <translation id="4731797938093519117">Accès parental</translation>
 <translation id="4773299976671772492">Interrompu</translation>
 <translation id="4808449224298348341">Tâche d'impression annulée pour <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Choisissez-en un nouveau immédiatement</translation>
-<translation id="4917889632206600977">Arrêt - À court de papier</translation>
+<translation id="4917889632206600977">Tâche suspendue - À court de papier</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="5212543919916444558">Je ne parviens pas à détecter d'éléments sur votre écran pour lesquels je peux vous aider.
 Veuillez appuyer sur le micro pour me poser une question.</translation>
@@ -68,11 +68,11 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="6106186594183574873">Pour terminer, saisissez votre ancien mot de passe</translation>
 <translation id="6146993107019042706">Pour terminer, saisissez votre nouveau mot de passe</translation>
 <translation id="636850387210749493">Inscription d'entreprise</translation>
-<translation id="649050271426829538">Arrêt - Bourrage papier</translation>
+<translation id="649050271426829538">Tâche suspendue - Bourrage papier</translation>
 <translation id="6517239166834772319">Explorer</translation>
 <translation id="6564646048574748301">Échec – Imprimante inaccessible</translation>
 <translation id="6643016212128521049">Effacer</translation>
-<translation id="6747215703636344499">Arrêt - Bac de sortie plein</translation>
+<translation id="6747215703636344499">Tâche suspendue - Bac de sortie plein</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Cette action est gérée par votre administrateur</translation>
@@ -84,7 +84,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8347227221149377169">Tâches d'impression</translation>
 <translation id="8701136875688985581">Cet utilisateur est géré par <ph name="ENROLLMENT_DOMAIN" />, qui peut modifier ses paramètres et surveiller son activité à distance.</translation>
 <translation id="871560550817059752">Échec – À court d'encre</translation>
-<translation id="8726019395068607495">Arrêt - Capot ouvert</translation>
+<translation id="8726019395068607495">Tâche suspendue - Capot ouvert</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
 <translation id="8919837981463578619">Échec – Bac à papier manquant</translation>
 <translation id="8928727111548978589">Échec – À court de papier</translation>

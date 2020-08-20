@@ -411,7 +411,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5691772641933328258">Fingeravtrycket känns inte igen</translation>
 <translation id="5710450975648804523">Stör ej har aktiverats</translation>
 <translation id="573413375004481890">Enheten har inte stöd för alla skärmar. Därför är en av skärmarna frånkopplad.</translation>
-<translation id="574392208103952083">Medium</translation>
+<translation id="574392208103952083">Medelstark</translation>
 <translation id="5744083938413354016">Tryck snabbt två gånger och dra</translation>
 <translation id="5745612484876805746">Nattljus aktiveras automatiskt när solen går ned</translation>
 <translation id="5750765938512549687">Bluetooth är inaktiverat</translation>
@@ -520,6 +520,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="6972754398087986839">Komma igång</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
+<translation id="6990778048354947307">Mörkt tema</translation>
 <translation id="7007983414944123363">Det gick inte att verifiera pinkoden eller lösenordet. Försök igen.</translation>
 <translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Anslut <ph name="DEVICE_NAME" /> med mobilen</translation>

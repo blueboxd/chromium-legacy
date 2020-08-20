@@ -853,9 +853,9 @@ void ShapeResult::ApplySpacingImpl(
         continue;
       }
 
-      space = spacing.ComputeSpacing(
-          run_start_index + glyph_data.character_index,
-          run->font_data_->GetLetterSpacingOverride(), offset);
+      space =
+          spacing.ComputeSpacing(run_start_index + glyph_data.character_index,
+                                 run->font_data_->GetAdvanceOverride(), offset);
       glyph_data.advance += space;
       total_space_for_run += space;
 

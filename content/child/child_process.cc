@@ -41,7 +41,7 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
   DCHECK(!g_lazy_child_process_tls.Pointer()->Get());
   g_lazy_child_process_tls.Pointer()->Set(this);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (IsMojoCoreSharedLibraryEnabled()) {

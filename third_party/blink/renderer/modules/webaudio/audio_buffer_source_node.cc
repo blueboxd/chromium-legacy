@@ -368,8 +368,15 @@ std::tuple<double, int, bool> AudioBufferSourceHandler::ComputeIndices(
     // Final sanity check on buffer access.
     // FIXME: as an optimization, try to get rid of this inner-loop check and
     // put assertions and guards before the loop.
-    if (read_index >= buffer_length || read_index2 >= buffer_length)
+    CHECK_LT(read_index, buffer_length);
+    CHECK_LT(read_index2, buffer_length);
+    if (read_index >= buffer_length || read_index2 >= buffer_length) {
+      // Informs ComputeOutput how many frames we processed so that it only
+      // processes that many output samples. The read indices and interpolation
+      // factor are invalid after this point.
+      frames_processed = k;
       break;
+    }
 
     read0[k] = read_index;
     read1[k] = read_index2;

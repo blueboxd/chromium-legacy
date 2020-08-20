@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">ప్రస్తుత వెర్షన్ Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">ఏ <ph name="DEVICE_NAME_AND_VENDOR" />ని అయినా USB ద్వారా యాక్సెస్ చేయడానికి అనుమతి</translation>
 <translation id="1509960214886564027">చాలా సైట్‌లలోని ఫీచర్‌లు పని చేయకుండాపోవచ్చు</translation>
-<translation id="1510030919967934016">మీ స్థానాన్ని ట్రాక్ చెయ్యకుండా ఈ పేజీ బ్లాక్ చెయ్యబడింది.</translation>
 <translation id="1510238584712386396">లాంచర్</translation>
 <translation id="1510785804673676069">మీరు ప్రాక్సీ సర్వర్‌ను ఉపయోగిస్తుంటే, ప్రాక్సీ సర్వర్ పని చేస్తోందని
     తనిఖీ చేయడానికి మీ ప్రాక్సీ సెట్టింగ్‌లను తనిఖీ చేయండి లేదా మీ నెట్‌వర్క్
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">ఎడిటింగ్‌ను అనుమతించు</translation>
 <translation id="1698122934742150150">ప్రస్తుత అజ్ఞాత సెషన్‌కు మాత్రమే</translation>
 <translation id="1700079447639026019">కుక్కీలను ఉపయోగించే అనుమతి ఎప్పటికీ లేని సైట్‌లు</translation>
-<translation id="1700845716982723710">యాంబియెంట్ మోడ్‌ను ఆఫ్ చేయండి</translation>
 <translation id="1701062906490865540">ఈ వ్యక్తిని తీసివేయి</translation>
 <translation id="1703331064825191675">మీ పాస్‌వర్డ్‌ల గురించి ఎప్పుడూ చింతించకండి</translation>
 <translation id="1704970325597567340">భద్రతా తనిఖీ <ph name="DATE" /> తేదీన రన్ చేయబడింది</translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">మీ Linux యాప్‌లు, ఫైల్‌లను మునుపు సేవ్ చేసిన బ్యాకప్‌తో భర్తీ చేయండి</translation>
 <translation id="1842766183094193446">మీరు ఖచ్చితంగా డెమో మోడ్‌ని ప్రారంభించాలనుకుంటున్నారా?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />ను అమలు చేయడానికి కంట్రోల్ నొక్కి, క్లిక్ చేయండి</translation>
-<translation id="184715642345428649">యాంబియెంట్ మోడ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="1849186935225320012">ఈ పేజీ MIDI పరికరాలకు పూర్తి నియంత్రణను కలిగి ఉంది.</translation>
 <translation id="1850508293116537636">&amp;సవ్యదిశలో తిప్పు</translation>
 <translation id="1852141627593563189">హానికరమైన సాఫ్ట్‌వేర్‌ను కనుగొనండి</translation>
@@ -1174,7 +1171,6 @@
 <translation id="2392163307141705938"><ph name="IDS_SHORT_PRODUCT_NAME" /> కోసం మీ తల్లి/తండ్రి సెట్ చేసిన సమయ పరిమితిని మీరు చేరుకున్నారు.</translation>
 <translation id="2392369802118427583">సక్రియం చేయి</translation>
 <translation id="2393136602862631930">మీ Chromebookలో <ph name="APP_NAME" />ను సెటప్ చేయండి</translation>
-<translation id="2394566832561516196">సెట్టింగ్‌లు తర్వాతిసారి మళ్లీ లోడ్‌ చేసే సమయంలో క్లియర్ చేయబడతాయి.</translation>
 <translation id="2395616325548404795">మీ <ph name="DEVICE_TYPE" /> ఎంటర్‌ప్రైజ్ నిర్వహణ కోసం విజయవంతంగా నమోదు చేయబడింది, కానీ దాని లక్షణ మరియు స్థాన సమాచారాన్ని పంపడంలో విఫలమైంది. దయచేసి ఈ పరికరం కోసం ఈ సమాచారాన్ని మీ నిర్వాహక కన్సోల్ నుండి మాన్యువల్‌గా నమోదు చేయండి.</translation>
 <translation id="2396387085693598316">మీ అడ్మిన్ "<ph name="EXTENSION_NAME" />"ను బ్లాక్ చేశారు</translation>
 <translation id="2396783860772170191">4 అంకెల పిన్ (0000-9999) నమోదు చేయండి</translation>
@@ -1664,7 +1660,6 @@
 <translation id="2979639724566107830">కొత్త విండోలో తెరువు</translation>
 <translation id="2981113813906970160">పెద్ద మౌస్ కర్సర్‌ను చూపు</translation>
 <translation id="2985348301114641460">"<ph name="EXTENSION_NAME" />"ను ఇన్‌స్టాల్ చేయడానికి మీ అడ్మినిస్ట్రేటర్‌కు అభ్యర్థన పంపాలా?</translation>
-<translation id="2986010903908656993">MIDI పరికరాలకు పూర్తి నియంత్రణ లేకుండా ఈ పేజీ బ్లాక్ చేయబడింది.</translation>
 <translation id="2987620471460279764">ఇతర పరికరం నుండి షేర్ చేయబడిన వచనం</translation>
 <translation id="2988018669686457659">స్పేర్ రెండరర్</translation>
 <translation id="2989123969927553766">మౌస్ స్క్రోల్ యాక్సిలరేషన్</translation>
@@ -2088,7 +2083,6 @@
 <translation id="3524965460886318643">కార్యకలాపాలను ఎగుమతి చేయి</translation>
 <translation id="3526034519184079374">సైట్ డేటాని చదవడం లేదా మార్చడం సాధ్యం కాదు</translation>
 <translation id="3527085408025491307">ఫోల్డర్</translation>
-<translation id="3528033729920178817">ఈ పేజీ మీ స్థానాన్ని ట్రాక్ చేస్తోంది.</translation>
 <translation id="3528498924003805721">షార్ట్‌కట్ లక్ష్యాలు</translation>
 <translation id="3532273508346491126">సింక్ మేనేజ్‌మెంట్</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ఆడియో మ్యూట్ చేయబడింది</translation>
@@ -2564,7 +2558,6 @@
 <translation id="4061374428807229313">షేర్ చేయడానికి, Files యాప్‌లోని ఫోల్డర్‌పై కుడి క్లిక్ చేయండి, తర్వాత "Parallels desktopతో షేర్ చేయి"ని ఎంచుకోండి.</translation>
 <translation id="4065876735068446555">మీరు ఉపయోగిస్తున్న నెట్‌వర్క్ (<ph name="NETWORK_ID" />)కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం కావచ్చు.</translation>
 <translation id="4066207411788646768">మీ నెట్‌వర్క్‌లో అందుబాటులో గల ప్రింటర్లను చూడడానికి మీ కనెక్షన్‌ను తనిఖీ చేయండి</translation>
-<translation id="4068506536726151626">ఈ పేజీలో మీ స్థానాన్ని ట్రాక్ చేస్తున్న క్రింది సైట్‌ల ఎలిమెంట్‌లు ఉన్నాయి:</translation>
 <translation id="4068776064906523561">సేవ్ చేయబడిన వేలిముద్రలు</translation>
 <translation id="407173827865827707">క్లిక్ చేసినప్పుడు</translation>
 <translation id="4074900173531346617">ఇమెయిల్ సైన్ చేసినవారి సర్టిఫికెట్</translation>
@@ -3207,7 +3200,6 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" పొడిగింపుతో కమ్యూనికేట్ చేయాలనుకుంటోంది</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" />ను ఇన్‌స్టాల్ చేయండి (డౌన్‌లోడ్ చేయాల్సిన అవసరం లేదు)</translation>
-<translation id="4920887663447894854">ఈ పేజీలో మీ స్థానాన్ని ట్రాక్ చెయ్యకుండా ఈ క్రింది సైట్‌లు బ్లాక్ చెయ్యబడ్డాయి:</translation>
 <translation id="4921290200821452703">తల్లితండ్రుల కోసం పాఠశాల ఖాతా సమాచారం</translation>
 <translation id="4921348630401250116">టెక్స్ట్-టు-స్పీచ్</translation>
 <translation id="49226369361073053">{0,plural, =0{ఇప్పుడే పరికరాన్ని అప్‌డేట్ చేయండి}=1{1 సెకను లోపు పరికరాన్ని అప్‌డేట్ చేయండి}other{# సెకన్ల లోపు పరికరాన్ని అప్‌డేట్ చేయండి}}</translation>
@@ -3285,7 +3277,6 @@
 <translation id="5027562294707732951">ఎక్స్‌టెన్షన్‌ని జోడించు</translation>
 <translation id="5029568752722684782">కాపీని తీసివేయి</translation>
 <translation id="5033266061063942743">జ్యామితీయ ఆకారాలు</translation>
-<translation id="5033370009438029887">యాంబియంట్ మోడ్‌ను డిజేబుల్ చేయండి</translation>
 <translation id="5036662165765606524">బహుళ ఫైల్‌లను ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయడానికి ఏ సైట్‌నూ అనుమతించవద్దు</translation>
 <translation id="5037676449506322593">అన్నీ ఎంచుకోండి</translation>
 <translation id="5038022729081036555">మీరు రేపు <ph name="TIME_LIMIT" /> పాటు ఉపయోగించవచ్చు.</translation>
@@ -3962,7 +3953,6 @@
 <translation id="5865508026715185451"><ph name="APP_NAME" /> త్వరలో పాజ్ అవుతుంది</translation>
 <translation id="586567932979200359">మీరు <ph name="PRODUCT_NAME" /> డిస్క్ ఇమేజ్ నుండి దాన్ని అమలు చేస్తున్నారు. మీ కంప్యూటర్‌లో దీన్ని ఇన్‌స్టాల్ చేయడం వలన డిస్క్ ఇమేజ్ లేకుండా దాన్ని అమలు చేయడానికి మీరు అనుమతించబడతారు. ఇది తాజాగా ఉంటుందని హామీ పొందుతారు.</translation>
 <translation id="5865733239029070421">Googleకు ఆటోమేటిక్‌గా వినియోగ గణాంకాలను, క్రాష్ నివేదికలను పంపుతుంది</translation>
-<translation id="5866557323934807206">భవిష్యత్ సందర్శనల కోసం ఈ సెట్టింగ్‌లను క్లియర్ చేయి</translation>
 <translation id="5866840822086176774">చాలా బలంగా ఉంది</translation>
 <translation id="5867841422488265304">వెతకండి లేదా వెబ్ చిరునామా టైప్ చేయండి</translation>
 <translation id="5869029295770560994">సరే, అర్థమైంది</translation>
@@ -4247,7 +4237,6 @@
 <translation id="6225475702458870625">మీ <ph name="PHONE_NAME" /> నుండి డేటా కనెక్షన్ అందుబాటులో ఉంది</translation>
 <translation id="6226777517901268232">ప్రైవేట్ కీ ఫైల్ (ఐచ్ఛికం)</translation>
 <translation id="6227280783235722609">ఎక్స్‌టెన్షన్</translation>
-<translation id="6228691855869374890">ఈ సైట్ MIDI పరికరాలకు పూర్తి నియంత్రణను కలిగి ఉంది.</translation>
 <translation id="6229849828796482487">Disconnect Wi-Fi నెట్‌వర్క్ డిస్‌కనెక్ట్ చేయడం</translation>
 <translation id="6229890768313448549">Google Play సేవా నిబంధనలను లోడ్ చేయడం సాధ్యపడదు. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6231881193380278751">పేజీని ఆటోమేటిక్‌గా రిఫ్రెష్ చేయడానికి URLలో ప్రశ్న పారామీట‌ర్‌ను జోడించండి: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@
 <translation id="6412931879992742813">కొత్త అజ్ఞాత విండో</translation>
 <translation id="641469293210305670">అప్‌డేట్‌లు, యాప్‌లు ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="6414888972213066896">మీరు ఈ సైట్‌ను సందర్శించడానికి అనుమతించమని కోరుతూ మీ తల్లి/తండ్రికి అభ్యర్థన పంపారు</translation>
-<translation id="6415659939354280526">యాంబియంట్ మోడ్ సోర్స్‌ను ఎంచుకోండి</translation>
 <translation id="6415900369006735853">మీ ఫోన్ ద్వారా ఇంటర్నెట్‌కు కనెక్ట్ అవ్వండి</translation>
 <translation id="6416743254476733475">మీ కంప్యూటర్‌లో అనుమతించండి లేదా బ్లాక్ చేయండి.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -5345,7 +5333,6 @@
 <translation id="7616214729753637086">పరికరాన్ని నమోదు చేస్తోంది...</translation>
 <translation id="7617263010641145920">Play స్టోర్‌ను ఆన్ చేయండి</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తోంది</translation>
-<translation id="761763866592998929">యాంబియెంట్ మోడ్</translation>
 <translation id="7621382409404463535">పరికర కాన్ఫిగరేషన్‌ను సేవ్ చేయడంలో సిస్టమ్ విఫలమైంది.</translation>
 <translation id="7622114377921274169">ఛార్జింగ్.</translation>
 <translation id="7622903810087708234">పాస్‌వర్డ్ వివరాలు</translation>
@@ -5588,7 +5575,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">ఖాతాను వీక్షించండి</translation>
 <translation id="7882358943899516840">ప్రదాత రకం</translation>
-<translation id="78851824530736377">యాంబియెంట్ మోడ్‌ను ఆన్ చేయండి</translation>
 <translation id="7885253890047913815">ఇటీవలి గమ్యస్థానాలు</translation>
 <translation id="7887334752153342268">నకిలీ</translation>
 <translation id="7887864092952184874">బ్లూటూత్ మౌస్ జత చేయబడింది</translation>

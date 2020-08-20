@@ -149,7 +149,7 @@ bool ProfileAttributesSortComparator::operator()(
 
 MultiProfileUserType GetMultiProfileUserType(
     const std::vector<ProfileAttributesEntry*>& entries) {
-  DCHECK(entries.size() > 0);
+  DCHECK_GT(entries.size(), 0u);
   if (entries.size() == 1u)
     return MultiProfileUserType::kSingleProfile;
 

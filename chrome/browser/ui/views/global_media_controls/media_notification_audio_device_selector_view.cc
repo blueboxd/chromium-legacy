@@ -102,6 +102,9 @@ MediaNotificationAudioDeviceSelectorView::
       expand_button_, kKeyboardArrowUpIcon, kExpandButtonSize, SK_ColorBLACK,
       SK_ColorBLACK);
 
+  // This view will become visible when devices are discovered.
+  SetVisible(false);
+
   // Get a list of the connected audio output devices
   audio_device_subscription_ =
       service_->RegisterAudioOutputDeviceDescriptionsCallback(
@@ -117,6 +120,10 @@ MediaNotificationAudioDeviceSelectorView::
 
 void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
     const media::AudioDeviceDescriptions& device_descriptions) {
+  bool is_visible = ShouldBeVisible(device_descriptions);
+  SetVisible(is_visible);
+  delegate_->OnAudioDeviceSelectorViewSizeChanged();
+
   sink_id_map_.clear();
   device_button_container_->RemoveAllChildViews(true);
   current_device_button_ = nullptr;
@@ -181,4 +188,9 @@ void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
   sink_id_map_[button.get()] = device_description.unique_id;
   device_button_container_->AddChildView(std::move(button));
   device_button_container_->Layout();
+}
+
+bool MediaNotificationAudioDeviceSelectorView::ShouldBeVisible(
+    const media::AudioDeviceDescriptions& device_descriptions) {
+  return device_descriptions.size() > 2;
 }

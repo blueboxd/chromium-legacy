@@ -56,6 +56,7 @@ extern const base::Feature kDynamicMaxAutocomplete;
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
 extern const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking;
+extern const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP;
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
 extern const base::Feature kOnFocusSuggestionsContextualWebOnContent;

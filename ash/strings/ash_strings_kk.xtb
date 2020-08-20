@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">Bluetooth параметрлерін көрсету. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Сөрені әрқашан көрсету</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> қосылған</translation>
 <translation id="1341651618736211726">Қосымша мәзір</translation>
 <translation id="1346748346194534595">Оңға</translation>
 <translation id="1351937230027495976">Мәзірді жию</translation>
@@ -518,6 +519,7 @@
 <translation id="6972754398087986839">Іске кірісу</translation>
 <translation id="6981982820502123353">Арнайы мүмкіндіктер</translation>
 <translation id="698231206551913481">Бұл пайдаланушы өшірілгеннен кейін, оған қатысты барлық файлдар және жергілікті деректер біржола жойылады.</translation>
+<translation id="6990778048354947307">Күңгірт тақырып</translation>
 <translation id="7007983414944123363">PIN кодыңыз не құпия сөзіңіз расталмады. Қайталап көріңіз.</translation>
 <translation id="7015766095477679451">Сағат <ph name="COME_BACK_TIME" /> болғанда, қайта қолданып көріңіз.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> құрылғысын телефонға жалғаңыз</translation>

@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Phiên bản hiện tại là Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Truy cập mọi <ph name="DEVICE_NAME_AND_VENDOR" /> qua USB</translation>
 <translation id="1509960214886564027">Các tính năng trên nhiều trang web có thể hoạt động không đúng cách</translation>
-<translation id="1510030919967934016">Trang này đã bị chặn theo dõi vị trí của bạn.</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
 <translation id="1510785804673676069">Nếu bạn sử dụng máy chủ proxy, hãy kiểm tra cài đặt proxy của bạn hoặc
     liên hệ với quản trị viên mạng để kiểm tra xem máy chủ proxy
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Chỉnh sửa tệp</translation>
 <translation id="1698122934742150150">Chỉ phiên ẩn danh hiện tại</translation>
 <translation id="1700079447639026019">Các trang web không bao giờ được dùng cookie</translation>
-<translation id="1700845716982723710">Tắt Chế độ môi trường xung quanh</translation>
 <translation id="1701062906490865540">Xóa người này</translation>
 <translation id="1703331064825191675">Không bao giờ phải lo lắng về mật khẩu của bạn</translation>
 <translation id="1704970325597567340">Tính năng kiểm tra an toàn đã chạy vào <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Thay thế các ứng dụng và tệp Linux của bạn bằng bản sao lưu trước đó</translation>
 <translation id="1842766183094193446">Bạn có chắc chắn muốn bật chế độ minh họa không?</translation>
 <translation id="1846308012215045257">Giữ Control khi nhấp để chạy <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Bật Chế độ môi trường xung quanh</translation>
 <translation id="1849186935225320012">Trang này có quyền kiểm soát toàn bộ thiết bị MIDI.</translation>
 <translation id="1850508293116537636">Xoay &amp;theo chiều kim đồng hồ</translation>
 <translation id="1852141627593563189">Tìm phần mềm có hại</translation>
@@ -1174,7 +1171,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2392163307141705938">Bạn đã đạt đến giới hạn thời gian sử dụng <ph name="IDS_SHORT_PRODUCT_NAME" /> do cha mẹ đặt ra.</translation>
 <translation id="2392369802118427583">Kích hoạt</translation>
 <translation id="2393136602862631930">Thiết lập ứng dụng <ph name="APP_NAME" /> trên Chromebook</translation>
-<translation id="2394566832561516196">Cài đặt sẽ được xóa trong lần tải lại tiếp theo.</translation>
 <translation id="2395616325548404795">Thiết bị <ph name="DEVICE_TYPE" /> của bạn đã được đăng ký thành công cho quản lý doanh nghiệp, nhưng không gửi được thông tin phần tử và vị trí. Vui lòng nhập thủ công thông tin này từ Bảng điều khiển dành cho quản trị viên của thiết bị này.</translation>
 <translation id="2396387085693598316">Quản trị viên đã chặn "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="2396783860772170191">Nhập mã pin có 4 chữ số (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2979639724566107830">Mở trong cửa sổ mới</translation>
 <translation id="2981113813906970160">Hiển thị con trỏ chuột lớn</translation>
 <translation id="2985348301114641460">Gửi yêu cầu tới quản trị viên để cài đặt "<ph name="EXTENSION_NAME" />"?</translation>
-<translation id="2986010903908656993">Trang này đã bị chặn quyền kiểm soát hoàn toàn thiết bị MIDI.</translation>
 <translation id="2987620471460279764">Văn bản được chia sẻ từ thiết bị khác</translation>
 <translation id="2988018669686457659">Trình kết xuất dự phòng</translation>
 <translation id="2989123969927553766">Tăng tốc độ cuộn chuột</translation>
@@ -2088,7 +2083,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3524965460886318643">Xuất hoạt động</translation>
 <translation id="3526034519184079374">Không thể đọc hoặc thay đổi dữ liệu của trang web</translation>
 <translation id="3527085408025491307">Thư mục</translation>
-<translation id="3528033729920178817">Trang này đang theo dõi vị trí của bạn.</translation>
 <translation id="3528498924003805721">Lối tắt</translation>
 <translation id="3532273508346491126">Quản lý tính năng đồng bộ hóa</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Đã tắt âm thanh</translation>
@@ -2564,7 +2558,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4061374428807229313">Để chia sẻ, hãy nhấp chuột phải vào một thư mục trong ứng dụng Files rồi chọn "Chia sẻ với ứng dụng Parallels Desktop".</translation>
 <translation id="4065876735068446555">Mạng bạn đang sử dụng (<ph name="NETWORK_ID" />) có thể yêu cầu bạn truy cập vào trang đăng nhập của mạng đó.</translation>
 <translation id="4066207411788646768">Vui lòng kiểm tra kết nối của bạn để xem các máy in hiện có trong mạng</translation>
-<translation id="4068506536726151626">Trang này chứa các yếu tố từ các trang web đang theo dõi vị trí của bạn:</translation>
 <translation id="4068776064906523561">Vân tay đã lưu</translation>
 <translation id="407173827865827707">Khi nhấp chuột</translation>
 <translation id="4074900173531346617">Chứng chỉ Người ký Email</translation>
@@ -3207,7 +3200,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4918021164741308375"><ph name="ORIGIN" /> muốn giao tiếp với tiện ích "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="4918221908152712722">Cài đặt <ph name="APP_NAME" /> (không cần tải xuống)</translation>
-<translation id="4920887663447894854">Các trang web sau đã bị chặn theo dõi vị trí của bạn trên trang này:</translation>
 <translation id="4921290200821452703">Thông tin về tài khoản trường học dành cho cha mẹ</translation>
 <translation id="4921348630401250116">Chuyển văn bản sang lời nói</translation>
 <translation id="49226369361073053">{0,plural, =0{Cập nhật thiết bị ngay}=1{Cập nhật thiết bị trong vòng 1 giây}other{Cập nhật thiết bị trong vòng # giây}}</translation>
@@ -3285,7 +3277,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5027562294707732951">Thêm tiện ích</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
 <translation id="5033266061063942743">Hình dạng hình học</translation>
-<translation id="5033370009438029887">Tắt chế độ môi trường xung quanh</translation>
 <translation id="5036662165765606524">Không cho phép bất kỳ trang web nào tự động tải nhiều tệp xuống</translation>
 <translation id="5037676449506322593">Chọn Tất cả</translation>
 <translation id="5038022729081036555">Bạn có thể dùng ứng dụng này trong <ph name="TIME_LIMIT" /> vào ngày mai.</translation>
@@ -3962,7 +3953,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5865508026715185451"><ph name="APP_NAME" /> sắp tạm dừng</translation>
 <translation id="586567932979200359">Bạn đang chạy <ph name="PRODUCT_NAME" /> từ hình ảnh đĩa của nó. Cài đặt trình duyệt này trên máy tính cho phép bạn chạy trình duyệt mà không cần có hình ảnh đĩa và đảm bảo trình duyệt sẽ được cập nhật.</translation>
 <translation id="5865733239029070421">Tự động gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google</translation>
-<translation id="5866557323934807206">Xóa các cài đặt này cho những lần truy cập tiếp theo</translation>
 <translation id="5866840822086176774">Rất mạnh</translation>
 <translation id="5867841422488265304">Tìm kiếm hoặc nhập địa chỉ web</translation>
 <translation id="5869029295770560994">OK</translation>
@@ -4247,7 +4237,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6225475702458870625">Kết nối dữ liệu có sẵn từ <ph name="PHONE_NAME" /> của bạn</translation>
 <translation id="6226777517901268232">Tệp khóa cá nhân (không bắt buộc)</translation>
 <translation id="6227280783235722609">tiện ích</translation>
-<translation id="6228691855869374890">Trang web này có quyền kiểm soát toàn bộ thiết bị MIDI.</translation>
 <translation id="6229849828796482487">Ngắt kết nối mạng Wi-Fi</translation>
 <translation id="6229890768313448549">Không thể tải Điều khoản dịch vụ của Google. Vui lòng thử lại.</translation>
 <translation id="6231881193380278751">Thêm thông số truy vấn trong URL để tự động làm mới trang: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6412931879992742813">Cửa sổ ẩn danh mới</translation>
 <translation id="641469293210305670">Cài đặt bản cập nhật và ứng dụng</translation>
 <translation id="6414888972213066896">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>
-<translation id="6415659939354280526">Chọn nguồn của chế độ môi trường xung quanh</translation>
 <translation id="6415900369006735853">Kết nối Internet qua điện thoại</translation>
 <translation id="6416743254476733475">Hãy cho phép hoặc chặn trên máy tính của bạn.</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
@@ -5345,7 +5333,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7616214729753637086">Đang đăng ký thiết bị...</translation>
 <translation id="7617263010641145920">Bật Cửa hàng Play</translation>
 <translation id="7617366389578322136">Đang kết nối với "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">Chế độ môi trường xung quanh</translation>
 <translation id="7621382409404463535">Hệ thống không lưu được cấu hình thiết bị.</translation>
 <translation id="7622114377921274169">Đang sạc.</translation>
 <translation id="7622903810087708234">Thông tin chi tiết về mật khẩu</translation>
@@ -5589,7 +5576,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Xem tài khoản</translation>
 <translation id="7882358943899516840">Loại nhà mạng</translation>
-<translation id="78851824530736377">Bật Chế độ môi trường xung quanh</translation>
 <translation id="7885253890047913815">Máy in đích gần đây</translation>
 <translation id="7887334752153342268">Nhân đôi</translation>
 <translation id="7887864092952184874">Đã ghép nối chuột Bluetooth</translation>

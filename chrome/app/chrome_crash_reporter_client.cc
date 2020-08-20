@@ -109,7 +109,7 @@ void ChromeCrashReporterClient::GetProductNameAndVersion(
   *product_name = "Chrome_ChromeOS";
 #elif BUILDFLAG(IS_LACROS)
   *product_name = "Chrome_Lacros";
-#else  // OS_LINUX
+#else  // defined(OS_LINUX
 #if !defined(ADDRESS_SANITIZER)
   *product_name = "Chrome_Linux";
 #else
@@ -142,12 +142,12 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   return base::PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::FilePath* metrics_dir) {
   return base::PathService::Get(chrome::DIR_USER_DATA, metrics_dir);
 }
-#endif  // OS_MAC || OS_LINUX
+#endif  // defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -199,14 +199,14 @@ int ChromeCrashReporterClient::GetAndroidMinidumpDescriptor() {
 }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool ChromeCrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
   // TODO(jperaza): Turn this on less frequently for stable channels when
   // Crashpad is always enabled on Linux. Consider combining with the
   // macOS implementation.
   return true;
 }
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 bool ChromeCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {

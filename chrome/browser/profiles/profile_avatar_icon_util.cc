@@ -285,6 +285,28 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
   }
 }
 
+class ImageWithBackgroundSource : public gfx::CanvasImageSource {
+ public:
+  ImageWithBackgroundSource(const gfx::ImageSkia& image, SkColor background)
+      : gfx::CanvasImageSource(image.size()),
+        image_(image),
+        background_(background) {}
+
+  ~ImageWithBackgroundSource() override = default;
+
+  // gfx::CanvasImageSource override.
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->DrawColor(background_);
+    canvas->DrawImageInt(image_, 0, 0);
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const SkColor background_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageWithBackgroundSource);
+};
+
 }  // namespace
 
 namespace profiles {
@@ -589,6 +611,18 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
 #endif
   };
   return &resource_info[index];
+}
+
+gfx::Image GetPlaceholderAvatarIconWithColors(SkColor fill_color,
+                                              SkColor stroke_color,
+                                              int size) {
+  gfx::ImageSkia icon_without_background = gfx::CreateVectorIcon(
+      gfx::IconDescription(kPersonOutlinePaddedIcon, size, stroke_color));
+  gfx::ImageSkia icon_with_background(
+      std::make_unique<ImageWithBackgroundSource>(icon_without_background,
+                                                  fill_color),
+      size);
+  return gfx::Image(icon_with_background);
 }
 
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {

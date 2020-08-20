@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">بلوٹوتھ کی ترتیبات دکھائیں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">ہمیشہ شیلف دکھائیں</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> منسلک ہے</translation>
 <translation id="1341651618736211726">اوورفلو</translation>
 <translation id="1346748346194534595">دائیں</translation>
 <translation id="1351937230027495976">مینو کو سکیڑیں</translation>
@@ -518,6 +519,7 @@
 <translation id="6972754398087986839">شروع کریں</translation>
 <translation id="6981982820502123353">ایکسیسبیلٹی</translation>
 <translation id="698231206551913481">اس صارف کو ہٹانے کے بعد اس صارف کے ساتھ وابستہ سبھی فائلیں اور مقامی ڈیٹا کو مستقل طور پر حذف کر دیا جائے گا۔</translation>
+<translation id="6990778048354947307">گہرا تھیم</translation>
 <translation id="7007983414944123363">‏آپ کے PIN یا پاس ورڈ کی توثیق نہیں کی جا سکی۔ دوبارہ کوشش کریں۔</translation>
 <translation id="7015766095477679451">بوقت <ph name="COME_BACK_TIME" /> پھر استعمال کریں۔</translation>
 <translation id="7025533177575372252">اپنے <ph name="DEVICE_NAME" /> کو اپنے فون سے منسلک کریں</translation>

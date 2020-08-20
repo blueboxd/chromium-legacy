@@ -3,6 +3,7 @@
 <translationbundle lang="fr">
 <translation id="1001307489511021749">Vos applications, paramètres et autres personnalisations seront synchronisés sur tous les appareils Chrome OS où vous êtes connecté à votre compte Google.</translation>
 <translation id="1003088604756913841">Ouvrir le lien dans une nouvelle fenêtre <ph name="APP" /></translation>
+<translation id="1003363546227723021">Affichez des photos, l'heure, la température extérieure ou les actualités sur l'écran de veille</translation>
 <translation id="1004218526896219317">Accès au site</translation>
 <translation id="1005274289863221750">Utiliser votre micro et votre caméra</translation>
 <translation id="1005333234656240382">Activer le débogage ADB ?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Arrêter</translation>
 <translation id="1110155001042129815">Attendre</translation>
 <translation id="1112420131909513020">Le Bluetooth est utilisé par un onglet d'arrière-plan</translation>
+<translation id="1113892970288677790">Faites votre choix parmi une sélection d'images et d'œuvres</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MODEL" /> <ph name="PRINTER_MANUFACTURER" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Votre ordinateur comprend un dispositif de sécurité avec module de plate-forme sécurisée (TPM, Trusted Platform Module) qui permet de mettre en œuvre plusieurs fonctionnalités de sécurité critiques dans Chrome OS. Consultez le centre d'aide Chromebook pour en savoir plus : https://support.google.com/chromebook/?p=tpm.</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">La plus rapide</translation>
 <translation id="1225177025209879837">Traitement de la demande en cours…</translation>
 <translation id="1227507814927581609">Échec de l'authentification lors de la connexion à l'appareil "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">La protection standard est activée. Pour un niveau de sécurité supérieur, activez la protection renforcée.</translation>
 <translation id="1231733316453485619">Activer la synchronisation ?</translation>
 <translation id="1232569758102978740">Sans titre</translation>
 <translation id="1233497634904001272">Appuyez de nouveau sur votre clé de sécurité pour finaliser la requête.</translation>
@@ -429,7 +432,6 @@
 <translation id="1508575541972276599">Version actuelle : Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Accéder à n'importe quel appareil <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
 <translation id="1509960214886564027">Des fonctionnalités sur de nombreux sites risquent de ne pas fonctionner</translation>
-<translation id="1510030919967934016">Le suivi de votre position géographique a été bloqué pour cette page.</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="1510785804673676069">Si vous utilisez un serveur proxy, vérifiez vos paramètres de proxy ou
     contactez votre administrateur réseau pour vérifier que le serveur
@@ -599,7 +601,6 @@
 <translation id="1697686431566694143">Modifier le fichier</translation>
 <translation id="1698122934742150150">Session de navigation privée actuelle uniquement</translation>
 <translation id="1700079447639026019">Sites ne pouvant pas utiliser de cookies</translation>
-<translation id="1700845716982723710">Désactiver le mode Veille</translation>
 <translation id="1701062906490865540">Supprimer ce profil utilisateur</translation>
 <translation id="1703331064825191675">Ne vous souciez plus jamais de vos mots de passe</translation>
 <translation id="1704970325597567340">Contrôle de sécurité effectué le <ph name="DATE" /></translation>
@@ -728,7 +729,6 @@
 <translation id="184273675144259287">Remplacer vos applications et fichiers Linux avec une sauvegarde existante</translation>
 <translation id="1842766183094193446">Voulez-vous vraiment activer le mode de démonstration ?</translation>
 <translation id="1846308012215045257">Cliquez ici en maintenant la touche Ctrl enfoncée pour exécuter <ph name="PLUGIN_NAME" />.</translation>
-<translation id="184715642345428649">Activer le mode Veille</translation>
 <translation id="1849186935225320012">Le contrôle total des appareils MIDI est activé pour cette page</translation>
 <translation id="1850508293116537636">Rotation &amp;dans le sens des aiguilles d'une montre</translation>
 <translation id="1852141627593563189">Détecter des logiciels malveillants</translation>
@@ -1171,7 +1171,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2392163307141705938">Tu as atteint la limite de temps définie par l'un de tes parents pour <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activer</translation>
 <translation id="2393136602862631930">Configurer <ph name="APP_NAME" /> sur votre Chromebook</translation>
-<translation id="2394566832561516196">Les paramètres seront effacés lors du prochain chargement de la page.</translation>
 <translation id="2395616325548404795">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise, mais l'envoi d'informations concernant ses éléments et sa position a échoué. Veuillez saisir ces informations manuellement depuis la console d'administration de cet appareil.</translation>
 <translation id="2396387085693598316">Votre administrateur a bloqué <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Saisissez un code à quatre chiffres (entre 0000 et 9999)</translation>
@@ -1253,6 +1252,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="249113932447298600">Désolé, le périphérique <ph name="DEVICE_LABEL" /> n'est pas compatible pour le moment.</translation>
 <translation id="2492461744635776704">Préparation de la demande de signature du certificat</translation>
 <translation id="249303669840926644">Impossible de terminer l'enregistrement</translation>
+<translation id="2493126929778606526">Vos plus belles photos sélectionnées automatiquement</translation>
 <translation id="2495777824269688114">Découvrez d'autres fonctionnalités et obtenez des réponses à vos questions. Sélectionnez "?" pour obtenir de l'aide.</translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
 <translation id="2497229222757901769">Vitesse de la souris</translation>
@@ -1345,6 +1345,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2604255671529671813">Erreur de connexion réseau</translation>
 <translation id="2606246518223360146">Associer les données</translation>
 <translation id="2607101320794533334">Infos sur la clé publique de l'objet</translation>
+<translation id="2607968157341167679">Aucun album. Créez-en un dans <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Créer des raccourcis…</translation>
 <translation id="2610157865375787051">Veille</translation>
 <translation id="2610260699262139870">Taille ré&amp;elle</translation>
@@ -1481,6 +1482,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2762441749940182211">Caméra bloquée</translation>
 <translation id="2764786626780673772">Informations sur le VPN</translation>
 <translation id="2765217105034171413">Léger</translation>
+<translation id="2765729904637714153">Revivez vos souvenirs préférés. Pour ajouter ou modifier un album, accédez à <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Coller l'URL et y a&amp;ccéder</translation>
 <translation id="2766161002040448006">Demander à l'un des parents</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> pourra modifier le fichier <ph name="FILENAME" /> jusqu'à ce que vous fermiez tous les onglets de ce site</translation>
@@ -1658,7 +1660,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2979639724566107830">Ouvrir dans une nouvelle fenêtre</translation>
 <translation id="2981113813906970160">Afficher le grand curseur</translation>
 <translation id="2985348301114641460">Envoyer une requête à votre administrateur pour installer "<ph name="EXTENSION_NAME" />" ?</translation>
-<translation id="2986010903908656993">Le contrôle total des appareils MIDI a été bloqué pour cette page.</translation>
 <translation id="2987620471460279764">Texte partagé depuis un autre appareil</translation>
 <translation id="2988018669686457659">Moteur de rendu de rechange</translation>
 <translation id="2989123969927553766">Accélération du défilement avec la souris</translation>
@@ -2082,7 +2083,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3524965460886318643">Exporter les activités</translation>
 <translation id="3526034519184079374">Impossible de lire ou de modifier les données du site</translation>
 <translation id="3527085408025491307">Dossier</translation>
-<translation id="3528033729920178817">Cette page suit votre position géographique.</translation>
 <translation id="3528498924003805721">Cibles des raccourcis</translation>
 <translation id="3532273508346491126">Gestion de la synchronisation</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Son coupé</translation>
@@ -2113,6 +2113,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3566325075220776093">Celui sur cet appareil</translation>
 <translation id="3566721612727112615">Aucun site ajouté</translation>
 <translation id="3569382839528428029">Voulez-vous que l'application <ph name="APP_NAME" /> partage votre écran ?</translation>
+<translation id="3569407787324516067">Économiseur d'écran</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> peut accéder aux fichiers et dossiers suivants :</translation>
 <translation id="3571734092741541777">Configurer</translation>
 <translation id="3574210789297084292">connexion</translation>
@@ -2261,6 +2262,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3727148787322499904">Les modifications apportées à ce paramètre s'appliquent à tous les réseaux partagés</translation>
 <translation id="3727187387656390258">Inspecter le pop-up</translation>
 <translation id="372722114124766626">Une seule fois</translation>
+<translation id="3728188878314831180">Afficher les notifications de votre téléphone</translation>
 <translation id="3728681439294129328">Configurer l'adresse réseau</translation>
 <translation id="3729303374699765035">Me demander lorsqu'un site souhaite accéder aux appareils Bluetooth se trouvant à proximité</translation>
 <translation id="3729506734996624908">Sites autorisés</translation>
@@ -2556,7 +2558,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4061374428807229313">Pour partager un dossier, faites un clic droit dessus dans l'application Fichiers, puis sélectionnez "Partager avec Parallels Desktop".</translation>
 <translation id="4065876735068446555">Pour utiliser ce réseau (<ph name="NETWORK_ID" />), il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
 <translation id="4066207411788646768">Veuillez vérifier votre connexion pour afficher les imprimantes disponibles sur le réseau</translation>
-<translation id="4068506536726151626">Cette page contient des éléments des sites ci-dessous qui suivent votre position géographique :</translation>
 <translation id="4068776064906523561">Empreintes digitales enregistrées</translation>
 <translation id="407173827865827707">En cas de clic</translation>
 <translation id="4074900173531346617">Certificat du signataire de courrier électronique</translation>
@@ -3199,7 +3200,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> souhaite communiquer avec l'extension "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4918221908152712722">Installer <ph name="APP_NAME" /> (aucun téléchargement requis)</translation>
-<translation id="4920887663447894854">Le suivi de votre position géographique sur cette page a été bloqué pour les sites suivants :</translation>
 <translation id="4921290200821452703">Informations pour les parents concernant les comptes scolaires</translation>
 <translation id="4921348630401250116">Synthèse vocale</translation>
 <translation id="49226369361073053">{0,plural, =0{Mettre à jour l'appareil maintenant}=1{Mettre à jour l'appareil d'ici 1 seconde}one{Mettre à jour l'appareil d'ici # seconde}other{Mettre à jour l'appareil d'ici # secondes}}</translation>
@@ -3277,7 +3277,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5027562294707732951">Ajouter l'extension</translation>
 <translation id="5029568752722684782">Effacer la copie</translation>
 <translation id="5033266061063942743">Formes géométriques</translation>
-<translation id="5033370009438029887">Désactiver le mode Veille</translation>
 <translation id="5036662165765606524">N'autoriser le téléchargement automatique de plusieurs fichiers pour aucun site</translation>
 <translation id="5037676449506322593">Tout sélectionner</translation>
 <translation id="5038022729081036555">Tu pourras de nouveau l'utiliser pendant <ph name="TIME_LIMIT" /> demain.</translation>
@@ -3955,7 +3954,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5865508026715185451">L'application <ph name="APP_NAME" /> sera bientôt suspendue</translation>
 <translation id="586567932979200359">Vous exécutez <ph name="PRODUCT_NAME" /> à partir de son image disque. Si vous l'installez sur votre ordinateur, vous pourrez l'utiliser sans image disque et bénéficierez de mises à jour automatiques.</translation>
 <translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
-<translation id="5866557323934807206">Supprimer ces paramètres pour les prochaines visites</translation>
 <translation id="5866840822086176774">Excellent</translation>
 <translation id="5867841422488265304">Recherchez ou saisissez une adresse Web</translation>
 <translation id="5869029295770560994">OK</translation>
@@ -4240,7 +4238,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6225475702458870625">Connexion de données disponible sur votre <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Fichier de clé privée (facultatif)</translation>
 <translation id="6227280783235722609">extension</translation>
-<translation id="6228691855869374890">Le contrôle total des appareils MIDI est activé pour ce site.</translation>
 <translation id="6229849828796482487">Se déconnecter du réseau Wi-Fi</translation>
 <translation id="6229890768313448549">Impossible de charger les conditions d'utilisation de Google Play. Veuillez réessayer.</translation>
 <translation id="6231881193380278751">Ajoutez un paramètre de requête dans l'URL pour une actualisation automatique de la page : chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4394,7 +4391,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6412931879992742813">Nouvelle fenêtre de navigation privée</translation>
 <translation id="641469293210305670">Installer des mises à jour et des applications</translation>
 <translation id="6414888972213066896">Une demande d'autorisation a été envoyée à tes parents pour la consultation de ce site</translation>
-<translation id="6415659939354280526">Sélectionner la source du mode Veille</translation>
 <translation id="6415900369006735853">Se connecter à Internet via votre téléphone</translation>
 <translation id="6416743254476733475">Autorisez ou bloquez ces actions sur votre ordinateur.</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
@@ -4711,6 +4707,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6824584962142919697">&amp;Examiner les éléments</translation>
 <translation id="6825184156888454064">Trier par nom</translation>
 <translation id="6826872289184051766">Valider via USB</translation>
+<translation id="6827623133556594466">Google Cloud Print ne sera plus disponible après le 31 décembre. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Autoriser uniquement les utilisateurs suivants à se connecter :</translation>
 <translation id="6828182567531805778">Saisissez votre phrase secrète pour synchroniser vos données.</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5329,6 +5326,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7605594153474022051">La synchronisation ne fonctionne pas</translation>
 <translation id="7606992457248886637">Autorités</translation>
 <translation id="7607002721634913082">Suspendu</translation>
+<translation id="7608810328871051088">Préférences Android</translation>
 <translation id="7609148976235050828">Veuillez vous connecter à Internet, puis réessayer.</translation>
 <translation id="7614260613810441905">Vous demander lorsqu'un site souhaite modifier des fichiers ou des dossiers sur votre appareil (recommandé)</translation>
 <translation id="761530003705945209">Sauvegarder dans Google Drive. Restaurez vos données ou changez d'appareil facilement et à tout moment. Les données des applications sont également sauvegardées. Vos sauvegardes sont importées dans Google et chiffrées à l'aide du mot de passe de votre compte Google.</translation>
@@ -5336,7 +5334,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7616214729753637086">Enregistrement de l'appareil...</translation>
 <translation id="7617263010641145920">Activer le Play Store</translation>
 <translation id="7617366389578322136">Connexion à "<ph name="DEVICE_NAME" />"…</translation>
-<translation id="761763866592998929">Mode Veille</translation>
 <translation id="7621382409404463535">Échec de l'enregistrement de la configuration de l'appareil.</translation>
 <translation id="7622114377921274169">En charge.</translation>
 <translation id="7622903810087708234">Détails du mot de passe</translation>
@@ -5580,7 +5577,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Afficher le compte</translation>
 <translation id="7882358943899516840">Type de fournisseur</translation>
-<translation id="78851824530736377">Activer le mode Veille</translation>
 <translation id="7885253890047913815">Emplacements de destination récents</translation>
 <translation id="7887334752153342268">Dupliquer</translation>
 <translation id="7887864092952184874">Souris Bluetooth associée.</translation>
@@ -5858,6 +5854,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8225753906568652947">Utiliser vos offres</translation>
 <translation id="8226222018808695353">Interdit</translation>
 <translation id="8226619461731305576">File d'attente</translation>
+<translation id="8226628635270268143">Choisissez vos photos et vos albums préférés</translation>
 <translation id="8226742006292257240">Le mot de passe TPM ci-dessous, généré de façon aléatoire, a été attribué à votre ordinateur :</translation>
 <translation id="8227119283605456246">Joindre un fichier</translation>
 <translation id="8229943166551236192">Les données de l'appareil seront supprimées dans 24 heures</translation>
@@ -6356,6 +6353,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="882854468542856424">N'autoriser aucun site à découvrir les appareils Bluetooth se trouvant à proximité</translation>
 <translation id="8828933418460119530">Nom DNS</translation>
 <translation id="883062543841130884">Substitutions</translation>
+<translation id="8830779999439981481">Redémarrage pour appliquer les mises à jour…</translation>
 <translation id="8830796635868321089">Échec de la vérification de mise à jour avec les paramètres de proxy actuels. Veuillez modifier vos <ph name="PROXY_SETTINGS_LINK_START" />paramètres de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Votre <ph name="DEVICE_TYPE" /> et votre téléphone Android fonctionnent mieux ensemble. Connectez-les pour envoyer des SMS depuis votre ordinateur, partager votre connexion Internet et déverrouiller votre <ph name="DEVICE_TYPE" /> avec votre téléphone.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">La configuration réseau est contrôlée par <ph name="USER_EMAIL" />.</translation>

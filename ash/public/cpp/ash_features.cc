@@ -45,7 +45,7 @@ const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDisplayIdentification{"DisplayIdentification",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

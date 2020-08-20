@@ -111,6 +111,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 }
 
 - (void)dealloc {
+  [self.feedView removeObserver:self forKeyPath:@"contentSize"];
   [self.discoverFeedVC willMoveToParentViewController:nil];
   [self.discoverFeedVC.view removeFromSuperview];
   [self.discoverFeedVC removeFromParentViewController];
@@ -419,8 +420,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     UIViewController* newFeedViewController = discoverFeedItem.discoverFeed;
 
     if (newFeedViewController != self.discoverFeedVC) {
-      // If previous VC is not nil, remove it from the view hierarchy.
+      // If previous VC is not nil, remove it from the view hierarchy and stop
+      // osberving its feedView.
       if (self.discoverFeedVC) {
+        [self.feedView removeObserver:self forKeyPath:@"contentSize"];
         [self.discoverFeedVC willMoveToParentViewController:nil];
         [self.discoverFeedVC.view removeFromSuperview];
         [self.discoverFeedVC removeFromParentViewController];

@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -165,8 +166,8 @@ class QuickUnlockPrivateUnitTest
   void SetUp() override {
     // Enable/disable PIN auto submit
     auto param = GetParam();
-    feature_list_.InitWithFeatureState(features::kQuickUnlockPinAutosubmit,
-                                       std::get<1>(param));
+    feature_list_.InitWithFeatureState(
+        features::kQuickUnlockPinAutosubmit, std::get<1>(param));
 
     CryptohomeClient::InitializeFake();
     if (std::get<0>(param) == TestType::kCryptohome) {
@@ -1062,7 +1063,8 @@ TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitClearLengthOnUiUpdate) {
 // Checks that the feature flag correctly prevents all actions.
 TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitFeatureGuard) {
   const bool feature_enabled = IsAutosubmitFeatureEnabled();
-  EXPECT_EQ(quick_unlock::IsPinAutosubmitFeatureEnabled(), feature_enabled);
+  EXPECT_EQ(features::IsPinAutosubmitFeatureEnabled(),
+            feature_enabled);
 }
 
 // Tests that the backfill operation sets a user value for the auto submit pref

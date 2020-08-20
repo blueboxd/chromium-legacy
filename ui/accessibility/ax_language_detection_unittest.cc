@@ -842,6 +842,7 @@ TEST_F(AXLanguageDetectionTestStaticContent, kLanguageUntouched) {
 
 // Test RegisterLanguageDetectionObserver correctly respects the feature flag.
 TEST_F(AXLanguageDetectionTestFixture, ObserverRegistrationObeysFlag) {
+  // Enable only the flag controlling static language detection.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -855,11 +856,12 @@ TEST_F(AXLanguageDetectionTestFixture, ObserverRegistrationObeysFlag) {
 
   ASSERT_EQ(getObserver(tree), nullptr);
 
+  // Now enable the dynamic feature flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
 
-  // Try registration without turning on Dynamic feature flag, this should
-  // do nothing.
+  // Try registration again, this should construct and register observer as flag
+  // is now enabled.
   tree.language_detection_manager->RegisterLanguageDetectionObserver();
 
   // Check our observer was constructed.

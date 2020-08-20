@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a64aed2333abf49e494d2a5ce24bbd14fff19f60',
+  'v8_revision': 'd2f63b518b8ad5c5b4b1d69bff89b8e2d85da551',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5b4f6e3193cf5fe2214c5c5b322940da243ce983',
+  'angle_revision': 'f6fb6da87dc4db174ba8a808010f511a29a4201b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'abfdfbb6683802d3a46ed515246573729ea147ff',
+  'catapult_revision': 'c244e33eadecb6319af92c87b1b363e91eed0660',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '58468984dc04f8f538b5faabb5a0f033ea35cd9c',
+  'quiche_revision': '8607b29d7b55f7e7e1c1f93cfcd1944716fafe13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@53effa99e2556a52d20e03490a006673d2c9d6c5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@90adfcb7b606ad432e4e6ff8497346230cc49594',
     'condition': 'checkout_src_internal',
   },
 
@@ -1550,7 +1550,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '50LmdZ87Aei15bQBU0QVN59IeJPvU-acRxSAEOTzcrYC',
+        'version': '2mC2HAs3wr9lkv-fO7paccSOBACAv2EXtzFGg-sY7ukC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

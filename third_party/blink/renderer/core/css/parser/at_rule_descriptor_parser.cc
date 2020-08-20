@@ -208,8 +208,8 @@ CSSValue* ConsumeFontMetricOverride(CSSParserTokenRange& range,
                                            kValueRangeNonNegative);
 }
 
-CSSValue* ConsumeLetterSpacingOverride(CSSParserTokenRange& range,
-                                       const CSSParserContext& context) {
+CSSValue* ConsumeAdvanceOverride(CSSParserTokenRange& range,
+                                 const CSSParserContext& context) {
   if (!RuntimeEnabledFeatures::CSSFontMetricsOverrideEnabled())
     return nullptr;
   return css_parsing_utils::ConsumeNumber(range, context, kValueRangeAll);
@@ -269,8 +269,8 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
     case AtRuleDescriptorID::LineGapOverride:
       parsed_value = ConsumeFontMetricOverride(range, context);
       break;
-    case AtRuleDescriptorID::LetterSpacingOverride:
-      parsed_value = ConsumeLetterSpacingOverride(range, context);
+    case AtRuleDescriptorID::AdvanceOverride:
+      parsed_value = ConsumeAdvanceOverride(range, context);
       break;
     default:
       break;

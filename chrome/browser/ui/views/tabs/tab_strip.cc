@@ -2173,7 +2173,7 @@ void TabStrip::Layout() {
     const int available_width = available_width_callback_.Run();
     // It should be as wide as possible subject to the above constraints.
     const int width = std::min(max_width, std::max(min_width, available_width));
-    SetBounds(0, 0, width, height());
+    SetBounds(0, 0, width, GetLayoutConstant(TAB_HEIGHT));
     SetTabSlotVisibility();
   }
 

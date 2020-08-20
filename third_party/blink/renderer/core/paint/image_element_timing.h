@@ -36,6 +36,8 @@ class CORE_EXPORT ImageElementTiming final
   static constexpr const unsigned kInlineImageMaxChars = 100;
 
   explicit ImageElementTiming(LocalDOMWindow&);
+  ImageElementTiming(const ImageElementTiming&) = delete;
+  ImageElementTiming& operator=(const ImageElementTiming&) = delete;
   virtual ~ImageElementTiming() = default;
 
   static ImageElementTiming& From(LocalDOMWindow&);
@@ -95,6 +97,8 @@ class CORE_EXPORT ImageElementTiming final
           intrinsic_size(intrinsic_size),
           id(id),
           element(element) {}
+    ElementTimingInfo(const ElementTimingInfo&) = delete;
+    ElementTimingInfo& operator=(const ElementTimingInfo&) = delete;
     ~ElementTimingInfo() = default;
 
     void Trace(Visitor* visitor) const { visitor->Trace(element); }
@@ -106,9 +110,6 @@ class CORE_EXPORT ImageElementTiming final
     IntSize intrinsic_size;
     AtomicString id;
     Member<Element> element;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ElementTimingInfo);
   };
 
   // Vector containing the element timing infos that will be reported during the
@@ -132,8 +133,6 @@ class CORE_EXPORT ImageElementTiming final
   // of the background image.
   HeapHashMap<WeakMember<const StyleFetchedImage>, base::TimeTicks>
       background_image_timestamps_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };
 
 }  // namespace blink

@@ -62,10 +62,6 @@ void EnabledForTesting(bool state);
 // Returns true if EnableForTesting() was previously called.
 bool IsEnabledForTesting();
 
-// Feature flag for PIN auto submit.
-bool IsPinAutosubmitFeatureEnabled();
-bool IsPinAutosubmitBackfillFeatureEnabled();
-
 // Forcibly disable PIN for testing purposes.
 void DisablePinByPolicyForTesting(bool disable);
 

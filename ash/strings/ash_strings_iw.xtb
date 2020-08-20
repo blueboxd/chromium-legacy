@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">‏צפייה בהגדרות Bluetooth‏. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">עוצמת האות: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">המדף תמיד מוצג</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> מחובר</translation>
 <translation id="1341651618736211726">אפשרויות נוספות</translation>
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="1351937230027495976">כיווץ התפריט</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>
+<translation id="6990778048354947307">עיצוב כהה</translation>
 <translation id="7007983414944123363">לא הצלחנו לאמת את קוד האימות או את הסיסמה שלך. אפשר לנסות שוב.</translation>
 <translation id="7015766095477679451">אפשר לחזור בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">חיבור <ph name="DEVICE_NAME" /> לטלפון</translation>

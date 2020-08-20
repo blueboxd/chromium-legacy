@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/time/clock.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
@@ -35,7 +37,13 @@ class FakeNearbyShareCertificateManager : public NearbyShareCertificateManager {
 
    private:
     // NearbyShareCertificateManagerImpl::Factory:
-    std::unique_ptr<NearbyShareCertificateManager> CreateInstance() override;
+    std::unique_ptr<NearbyShareCertificateManager> CreateInstance(
+        NearbyShareLocalDeviceDataManager* local_device_data_manager,
+        PrefService* pref_service,
+        leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+        const base::FilePath& profile_path,
+        NearbyShareClientFactory* client_factory,
+        base::Clock* clock) override;
 
     std::vector<FakeNearbyShareCertificateManager*> instances_;
   };

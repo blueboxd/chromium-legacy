@@ -28,7 +28,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/datagram_client_socket.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "net/base/address_tracker_linux.h"
 #endif
 
@@ -329,7 +329,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
 void AddressSorterPosix::OnIPAddressChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_map_.clear();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   const internal::AddressTrackerLinux* tracker =
       NetworkChangeNotifier::GetAddressTracker();
   if (!tracker)

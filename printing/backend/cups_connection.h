@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_jobs.h"
@@ -38,9 +37,9 @@ class PRINTING_EXPORT CupsConnection {
   CupsConnection(const GURL& print_server_url,
                  http_encryption_t encryption,
                  bool blocking);
-
   CupsConnection(CupsConnection&& connection);
-
+  CupsConnection(const CupsConnection&) = delete;
+  CupsConnection& operator=(const CupsConnection&) = delete;
   ~CupsConnection();
 
   // Returns a vector of all the printers configure on the CUPS server.
@@ -74,8 +73,6 @@ class PRINTING_EXPORT CupsConnection {
   bool blocking_;
 
   ScopedHttpPtr cups_http_;
-
-  DISALLOW_COPY_AND_ASSIGN(CupsConnection);
 };
 
 }  // namespace printing

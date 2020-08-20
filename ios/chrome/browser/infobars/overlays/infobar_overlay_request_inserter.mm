@@ -75,10 +75,7 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
   std::unique_ptr<OverlayRequest> request =
       request_factory_->CreateInfobarRequest(params.infobar,
                                              params.overlay_type);
-  // TODO(crbug.com/1030357): Replace early return with a DCHECK once all
-  // infobars have been converted to use OverlayPresenter.
-  if (!request)
-    return;
+  DCHECK(request);
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(params.infobar);
   DCHECK_EQ(infobar_ios,
             request->GetConfig<InfobarOverlayRequestConfig>()->infobar());

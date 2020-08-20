@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -298,6 +299,12 @@ TEST_F(TabSearchPageHandlerTest, CloseTab) {
   handler()->CloseTab(tab_id);
   ASSERT_EQ(1, browser1()->tab_strip_model()->count());
   ASSERT_EQ(1, browser2()->tab_strip_model()->count());
+}
+
+TEST_F(TabSearchPageHandlerTest, ShowFeedbackPage) {
+  base::HistogramTester histogram_tester;
+  handler()->ShowFeedbackPage();
+  histogram_tester.ExpectTotalCount("Feedback.RequestSource", 1);
 }
 
 }  // namespace

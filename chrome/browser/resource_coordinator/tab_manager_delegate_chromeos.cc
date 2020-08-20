@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/memory/pressure/system_memory_pressure_evaluator.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -223,7 +223,7 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
   // A margin file can contain multiple values but the first one
   // represents the critical memory threshold.
   std::vector<int> margin_parts =
-      util::chromeos::SystemMemoryPressureEvaluator::GetMarginFileParts();
+      chromeos::memory::SystemMemoryPressureEvaluator::GetMarginFileParts();
   if (!margin_parts.empty()) {
     return margin_parts[0] * 1024;
   }
@@ -235,7 +235,7 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
 // memory back to the margin.
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
   uint64_t available_mem_mb;
-  auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
+  auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
   if (monitor) {
     available_mem_mb = monitor->GetAvailableMemoryKB();
   } else {
@@ -442,7 +442,7 @@ void TabManagerDelegate::Observe(int type,
       // on top. So the longer the cleanup phase takes, the more tabs will
       // get discarded in parallel.
 
-      auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
+      auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
       if (monitor) {
         monitor->ScheduleEarlyCheck();
       }

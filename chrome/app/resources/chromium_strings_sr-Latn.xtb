@@ -118,7 +118,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="5416696090975899932">Chromium ne može da pokaže prikaz pre štampanja kada nedostaje ugrađeni PDF prikazivač.</translation>
 <translation id="5427571867875391349">Podesi Chromium kao podrazumevani pregledač</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium beta</translation>
-<translation id="544968170749360982">Prijavljeni ste pomoću novog naloga u prostoru korisnika <ph name="EXISTING_USER" />. Želite li da napravite nov Chromium prostor za korisnika <ph name="NEW_USER" /> da bi podaci bili razdvojeni?</translation>
+<translation id="544968170749360982">Prijavljeni ste pomoću novog naloga u prostoru korisnika <ph name="EXISTING_USER" />. Želite li da napravite nov Chromium prostor za korisnika <ph name="NEW_USER" /> da bi vam podaci bili razdvojeni?</translation>
 <translation id="5479196819031988440">Chromium OS ne može da otvori ovu stranicu.</translation>
 <translation id="5480860683791598150">Chromium traži pristup vašoj lokaciji da biste je delili sa ovim sajtom</translation>
 <translation id="549669000822060376">Sačekajte da Chromium instalira najnovija ažuriranja sistema.</translation>
@@ -203,7 +203,7 @@ Chromium ne može da vrati podešavanja.</translation>
 <translation id="7561906087460245826">Obriši podatke i iz Chromium-a (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ako se podešavanje ne prikazuje na ovoj stranici, potražite ga u <ph name="LINK_BEGIN" />
       podešavanjima Chromium OS-a<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Prijavljeni ste pomoću poslovnog naloga. Želite li da napravite nov Chromium prostor za korisnika <ph name="NEW_USER" /> da bi lični podaci bili razdvojeni?</translation>
+<translation id="7607142834923530546">Prijavljeni ste pomoću poslovnog naloga. Želite li da napravite nov Chromium prostor za korisnika <ph name="NEW_USER" /> da bi vam lični podaci bili razdvojeni?</translation>
 <translation id="761356813943268536">Chromium koristi kameru i mikrofon.</translation>
 <translation id="7617377681829253106">Upravo smo poboljšali Chromium</translation>
 <translation id="7628001322379820951">Chromium je pronašao štetan softver na računaru</translation>

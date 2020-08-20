@@ -54,7 +54,8 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy {
       colorId: 0,
       themeFrameColor: '',
       themeShapeColor: '',
-      themeFrameTextColor: ''
+      themeFrameTextColor: '',
+      themeGenericAvatar: ''
     });
   }
 

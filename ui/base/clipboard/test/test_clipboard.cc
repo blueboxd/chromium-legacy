@@ -54,13 +54,13 @@ bool TestClipboard::IsFormatAvailable(
   if (dlp_controller_ && !dlp_controller_->IsDataReadAllowed(
                              GetStore(buffer).data_src.get(), data_dst))
     return false;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // The linux clipboard treats the presence of text on the clipboard
   // as the url format being available.
   if (format == ClipboardFormatType::GetUrlType())
     return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
                              data_dst);
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   const DataStore& store = GetStore(buffer);
   return base::Contains(store.data, format);
 }

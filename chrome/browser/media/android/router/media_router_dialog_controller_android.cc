@@ -17,7 +17,6 @@
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -139,14 +138,6 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {}
 
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog(
     MediaRouterDialogOpenOrigin activation_location) {
-  // TODO(crbug.com/736568): Re-enable dialog in VR.
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          initiator(),
-          vr::UiSuppressedElement::kMediaRouterPresentationRequest)) {
-    CancelPresentationRequest();
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<MediaSource> sources;

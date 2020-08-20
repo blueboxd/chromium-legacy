@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">የብሉቱዝ ቅንብሮችን አሳይ። <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">ሁሉጊዜ መደርደሪያን አሳይ</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> ተገናኝቷል</translation>
 <translation id="1341651618736211726">ትርፍ ፍሰት</translation>
 <translation id="1346748346194534595">ቀኝ</translation>
 <translation id="1351937230027495976">ምናሌ ሰብስብ</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">አስጀማሪ መመሪያ</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="698231206551913481">አንዴ ይህ ተጠቃሚ ከተወገደ በኋላ ከዚህ ተጠቃሚ ጋር የተጎዳኙ ሁሉም ፋይሎች እና አካባቢያዊ ውሂብ በቋሚነት ይሰረዛሉ።</translation>
+<translation id="6990778048354947307">ጨለማ ገጽታ</translation>
 <translation id="7007983414944123363">የእርስዎ ፒን ወይም ይለፍ ቃል ሊረጋገጥ አልቻለም። እንደገና ይሞክሩ።</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="7025533177575372252">የእርስዎን <ph name="DEVICE_NAME" /> ከስልክዎ ጋር ያገናኙት</translation>

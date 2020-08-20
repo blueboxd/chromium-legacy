@@ -40,6 +40,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1302880136325416935">Mostra impostazioni Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Mostra sempre shelf</translation>
+<translation id="1333308631814936910">Dispositivo <ph name="DISPLAY_NAME" /> connesso</translation>
 <translation id="1341651618736211726">Overflow</translation>
 <translation id="1346748346194534595">Destra</translation>
 <translation id="1351937230027495976">Comprimi il menu</translation>
@@ -520,6 +521,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>
+<translation id="6990778048354947307">Tema scuro</translation>
 <translation id="7007983414944123363">Impossibile verificare il PIN o la password. Riprova.</translation>
 <translation id="7015766095477679451">Ritorna alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connetti il tuo dispositivo <ph name="DEVICE_NAME" /> con il telefono</translation>

@@ -22,6 +22,7 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedal {
  public:
   OmniboxPedalClearBrowsingData()
       : OmniboxPedal(
+            OmniboxPedalId::CLEAR_BROWSING_DATA,
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
                 IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
@@ -37,6 +38,7 @@ class OmniboxPedalManagePasswords : public OmniboxPedal {
  public:
   OmniboxPedalManagePasswords()
       : OmniboxPedal(
+            OmniboxPedalId::MANAGE_PASSWORDS,
             LabelStrings(IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT,
                          IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT,
                          IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS,
@@ -51,6 +53,7 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
  public:
   OmniboxPedalUpdateCreditCard()
       : OmniboxPedal(
+            OmniboxPedalId::UPDATE_CREDIT_CARD,
             OmniboxPedal::LabelStrings(
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT_SHORT,
@@ -66,6 +69,7 @@ class OmniboxPedalLaunchIncognito : public OmniboxPedal {
  public:
   OmniboxPedalLaunchIncognito()
       : OmniboxPedal(
+            OmniboxPedalId::LAUNCH_INCOGNITO,
             LabelStrings(IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
                          IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
                          IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS,
@@ -85,6 +89,7 @@ class OmniboxPedalTranslate : public OmniboxPedal {
  public:
   OmniboxPedalTranslate()
       : OmniboxPedal(
+            OmniboxPedalId::TRANSLATE,
             LabelStrings(IDS_OMNIBOX_PEDAL_TRANSLATE_HINT,
                          IDS_OMNIBOX_PEDAL_TRANSLATE_HINT_SHORT,
                          IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS,
@@ -104,6 +109,7 @@ class OmniboxPedalUpdateChrome : public OmniboxPedal {
  public:
   OmniboxPedalUpdateChrome()
       : OmniboxPedal(
+            OmniboxPedalId::UPDATE_CHROME,
             LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
                          IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
                          IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS,

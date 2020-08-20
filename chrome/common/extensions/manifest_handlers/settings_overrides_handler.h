@@ -29,7 +29,7 @@ struct SettingsOverrides : public Extension::ManifestData {
 
   static const SettingsOverrides* Get(const Extension* extension);
 
-  std::unique_ptr<api::manifest_types::ChromeSettingsOverrides::Search_provider>
+  std::unique_ptr<api::manifest_types::ChromeSettingsOverrides::SearchProvider>
       search_engine;
   std::unique_ptr<GURL> homepage;
   std::vector<GURL> startup_pages;

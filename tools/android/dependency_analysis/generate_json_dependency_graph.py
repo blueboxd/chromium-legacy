@@ -10,6 +10,7 @@ import math
 import multiprocessing
 import pathlib
 import subprocess
+import sys
 
 from typing import List, Tuple
 
@@ -87,27 +88,34 @@ class JavaClassJdepsParser(object):
         from_node.add_build_target(build_target)
 
 
-def _run_jdeps(jdeps_path: str, filepath: pathlib.Path):
+def _run_command(command: List[str]) -> str:
+    """Runs a command and returns the output.
+
+    Raises an exception and prints the command output if the command fails."""
+    try:
+        run_result = subprocess.run(command,
+                                    capture_output=True,
+                                    text=True,
+                                    check=True)
+    except subprocess.CalledProcessError as e:
+        print(f'{command} failed with error:\n{e.output}', file=sys.stderr)
+        raise
+    return run_result.stdout
+
+
+def _run_jdeps(jdeps_path: str, filepath: pathlib.Path) -> str:
     """Runs jdeps on the given filepath and returns the output."""
     print(f'Running jdeps and parsing output for {filepath}')
-    jdeps_res = subprocess.run([jdeps_path, '-R', '-verbose:class', filepath],
-                               capture_output=True,
-                               text=True,
-                               check=True)
-    return jdeps_res.stdout
+    return _run_command([jdeps_path, '-R', '-verbose:class', filepath])
 
 
 def _run_gn_desc_list_dependencies(build_output_dir: str, target: str,
-                                   gn_path: str):
+                                   gn_path: str) -> str:
     """Runs gn desc to list all jars that a target depends on.
 
     This includes direct and indirect dependencies."""
-    gn_desc_res = subprocess.run(
-        [gn_path, 'desc', '--all', build_output_dir, target, 'deps'],
-        capture_output=True,
-        text=True,
-        check=True)
-    return gn_desc_res.stdout
+    return _run_command(
+        [gn_path, 'desc', '--all', build_output_dir, target, 'deps'])
 
 
 JarTargetList = List[Tuple[str, pathlib.Path]]

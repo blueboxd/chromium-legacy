@@ -21,10 +21,14 @@
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
+const base::FilePath::CharType kPublicCertificateDatabaseName[] =
+    FILE_PATH_LITERAL("NearbySharePublicCertificateDatabase");
+
 std::string EncodeString(const std::string& unencoded_string) {
   std::string encoded_string;
   base::Base64UrlEncode(unencoded_string,
@@ -76,16 +80,24 @@ NearbyShareCertificateStorageImpl::Factory*
 std::unique_ptr<NearbyShareCertificateStorage>
 NearbyShareCertificateStorageImpl::Factory::Create(
     PrefService* pref_service,
-    std::unique_ptr<
-        leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-        proto_database) {
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& profile_path) {
   if (test_factory_) {
-    return test_factory_->CreateInstance(pref_service,
-                                         std::move(proto_database));
+    return test_factory_->CreateInstance(pref_service, proto_database_provider,
+                                         profile_path);
   }
 
-  return base::WrapUnique(new NearbyShareCertificateStorageImpl(
-      pref_service, std::move(proto_database)));
+  base::FilePath database_path =
+      profile_path.Append(kPublicCertificateDatabaseName);
+  scoped_refptr<base::SequencedTaskRunner> database_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+
+  return std::make_unique<NearbyShareCertificateStorageImpl>(
+      pref_service,
+      proto_database_provider->GetDB<nearbyshare::proto::PublicCertificate>(
+          leveldb_proto::ProtoDbType::NEARBY_SHARE_PUBLIC_CERTIFICATE_DATABASE,
+          database_path, database_task_runner));
 }
 
 // static

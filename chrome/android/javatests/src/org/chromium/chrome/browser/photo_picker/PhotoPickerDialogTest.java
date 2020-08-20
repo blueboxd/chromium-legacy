@@ -34,6 +34,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -42,7 +43,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelega
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
-import org.chromium.ui.PhotoPickerListener;
+import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.io.File;
@@ -257,8 +258,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
                     @Override
                     public PhotoPickerDialog call() {
                         final PhotoPickerDialog dialog = new PhotoPickerDialog(
-                                mActivityTestRule.getActivity(), contentResolver,
-                                PhotoPickerDialogTest.this, multiselect, mimeTypes);
+                                mActivityTestRule.getActivity().getWindowAndroid(), contentResolver,
+                                PhotoPickerDialogTest.this, multiselect, mimeTypes,
+                                new VrModeProviderImpl());
                         dialog.show();
                         return dialog;
                     }

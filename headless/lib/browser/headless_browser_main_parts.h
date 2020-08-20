@@ -32,7 +32,7 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_MAC)
   void PreMainMessageLoopStart() override;
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void PostMainMessageLoopStart() override;
 #endif
   void QuitMainMessageLoop();

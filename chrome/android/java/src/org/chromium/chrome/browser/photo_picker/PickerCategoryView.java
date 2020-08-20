@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,15 +32,16 @@ import org.chromium.base.DiscardableReferencePool.DiscardableReference;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.components.browser_ui.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.net.MimeTypeFilter;
-import org.chromium.ui.PhotoPickerListener;
-import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.PhotoPickerListener;
+import org.chromium.ui.base.SelectFileDialog;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,8 +92,8 @@ public class PickerCategoryView extends RelativeLayout
     // The view containing the RecyclerView and the toolbar, etc.
     private SelectableListLayout<PickerBitmap> mSelectableListLayout;
 
-    // Our activity.
-    private ChromeActivity mActivity;
+    // The {@link WindowAndroid} for the {@link Activity}.
+    private WindowAndroid mWindowAndroid;
 
     // The ContentResolver to use to retrieve image metadata from disk.
     private ContentResolver mContentResolver;
@@ -190,15 +192,18 @@ public class PickerCategoryView extends RelativeLayout
     private ImageView mZoom;
 
     /**
-     * @param context The context to use.
+     * @param windowAndroid The window of the hosting {@link Activity}.
      * @param contentResolver The ContentResolver to use to retrieve image metadata from disk.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
+     * @param vrModeProvider The VR mode provider for querying VR mode state.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context, ContentResolver contentResolver,
-            boolean multiSelectionAllowed, PhotoPickerToolbar.PhotoPickerToolbarDelegate delegate) {
-        super(context);
-        mActivity = (ChromeActivity) context;
+    public PickerCategoryView(WindowAndroid windowAndroid, ContentResolver contentResolver,
+            boolean multiSelectionAllowed, PhotoPickerToolbar.PhotoPickerToolbarDelegate delegate,
+            VrModeProvider vrModeProvider) {
+        super(windowAndroid.getContext().get());
+        mWindowAndroid = windowAndroid;
+        Context context = mWindowAndroid.getContext().get();
         mContentResolver = contentResolver;
         mMultiSelectionAllowed = multiSelectionAllowed;
 
@@ -221,7 +226,7 @@ public class PickerCategoryView extends RelativeLayout
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
-                false, new VrModeProviderImpl());
+                false, vrModeProvider);
         toolbar.setNavigationOnClickListener(this);
         toolbar.setDelegate(delegate);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
@@ -231,7 +236,7 @@ public class PickerCategoryView extends RelativeLayout
 
         calculateGridMetrics();
 
-        mLayoutManager = new GridLayoutManager(mActivity, mColumns);
+        mLayoutManager = new GridLayoutManager(context, mColumns);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
@@ -279,7 +284,7 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         if (mDecoderServiceHost != null) {
-            mDecoderServiceHost.unbind(mActivity);
+            mDecoderServiceHost.unbind(mWindowAndroid.getContext().get());
             mDecoderServiceHost = null;
         }
     }
@@ -492,7 +497,7 @@ public class PickerCategoryView extends RelativeLayout
 
     public LruCache<String, Thumbnail> getLowResThumbnails() {
         if (mLowResThumbnails == null || mLowResThumbnails.get() == null) {
-            mLowResThumbnails = mActivity.getReferencePool().put(
+            mLowResThumbnails = GlobalDiscardableReferencePool.getReferencePool().put(
                     new LruCache<String, Thumbnail>(mCacheSizeSmall));
         }
         return mLowResThumbnails.get();
@@ -500,7 +505,7 @@ public class PickerCategoryView extends RelativeLayout
 
     public LruCache<String, Thumbnail> getHighResThumbnails() {
         if (mHighResThumbnails == null || mHighResThumbnails.get() == null) {
-            mHighResThumbnails = mActivity.getReferencePool().put(
+            mHighResThumbnails = GlobalDiscardableReferencePool.getReferencePool().put(
                     new LruCache<String, Thumbnail>(mCacheSizeLarge));
         }
         return mHighResThumbnails.get();
@@ -508,7 +513,7 @@ public class PickerCategoryView extends RelativeLayout
 
     public LruCache<String, Thumbnail> getFullScreenBitmaps() {
         if (mFullScreenBitmaps == null || mFullScreenBitmaps.get() == null) {
-            mFullScreenBitmaps = mActivity.getReferencePool().put(
+            mFullScreenBitmaps = GlobalDiscardableReferencePool.getReferencePool().put(
                     new LruCache<String, Thumbnail>(mCacheSizeFullScreen));
         }
         return mFullScreenBitmaps.get();
@@ -537,14 +542,15 @@ public class PickerCategoryView extends RelativeLayout
      */
     private void calculateGridMetrics() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        Activity activity = (Activity) mWindowAndroid.getContext().get();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         int width = displayMetrics.widthPixels;
         int minSize =
-                mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
+                activity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
         mPadding = mMagnifyingMode
                 ? 0
-                : mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
+                : activity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
         mColumns = mMagnifyingMode ? 1 : Math.max(1, (width - mPadding) / (minSize + mPadding));
         mImageWidth = (width - mPadding * (mColumns + 1)) / (mColumns);
         mImageHeight = mMagnifyingMode
@@ -572,7 +578,7 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();
-        mWorkerTask = new FileEnumWorkerTask(mActivity.getWindowAndroid(), this,
+        mWorkerTask = new FileEnumWorkerTask(mWindowAndroid, this,
                 new MimeTypeFilter(mMimeTypes, true), mMimeTypes, mContentResolver);
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -648,7 +654,7 @@ public class PickerCategoryView extends RelativeLayout
             @PhotoPickerListener.PhotoPickerAction int action, Uri[] photos, int umaId) {
         mListener.onPhotoPickerUserAction(action, photos);
         mDialog.dismiss();
-        UiUtils.onPhotoPickerDismissed();
+        SelectFileDialog.onPhotoPickerDismissed();
         recordFinalUmaStats(umaId);
     }
 

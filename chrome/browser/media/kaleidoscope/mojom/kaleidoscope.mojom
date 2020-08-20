@@ -58,6 +58,15 @@ interface KaleidoscopeDataProvider {
   // Called when the user successfully completes the first run experience.
   SetFirstRunExperienceCompleted();
 
+  // Returns all the Media Feeds so the user can choose which ones they want to enable/disable.
+  GetAllMediaFeeds() => (array<media_feeds.mojom.MediaFeed> feeds);
+
+  // Called when the user completes the consent screen for Media Feeds.
+  SetMediaFeedsConsent(bool accepted_media_feeds,
+                       bool accepted_auto_select_media_feeds,
+                       array<int64> enabled_feed_ids,
+                       array<int64> disabled_feed_ids);
+
   // Returns all the watch time origins from media history store that have
   // watch time above a threshold.
   GetHighWatchTimeOrigins() => (array<url.mojom.Origin> origins);

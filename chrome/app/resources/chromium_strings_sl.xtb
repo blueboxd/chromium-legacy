@@ -203,7 +203,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="7561906087460245826">Počisti tudi podatke iz Chromiuma (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Če nastavitev ni prikazana na tej strani, preverite <ph name="LINK_BEGIN" />
       nastavitve operacijskega sistema Chromium<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Prijavili ste se s službenim računom. Ali želite ustvariti nov prostor v Chromiumu za domeno <ph name="NEW_USER" />, da bodo osebni podatki ločeni?</translation>
+<translation id="7607142834923530546">Prijavili ste se s službenim računom. Ali želite ustvariti nov prostor v Chromiumu za uporabnika <ph name="NEW_USER" />, da bodo osebni podatki ločeni?</translation>
 <translation id="761356813943268536">Chromium uporablja vašo kamero in mikrofon.</translation>
 <translation id="7617377681829253106">Chromium je pravkar postal še boljši</translation>
 <translation id="7628001322379820951">Chromium je v računalniku odkril škodljivo programsko opremo</translation>

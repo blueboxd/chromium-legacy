@@ -3426,6 +3426,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "omnibox-trending-zero-prefix-suggestions-on-ntp",
+    "owners": [ "mahmadi", "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",
     "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
     "expiry_milestone": 89
@@ -4241,6 +4246,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "tabbed-app-overflow-menu-regroup",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "terminal-system-app-legacy-settings",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
     "expiry_milestone": 85
@@ -4549,6 +4559,11 @@
     // the particular hardware. Useful to debug user issues or multiple runtimes
     // with a single headset.
     "expiry_milestone": -1
+  },
+  {
+    "name": "wifi-sync-android",
+    "owners": [ "jonmann", "cvandermerwe@google.com", "cros-system-services@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "win-use-native-spellchecker",

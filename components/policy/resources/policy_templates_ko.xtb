@@ -933,11 +933,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
       이 정책이 False로 설정되어 있으면 사용자가 네트워크 파일 공유를 사용할 수 없게 됩니다.</translation>
 <translation id="2435052056904485763">Kerberos 위임 서버 허용 목록</translation>
-<translation id="2439793457499023062">정책이 설정되지 않은 경우 Chrome 정리도구가 원치 않은 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않은 소프트웨어를 삭제할 것인지 묻습니다. 사용자는 Google과 정리 결과를 공유하여 향후 원치 않은 소프트웨어 감지를 도울 것인지 여부를 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 명시된 바와 같이 파일 메타데이터, 자동 설치된 확장 프로그램, 레지스트리 키가 포함됩니다.
+<translation id="2439793457499023062">정책이 설정되지 않은 경우 Chrome 정리도구가 원치 않는 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 삭제할 것인지 묻습니다. 사용자는 Google과 정리 결과를 공유하여 향후 원치 않는 소프트웨어 감지를 도울 것인지 여부를 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 명시된 바와 같이 파일 메타데이터, 자동 설치된 확장 프로그램, 레지스트리 키가 포함됩니다.
 
-      정책이 사용 중지된 경우 Chrome 정리도구가 원치 않은 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책을 재정의하여 Google에 검사 관련 메타데이터를 보고하지 않습니다. Chrome 정리도구가 사용자에게 원치 않은 소프트웨어를 삭제할 것인지 묻습니다.  정리 결과는 Google에 보고되지 않으며 사용자에게는 Google에 정리 결과를 보고하도록 선택할 옵션이 없습니다.
+      정책이 사용 중지된 경우 Chrome 정리도구가 원치 않는 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책을 재정의하여 Google에 검사 관련 메타데이터를 보고하지 않습니다. Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 삭제할 것인지 묻습니다.  정리 결과는 Google에 보고되지 않으며 사용자에게는 Google에 정리 결과를 보고하도록 선택할 옵션이 없습니다.
 
-      사용 설정된 경우 Chrome 정리도구가 원치 않은 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. Chrome 정리도구가 사용자에게 원치 않은 소프트웨어를 삭제할 것인지 묻습니다.  정리 결과는 Google에 보고되며 사용자에게는 Google에 정리 결과를 보고하지 않도록 선택할 옵션이 없습니다.
+정책이 사용 설정된 경우 Chrome 정리도구가 원치 않는 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 삭제할 것인지 묻습니다.  정리 결과는 Google에 보고되며 사용자에게는 Google에 정리 결과를 보고하지 않도록 선택할 옵션이 없습니다.
 
       <ph name="MS_WIN_NAME" />에서 이 기능은 <ph name="MS_AD_NAME" /> 도메인에 연결된 인스턴스, Windows 10 Pro에서 실행되는 인스턴스, Chrome 브라우저 클라우드 관리에 등록된 인스턴스에서만 사용할 수 있습니다.</translation>
 <translation id="2440773021691931148">전원과 관련된 하드웨어 통계 및 식별자를 보고합니다.
@@ -1452,6 +1452,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="3192902750888034827"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있으면 <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />을 설정하여 새 탭 페이지를 제공할 때 사용되는 검색엔진의 URL을 지정합니다.
 
       <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />을 설정하지 않으면 새 탭 페이지가 제공되지 않습니다.</translation>
+<translation id="3195103497550111266">이 정책을 <ph name="DEVICE_LTS_TAG_VALUE" />로 설정하면 기기가 LTS(장기적 지원) 업데이트를 받을 수 있습니다.</translation>
 <translation id="3196585866522778760">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 85에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           배터리 전원으로 실행할 때 사용자 입력이 없어서 유휴 작업이 실행되기까지 걸리는 시간을 지정합니다.
@@ -1468,6 +1469,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="322359555555487980"><ph name="PRODUCT_OS_NAME" />에서의 변형 사용 가능 여부 결정</translation>
 <translation id="3236046242843493070">확장 프로그램, 앱, 사용자 스크립트 설치 등을 허용하는 URL 패턴</translation>
 <translation id="3240609035816615922">프린터 설정 액세스 정책</translation>
+<translation id="324062325008698789">프린터 목록 구성</translation>
 <translation id="3240655340884151271">도크의 내장 NIC MAC 주소</translation>
 <translation id="3242756958360374888"><ph name="PRODUCT_NAME" />에서 계정 공개 상태를 관리하는 데 사용되는 패턴 목록이 포함되어 있습니다.
 
@@ -1681,11 +1683,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="3540935459049973317">앱별 시간 제한</translation>
-<translation id="3543579213273969284">정책을 사용으로 설정하면 HTTP 인증에서 KDC 정책에 의한 인증을 승인합니다. 즉, <ph name="PRODUCT_NAME" />에서는 KDC가 서비스 티켓에 <ph name="OK_AS_DELEGATE" />를 설정한 경우에만 사용자 인증 정보를 위임합니다. RFC 5896(https://tools.ietf.org/html/rfc5896.html)을 참고하세요. 서비스는 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />와 일치해야 합니다.
-
-      정책을 사용 안함으로 설정하거나 설정하지 않으면 지원되는 플랫폼에서 KDC 정책이 무시되고 <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> 정책만 인정됩니다.
-
-      <ph name="MS_WIN_NAME" />에서는 KDC 정책이 항상 인정됩니다.</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3550122827225052130">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 85에서 삭제될 예정입니다. 대신 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" /> 정책을 사용하세요.
 
@@ -2202,12 +2199,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책을 '사용 안함'으로 설정하거나 설정하지 않으면 모바일 데이터에 연결되어 있을 때도 사용자가 드라이브로 파일을 전송하도록 허용합니다.</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4261820385751181068">기기 로그인 화면 언어</translation>
-<translation id="427220754384423013">사용자가 사용할 수 있는 프린터를 지정합니다.
-
-      이 정책은 <ph name="BULK_PRINTERS_ACCESS_MODE" />으(로) <ph name="PRINTERS_WHITELIST" />이(가) 선택되었을 때만 사용됩니다.
-
-      이 정책을 사용하면 이 정책에 있는 값과 ID가 일치하는 프린터만 사용자에게 제공됩니다. 이 ID는 <ph name="BULK_PRINTERS_POLICY" />에 명시된 파일 내 'id' 또는 'guid' 입력란과 일치해야 합니다.
-      </translation>
 <translation id="4285674129118156176">제휴되지 않은 사용자가 ARC를 사용할 수 있게 허용</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">기기에서 지정된 도크 MAC 주소</translation>
@@ -2822,22 +2813,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5272684451155669299">True일 경우, 사용자는 Chrome 기기의 하드웨어를 사용하여 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" />을(를) 통해 개인정보 보호 설정 CA에 대한 인증서를 원격으로 증명할 수 있습니다.
 
           False로 설정되어 있거나 설정되지 않은 경우, API 호출 시 오류 메시지가 표시되며 호출에 실패합니다.</translation>
-<translation id="5273333167497341402">기기에 연결된 엔터프라이즈 프린터의 설정을 제공합니다.
-
-      이 정책에서는 <ph name="PRODUCT_OS_NAME" /> 기기에 프린터 설정을 제공하도록 허용합니다.  형식은 NativePrinters 사전과 동일하며, 허용 목록 또는 차단 목록을 사용하려면 프린터마다 'id' 또는 'guid' 필드가 추가로 필요합니다.
-
-      파일 크기는 5MB를 초과할 수 없으며 JSON으로 인코딩되어야 합니다.  5MB는 약 21,000대의 프린터가 포함된 파일을 인코딩했을 때 예상할 수 있는 크기입니다.  암호화 해시는 다운로드 파일의 무결성을 확인하는 데 사용됩니다.
-
-      파일이 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 다시 다운로드됩니다.
-
-      정책을 설정하면 <ph name="PRODUCT_OS_NAME" />에서 프린터 설정 파일을 다운로드하고 <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />, <ph name="DEVICE_PRINTERS_BLOCKLIST" />에 따라 프린터를 사용할 수 있게 됩니다.
-
-      이 정책은 개별 기기에서의 프린터 설정 가능 여부에 영향을 미치지 않습니다.  개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
-
-      이 정책은 <ph name="BULK_PRINTERS_POLICY" />에 추가되는 정책입니다.
-
-      정책을 설정하지 않으면 기기 프린터가 사용되지 않으며 다른 <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> 정책은 무시됩니다.
-      </translation>
 <translation id="5273744932022326215">로그인 화면에서 커서 강조표시 접근성 기능을 사용합니다.
 
           이 정책이 True로 설정되면 로그인 화면에서 커서 강조표시가 항상 사용됩니다.
@@ -2976,6 +2951,14 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
       정책을 설정하지 않는 경우, 사용자가 로그인 화면에서 자신을 표현하는 아바타 이미지를 선택할 수 있습니다.</translation>
+<translation id="5431392643649571773"><ph name="PRODUCT_NAME" /> 기능을 사용 설정하면 뒤로-앞으로 캐시를 사용할 수 있습니다. 페이지에서 벗어나면 현재 상태(문서 트리, 스크립트 등)가 뒤로-앞으로 캐시에 보존될 수 있습니다. 브라우저에서 다시 페이지로 돌아가면 페이지가 뒤로-앞으로 캐시에서 복원되며 캐시되기 전 상태로 표시됩니다.
+
+          이 기능은 이 캐싱을 예상하지 않는 일부 웹사이트에서 문제를 일으킬 수 있습니다. 특히 일부 웹사이트는 브라우저에서 페이지를 벗어날 때 '<ph name="UNLOAD_HANDLER_NAME" />' 이벤트를 전달해야 합니다. 페이지가 뒤로-앞으로 캐시에 저장되면 '<ph name="UNLOAD_HANDLER_NAME" />' 이벤트가 전달되지 않습니다.
+
+          정책을 사용으로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" /> 기능이 사용 설정됩니다.
+
+          정책을 사용 안함으로 설정하면 기능이 강제로 사용 중지됩니다.
+          </translation>
 <translation id="5437214086679373363">검사가 필요한 경우 사용자가 비밀번호로 보호된 파일을 업로드 또는 다운로드하도록 허용할지 여부를 제어합니다.  이 제한은 검사가 사용 설정된 도메인 목록을 제어하는 정책, <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 및 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />에서 검사가 필요하다고 결정한 파일에만 적용됩니다.
 
       정책이 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 사용자가 비밀번호로 보호된 파일을 업로드하거나 다운로드하지 못하도록 차단합니다.
@@ -3257,17 +3240,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5775235485119094648">고정 범위에 해당할 때 배터리를 충전합니다.</translation>
 <translation id="5776485039795852974">사이트에서 데스크톱 알림을 표시할 때마다 확인</translation>
 <translation id="5783009211970309878">인쇄 머리글 및 바닥글</translation>
-<translation id="5783576706065107606">새로운 <ph name="CORS" /> 구현에서 <ph name="CORS" /> 확인 완화를 사용 설정하여 확장 프로그램이 호환되는 동작을 유지하도록 허용하고 <ph name="PRODUCT_NAME" />에서 <ph name="CORS" /> 확인 없이 지정된 헤더를 전송하도록 허용합니다.
-
-      목록이 빈 상태로 설정되어 있으면 <ph name="PRODUCT_NAME" />은(는) 호환되는 방식으로 확장 프로그램을 실행하도록 시도하고 <ph name="WEB_REQUEST_API_MANUAL" />에 설명된 것처럼 <ph name="PRODUCT_NAME" /> 79의 <ph name="API" /> 변경사항을 적용하지 않습니다.
-
-      목록이 <ph name="HTTP" /> 요청 헤더 이름을 가지도록 설정되어 있으면 <ph name="CORS" /> 검사에서 등록된 헤더를 무시하고 확장 프로그램의 완화를 사용 설정합니다.
-
-      목록이 설정되지 않으면 위에서 설명된 완화가 모두 적용되지 않습니다.
-
-      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
-
-      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정이라고 발표되었으나, 버전 84에서 삭제되는 것으로 계획이 변경되었습니다.</translation>
 <translation id="5790763087505467169">관리되는 게스트 세션 자동 실행 알림 줄이기</translation>
 <translation id="5806128552675651249">배경 그래픽을 포함하지 않은 경우에만 인쇄 허용</translation>
 <translation id="5809210507920527553">Linux 컨테이너(Crostini) 관련 설정을 제어합니다.</translation>
@@ -3331,17 +3303,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 설정을 사용 중지하거나 설정하지 않으면 모든 호스트에 대해 기본  TalkGadget 도메인 이름('chromoting-host.talkgadget.google.com')이 사용됩니다.
 
           원격 액세스 클라이언트는 이 정책 설정의 영향을 받지 않으며 TalkGadget에 액세스할 때 항상 'chromoting-client.talkgadget.google.com'을 사용합니다.</translation>
-<translation id="5888171512889380367">새 <ph name="CORS" /> 대신 기존 <ph name="CORS" /> 구현을 사용합니다.
-
-      설정이 True로 설정되어 있으면 이전 버전과 호환되어야 하는 기존 구현이 사용됩니다.
-
-      설정이 False로 설정되어 있거나 설정되어 있지 않으면 엔터프라이즈별 호환성 문제를 일으킬 수 있는 새 구현이 사용됩니다.
-
-      이 정책은 몇 번의 기능 출시를 거치고 나면 삭제됩니다.
-
-      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
-
-      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정이라고 발표되었으나, 버전 84에서 삭제되는 것으로 계획이 변경되었습니다.</translation>
 <translation id="5890063326284543943">Serial API 사용 제어</translation>
 <translation id="5893553533827140852">이 설정을 사용하도록 설정하면 gnubby 인증 요청이 원격 호스트 연결을 통해 프록시됩니다.
 
@@ -3885,24 +3846,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책을 False로 설정하거나 설정하지 않으면 사용자에게 <ph name="PLUGIN_VM_NAME" />이(가) 사용 설정되지 않습니다.
       정책을 True로 설정하면 다른 설정에서도 허용하는 한 사용자가 <ph name="PLUGIN_VM_NAME" />을(를) 사용하도록 설정됩니다. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 및 <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" />이(가) True로 설정되고 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 또는 <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />이(가) 설정되어야 <ph name="PLUGIN_VM_NAME" />이(가) 실행될 수 있습니다.</translation>
-<translation id="6741496055862838205">기기에 연결된 회사 프린터의 설정을 제공합니다.
-
-      이 정책에서는 <ph name="PRODUCT_OS_NAME" /> 기기에 프린터 설정을 제공하도록 허용합니다.  형식은 NativePrinters 사전과 동일하며, 허용 목록 또는 차단 목록을 사용하려면 프린터마다 'id' 또는 'guid' 필드가 추가로 필요합니다.
-
-      파일 크기는 5MB를 초과할 수 없으며 JSON으로 인코딩되어야 합니다.  5MB는 약 21,000대의 프린터가 포함된 파일을 인코딩했을 때 예상할 수 있는 크기입니다.  암호화 해시는 다운로드 파일의 무결성을 확인하는 데 사용됩니다.
-
-      파일이 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 다시 다운로드됩니다.
-
-      정책을 설정하면 <ph name="PRODUCT_OS_NAME" />에서 프린터 설정 파일을 다운로드하고 <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />, <ph name="DEVICE_PRINTERS_BLOCKLIST" />에 따라 프린터를 사용할 수 있게 됩니다.
-
-      이 정책은 개별 기기에서의 프린터 설정 가능 여부에 영향을 미치지 않으며,  개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
-
-      이 정책은 <ph name="BULK_PRINTERS_POLICY" />에 추가되는 정책입니다.
-
-      정책을 설정하지 않으면 기기 프린터가 사용되지 않으며 다른 <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> 정책은 무시됩니다.
-
-      이 정책은 지원 중단되었으므로 <ph name="DEVICE_PRINTERS" /> 정책을 대신 사용하세요.
-      </translation>
 <translation id="6752711782954612641"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있으면 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> 설정은 POST로 URL을 검색할 때의 매개변수를 지정합니다. 이 매개변수는 쉼표로 구분된 이름 값의 쌍으로 구성됩니다. 값이 <ph name="SEARCH_TERM_MARKER" />와 같은 템플릿 매개변수면 실제 검색어 데이터로 교체됩니다.
 
       <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />를 설정하지 않으면 GET 메서드를 사용해 검색 요청이 전송됩니다.</translation>
@@ -4407,6 +4350,23 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="749556411189861380">등록된 기기의 OS 및 펌웨어 버전을 보고합니다.
 
       이 정책을 설정하지 않거나 True로 설정하면 등록된 기기에서 주기적으로 OS 및 펌웨어 버전을 보고합니다. 이 설정을 False로 설정하면 버전 정보가 보고되지 않습니다.</translation>
+<translation id="7504111874944876852">프린터 목록을 설정합니다.
+
+      이 정책을 사용하면 관리자가 사용자에게 프린터 설정을 제공할 수
+      있습니다.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> 및 <ph name="PRINTER_DESCRIPTION" />은 프린터 선택을 용이하게 하기 위해 맞춤설정이 가능한 자유 형식 문자열로 구성되어 있습니다. <ph name="PRINTER_MANUFACTURER" /> 및 <ph name="PRINTER_MODEL" />을 통해 최종 사용자가 쉽게 프린터를 식별할 수 있습니다. 프린터의 제조업체 및 모델을 나타냅니다. <ph name="PRINTER_URI" />는 <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" /> 등 클라이언트 컴퓨터에서 연결할 수 있는 주소여야 합니다. <ph name="PRINTER_UUID" />는 선택사항입니다. 제공되는 경우 <ph name="ZEROCONF_DISCOVERY" /> 프린터의 중복을 삭제하는 데 사용됩니다.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" />이 프린터 이름을 포함하거나 <ph name="PRINTER_AUTOCONF" />가 True로 설정되어야 합니다. 이 두 가지 속성이 모두 포함되거나 속성이 없는 프린터는 무시됩니다.
+
+      프린터 설정은 프린터 최초 사용 시 완료됩니다.  프린터가 사용되어야 PPD가 다운로드됩니다.  이후 자주 사용되는 PPD가 캐시됩니다.
+
+      이 정책은 개별 기기에서의 프린터 설정 가능 여부에 영향을 미치지 않으며,  개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
+
+      Active Directory 관리 대상 기기에서는 이 정책을 통해 <ph name="MACHINE_NAME_VARIABLE" />을(를) Active Directory 컴퓨터 이름 또는 관련 하위 문자열로 확장할 수 있습니다. 예를 들어, 컴퓨터 이름이 <ph name="MACHINE_NAME_EXAMPLE" />인 경우, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />가 6번째 위치 이후에 시작되는 네 글자로 대체되어 <ph name="MACHINE_NAME_PART_EXAMPLE" />이(가) 됩니다. 이 위치는 0을 기준으로 합니다.
+
+      이 정책은 지원 중단되었으므로 <ph name="PRINTERS_POLICY_NAME" /> 정책을 대신 사용하세요.
+      </translation>
 <translation id="7506745375479451616">이 정책은 <ph name="IE_PRODUCT_NAME" />에서 전환할 때 <ph name="PRODUCT_NAME" />에서 URL을 여는 데 사용할 명령을 제어합니다. 정책을 실행 파일 경로로 설정하거나 <ph name="PRODUCT_NAME_PLACEHOLDER" />으로 설정하여 <ph name="PRODUCT_NAME" />의 위치를 자동으로 감지할 수 있습니다.
 
       정책을 설정하지 않으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />을 실행할 때 <ph name="IE_PRODUCT_NAME" />에서 <ph name="PRODUCT_NAME" />의 자체 실행 경로를 자동으로 감지합니다.
@@ -4652,6 +4612,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7841880500990419427">대체에 사용할 최소 TLS 버전</translation>
 <translation id="7846952520291088817">WebRTC ICE 후보에 노출된 로컬 IP의 URL</translation>
 <translation id="7848641140449742406">OS 설정</translation>
+<translation id="7850846808758624237">정책을 사용으로 설정하면 최초 실행 시 이전 기본 브라우저의 홈페이지를 가져옵니다. 정책을 사용 안함으로 설정하거나 설정하지 않으면 최초 실행 시 홈페이지를 가져오지 않습니다.
+
+      사용자는 가져오기 대화상자를 실행할 수 있으며 홈페이지 체크박스가 이 정책의 값에 맞게 선택되거나 선택 해제됩니다.</translation>
 <translation id="7863947545897944083">로그인 화면에서 고대비 접근성 기능을 사용 설정합니다.
 
           이 정책이 true로 설정된 경우 로그인 화면에서 고대비가 항상 사용됩니다.
@@ -5156,12 +5119,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="858309738002328421">대용량 파일 업로드 차단</translation>
 <translation id="8584279193368801689">PIN 인쇄 모드를 제한합니다. 정책이 설정되지 않은 경우 제한이 없는 것으로 간주됩니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다. PIN 인쇄 기능은 IPPS, HTTPS, USB 또는 IPP-over-USB 프로토콜을 사용하는 프린터에서만 지원됩니다.</translation>
 <translation id="8585558195682146109">사용자 다운로드 항목을 검사를 위해 보내기</translation>
-<translation id="8586528890725660268">사용자가 사용할 수 없는 프린터를 지정합니다.
-
-      이 정책은 <ph name="BULK_PRINTERS_ACCESS_MODE" />(으)로 <ph name="PRINTERS_BLACKLIST" />이(가) 선택되었을 때만 사용됩니다.
-
-      이 정책을 사용하면 ID가 이 정책에 명시된 프린터를 제외한 모든 프린터가 사용자에게 제공됩니다. 이 ID는 <ph name="BULK_PRINTERS_POLICY" />에 명시된 파일 내 'id' 또는 'guid' 입력란과 일치해야 합니다.
-      </translation>
 <translation id="8587229956764455752">새로운 사용자 계정 생성 허용</translation>
 <translation id="8591713876665299827">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 85에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
@@ -5361,6 +5318,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       보고됩니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8917070657147922192">사용자가 설치된 CA 인증을 관리하도록 허용합니다.</translation>
+<translation id="8919369436496201075">기기가 LTS 업데이트를 수신하도록 허용</translation>
 <translation id="8927015246639044346">업로드한 파일, 클립보드에서 붙여넣은 데이터 또는 드래그 앤 드롭한 데이터가 민감한 정보 보호 규칙을 위반하는지 검사하지 않아도 되는 URL 패턴 목록입니다.  이 정책은 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />가 사용 설정된 경우에만 사용됩니다.
 
       정책이 설정되지 않거나 빈 URL 패턴 목록으로 설정되면 모든 콘텐츠의 민감한 정보 보호 규칙 위반 여부를 검사합니다.

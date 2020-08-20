@@ -48,37 +48,6 @@ RemotingSinkMetadataPtr GetDefaultSinkMetadata() {
   return metadata;
 }
 
-// Implements basic functionality of a subset of the MediaRouter for use by the
-// unit tests in this module. Note that MockMediaRouter will complain at runtime
-// if any methods were called that should not have been called.
-class FakeMediaRouter : public media_router::MockMediaRouter {
- public:
-  FakeMediaRouter() {}
-  ~FakeMediaRouter() final {}
-
-  void RegisterRemotingSource(SessionID tab_id,
-                              CastRemotingConnector* remoting_source) final {
-    EXPECT_FALSE(tab_id_.is_valid());
-    tab_id_ = tab_id;
-    connector_ = remoting_source;
-  }
-
-  void UnregisterRemotingSource(SessionID tab_id) final {
-    EXPECT_EQ(tab_id, tab_id_);
-    tab_id_ = SessionID::InvalidValue();
-    connector_ = nullptr;
-  }
-
-  // Get the registered tab ID.
-  SessionID tab_id() const { return tab_id_; }
-
- private:
-  SessionID tab_id_ = SessionID::InvalidValue();
-  CastRemotingConnector* connector_ = nullptr;
-
-  base::WeakPtrFactory<FakeMediaRouter> weak_factory_{this};
-};
-
 class MockRemotingSource : public media::mojom::RemotingSource {
  public:
   MockRemotingSource() {}
@@ -208,13 +177,9 @@ class CastRemotingConnectorTest : public ::testing::Test {
 
   CastRemotingConnector* GetConnector() const { return connector_.get(); }
 
-  FakeMediaRouter* GetMediaRouter() const {
-    return const_cast<FakeMediaRouter*>(&media_router_);
-  }
-
  private:
   content::BrowserTaskEnvironment task_environment_;
-  FakeMediaRouter media_router_;
+  media_router::MockMediaRouter media_router_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<CastRemotingConnector> connector_;
 };

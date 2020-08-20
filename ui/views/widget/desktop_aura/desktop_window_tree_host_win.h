@@ -175,7 +175,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool WidgetSizeIsClientSize() const override;
   bool IsModal() const override;
   int GetInitialShowState() const override;
-  bool WillProcessWorkAreaChange() const override;
   int GetNonClientComponent(const gfx::Point& point) const override;
   void GetWindowMask(const gfx::Size& size, SkPath* path) override;
   bool GetClientAreaInsets(gfx::Insets* insets,

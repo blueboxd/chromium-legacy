@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/common/scoped_defer_task_posting.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -191,9 +192,28 @@ void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(
         base::BindRepeating(&MainThreadSchedulerImpl::OnTaskCompleted,
                             main_thread_scheduler_->GetWeakPtr(), nullptr));
+    GetTaskQueueImpl()->SetOnTaskPostedHandler(
+        internal::TaskQueueImpl::OnTaskPostedHandler());
   }
 
   ClearReferencesToSchedulers();
+}
+
+void MainThreadTaskQueue::SetOnIPCTaskPosted(
+    base::RepeatingCallback<void(const base::sequence_manager::Task&)>
+        on_ipc_task_posted_callback) {
+  if (GetTaskQueueImpl()) {
+    // We use the frame_scheduler_ to track metrics so as to ensure that metrics
+    // are not tied to individual task queues.
+    GetTaskQueueImpl()->SetOnTaskPostedHandler(on_ipc_task_posted_callback);
+  }
+}
+
+void MainThreadTaskQueue::DetachOnIPCTaskPostedWhileInBackForwardCache() {
+  if (GetTaskQueueImpl()) {
+    GetTaskQueueImpl()->SetOnTaskPostedHandler(
+        internal::TaskQueueImpl::OnTaskPostedHandler());
+  }
 }
 
 void MainThreadTaskQueue::ShutdownTaskQueue() {

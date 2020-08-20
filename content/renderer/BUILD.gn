@@ -45,6 +45,8 @@ target(link_target_type, "renderer") {
     "accessibility/render_accessibility_impl.h",
     "accessibility/render_accessibility_manager.cc",
     "accessibility/render_accessibility_manager.h",
+    "agent_scheduling_group.cc",
+    "agent_scheduling_group.h",
     "android/synchronous_layer_tree_frame_sink_impl.cc",
     "android/synchronous_layer_tree_frame_sink_impl.h",
     "browser_exposed_renderer_interfaces.cc",

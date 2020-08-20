@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">แสดงการตั้งค่าบลูทูธ <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">แสดงชั้นวางเสมอ</translation>
+<translation id="1333308631814936910">เชื่อมต่อ <ph name="DISPLAY_NAME" /> แล้ว</translation>
 <translation id="1341651618736211726">รายการเพิ่มเติม</translation>
 <translation id="1346748346194534595">ขวา</translation>
 <translation id="1351937230027495976">ยุบเมนู</translation>
@@ -519,6 +520,7 @@
 <translation id="6972754398087986839">เริ่มต้นใช้งาน</translation>
 <translation id="6981982820502123353">การช่วยเหลือพิเศษ</translation>
 <translation id="698231206551913481">ระบบจะลบไฟล์ทั้งหมดและข้อมูลในเครื่องที่เชื่อมโยงกับผู้ใช้รายนี้ออกอย่างถาวรหลังจากนำผู้ใช้รายนี้ออกแล้ว</translation>
+<translation id="6990778048354947307">ธีมสีเข้ม</translation>
 <translation id="7007983414944123363">ยืนยัน PIN หรือรหัสผ่านของคุณไม่ได้ ลองใหม่</translation>
 <translation id="7015766095477679451">กลับมาเมื่อถึงเวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="7025533177575372252">เชื่อมต่อ <ph name="DEVICE_NAME" /> กับโทรศัพท์</translation>

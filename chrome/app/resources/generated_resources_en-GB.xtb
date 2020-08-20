@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Current version is Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Access any <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
 <translation id="1509960214886564027">Features on many sites may break</translation>
-<translation id="1510030919967934016">This page has been blocked from tracking your location.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1510785804673676069">If you are using a proxy server, check your proxy settings or
     contact your network administrator to check that the proxy
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Edit file</translation>
 <translation id="1698122934742150150">Current incognito session only</translation>
 <translation id="1700079447639026019">Sites that can never use cookies</translation>
-<translation id="1700845716982723710">Turn off Ambient Mode</translation>
 <translation id="1701062906490865540">Remove this person</translation>
 <translation id="1703331064825191675">Never worry about your passwords</translation>
 <translation id="1704970325597567340">Safety check ran on <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Replace your Linux apps and files with a previous backup</translation>
 <translation id="1842766183094193446">Are you sure that you want to enable demo mode?</translation>
 <translation id="1846308012215045257">Control-click to run <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Enable Ambient Mode</translation>
 <translation id="1849186935225320012">This page has full control of MIDI devices.</translation>
 <translation id="1850508293116537636">Rotate &amp;clockwise</translation>
 <translation id="1852141627593563189">Find harmful software</translation>
@@ -1174,7 +1171,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2392163307141705938">You reached the time limit that your parent set for <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Activate</translation>
 <translation id="2393136602862631930">Set up <ph name="APP_NAME" /> on your Chromebook</translation>
-<translation id="2394566832561516196">Settings will be cleared on next reload.</translation>
 <translation id="2395616325548404795">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.</translation>
 <translation id="2396387085693598316">Your admin has blocked '<ph name="EXTENSION_NAME" />'</translation>
 <translation id="2396783860772170191">Enter 4-digit pin (0000-9999)</translation>
@@ -1664,7 +1660,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2979639724566107830">Open in new window</translation>
 <translation id="2981113813906970160">Show large mouse cursor</translation>
 <translation id="2985348301114641460">Send a request to your administrator to install '<ph name="EXTENSION_NAME" />'?</translation>
-<translation id="2986010903908656993">This page has been blocked from having full control of MIDI devices.</translation>
 <translation id="2987620471460279764">Text shared from other device</translation>
 <translation id="2988018669686457659">Spare renderer</translation>
 <translation id="2989123969927553766">Mouse scroll acceleration</translation>
@@ -2088,7 +2083,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3524965460886318643">Export activities</translation>
 <translation id="3526034519184079374">Can't Read or Change Site's Data</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3528033729920178817">This page is tracking your location.</translation>
 <translation id="3528498924003805721">Shortcut targets</translation>
 <translation id="3532273508346491126">Sync management</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Audio muted</translation>
@@ -2564,7 +2558,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4061374428807229313">To share, right-click on a folder in the Files app, then select 'Share with Parallels Desktop'.</translation>
 <translation id="4065876735068446555">The network you are using (<ph name="NETWORK_ID" />) may require you to visit its login page.</translation>
 <translation id="4066207411788646768">Please check your connection to see available printers in your network</translation>
-<translation id="4068506536726151626">This page contains elements from the following sites that are tracking your location:</translation>
 <translation id="4068776064906523561">Saved fingerprints</translation>
 <translation id="407173827865827707">On click</translation>
 <translation id="4074900173531346617">Email Signer Certificate</translation>
@@ -3207,7 +3200,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wants to communicate with the extension "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4918221908152712722">Install <ph name="APP_NAME" /> (no download required)</translation>
-<translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
 <translation id="4921290200821452703">School account information for parents</translation>
 <translation id="4921348630401250116">Text-to-speech</translation>
 <translation id="49226369361073053">{0,plural, =0{Update device now}=1{Update device within 1 second}other{Update device within # seconds}}</translation>
@@ -3285,7 +3277,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5027562294707732951">Add extension</translation>
 <translation id="5029568752722684782">Clear copy</translation>
 <translation id="5033266061063942743">Geometric shapes</translation>
-<translation id="5033370009438029887">Disable Ambient Mode</translation>
 <translation id="5036662165765606524">Do not allow any site to download multiple files automatically</translation>
 <translation id="5037676449506322593">Select All</translation>
 <translation id="5038022729081036555">You can use it for <ph name="TIME_LIMIT" /> tomorrow.</translation>
@@ -3962,7 +3953,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5865508026715185451"><ph name="APP_NAME" /> will pause soon</translation>
 <translation id="586567932979200359">You're running <ph name="PRODUCT_NAME" /> from its disk image. Installing it on your computer lets you run it without the disk image and ensures that it will be kept up to date.</translation>
 <translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
-<translation id="5866557323934807206">Clear these settings for future visits</translation>
 <translation id="5866840822086176774">Very strong</translation>
 <translation id="5867841422488265304">Search or type web address</translation>
 <translation id="5869029295770560994">OK, got it</translation>
@@ -4247,7 +4237,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6225475702458870625">Data connection available from your <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Private key file (optional)</translation>
 <translation id="6227280783235722609">extension</translation>
-<translation id="6228691855869374890">This site has full control of MIDI devices.</translation>
 <translation id="6229849828796482487">Disconnect Wi-Fi network</translation>
 <translation id="6229890768313448549">Google Play Terms of Service cannot be loaded. Please retry.</translation>
 <translation id="6231881193380278751">Add a QueryParam in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4401,7 +4390,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6412931879992742813">New incognito window</translation>
 <translation id="641469293210305670">Install updates and apps</translation>
 <translation id="6414888972213066896">You asked your parent if it's OK to visit this site</translation>
-<translation id="6415659939354280526">Choose Ambient Mode source</translation>
 <translation id="6415900369006735853">Connect to the Internet through your phone</translation>
 <translation id="6416743254476733475">Allow or block on your computer.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -5345,7 +5333,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7616214729753637086">Enrolling device…</translation>
 <translation id="7617263010641145920">Turn on Play Store</translation>
 <translation id="7617366389578322136">Connecting to '<ph name="DEVICE_NAME" />'</translation>
-<translation id="761763866592998929">Ambient Mode</translation>
 <translation id="7621382409404463535">The system failed to save device configuration.</translation>
 <translation id="7622114377921274169">Charging.</translation>
 <translation id="7622903810087708234">Password details</translation>
@@ -5589,7 +5576,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">View Account</translation>
 <translation id="7882358943899516840">Provider type</translation>
-<translation id="78851824530736377">Turn on Ambient Mode</translation>
 <translation id="7885253890047913815">Recent destinations</translation>
 <translation id="7887334752153342268">Duplicate</translation>
 <translation id="7887864092952184874">Bluetooth mouse paired</translation>

@@ -398,19 +398,6 @@ suite('Tab', function() {
         tabElement.shadowRoot.querySelector('#dragImage'));
   });
 
-  test('has custom context menu', async () => {
-    let event = new Event('contextmenu');
-    event.clientX = 1;
-    event.clientY = 2;
-    tabElement.shadowRoot.querySelector('#tab').dispatchEvent(event);
-
-    const contextMenuArgs =
-        await testTabStripEmbedderProxy.whenCalled('showTabContextMenu');
-    assertEquals(contextMenuArgs[0], tabElement.tab.id);
-    assertEquals(contextMenuArgs[1], 1);
-    assertEquals(contextMenuArgs[2], 2);
-  });
-
   test('activating closes WebUI container', () => {
     assertEquals(testTabStripEmbedderProxy.getCallCount('closeContainer'), 0);
     tabElement.shadowRoot.querySelector('#tab').click();

@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Den aktuelle version er Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Få adgang til enhver <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
 <translation id="1509960214886564027">Funktioner på mange websites virker muligvis ikke</translation>
-<translation id="1510030919967934016">Dette website kan ikke spore din placering.</translation>
 <translation id="1510238584712386396">Appliste</translation>
 <translation id="1510785804673676069">Hvis du bruger en proxyserver, skal du kontrollere dine proxyindstillinger eller
     kontakte din netværksadminstrator for at sikre, at
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">Rediger fil</translation>
 <translation id="1698122934742150150">Kun for den aktuelle inkognitosession</translation>
 <translation id="1700079447639026019">Websites, der aldrig kan anvende cookies</translation>
-<translation id="1700845716982723710">Sluk pauseskærm</translation>
 <translation id="1701062906490865540">Fjern denne person</translation>
 <translation id="1703331064825191675">Glem aldrig dine adgangskoder igen</translation>
 <translation id="1704970325597567340">Sikkerhedstjekket blev udført <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">Erstat dine Linux-apps og -filer med en tidligere backup</translation>
 <translation id="1842766183094193446">Er du sikker på, at du vil aktivere demotilstand?</translation>
 <translation id="1846308012215045257">Hold ctrl-tasten nede, og klik for at køre <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Aktivér pauseskærm</translation>
 <translation id="1849186935225320012">Denne side har fuld kontrol over MIDI-enheder.</translation>
 <translation id="1850508293116537636">Roter med &amp;uret</translation>
 <translation id="1852141627593563189">Find skadelig software</translation>
@@ -1174,7 +1171,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2392163307141705938">Du har nået den grænse, din forælder har angivet for <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Aktivér</translation>
 <translation id="2393136602862631930">Konfigurer <ph name="APP_NAME" /> på din Chromebook</translation>
-<translation id="2394566832561516196">Indstillingerne nulstilles ved næste genindlæsning.</translation>
 <translation id="2395616325548404795">Din <ph name="DEVICE_TYPE" /> er tilmeldt virksomhedsadministration, men den har ikke tilsendt oplysninger om aktiver og placering. Angiv disse oplysninger manuelt i administrationskonsollen for denne enhed.</translation>
 <translation id="2396387085693598316">Din administrator har blokeret "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="2396783860772170191">Angiv den firecifrede pinkode (0000-9999)</translation>
@@ -1349,7 +1345,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2604255671529671813">Fejl i netværksforbindelsen</translation>
 <translation id="2606246518223360146">Tilknyt data</translation>
 <translation id="2607101320794533334">Oplysninger om emnets offentlige nøgle</translation>
-<translation id="2607968157341167679">Der er ingen album. Opret et album i <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
+<translation id="2607968157341167679">Der er ingen album. Opret et album i<ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Opret genveje...</translation>
 <translation id="2610157865375787051">Dvale</translation>
 <translation id="2610260699262139870">Fa&amp;ktisk størrelse</translation>
@@ -1664,7 +1660,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2979639724566107830">Åbn i nyt vindue</translation>
 <translation id="2981113813906970160">Vis stor musemarkør</translation>
 <translation id="2985348301114641460">Vil du sende en anmodning om at installere "<ph name="EXTENSION_NAME" />" til din administrator?</translation>
-<translation id="2986010903908656993">Denne side er blevet forhindret i at have fuld kontrol over MIDI-enheder.</translation>
 <translation id="2987620471460279764">Tekst, der er delt fra en anden enhed</translation>
 <translation id="2988018669686457659">Spare Renderer</translation>
 <translation id="2989123969927553766">Acceleration af rulning med mus</translation>
@@ -2088,7 +2083,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3524965460886318643">Eksportér aktiviteter</translation>
 <translation id="3526034519184079374">Kan hverken læse eller ændre websitedata</translation>
 <translation id="3527085408025491307">Mappe</translation>
-<translation id="3528033729920178817">Denne side sporer din placering.</translation>
 <translation id="3528498924003805721">Målene for genveje</translation>
 <translation id="3532273508346491126">Administration af synkronisering</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – lyden er slået fra</translation>
@@ -2564,7 +2558,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4061374428807229313">Hvis du vil dele, skal du højreklikke på en mappe i appen Filer og derefter vælge "Del med Parallels Desktop".</translation>
 <translation id="4065876735068446555">Det netværk, du bruger (<ph name="NETWORK_ID" />), kan kræve, at du går til netværkets loginside.</translation>
 <translation id="4066207411788646768">Tjek din forbindelse for at se tilgængelige printere på dit netværk.</translation>
-<translation id="4068506536726151626">Denne side indeholder elementer fra følgende websites, som sporer din placering:</translation>
 <translation id="4068776064906523561">Gemte fingeraftryk</translation>
 <translation id="407173827865827707">Ved klik</translation>
 <translation id="4074900173531346617">Certifikat til e-mailunderskriver</translation>
@@ -3207,7 +3200,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ønsker at kommunikere med udvidelsen "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4918221908152712722">Installer <ph name="APP_NAME" /> (kræver ikke download)</translation>
-<translation id="4920887663447894854">Følgende websites kan ikke spore din placering på denne side:</translation>
 <translation id="4921290200821452703">Oplysninger til forældre om skolekonti</translation>
 <translation id="4921348630401250116">Oplæsning</translation>
 <translation id="49226369361073053">{0,plural, =0{Genstart enheden nu}=1{Genstart enheden inden for 1 sekund}one{Genstart enheden inden for # sekund}other{Genstart enheden inden for # sekunder}}</translation>
@@ -3285,7 +3277,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5027562294707732951">Tilføj udvidelsen</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
 <translation id="5033266061063942743">Geometriske former</translation>
-<translation id="5033370009438029887">Deaktiver pauseskærm</translation>
 <translation id="5036662165765606524">Tillad ikke, at nogen websites kan downloade flere filer automatisk</translation>
 <translation id="5037676449506322593">Vælg alle</translation>
 <translation id="5038022729081036555">Du kan bruge den i <ph name="TIME_LIMIT" /> i morgen.</translation>
@@ -3962,7 +3953,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> sættes snart på pause</translation>
 <translation id="586567932979200359">Du kører <ph name="PRODUCT_NAME" /> fra dets diskbillede. Hvis du installerer det på din computer, kan du køre det uden diskbilledet, og det vil blive opdateret løbende.</translation>
 <translation id="5865733239029070421">Sender automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
-<translation id="5866557323934807206">Ryd disse indstillinger til fremtidige besøg</translation>
 <translation id="5866840822086176774">Meget stærk</translation>
 <translation id="5867841422488265304">Søg, eller skriv webadresse</translation>
 <translation id="5869029295770560994">OK</translation>
@@ -4248,7 +4238,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6225475702458870625">Dataforbindelse er tilgængelig via <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Privat nøglefil (valgfrit)</translation>
 <translation id="6227280783235722609">udvidelse</translation>
-<translation id="6228691855869374890">Dette website har fuld kontrol over MIDI-enheder.</translation>
 <translation id="6229849828796482487">Afbryd forbindelsen til Wi-Fi-netværket</translation>
 <translation id="6229890768313448549">Servicevilkårene for Google Play kan ikke indlæses. Prøv igen.</translation>
 <translation id="6231881193380278751">Tilføj en forespørgselsparameter i webadressen for at opdatere siden automatisk: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4402,7 +4391,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6412931879992742813">Nyt inkognitovindue</translation>
 <translation id="641469293210305670">Installer opdateringer og apps</translation>
 <translation id="6414888972213066896">Du har spurgt en af dine forældre, om det er i orden, at du besøger dette website.</translation>
-<translation id="6415659939354280526">Vælg kilde for pauseskærm</translation>
 <translation id="6415900369006735853">Opret forbindelse til internettet via din telefon</translation>
 <translation id="6416743254476733475">Tillad eller bloker på din computer.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -5346,7 +5334,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7616214729753637086">Tilmelder enhed...</translation>
 <translation id="7617263010641145920">Slå Play Butik til</translation>
 <translation id="7617366389578322136">Opretter forbindelse til "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">Pauseskærm</translation>
 <translation id="7621382409404463535">Systemet kunne ikke gemme enhedskonfigurationen.</translation>
 <translation id="7622114377921274169">Oplader.</translation>
 <translation id="7622903810087708234">Oplysninger om adgangskode</translation>
@@ -5589,7 +5576,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Vis konto</translation>
 <translation id="7882358943899516840">Udbydertype</translation>
-<translation id="78851824530736377">Slå pauseskærm til</translation>
 <translation id="7885253890047913815">Seneste destinationer</translation>
 <translation id="7887334752153342268">Dupliker</translation>
 <translation id="7887864092952184874">Bluetooth-mus er parret</translation>

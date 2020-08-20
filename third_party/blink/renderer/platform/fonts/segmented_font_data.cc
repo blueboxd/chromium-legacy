@@ -86,10 +86,10 @@ bool SegmentedFontData::ShouldSkipDrawing() const {
   return false;
 }
 
-bool SegmentedFontData::HasLetterSpacingOverride() const {
+bool SegmentedFontData::HasAdvanceOverride() const {
   auto* end = faces_.end();
   for (auto* it = faces_.begin(); it != end; ++it) {
-    if ((*it)->FontData()->HasLetterSpacingOverride())
+    if ((*it)->FontData()->HasAdvanceOverride())
       return true;
   }
   return false;

@@ -275,7 +275,7 @@ void AmbientController::OnLockStateChanged(bool locked) {
     //        locking screen. We can add the refresh token into it. If the token
     //        has already been fetched, then there is not additional time to
     //        wait.
-    RequestAccessToken(base::DoNothing());
+    RequestAccessToken(base::DoNothing(), /*may_refresh_token_on_lock=*/true);
 
     ShowUi(AmbientUiMode::kLockScreenUi);
   } else {
@@ -463,8 +463,10 @@ void AmbientController::CloseWidget(bool immediately) {
 }
 
 void AmbientController::RequestAccessToken(
-    AmbientAccessTokenController::AccessTokenCallback callback) {
-  access_token_controller_.RequestAccessToken(std::move(callback));
+    AmbientAccessTokenController::AccessTokenCallback callback,
+    bool may_refresh_token_on_lock) {
+  access_token_controller_.RequestAccessToken(std::move(callback),
+                                              may_refresh_token_on_lock);
 }
 
 AmbientBackendModel* AmbientController::GetAmbientBackendModel() {

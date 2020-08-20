@@ -268,8 +268,7 @@ class ExtensionContentSettingsApiLazyTest
     : public ExtensionContentSettingsApiTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    ExtensionContentSettingsApiTest::SetUp();
+  ExtensionContentSettingsApiLazyTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker)

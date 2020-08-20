@@ -355,17 +355,13 @@ void FidoCableDiscovery::AdapterDiscoveringChanged(BluetoothAdapter* adapter,
 
 void FidoCableDiscovery::FidoCableDeviceConnected(FidoCableDevice* device,
                                                   bool success) {
-  if (!success || !IsObservedV1Device(device->GetAddress())) {
-    return;
+  if (success) {
+    RecordCableV1DiscoveryEventOnce(
+        CableV1DiscoveryEvent::kFirstCableDeviceGATTConnected);
   }
-  RecordCableV1DiscoveryEventOnce(
-      CableV1DiscoveryEvent::kFirstCableDeviceGATTConnected);
 }
 
 void FidoCableDiscovery::FidoCableDeviceTimeout(FidoCableDevice* device) {
-  if (!IsObservedV1Device(device->GetAddress())) {
-    return;
-  }
   RecordCableV1DiscoveryEventOnce(
       CableV1DiscoveryEvent::kFirstCableDeviceTimeout);
 }
@@ -635,9 +631,6 @@ FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
   auto observed_data = std::make_unique<ObservedDeviceData>();
   observed_data->service_data = maybe_eid_from_service_data;
   observed_data->uuids = uuids;
-  if (result) {
-    observed_data->maybe_discovery_data = result->discovery_data;
-  }
   observed_devices_.insert_or_assign(address, std::move(observed_data));
 
   return result;
@@ -732,13 +725,6 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
   }
 
   return base::nullopt;
-}
-
-bool FidoCableDiscovery::IsObservedV1Device(const std::string& address) const {
-  const auto it = observed_devices_.find(address);
-  return it != observed_devices_.end() && it->second->maybe_discovery_data &&
-         it->second->maybe_discovery_data->version ==
-             CableDiscoveryData::Version::V1;
 }
 
 void FidoCableDiscovery::RecordCableV1DiscoveryEventOnce(

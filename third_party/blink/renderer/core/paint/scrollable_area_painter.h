@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLLABLE_AREA_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLLABLE_AREA_PAINTER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -27,6 +26,8 @@ class ScrollableAreaPainter {
   explicit ScrollableAreaPainter(
       PaintLayerScrollableArea& paint_layer_scrollable_area)
       : scrollable_area_(&paint_layer_scrollable_area) {}
+  ScrollableAreaPainter(const ScrollableAreaPainter&) = delete;
+  ScrollableAreaPainter& operator=(const ScrollableAreaPainter&) = delete;
 
   void PaintOverflowControls(const PaintInfo&, const IntPoint& paint_offset);
   void PaintScrollbar(GraphicsContext&,
@@ -53,8 +54,6 @@ class ScrollableAreaPainter {
   const DisplayItemClient& DisplayItemClientForCorner() const;
 
   PaintLayerScrollableArea* scrollable_area_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableAreaPainter);
 };
 
 }  // namespace blink

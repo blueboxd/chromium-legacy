@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">កំណែ​បច្ចុប្បន្ន​គឺ Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">ចូលប្រើ <ph name="DEVICE_NAME_AND_VENDOR" /> ណាមួយតាមរយៈ USB</translation>
 <translation id="1509960214886564027">មុខងារ​នៅលើ​គេហទំព័រ​ជាច្រើន​អាចដំណើរការមិន​ត្រឹមត្រូវ</translation>
-<translation id="1510030919967934016">ទំព័រនេះត្រូវបានរារាំងពីការតាមដានទីតាំងរបស់អ្នក។</translation>
 <translation id="1510238584712386396">ឡាន់ឆ័រ</translation>
 <translation id="1510785804673676069">អ្នកកំពុងប្រើម៉ាស៊ីនមេប្រូកស៊ី ពិនិត្យការកំណត់ប្រូកស៊ីរបស់អ្នក ឬ
     ទំនាក់ទំនងអ្នកគ្រប់គ្រងបណ្តាញដើម្បីពិនិត្យថា
@@ -602,7 +601,6 @@
 <translation id="1697686431566694143">កែ​ឯកសារ</translation>
 <translation id="1698122934742150150">វេនប្រើអនាមិកបច្ចុប្បន្នប៉ុណ្ណោះ</translation>
 <translation id="1700079447639026019">គេហទំព័រ​ដែល​មិនអាច​ប្រើ​ខូគីបាន</translation>
-<translation id="1700845716982723710">បិទមុខងារ​សម្ងំ</translation>
 <translation id="1701062906490865540">ដកបុគ្គលនេះចេញ</translation>
 <translation id="1703331064825191675">មិនចាំបាច់​បារម្ភអំពីពាក្យ​សម្ងាត់របស់អ្នកទេ</translation>
 <translation id="1704970325597567340">ការពិនិត្យ​សុវត្ថិភាពបានដំណើរការនៅថ្ងៃទី <ph name="DATE" /></translation>
@@ -731,7 +729,6 @@
 <translation id="184273675144259287">ជំនួសកម្មវិធី និងឯកសារ Linux ដោយប្រើ​ការបម្រុងទុកពីមុន</translation>
 <translation id="1842766183094193446">តើអ្នក​ប្រាកដ​ថាចង់​បើក​មុខងារ​សាកល្បង​មែនឬ?</translation>
 <translation id="1846308012215045257">ចុច Control-click ដើម្បីដំណើរការ <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">បើក​មុខងារ​សម្ងំ</translation>
 <translation id="1849186935225320012">ទំព័រនេះមានការគ្រប់គ្រងឧបករណ៍ MIDI ទាំងស្រុង។</translation>
 <translation id="1850508293116537636">បង្វិលបញ្ច្រាសទ្រនិចនាឡិកា</translation>
 <translation id="1852141627593563189">ស្វែងរកកម្មវិធី​បង្កគ្រោះថ្នាក់</translation>
@@ -1174,7 +1171,6 @@
 <translation id="2392163307141705938">អ្នកបានឈានដល់រយៈពេលកំណត់​ ដែលមាតាបិតារបស់អ្នក​បានកំណត់សម្រាប់ <ph name="IDS_SHORT_PRODUCT_NAME" /> ហើយ។</translation>
 <translation id="2392369802118427583">ធ្វើសកម្មភាព</translation>
 <translation id="2393136602862631930">រៀបចំ <ph name="APP_NAME" /> នៅលើ Chromebook របស់អ្នក</translation>
-<translation id="2394566832561516196">កំណត់នឹងត្រូវបានជម្រះនៅពេលដំណើរឡើងវិញពេលបន្ទាប់។</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> របស់អ្នកបានចុះឈ្មោះដោយជោគជ័យសម្រាប់ការគ្រប់គ្រងសហគ្រាស ក៏ប៉ុន្តែបានបរាជ័យក្នុងការផ្ញើព័ត៌មានអំពីទ្រព្យសកម្ម និងទីតាំងរបស់វា។ សូមបញ្ចូលព័ត៌មាននេះដោយផ្ទាល់ចេញពីកុងសូលគ្រប់គ្រងសម្រាប់ឧបករណ៍នេះ។</translation>
 <translation id="2396387085693598316">អ្នកគ្រប់គ្រង​របស់អ្នក​បានទប់ស្កាត់ "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="2396783860772170191">បញ្ចូល​កូដ pin 4 ខ្ទង់ (0000-9999)</translation>
@@ -1664,7 +1660,6 @@
 <translation id="2979639724566107830">បើក​នៅក្នុង​វិនដូថ្មី</translation>
 <translation id="2981113813906970160">បង្ហាញព្រួញកណ្តុរធំ</translation>
 <translation id="2985348301114641460">ផ្ញើ​សំណើទៅអ្នកគ្រប់គ្រងរបស់អ្នក​ ដើម្បីដំឡើង "<ph name="EXTENSION_NAME" />" ឬ?</translation>
-<translation id="2986010903908656993">ទំព័រនេះត្រូវបានរារាំងពីការគ្រប់គ្រងលើឧបករណ៍ MIDI ទាំងស្រុង។</translation>
 <translation id="2987620471460279764">អត្ថបទដែលបាន​ចែករំលែកពីឧបករណ៍​ផ្សេងទៀត</translation>
 <translation id="2988018669686457659">កម្មវិធីបំប្លែងបម្រុង</translation>
 <translation id="2989123969927553766">ការបង្កើន​ល្បឿន​រំកិលកណ្ដុរ</translation>
@@ -2088,7 +2083,6 @@
 <translation id="3524965460886318643">នាំចេញ​សកម្មភាព</translation>
 <translation id="3526034519184079374">មិនអាចអាន ឬប្ដូរទិន្នន័យរបស់​គេហទំព័របានទេ</translation>
 <translation id="3527085408025491307">ថតឯកសារ</translation>
-<translation id="3528033729920178817">ទំព័រនេះកំពុងតាមដានទីតាំងរបស់អ្នក។</translation>
 <translation id="3528498924003805721">គោលដៅផ្លូវកាត់</translation>
 <translation id="3532273508346491126">ការគ្រប់គ្រង​សម​កាល​កម្ម</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - បានបិទ​​សំឡេង​</translation>
@@ -2564,7 +2558,6 @@
 <translation id="4061374428807229313">ដើម្បីចែករំលែក សូមចុចកណ្ដុរខាងស្ដាំ​លើថត​នៅក្នុងកម្មវិធី Files រួចជ្រើសរើស "ចែករំលែក​ជាមួយ Parallels Desktop"។</translation>
 <translation id="4065876735068446555">បណ្តាញដែលអ្នកកំពុងប្រើ (<ph name="NETWORK_ID" />) អាចតម្រូវឲ្យអ្នកទៅកាន់ទំព័រចូលរបស់វា។</translation>
 <translation id="4066207411788646768">សូមពិនិត្យ​មើលការ​តភ្ជាប់របស់អ្នក ដើម្បី​មើលឃើញម៉ាស៊ីន​បោះពុម្ព​ដែលមាននៅក្នុង​បណ្ដាញ​របស់អ្នក</translation>
-<translation id="4068506536726151626">ទំព័រនេះផ្ទុកធាតុពីគេហទំព័រខាងក្រោមដែលតាមដានទីតាំងរបស់អ្នក៖</translation>
 <translation id="4068776064906523561">ស្នាម​ម្រាមដៃ​ដែល​បាន​រក្សាទុក</translation>
 <translation id="407173827865827707">នៅ​ពេលចុច</translation>
 <translation id="4074900173531346617">វិញ្ញាបនប័ត្រអ្នកចុះហត្ថលេខាអ៊ីម៉ែល</translation>
@@ -3207,7 +3200,6 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ចង់ទាក់ទងជាមួយភាពផ្នែកបន្ថែម "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">ទទួល</translation>
 <translation id="4918221908152712722">ដំឡើង <ph name="APP_NAME" /> (មិនតម្រូវ​ឱ្យទាញយកទេ)</translation>
-<translation id="4920887663447894854">គេហទំព័រខាងក្រោមត្រូវបានរារាំងពីការតាមដានទីតាំងរបស់អ្នកនៅលើទំព័រនេះ៖</translation>
 <translation id="4921290200821452703">ព័ត៌មាន​គណនីសាលារៀន​សម្រាប់មាតាបិតា</translation>
 <translation id="4921348630401250116">ការបំប្លែង​អត្ថបទ​ទៅជា​ការនិយាយ</translation>
 <translation id="49226369361073053">{0,plural, =0{ដំឡើងកំណែ​ឧបករណ៍​ឥឡូវនេះ}=1{ដំឡើងកំណែ​ឧបករណ៍​ក្នុងរយៈពេល 1 វិនាទី​ទៀត}other{ដំឡើងកំណែ​ឧបករណ៍​ក្នុងរយៈពេល # វិនាទី​ទៀត}}</translation>
@@ -3285,7 +3277,6 @@
 <translation id="5027562294707732951">បន្ថែមផ្នែកបន្ថែម</translation>
 <translation id="5029568752722684782">ជម្រះការថតចម្លង</translation>
 <translation id="5033266061063942743">ទម្រង់​ធរណីមាត្រ</translation>
-<translation id="5033370009438029887">បិទមុខងារសម្ងំ</translation>
 <translation id="5036662165765606524">កុំអនុញ្ញាតឲ្យគេហទំព័រណាមួួយទាញយកឯកសារច្រើនដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5037676449506322593">ជ្រើសរើសទាំងអស់</translation>
 <translation id="5038022729081036555">អ្នកអាចប្រើ​កម្មវិធីនេះ​​រយៈពេល <ph name="TIME_LIMIT" /> នៅថ្ងៃស្អែក។</translation>
@@ -3963,7 +3954,6 @@
 <translation id="5865508026715185451"><ph name="APP_NAME" /> នឹងផ្អាក​ក្នុងពេល​ឆាប់ៗ​នេះ</translation>
 <translation id="586567932979200359">អ្នកកំពុងដំណើរការ <ph name="PRODUCT_NAME" /> ពីរូបភាពឌីសរបស់វា។ ការតំឡើងវានៅលើកុំព្យូទ័ររបស់អ្នក អនុញ្ញាតឲ្យអ្នកដំណើរការវាដោយមិនចាំបាច់រូបភាពឌីស ហើយត្រូវប្រាកដថារក្សាវាឲ្យទាន់សម័យកាល។</translation>
 <translation id="5865733239029070421">ផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍អំពីការគាំងទៅ Google ដោយស្វ័យប្រវត្តិ</translation>
-<translation id="5866557323934807206">ជម្រះការកំណត់ទាំងនេះសម្រាប់ការទៅកាន់នាពេលអនាគត</translation>
 <translation id="5866840822086176774">ខ្លាំងណាស់</translation>
 <translation id="5867841422488265304">ស្វែងរក ឬវាយ​បញ្ចូល​អាសយដ្ឋានទំព័រ</translation>
 <translation id="5869029295770560994">យល់ព្រម ខ្ញុំយល់ហើយ</translation>
@@ -4248,7 +4238,6 @@
 <translation id="6225475702458870625">មាន​ការតភ្ជាប់​ទិន្នន័យ​ពី <ph name="PHONE_NAME" /> របស់​អ្នក</translation>
 <translation id="6226777517901268232">ឯកសារសោឯកជន (ស្រេចចិត្ត)</translation>
 <translation id="6227280783235722609">កម្មវិធីបន្ថែម​</translation>
-<translation id="6228691855869374890">គេហទំព័រនេះមានការគ្រប់គ្រងឧបករណ៍ MIDI ទាំងស្រុង។</translation>
 <translation id="6229849828796482487">ផ្ដាច់​បណ្ដាញ Wi-Fi</translation>
 <translation id="6229890768313448549">លក្ខខណ្ឌប្រើប្រាស់ Google Play មិនអាចដំណើរការបានទេ។ សូមព្យាយាមម្តងទៀត។</translation>
 <translation id="6231881193380278751">បន្ថែមប៉ារ៉ាម៉ែត្រសំណួរនៅក្នុង URL ដើម្បីផ្ទុកទំព័រឡើងវិញដោយស្វ័យប្រវត្តិ៖ chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4402,7 +4391,6 @@
 <translation id="6412931879992742813">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="641469293210305670">ដំឡើង​កំណែថ្មី និងកម្មវិធី</translation>
 <translation id="6414888972213066896">អ្នកបានសាកសួរមាតាបិតារបស់អ្នក ថាអ្នកអាចចូលទៅទំព័រនេះបានដែរទេ</translation>
-<translation id="6415659939354280526">ជ្រើសរើសប្រភពមុខងារសម្ងំ</translation>
 <translation id="6415900369006735853">ភ្ជាប់​​អ៊ីនធឺណិតតាមរយៈទូរសព្ទរបស់អ្នក</translation>
 <translation id="6416743254476733475">អនុញ្ញាត ឬ​ទប់ស្កាត់​នៅលើ​កុំព្យូទ័រ​របស់អ្នក។</translation>
 <translation id="6417265370957905582">Google ជំនួយការ</translation>
@@ -5346,7 +5334,6 @@
 <translation id="7616214729753637086">កំពុង​ចុះឈ្មោះ​ឧបករណ៍...</translation>
 <translation id="7617263010641145920">បើក Play Store</translation>
 <translation id="7617366389578322136">កំពុង​ភ្ជាប់ទៅ "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">មុខងារ​សម្ងំ</translation>
 <translation id="7621382409404463535">ប្រព័ន្ធមិនអាច​រក្សាទុក​ការ​កំណត់​រចនាសម្ព័ន្ធ​ឧបករណ៍​បាន​ទេ។</translation>
 <translation id="7622114377921274169">កំពុង​សាក​ថ្ម។</translation>
 <translation id="7622903810087708234">ព័ត៌មានលម្អិតអំពីពាក្យសម្ងាត់</translation>
@@ -5590,7 +5577,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">មើលគណនី</translation>
 <translation id="7882358943899516840">ប្រភេទអ្នកផ្តល់សេវាកម្ម</translation>
-<translation id="78851824530736377">បើកមុខងារ​សម្ងំ</translation>
 <translation id="7885253890047913815">គោលដៅកន្លងទៅថ្មីៗ</translation>
 <translation id="7887334752153342268">ចម្លង</translation>
 <translation id="7887864092952184874">ប៊្លូធូសកណ្តុរត្រូវបានភ្ជាប់</translation>

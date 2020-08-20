@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/buildflags.h"
+#include "components/omnibox/browser/omnibox_pedal_concepts.h"
 #include "url/gurl.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
@@ -119,7 +120,7 @@ class OmniboxPedal {
     base::TimeTicks match_selection_timestamp_;
   };
 
-  OmniboxPedal(LabelStrings strings, GURL url);
+  OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url);
   virtual ~OmniboxPedal();
 
   // Provides read access to labels associated with this Pedal.
@@ -153,6 +154,8 @@ class OmniboxPedal {
   // Move a synonym group into this Pedal's collection.
   void AddSynonymGroup(SynonymGroup&& group);
 
+  OmniboxPedalId id() { return id_; }
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupsDriveConceptMatches);
@@ -168,6 +171,8 @@ class OmniboxPedal {
 
   // Use this for the common case of navigating to a URL.
   void OpenURL(ExecutionContext& context, const GURL& url) const;
+
+  OmniboxPedalId id_;
 
   std::vector<SynonymGroup> synonym_groups_;
   LabelStrings strings_;

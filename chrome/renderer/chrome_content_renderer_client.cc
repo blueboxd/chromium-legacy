@@ -1669,9 +1669,6 @@ bool ChromeContentRendererClient::RequiresWebComponentsV0(const GURL& url) {
            host_piece == chrome::kChromeUIOSSettingsHost ||
            // TODO(crbug.com/1022192): Remove when migrated to Polymer3.
            host_piece == chrome::kChromeUIPasswordChangeHost ||
-           // TODO(crbug.com/1111393): Remove when migrated away from HTML
-           // imports.
-           host_piece == "file_manager_test" ||
 #endif
            false;
   }

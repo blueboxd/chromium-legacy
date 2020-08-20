@@ -32,6 +32,7 @@
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/combobox/combobox_util.h"
+#include "ui/views/controls/combobox/empty_combobox_model.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -50,23 +51,6 @@ namespace {
 
 // Used to indicate that no item is currently selected by the user.
 constexpr int kNoSelection = -1;
-
-// An empty model for a combo box.
-class EmptyComboboxModel final : public ui::ComboboxModel {
- public:
-  EmptyComboboxModel() = default;
-  EmptyComboboxModel(EmptyComboboxModel&) = delete;
-  EmptyComboboxModel& operator=(const EmptyComboboxModel&) = delete;
-  ~EmptyComboboxModel() override = default;
-
-  // ui::ComboboxModel:
-  int GetItemCount() const override { return 0; }
-  base::string16 GetItemAt(int index) const override {
-    NOTREACHED();
-    return base::string16();
-  }
-  int GetDefaultIndex() const override { return -1; }
-};
 
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
@@ -248,7 +232,7 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
 // Combobox, public:
 
 Combobox::Combobox(int text_context, int text_style)
-    : Combobox(std::make_unique<EmptyComboboxModel>()) {}
+    : Combobox(std::make_unique<internal::EmptyComboboxModel>()) {}
 
 Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model,
                    int text_context,

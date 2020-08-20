@@ -5,7 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_AGENT_SCHEDULING_GROUP_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_AGENT_SCHEDULING_GROUP_HOST_H_
 
+#include <memory>
+
+#include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -31,12 +35,22 @@ class CONTENT_EXPORT AgentSchedulingGroupHost {
 
   // Should not be called explicitly. Use Get() instead.
   explicit AgentSchedulingGroupHost(RenderProcessHost& process);
-  virtual ~AgentSchedulingGroupHost();
+  ~AgentSchedulingGroupHost();
 
   RenderProcessHost* GetProcess();
 
  private:
+  // The RenderProcessHost this AgentSchedulingGroup is assigned to.
   RenderProcessHost& process_;
+
+  // Internal implementation of content::mojom::AgentSchedulingGroupHost, used
+  // for responding to calls from the (renderer-side) AgentSchedulingGroup.
+  std::unique_ptr<content::mojom::AgentSchedulingGroupHost> mojo_impl_;
+
+  // Remote stub of content::mojom::AgentSchedulingGroup, used for sending calls
+  // to the (renderer-side) AgentSchedulingGroup.
+  std::unique_ptr<mojo::Remote<content::mojom::AgentSchedulingGroup>>
+      mojo_remote_;
 };
 
 }  // namespace content

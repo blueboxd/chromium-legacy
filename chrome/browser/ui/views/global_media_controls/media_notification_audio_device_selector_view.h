@@ -57,6 +57,9 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   void CreateDeviceButton(
       const media::AudioDeviceDescription& device_description);
 
+  bool ShouldBeVisible(
+      const media::AudioDeviceDescriptions& device_descriptions);
+
   MediaNotificationAudioDeviceSelectorViewDelegate* const delegate_;
   MediaNotificationService* const service_;
 

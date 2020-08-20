@@ -30,6 +30,8 @@ class TestAffiliationFetcherFactory;
 //
 // An instance is good for exactly one fetch, and may be used from any thread
 // that runs a message loop (i.e. not a worker pool thread).
+// TODO(crbug.com/1117447): Create and SetFactoryForTesting methods should be
+// moved to a factory responsible for creating AffiliationFetcher instances.
 class AffiliationFetcher : public AffiliationFetcherInterface {
  public:
   ~AffiliationFetcher() override;
@@ -37,7 +39,7 @@ class AffiliationFetcher : public AffiliationFetcherInterface {
   // Constructs a fetcher using the specified |url_loader_factory|, and will
   // provide the results to the |delegate| on the same thread that creates the
   // instance.
-  static AffiliationFetcher* Create(
+  static AffiliationFetcherInterface* Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AffiliationFetcherDelegate* delegate);
 

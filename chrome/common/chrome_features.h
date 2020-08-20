@@ -411,14 +411,6 @@ extern const base::Feature kPushMessagingBackgroundMode;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockFingerprint;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kQuickUnlockPinAutosubmit;
-
-// TODO(crbug.com/1104164) - Remove this once most
-// users have their preferences backfilled.
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kQuickUnlockPinAutosubmitBackfill;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

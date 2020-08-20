@@ -136,6 +136,50 @@ TEST_F(AmbientControllerTest, ShouldReturnCachedAccessToken) {
   CloseAmbientScreen();
 }
 
+TEST_F(AmbientControllerTest, ShouldReturnEmptyAccessToken) {
+  EXPECT_FALSE(IsAccessTokenRequestPending());
+
+  // Lock the screen will request a token.
+  LockScreen();
+  EXPECT_TRUE(IsAccessTokenRequestPending());
+  std::string access_token = "access_token";
+  IssueAccessToken(access_token, /*with_error=*/false);
+  EXPECT_FALSE(IsAccessTokenRequestPending());
+
+  // Another token request will return cached token.
+  base::OnceClosure closure = base::MakeExpectedRunClosure(FROM_HERE);
+  base::RunLoop run_loop_1;
+  ambient_controller()->RequestAccessToken(base::BindLambdaForTesting(
+      [&](const std::string& gaia_id, const std::string& access_token_fetched) {
+        EXPECT_EQ(access_token_fetched, access_token);
+
+        std::move(closure).Run();
+        run_loop_1.Quit();
+      }));
+  EXPECT_FALSE(IsAccessTokenRequestPending());
+  run_loop_1.Run();
+
+  base::RunLoop run_loop_2;
+  // When token expired, another token request will get empty token.
+  constexpr base::TimeDelta kTokenRefreshDelay =
+      base::TimeDelta::FromSeconds(60);
+  task_environment()->FastForwardBy(kTokenRefreshDelay);
+
+  closure = base::MakeExpectedRunClosure(FROM_HERE);
+  ambient_controller()->RequestAccessToken(base::BindLambdaForTesting(
+      [&](const std::string& gaia_id, const std::string& access_token_fetched) {
+        EXPECT_TRUE(access_token_fetched.empty());
+
+        std::move(closure).Run();
+        run_loop_2.Quit();
+      }));
+  EXPECT_FALSE(IsAccessTokenRequestPending());
+  run_loop_2.Run();
+
+  // Clean up.
+  CloseAmbientScreen();
+}
+
 TEST_F(AmbientControllerTest, ShouldRefreshAccessTokenAfterFailure) {
   EXPECT_FALSE(IsAccessTokenRequestPending());
 

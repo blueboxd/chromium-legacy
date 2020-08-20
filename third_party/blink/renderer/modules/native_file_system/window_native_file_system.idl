@@ -22,7 +22,4 @@
     [CallWith=ScriptState, RaisesException, Measure]
     Promise<FileSystemDirectoryHandle> showDirectoryPicker(
         optional DirectoryPickerOptions options = {});
-
-    [CallWith=ScriptState, RaisesException, Measure]
-    Promise<FileSystemDirectoryHandle> getOriginPrivateDirectory();
 };

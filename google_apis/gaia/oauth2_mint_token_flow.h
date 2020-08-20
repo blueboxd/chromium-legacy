@@ -115,6 +115,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
     Parameters(const std::string& eid,
                const std::string& cid,
                const std::vector<std::string>& scopes_arg,
+               bool enable_granular_permissions,
                const std::string& device_id,
                const std::string& consent_result,
                const std::string& version,
@@ -126,6 +127,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
     std::string extension_id;
     std::string client_id;
     std::vector<std::string> scopes;
+    bool enable_granular_permissions;
     std::string device_id;
     std::string consent_result;
     std::string version;

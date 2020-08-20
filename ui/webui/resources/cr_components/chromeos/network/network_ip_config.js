@@ -49,11 +49,14 @@ const getRoutingPrefixAsNetmask = function(prefixLength) {
  */
 const getRoutingPrefixAsLength = function(netmask) {
   'use strict';
-  let prefixLength = 0;
+  if (!netmask) {
+    return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
+  }
   const tokens = netmask.split('.');
   if (tokens.length !== 4) {
-    return -1;
+    return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
   }
+  let prefixLength = 0;
   for (let i = 0; i < tokens.length; ++i) {
     const token = tokens[i];
     // If we already found the last mask and the current one is not

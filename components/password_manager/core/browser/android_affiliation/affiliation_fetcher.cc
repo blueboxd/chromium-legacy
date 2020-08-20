@@ -55,7 +55,7 @@ AffiliationFetcher::AffiliationFetcher(
 AffiliationFetcher::~AffiliationFetcher() = default;
 
 // static
-AffiliationFetcher* AffiliationFetcher::Create(
+AffiliationFetcherInterface* AffiliationFetcher::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AffiliationFetcherDelegate* delegate) {
   if (g_testing_factory) {

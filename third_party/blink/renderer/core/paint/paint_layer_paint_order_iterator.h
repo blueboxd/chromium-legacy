@@ -54,6 +54,9 @@ class CORE_EXPORT PaintLayerPaintOrderIterator {
 #endif
   {
   }
+  PaintLayerPaintOrderIterator(const PaintLayerPaintOrderIterator&) = delete;
+  PaintLayerPaintOrderIterator& operator=(const PaintLayerPaintOrderIterator&) =
+      delete;
 
   PaintLayer* Next();
 
@@ -73,7 +76,6 @@ class CORE_EXPORT PaintLayerPaintOrderIterator {
 #if DCHECK_IS_ON()
   PaintLayerListMutationDetector mutation_detector_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerPaintOrderIterator);
 };
 
 // This iterator is similar to PaintLayerPaintOrderIterator but it walks the
@@ -93,6 +95,10 @@ class CORE_EXPORT PaintLayerPaintOrderReverseIterator {
   {
     SetIndexToLastItem();
   }
+  PaintLayerPaintOrderReverseIterator(
+      const PaintLayerPaintOrderReverseIterator&) = delete;
+  PaintLayerPaintOrderReverseIterator& operator=(
+      const PaintLayerPaintOrderReverseIterator&) = delete;
 
   PaintLayer* Next();
 
@@ -106,7 +112,6 @@ class CORE_EXPORT PaintLayerPaintOrderReverseIterator {
 #if DCHECK_IS_ON()
   PaintLayerListMutationDetector mutation_detector_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerPaintOrderReverseIterator);
 };
 
 }  // namespace blink

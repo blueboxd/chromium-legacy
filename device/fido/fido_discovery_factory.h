@@ -19,6 +19,7 @@
 #include "device/fido/hid/fido_hid_discovery.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 
 #if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
@@ -52,6 +53,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
                       base::Optional<QRGeneratorKey> qr_generator_key);
 
   void set_usb_device_manager(mojo::Remote<device::mojom::UsbDeviceManager>);
+
+  void set_network_context(network::mojom::NetworkContext*);
 
   // set_cable_pairing_callback installs a repeating callback that will be
   // called when a QR handshake results in a phone wishing to pair with this
@@ -91,6 +94,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #endif  // defined(OS_MAC)
   base::Optional<mojo::Remote<device::mojom::UsbDeviceManager>>
       usb_device_manager_;
+  network::mojom::NetworkContext* network_context_ = nullptr;
   base::Optional<std::vector<CableDiscoveryData>> cable_data_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
   base::Optional<

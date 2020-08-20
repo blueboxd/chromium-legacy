@@ -9,7 +9,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/file_descriptor_posix.h"
-#include "base/macros.h"
 #include "printing/printing_context.h"
 
 namespace ui {
@@ -25,6 +24,8 @@ class MetafilePlayer;
 class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
  public:
   explicit PrintingContextAndroid(Delegate* delegate);
+  PrintingContextAndroid(const PrintingContextAndroid&) = delete;
+  PrintingContextAndroid& operator=(const PrintingContextAndroid&) = delete;
   ~PrintingContextAndroid() override;
 
   // Called when the page is successfully written to a PDF using the file
@@ -80,8 +81,6 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   PrintSettingsCallback callback_;
 
   int fd_ = base::kInvalidFd;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextAndroid);
 };
 
 }  // namespace printing

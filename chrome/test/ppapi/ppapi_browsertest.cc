@@ -125,7 +125,8 @@ using content::RenderViewHost;
 #else
 
 #define MAYBE_PPAPI_NACL(test_name) test_name
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(ADDRESS_SANITIZER)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(ADDRESS_SANITIZER)
 // http://crbug.com/633067, http://crbug.com/727989
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
 #else
@@ -1469,7 +1470,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(URLLoader3)) {
 }
 
 // Flaky on 32-bit linux bot; http://crbug.com/308906
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86)
 #define MAYBE_URLLoader_BasicFilePOST DISABLED_URLLoader_BasicFilePOST
 #else
 #define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
@@ -1745,7 +1746,7 @@ TEST_PPAPI_NACL(MAYBE_FileSystem)
 #if defined(OS_MAC)
 // http://crbug.com/103912
 #define MAYBE_Fullscreen DISABLED_Fullscreen
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/146008
 #define MAYBE_Fullscreen DISABLED_Fullscreen
 #elif defined(OS_WIN)
@@ -1969,7 +1970,7 @@ TEST_PPAPI_NACL(AudioEncoder)
       LIST_TEST(Audio_AudioCallback4) \
   )
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/396464
 #define MAYBE_Audio DISABLED_Audio
 #else
@@ -2128,7 +2129,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(View)) {
   )
 
 // Disabled due to flakiness http://crbug.com/1036287
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
 #define MAYBE_FlashMessageLoop DISABLED_FlashMessageLoop
 #else
 #define MAYBE_FlashMessageLoop FlashMessageLoop
@@ -2224,7 +2225,7 @@ TEST_PPAPI_NACL(MAYBE_VideoEncoder)
 TEST_PPAPI_OUT_OF_PROCESS(Printing)
 
 // https://crbug.com/1038957.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_MessageHandler DISABLED_MessageHandler
 #else
 #define MAYBE_MessageHandler MessageHandler
@@ -2339,7 +2340,7 @@ IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
   RunTests("packaged_app");
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/579804
 #define MAYBE_SuccessfulLoad DISABLED_SuccessfulLoad
 #else

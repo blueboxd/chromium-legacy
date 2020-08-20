@@ -689,6 +689,7 @@ void Textfield::SetAccessibleName(const base::string16& name) {
 
   accessible_name_ = name;
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void Textfield::SetObscuredGlyphSpacing(int spacing) {

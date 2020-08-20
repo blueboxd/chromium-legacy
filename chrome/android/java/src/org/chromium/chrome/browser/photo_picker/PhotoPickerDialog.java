@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.VisibleForTesting;
@@ -17,7 +16,9 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.ui.PhotoPickerListener;
+import org.chromium.ui.base.PhotoPickerListener;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.util.List;
 
@@ -27,8 +28,8 @@ import java.util.List;
  */
 public class PhotoPickerDialog
         extends AlertDialog implements PhotoPickerToolbar.PhotoPickerToolbarDelegate {
-    // Our context.
-    private Context mContext;
+    // Our window.
+    private WindowAndroid mWindowAndroid;
 
     // The category we're showing photos for.
     private PickerCategoryView mCategoryView;
@@ -79,22 +80,25 @@ public class PhotoPickerDialog
 
     /**
      * The PhotoPickerDialog constructor.
-     * @param context The context to use.
+     * @param windowAndroid The window of the hosting Activity.
      * @param contentResolver The ContentResolver to use to retrieve image metadata from disk.
      * @param listener The listener object that gets notified when an action is taken.
      * @param multiSelectionAllowed Whether the photo picker should allow multiple items to be
      *                              selected.
      * @param mimeTypes A list of mime types to show in the dialog.
+     * @param vrModeProvider Used to query VR mode state.
      */
-    public PhotoPickerDialog(Context context, ContentResolver contentResolver,
-            PhotoPickerListener listener, boolean multiSelectionAllowed, List<String> mimeTypes) {
-        super(context, R.style.Theme_Chromium_Fullscreen);
-        mContext = context;
+    public PhotoPickerDialog(WindowAndroid windowAndroid, ContentResolver contentResolver,
+            PhotoPickerListener listener, boolean multiSelectionAllowed, List<String> mimeTypes,
+            VrModeProvider vrModeProvider) {
+        super(windowAndroid.getContext().get(), R.style.Theme_Chromium_Fullscreen);
+
+        mWindowAndroid = windowAndroid;
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 
         // Initialize the main content view.
-        mCategoryView =
-                new PickerCategoryView(context, contentResolver, multiSelectionAllowed, this);
+        mCategoryView = new PickerCategoryView(
+                windowAndroid, contentResolver, multiSelectionAllowed, this, vrModeProvider);
         mCategoryView.initialize(this, mListenerWrapper, mimeTypes);
         setView(mCategoryView);
     }
@@ -131,7 +135,7 @@ public class PhotoPickerDialog
                         dismiss();
                     }
                 }
-            }, ContextUtils.activityFromContext(mContext));
+            }, ContextUtils.activityFromContext(mWindowAndroid.getContext().get()));
         }
     }
 

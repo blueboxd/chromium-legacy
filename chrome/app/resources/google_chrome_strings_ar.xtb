@@ -46,7 +46,7 @@
 <translation id="2123055963409958220">‏يمكنك المساعدة في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">‏يُرجى إعادة تشغيل Chrome الآن</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
-<translation id="226038281051944330">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب جديد. هل تريد إنشاء ملف شخصي جديد على Chrome space للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك منفصلة؟</translation>
+<translation id="226038281051944330">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب جديد. هل تريد إنشاء ملف شخصي جديد على Chrome للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك منفصلة؟</translation>
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
 <translation id="2290095356545025170">‏هل تريد فعلًا إزالة Google Chrome؟</translation>
 <translation id="2309047409763057870">‏هذا تثبيت ثانوي من Google Chrome، ولا يمكن جعله متصفحك التلقائي.</translation>
@@ -145,7 +145,7 @@
 <translation id="4895437082222824641">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="4953650215774548573">‏تعيين Google Chrome المتصفح التلقائي</translation>
 <translation id="495931528404527476">‏في Chrome</translation>
-<translation id="4960472897514318257">‏لقد سجَّلت الدخول باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chrome space للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك الشخصية منفصلة؟</translation>
+<translation id="4960472897514318257">‏لقد سجَّلت الدخول باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chrome للمستخدم <ph name="NEW_USER" /> حتى تُبقي بياناتك الشخصية منفصلة؟</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">‏إعادة تشغيل نظام التشغيل Chrome</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
@@ -265,9 +265,9 @@
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="8834965163890861871">‏يحاول Google Chrome تعديل كلمات المرور. للسماح بذلك، يُرجى كتابة كلمة مرور Windows الخاصة بك.</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>
-<translation id="8859948767482842016">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chrome space للمستخدم <ph name="WORK_DOMAIN" /> حتى تُبقي بياناتك منفصلة؟</translation>
+<translation id="8859948767482842016">‏لقد سجَّلت الدخول إلى ملف <ph name="EXISTING_USER" /> الشخصي باستخدام حساب عمل. هل تريد إنشاء ملف شخصي جديد على Chrome للنطاق <ph name="WORK_DOMAIN" /> حتى تُبقي بياناتك منفصلة؟</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
-<translation id="8877586659207810298">‏هل تريد إنشاء ملف شخصي جديد على Chrome space للمستخدم <ph name="NEW_USER" />؟</translation>
+<translation id="8877586659207810298">‏هل تريد إنشاء ملف شخصي جديد على Chrome للمستخدم <ph name="NEW_USER" />؟</translation>
 <translation id="8914504000324227558">‏إعادة تشغيل Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{‏يتوفر تحديث لمتصفح Chrome}=1{‏يتوفر تحديث لمتصفح Chrome}two{‏يتوفر تحديث لمتصفح Chrome منذ يومين}few{‏يتوفر تحديث لمتصفح Chrome منذ # أيام}many{‏يتوفر تحديث لمتصفح Chrome منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chrome منذ # يوم}}</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>

@@ -31,10 +31,10 @@ TEST_P(URLRequestContextMemoryDumpTest, MemoryDumpProvider) {
   std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(dump_args));
   URLRequestContextBuilder builder;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
       ProxyConfigWithAnnotation::CreateDirect()));
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   std::unique_ptr<URLRequestContext> context(builder.Build());
   context->OnMemoryDump(dump_args, process_memory_dump.get());
   const base::trace_event::ProcessMemoryDump::AllocatorDumpsMap&

@@ -30,8 +30,7 @@ using ContextType = ExtensionApiTest::ContextType;
 class BookmarksApiTest : public ExtensionApiTest,
                          public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    ExtensionApiTest::SetUp();
+  BookmarksApiTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker)

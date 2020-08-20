@@ -52,6 +52,7 @@ bool SupportsOverlays() {
   base::AutoLock auto_lock(GetOverlayLock());
   return g_supports_overlays;
 }
+
 void SetSupportsOverlays(bool support) {
   base::AutoLock auto_lock(GetOverlayLock());
   g_supports_overlays = support;
@@ -95,11 +96,26 @@ DXGI_FORMAT g_overlay_format_used = DXGI_FORMAT_NV12;
 DXGI_FORMAT g_overlay_format_used_hdr = DXGI_FORMAT_UNKNOWN;
 
 // These are the raw support info, which shouldn't depend on field trial state,
-// or command line flags.
+// or command line flags. GUARDED_BY GetOverlayLock().
 UINT g_nv12_overlay_support_flags = 0;
 UINT g_yuy2_overlay_support_flags = 0;
 UINT g_bgra8_overlay_support_flags = 0;
 UINT g_rgb10a2_overlay_support_flags = 0;
+
+// When this is set, if NV12 or YUY2 overlays are supported, set BGRA8 overlays
+// as supported as well.
+bool g_enable_bgra8_overlays_with_yuv_overlay_support = false;
+
+void SetOverlaySupportFlagsForFormats(UINT nv12_flags,
+                                      UINT yuy2_flags,
+                                      UINT bgra8_flags,
+                                      UINT rgb10a2_flags) {
+  base::AutoLock auto_lock(GetOverlayLock());
+  g_nv12_overlay_support_flags = nv12_flags;
+  g_yuy2_overlay_support_flags = yuy2_flags;
+  g_bgra8_overlay_support_flags = bgra8_flags;
+  g_rgb10a2_overlay_support_flags = rgb10a2_flags;
+}
 
 bool FlagsSupportsOverlays(UINT flags) {
   return (flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
@@ -207,6 +223,13 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
       *overlay_format_used = DXGI_FORMAT_YUY2;
       *supports_overlays = true;
     }
+    if (g_enable_bgra8_overlays_with_yuv_overlay_support) {
+      if (FlagsSupportsOverlays(*nv12_overlay_support_flags))
+        *bgra8_overlay_support_flags = *nv12_overlay_support_flags;
+      else if (FlagsSupportsOverlays(*yuy2_overlay_support_flags))
+        *bgra8_overlay_support_flags = *yuy2_overlay_support_flags;
+    }
+
     if (*supports_overlays) {
       DXGI_OUTPUT_DESC monitor_desc = {};
       if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
@@ -288,12 +311,11 @@ void UpdateOverlaySupport() {
 
   // Update global caps
   SetSupportsOverlays(supports_overlays);
+  SetOverlaySupportFlagsForFormats(
+      nv12_overlay_support_flags, yuy2_overlay_support_flags,
+      bgra8_overlay_support_flags, rgb10a2_overlay_support_flags);
   g_overlay_format_used = overlay_format_used;
   g_overlay_format_used_hdr = overlay_format_used_hdr;
-  g_nv12_overlay_support_flags = nv12_overlay_support_flags;
-  g_yuy2_overlay_support_flags = yuy2_overlay_support_flags;
-  g_bgra8_overlay_support_flags = bgra8_overlay_support_flags;
-  g_rgb10a2_overlay_support_flags = rgb10a2_overlay_support_flags;
   g_overlay_monitor_size = overlay_monitor_size;
 }
 
@@ -471,6 +493,7 @@ bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
 // static
 UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
   UpdateOverlaySupport();
+  base::AutoLock auto_lock(GetOverlayLock());
   UINT support_flag = 0;
   switch (format) {
     case DXGI_FORMAT_NV12:
@@ -640,6 +663,13 @@ bool DirectCompositionSurfaceWin::AllowTearing() {
 void DirectCompositionSurfaceWin::SetOverlayHDRGpuInfoUpdateCallback(
     OverlayHDRInfoUpdateCallback callback) {
   g_overlay_hdr_gpu_info_callback = std::move(callback);
+}
+
+// static
+void DirectCompositionSurfaceWin::EnableBGRA8OverlaysWithYUVOverlaySupport() {
+  // This has to be set before initializing overlay caps.
+  DCHECK(!OverlayCapsValid());
+  g_enable_bgra8_overlays_with_yuv_overlay_support = true;
 }
 
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {

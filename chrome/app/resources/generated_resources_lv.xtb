@@ -3,6 +3,7 @@
 <translationbundle lang="lv">
 <translation id="1001307489511021749">Jūsu lietotnes, iestatījumi un citi pielāgojumi tiks sinhronizēti visās Chrome OS ierīcēs, kurās esat pierakstījies, izmantojot savu Google kontu.</translation>
 <translation id="1003088604756913841">Atvērt saiti jaunā <ph name="APP" /> logā</translation>
+<translation id="1003363546227723021">Kad ekrāns ir īslaicīgi neaktīvs, tiek rādīti fotoattēli, laiks, informācija par laikapstākļiem un multivides informācija</translation>
 <translation id="1004218526896219317">Piekļuve vietnēm</translation>
 <translation id="1005274289863221750">Izmantot jūsu mikrofonu un videokameru</translation>
 <translation id="1005333234656240382">Vai iespējot ADB atkļūdošanu?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Apturēt</translation>
 <translation id="1110155001042129815">Uzgaidiet</translation>
 <translation id="1112420131909513020">Fona cilne izmanto Bluetooth savienojumu.</translation>
+<translation id="1113892970288677790">Izvēlieties atlasītos mākslas darbus un attēlus.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Dimants</translation>
 <translation id="1114335938027186412">Jūsu datorā ir ietverta uzticamas platformas moduļa (Trusted Platform Module — TPM) drošības ierīce, kas tiek izmantota, lai operētājsistēmā Chrome OS ieviestu daudz svarīgu drošības funkciju. Lai uzzinātu vairāk, apmeklējiet Chromebook palīdzības centru: https://support.google.com/chromebook/?p=tpm.</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Ātrākais</translation>
 <translation id="1225177025209879837">Notiek pieprasījuma apstrāde...</translation>
 <translation id="1227507814927581609">Veidojot savienojumu ar ierīci <ph name="DEVICE_NAME" />, radās autentifikācijas kļūda.</translation>
+<translation id="1230417814058465809">Ir ieslēgta standarta aizsardzība. Lai iegūtu lielāku drošību, izmantojiet uzlaboto aizsardzību.</translation>
 <translation id="1231733316453485619">Vai ieslēgt sinhronizāciju?</translation>
 <translation id="1232569758102978740">Bez nosaukuma</translation>
 <translation id="1233497634904001272">Lai pabeigtu pieprasījumu, vēlreiz pieskarieties drošības atslēgai.</translation>
@@ -429,7 +432,6 @@
 <translation id="1508575541972276599">Pašreizējā versija ir Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Piekļūt jebkurai ierīcei <ph name="DEVICE_NAME_AND_VENDOR" />, izmantojot USB savienojumu</translation>
 <translation id="1509960214886564027">Daudzās vietnēs funkcijas var nedarboties</translation>
-<translation id="1510030919967934016">Šī lapa ir bloķēta un nevar izsekot jūsu atrašanās vietu.</translation>
 <translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
 <translation id="1510785804673676069">Ja lietojat starpniekserveri, pārbaudiet starpniekservera iestatījumus vai
     sazinieties ar tīkla administratoru, lai pārliecinātos, vai starpniekserveris
@@ -599,7 +601,6 @@
 <translation id="1697686431566694143">Rediģēt failu</translation>
 <translation id="1698122934742150150">Tikai pašreizējā inkognito sesijā</translation>
 <translation id="1700079447639026019">Vietnes, kas nekad nedrīkst izmantot sīkfailus</translation>
-<translation id="1700845716982723710">Gaidstāves režīma izslēgšana</translation>
 <translation id="1701062906490865540">Noņemt šo lietotāju</translation>
 <translation id="1703331064825191675">Nekad neraizējieties par parolēm</translation>
 <translation id="1704970325597567340">Drošības pārbaude tika izpildīta šādā datumā: <ph name="DATE" /></translation>
@@ -728,7 +729,6 @@
 <translation id="184273675144259287">Aizstāt jūsu Linux lietotnes un failus ar iepriekšējo dublējumu</translation>
 <translation id="1842766183094193446">Vai tiešām vēlaties iespējot demonstrācijas režīmu?</translation>
 <translation id="1846308012215045257">Lai palaistu spraudni <ph name="PLUGIN_NAME" />, nospiediet taustiņu Ctrl un noklikšķiniet</translation>
-<translation id="184715642345428649">Gaidstāves režīma iespējošana</translation>
 <translation id="1849186935225320012">Šai lapai ir pieejama MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="1850508293116537636">Pagriezt &amp;pulksteņrādītāju kustības virzienā</translation>
 <translation id="1852141627593563189">Atrodiet kaitīgu programmatūru</translation>
@@ -1171,7 +1171,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2392163307141705938">Ir sasniegts laika ierobežojums, ko jūsu vecāki iestatīja lietotnes <ph name="IDS_SHORT_PRODUCT_NAME" /> izmantošanai.</translation>
 <translation id="2392369802118427583">Aktivizēt</translation>
 <translation id="2393136602862631930"><ph name="APP_NAME" /> iestatīšana jūsu Chromebook datorā</translation>
-<translation id="2394566832561516196">Iestatījumi tiks notīrīti pēc nākamās atkārtotās ielādes.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> ierīce ir sekmīgi reģistrēta uzņēmuma pārvaldībai, taču neizdevās nosūtīt tās līdzekļu un atrašanās vietas informāciju. Lūdzu, manuāli ievadiet šo informāciju, izmantojot šīs ierīces administratora konsoli.</translation>
 <translation id="2396387085693598316">Jūsu administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="2396783860772170191">Ievadiet 4 ciparu PIN (0000–9999)</translation>
@@ -1253,6 +1252,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="249113932447298600">Diemžēl ierīce <ph name="DEVICE_LABEL" /> šobrīd netiek atbalstīta.</translation>
 <translation id="2492461744635776704">Tiek sagatavots sertifikāta parakstīšanas pieprasījums</translation>
 <translation id="249303669840926644">Nevarēja pabeigt reģistrāciju</translation>
+<translation id="2493126929778606526">Jūsu labākie fotoattēli (atlasīti automātiski)</translation>
 <translation id="2495777824269688114">Atklājiet citas funkcijas vai iegūstiet atbildes. Atlasiet “?”, lai saņemtu palīdzību.</translation>
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
 <translation id="2497229222757901769">Peles ātrums</translation>
@@ -1345,6 +1345,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2604255671529671813">Tīkla savienojuma kļūda</translation>
 <translation id="2606246518223360146">Saistīt datus</translation>
 <translation id="2607101320794533334">Subjekta publiskās atslēgas dati</translation>
+<translation id="2607968157341167679">Nav albumu. Izveidojiet albumu pakalpojumā <ph name="LINK_BEGIN" />Google fotoattēli<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Izveidot saīsnes...</translation>
 <translation id="2610157865375787051">Miega režīms</translation>
 <translation id="2610260699262139870">Patiesais izmērs</translation>
@@ -1481,6 +1482,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2762441749940182211">Kameras lietošana ir bloķēta</translation>
 <translation id="2764786626780673772">VPN dati</translation>
 <translation id="2765217105034171413">Mazs</translation>
+<translation id="2765729904637714153">Iedzīviniet savas mīļākās atmiņas. Lai pievienotu vai rediģētu albumus, pārejiet uz pakalpojumu <ph name="LINK_BEGIN" />Google fotoattēli<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Ielīmēt un doties</translation>
 <translation id="2766161002040448006">Lūgt kādam no vecākiem</translation>
 <translation id="2767127727915954024">Vietne <ph name="ORIGIN" /> varēs rediģēt failu “<ph name="FILENAME" />”, kamēr netiks aizvērtas visas šīs vietnes cilnes.</translation>
@@ -1658,7 +1660,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="2979639724566107830">Atvērt jaunā logā</translation>
 <translation id="2981113813906970160">Rādīt lielu peles kursoru</translation>
 <translation id="2985348301114641460">Vai nosūtīt administratoram pieprasījumu instalēt <ph name="EXTENSION_NAME" />?</translation>
-<translation id="2986010903908656993">Šajā lapā ir bloķēta MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="2987620471460279764">No citas ierīces kopīgotais teksts</translation>
 <translation id="2988018669686457659">Rezerves renderētājs</translation>
 <translation id="2989123969927553766">Peles ritināšanas paātrināšana</translation>
@@ -2082,7 +2083,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3524965460886318643">Eksportēt darbības</translation>
 <translation id="3526034519184079374">Nevar lasīt vai mainīt vietnes datus</translation>
 <translation id="3527085408025491307">Mape</translation>
-<translation id="3528033729920178817">Šī lapa izseko jūsu atrašanās vietu.</translation>
 <translation id="3528498924003805721">Saīšņu mērķi</translation>
 <translation id="3532273508346491126">Sinhronizācijas pārvaldība</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> — izslēgta skaņa</translation>
@@ -2113,6 +2113,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3566325075220776093">No šīs ierīces</translation>
 <translation id="3566721612727112615">Nav pievienota neviena vietne</translation>
 <translation id="3569382839528428029">Vai vēlaties, lai lietotne <ph name="APP_NAME" /> kopīgotu jūsu ekrānu?</translation>
+<translation id="3569407787324516067">Ekrānsaudzētājs</translation>
 <translation id="3569682580018832495">Vietne <ph name="ORIGIN" /> var skatīt šos failus un mapes:</translation>
 <translation id="3571734092741541777">Iestatīt</translation>
 <translation id="3574210789297084292">pierakstīties</translation>
@@ -2261,6 +2262,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3727148787322499904">Nomainot šo iestatījumu, tiks ietekmēti visi koplietotie tīkli.</translation>
 <translation id="3727187387656390258">Pārbaudīt uznirstošo elementu</translation>
 <translation id="372722114124766626">Tikai vienreiz</translation>
+<translation id="3728188878314831180">Spoguļot paziņojumus no jūsu tālruņa</translation>
 <translation id="3728681439294129328">Tīkla adreses konfigurēšana</translation>
 <translation id="3729303374699765035">Vaicāt, ja vietne vēlas redzēt tuvumā esošās Bluetooth ierīces</translation>
 <translation id="3729506734996624908">Atļautās vietnes</translation>
@@ -2556,7 +2558,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4061374428807229313">Lai kopīgotu mapi, lietotnē Faili ar peles labo pogu noklikšķiniet uz attiecīgās mapes un pēc tam atlasiet “Kopīgot ar Parallels Desktop”.</translation>
 <translation id="4065876735068446555">Iespējams, izmantotajā tīklā (<ph name="NETWORK_ID" />) tiks prasīts apmeklēt pieteikšanās lapu.</translation>
 <translation id="4066207411788646768">Lūdzu, pārbaudiet savienojumu, lai skatītu tīklā pieejamos printerus.</translation>
-<translation id="4068506536726151626">Šajā lapā ir elementi no šādām vietnēm, kas izseko jūsu atrašanās vietu:</translation>
 <translation id="4068776064906523561">Saglabātie pirkstu nospiedumi</translation>
 <translation id="407173827865827707">Noklikšķinot</translation>
 <translation id="4074900173531346617">E-pasta parakstītāja sertifikāts</translation>
@@ -3199,7 +3200,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vēlas sazināties ar paplašinājumu “<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4918221908152712722">Instalējiet lietotni <ph name="APP_NAME" /> (nav nepieciešama lejupielāde)</translation>
-<translation id="4920887663447894854">Šīs vietnes ir bloķētas un nevar izsekot jūsu atrašanās vietu šajā lapā:</translation>
 <translation id="4921290200821452703">Mācību iestādes konta informācija vecākiem</translation>
 <translation id="4921348630401250116">Teksta pārvēršana runā</translation>
 <translation id="49226369361073053">{0,plural, =0{Ierīce tūlīt jāatjaunina}=1{Ierīces atjaunināšana jāsāk 1 sekundes laikā}zero{Ierīces atjaunināšana jāsāk # sekunžu laikā}one{Ierīces atjaunināšana jāsāk # sekundes laikā}other{Ierīces atjaunināšana jāsāk # sekunžu laikā}}</translation>
@@ -3277,7 +3277,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5027562294707732951">Pievienot paplašinājumu</translation>
 <translation id="5029568752722684782">Dzēst kopiju</translation>
 <translation id="5033266061063942743">Ģeometriskas formas</translation>
-<translation id="5033370009438029887">Gaidstāves režīma atspējošana</translation>
 <translation id="5036662165765606524">Neļaut nevienai vietnei automātiski lejupielādēt vairākus failus</translation>
 <translation id="5037676449506322593">Atlasīt visu</translation>
 <translation id="5038022729081036555">Rīt varēsiet to izmantot <ph name="TIME_LIMIT" />.</translation>
@@ -3954,7 +3953,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5865508026715185451">Lietotnes <ph name="APP_NAME" /> darbība drīz tiks apturēta.</translation>
 <translation id="586567932979200359">Jūs izpildāt <ph name="PRODUCT_NAME" /> no diska attēla. Instalējot datorā, varēsiet to izpildīt bez diska attēla, un tiks nodrošināta tā atjaunināšana.</translation>
 <translation id="5865733239029070421">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem</translation>
-<translation id="5866557323934807206">Notīrīt šos iestatījumus nākamiem apmeklējumiem</translation>
 <translation id="5866840822086176774">Ļoti spēcīgs</translation>
 <translation id="5867841422488265304">Meklējiet vai ievadiet tīmekļa adresi</translation>
 <translation id="5869029295770560994">Labi, sapratu</translation>
@@ -4239,7 +4237,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6225475702458870625">Ir pieejams datu savienojums no tālruņa <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Privātās atslēgas fails (neobligāti)</translation>
 <translation id="6227280783235722609">paplašinājums</translation>
-<translation id="6228691855869374890">Šai vietnei ir pieejama MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="6229849828796482487">Wi-Fi tīkla atvienošana</translation>
 <translation id="6229890768313448549">Google Play pakalpojumu sniegšanas noteikumus nevar ielādēt. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6231881193380278751">Vietrādī URL pievienojiet vaicājuma parametru, lai automātiski atsvaidzinātu lapu: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4393,7 +4390,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6412931879992742813">Jauns inkognito logs</translation>
 <translation id="641469293210305670">Atjauninājumu un lietotņu saglabāšana</translation>
 <translation id="6414888972213066896">Jūs lūdzāt vienam no vecākiem atļauju apmeklēt šo vietni</translation>
-<translation id="6415659939354280526">Gaidstāves režīmā rādāmā satura izvēlēšanās</translation>
 <translation id="6415900369006735853">Piekļūstiet internetam, izmantojot tālruni</translation>
 <translation id="6416743254476733475">Atļaujiet vai bloķējiet savā datorā.</translation>
 <translation id="6417265370957905582">Google asistents</translation>
@@ -4710,6 +4706,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6824584962142919697">&amp;Pārbaudīt elementus</translation>
 <translation id="6825184156888454064">Kārtot pēc nosaukuma</translation>
 <translation id="6826872289184051766">Apstiprināt, izmantojot USB</translation>
+<translation id="6827623133556594466">Pēc 31. decembra Google mākoņdruka vairs netiks atbalstīta. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="6828153365543658583">Ierobežot pierakstīšanos, izņemot šādiem lietotājiem:</translation>
 <translation id="6828182567531805778">Lai sinhronizētu datus, ievadiet ieejas frāzi</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5328,6 +5325,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7605594153474022051">Sinhronizācija nedarbojas</translation>
 <translation id="7606992457248886637">Izdevējiestādes</translation>
 <translation id="7607002721634913082">Apturēta</translation>
+<translation id="7608810328871051088">Android iestatījumi</translation>
 <translation id="7609148976235050828">Izveidojiet savienojumu ar internetu un mēģiniet vēlreiz.</translation>
 <translation id="7614260613810441905">Vaicāt, ja vietne vēlas rediģēt ierīces failus vai mapes (ieteicams)</translation>
 <translation id="761530003705945209">Datu dublēšana Google diskā. Varēsiet jebkurā laikā ērti atjaunot savus datus vai mainīt ierīci. Dublējumā ir ietverti arī lietotņu dati. Jūsu dublējumi tiek augšupielādēti Google serveros un šifrēti, izmantojot jūsu Google konta paroli.</translation>
@@ -5335,7 +5333,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7616214729753637086">Notiek ierīces reģistrēšana...</translation>
 <translation id="7617263010641145920">Play veikala ieslēgšana</translation>
 <translation id="7617366389578322136">Notiek savienojuma izveide ar ierīci <ph name="DEVICE_NAME" />.</translation>
-<translation id="761763866592998929">Gaidstāves režīms</translation>
 <translation id="7621382409404463535">Diemžēl sistēmā neizdevās saglabāt ierīces konfigurāciju.</translation>
 <translation id="7622114377921274169">Notiek uzlāde.</translation>
 <translation id="7622903810087708234">Informācija par paroli</translation>
@@ -5578,7 +5575,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Skatīt kontu</translation>
 <translation id="7882358943899516840">Pakalpojumu sniedzēja veids</translation>
-<translation id="78851824530736377">Gaidstāves režīma ieslēgšana</translation>
 <translation id="7885253890047913815">Nesenie printeri</translation>
 <translation id="7887334752153342268">Izveidot dublikātu</translation>
 <translation id="7887864092952184874">Bluetooth pele ir savienota pārī.</translation>
@@ -5856,6 +5852,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8225753906568652947">Izmantot piedāvājumus</translation>
 <translation id="8226222018808695353">Aizliegts</translation>
 <translation id="8226619461731305576">Rinda</translation>
+<translation id="8226628635270268143">Izvēlieties savus iecienītākos fotoattēlus un albumus.</translation>
 <translation id="8226742006292257240">Tālāk redzama nejauši izveidota TPM parole, kas piešķirta jūsu datoram:</translation>
 <translation id="8227119283605456246">Pievienot failu</translation>
 <translation id="8229943166551236192">Ierīces dati 24 stundu laikā tiks izdzēsti</translation>
@@ -6354,6 +6351,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="882854468542856424">Neatļaut nevienai vietnei redzēt tuvumā esošās Bluetooth ierīces</translation>
 <translation id="8828933418460119530">DNS nosaukums</translation>
 <translation id="883062543841130884">Aizstājēji</translation>
+<translation id="8830779999439981481">Notiek restartēšana, lai lietotu atjauninājumus</translation>
 <translation id="8830796635868321089">Atjauninājumu pārbaude, izmantojot esošos starpniekservera iestatījumus, neizdevās. Lūdzu, pielāgojiet <ph name="PROXY_SETTINGS_LINK_START" />starpniekservera iestatījumus<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Jūsu <ph name="DEVICE_TYPE" /> dators un Android tālrunis labāk darbojas kopā. Savienojiet tos, lai sūtītu īsziņas no datora, koplietotu interneta savienojumu un atbloķētu <ph name="DEVICE_TYPE" /> datoru ar tālruni. <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Uzziniet vairāk<ph name="LINK_END" />.</translation>
 <translation id="8834039744648160717">Tīkla konfigurāciju kontrolē <ph name="USER_EMAIL" />.</translation>

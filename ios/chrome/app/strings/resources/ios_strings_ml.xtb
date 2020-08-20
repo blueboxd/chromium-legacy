@@ -43,7 +43,7 @@
 <translation id="1375321115329958930">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
 <translation id="1377255359165588604">സമന്വയിപ്പിക്കുന്നത് നിർത്തി.</translation>
 <translation id="1377321085342047638">കാർഡ് നമ്പർ</translation>
-<translation id="1383876407941801731">തിരയുക</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1389974829397082527">ഇവിടെ ബുക്ക്‌മാർക്കുകളൊന്നുമില്ല</translation>
 <translation id="1400642268715879018">കഴിഞ്ഞ 4 ആഴ്‌ചയിലെ</translation>
 <translation id="1407135791313364759">എല്ലാം തുറക്കുക</translation>
@@ -273,7 +273,7 @@
 <translation id="4082688844002261427">തിരയൽ, പരസ്യങ്ങൾ എന്നിവയും മറ്റും വ്യക്തിപരമാക്കുന്നതിനായി നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന വിധം നിയന്ത്രിക്കുക</translation>
 <translation id="408404951701638773">തിരയൽ ബാറിൽ എത്താൻ ഇപ്പോൾ എളുപ്പമാണ്</translation>
 <translation id="411254640334432676">ഡൗൺലോഡ് പരാജയപ്പെട്ടു.</translation>
-<translation id="4112644173421521737">തിരയുക</translation>
+<translation id="4112644173421521737">Search</translation>
 <translation id="4121993058175073134">നെറ്റ്-എക്‌സ്‌പോർട്ട് ഡാറ്റ അയയ്‌ക്കുന്നതിന്, ക്രമീകരണ ആപ്പിൽ നിങ്ങളുടെ ഇമെയിൽ അക്കൗണ്ട് കോൺഫിഗർ ചെയ്യുക.</translation>
 <translation id="4124987746317609294">സമയ ശ്രേണി</translation>
 <translation id="4152011295694446843">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ ഇവിടെ കാണാം</translation>
@@ -442,6 +442,7 @@
 <translation id="6125339936101702016"><ph name="COMPANY" /> മാനേജ് ചെയ്യുന്നത്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
 <translation id="6136914049981179737">സെക്കൻഡ് മുമ്പ്</translation>
+<translation id="6144589619057374135">${url} അദൃശ്യ മോഡിൽ തുറക്കുക</translation>
 <translation id="616831107264507309">പിന്നീട് വായിക്കുക</translation>
 <translation id="6177442314419606057">Chrome-ൽ തിരയുക</translation>
 <translation id="6184086493125982861">ടാബുകൾ കാണിക്കുക</translation>

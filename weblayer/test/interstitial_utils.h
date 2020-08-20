@@ -27,6 +27,10 @@ bool IsShowingCaptivePortalInterstitial(Tab* tab);
 // Returns true iff a bad clock interstitial is currently displaying in |tab|.
 bool IsShowingBadClockInterstitial(Tab* tab);
 
+// Returns true iff an insecure form interstitial is currently displaying in
+// |tab|.
+bool IsShowingInsecureFormInterstitial(Tab* tab);
+
 }  // namespace weblayer
 
 #endif  // WEBLAYER_TEST_INTERSTITIAL_UTILS_H_

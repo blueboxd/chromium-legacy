@@ -52,8 +52,7 @@ class NativeMessagingLazyApiTest
     : public NativeMessagingApiTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    NativeMessagingApiTest::SetUp();
+  NativeMessagingLazyApiTest() {
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker)

@@ -45,7 +45,7 @@ These are all generated from red.png with the appropriate avifenc command line:
 
 BT.709:
 ```
-avifenc -r f -d  8 -y 444 -s 0 --nclx 1/1/1 red.png red-full-range-bt709-pq-444-8bpc.avif
+avifenc -r f -d  8 -y 444 -s 0 --nclx 1/1/1 red.png red-full-range-bt709-444-8bpc.avif
 ```
 
 PQ:
@@ -56,8 +56,13 @@ avifenc -r f -d 10 -y 444 -s 0 --nclx 9/16/9 red.png red-full-range-bt2020-pq-44
 
 HLG:
 ```
-avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-444-10bpc.avif
-avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-444-12bpc.avif
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-hlg-444-10bpc.avif
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-hlg-444-12bpc.avif
+```
+
+Unspecified color primaries, transfer characteristics, and matrix coefficients:
+```
+avifenc -r f -d  8 -y 420 -s 0 --nclx 2/2/2 red.png red-full-range-unspecified-420-8bpc.avif
 ```
 
 ### silver-full-range-srgb-420-8bpc.avif

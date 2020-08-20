@@ -145,9 +145,7 @@ static void TestAtkObjectStringAttribute(
   EnsureAtkObjectDoesNotHaveAttribute(atk_object, attribute_name);
 
   const char* tests[] = {
-      "",
-      "a string with spaces"
-      "a string with , a comma",
+      "", "a string with spaces", "a string with , a comma",
       "\xE2\x98\xBA",  // The smiley emoji.
   };
 

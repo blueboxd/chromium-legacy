@@ -46,7 +46,6 @@
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
-#include "media/gpu/vaapi/vaapi_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
@@ -2114,18 +2113,20 @@ void VaapiWrapper::DestroyVABuffer(VABufferID buffer_id) {
   base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaDestroyBuffer(va_display_, buffer_id);
   VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyBuffer);
-  const auto was_found = va_buffers_.erase(buffer_id);
-  DCHECK(was_found);
+  // If this |buffer_id| comes from CreateVABuffer() it'll be in |va_buffers_|,
+  // but otherwise (BlitSurface() - |va_buffer_for_vpp_|), it won't. This is
+  // needed temporarily while moving the VABufferID lifetime management to the
+  // clients, see crbug.com/1016219 and b/162962069.
+  va_buffers_.erase(buffer_id);
 }
 
 void VaapiWrapper::DestroyVABuffers() {
   base::AutoLock auto_lock(*va_lock_);
 
-  for (auto it = va_buffers_.begin(); it != va_buffers_.end(); ++it) {
-    VAStatus va_res = vaDestroyBuffer(va_display_, *it);
+  for (const VABufferID va_buffer_id : va_buffers_) {
+    VAStatus va_res = vaDestroyBuffer(va_display_, va_buffer_id);
     VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyBuffer);
   }
-
   va_buffers_.clear();
 }
 
@@ -2152,22 +2153,23 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                                VideoRotation rotation) {
   base::AutoLock auto_lock(*va_lock_);
 
-  if (va_buffers_.empty()) {
+  // Create a buffer for VPP if it has not been created.
+  if (!va_buffer_for_vpp_) {
     DCHECK_NE(VA_INVALID_ID, va_context_id_);
-    // Create a buffer for VPP if it has not been created.
-    VABufferID buffer_id;
+    VABufferID buffer_id = VA_INVALID_ID;
     const VAStatus va_res = vaCreateBuffer(
         va_display_, va_context_id_, VAProcPipelineParameterBufferType,
         sizeof(VAProcPipelineParameterBuffer), 1, nullptr, &buffer_id);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
     DCHECK_NE(buffer_id, VA_INVALID_ID);
-    va_buffers_.emplace(buffer_id);
+
+    va_buffer_for_vpp_ = std::make_unique<ScopedID<VABufferID>>(
+        buffer_id, base::BindOnce(&VaapiWrapper::DestroyVABuffer, this));
   }
 
-  DCHECK_EQ(va_buffers_.size(), 1u);
-  VABufferID buffer_id = *va_buffers_.begin();
   {
-    ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
+    ScopedVABufferMapping mapping(va_lock_, va_display_,
+                                  va_buffer_for_vpp_->id());
     if (!mapping.IsValid())
       return false;
     auto* pipeline_param =
@@ -2221,8 +2223,9 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
       vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id()),
       VaapiFunctions::kVABeginPicture, false);
 
+  VABufferID va_buffer_id = va_buffer_for_vpp_->id();
   VA_SUCCESS_OR_RETURN(
-      vaRenderPicture(va_display_, va_context_id_, &buffer_id, 1),
+      vaRenderPicture(va_display_, va_context_id_, &va_buffer_id, 1),
       VaapiFunctions::kVARenderPicture_Vpp, false);
 
   VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_context_id_),

@@ -217,8 +217,9 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsChange) {
   auto* provider = provider_.get();
   service_->set_device_provider_for_testing(std::move(provider_));
 
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      nullptr, service_.get(), gfx::Size(), "1");
+      &delegate, service_.get(), gfx::Size(), "1");
 
   std::vector<std::string> button_texts;
   ASSERT_TRUE(view_->device_button_container_ != nullptr);
@@ -238,4 +239,28 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsChange) {
   // When the device highlighted in the UI is removed, the UI should fall back
   // to highlighting the default device.
   EXPECT_TRUE(button->GetProminent());
+}
+
+TEST_F(MediaNotificationAudioDeviceSelectorViewTest, VisibilityChanges) {
+  // The audio device selector view should become hidden when there is only one
+  // unique device.
+  provider_->AddDevice("Speaker", "1");
+  provider_->AddDevice("default",
+                       media::AudioDeviceDescription::kDefaultDeviceId);
+  auto* provider = provider_.get();
+  service_->set_device_provider_for_testing(std::move(provider_));
+
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
+  EXPECT_CALL(delegate, OnAudioDeviceSelectorViewSizeChanged).Times(1);
+  view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+      &delegate, service_.get(), gfx::Size(), "1");
+  EXPECT_FALSE(view_->GetVisible());
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+
+  provider->AddDevice("Headphones", "2");
+  EXPECT_CALL(delegate, OnAudioDeviceSelectorViewSizeChanged).Times(1);
+  provider->RunUICallback();
+  EXPECT_TRUE(view_->GetVisible());
+  testing::Mock::VerifyAndClearExpectations(&delegate);
 }

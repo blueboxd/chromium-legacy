@@ -253,14 +253,14 @@
         ],
         'identifier': 'iPhone 7 14.0'
     },
-    'SIM_IPHONE_SE_13_6': {
+    'SIM_IPHONE_SE_1ST_GEN_13_6': {
         'args': [
             '--platform',
-            'iPhone SE',
+            'iPhone SE (1st generation)',
             '--version',
             '13.6',
         ],
-        'identifier': 'iPhone SE 13.6'
+        'identifier': 'iPhone SE (1st generation) 13.6'
     },
     'SIM_IPHONE_X_12_4': {
         'args': [

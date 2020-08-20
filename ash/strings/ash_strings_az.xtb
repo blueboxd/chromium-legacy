@@ -40,6 +40,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1302880136325416935">Bluetooth ayarlarını göstərin. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Siqnal Gücü <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Hər zaman rəfi göstərin</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> qoşulub</translation>
 <translation id="1341651618736211726">Kənara çıxma</translation>
 <translation id="1346748346194534595">Sağ</translation>
 <translation id="1351937230027495976">Menyunu yığcamlaşdırın</translation>
@@ -518,6 +519,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="6972754398087986839">Başlayın</translation>
 <translation id="6981982820502123353">Giriş İmkanı</translation>
 <translation id="698231206551913481">İstifadəçi silinən kimi onunla əlaqədar bütün fayl və data həmişəlik silinəcək.</translation>
+<translation id="6990778048354947307">Qara Tema</translation>
 <translation id="7007983414944123363">PIN və ya parolunuzu doğrulamaq mümkün olmadı. Yenidən sınayın.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> olduqda yenidən davam edin.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> cihazını telefonla əlaqələndirin</translation>

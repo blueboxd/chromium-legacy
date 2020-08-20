@@ -11,7 +11,7 @@ import "url/mojom/url.mojom";
 // The type of dialog to open. The integer values intentionally do not match
 // ui::SelectFileDialog::Type because there is no "none" value and kOpenFile
 // is the common case.
-[Extensible]
+[Stable, Extensible]
 enum SelectFileDialogType {
   // For opening a file.
   kOpenFile = 0,
@@ -33,7 +33,7 @@ enum SelectFileDialogType {
 };
 
 // Specifies which type of paths the caller can handle.
-[Extensible]
+[Stable, Extensible]
 enum AllowedPaths {
   // Any type of path, whether local/native or remote/virtual.
   kAnyPath,
@@ -49,6 +49,7 @@ enum AllowedPaths {
 };
 
 // Information about the types of files used by the dialog.
+[Stable]
 struct SelectFileTypeInfo {
   // The list of allowed file extensions. For example:
   // { { "htm", "html" }, { "txt" } }
@@ -78,6 +79,7 @@ struct SelectFileTypeInfo {
 };
 
 // Options for the select file dialog.
+[Stable]
 struct SelectFileOptions {
   // Dialog type.
   SelectFileDialogType type;
@@ -97,7 +99,7 @@ struct SelectFileOptions {
 };
 
 // Result of the select file dialog.
-[Extensible]
+[Stable, Extensible]
 enum SelectFileResult {
   // Everything worked.
   kSuccess = 0,
@@ -107,6 +109,7 @@ enum SelectFileResult {
 };
 
 // Information about the selected file or files.
+[Stable]
 struct SelectedFileInfo {
   // Path to the file, as seen in the UI.
   mojo_base.mojom.FilePath file_path;
@@ -132,6 +135,7 @@ struct SelectedFileInfo {
 // Select file dialog interface. Wrapper around the C++ SelectFileDialog
 // class. Called from lacros-chrome. Implemented in ash-chrome using the
 // file manager dialog.
+[Stable]
 interface SelectFile {
   // Selects one or more files. If the dialog is closed or canceled without
   // selecting a file, or if there is an error, |files| will be empty.

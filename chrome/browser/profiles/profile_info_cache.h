@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -48,6 +47,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                          public base::SupportsWeakPtr<ProfileInfoCache> {
  public:
   ProfileInfoCache(PrefService* prefs, const base::FilePath& user_data_dir);
+  ProfileInfoCache(const ProfileInfoCache&) = delete;
+  ProfileInfoCache& operator=(const ProfileInfoCache&) = delete;
   ~ProfileInfoCache() override;
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
@@ -188,8 +189,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;
   base::WeakPtrFactory<ProfileInfoCache> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_

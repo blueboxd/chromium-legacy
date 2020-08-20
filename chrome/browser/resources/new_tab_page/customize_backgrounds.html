@@ -7,8 +7,8 @@
     padding: 4px;
   }
 
-  ntp-grid {
-    --ntp-grid-gap: 8px;
+  cr-grid {
+    --cr-grid-gap: 8px;
   }
 
   .tile {
@@ -166,7 +166,7 @@
   <div id="backgroundsDisabledIcon"></div>
   <div id="backgroundsDisabledTitle">$i18n{customBackgroundDisabled}</div>
 </div>
-<ntp-grid id="collections" columns="3" hidden="[[!showBackgroundSelection_]]">
+<cr-grid id="collections" columns="3" hidden="[[!showBackgroundSelection_]]">
   <div id="uploadFromDevice" class="tile" role="button"
       on-click="onUploadFromDeviceClick_" tabindex="0">
     <div class$="[[getCustomBackgroundClass_(theme, backgroundSelection)]]">
@@ -203,8 +203,8 @@
       </div>
     </template>
   </dom-repeat>
-</ntp-grid>
-<ntp-grid id="images" columns="3" hidden="[[!selectedCollection]]">
+</cr-grid>
+<cr-grid id="images" columns="3" hidden="[[!selectedCollection]]">
   <dom-repeat id="imagesRepeat" items="[[images_]]">
     <template>
       <div
@@ -220,4 +220,4 @@
       </div>
     </template>
   </dom-repeat>
-</ntp-grid>
+</cr-grid>

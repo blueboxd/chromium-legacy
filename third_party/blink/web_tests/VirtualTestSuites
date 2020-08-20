@@ -546,7 +546,8 @@
   },
   {
     "prefix": "dark-color-scheme",
-    "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme"],
+    "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
+              "fast/forms/color-scheme"],
     "args": ["--force-dark-mode",
              "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering"]
   },

@@ -1505,10 +1505,6 @@ bool Node::InActiveDocument() const {
   return isConnected() && GetDocument().IsActive();
 }
 
-const Node* Node::FocusDelegate() const {
-  return this;
-}
-
 bool Node::ShouldHaveFocusAppearance() const {
   DCHECK(IsFocused());
   return true;

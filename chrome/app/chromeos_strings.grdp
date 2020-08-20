@@ -5697,6 +5697,12 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SUGGESTION_DISMISSED" desc="String announced by screenreader when suggestion pop-up disappears.">
     Suggestion dismissed
   </message>
+  <message name="IDS_SUGGESTION_EMOJI_INSERTED" desc="String announced by screenreader when an emoji suggestion is inserted.">
+    Emoji inserted
+  </message>
+  <message name="IDS_SUGGESTION_INSERTED" desc="String announced by screenreader when a suggestion is inserted.">
+    Suggestion inserted
+  </message>
 
   <!-- Strings for Custom Tab UI -->
   <message name="IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME" desc="Accessible name for the overflow menu of the Chrome Custom Tab toolbar.">

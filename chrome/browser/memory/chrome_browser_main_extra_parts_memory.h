@@ -10,6 +10,14 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+namespace memory {
+class SystemMemoryPressureEvaluator;
+}
+}  // namespace chromeos
+#endif
+
 namespace memory {
 class EnterpriseMemoryLimitPrefObserver;
 }  // namespace memory
@@ -33,6 +41,11 @@ class ChromeBrowserMainExtraPartsMemory : public ChromeBrowserMainExtraParts {
   // supported platforms.
   std::unique_ptr<memory::EnterpriseMemoryLimitPrefObserver>
       memory_limit_pref_observer_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::memory::SystemMemoryPressureEvaluator>
+      cros_evaluator_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMemory);
 };

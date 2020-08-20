@@ -870,4 +870,10 @@ void QuicEventLogger::OnTransportParametersResumed(
       });
 }
 
+void QuicEventLogger::OnZeroRttRejected() {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_ZERO_RTT_REJECTED);
+}
+
 }  // namespace net

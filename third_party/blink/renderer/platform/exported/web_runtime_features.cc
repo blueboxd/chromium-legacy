@@ -721,4 +721,8 @@ void WebRuntimeFeatures::EnableCompositingOptimizations(bool enable) {
   RuntimeEnabledFeatures::SetCompositingOptimizationsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableConversionMeasurementInfraSupport(bool enable) {
+  RuntimeEnabledFeatures::SetConversionMeasurementInfraSupportEnabled(enable);
+}
+
 }  // namespace blink

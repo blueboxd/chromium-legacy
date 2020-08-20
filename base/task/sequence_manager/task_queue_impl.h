@@ -95,6 +95,7 @@ class BASE_EXPORT TaskQueueImpl {
       RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
       RepeatingCallback<void(const Task&, TaskQueue::TaskTiming*, LazyNow*)>;
+  using OnTaskPostedHandler = RepeatingCallback<void(const Task&)>;
 
   // May be called from any thread.
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
@@ -216,6 +217,13 @@ class BASE_EXPORT TaskQueueImpl {
                        TaskQueue::TaskTiming* task_timing,
                        LazyNow* lazy_now);
   bool RequiresTaskTiming() const;
+
+  // Set a callback for adding custom functionality for processing posted task.
+  // Callback will be dispatched while holding a scheduler lock. As a result,
+  // callback should not call scheduler APIs directly, as this can lead to
+  // deadlocks. For example, PostTask should not be called directly and
+  // ScopedDeferTaskPosting::PostOrDefer should be used instead.
+  void SetOnTaskPostedHandler(OnTaskPostedHandler handler);
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();
 
@@ -496,6 +504,8 @@ class BASE_EXPORT TaskQueueImpl {
     bool post_immediate_task_should_schedule_work = true;
 
     bool unregistered = false;
+
+    OnTaskPostedHandler on_task_posted_handler;
 
 #if DCHECK_IS_ON()
     // A cache of |immediate_work_queue->work_queue_set_index()| which is used

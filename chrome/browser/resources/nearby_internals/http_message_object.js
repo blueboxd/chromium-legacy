@@ -30,16 +30,13 @@ Polymer({
    * @private
    */
   itemChanged_() {
-    switch (this.item.direction) {
-      case Direction.REQUEST:
-        this.$['item'].classList.add('request');
-        break;
-      case Direction.RESPONSE:
-        this.$['item'].classList.add('response');
-        break;
-      default:
-        break;
+    let classStyle = '';
+    if (this.item.direction === Direction.REQUEST) {
+      classStyle = 'request';
+    } else if (this.item.direction === Direction.RESPONSE) {
+      classStyle = 'response';
     }
+    this.$['item'].className = classStyle;
   },
 
   /**

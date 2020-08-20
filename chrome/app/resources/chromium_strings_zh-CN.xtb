@@ -116,7 +116,7 @@
 <translation id="5416696090975899932">在缺少内置 PDF 查看器的情况下，Chromium 无法显示打印预览。</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
-<translation id="544968170749360982">您已在<ph name="EXISTING_USER" />的空间中使用新帐号登录。想为<ph name="NEW_USER" />创建一个新的 Chromium 空间来单独保存您的数据吗？</translation>
+<translation id="544968170749360982">您已使用新帐号登录<ph name="EXISTING_USER" />的空间。想为<ph name="NEW_USER" />创建一个新的 Chromium 空间来单独保存您的数据吗？</translation>
 <translation id="5479196819031988440">Chromium 操作系统无法打开此网页。</translation>
 <translation id="5480860683791598150">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
@@ -139,7 +139,7 @@
 <translation id="608189560609172163">由于在登录时出现错误，Chromium无法同步您的数据。</translation>
 <translation id="6096348254544841612">有可用的更新。欢迎自定义和控制 Chromium。</translation>
 <translation id="6120345080069858279">Chromium 会将此密码保存在您的 Google 帐号中，因此您不必记住它。</translation>
-<translation id="6128834065531097268">您已在<ph name="EXISTING_USER" />的空间中使用工作帐号登录。想为<ph name="WORK_DOMAIN" />创建一个新的 Chromium 空间来单独保存您的数据吗？</translation>
+<translation id="6128834065531097268">您已使用工作帐号登录<ph name="EXISTING_USER" />的空间。想为<ph name="WORK_DOMAIN" />创建一个新的 Chromium 空间来单独保存您的数据吗？</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6134968993075716475">“安全浏览”功能已关闭。Chromium 建议开启此功能。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>

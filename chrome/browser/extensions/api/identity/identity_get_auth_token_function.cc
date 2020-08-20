@@ -99,18 +99,11 @@ bool IsReturnScopesInGetAuthTokenEnabled() {
 }  // namespace
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
-    :
 #if defined(OS_CHROMEOS)
-      OAuth2AccessTokenManager::Consumer(
-          kExtensionsIdentityAPIOAuthConsumerName),
+    : OAuth2AccessTokenManager::Consumer(
+          kExtensionsIdentityAPIOAuthConsumerName)
 #endif
-      interactive_(false),
-      should_prompt_for_scopes_(false),
-      should_prompt_for_signin_(false),
-      token_key_(/*extension_id=*/std::string(),
-                 /*account_id=*/CoreAccountId(),
-                 /*scopes=*/std::set<std::string>()),
-      scoped_identity_manager_observer_(this) {
+{
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
@@ -138,6 +131,11 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   should_prompt_for_scopes_ = interactive_;
   should_prompt_for_signin_ =
       interactive_ && IsBrowserSigninAllowed(GetProfile());
+
+  enable_granular_permissions_ =
+      IsReturnScopesInGetAuthTokenEnabled() && params->details.get() &&
+      params->details->enable_granular_permissions.get() &&
+      *params->details->enable_granular_permissions;
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
 
@@ -1041,8 +1039,8 @@ IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
                 extension()->id(), oauth2_client_id_,
                 std::vector<std::string>(token_key_.scopes.begin(),
                                          token_key_.scopes.end()),
-                signin_scoped_device_id, consent_result_,
-                GetOAuth2MintTokenFlowVersion(),
+                enable_granular_permissions_, signin_scoped_device_id,
+                consent_result_, GetOAuth2MintTokenFlowVersion(),
                 GetOAuth2MintTokenFlowChannel(), gaia_mint_token_mode_));
   return mint_token_flow;
 }
@@ -1073,6 +1071,10 @@ bool IdentityGetAuthTokenFunction::IsPrimaryAccountOnly() const {
 
 Profile* IdentityGetAuthTokenFunction::GetProfile() const {
   return Profile::FromBrowserContext(browser_context());
+}
+
+bool IdentityGetAuthTokenFunction::enable_granular_permissions() const {
+  return enable_granular_permissions_;
 }
 
 }  // namespace extensions

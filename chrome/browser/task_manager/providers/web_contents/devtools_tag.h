@@ -17,7 +17,8 @@ class DevToolsTag : public WebContentsTag {
   ~DevToolsTag() override;
 
   // task_manager::WebContentsTag:
-  DevToolsTask* CreateTask(WebContentsTaskProvider*) const override;
+  std::unique_ptr<RendererTask> CreateTask(
+      WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

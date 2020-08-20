@@ -118,6 +118,11 @@ int GetPlaceholderAvatarIconResourceID();
 // Returns a URL for the placeholder avatar icon.
 std::string GetPlaceholderAvatarIconUrl();
 
+// Returns colored generic avatar.
+gfx::Image GetPlaceholderAvatarIconWithColors(SkColor fill_color,
+                                              SkColor stroke_color,
+                                              int size);
+
 // Gets the resource ID of the default avatar icon at |index|.
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
 

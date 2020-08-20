@@ -1,0 +1,102 @@
+<style include="shared-style">
+  :host {
+    --standard-border: 1px solid black;
+  }
+
+  ui-trigger-object:last-child {
+    border-bottom: var(--standard-border);
+  }
+
+  ui-trigger-object {
+    border-left: var(--standard-border);
+    border-right: var(--standard-border);
+    border-top: var(--standard-border);
+  }
+
+  .buttons {
+    display: flex;
+  }
+
+  #logging-section {
+    width: 100%;
+  }
+
+  #share-select {
+    padding-right: 10px;
+  }
+
+  #flex {
+   flex: 1;
+  }
+
+  cr-button {
+    height: 35px;
+    padding: 5px;
+    width: 150px;
+  }
+</style>
+<div>
+  <div class="buttons">
+    <cr-button class="internals-button"
+        on-click="onRegisterSendSurfaceBackgroundClicked_">
+      Register Background SendSurface
+    </cr-button>
+    <cr-button class="internals-button"
+        on-click="onRegisterSendSurfaceForegroundClicked_">
+      Register Foreground SendSurface
+    </cr-button>
+    <cr-button class="internals-button"
+        on-click="onUnregisterSendSurfaceClicked_">
+      Unregister Current SendSurface
+    </cr-button>
+    <span id="flex"></span>
+    <cr-button on-click="onAcceptClicked_" class="internals-button"
+        class="trigger-button" disabled="[[!shareTargetSelectOptionList_.length]]">
+      Accept
+    </cr-button>
+    <cr-button on-click="onRejectClicked_" class="internals-button"
+        class="trigger-button" disabled="[[!shareTargetSelectOptionList_.length]]">
+      Reject
+    </cr-button>
+    <cr-button on-click="onOpenClicked_" class="internals-button"
+        class="trigger-button" disabled="[[!shareTargetSelectOptionList_.length]]">
+      Open
+    </cr-button>
+  </div>
+  <div class="buttons">
+    <cr-button class="internals-button"
+        on-click="onRegisterReceiveSurfaceBackgroundClicked_">
+      Register Background ReceiveSurface
+    </cr-button>
+    <cr-button class="internals-button"
+        on-click="onRegisterReceiveSurfaceForegroundClicked_">
+      Register Foreground ReceiveSurface
+    </cr-button>
+    <cr-button class="internals-button"
+        on-click="onUnregisterReceiveSurfaceClicked_">
+      Unregister Current ReceiveSurface
+    </cr-button>
+    <span id="flex"></span>
+    <select id="share-select" on-change="onSelectChange_">
+      <template is="dom-repeat" items="[[shareTargetSelectOptionList_]]">
+        <option value="[[item.value]]" selected="[[item.selected]]">
+          [[item.name]]
+        </option>
+      </template>
+    </select>
+    <cr-button on-click="onSendTextClicked_" class="internals-button"
+        class="trigger-button" disabled="[[!shareTargetSelectOptionList_.length]]">
+      Send Text
+    </cr-button>
+    <cr-button on-click="onCancelClicked_" class="internals-button"
+        class="trigger-button" disabled="[[!shareTargetSelectOptionList_.length]]">
+      Cancel
+    </cr-button>
+  </div>
+</div>
+<iron-list items="[[uiTriggerObjectList_]]" as="generic-object" id="logging-section">
+  <template>
+    <ui-trigger-object item="[[generic-object]]">
+    </ui-trigger-object>
+  </template>
+</iron-listt>

@@ -31,7 +31,6 @@ import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -494,23 +493,16 @@ public class HomepagePromoTest {
     private void scrollToHomepagePromo() {
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(NTP_HEADER_POSITION + 1));
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            waitForView(
-                    (ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
-                    allOf(withId(R.id.promo_primary_button), isDisplayed()));
-        });
+        waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
+                allOf(withId(R.id.promo_primary_button), isDisplayed()));
 
-        CriteriaHelper.pollUiThread(() -> {
-            // Verify impress tracking metrics is working.
-            Criteria.checkThat("Promo created should be seen.",
-                    RecordHistogram.getHistogramValueCountForTesting(
-                            METRICS_HOMEPAGE_PROMO, HomepagePromoAction.SEEN),
-                    Matchers.is(1));
-            Criteria.checkThat("Impression should be tracked in shared preference.",
-                    SharedPreferencesManager.getInstance().readInt(
-                            HomepagePromoUtils.getTimesSeenKey()),
-                    Matchers.is(1));
-        });
+        // Verify impress tracking metrics is working.
+        Assert.assertEquals("Promo created should be seen.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.SEEN));
+        Assert.assertEquals("Impression should be tracked in shared preference.", 1,
+                SharedPreferencesManager.getInstance().readInt(
+                        HomepagePromoUtils.getTimesSeenKey()));
         Mockito.verify(mTracker).notifyEvent(EventConstants.HOMEPAGE_PROMO_SEEN);
     }
 
@@ -541,10 +533,8 @@ public class HomepagePromoTest {
         // screen.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(feedHeaderPosition));
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            waitForView(rootView,
-                    allOf(withId(R.id.header_status),
-                            withText(expanded ? R.string.hide_content : R.string.show_content)));
-        });
+        waitForView(rootView,
+                allOf(withId(R.id.header_status),
+                        withText(expanded ? R.string.hide_content : R.string.show_content)));
     }
 }

@@ -157,3 +157,16 @@ var IronListFocusV3Test = class extends CrElementsV3FocusTest {
 TEST_F('IronListFocusV3Test', 'All', function() {
   mocha.run();
 });
+
+
+// eslint-disable-next-line no-var
+var CrElementsGridFocusTest = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_grid_focus_test.js';
+  }
+};
+
+TEST_F('CrElementsGridFocusTest', 'All', function() {
+  mocha.run();
+});

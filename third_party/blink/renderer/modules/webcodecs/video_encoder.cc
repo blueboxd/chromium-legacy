@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 namespace blink {
 
@@ -58,6 +59,37 @@ std::unique_ptr<media::VideoEncoder> CreateVpxVideoEncoder() {
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_LIBVPX)
+}
+
+scoped_refptr<media::VideoFrame> ConvertToI420Frame(
+    scoped_refptr<media::VideoFrame> frame) {
+  DCHECK_EQ(frame->storage_type(),
+            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  // TODO: Support more pixel formats
+  if (frame->format() != media::VideoPixelFormat::PIXEL_FORMAT_NV12)
+    return nullptr;
+
+  auto* gmb = frame->GetGpuMemoryBuffer();
+  if (!gmb->Map())
+    return nullptr;
+  scoped_refptr<media::VideoFrame> i420_frame = media::VideoFrame::CreateFrame(
+      media::VideoPixelFormat::PIXEL_FORMAT_I420, frame->coded_size(),
+      frame->visible_rect(), frame->natural_size(), frame->timestamp());
+  auto ret = libyuv::NV12ToI420(
+      static_cast<const uint8_t*>(gmb->memory(0)), gmb->stride(0),
+      static_cast<const uint8_t*>(gmb->memory(1)), gmb->stride(1),
+      i420_frame->data(media::VideoFrame::kYPlane),
+      i420_frame->stride(media::VideoFrame::kYPlane),
+      i420_frame->data(media::VideoFrame::kUPlane),
+      i420_frame->stride(media::VideoFrame::kUPlane),
+      i420_frame->data(media::VideoFrame::kVPlane),
+      i420_frame->stride(media::VideoFrame::kVPlane),
+      frame->coded_size().width(), frame->coded_size().height());
+  gmb->Unmap();
+  if (ret)
+    return nullptr;
+  return i420_frame;
 }
 
 }  // namespace
@@ -251,10 +283,19 @@ void VideoEncoder::ProcessEncode(Request* request) {
     return;
   }
 
+  scoped_refptr<media::VideoFrame> frame = request->frame->frame();
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    frame = ConvertToI420Frame(frame);
+    if (!frame) {
+      HandleError(DOMExceptionCode::kOperationError, "Unexpected frame format");
+      return;
+    }
+  }
+
   bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
                   request->encodeOpts->keyFrameNonNull();
   --requested_encodes_;
-  media_encoder_->Encode(request->frame->frame(), keyframe,
+  media_encoder_->Encode(frame, keyframe,
                          WTF::Bind(done_callback, WrapWeakPersistent(this),
                                    WrapPersistentIfNeeded(request)));
 }

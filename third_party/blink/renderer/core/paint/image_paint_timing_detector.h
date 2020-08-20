@@ -72,6 +72,8 @@ class CORE_EXPORT ImageRecordsManager {
 
  public:
   explicit ImageRecordsManager(LocalFrameView*);
+  ImageRecordsManager(const ImageRecordsManager&) = delete;
+  ImageRecordsManager& operator=(const ImageRecordsManager&) = delete;
   ImageRecord* FindLargestPaintCandidate() const;
 
   inline void RemoveInvisibleRecordIfNeeded(const LayoutObject& object) {
@@ -216,8 +218,6 @@ class CORE_EXPORT ImageRecordsManager {
   // consider this an LCP candidate when the documentElement's opacity changes
   // from zero to nonzero.
   std::unique_ptr<ImageRecord> largest_ignored_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };
 
 // ImagePaintTimingDetector contains Largest Image Paint.

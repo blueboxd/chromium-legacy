@@ -18,6 +18,7 @@ export function ensureLazyLoadedOs() {
       'os-settings-reset-page',
       'os-settings-files-page',
       'settings-smb-shares-page',
+      'os-printing-page',
     ].map(name => customElements.whenDefined(name)));
   }
   return lazyLoadPromise;

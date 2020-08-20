@@ -56,7 +56,7 @@
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
@@ -65,7 +65,7 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #endif
 

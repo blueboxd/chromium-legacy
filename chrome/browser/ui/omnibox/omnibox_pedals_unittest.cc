@@ -48,6 +48,7 @@ TEST(OmniboxPedals, DataLoadsForAllLocales) {
       {"he", "איפוס נתונים"},
       {"hi", "वाइप करें कैश मेमोरी"},
       {"hr", "odstranjivanje privremena memorija"},
+      {"hu", "eltávolítása gyorsítótár"},
       {"id", "hapus informasi"},
       {"it", "cancellare informazioni"},
       {"ja", "クリアキャッシュ"},

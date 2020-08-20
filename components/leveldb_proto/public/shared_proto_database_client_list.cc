@@ -84,6 +84,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "TabStateDatabase";
     case ProtoDbType::UPBOARDING_QUERY_TILE_STORE:
       return "UpboardingQueryTileStore";
+    case ProtoDbType::NEARBY_SHARE_PUBLIC_CERTIFICATE_DATABASE:
+      return "NearbySharePublicCertificateDatabase";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

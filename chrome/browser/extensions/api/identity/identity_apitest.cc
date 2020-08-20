@@ -523,6 +523,10 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     return flow;
   }
 
+  bool enable_granular_permissions() const {
+    return IdentityGetAuthTokenFunction::enable_granular_permissions();
+  }
+
  private:
   ~FakeGetAuthTokenFunction() override {}
   bool login_access_token_result_;
@@ -2863,6 +2867,34 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, SubsetMatchCachePopulate) {
       1);
 }
 
+// Ensure that the scopes returned by the function reflects the granted scopes
+// and not the requested scopes.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, GranularPermissionsResponse) {
+  SignIn("primary@example.com");
+  auto func = base::MakeRefCounted<FakeGetAuthTokenFunction>();
+  auto extension = base::WrapRefCounted(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  std::set<std::string> scopes = {"email", "foobar"};
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS,
+                               scopes);
+  std::string access_token;
+  std::set<std::string> granted_scopes;
+  RunGetAuthTokenFunction(func.get(),
+                          "[{\"enableGranularPermissions\": true,"
+                          "\"scopes\": [\"email\", \"bar\"]}]",
+                          browser(), &access_token, &granted_scopes);
+  EXPECT_EQ(kAccessToken, access_token);
+  EXPECT_EQ(scopes, granted_scopes);
+
+  EXPECT_TRUE(func->enable_granular_permissions());
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
+}
+
 #if defined(OS_CHROMEOS)
 class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
  public:
@@ -2942,6 +2974,52 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
 
 #endif
 
+// There are two parameters, which are stored in a std::pair, for these tests.
+//
+// std::string: the GetAuthToken arguments
+// bool: the expected value of GetAuthToken's enable_granular_permissions
+class GetAuthTokenFunctionEnableGranularPermissionsTest
+    : public GetAuthTokenFunctionTest,
+      public testing::WithParamInterface<std::pair<std::string, bool>> {};
+
+// Provided with the arguments for GetAuthToken, ensures that GetAuthToken's
+// enable_granular_permissions is some expected value when the
+// 'ReturnScopesInGetAuthToken' feature flag is enabled.
+IN_PROC_BROWSER_TEST_P(GetAuthTokenFunctionEnableGranularPermissionsTest,
+                       EnableGranularPermissions) {
+  const std::string& args = GetParam().first;
+  bool expected_enable_granular_permissions = GetParam().second;
+
+  SignIn("primary@example.com");
+  auto func = base::MakeRefCounted<FakeGetAuthTokenFunction>();
+  auto extension = base::WrapRefCounted(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+
+  std::string access_token;
+  std::set<std::string> granted_scopes;
+  RunGetAuthTokenFunction(func.get(), "[{" + args + "}]", browser(),
+                          &access_token, &granted_scopes);
+  EXPECT_EQ(kAccessToken, access_token);
+  EXPECT_EQ(func->GetExtensionTokenKeyForTest()->scopes, granted_scopes);
+
+  EXPECT_EQ(expected_enable_granular_permissions,
+            func->enable_granular_permissions());
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GetAuthTokenFunctionEnableGranularPermissionsTest,
+    testing::Values(std::make_pair("\"enableGranularPermissions\": true", true),
+                    std::make_pair("\"enableGranularPermissions\": false",
+                                   false),
+                    std::make_pair("", false)));
+
 class GetAuthTokenFunctionReturnScopesDisabledTest
     : public GetAuthTokenFunctionTest {
  public:
@@ -3007,6 +3085,51 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionReturnScopesDisabledTest,
       kGetAuthTokenResultHistogramName,
       IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
+
+// There are two parameters, which are stored in a std::pair, for these tests.
+//
+// std::string: the GetAuthToken arguments
+// bool: the expected value of GetAuthToken's enable_granular_permissions
+class GetAuthTokenFunctionReturnScopesDisabledEnableGranularPermissionsTest
+    : public GetAuthTokenFunctionReturnScopesDisabledTest,
+      public testing::WithParamInterface<std::pair<std::string, bool>> {};
+
+// Provided with the arguments for GetAuthToken, ensures that GetAuthToken's
+// enable_granular_permissions is some expected value when the
+// 'ReturnScopesInGetAuthToken' feature flag is disabled.
+IN_PROC_BROWSER_TEST_P(
+    GetAuthTokenFunctionReturnScopesDisabledEnableGranularPermissionsTest,
+    EnableGranularPermissions) {
+  const std::string& args = GetParam().first;
+  bool expected_enable_granular_permissions = GetParam().second;
+
+  SignIn("primary@example.com");
+  auto func = base::MakeRefCounted<FakeGetAuthTokenFunction>();
+  auto extension = base::WrapRefCounted(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+
+  std::string access_token;
+  RunGetAuthTokenFunctionReturnScopesDisabled(func.get(), "[{" + args + "}]",
+                                              browser(), &access_token);
+  EXPECT_EQ(kAccessToken, access_token);
+
+  EXPECT_EQ(expected_enable_granular_permissions,
+            func->enable_granular_permissions());
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GetAuthTokenFunctionReturnScopesDisabledEnableGranularPermissionsTest,
+    testing::Values(
+        std::make_pair("\"enableGranularPermissions\": true", false),
+        std::make_pair("\"enableGranularPermissions\": false", false),
+        std::make_pair("", false)));
 
 class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
  protected:

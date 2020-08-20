@@ -37,24 +37,24 @@ class FakeNearbyShareCertificateStorage : public NearbyShareCertificateStorage {
 
     PrefService* latest_pref_service() { return latest_pref_service_; }
 
-    leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>*
-    latest_proto_database() {
-      return latest_proto_database_.get();
+    leveldb_proto::ProtoDatabaseProvider* latest_proto_database_provider() {
+      return latest_proto_database_provider_;
     }
+
+    const base::FilePath& latest_profile_path() { return latest_profile_path_; }
 
    private:
     // NearbyShareCertificateStorageImpl::Factory:
     std::unique_ptr<NearbyShareCertificateStorage> CreateInstance(
         PrefService* pref_service,
-        std::unique_ptr<
-            leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-            proto_database) override;
+        leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+        const base::FilePath& profile_path) override;
 
     std::vector<FakeNearbyShareCertificateStorage*> instances_;
     PrefService* latest_pref_service_ = nullptr;
-    std::unique_ptr<
-        leveldb_proto::ProtoDatabase<nearbyshare::proto::PublicCertificate>>
-        latest_proto_database_;
+    leveldb_proto::ProtoDatabaseProvider* latest_proto_database_provider_ =
+        nullptr;
+    base::FilePath latest_profile_path_;
   };
 
   struct ReplacePublicCertificatesCall {

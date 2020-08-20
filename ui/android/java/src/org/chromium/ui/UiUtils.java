@@ -79,9 +79,6 @@ public class UiUtils {
     private UiUtils() {
     }
 
-    /** A delegate for the photo picker. */
-    private static PhotoPickerDelegate sPhotoPickerDelegate;
-
     /** A delegate for the contacts picker. */
     private static ContactsPickerDelegate sContactsPickerDelegate;
 
@@ -112,32 +109,6 @@ public class UiUtils {
          * Called when the contacts picker dialog has been dismissed.
          */
         void onContactsPickerDismissed();
-    }
-
-    /**
-     * A delegate interface for the photo picker.
-     */
-    public interface PhotoPickerDelegate {
-        /**
-         * Called to display the photo picker.
-         * @param context  The context to use.
-         * @param listener The listener that will be notified of the action the user took in the
-         *                 picker.
-         * @param allowMultiple Whether the dialog should allow multiple images to be selected.
-         * @param mimeTypes A list of mime types to show in the dialog.
-         */
-        void showPhotoPicker(Context context, PhotoPickerListener listener, boolean allowMultiple,
-                List<String> mimeTypes);
-
-        /**
-         * Called when the photo picker dialog has been dismissed.
-         */
-        void onPhotoPickerDismissed();
-
-        /**
-         * Returns whether video decoding support is supported in the photo picker.
-         */
-        boolean supportsVideos();
     }
 
     // ContactsPickerDelegate:
@@ -178,55 +149,6 @@ public class UiUtils {
     public static void onContactsPickerDismissed() {
         if (sContactsPickerDelegate == null) return;
         sContactsPickerDelegate.onContactsPickerDismissed();
-    }
-
-    // PhotoPickerDelegate:
-
-    /**
-     * Allows setting a delegate to override the default Android stock photo picker.
-     * @param delegate A {@link PhotoPickerDelegate} instance.
-     */
-    public static void setPhotoPickerDelegate(PhotoPickerDelegate delegate) {
-        sPhotoPickerDelegate = delegate;
-    }
-
-    /**
-     * Returns whether a photo picker should be called.
-     */
-    public static boolean shouldShowPhotoPicker() {
-        return sPhotoPickerDelegate != null;
-    }
-
-    /**
-     * Returns whether the photo picker supports showing videos.
-     */
-    public static boolean photoPickerSupportsVideo() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
-        if (!shouldShowPhotoPicker()) return false;
-        return sPhotoPickerDelegate.supportsVideos();
-    }
-
-    /**
-     * Called to display the photo picker.
-     * @param context  The context to use.
-     * @param listener The listener that will be notified of the action the user took in the
-     *                 picker.
-     * @param allowMultiple Whether the dialog should allow multiple images to be selected.
-     * @param mimeTypes A list of mime types to show in the dialog.
-     */
-    public static boolean showPhotoPicker(Context context, PhotoPickerListener listener,
-            boolean allowMultiple, List<String> mimeTypes) {
-        if (sPhotoPickerDelegate == null) return false;
-        sPhotoPickerDelegate.showPhotoPicker(context, listener, allowMultiple, mimeTypes);
-        return true;
-    }
-
-    /**
-     * Called when the photo picker dialog has been dismissed.
-     */
-    public static void onPhotoPickerDismissed() {
-        if (sPhotoPickerDelegate == null) return;
-        sPhotoPickerDelegate.onPhotoPickerDismissed();
     }
 
     /**

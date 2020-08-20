@@ -21,12 +21,12 @@
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
-#include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/system/unified/top_shortcut_button.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -61,9 +61,14 @@ constexpr int kTrayIconCrossAxisInset = 0;
 constexpr int kPaletteWidth = 332;
 
 // Margins between the title view and the edges around it (dp).
-constexpr int kPaddingBetweenTitleAndLeftEdge = 16;
 constexpr int kPaddingBetweenTitleAndSeparator = 3;
 constexpr int kPaddingBetweenBottomAndLastTrayItem = 8;
+
+// Insets for the title view (dp).
+constexpr gfx::Insets kTitleViewPadding(8, 16, 8, 16);
+
+// Spacing between buttons in the title view (dp).
+constexpr int kTitleViewChildSpacing = 16;
 
 // Returns true if the |palette_tray| is on an internal display or on every
 // display if requested from the command line.
@@ -89,7 +94,8 @@ class TitleView : public views::View, public views::ButtonListener {
     // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
     // See crbug.com/614453.
     auto box_layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal);
+        views::BoxLayout::Orientation::kHorizontal, kTitleViewPadding,
+        kTitleViewChildSpacing);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));
@@ -102,13 +108,12 @@ class TitleView : public views::View, public views::ButtonListener {
                              true /* use_unified_theme */);
     style.SetupLabel(title_label);
     layout_ptr->SetFlexForView(title_label, 1);
-    help_button_ = new SystemMenuButton(this, kSystemMenuHelpIcon,
-                                        IDS_ASH_STATUS_TRAY_HELP);
-    settings_button_ = new SystemMenuButton(this, kSystemMenuSettingsIcon,
-                                            IDS_ASH_PALETTE_SETTINGS);
+    help_button_ = new TopShortcutButton(this, kSystemMenuHelpIcon,
+                                         IDS_ASH_STATUS_TRAY_HELP);
+    settings_button_ = new TopShortcutButton(this, kSystemMenuSettingsIcon,
+                                             IDS_ASH_PALETTE_SETTINGS);
 
     AddChildView(help_button_);
-    AddChildView(TrayPopupUtils::CreateVerticalSeparator());
     AddChildView(settings_button_);
   }
 
@@ -500,8 +505,6 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   auto* title_view =
       bubble_view->AddChildView(std::make_unique<TitleView>(this));
   setup_layered_view(title_view);
-  title_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
 
   // Add horizontal separator between the title and tools.
   auto* separator =

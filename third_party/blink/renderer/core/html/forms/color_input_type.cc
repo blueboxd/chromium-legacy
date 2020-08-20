@@ -208,13 +208,10 @@ void ColorInputType::DidChooseColor(const Color& color) {
   EventQueueScope scope;
   GetElement().SetValueFromRenderer(color.Serialized());
   GetElement().UpdateView();
-  if (!LayoutTheme::GetTheme().IsModalColorChooser())
-    GetElement().DispatchFormControlChangeEvent();
 }
 
 void ColorInputType::DidEndChooser() {
-  if (LayoutTheme::GetTheme().IsModalColorChooser())
-    GetElement().EnqueueChangeEvent();
+  GetElement().EnqueueChangeEvent();
   chooser_.Clear();
   if (::features::IsFormControlsRefreshEnabled() &&
       GetElement().GetLayoutObject()) {

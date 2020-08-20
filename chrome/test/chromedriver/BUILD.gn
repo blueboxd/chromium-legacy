@@ -146,6 +146,8 @@ source_set("automation_client_lib") {
     "net/command_id.h",
     "net/net_util.cc",
     "net/net_util.h",
+    "net/pipe_handler.cc",
+    "net/pipe_handler.h",
     "net/sync_websocket.h",
     "net/sync_websocket_factory.cc",
     "net/sync_websocket_factory.h",

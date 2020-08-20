@@ -4078,7 +4078,7 @@ if (enable_java_templates) {
       chromium_code = false
       sources = []
       srcjar_deps = [ ":${_template_name}__protoc_java" ]
-      deps = [ android_proto_runtime ]
+      deps = [ "//third_party/android_deps:protobuf_lite_runtime_java" ]
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }

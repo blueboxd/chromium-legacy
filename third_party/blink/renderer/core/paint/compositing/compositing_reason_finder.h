@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REASON_FINDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REASON_FINDER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -25,7 +24,8 @@ class CORE_EXPORT CompositingReasonFinder {
 
   static CompositingReasons NonStyleDeterminedDirectReasons(const PaintLayer&);
 
-  DISALLOW_COPY_AND_ASSIGN(CompositingReasonFinder);
+  CompositingReasonFinder(const CompositingReasonFinder&) = delete;
+  CompositingReasonFinder& operator=(const CompositingReasonFinder&) = delete;
 
   // Returns the direct reasons for compositing the given layer.
   static CompositingReasons DirectReasons(const PaintLayer&);

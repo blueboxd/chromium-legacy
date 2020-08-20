@@ -19,6 +19,7 @@ class ScopedHardwareBufferFenceSync;
 
 namespace gpu {
 class SharedImageRepresentationGLTexture;
+class SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync;
 class SharedImageRepresentationSkia;
 struct Mailbox;
 
@@ -67,6 +68,10 @@ class GPU_GLES2_EXPORT SharedImageBackingScopedHardwareBufferFenceSync
   friend class SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync;
   friend class SharedImageRepresentationSkiaVkScopedHardwareBufferFenceSync;
 
+  std::unique_ptr<
+      SharedImageRepresentationGLTextureScopedHardwareBufferFenceSync>
+  GenGLTextureRepresentation(SharedImageManager* manager,
+                             MemoryTypeTracker* tracker);
   bool BeginGLReadAccess();
   void EndGLReadAccess();
   void EndSkiaReadAccess();

@@ -45,7 +45,7 @@ class FeedbackTest : public ExtensionBrowserTest {
  public:
   void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    InProcessBrowserTest::SetUp();
+    ExtensionBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

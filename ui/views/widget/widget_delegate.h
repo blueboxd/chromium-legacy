@@ -249,12 +249,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // targeting).
   virtual View* CreateOverlayView();
 
-  // Returns true if the window can be notified with the work area change.
-  // Otherwise, the work area change for the top window will be processed by
-  // the default window manager. In some cases, like panel, we would like to
-  // manage the positions by ourselves.
-  virtual bool WillProcessWorkAreaChange() const;
-
   // Returns true if window has a hit-test mask.
   virtual bool WidgetHasHitTestMask() const;
 

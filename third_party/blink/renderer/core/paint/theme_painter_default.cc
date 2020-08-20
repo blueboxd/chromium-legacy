@@ -30,6 +30,7 @@
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
@@ -421,8 +422,14 @@ bool ThemePainterDefault::PaintInnerSpinButton(const Node* node,
                                                const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
-  extra_params.inner_spin.spin_up =
-      (LayoutTheme::ControlStatesForNode(node, style) & kSpinUpControlState);
+
+  bool spin_up = false;
+  if (const auto* element = DynamicTo<SpinButtonElement>(node)) {
+    if (element->GetUpDownState() == SpinButtonElement::kUp)
+      spin_up = node->IsHovered() || node->IsActive();
+  }
+
+  extra_params.inner_spin.spin_up = spin_up;
   extra_params.inner_spin.read_only = LayoutTheme::IsReadOnlyControl(node);
 
   Platform::Current()->ThemeEngine()->Paint(

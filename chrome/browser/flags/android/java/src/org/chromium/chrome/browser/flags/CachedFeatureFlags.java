@@ -80,6 +80,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
             put(ChromeFeatureList.INTEREST_FEED_V2, false);
             put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS, false);
+            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP, false);
         }
     };
 

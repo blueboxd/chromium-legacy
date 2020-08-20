@@ -457,6 +457,18 @@ TEST_F(NetworkSessionConfiguratorTest,
   EXPECT_TRUE(quic_params_.disable_tls_zero_rtt);
 }
 
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicDisableGQuicZeroRttFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_gquic_zero_rtt"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(quic_params_.disable_gquic_zero_rtt);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["max_packet_length"] = "1450";

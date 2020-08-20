@@ -503,6 +503,8 @@ int QuicChromiumClientSession::Handle::RequestStream(
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
+  requires_confirmation |= session_->gquic_zero_rtt_disabled();
+
   // std::make_unique does not work because the StreamRequest constructor
   // is private.
   stream_request_ = base::WrapUnique(
@@ -2979,6 +2981,12 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   dict.Set("aliases", std::move(alias_list));
 
   return std::move(dict);
+}
+
+bool QuicChromiumClientSession::gquic_zero_rtt_disabled() const {
+  if (!stream_factory_)
+    return false;
+  return stream_factory_->gquic_zero_rtt_disabled();
 }
 
 std::unique_ptr<QuicChromiumClientSession::Handle>

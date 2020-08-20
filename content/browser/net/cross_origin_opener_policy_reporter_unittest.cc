@@ -66,10 +66,8 @@ class CrossOriginOpenerPolicyReporterTest : public testing::Test {
 
  protected:
   std::unique_ptr<CrossOriginOpenerPolicyReporter> GetReporter() {
-    return std::unique_ptr<CrossOriginOpenerPolicyReporter>(
-        new CrossOriginOpenerPolicyReporter(storage_partition(), GURL(),
-                                            GlobalFrameRoutingId(123, 456),
-                                            context_url(), coop()));
+    return std::make_unique<CrossOriginOpenerPolicyReporter>(
+        storage_partition(), context_url(), coop());
   }
 
  private:
@@ -82,59 +80,67 @@ class CrossOriginOpenerPolicyReporterTest : public testing::Test {
 
 TEST_F(CrossOriginOpenerPolicyReporterTest, Basic) {
   auto reporter = GetReporter();
+  std::string url1 = "https://www1.example.com/y#foo?bar=baz";
+  std::string url2 = "https://www1.example.com/";
+  std::string url3 = "http://www2.example.com:41/z";
 
-  reporter->QueueOpenerBreakageReport(
-      GURL("https://www1.example.com/y#foo?bar=baz"), false, false);
-  reporter->QueueOpenerBreakageReport(GURL("http://www2.example.com:41/z"),
-                                      true, false);
+  reporter->QueueNavigationToCOOPReport(GURL(url1), GURL(url2), true, false);
+  reporter->QueueNavigationAwayFromCOOPReport(GURL(url3), true, true, false);
 
   ASSERT_EQ(2u, network_context().reports().size());
   const Report& r1 = network_context().reports()[0];
   const Report& r2 = network_context().reports()[1];
 
   EXPECT_EQ(r1.type, "coop");
+  EXPECT_EQ(r1.url, context_url());
   EXPECT_EQ(r1.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(), context_url());
-  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
-            "https://www1.example.com/y#foo?bar=baz");
-  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-document");
+  EXPECT_EQ(r1.body.FindKey("previousResponseURL")->GetString(), url1);
+  EXPECT_EQ(r1.body.FindKey("referrer")->GetString(), url2);
+  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-response");
   EXPECT_EQ(r1.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 
   EXPECT_EQ(r2.type, "coop");
+  EXPECT_EQ(r2.url, context_url());
   EXPECT_EQ(r2.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r2.body.FindKey("documentURI")->GetString(), context_url());
-  EXPECT_EQ(r2.body.FindKey("navigationURI")->GetString(),
-            "http://www2.example.com:41/z");
-  EXPECT_EQ(r2.body.FindKey("type")->GetString(), "navigation-from-document");
+  EXPECT_EQ(r2.body.FindKey("nextResponseURL")->GetString(), url3);
+  EXPECT_EQ(r2.body.FindKey("type")->GetString(), "navigation-from-response");
   EXPECT_EQ(r2.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 }
 
 TEST_F(CrossOriginOpenerPolicyReporterTest, UserAndPassSanitization) {
   auto reporter = GetReporter();
+  std::string url = "https://u:p@www2.example.com/x";
 
-  reporter->QueueOpenerBreakageReport(GURL("https://u:p@www2.example.com/x"),
-                                      false, false);
+  reporter->QueueNavigationToCOOPReport(GURL(url), GURL(url), true, false);
+  reporter->QueueNavigationAwayFromCOOPReport(GURL(url), true, true, false);
 
-  ASSERT_EQ(1u, network_context().reports().size());
+  ASSERT_EQ(2u, network_context().reports().size());
   const Report& r1 = network_context().reports()[0];
+  const Report& r2 = network_context().reports()[1];
 
   EXPECT_EQ(r1.type, "coop");
-  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(),
-            "https://www1.example.com/x");
-  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
+  EXPECT_EQ(r1.url, GURL("https://www1.example.com/x"));
+  EXPECT_EQ(r1.body.FindKey("previousResponseURL")->GetString(),
+            "https://www2.example.com/x");
+  EXPECT_EQ(r1.body.FindKey("referrer")->GetString(),
+            "https://www2.example.com/x");
+
+  EXPECT_EQ(r2.type, "coop");
+  EXPECT_EQ(r2.url, GURL("https://www1.example.com/x"));
+  EXPECT_EQ(r2.body.FindKey("nextResponseURL")->GetString(),
             "https://www2.example.com/x");
 }
 
 TEST_F(CrossOriginOpenerPolicyReporterTest, Clone) {
   auto reporter = GetReporter();
+  std::string url1 = "https://www1.example.com/y#foo?bar=baz";
 
   mojo::Remote<network::mojom::CrossOriginOpenerPolicyReporter> remote;
   reporter->Clone(remote.BindNewPipeAndPassReceiver());
 
-  remote->QueueOpenerBreakageReport(GURL("https://www1.example.com/y"), false,
-                                    false);
+  reporter->QueueNavigationToCOOPReport(GURL(url1), GURL(url1), true, false);
 
   remote.FlushForTesting();
 
@@ -142,11 +148,11 @@ TEST_F(CrossOriginOpenerPolicyReporterTest, Clone) {
   const Report& r1 = network_context().reports()[0];
 
   EXPECT_EQ(r1.type, "coop");
+  EXPECT_EQ(r1.url, context_url());
   EXPECT_EQ(r1.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(), context_url());
-  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
-            "https://www1.example.com/y");
-  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-document");
+  EXPECT_EQ(r1.body.FindKey("previousResponseURL")->GetString(), url1);
+  EXPECT_EQ(r1.body.FindKey("referrer")->GetString(), url1);
+  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-response");
   EXPECT_EQ(r1.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 }

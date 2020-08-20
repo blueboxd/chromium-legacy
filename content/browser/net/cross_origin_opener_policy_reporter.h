@@ -33,7 +33,6 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
     : public network::mojom::CrossOriginOpenerPolicyReporter {
  public:
   CrossOriginOpenerPolicyReporter(StoragePartition* storage_partition,
-                                  RenderFrameHostImpl* current_frame_host,
                                   const GURL& context_url,
                                   const network::CrossOriginOpenerPolicy& coop);
   ~CrossOriginOpenerPolicyReporter() override;
@@ -42,28 +41,26 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   CrossOriginOpenerPolicyReporter& operator=(
       const CrossOriginOpenerPolicyReporter&) = delete;
 
+  void set_storage_partition(StoragePartition* storage_partition) {
+    storage_partition_ = storage_partition;
+  }
+
   // network::mojom::CrossOriginOpenerPolicyReporter implementation.
-  void QueueOpenerBreakageReport(const GURL& other_url,
-                                 bool is_reported_from_document,
-                                 bool is_report_only) final;
   void QueueAccessReport(
       network::mojom::CoopAccessReportType report_type,
       const std::string& property,
       network::mojom::SourceLocationPtr source_location) final;
 
-  // Returns the "previous" URL that is safe to expose.
-  // Reference, "Next document URL for reporting" section:
-  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#safe-urls-for-reporting
-  GURL GetPreviousDocumentUrlForReporting(
-      const std::vector<GURL>& redirect_chain,
-      const GURL& referrer_url);
-
-  // Returns the "next" URL that is safe to expose.
-  // Reference, "Next document URL for reporting" section:
-  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#safe-urls-for-reporting
-  GURL GetNextDocumentUrlForReporting(
-      const std::vector<GURL>& redirect_chain,
-      const GlobalFrameRoutingId& initiator_routing_id);
+  // Sends reports when COOP causing a browsing context group switch that
+  // breaks opener relationships.
+  void QueueNavigationToCOOPReport(const GURL& previous_url,
+                                   const GURL& referrer_url,
+                                   bool same_origin_with_previous,
+                                   bool is_report_only);
+  void QueueNavigationAwayFromCOOPReport(const GURL& next_url,
+                                         bool is_current_source,
+                                         bool same_origin_with_next,
+                                         bool is_report_only);
 
   // For every other window in the same browsing context group, but in a
   // different virtual browsing context group, install the necessary
@@ -78,14 +75,9 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   static int NextVirtualBrowsingContextGroup();
 
  private:
-  friend class CrossOriginOpenerPolicyReporterTest;
-
-  // Used in unit_tests that do not have access to a RenderFrameHost.
-  CrossOriginOpenerPolicyReporter(StoragePartition* storage_partition,
-                                  const GURL& source_url,
-                                  const GlobalFrameRoutingId source_routing_id,
-                                  const GURL& context_url,
-                                  const network::CrossOriginOpenerPolicy& coop);
+  void QueueNavigationReport(base::DictionaryValue body,
+                             const std::string& endpoint,
+                             bool is_report_only);
 
   // Install the CoopAccessMonitors monitoring accesses from |accessing_node|
   // toward |accessed_node|.
@@ -93,11 +85,11 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
                        FrameTreeNode* accessed_node);
 
   // See the class comment.
-  StoragePartition* const storage_partition_;
+  StoragePartition* storage_partition_;
   GURL source_url_;
   GlobalFrameRoutingId source_routing_id_;
   const GURL context_url_;
-  network::CrossOriginOpenerPolicy coop_;
+  const network::CrossOriginOpenerPolicy coop_;
 
   mojo::ReceiverSet<network::mojom::CrossOriginOpenerPolicyReporter>
       receiver_set_;

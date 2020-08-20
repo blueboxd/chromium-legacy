@@ -62,6 +62,7 @@ Still reading?
   <issue id="DuplicateIds" severity="Fatal">
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/menu/main_menu.xml"/>
+    <ignore regexp="chrome/android/java/res/menu/main_menu_regroup.xml"/>
   </issue>
   <!-- TODO(crbug.com/635567): Fix this properly. -->
   <issue id="Deprecated">

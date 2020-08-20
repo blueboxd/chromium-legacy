@@ -14,7 +14,7 @@ template <typename TextContainerType>
 bool ShapeResultSpacing<TextContainerType>::SetSpacing(const Font& font) {
   const FontDescription& font_description = font.GetFontDescription();
   if (!font_description.LetterSpacing() && !font_description.WordSpacing() &&
-      !font.HasLetterSpacingOverride()) {
+      !font.HasAdvanceOverride()) {
     has_spacing_ = false;
     return false;
   }
@@ -55,7 +55,7 @@ void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(const Font& font) {
   word_spacing_ = font_description.WordSpacing();
   expansion_ = text_.Expansion();
   has_spacing_ = letter_spacing_ || word_spacing_ || expansion_ ||
-                 font.HasLetterSpacingOverride();
+                 font.HasAdvanceOverride();
   if (!has_spacing_)
     return;
 
@@ -123,7 +123,7 @@ float ShapeResultSpacing<TextContainerType>::NextExpansion() {
 template <typename TextContainerType>
 float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
     unsigned index,
-    float letter_spacing_override,
+    float advance_override,
     float& offset) {
   DCHECK(has_spacing_);
   UChar32 character = text_[index];
@@ -137,9 +137,9 @@ float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
 
   float spacing = 0;
 
-  bool has_letter_spacing = letter_spacing_ || letter_spacing_override;
+  bool has_letter_spacing = letter_spacing_ || advance_override;
   if (has_letter_spacing && !Character::TreatAsZeroWidthSpace(character))
-    spacing += letter_spacing_ + letter_spacing_override;
+    spacing += letter_spacing_ + advance_override;
 
   if (treat_as_space && (index || character == kNoBreakSpaceCharacter))
     spacing += word_spacing_;

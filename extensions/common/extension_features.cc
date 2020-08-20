@@ -52,8 +52,8 @@ const base::Feature kContentScriptsMatchOriginAsFallback{
 const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the granted OAuth2 scopes to be returned in the GetAuthToken callback
-// function.
+// Enables callers of the GetAuthToken API to request for the unbundled consent
+// UI and populates the scopes parameter in the GetAuthToken callback function.
 const base::Feature kReturnScopesInGetAuthToken{
     "ReturnScopesInGetAuthToken", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -556,6 +556,7 @@ TEST(FileEnumerator, GetInfoRecursive) {
 // modification time of the current directory, not the parent directory. This is
 // a bug in Windows, not us -- you can see it with the "dir" command (notice
 // that the time of . and .. always match). Skip this test.
+// https://crbug.com/1119546
 #else
 // Tests that FileEnumerator::GetInfo() returns the correct info for the ..
 // directory.

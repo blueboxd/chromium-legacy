@@ -84,48 +84,49 @@ function getTree(loadedPage) {
 TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
   this.runWithLoadedTree(testWebsite(), (loadedPage) => {
     const t = getTree(loadedPage);
+    const cache = new SACache();
 
     // The scope is only used to verify the locations are not the same, and
     // since the buildTree function depends on isInteresting, pass in null
     // for the scope.
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.root, null),
+        SwitchAccessPredicate.isInteresting(t.root, null, cache),
         'Root should be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.upper1, null),
+        SwitchAccessPredicate.isInteresting(t.upper1, null, cache),
         'Upper1 should be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.upper2, null),
+        SwitchAccessPredicate.isInteresting(t.upper2, null, cache),
         'Upper2 should be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.lower1, null),
+        SwitchAccessPredicate.isInteresting(t.lower1, null, cache),
         'Lower1 should be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.lower2, null),
+        SwitchAccessPredicate.isInteresting(t.lower2, null, cache),
         'Lower2 should not be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.lower3, null),
+        SwitchAccessPredicate.isInteresting(t.lower3, null, cache),
         'Lower3 should not be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.leaf1, null),
+        SwitchAccessPredicate.isInteresting(t.leaf1, null, cache),
         'Leaf1 should be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.leaf2, null),
+        SwitchAccessPredicate.isInteresting(t.leaf2, null, cache),
         'Leaf2 should not be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.leaf3, null),
+        SwitchAccessPredicate.isInteresting(t.leaf3, null, cache),
         'Leaf3 should be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.leaf4, null),
+        SwitchAccessPredicate.isInteresting(t.leaf4, null, cache),
         'Leaf4 should not be interesting');
     assertTrue(
-        SwitchAccessPredicate.isInteresting(t.leaf5, null),
+        SwitchAccessPredicate.isInteresting(t.leaf5, null, cache),
         'Leaf5 should be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.leaf6, null),
+        SwitchAccessPredicate.isInteresting(t.leaf6, null, cache),
         'Leaf6 should not be interesting');
     assertFalse(
-        SwitchAccessPredicate.isInteresting(t.leaf7, null),
+        SwitchAccessPredicate.isInteresting(t.leaf7, null, cache),
         'Leaf7 should not be interesting');
   }, {returnPage: true});
 });
@@ -133,47 +134,49 @@ TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
 TEST_F('SwitchAccessPredicateTest', 'IsGroup', function() {
   this.runWithLoadedTree(testWebsite(), (loadedPage) => {
     const t = getTree(loadedPage);
+    const cache = new SACache();
 
     // The scope is only used to verify the locations are not the same, and
     // since the buildTree function depends on isGroup, pass in null for
     // the scope.
     assertTrue(
-        SwitchAccessPredicate.isGroup(t.root, null), 'Root should be a group');
+        SwitchAccessPredicate.isGroup(t.root, null, cache),
+        'Root should be a group');
     assertTrue(
-        SwitchAccessPredicate.isGroup(t.upper1, null),
+        SwitchAccessPredicate.isGroup(t.upper1, null, cache),
         'Upper1 should be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.upper2, null),
+        SwitchAccessPredicate.isGroup(t.upper2, null, cache),
         'Upper2 should not be a group');
     assertTrue(
-        SwitchAccessPredicate.isGroup(t.lower1, null),
+        SwitchAccessPredicate.isGroup(t.lower1, null, cache),
         'Lower1 should be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.lower2, null),
+        SwitchAccessPredicate.isGroup(t.lower2, null, cache),
         'Lower2 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.lower3, null),
+        SwitchAccessPredicate.isGroup(t.lower3, null, cache),
         'Lower3 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf1, null),
+        SwitchAccessPredicate.isGroup(t.leaf1, null, cache),
         'Leaf1 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf2, null),
+        SwitchAccessPredicate.isGroup(t.leaf2, null, cache),
         'Leaf2 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf3, null),
+        SwitchAccessPredicate.isGroup(t.leaf3, null, cache),
         'Leaf3 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf4, null),
+        SwitchAccessPredicate.isGroup(t.leaf4, null, cache),
         'Leaf4 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf5, null),
+        SwitchAccessPredicate.isGroup(t.leaf5, null, cache),
         'Leaf5 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf6, null),
+        SwitchAccessPredicate.isGroup(t.leaf6, null, cache),
         'Leaf6 should not be a group');
     assertFalse(
-        SwitchAccessPredicate.isGroup(t.leaf7, null),
+        SwitchAccessPredicate.isGroup(t.leaf7, null, cache),
         'Leaf7 should not be a group');
   }, {returnPage: true});
 });
@@ -181,45 +184,46 @@ TEST_F('SwitchAccessPredicateTest', 'IsGroup', function() {
 TEST_F('SwitchAccessPredicateTest', 'IsInterestingSubtree', function() {
   this.runWithLoadedTree(testWebsite(), (loadedPage) => {
     const t = getTree(loadedPage);
+    const cache = new SACache();
 
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.root),
+        SwitchAccessPredicate.isInterestingSubtree(t.root, cache),
         'Root should be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.upper1),
+        SwitchAccessPredicate.isInterestingSubtree(t.upper1, cache),
         'Upper1 should be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.upper2),
+        SwitchAccessPredicate.isInterestingSubtree(t.upper2, cache),
         'Upper2 should be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.lower1),
+        SwitchAccessPredicate.isInterestingSubtree(t.lower1, cache),
         'Lower1 should be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.lower2),
+        SwitchAccessPredicate.isInterestingSubtree(t.lower2, cache),
         'Lower2 should be an interesting subtree');
     assertFalse(
-        SwitchAccessPredicate.isInterestingSubtree(t.lower3),
+        SwitchAccessPredicate.isInterestingSubtree(t.lower3, cache),
         'Lower3 should not be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf1),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf1, cache),
         'Leaf1 should be an interesting subtree');
     assertFalse(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf2),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf2, cache),
         'Leaf2 should not be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf3),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf3, cache),
         'Leaf3 should be an interesting subtree');
     assertFalse(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf4),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf4, cache),
         'Leaf4 should not be an interesting subtree');
     assertTrue(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf5),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf5, cache),
         'Leaf5 should be an interesting subtree');
     assertFalse(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf6),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf6, cache),
         'Leaf6 should not be an interesting subtree');
     assertFalse(
-        SwitchAccessPredicate.isInterestingSubtree(t.leaf7),
+        SwitchAccessPredicate.isInterestingSubtree(t.leaf7, cache),
         'Leaf7 should not be an interesting subtree');
   }, {returnPage: true});
 });
@@ -235,57 +239,59 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
        <div id="clickable" role="listitem" onclick="2+2"></div>
        <div aria-label="div1"><p>p1</p></div>`;
   this.runWithLoadedTree(treeString, (desktop) => {
+    const cache = new SACache();
+
     const offscreenButton = this.findNodeByNameAndRole('offscreen', 'button');
     assertFalse(
-        SwitchAccessPredicate.isActionable(offscreenButton),
+        SwitchAccessPredicate.isActionable(offscreenButton, cache),
         'Offscreen objects should not be actionable');
 
     const disabledButton = this.findNodeByNameAndRole('disabled', 'button');
     assertFalse(
-        SwitchAccessPredicate.isActionable(disabledButton),
+        SwitchAccessPredicate.isActionable(disabledButton, cache),
         'Disabled objects should not be actionable');
 
     const rwas =
         desktop.findAll({role: chrome.automation.RoleType.ROOT_WEB_AREA});
     for (const node of rwas) {
       assertFalse(
-          SwitchAccessPredicate.isActionable(node),
+          SwitchAccessPredicate.isActionable(node, cache),
           'Root web area should not be directly actionable');
     }
 
     const link1 = this.findNodeByNameAndRole('link1', 'link');
     assertTrue(
-        SwitchAccessPredicate.isActionable(link1),
+        SwitchAccessPredicate.isActionable(link1, cache),
         'Links should be actionable');
 
     const input1 = this.findNodeByNameAndRole('input1', 'textField');
     assertTrue(
-        SwitchAccessPredicate.isActionable(input1),
+        SwitchAccessPredicate.isActionable(input1, cache),
         'Inputs should be actionable');
 
     const button3 = this.findNodeByNameAndRole('button3', 'button');
     assertTrue(
-        SwitchAccessPredicate.isActionable(button3),
+        SwitchAccessPredicate.isActionable(button3, cache),
         'Buttons should be actionable');
 
     const slider = this.findNodeByNameAndRole('slider', 'slider');
     assertTrue(
-        SwitchAccessPredicate.isActionable(slider),
+        SwitchAccessPredicate.isActionable(slider, cache),
         'Sliders should be actionable');
 
     const clickable = this.findNodeById('clickable');
     assertTrue(
-        SwitchAccessPredicate.isActionable(clickable),
+        SwitchAccessPredicate.isActionable(clickable, cache),
         'Clickable list items should be actionable');
 
     const div1 = this.findNodeByNameAndRole('div1', 'genericContainer');
     assertFalse(
-        SwitchAccessPredicate.isActionable(div1),
+        SwitchAccessPredicate.isActionable(div1, cache),
         'Divs should not generally be actionable');
 
     const p1 = this.findNodeByNameAndRole('p1', 'staticText');
     assertFalse(
-        SwitchAccessPredicate.isActionable(p1),
+        SwitchAccessPredicate.isActionable(p1, cache),
         'Static text should not generally be actionable');
   });
 });
@@ -313,29 +319,31 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionableFocusableElements', function() 
          <p>p3</p>
        </div>`;
   this.runWithLoadedTree(treeString, (desktop) => {
+    const cache = new SACache();
+
     const noChildren = this.findNodeById('noChildren');
     assertTrue(
-        SwitchAccessPredicate.isActionable(noChildren),
+        SwitchAccessPredicate.isActionable(noChildren, cache),
         'Focusable element with no children should be actionable');
 
     const oneInterestingChild = this.findNodeById('oneInterestingChild');
     assertFalse(
-        SwitchAccessPredicate.isActionable(oneInterestingChild),
+        SwitchAccessPredicate.isActionable(oneInterestingChild, cache),
         'Focusable element with an interesting child should not be actionable');
 
     const interestingChildren = this.findNodeById('interestingChildren');
     assertFalse(
-        SwitchAccessPredicate.isActionable(interestingChildren),
+        SwitchAccessPredicate.isActionable(interestingChildren, cache),
         'Focusable element with interesting children should not be actionable');
 
     const oneUninterestingChild = this.findNodeById('oneUninterestingChild');
     assertTrue(
-        SwitchAccessPredicate.isActionable(oneUninterestingChild),
+        SwitchAccessPredicate.isActionable(oneUninterestingChild, cache),
         'Focusable element with one uninteresting child should be actionable');
 
     const uninterestingChildren = this.findNodeById('uninterestingChildren');
     assertTrue(
-        SwitchAccessPredicate.isActionable(uninterestingChildren),
+        SwitchAccessPredicate.isActionable(uninterestingChildren, cache),
         'Focusable element with uninteresting children should be actionable');
   });
 });
@@ -343,22 +351,23 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionableFocusableElements', function() 
 TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
   this.runWithLoadedTree(testWebsite(), (loadedPage) => {
     const t = getTree(loadedPage);
+    const cache = new SACache();
 
     // Start with root as scope
-    let leaf = SwitchAccessPredicate.leaf(t.root);
+    let leaf = SwitchAccessPredicate.leaf(t.root, cache);
     assertFalse(leaf(t.root), 'Root should not be a leaf node');
     assertTrue(leaf(t.upper1), 'Upper1 should be a leaf node for root tree');
     assertTrue(leaf(t.upper2), 'Upper2 should be a leaf node for root tree');
 
     // Set upper1 as scope
-    leaf = SwitchAccessPredicate.leaf(t.upper1);
+    leaf = SwitchAccessPredicate.leaf(t.upper1, cache);
     assertFalse(leaf(t.upper1), 'Upper1 should not be a leaf for upper1 tree');
     assertTrue(leaf(t.lower1), 'Lower1 should be a leaf for upper1 tree');
     assertTrue(leaf(t.leaf4), 'leaf4 should be a leaf for upper1 tree');
     assertTrue(leaf(t.leaf5), 'leaf5 should be a leaf for upper1 tree');
 
     // Set lower1 as scope
-    leaf = SwitchAccessPredicate.leaf(t.lower1);
+    leaf = SwitchAccessPredicate.leaf(t.lower1, cache);
     assertFalse(leaf(t.lower1), 'Lower1 should not be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf1), 'Leaf1 should be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf2), 'Leaf2 should be a leaf for lower1 tree');
@@ -396,15 +405,16 @@ TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
 TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
   this.runWithLoadedTree(testWebsite(), (loadedPage) => {
     const t = getTree(loadedPage);
+    const cache = new SACache();
 
     // Start with root as scope
-    let visit = SwitchAccessPredicate.visit(t.root);
+    let visit = SwitchAccessPredicate.visit(t.root, cache);
     assertTrue(visit(t.root), 'Root should be visited in root tree');
     assertTrue(visit(t.upper1), 'Upper1 should be visited in root tree');
     assertTrue(visit(t.upper2), 'Upper2 should be visited in root tree');
 
     // Set upper1 as scope
-    visit = SwitchAccessPredicate.visit(t.upper1);
+    visit = SwitchAccessPredicate.visit(t.upper1, cache);
     assertTrue(visit(t.upper1), 'Upper1 should be visited in upper1 tree');
     assertTrue(visit(t.lower1), 'Lower1 should be visited in upper1 tree');
     assertFalse(visit(t.lower2), 'Lower2 should not be visited in upper1 tree');
@@ -412,7 +422,7 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
     assertTrue(visit(t.leaf5), 'Leaf5 should be visited in upper1 tree');
 
     // Set lower1 as scope
-    visit = SwitchAccessPredicate.visit(t.lower1);
+    visit = SwitchAccessPredicate.visit(t.lower1, cache);
     assertTrue(visit(t.lower1), 'Lower1 should be visited in lower1 tree');
     assertTrue(visit(t.leaf1), 'Leaf1 should be visited in lower1 tree');
     assertFalse(visit(t.leaf2), 'Leaf2 should not be visited in lower1 tree');
@@ -422,5 +432,49 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
     assertFalse(visit(t.lower3), 'Lower3 should not be visited in lower1 tree');
     assertFalse(visit(t.leaf6), 'Leaf6 should not be visited in lower1 tree');
     assertFalse(visit(t.leaf7), 'Leaf7 should not be visited in lower1 tree');
+  }, {returnPage: true});
+});
+
+TEST_F('SwitchAccessPredicateTest', 'Cache', function() {
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
+    const cache = new SACache();
+
+    let locationAccessCount = 0;
+    class TestRoot extends SARootNode {
+      /** @override */
+      get location() {
+        locationAccessCount++;
+        return null;
+      }
+    }
+    const group = new TestRoot();
+
+    assertTrue(
+        SwitchAccessPredicate.isGroup(t.root, group, cache),
+        'Root should be a group');
+    assertEquals(
+        locationAccessCount, 1,
+        'Location should have been accessed to calculate isGroup');
+    assertTrue(
+        SwitchAccessPredicate.isGroup(t.root, group, cache),
+        'isGroup value should not change');
+    assertEquals(
+        locationAccessCount, 1,
+        'Cache should have been used, avoiding second location access');
+
+    locationAccessCount = 0;
+    assertFalse(
+        SwitchAccessPredicate.isGroup(t.leaf1, group, cache),
+        'Leaf should not be a group');
+    assertEquals(
+        locationAccessCount, 1,
+        'Location should have been accessed to calculate isGroup');
+    assertFalse(
+        SwitchAccessPredicate.isGroup(t.leaf1, group, cache),
+        'isGroup value should not change');
+    assertEquals(
+        locationAccessCount, 1,
+        'Cache should have been used, avoiding second location access');
   }, {returnPage: true});
 });

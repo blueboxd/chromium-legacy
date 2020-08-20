@@ -30,7 +30,7 @@
 <translation id="2294245788148774212">선택사항: 진단 및 사용 데이터를 Google에 자동으로 전송하여 Chromium OS의 기능 및 성능 개선에 참여합니다.</translation>
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2396765026452590966">Chromium을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
-<translation id="2442081746662839303"><ph name="NEW_USER" />님을 위해 Chromium 공간을 새로 만드시겠습니까?</translation>
+<translation id="2442081746662839303"><ph name="NEW_USER" />님을 위한 Chromium 공간을 새로 만드시겠습니까?</translation>
 <translation id="2483889755041906834">Chromium에서</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2527042973354814951"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chromium을 다시 시작하세요.</translation>
@@ -118,7 +118,7 @@
 <translation id="5416696090975899932">기본 제공되는 PDF 뷰어가 없으면 Chromium에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
 <translation id="5427571867875391349">Chromium을 기본 브라우저로 설정</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 베타</translation>
-<translation id="544968170749360982"><ph name="EXISTING_USER" />님의 공간에 새 계정으로 로그인했습니다. 데이터를 별도로 유지하기 위해 <ph name="NEW_USER" />용 Chromium 공간을 새로 만드시겠습니까?</translation>
+<translation id="544968170749360982"><ph name="EXISTING_USER" />님의 공간에 새 계정으로 로그인했습니다. 데이터를 별도로 유지하기 위해 <ph name="NEW_USER" />님을 위한 Chromium 공간을 새로 만드시겠습니까?</translation>
 <translation id="5479196819031988440">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="5480860683791598150">이 사이트와 위치를 공유하려면 Chromium에 내 위치 액세스 권한이 있어야 합니다</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>

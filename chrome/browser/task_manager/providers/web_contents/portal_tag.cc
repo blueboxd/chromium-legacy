@@ -4,11 +4,13 @@
 
 #include "chrome/browser/task_manager/providers/web_contents/portal_tag.h"
 
+#include <memory>
+
 namespace task_manager {
 
-PortalTask* PortalTag::CreateTask(
+std::unique_ptr<RendererTask> PortalTag::CreateTask(
     WebContentsTaskProvider* task_provider) const {
-  return new PortalTask(web_contents(), task_provider);
+  return std::make_unique<PortalTask>(web_contents(), task_provider);
 }
 
 PortalTag::PortalTag(content::WebContents* web_contents)

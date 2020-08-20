@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -89,9 +90,11 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   if (!should_scroll)
     return nullptr;
 
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+          frame.GetDocument()->GetExecutionContext())) {
     anchor_node->DispatchEvent(
         *Event::CreateBubble(event_type_names::kBeforematch));
+  }
 
   return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
 }

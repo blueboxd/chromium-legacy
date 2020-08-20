@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_LAYER_MAPPING_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_updater.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
@@ -90,6 +89,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
  public:
   explicit CompositedLayerMapping(PaintLayer&);
+  CompositedLayerMapping(const CompositedLayerMapping&) = delete;
+  CompositedLayerMapping& operator=(const CompositedLayerMapping&) = delete;
   ~CompositedLayerMapping() override;
 
   PaintLayer& OwningLayer() const { return owning_layer_; }
@@ -475,7 +476,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool draws_background_onto_content_layer_;
 
   friend class CompositedLayerMappingTest;
-  DISALLOW_COPY_AND_ASSIGN(CompositedLayerMapping);
 };
 
 }  // namespace blink

@@ -183,6 +183,7 @@ void TaskQueue::ShutdownTaskQueue() {
       internal::TaskQueueImpl::OnTaskStartedHandler());
   impl_->SetOnTaskCompletedHandler(
       internal::TaskQueueImpl::OnTaskCompletedHandler());
+  impl_->SetOnTaskPostedHandler(internal::TaskQueueImpl::OnTaskPostedHandler());
   sequence_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
 }
 

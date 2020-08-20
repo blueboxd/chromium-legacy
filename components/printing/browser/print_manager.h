@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,6 +29,8 @@ namespace printing {
 class PrintManager : public content::WebContentsObserver,
                      public mojom::PrintManagerHost {
  public:
+  PrintManager(const PrintManager&) = delete;
+  PrintManager& operator=(const PrintManager&) = delete;
   ~PrintManager() override;
 
 #if defined(OS_ANDROID)
@@ -121,8 +122,6 @@ class PrintManager : public content::WebContentsObserver,
 
   content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
       print_manager_host_receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintManager);
 };
 
 }  // namespace printing

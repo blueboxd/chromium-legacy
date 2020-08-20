@@ -35,6 +35,8 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
     static unsigned next_insertion_index_ = 1;
     insertion_index_ = next_insertion_index_++;
   }
+  TextRecord(const TextRecord&) = delete;
+  TextRecord& operator=(const TextRecord&) = delete;
 
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
@@ -44,7 +46,6 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
   FloatRect element_timing_rect_;
   // The time of the first paint after fully loaded.
   base::TimeTicks paint_time = base::TimeTicks();
-  DISALLOW_COPY_AND_ASSIGN(TextRecord);
 };
 
 class CORE_EXPORT LargestTextPaintManager {
@@ -56,6 +57,8 @@ class CORE_EXPORT LargestTextPaintManager {
 
  public:
   LargestTextPaintManager(LocalFrameView*, PaintTimingDetector*);
+  LargestTextPaintManager(const LargestTextPaintManager&) = delete;
+  LargestTextPaintManager& operator=(const LargestTextPaintManager&) = delete;
 
   inline void RemoveVisibleRecord(base::WeakPtr<TextRecord> record) {
     DCHECK(record);
@@ -110,7 +113,6 @@ class CORE_EXPORT LargestTextPaintManager {
 
   Member<const LocalFrameView> frame_view_;
   Member<PaintTimingDetector> paint_timing_detector_;
-  DISALLOW_COPY_AND_ASSIGN(LargestTextPaintManager);
 };
 
 class CORE_EXPORT TextRecordsManager {
@@ -119,6 +121,8 @@ class CORE_EXPORT TextRecordsManager {
 
  public:
   TextRecordsManager(LocalFrameView*, PaintTimingDetector*);
+  TextRecordsManager(const TextRecordsManager&) = delete;
+  TextRecordsManager& operator=(const TextRecordsManager&) = delete;
 
   void RemoveVisibleRecord(const LayoutObject&);
   void RemoveInvisibleRecord(const LayoutObject&);
@@ -197,8 +201,6 @@ class CORE_EXPORT TextRecordsManager {
   Deque<std::unique_ptr<TextRecord>> size_zero_texts_queued_for_paint_time_;
   base::Optional<LargestTextPaintManager> ltp_manager_;
   Member<TextElementTiming> text_element_timing_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
 };
 
 // TextPaintTimingDetector contains Largest Text Paint and support for Text
@@ -225,6 +227,9 @@ class CORE_EXPORT TextPaintTimingDetector final
   explicit TextPaintTimingDetector(LocalFrameView*,
                                    PaintTimingDetector*,
                                    PaintTimingCallbackManager*);
+  TextPaintTimingDetector(const TextPaintTimingDetector&) = delete;
+  TextPaintTimingDetector& operator=(const TextPaintTimingDetector&) = delete;
+
   bool ShouldWalkObject(const LayoutBoxModelObject&) const;
   void RecordAggregatedText(const LayoutBoxModelObject& aggregator,
                             const IntRect& aggregated_visual_rect,
@@ -261,8 +266,6 @@ class CORE_EXPORT TextPaintTimingDetector final
   bool need_update_timing_at_frame_end_ = false;
 
   Member<const LocalFrameView> frame_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextPaintTimingDetector);
 };
 }  // namespace blink
 

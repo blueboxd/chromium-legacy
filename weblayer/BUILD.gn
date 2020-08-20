@@ -194,6 +194,8 @@ source_set("weblayer_lib_base") {
     "browser/i18n_util.h",
     "browser/infobar_container_android.cc",
     "browser/infobar_container_android.h",
+    "browser/insecure_form_controller_client.cc",
+    "browser/insecure_form_controller_client.h",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.h",
     "browser/js_communication/web_message_host_factory_wrapper.cc",

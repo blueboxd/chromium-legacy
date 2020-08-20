@@ -30,7 +30,7 @@
 <translation id="2294245788148774212">Дапамагаць паляпшаць функцыі і прадукцыйнасць Chromium OS шляхам аўтаматычнай адпраўкі ў Google даных пра выкарыстанне і дыягностыку (неабавязкова).</translation>
 <translation id="2347108572062610441">Гэта пашырэнне змяніла старонку, якая паказваецца пры запуску Chromium.</translation>
 <translation id="2396765026452590966">Пашырэнне "<ph name="EXTENSION_NAME" />" змяніла старонку, якая паказваецца пры запуску Chromium.</translation>
-<translation id="2442081746662839303">Сварыць новы профіль Chromium Space для карыстальніка <ph name="NEW_USER" />?</translation>
+<translation id="2442081746662839303">Стварыць новы профіль Chromium для карыстальніка <ph name="NEW_USER" />?</translation>
 <translation id="2483889755041906834">У Chromium</translation>
 <translation id="2485422356828889247">Выдаліць</translation>
 <translation id="2527042973354814951">Каб уключыць убудову "<ph name="PLUGIN_NAME" />", перазапусціце Chromium</translation>
@@ -108,7 +108,7 @@
 <translation id="4943838377383847465">Chromium працуе ў фонавым рэжыме.</translation>
 <translation id="4987820182225656817">Госці могуць выкарыстоўваць Chromium, не пакідаючы нічога пасля сябе.</translation>
 <translation id="4994636714258228724">Дадаць мяне ў Chromium</translation>
-<translation id="5053724573690775822">Сварыць новы працоўны профіль Chromium Space?</translation>
+<translation id="5053724573690775822">Стварыць новы працоўны профіль Chromium?</translation>
 <translation id="5224391634244552924">Няма захаваных пароляў. Chromium можа правяраць толькі захаваныя паролі.</translation>
 <translation id="5277894862589591112">Каб прымяніць змяненні, перазапусціце Chromium</translation>
 <translation id="5358375970380395591">Вы ўваходзіце праз уліковы запіс пад кіраваннем, што дае адміністратару кантроль над вашым профілем у браўзеры Chromium. Даныя Chromium (праграмы, закладкі, гісторыя, паролі і іншыя налады) будуць назаўсёды прывязаны да ўліковага запісу <ph name="USER_NAME" />. Вы зможаце выдаліць гэтыя даныя праз панэль кіравання Уліковымі запісамі Google, але іх нельга будзе звязаць з іншым уліковым запісам. <ph name="LEARN_MORE" /></translation>
@@ -118,7 +118,7 @@
 <translation id="5416696090975899932">Chromium не можа паказаць перадпрагляд друку: убудаваны сродак прагляду PDF адсутнічае.</translation>
 <translation id="5427571867875391349">Зрабіць Chromium стандартным браўзерам</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium (бэта-версія)</translation>
-<translation id="544968170749360982">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы новы ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium Space для карыстальніка <ph name="NEW_USER" />, каб трымаць свае даныя асобна?</translation>
+<translation id="544968170749360982">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы новы ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium для карыстальніка <ph name="NEW_USER" />, каб трымаць свае даныя асобна?</translation>
 <translation id="5479196819031988440">Сістэме Chromium OS не ўдалося адкрыць гэту старонку.</translation>
 <translation id="5480860683791598150">Chromium патрабуецца доступ да геаданых, каб абагуліць звесткі аб вашым месцазнаходжанні з гэтым сайтам</translation>
 <translation id="549669000822060376">Пачакайце, пакуль Chromium усталюе апошнія абнаўленні сістэмы.</translation>
@@ -141,7 +141,7 @@
 <translation id="608189560609172163">Chromium не змог сінхранізаваць даныя з-за памылкі ўваходу.</translation>
 <translation id="6096348254544841612">Наладжвайце Chromium і кіруйце ім. Ёсць абнаўленне.</translation>
 <translation id="6120345080069858279">Chromium захавае гэты пароль у вашым Уліковым запісе Google. Вам не трэба запамінаць яго.</translation>
-<translation id="6128834065531097268">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium Space для дамена <ph name="WORK_DOMAIN" />, каб трымаць свае даныя асобна?</translation>
+<translation id="6128834065531097268">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium для дамена <ph name="WORK_DOMAIN" />, каб трымаць свае даныя асобна?</translation>
 <translation id="6129621093834146363">Файл <ph name="FILE_NAME" /> небяспечны, таму Chromium заблакіраваў яго.</translation>
 <translation id="6134968993075716475">"Бяспечны прагляд" выключаны. Chromium рэкамендуе ўключыць гэты рэжым.</translation>
 <translation id="6212496753309875659">На гэтым камп'ютары ўжо ўсталявана навейшая версія Chromium. Калі праграма не працуе, выдаліце Chromium і паўтарыце спробу.</translation>
@@ -203,7 +203,7 @@
 <translation id="7561906087460245826">Таксама выдаліць даныя з Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Калі налада адсутнічае на гэтай старонцы, перайдзіце ў <ph name="LINK_BEGIN" />
       налады Chromium OS<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Вы ўвайшлі ў працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium Space для карыстальніка <ph name="NEW_USER" />, каб трымаць свае асабістыя даныя асобна?</translation>
+<translation id="7607142834923530546">Вы ўвайшлі ў працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chromium для карыстальніка <ph name="NEW_USER" />, каб трымаць свае асабістыя даныя асобна?</translation>
 <translation id="761356813943268536">Chromium выкарыстоўвае камеру і мікрафон.</translation>
 <translation id="7617377681829253106">Chromium стаў яшчэ лепшым</translation>
 <translation id="7628001322379820951">Chromium знайшоў шкоднае праграмнае забеспячэнне на вашым камп'ютары</translation>

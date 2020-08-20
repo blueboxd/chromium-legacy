@@ -17,11 +17,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -35,12 +33,8 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   OmniboxSuggestionRowButton(views::ButtonListener* listener,
                              const base::string16& text,
                              const gfx::VectorIcon& icon,
-                             OmniboxPopupContentsView* popup_contents_view,
-                             OmniboxPopupModel::Selection selection)
-      : MdTextButton(listener, text, CONTEXT_OMNIBOX_PRIMARY),
-        icon_(icon),
-        popup_contents_view_(popup_contents_view),
-        selection_(selection) {
+                             const views::FocusRing::ViewPredicate& predicate)
+      : MdTextButton(listener, text, CONTEXT_OMNIBOX_PRIMARY), icon_(icon) {
     views::InstallPillHighlightPathGenerator(this);
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
@@ -50,10 +44,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
                     GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
 
     set_ink_drop_highlight_opacity(CalculateInkDropHighlightOpacity());
-    focus_ring()->SetHasFocusPredicate([=](View* view) {
-      return view->GetVisible() &&
-             popup_contents_view_->model()->selection() == selection_;
-    });
+    focus_ring()->SetHasFocusPredicate(predicate);
   }
 
   OmniboxSuggestionRowButton(const OmniboxSuggestionRowButton&) = delete;
@@ -67,8 +58,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   }
 
   void OnStyleRefresh() { focus_ring()->SchedulePaint(); }
-
-  OmniboxPopupModel::Selection selection() { return selection_; }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
@@ -88,17 +77,8 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
                  icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), color));
   }
 
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->SetName(GetAccessibleName());
-    // Although this appears visually as a button, expose as a list box option
-    // so that it matches the other options within its list box container.
-    node_data->role = ax::mojom::Role::kListBoxOption;
-  }
-
  private:
   const gfx::VectorIcon& icon_;
-  OmniboxPopupContentsView* popup_contents_view_;
-  OmniboxPopupModel::Selection selection_;
 
   float CalculateInkDropHighlightOpacity() {
     // Ink drop highlight opacity is result of mixing a layer with hovered
@@ -129,27 +109,30 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
           gfx::Insets(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
                              views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
+  const auto make_predicate = [=](auto state) {
+    return [=](View* view) {
+      return view->GetVisible() &&
+             model()->selection() ==
+                 OmniboxPopupModel::Selection(model_index_, state);
+    };
+  };
+
   // For all of these buttons, the visibility set from UpdateFromModel().
   // The Keyword and Pedal buttons also get their text from there, since the
   // text depends on the actual match. That shouldn't produce a flicker, because
   // it's called directly from OmniboxResultView::SetMatch(). If this flickers,
   // then so does everything else in the result view.
   keyword_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
-      this, base::string16(), vector_icons::kSearchIcon, popup_contents_view_,
-      OmniboxPopupModel::Selection(model_index_,
-                                   OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD)));
+      this, base::string16(), vector_icons::kSearchIcon,
+      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD)));
   tab_switch_button_ =
       AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
           this, l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-          omnibox::kSwitchIcon, popup_contents_view_,
-          OmniboxPopupModel::Selection(
-              model_index_, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)));
-  tab_switch_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACC_TAB_SWITCH_BUTTON));
+          omnibox::kSwitchIcon,
+          make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)));
   pedal_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
-      this, base::string16(), omnibox::kProductIcon, popup_contents_view_,
-      OmniboxPopupModel::Selection(model_index_,
-                                   OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)));
+      this, base::string16(), omnibox::kProductIcon,
+      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)));
 }
 
 OmniboxSuggestionButtonRowView::~OmniboxSuggestionButtonRowView() = default;
@@ -167,17 +150,14 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
     const auto names = SelectedKeywordView::GetKeywordLabelNames(
         keyword, edit_model->client()->GetTemplateURLService());
     keyword_button_->SetText(names.full_name);
-    keyword_button_->SetAccessibleName(
-        l10n_util::GetStringFUTF16(IDS_ACC_KEYWORD_BUTTON, names.short_name));
   }
 
   SetPillButtonVisibility(pedal_button_,
                           OmniboxPopupModel::FOCUSED_BUTTON_PEDAL);
   if (pedal_button_->GetVisible()) {
-    const auto pedal_strings = match().pedal->GetLabelStrings();
-    pedal_button_->SetText(pedal_strings.hint);
-    pedal_button_->SetTooltipText(pedal_strings.suggestion_contents);
-    pedal_button_->SetAccessibleName(pedal_strings.accessibility_hint);
+    pedal_button_->SetText(match().pedal->GetLabelStrings().hint);
+    pedal_button_->SetTooltipText(
+        match().pedal->GetLabelStrings().suggestion_contents);
   }
 
   SetPillButtonVisibility(tab_switch_button_,
@@ -228,28 +208,6 @@ void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
                                      OmniboxPopupModel::FOCUSED_BUTTON_PEDAL),
         event.time_stamp());
   }
-}
-
-views::Button* OmniboxSuggestionButtonRowView::GetActiveButton() const {
-  std::vector<OmniboxSuggestionRowButton*> visible_buttons;
-  if (keyword_button_->GetVisible())
-    visible_buttons.push_back(keyword_button_);
-  if (tab_switch_button_->GetVisible())
-    visible_buttons.push_back(tab_switch_button_);
-  if (pedal_button_->GetVisible())
-    visible_buttons.push_back(pedal_button_);
-
-  if (visible_buttons.empty())
-    return nullptr;
-
-  // Find first visible button that matches model selection.
-  auto selected_button =
-      std::find_if(visible_buttons.begin(), visible_buttons.end(),
-                   [=](OmniboxSuggestionRowButton* button) {
-                     return model()->selection() == button->selection();
-                   });
-  return selected_button == visible_buttons.end() ? visible_buttons.front()
-                                                  : *selected_button;
 }
 
 const OmniboxPopupModel* OmniboxSuggestionButtonRowView::model() const {

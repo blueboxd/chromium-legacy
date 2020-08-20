@@ -14,7 +14,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "printing/metafile.h"
 
 namespace base {
@@ -38,6 +37,8 @@ class PRINTING_EXPORT Emf : public Metafile {
   // Generates a virtual HDC that will record every GDI commands and compile
   // it in a EMF data stream.
   Emf();
+  Emf(const Emf&) = delete;
+  Emf& operator=(const Emf&) = delete;
   ~Emf() override;
 
   // Closes metafile.
@@ -95,8 +96,6 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Valid when generating EMF data through a virtual HDC.
   HDC hdc_;
-
-  DISALLOW_COPY_AND_ASSIGN(Emf);
 };
 
 struct Emf::EnumerationContext {
@@ -144,7 +143,8 @@ class PRINTING_EXPORT Emf::Enumerator {
   // both optional at the same time or must both be valid.
   // Warning: |emf| must be kept valid for the time this object is alive.
   Enumerator(const Emf& emf, HDC hdc, const RECT* rect);
-
+  Enumerator(const Enumerator&) = delete;
+  Enumerator& operator=(const Enumerator&) = delete;
   ~Enumerator();
 
   // Retrieves the first Record.
@@ -170,7 +170,6 @@ class PRINTING_EXPORT Emf::Enumerator {
 
   EnumerationContext context_;
 
-  DISALLOW_COPY_AND_ASSIGN(Enumerator);
 };
 
 }  // namespace printing

@@ -301,7 +301,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
        ConfirmSensitiveDirectoryAccess_ExplicitPathBlock) {
 // Linux is the only OS where we have some blocked directories with explicit
 // paths (as opposed to PathService provided paths).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // /dev should be blocked.
   EXPECT_EQ(
       SensitiveDirectoryResult::kAbort,

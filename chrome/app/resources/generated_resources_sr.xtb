@@ -432,7 +432,6 @@
 <translation id="1508575541972276599">Актуелна верзија је Debian 9 (Stretch)</translation>
 <translation id="1509281256533087115">Приступај било ком уређају <ph name="DEVICE_NAME_AND_VENDOR" /> преко USB-а</translation>
 <translation id="1509960214886564027">Функције на многим сајтовима могу да престану са радом</translation>
-<translation id="1510030919967934016">Овој страници је онемогућено да прати локацију на којој се налазите.</translation>
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="1510785804673676069">Ако користите прокси сервер, проверите подешавања проксија или контактирајте администратора мреже да бисте проверили да ли прокси сервер функционише. Ако не сматрате да треба да користите прокси сервер, прилагодите <ph name="LINK_START" />подешавања проксија<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">На овом безбедносном кључу не можете да чувате податке за пријављивање</translation>
@@ -599,7 +598,6 @@
 <translation id="1697686431566694143">Измени датотеку</translation>
 <translation id="1698122934742150150">Само актуелна сесија без архивирања</translation>
 <translation id="1700079447639026019">Сајтови који никада не могу да користе колачиће</translation>
-<translation id="1700845716982723710">Искључите амбијентални режим</translation>
 <translation id="1701062906490865540">Уклони ову особу</translation>
 <translation id="1703331064825191675">Никада не брините о лозинкама</translation>
 <translation id="1704970325597567340">Безбедносна провера је покренута <ph name="DATE" /></translation>
@@ -728,7 +726,6 @@
 <translation id="184273675144259287">Замените Linux апликације и датотеке претходном резервном копијом</translation>
 <translation id="1842766183094193446">Желите ли стварно да омогућите режим демонстрације?</translation>
 <translation id="1846308012215045257">Кликните и задржите тастер Control да бисте покренули <ph name="PLUGIN_NAME" /></translation>
-<translation id="184715642345428649">Омогућите амбијентални режим</translation>
 <translation id="1849186935225320012">Ова страница у потпуности контролише MIDI уређаје.</translation>
 <translation id="1850508293116537636">Окрећи &amp;у смеру кретања казаљке на сату</translation>
 <translation id="1852141627593563189">Пронађите штетан софтвер</translation>
@@ -1171,7 +1168,6 @@
 <translation id="2392163307141705938">Достигао/ла си временско ограничење које је родитељ подесио за <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Активирај</translation>
 <translation id="2393136602862631930">Подесите апликацију <ph name="APP_NAME" /> на Chromebook-у</translation>
-<translation id="2394566832561516196">Подешавања ће бити обрисана при следећем поновном учитавању.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> је регистрован за управљање предузећем, али није послао информације о елементу и локацији. Унесите те информације ручно на Admin console-у за овај уређај.</translation>
 <translation id="2396387085693598316">Администратор је блокирао додатак „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="2396783860772170191">Унесите 4-цифрени PIN (0000–9999)</translation>
@@ -1375,7 +1371,7 @@
 <translation id="2636625531157955190">Chrome не може да приступи слици.</translation>
 <translation id="2637400434494156704">Нетачан PIN. Имате још један покушај.</translation>
 <translation id="2638662041295312666">Слика за пријављивање</translation>
-<translation id="2640549051766135490">Изабран је албум <ph name="TITLE" /> (<ph name="DESC" />)</translation>
+<translation id="2640549051766135490">Изабран је албум <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="264083724974021997">Повежите са телефоном – дијалог</translation>
 <translation id="2641065435954454414">Припрема се преузимање</translation>
 <translation id="2642111877055905627">Фудбалска лопта</translation>
@@ -1661,7 +1657,6 @@
 <translation id="2979639724566107830">Отворите у новом прозору</translation>
 <translation id="2981113813906970160">Прикажи велики курсор</translation>
 <translation id="2985348301114641460">Желите ли да пошаљете захтев администратору да инсталира „<ph name="EXTENSION_NAME" />“?</translation>
-<translation id="2986010903908656993">Спречено је да ова страница у потпуности контролише MIDI уређаје.</translation>
 <translation id="2987620471460279764">Текст који се дели са другог уређаја</translation>
 <translation id="2988018669686457659">Резервни приказивач</translation>
 <translation id="2989123969927553766">Убрзавање померања мишем</translation>
@@ -2085,7 +2080,6 @@
 <translation id="3524965460886318643">Извези активности</translation>
 <translation id="3526034519184079374">Читање или мењање података сајта није успело</translation>
 <translation id="3527085408025491307">Директоријум</translation>
-<translation id="3528033729920178817">Ова страница прати локацију на којој се налазите.</translation>
 <translation id="3528498924003805721">Циљеви пречица</translation>
 <translation id="3532273508346491126">Управљање синхронизацијом</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Звук је искључен</translation>
@@ -2561,7 +2555,6 @@
 <translation id="4061374428807229313">Да бисте делили, кликните десним тастером миша на директоријум у апликацији Датотеке, па изаберите Дели са Parallels Desktop-ом.</translation>
 <translation id="4065876735068446555">Мрежа коју користите (<ph name="NETWORK_ID" />) ће можда захтевати да посетите страницу за пријављивање.</translation>
 <translation id="4066207411788646768">Проверите везу да бисте видели доступне штампаче на мрежи</translation>
-<translation id="4068506536726151626">Ова страница садржи елементе са следећих сајтова који прате локацију на којој се налазите:</translation>
 <translation id="4068776064906523561">Сачувани отисци прстију</translation>
 <translation id="407173827865827707">При клику</translation>
 <translation id="4074900173531346617">Сертификат потписника е-поште</translation>
@@ -2603,7 +2596,7 @@
 <translation id="4107048419833779140">идентификује и избацује меморијске уређаје</translation>
 <translation id="4109135793348361820">Премести прозор код <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Преузимање је довршено: <ph name="FILE_NAME" />. Притисните Shift + F6 да бисте прешли на област траке са преузимањима.</translation>
-<translation id="4110686435123617899">Изаберите албум <ph name="TITLE" /> (<ph name="DESC" />)</translation>
+<translation id="4110686435123617899">Изаберите албум <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4110895898888439383">Прегледајте веб у режиму високог контраста</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (офлајн)</translation>
 <translation id="4115002065223188701">Мрежа је ван домета</translation>
@@ -3204,7 +3197,6 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> жели да комуницира са додатком „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4918221908152712722">Инсталирајте апликацију <ph name="APP_NAME" /> (не треба да је преузимате)</translation>
-<translation id="4920887663447894854">Следећим сајтовима је онемогућено праћење ваше локације на овој страници:</translation>
 <translation id="4921290200821452703">Информације о школском налогу за родитеље</translation>
 <translation id="4921348630401250116">Претварање текста у говор</translation>
 <translation id="49226369361073053">{0,plural, =0{Ажурирајте уређај}=1{Ажурирајте уређај у року од 1 секунде}one{Ажурирајте уређај у року од # секунде}few{Ажурирајте уређај у року од # секунде}other{Ажурирајте уређај у року од # секунди}}</translation>
@@ -3282,7 +3274,6 @@
 <translation id="5027562294707732951">Додај додатак</translation>
 <translation id="5029568752722684782">Обриши копију</translation>
 <translation id="5033266061063942743">Геометријски облици</translation>
-<translation id="5033370009438029887">Онемогућите амбијентални режим</translation>
 <translation id="5036662165765606524">Не дозволи ниједном сајту да аутоматски преузима више датотека</translation>
 <translation id="5037676449506322593">Изабери све</translation>
 <translation id="5038022729081036555">Сутра имаш <ph name="TIME_LIMIT" /> на располагању.</translation>
@@ -3960,7 +3951,6 @@
 <translation id="5865508026715185451"><ph name="APP_NAME" /> ће се ускоро паузирати</translation>
 <translation id="586567932979200359">Покрећете <ph name="PRODUCT_NAME" /> са диска. Инсталација на рачунар омогућава покретање без диска и редовно ажурирање.</translation>
 <translation id="5865733239029070421">Аутоматски шаље Google-у статистику коришћења и извештаје о отказивању</translation>
-<translation id="5866557323934807206">Обриши ова подешавања за касније посете</translation>
 <translation id="5866840822086176774">Веома јак</translation>
 <translation id="5867841422488265304">Претражите или унесите веб-адресу</translation>
 <translation id="5869029295770560994">Важи</translation>
@@ -4245,7 +4235,6 @@
 <translation id="6225475702458870625">Веза за пренос података је доступна на телефону <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Датотека приватног кључа (опционално)</translation>
 <translation id="6227280783235722609">додатак</translation>
-<translation id="6228691855869374890">Овај сајт у потпуности контролише MIDI уређаје.</translation>
 <translation id="6229849828796482487">Прекини везу са Wi-Fi мрежом</translation>
 <translation id="6229890768313448549">Услови коришћења услуге Google Play не могу да се учитају. Пробајте поново.</translation>
 <translation id="6231881193380278751">Додајте параметар упита у URL да бисте аутоматски освежили страницу: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -4399,7 +4388,6 @@
 <translation id="6412931879992742813">Нови прозор без архивирања</translation>
 <translation id="641469293210305670">Инсталирајте ажурирања и апликације</translation>
 <translation id="6414888972213066896">Питао/ла си родитеља да ли смеш да посетиш овај сајт</translation>
-<translation id="6415659939354280526">Одаберите извор амбијенталног режима</translation>
 <translation id="6415900369006735853">Повежите се на интернет помоћу телефона</translation>
 <translation id="6416743254476733475">Дозволите или блокирајте на рачунару.</translation>
 <translation id="6417265370957905582">Google помоћник</translation>
@@ -5343,7 +5331,6 @@
 <translation id="7616214729753637086">Уређај се региструје...</translation>
 <translation id="7617263010641145920">Укључите Play продавницу</translation>
 <translation id="7617366389578322136">Повезује се са уређајем „<ph name="DEVICE_NAME" />“</translation>
-<translation id="761763866592998929">Aмбијентални режим</translation>
 <translation id="7621382409404463535">Систем није успео да сачува конфигурацију уређаја.</translation>
 <translation id="7622114377921274169">Пуни се.</translation>
 <translation id="7622903810087708234">Детаљи лозинке</translation>
@@ -5587,7 +5574,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7881483672146086348">Прикажи налог</translation>
 <translation id="7882358943899516840">Тип добављача</translation>
-<translation id="78851824530736377">Укључите амбијентални режим</translation>
 <translation id="7885253890047913815">Недавна одредишта</translation>
 <translation id="7887334752153342268">Направи дупликат</translation>
 <translation id="7887864092952184874">Bluetooth миш је упарен</translation>
@@ -6364,7 +6350,7 @@
 <translation id="882854468542856424">Не дозвољавај ниједном сајту да открива Bluetooth уређаје у близини</translation>
 <translation id="8828933418460119530">Име DNS-а</translation>
 <translation id="883062543841130884">Замене</translation>
-<translation id="8830779999439981481">Рестартује се да би се применила ажурирања</translation>
+<translation id="8830779999439981481">Рестартује се да бисте применили ажурирања</translation>
 <translation id="8830796635868321089">Провера ажурирања није успела помоћу актуелних подешавања проксија. Прилагодите <ph name="PROXY_SETTINGS_LINK_START" />подешавања проксија<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> и Android телефон боље раде заједно. Повежите их да бисте могли да шаљете SMS-ове помоћу рачунара, делите интернет везу и откључавате <ph name="DEVICE_TYPE" /> помоћу телефона.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Конфигурацију мреже контролише <ph name="USER_EMAIL" />.</translation>

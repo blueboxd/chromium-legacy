@@ -829,5 +829,67 @@ TEST_F(EditableComboboxTest, NoCrashWithoutWidget) {
   combobox->RevealPasswords(true);
 }
 
+using EditableComboboxDefaultTest = ViewsTestBase;
+
+class ConfigurableComboboxModel final : public ui::ComboboxModel {
+ public:
+  explicit ConfigurableComboboxModel(bool* destroyed = nullptr)
+      : destroyed_(destroyed) {
+    if (destroyed_)
+      *destroyed_ = false;
+  }
+  ConfigurableComboboxModel(ConfigurableComboboxModel&) = delete;
+  ConfigurableComboboxModel& operator=(const ConfigurableComboboxModel&) =
+      delete;
+  ~ConfigurableComboboxModel() override {
+    if (destroyed_)
+      *destroyed_ = true;
+  }
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override { return item_count_; }
+  base::string16 GetItemAt(int index) const override {
+    DCHECK_LT(index, item_count_);
+    return base::NumberToString16(index);
+  }
+
+  void SetItemCount(int item_count) { item_count_ = item_count; }
+
+ private:
+  bool* const destroyed_;
+  int item_count_ = 0;
+};
+
 }  // namespace
+
+TEST_F(EditableComboboxDefaultTest, Default) {
+  auto combobox = std::make_unique<EditableCombobox>();
+  EXPECT_EQ(0, combobox->GetItemCountForTest());
+}
+
+TEST_F(EditableComboboxDefaultTest, SetModel) {
+  std::unique_ptr<ConfigurableComboboxModel> model =
+      std::make_unique<ConfigurableComboboxModel>();
+  model->SetItemCount(42);
+  auto combobox = std::make_unique<EditableCombobox>();
+  combobox->SetModel(std::move(model));
+  EXPECT_EQ(42, combobox->GetItemCountForTest());
+}
+
+TEST_F(EditableComboboxDefaultTest, SetModelOverwrite) {
+  bool destroyed_first = false;
+  bool destroyed_second = false;
+  {
+    auto combobox = std::make_unique<EditableCombobox>();
+    combobox->SetModel(
+        std::make_unique<ConfigurableComboboxModel>(&destroyed_first));
+    ASSERT_FALSE(destroyed_first);
+    combobox->SetModel(
+        std::make_unique<ConfigurableComboboxModel>(&destroyed_second));
+    EXPECT_TRUE(destroyed_first);
+    ASSERT_FALSE(destroyed_second);
+  }
+  EXPECT_TRUE(destroyed_second);
+}
+
 }  // namespace views

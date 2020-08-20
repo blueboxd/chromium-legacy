@@ -1,0 +1,5 @@
+include_rules = [
+  "+ui/android",
+  "+content/public/test/android",
+  "+components/browser_ui/banners/android",
+]

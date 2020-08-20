@@ -92,22 +92,6 @@ arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
   return name;
 }
 
-// Constructs a vector of UrlWithMimeType to be passed to
-// IntentHelperInstance.HandleUrlListDeprecated.
-std::vector<arc::mojom::UrlWithMimeTypePtr> ConstructUrlWithMimeTypeList(
-    const std::vector<GURL>& content_urls,
-    const std::vector<std::string>& mime_types) {
-  std::vector<arc::mojom::UrlWithMimeTypePtr> urls;
-  for (size_t i = 0; i < content_urls.size(); ++i) {
-    arc::mojom::UrlWithMimeTypePtr url_with_type =
-        arc::mojom::UrlWithMimeType::New();
-    url_with_type->url = content_urls[i].spec();
-    url_with_type->mime_type = mime_types[i];
-    urls.push_back(std::move(url_with_type));
-  }
-  return urls;
-}
-
 // Constructs an OpenUrlsRequest to be passed to
 // FileSystemInstance.OpenUrlsWithPermission.
 arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
@@ -292,51 +276,26 @@ void ExecuteArcTaskAfterContentUrlsResolved(
     return;
   }
 
-  // Try FileSystemInstance.OpenUrlsWithPermission first.
   arc::mojom::FileSystemInstance* arc_file_system = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->file_system(),
       OpenUrlsWithPermission);
-  if (arc_file_system) {
-    arc::mojom::OpenUrlsRequestPtr request =
-        ConstructOpenUrlsRequest(task, content_urls, mime_types);
-    arc_file_system->OpenUrlsWithPermission(std::move(request),
-                                            base::DoNothing());
+  if (!arc_file_system) {
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
-
+        extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        "OpenUrlsWithPermission is not supported");
     return;
   }
 
-  // Use IntentHelperInstance.HandleUrlListDeprecated as a fallback if
-  // OpenUrlsWithPermission is not supported yet.
-  // TODO(niwa): Remove this once we complete migration.
-  arc::mojom::IntentHelperInstance* arc_intent_helper =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_service_manager->arc_bridge_service()->intent_helper(),
-          HandleUrlListDeprecated);
-  if (arc_intent_helper) {
-    LOG(WARNING) << "Using HandleUrlListDeprecated because "
-                 << "OpenUrlsWithPermission is not supported yet.";
-    arc_intent_helper->HandleUrlListDeprecated(
-        ConstructUrlWithMimeTypeList(content_urls, mime_types),
-        AppIdToActivityName(task.app_id),
-        FileTaskActionIdToArcActionType(task.action_id));
-    std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
+  arc::mojom::OpenUrlsRequestPtr request =
+      ConstructOpenUrlsRequest(task, content_urls, mime_types);
+  arc_file_system->OpenUrlsWithPermission(std::move(request),
+                                          base::DoNothing());
+  std::move(done).Run(
+      extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
-
-    return;
-  }
-
-  std::move(done).Run(extensions::api::file_manager_private::TASK_RESULT_FAILED,
-                      "No android app to run task");
+  UMA_HISTOGRAM_ENUMERATION(
+      "Arc.UserInteraction",
+      arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
 }
 
 }  // namespace

@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/navigation_controller.h"
@@ -50,6 +51,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -57,6 +60,7 @@
 
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
+using testing::_;
 
 namespace autofill {
 
@@ -779,5 +783,178 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutocompleteState) {
   // Sanity check.
   ASSERT_TRUE(AutocompleteIsAvailable(node_data));
 }
+
+// Test fixture for testing that that appropriate form submission events are
+// fired in AutofillManager.
+class FormSubmissionDetectionTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ protected:
+  class MockAutofillManager : public AutofillManager {
+   public:
+    MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
+        : AutofillManager(driver,
+                          client,
+                          "en-US",
+                          AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
+
+    MOCK_METHOD3(OnFormSubmittedImpl,
+                 void(const FormData&, bool, mojom::SubmissionSource));
+  };
+
+  FormSubmissionDetectionTest() { InitializeFeatures(); }
+
+  void SetUpOnMainThread() override {
+    SetUpServer();
+    NavigateToPage("/form.html");
+    Mock();
+  }
+
+  void TearDownOnMainThread() override {}
+
+  void ExecuteScript(const std::string& js) {
+    // Simulate a mouse click to submit the form because form submissions not
+    // triggered by user gestures are ignored.
+    std::string onclick_js = "document.onclick = function() { " + js + "; };";
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(content::ExecuteScript(web_contents, onclick_js));
+    content::SimulateMouseClick(
+        browser()->tab_strip_model()->GetActiveWebContents(), 0,
+        blink::WebMouseEvent::Button::kLeft);
+  }
+
+  MockAutofillManager* autofill_manager_ = nullptr;
+
+ private:
+  void InitializeFeatures() {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+    if (std::get<0>(GetParam())) {
+      enabled.push_back(features::kAutofillAllowDuplicateFormSubmissions);
+    } else {
+      disabled.push_back(features::kAutofillAllowDuplicateFormSubmissions);
+    }
+    if (std::get<1>(GetParam())) {
+      enabled.push_back(features::kAutofillProbableFormSubmissionInBrowser);
+    } else {
+      disabled.push_back(features::kAutofillProbableFormSubmissionInBrowser);
+    }
+    feature_list_.InitWithFeatures(enabled, disabled);
+  }
+
+  void SetUpServer() {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &FormSubmissionDetectionTest::HandleRequest, base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    GURL absolute_url = embedded_test_server()->GetURL(request.relative_url);
+    std::string content;
+    if (absolute_url.path() == "/form.html") {
+      content = get_form_html();
+    } else if (absolute_url.path() == "/success.html") {
+      content = "<html><body>Happy times!";
+    } else {
+      return nullptr;
+    }
+
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("text/html");
+    http_response->set_content(content);
+    return http_response;
+  }
+
+  virtual std::string get_form_html() const {
+    return "<html><body>"
+           "<form id='form' method='POST' action='/success.html'>"
+           "Name: <input type='text' id='name'><br>"
+           "Address: <input type='text' id='address'><br>"
+           "City: <input type='text' id='city'><br>"
+           "ZIP: <input type='text' id='zip'><br>"
+           "State: <select id='state'>"
+           "  <option value='CA'>CA</option>"
+           "  <option value='WA'>WA</option>"
+           "</select><br>"
+           "</form>";
+  }
+
+  void NavigateToPage(const std::string& filename) {
+    GURL url = embedded_test_server()->GetURL(filename);
+    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    ui_test_utils::NavigateToURL(&params);
+  }
+
+  // TODO(crbug/1119526) This dependency injection is wonky because it only
+  // mocks the current ContentAutofillDriver's AutofillManager, not the future
+  // ones' AutofillManagers.
+  void Mock() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ContentAutofillDriverFactory* driver_factory =
+        ContentAutofillDriverFactory::FromWebContents(web_contents);
+    AutofillClient* client = driver_factory->client();
+    ContentAutofillDriver* driver =
+        driver_factory->DriverForFrame(web_contents->GetMainFrame());
+
+    std::unique_ptr<MockAutofillManager> mock_autofill_manager =
+        std::make_unique<MockAutofillManager>(driver, client);
+    autofill_manager_ = mock_autofill_manager.get();
+
+    driver->SetAutofillManager(std::move(mock_autofill_manager));
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that user-triggered submission triggers a submission event in
+// AutofillManager.
+IN_PROC_BROWSER_TEST_P(FormSubmissionDetectionTest, Submission) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *autofill_manager_,
+      OnFormSubmittedImpl(_, _, mojom::SubmissionSource::FORM_SUBMISSION))
+      .Times(1)
+      .WillRepeatedly(
+          testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  ExecuteScript(
+      "document.getElementById('name').value = 'Sarah';"
+      "document.getElementById('name').select();"
+      "document.getElementById('form').submit();");
+  run_loop.Run();
+}
+
+// Tests that non-link-click, renderer-inititiated navigation triggers a
+// submission event in AutofillManager.
+IN_PROC_BROWSER_TEST_P(FormSubmissionDetectionTest, ProbableSubmission) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(*autofill_manager_,
+              OnFormSubmittedImpl(
+                  _, _, mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED))
+      .Times(1)
+      .WillRepeatedly(
+          testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  // Add a delay before navigating away to avoid race conditions. This is
+  // appropriate since we're faking user interaction here.
+  ExecuteScript(
+      "document.getElementById('name').focus();"
+      "document.getElementById('name').value = 'Sarah';"
+      "document.getElementById('name').select();"
+      "document.getElementById('state').selectedIndex = 1;"
+      "document.getElementById('zip').focus();"
+      "document.getElementById('name').select();"
+      "setTimeout(function() { window.location.assign('/success.html'); }, "
+      "50);");
+  run_loop.Run();
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         FormSubmissionDetectionTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace autofill

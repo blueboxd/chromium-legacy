@@ -223,10 +223,11 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   // the next transaction.
   DCHECK_LE(pending_surfaces_count_, surface_list_.size());
   for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
-    const auto& surface_state = surface_list_[i];
+    auto& surface_state = surface_list_[i];
     pending_transaction_->SetBuffer(*surface_state.surface, nullptr,
                                     base::ScopedFD());
     pending_transaction_->SetVisibility(*surface_state.surface, false);
+    surface_state.visibility = false;
   }
 
   // TODO(khushalsagar): Consider using the SetDamageRect API for partial
@@ -250,11 +251,6 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       std::move(primary_plane_fences_));
   primary_plane_fences_.reset();
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
-
-  // Cache only those surfaces which were used in this transaction. The surfaces
-  // removed here are persisted in |resources_to_release| so we can release
-  // them after receiving read fences from the framework.
-  surface_list_.resize(pending_surfaces_count_);
   pending_surfaces_count_ = 0u;
   frame_rate_update_pending_ = false;
 
@@ -306,6 +302,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   }
   pending_surfaces_count_++;
   auto& surface_state = surface_list_.at(pending_surfaces_count_ - 1);
+
+  // Make the surface visible if its hidden or uninitialized..
+  if (uninitialized || !surface_state.visibility) {
+    pending_transaction_->SetVisibility(*surface_state.surface, true);
+    surface_state.visibility = true;
+  }
 
   if (uninitialized || surface_state.z_order != z_order) {
     surface_state.z_order = z_order;

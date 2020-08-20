@@ -59,6 +59,7 @@ scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
+  CHECK(AudioOutputIPCFactory::get());
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       AudioOutputIPCFactory::get()->CreateAudioOutputIPC(frame_token),
       AudioOutputIPCFactory::get()->io_task_runner(), params, auth_timeout);
@@ -123,6 +124,10 @@ AudioDeviceFactory::NewAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
     const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
+// Can be empty in tests on Android.
+#if !defined(OS_ANDROID)
+  CHECK(!frame_token.is_empty());
+#endif
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> device =
         factory_->CreateAudioRendererSink(source_type, frame_token, params);

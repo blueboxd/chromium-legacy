@@ -67,6 +67,10 @@
 @property(nonatomic, strong, readwrite)
     NSLayoutConstraint* locationBarBottomConstraint;
 
+// Whether the top-left and top-right corners of the toolbar are rounded or
+// square.
+@property(nonatomic, assign) BOOL topCornersRounded;
+
 // Sets all the subviews and constraints of the view. The |topSafeAnchor| needs
 // to be set before calling this.
 - (void)setUp;

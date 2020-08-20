@@ -37,9 +37,25 @@ const char kRawAuthenticationToken[] = {0x00, 0x05, 0x04, 0x03, 0x02};
 const char kBytePayload[] = {0x08, 0x09, 0x06, 0x04, 0x0f};
 const char kBytePayload2[] = {0x0a, 0x0b, 0x0c, 0x0d, 0x0e};
 const int64_t kPayloadId = 689777;
+const int64_t kPayloadId2 = 777689;
 const uint64_t kTotalSize = 5201314;
 const uint64_t kBytesTransferred = 721831;
-const char kPayload[] = {0x0f, 0x0a, 0x0c, 0x0e};
+const uint8_t kPayload[] = {0x0f, 0x0a, 0x0c, 0x0e};
+
+void VerifyFileReadWrite(base::File& input_file, base::File& output_file) {
+  const std::vector<uint8_t> expected_bytes(std::begin(kPayload),
+                                            std::end(kPayload));
+  EXPECT_TRUE(output_file.WriteAndCheck(
+      /*offset=*/0, base::make_span(expected_bytes)));
+  output_file.Flush();
+  output_file.Close();
+
+  std::vector<uint8_t> payload_bytes(input_file.GetLength());
+  EXPECT_TRUE(input_file.ReadAndCheck(
+      /*offset=*/0, base::make_span(payload_bytes)));
+  EXPECT_EQ(expected_bytes, payload_bytes);
+  input_file.Close();
+}
 
 }  // namespace
 
@@ -53,6 +69,7 @@ using PayloadStatus = location::nearby::connections::mojom::PayloadStatus;
 using PayloadTransferUpdate =
     location::nearby::connections::mojom::PayloadTransferUpdate;
 using Payload = location::nearby::connections::mojom::Payload;
+using BytesPayload = location::nearby::connections::mojom::BytesPayload;
 using FilePayload = location::nearby::connections::mojom::FilePayload;
 
 class MockDiscoveryListener
@@ -215,6 +232,56 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
         break;
     }
     run_loop.Run();
+
+    return nearby_connection;
+  }
+
+  NearbyConnection* OnIncomingConnection(
+      mojo::Remote<ConnectionLifecycleListener>& connection_listener_remote,
+      testing::NiceMock<MockIncomingConnectionListener>&
+          incoming_connection_listener,
+      mojo::Remote<PayloadListener>& payload_listener_remote) {
+    base::RunLoop accept_run_loop;
+    EXPECT_CALL(nearby_connections_, AcceptConnection)
+        .WillOnce(
+            [&](const std::string& endpoint_id,
+                mojo::PendingRemote<PayloadListener> listener,
+                NearbyConnectionsMojom::AcceptConnectionCallback callback) {
+              EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+
+              payload_listener_remote.Bind(std::move(listener));
+              std::move(callback).Run(Status::kSuccess);
+              accept_run_loop.Quit();
+            });
+
+    const std::vector<uint8_t> remote_endpoint_info(
+        std::begin(kRemoteEndpointInfo), std::end(kRemoteEndpointInfo));
+    const std::vector<uint8_t> raw_authentication_token(
+        std::begin(kRawAuthenticationToken), std::end(kRawAuthenticationToken));
+
+    connection_listener_remote->OnConnectionInitiated(
+        kRemoteEndpointId,
+        ConnectionInfo::New(kAuthenticationToken, raw_authentication_token,
+                            remote_endpoint_info,
+                            /*is_incoming_connection=*/true));
+    accept_run_loop.Run();
+
+    NearbyConnection* nearby_connection;
+    base::RunLoop incoming_connection_run_loop;
+    EXPECT_CALL(incoming_connection_listener,
+                OnIncomingConnection(testing::_, testing::_, testing::_))
+        .WillOnce([&](const std::string&, const std::vector<uint8_t>&,
+                      NearbyConnection* connection) {
+          nearby_connection = connection;
+          incoming_connection_run_loop.Quit();
+        });
+
+    connection_listener_remote->OnConnectionAccepted(kRemoteEndpointId);
+    incoming_connection_run_loop.Run();
+
+    EXPECT_EQ(raw_authentication_token,
+              nearby_connections_manager_.GetRawAuthenticationToken(
+                  kRemoteEndpointId));
 
     return nearby_connection;
   }
@@ -438,9 +505,15 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectReadBeforeAppend) {
         EXPECT_EQ(byte_payload, bytes);
         read_run_loop.Quit();
       }));
-  // TOOD(crbug/1076008): Call from mojo instead of casting.
-  static_cast<NearbyConnectionImpl*>(nearby_connection)
-      ->WriteMessage(byte_payload);
+
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId,
+                   PayloadContent::NewBytes(BytesPayload::New(byte_payload))));
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
   read_run_loop.Run();
 }
 
@@ -464,11 +537,22 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectReadAfterAppend) {
   ASSERT_TRUE(nearby_connection);
 
   // Read after message is appended should succeed.
-  // TOOD(crbug/1076008): Call from mojo instead of casting.
-  static_cast<NearbyConnectionImpl*>(nearby_connection)
-      ->WriteMessage(byte_payload);
-  static_cast<NearbyConnectionImpl*>(nearby_connection)
-      ->WriteMessage(byte_payload_2);
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId,
+                   PayloadContent::NewBytes(BytesPayload::New(byte_payload))));
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId2, PayloadContent::NewBytes(
+                                    BytesPayload::New(byte_payload_2))));
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId2, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
 
   base::RunLoop read_run_loop;
   nearby_connection->Read(base::BindLambdaForTesting(
@@ -635,56 +719,6 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectClosedByClient) {
       nearby_connections_manager_.GetRawAuthenticationToken(kRemoteEndpointId));
 }
 
-TEST_F(NearbyConnectionsManagerImplTest, ConnectPayloadStatusListener) {
-  // StartDiscovery will succeed.
-  mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
-  testing::NiceMock<MockDiscoveryListener> discovery_listener;
-  StartDiscovery(discovery_listener_remote, discovery_listener);
-
-  // RequestConnection will succeed.
-  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
-  mojo::Remote<PayloadListener> payload_listener_remote;
-  Connect(connection_listener_remote, payload_listener_remote,
-          ConnectionResponse::kAccepted);
-
-  testing::NiceMock<MockPayloadStatusListener> payload_listener;
-  nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
-                                                            &payload_listener);
-
-  auto expected_update = PayloadTransferUpdate::New(
-      kPayloadId, PayloadStatus::kInProgress, kTotalSize, kBytesTransferred);
-  base::RunLoop payload_run_loop;
-  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
-      .WillOnce(
-          [&](MockPayloadStatusListener::PayloadTransferUpdatePtr update) {
-            EXPECT_EQ(expected_update, update);
-            payload_run_loop.Quit();
-          });
-
-  payload_listener_remote->OnPayloadTransferUpdate(kRemoteEndpointId,
-                                                   expected_update.Clone());
-  payload_run_loop.Run();
-
-  // After success status.
-  base::RunLoop payload_run_loop_2;
-  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
-      .WillOnce([&payload_run_loop_2]() { payload_run_loop_2.Quit(); });
-
-  payload_listener_remote->OnPayloadTransferUpdate(
-      kRemoteEndpointId,
-      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
-                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
-  payload_run_loop_2.Run();
-
-  // PayloadStatusListener will be unregistered and won't receive further
-  // updates.
-  payload_listener_remote->OnPayloadTransferUpdate(
-      kRemoteEndpointId,
-      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
-                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
-  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_)).Times(0);
-}
-
 TEST_F(NearbyConnectionsManagerImplTest, ConnectSendPayload) {
   // StartDiscovery will succeed.
   mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
@@ -757,39 +791,277 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectCancelPayload) {
 }
 
 TEST_F(NearbyConnectionsManagerImplTest, StartAdvertising) {
-  mojo::Remote<ConnectionLifecycleListener> listener_remote;
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
   testing::NiceMock<MockIncomingConnectionListener>
       incoming_connection_listener;
-  StartAdvertising(listener_remote, incoming_connection_listener);
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
 
-  const std::vector<uint8_t> remote_endpoint_info(
-      std::begin(kRemoteEndpointInfo), std::end(kRemoteEndpointInfo));
-  const std::vector<uint8_t> raw_authentication_token(
-      std::begin(kRawAuthenticationToken), std::end(kRawAuthenticationToken));
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+}
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(
-      incoming_connection_listener,
-      OnIncomingConnection(kRemoteEndpointId, remote_endpoint_info, testing::_))
-      .WillOnce([&](const std::string&, const std::vector<uint8_t>&,
-                    NearbyConnection* connection) {
-        EXPECT_TRUE(connection);
-        run_loop.Quit();
-      });
+TEST_F(NearbyConnectionsManagerImplTest, IncomingPayloadStatusListener) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
 
-  listener_remote->OnConnectionInitiated(
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  testing::NiceMock<MockPayloadStatusListener> payload_listener;
+  nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
+                                                            &payload_listener);
+
+  auto expected_update = PayloadTransferUpdate::New(
+      kPayloadId, PayloadStatus::kInProgress, kTotalSize, kBytesTransferred);
+  base::RunLoop payload_run_loop;
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
+      .WillOnce(
+          [&](MockPayloadStatusListener::PayloadTransferUpdatePtr update) {
+            EXPECT_EQ(expected_update, update);
+            payload_run_loop.Quit();
+          });
+
+  payload_listener_remote->OnPayloadTransferUpdate(kRemoteEndpointId,
+                                                   expected_update.Clone());
+  payload_run_loop.Run();
+
+  // After success status.
+  base::RunLoop payload_run_loop_2;
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
+      .WillOnce([&payload_run_loop_2]() { payload_run_loop_2.Quit(); });
+
+  payload_listener_remote->OnPayloadTransferUpdate(
       kRemoteEndpointId,
-      ConnectionInfo::New(kAuthenticationToken, raw_authentication_token,
-                          remote_endpoint_info,
-                          /*is_incoming_connection=*/true));
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  payload_run_loop_2.Run();
 
-  listener_remote->OnConnectionAccepted(kRemoteEndpointId);
+  // PayloadStatusListener will be unregistered and won't receive further
+  // updates.
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_)).Times(0);
 
-  run_loop.Run();
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+}
 
-  EXPECT_EQ(
-      raw_authentication_token,
-      nearby_connections_manager_.GetRawAuthenticationToken(kRemoteEndpointId));
+TEST_F(NearbyConnectionsManagerImplTest, IncomingRegisterPayloadPath) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
+
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  base::RunLoop register_payload_run_loop;
+  EXPECT_CALL(nearby_connections_, RegisterPayloadFile)
+      .WillOnce(
+          [&](int64_t payload_id, base::File input_file, base::File output_file,
+              NearbyConnectionsMojom::RegisterPayloadFileCallback callback) {
+            EXPECT_EQ(kPayloadId, payload_id);
+            ASSERT_TRUE(input_file.IsValid());
+            ASSERT_TRUE(output_file.IsValid());
+            VerifyFileReadWrite(input_file, output_file);
+
+            std::move(callback).Run(Status::kSuccess);
+            register_payload_run_loop.Quit();
+          });
+
+  base::FilePath path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  base::MockCallback<NearbyConnectionsManager::ConnectionsCallback> callback;
+  EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
+  nearby_connections_manager_.RegisterPayloadPath(kPayloadId, path,
+                                                  callback.Get());
+  register_payload_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest,
+       IncomingRegisterPayloadPathAlreadyExist) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
+
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  base::FilePath path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                            base::File::Flags::FLAG_READ |
+                            base::File::Flags::FLAG_WRITE);
+  EXPECT_TRUE(file.WriteAndCheck(
+      /*offset=*/0, base::make_span(kPayload, sizeof(kPayload))));
+  file.Flush();
+  file.Close();
+
+  base::RunLoop register_payload_run_loop;
+  EXPECT_CALL(nearby_connections_, RegisterPayloadFile)
+      .WillOnce(
+          [&](int64_t payload_id, base::File input_file, base::File output_file,
+              NearbyConnectionsMojom::RegisterPayloadFileCallback callback) {
+            EXPECT_EQ(kPayloadId, payload_id);
+            ASSERT_TRUE(input_file.IsValid());
+            ASSERT_TRUE(output_file.IsValid());
+            VerifyFileReadWrite(input_file, output_file);
+
+            std::move(callback).Run(Status::kSuccess);
+            register_payload_run_loop.Quit();
+          });
+
+  // Register a path that already exists.
+  base::MockCallback<NearbyConnectionsManager::ConnectionsCallback> callback;
+  EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
+  nearby_connections_manager_.RegisterPayloadPath(kPayloadId, path,
+                                                  callback.Get());
+  register_payload_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, IncomingBytesPayload) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
+
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  testing::NiceMock<MockPayloadStatusListener> payload_listener;
+  nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
+                                                            &payload_listener);
+
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId, PayloadContent::NewBytes(
+                                   BytesPayload::New(expected_payload))));
+
+  base::RunLoop payload_run_loop;
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
+      .WillOnce([&payload_run_loop]() { payload_run_loop.Quit(); });
+
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  payload_run_loop.Run();
+
+  Payload* payload = nearby_connections_manager_.GetIncomingPayload(kPayloadId);
+  ASSERT_TRUE(payload);
+  ASSERT_TRUE(payload->content->is_bytes());
+  EXPECT_EQ(expected_payload, payload->content->get_bytes()->bytes);
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, IncomingFilePayload) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
+
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  testing::NiceMock<MockPayloadStatusListener> payload_listener;
+  nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
+                                                            &payload_listener);
+
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+
+  base::FilePath path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                            base::File::Flags::FLAG_READ |
+                            base::File::Flags::FLAG_WRITE);
+  EXPECT_TRUE(file.WriteAndCheck(
+      /*offset=*/0, base::make_span(expected_payload)));
+
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId,
+                   PayloadContent::NewFile(FilePayload::New(std::move(file)))));
+
+  base::RunLoop payload_run_loop;
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
+      .WillOnce([&payload_run_loop]() { payload_run_loop.Quit(); });
+
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  payload_run_loop.Run();
+
+  Payload* payload = nearby_connections_manager_.GetIncomingPayload(kPayloadId);
+  ASSERT_TRUE(payload);
+  ASSERT_TRUE(payload->content->is_file());
+  std::vector<uint8_t> payload_bytes(
+      payload->content->get_file()->file.GetLength());
+  EXPECT_TRUE(payload->content->get_file()->file.ReadAndCheck(
+      /*offset=*/0, base::make_span(payload_bytes)));
+  EXPECT_EQ(expected_payload, payload_bytes);
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, ClearIncomingPayloads) {
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(connection_listener_remote, incoming_connection_listener);
+
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* connection = OnIncomingConnection(
+      connection_listener_remote, incoming_connection_listener,
+      payload_listener_remote);
+  EXPECT_TRUE(connection);
+
+  testing::NiceMock<MockPayloadStatusListener> payload_listener;
+  nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
+                                                            &payload_listener);
+  payload_listener_remote->OnPayloadReceived(
+      kRemoteEndpointId,
+      Payload::New(kPayloadId, PayloadContent::NewBytes(BytesPayload::New())));
+
+  base::RunLoop payload_run_loop;
+  EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))
+      .WillOnce([&payload_run_loop]() { payload_run_loop.Quit(); });
+
+  payload_listener_remote->OnPayloadTransferUpdate(
+      kRemoteEndpointId,
+      PayloadTransferUpdate::New(kPayloadId, PayloadStatus::kSuccess,
+                                 kTotalSize, /*bytes_transferred=*/kTotalSize));
+  payload_run_loop.Run();
+
+  nearby_connections_manager_.ClearIncomingPayloads();
+
+  EXPECT_FALSE(nearby_connections_manager_.GetIncomingPayload(kPayloadId));
 }
 
 using MediumsTestParam = std::

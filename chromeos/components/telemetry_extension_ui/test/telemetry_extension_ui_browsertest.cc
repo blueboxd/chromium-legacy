@@ -132,6 +132,7 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
         ->SetAvailableRoutinesForTesting(input);
   }
 
+  auto telemetry_info = chromeos::cros_healthd::mojom::TelemetryInfo::New();
   {
     auto battery_info = chromeos::cros_healthd::mojom::BatteryInfo::New();
     battery_info->cycle_count = 100000000000000;
@@ -150,16 +151,50 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
     battery_info->temperature =
         chromeos::cros_healthd::mojom::UInt64Value::New(7777777777777777);
 
-    auto info = chromeos::cros_healthd::mojom::TelemetryInfo::New();
-    info->battery_result =
+    telemetry_info->battery_result =
         chromeos::cros_healthd::mojom::BatteryResult::NewBatteryInfo(
             std::move(battery_info));
-
-    DCHECK(chromeos::cros_healthd::FakeCrosHealthdClient::Get());
-
-    chromeos::cros_healthd::FakeCrosHealthdClient::Get()
-        ->SetProbeTelemetryInfoResponseForTesting(info);
   }
+  {
+    auto block_device_info =
+        chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo::New();
+    block_device_info->path = "/dev/device1";
+    block_device_info->size = 5555555555555555;
+    block_device_info->type = "NVMe";
+    block_device_info->manufacturer_id = 200;
+    block_device_info->name = "goog";
+    block_device_info->serial = 4287654321;
+    block_device_info->bytes_read_since_last_boot = 9000000000000000;
+    block_device_info->bytes_written_since_last_boot = 8000000000000000;
+    block_device_info->read_time_seconds_since_last_boot = 7000000000000000;
+    block_device_info->write_time_seconds_since_last_boot = 6666666666666666;
+    block_device_info->io_time_seconds_since_last_boot = 1111111111111;
+    block_device_info->discard_time_seconds_since_last_boot =
+        chromeos::cros_healthd::mojom::UInt64Value::New(77777777777777);
+
+    // Need to put some placeholder values, otherwise Mojo will crash, because
+    // mandatory union fields cannot be nullptr.
+    block_device_info->vendor_id =
+        chromeos::cros_healthd::mojom::BlockDeviceVendor::NewOther(0);
+    block_device_info->product_id =
+        chromeos::cros_healthd::mojom::BlockDeviceProduct::NewOther(0);
+    block_device_info->revision =
+        chromeos::cros_healthd::mojom::BlockDeviceRevision::NewOther(0);
+    block_device_info->firmware_version =
+        chromeos::cros_healthd::mojom::BlockDeviceFirmware::NewOther(0);
+
+    std::vector<chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>
+        infos;
+    infos.push_back(std::move(block_device_info));
+
+    telemetry_info->block_device_result = chromeos::cros_healthd::mojom::
+        NonRemovableBlockDeviceResult::NewBlockDeviceInfo(std::move(infos));
+  }
+
+  DCHECK(chromeos::cros_healthd::FakeCrosHealthdClient::Get());
+
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(telemetry_info);
 
   SandboxedWebUiAppTestBase::SetUpOnMainThread();
 }

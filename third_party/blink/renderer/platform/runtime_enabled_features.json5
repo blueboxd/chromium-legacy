@@ -403,6 +403,12 @@
       status: "experimental",
     },
     {
+      name: "CrossOriginOpenerPolicyReporting",
+      origin_trial_feature_name: "CrossOriginOpenerPolicyReporting",
+      origin_trial_allows_third_party: true,
+      status: "experimental",
+    },
+    {
       name: "CSS3Text",
       status: "experimental",
     },

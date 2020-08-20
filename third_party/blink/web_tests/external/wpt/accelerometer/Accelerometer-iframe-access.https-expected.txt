@@ -5,8 +5,8 @@ PASS Accelerometer: losing a document's frame with an active sensor does not cra
 PASS LinearAccelerationSensor: sensor is suspended and resumed when focus traverses from to cross-origin frame
 PASS LinearAccelerationSensor: sensor is not suspended when focus traverses from to same-origin frame
 PASS LinearAccelerationSensor: losing a document's frame with an active sensor does not crash
-FAIL GravitySensor: sensor is suspended and resumed when focus traverses from to cross-origin frame assert_true: expected true got false
-FAIL GravitySensor: sensor is not suspended when focus traverses from to same-origin frame assert_true: expected true got false
-FAIL GravitySensor: losing a document's frame with an active sensor does not crash assert_true: expected true got false
+FAIL GravitySensor: sensor is suspended and resumed when focus traverses from to cross-origin frame assert_implements: GravitySensor is not supported. undefined
+FAIL GravitySensor: sensor is not suspended when focus traverses from to same-origin frame assert_implements: GravitySensor is not supported. undefined
+FAIL GravitySensor: losing a document's frame with an active sensor does not crash assert_implements: GravitySensor is not supported. undefined
 Harness: the test ran to completion.
 

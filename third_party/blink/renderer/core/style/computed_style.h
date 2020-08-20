@@ -1005,6 +1005,9 @@ class ComputedStyle : public ComputedStyleBase,
   // to the same baseline in the child.
   FontBaseline GetFontBaseline() const;
 
+  FontHeight GetFontHeight(FontBaseline baseline) const;
+  FontHeight GetFontHeight() const { return GetFontHeight(GetFontBaseline()); }
+
   // Compute FontOrientation from this style. It is derived from WritingMode and
   // TextOrientation.
   FontOrientation ComputeFontOrientation() const;

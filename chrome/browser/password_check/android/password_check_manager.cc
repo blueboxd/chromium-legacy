@@ -41,29 +41,6 @@ std::string CreateChangeUrl(const GURL& url) {
   return url.GetOrigin().spec();
 }
 
-// Orders |compromised_credentials| in such a way that phished credentials
-// precede leaked credentials, and that credentials of the same compromise type
-// are ordered by recency.
-// TODO(crbug.com/1117579): Share the common logic with desktop.
-void OrderCompromisedCredentials(
-    std::vector<password_manager::CredentialWithPassword>& credentials) {
-  // Reordering phished credential to the beginning.
-  auto last_phished = std::partition(
-      credentials.begin(), credentials.end(), [](const auto& credential) {
-        return credential.compromise_type !=
-               password_manager::CompromiseTypeFlags::kCredentialLeaked;
-      });
-
-  // By construction the phished credentials precede the leaked credentials in
-  // |credentials|. Now sort both groups by their creation date so that most
-  // recent compromises appear first in both lists.
-  auto create_time_cmp = [](const auto& lhs, const auto& rhs) {
-    return lhs.create_time > rhs.create_time;
-  };
-  std::sort(credentials.begin(), last_phished, create_time_cmp);
-  std::sort(last_phished, credentials.end(), create_time_cmp);
-}
-
 }  // namespace
 
 using autofill::PasswordForm;
@@ -142,7 +119,6 @@ std::vector<CompromisedCredentialForUI>
 PasswordCheckManager::GetCompromisedCredentials() const {
   std::vector<CredentialWithPassword> credentials =
       compromised_credentials_manager_.GetCompromisedCredentials();
-  OrderCompromisedCredentials(credentials);
   std::vector<CompromisedCredentialForUI> ui_credentials;
   ui_credentials.reserve(credentials.size());
   for (const auto& credential : credentials) {

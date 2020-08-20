@@ -83,18 +83,24 @@ void RemoteApps::LoadIcon(const std::string& app_id,
                           int32_t size_hint_in_dip,
                           bool allow_placeholder_icon,
                           LoadIconCallback callback) {
-  // TODO(crbug.com/1083331): Handle IconType::kStandard.
   DCHECK(icon_type != mojom::IconType::kCompressed)
       << "Remote app should not be shown in management";
   mojom::IconValuePtr icon = mojom::IconValue::New();
 
+  bool is_placeholder_icon = false;
   gfx::ImageSkia icon_image = delegate_->GetIcon(app_id);
+  if (icon_image.isNull() && allow_placeholder_icon) {
+    is_placeholder_icon = true;
+    icon_image = delegate_->GetPlaceholderIcon(app_id, size_hint_in_dip);
+  }
+
   if (!icon_image.isNull()) {
     icon->icon_type = icon_type;
+    icon->uncompressed = icon_image;
+    icon->is_placeholder_icon = is_placeholder_icon;
     IconEffects icon_effects = (icon_type == mojom::IconType::kStandard)
                                    ? IconEffects::kCrOsStandardIcon
                                    : IconEffects::kResizeAndPad;
-    icon->uncompressed = icon_image;
     apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &icon->uncompressed);
   }
 

@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.signin.SigninActivityLauncher;
+import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestRule;
@@ -56,19 +56,19 @@ public class BookmarkPersonalizedSigninPromoTest {
     @Rule
     public final RuleChain chain = RuleChain.outerRule(mSyncTestRule).around(mBookmarkTestRule);
 
-    private final SigninActivityLauncher mMockSigninActivityLauncher =
-            mock(SigninActivityLauncher.class);
+    private final SigninActivityLauncherImpl mMockSigninActivityLauncherImpl =
+            mock(SigninActivityLauncherImpl.class);
 
     @Before
     public void setUp() {
         BookmarkPromoHeader.forcePromoStateForTests(
                 BookmarkPromoHeader.PromoState.PROMO_SIGNIN_PERSONALIZED);
-        SigninActivityLauncher.setLauncherForTest(mMockSigninActivityLauncher);
+        SigninActivityLauncherImpl.setLauncherForTest(mMockSigninActivityLauncherImpl);
     }
 
     @After
     public void tearDown() {
-        SigninActivityLauncher.setLauncherForTest(null);
+        SigninActivityLauncherImpl.setLauncherForTest(null);
         BookmarkPromoHeader.forcePromoStateForTests(null);
     }
 
@@ -76,12 +76,12 @@ public class BookmarkPersonalizedSigninPromoTest {
     @MediumTest
     public void testSigninButtonDefaultAccount() {
         doNothing()
-                .when(SigninActivityLauncher.get())
+                .when(SigninActivityLauncherImpl.get())
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
         Account account = mSyncTestRule.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
-        verify(mMockSigninActivityLauncher)
+        verify(mMockSigninActivityLauncherImpl)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
                         eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(account.name));
     }
@@ -90,12 +90,12 @@ public class BookmarkPersonalizedSigninPromoTest {
     @MediumTest
     public void testSigninButtonNotDefaultAccount() {
         doNothing()
-                .when(SigninActivityLauncher.get())
+                .when(SigninActivityLauncherImpl.get())
                 .launchActivityForPromoChooseAccountFlow(any(Context.class), anyInt(), anyString());
         Account account = mSyncTestRule.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
-        verify(mMockSigninActivityLauncher)
+        verify(mMockSigninActivityLauncherImpl)
                 .launchActivityForPromoChooseAccountFlow(any(Activity.class),
                         eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(account.name));
     }
@@ -104,11 +104,11 @@ public class BookmarkPersonalizedSigninPromoTest {
     @MediumTest
     public void testSigninButtonNewAccount() {
         doNothing()
-                .when(SigninActivityLauncher.get())
+                .when(SigninActivityLauncherImpl.get())
                 .launchActivityForPromoAddAccountFlow(any(Context.class), anyInt());
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
-        verify(mMockSigninActivityLauncher)
+        verify(mMockSigninActivityLauncherImpl)
                 .launchActivityForPromoAddAccountFlow(
                         any(Activity.class), eq(SigninAccessPoint.BOOKMARK_MANAGER));
     }

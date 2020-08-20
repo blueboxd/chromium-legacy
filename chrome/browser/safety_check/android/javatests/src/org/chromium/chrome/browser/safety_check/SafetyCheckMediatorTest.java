@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsS
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.signin.SigninActivityLauncher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -52,6 +53,8 @@ public class SafetyCheckMediatorTest {
     private PropertyModel mModel;
     @Mock
     private SafetyCheckUpdatesDelegate mUpdatesDelegate;
+    @Mock
+    private SigninActivityLauncher mSigninLauncher;
     @Mock
     private SettingsLauncher mSettingsLauncher;
     @Mock
@@ -81,7 +84,7 @@ public class SafetyCheckMediatorTest {
         mModel = SafetyCheckProperties.createSafetyCheckModel();
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator = new SafetyCheckMediator(
-                mModel, mUpdatesDelegate, mSettingsLauncher, mBridge, mHandler);
+                mModel, mUpdatesDelegate, mSettingsLauncher, mSigninLauncher, mBridge, mHandler);
         // Execute any delayed tasks immediately.
         doAnswer(invocation -> {
             Runnable runnable = (Runnable) (invocation.getArguments()[0]);

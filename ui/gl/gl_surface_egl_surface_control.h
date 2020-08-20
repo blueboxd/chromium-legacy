@@ -110,6 +110,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     // one pending.
     bool buffer_updated_in_pending_transaction = true;
 
+    // Indicates whether the |surface| will be visible or hidden.
+    bool visibility = true;
     scoped_refptr<SurfaceControl::Surface> surface;
   };
 

@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,6 +29,8 @@ constexpr const int kFieldSpace = 8;
 constexpr const int kPinInputTotalHeightDp = 37;
 // Default length
 constexpr const int kDefaultLength = 6;
+constexpr const int kPinAutosubmitMinLength = 6;
+constexpr const int kPinAutosubmitMaxLength = 12;
 }  // namespace
 
 // A FixedLengthCodeInput that is always obscured and
@@ -129,6 +132,11 @@ LoginPinInputView::LoginPinInputView() : length_(kDefaultLength) {
 }
 
 LoginPinInputView::~LoginPinInputView() = default;
+
+bool LoginPinInputView::IsAutosubmitSupported(int length) {
+  return chromeos::features::IsPinAutosubmitFeatureEnabled() &&
+         length >= kPinAutosubmitMinLength && length <= kPinAutosubmitMaxLength;
+}
 
 void LoginPinInputView::Init(const OnPinSubmit& on_submit,
                              const OnPinChanged& on_changed) {

@@ -22,7 +22,7 @@ namespace {
 
 FontHeight ComputeEmphasisMarkOutsets(const ComputedStyle& style) {
   if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
-    return FontHeight();
+    return FontHeight::Empty();
 
   const Font& font = style.GetFont();
   LayoutUnit emphasis_mark_height =
@@ -37,7 +37,7 @@ FontHeight ComputeEmphasisMarkOutsets(const ComputedStyle& style) {
 
 void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
                                           FontBaseline baseline_type) {
-  text_metrics = FontHeight(style, baseline_type);
+  text_metrics = style.GetFontHeight(baseline_type);
   text_top = -text_metrics.ascent;
   text_height = text_metrics.LineHeight();
 
@@ -59,7 +59,7 @@ void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
 }
 
 void NGInlineBoxState::ResetTextMetrics() {
-  metrics = text_metrics = FontHeight();
+  metrics = text_metrics = FontHeight::Empty();
   text_top = text_height = LayoutUnit();
 }
 
@@ -74,7 +74,8 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResultView* shape_result,
   HashSet<const SimpleFontData*> fallback_fonts;
   shape_result->FallbackFonts(&fallback_fonts);
   for (const SimpleFontData* const fallback_font : fallback_fonts) {
-    FontHeight fallback_metrics(fallback_font->GetFontMetrics(), baseline_type);
+    FontHeight fallback_metrics =
+        fallback_font->GetFontMetrics().GetFontHeight(baseline_type);
     fallback_metrics.AddLeading(
         fallback_font->GetFontMetrics().FixedLineSpacing());
     metrics.Unite(fallback_metrics);
@@ -261,7 +262,7 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     // The inline box should have the height of the font metrics without the
     // line-height property. Compute from style because |box->metrics| includes
     // the line-height property.
-    FontHeight metrics(style, baseline_type);
+    FontHeight metrics = style.GetFontHeight(baseline_type);
 
     // Extend the block direction of the box by borders and paddings. Inline
     // direction is already included into positions in NGLineBreaker.
@@ -724,7 +725,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
     for (NGPendingPositions& child : box->pending_descendants) {
       // In quirks mode, metrics is empty if no content.
       if (child.metrics.IsEmpty())
-        child.metrics = FontHeight::Zero();
+        child.metrics = FontHeight();
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
           baseline_shift = child.metrics.ascent + box->TextTop(baseline_type);
@@ -893,7 +894,7 @@ FontHeight NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(
 
   // In quirks mode, metrics is empty if no content.
   if (metrics.IsEmpty())
-    metrics = FontHeight::Zero();
+    metrics = FontHeight();
 
   // If the height of a box that has 'vertical-align: top' or 'bottom' exceeds
   // the height of the "aligned subtree", align the edge to the "aligned

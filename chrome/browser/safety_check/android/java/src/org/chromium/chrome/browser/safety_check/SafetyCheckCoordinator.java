@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.PasswordScriptsFetcherBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.signin.SigninActivityLauncher;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -21,6 +22,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     private SafetyCheckSettingsFragment mSettingsFragment;
     private SafetyCheckUpdatesDelegate mUpdatesClient;
+    private SigninActivityLauncher mSigninLauncher;
     private SafetyCheckMediator mMediator;
 
     /**
@@ -30,10 +32,13 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
      * @param settingsFragment An instance of {SafetyCheckSettingsFragment} to observe.
      * @param updatesClient An instance implementing the {@SafetyCheckUpdatesDelegate} interface.
      * @param settingsLauncher An instance implementing the {@SettingsLauncher} interface.
+     * @param signinLauncher An instance implementing {@SigninActivityLauncher}.
      */
     public static void create(SafetyCheckSettingsFragment settingsFragment,
-            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher) {
-        new SafetyCheckCoordinator(settingsFragment, updatesClient, settingsLauncher);
+            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher,
+            SigninActivityLauncher signinLauncher) {
+        new SafetyCheckCoordinator(
+                settingsFragment, updatesClient, settingsLauncher, signinLauncher);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHANGE_IN_SETTINGS)) {
             // Triggers pre-fetching the list of password change scripts.
             PasswordScriptsFetcherBridge.prewarmCache();
@@ -41,7 +46,8 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     }
 
     private SafetyCheckCoordinator(SafetyCheckSettingsFragment settingsFragment,
-            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher) {
+            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher,
+            SigninActivityLauncher signinLauncher) {
         mSettingsFragment = settingsFragment;
         mUpdatesClient = updatesClient;
         // Create the model and the mediator once the view is created.
@@ -65,7 +71,7 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
                             // Mediator.
                             PropertyModel model = createModelAndMcp(mSettingsFragment);
                             mMediator = new SafetyCheckMediator(
-                                    model, mUpdatesClient, settingsLauncher);
+                                    model, mUpdatesClient, settingsLauncher, signinLauncher);
                         }
                     }
                 });

@@ -20271,7 +20271,6 @@
       {
         "args": [
           "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI,ProactivelySwapBrowsingInstance",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--git-revision=${got_revision}"
@@ -20327,7 +20326,6 @@
       {
         "args": [
           "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI,ProactivelySwapBrowsingInstance",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -20426,7 +20424,6 @@
       {
         "args": [
           "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI,ProactivelySwapBrowsingInstance",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],

@@ -10,10 +10,7 @@ namespace location {
 namespace nearby {
 namespace chrome {
 
-InputFile::InputFile(base::File file) : file_(std::move(file)) {
-  DCHECK(file_.IsValid());
-  seek_succeeded_ = file_.Seek(base::File::FROM_BEGIN, 0) == 0;
-}
+InputFile::InputFile(base::File file) : file_(std::move(file)) {}
 
 InputFile::~InputFile() = default;
 
@@ -23,24 +20,34 @@ std::string InputFile::GetFilePath() const {
 }
 
 std::int64_t InputFile::GetTotalSize() const {
+  if (!file_.IsValid())
+    return 0;
+
   return file_.GetLength();
 }
 
 ExceptionOr<ByteArray> InputFile::Read(std::int64_t size) {
-  if (!seek_succeeded_)
-    return Exception::kFailed;
+  if (!file_.IsValid())
+    return Exception::kIo;
 
   ByteArray bytes(size);
   int bytes_read = file_.ReadAtCurrentPos(bytes.data(), bytes.size());
   if (bytes_read != size)
-    return Exception::kFailed;
+    return Exception::kIo;
 
   return ExceptionOr<ByteArray>(std::move(bytes));
 }
 
 Exception InputFile::Close() {
+  if (!file_.IsValid())
+    return {Exception::kIo};
+
   file_.Close();
   return {Exception::kSuccess};
+}
+
+base::File InputFile::ExtractUnderlyingFile() {
+  return std::move(file_);
 }
 
 }  // namespace chrome

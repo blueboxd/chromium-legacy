@@ -206,7 +206,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Helper method which collects unowned elements (i.e., those not inside a
   // form tag) and writes them into |output|. Returns true if the process is
   // successful, and all conditions for firing events are true.
-  bool CollectFormlessElements(FormData* output);
+  bool CollectFormlessElements(FormData* output) const;
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest, CollectFormlessElements);
 
   void OnTextFieldDidChange(const blink::WebInputElement& element);
@@ -244,7 +244,10 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Attempt to get submitted FormData from last_interacted_form_ or
   // provisionally_saved_form_, return true if |form| is set.
-  bool GetSubmittedForm(FormData* form);
+  base::Optional<FormData> GetSubmittedForm() const;
+
+  // Pushes the value of GetSubmittedForm() to the AutofillDriver.
+  void SendPotentiallySubmittedFormToBrowser();
 
   void ResetLastInteractedElements();
   void UpdateLastInteractedForm(blink::WebFormElement form);

@@ -13,7 +13,9 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/thread_annotations.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
@@ -97,9 +99,16 @@ class NearbyConnections : public mojom::NearbyConnections {
   void InitiateBandwidthUpgrade(
       const std::string& endpoint_id,
       InitiateBandwidthUpgradeCallback callback) override;
+  void RegisterPayloadFile(int64_t payload_id,
+                           base::File input_file,
+                           base::File output_file,
+                           RegisterPayloadFileCallback callback) override;
 
-  // Return the file associated with |payload_id|.
-  base::File ExtractFileForPayload(int64_t payload_id);
+  // Returns the file associated with |payload_id| for InputFile.
+  base::File ExtractInputFile(int64_t payload_id);
+
+  // Returns the file associated with |payload_id| for OutputFile.
+  base::File ExtractOutputFile(int64_t payload_id);
 
  private:
   void OnDisconnect();
@@ -116,8 +125,21 @@ class NearbyConnections : public mojom::NearbyConnections {
   mojo::SharedRemote<sharing::mojom::WebRtcSignalingMessenger>
       webrtc_signaling_messenger_;
 
+  // Core is thread-safe as its operations are always dispatched to a
+  // single-thread executor.
   std::unique_ptr<Core> core_;
-  base::flat_map<int64_t, base::File> outgoing_file_map_;
+
+  // input_file_map_ is accessed from background threads.
+  base::Lock input_file_lock_;
+  // A map of payload_id to file for InputFile.
+  base::flat_map<int64_t, base::File> input_file_map_
+      GUARDED_BY(input_file_lock_);
+
+  // output_file_map_ is accessed from background threads.
+  base::Lock output_file_lock_;
+  // A map of payload_id to file for OutputFile.
+  base::flat_map<int64_t, base::File> output_file_map_
+      GUARDED_BY(output_file_lock_);
 
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};
 };

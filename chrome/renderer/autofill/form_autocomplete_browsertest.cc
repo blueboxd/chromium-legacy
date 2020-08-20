@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/focus_test_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -62,6 +64,9 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
  private:
   // mojom::AutofillDriver:
+  void SetFormToBeProbablySubmitted(
+      const base::Optional<FormData>& form) override {}
+
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override {}
 
@@ -973,6 +978,10 @@ TEST_F(FormAutocompleteTest, FormSubmittedBySameDocumentNavigation) {
 }
 
 TEST_F(FormAutocompleteTest, FormSubmittedByProbablyFormSubmitted) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutofillProbableFormSubmissionInBrowser);
+
   LoadHTML(
       "<html>"
       "<input type='text' id='address_field' name='address' autocomplete='on'>"

@@ -21,6 +21,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -77,10 +78,13 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIAccountMigrationWelcomeHost);
-
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
+      "script-src chrome://resources chrome://test 'self';");
   html_source->DisableTrustedTypesCSP();
 
   html_source->UseStringsJs();
+  html_source->EnableReplaceI18nInJS();
 
   // Add localized strings.
   html_source->AddLocalizedString("welcomePageTitle",
@@ -96,12 +100,10 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
                          chrome::kAccountManagerLearnMoreURL);
 
   // Add required resources.
-  html_source->AddResourcePath("account_manager_shared.css",
-                               IDR_ACCOUNT_MANAGER_SHARED_CSS);
-  html_source->AddResourcePath("account_migration_welcome.js",
-                               IDR_ACCOUNT_MIGRATION_WELCOME_JS);
-  html_source->AddResourcePath("account_manager_browser_proxy.html",
-                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("account_migration_welcome_app.js",
+                               IDR_ACCOUNT_MIGRATION_WELCOME_APP_JS);
+  html_source->AddResourcePath("account_manager_shared_css.js",
+                               IDR_ACCOUNT_MANAGER_SHARED_CSS_JS);
   html_source->AddResourcePath("account_manager_browser_proxy.js",
                                IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -112,6 +114,8 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
   html_source->AddResourcePath("googleg.svg",
                                IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
 #endif
+  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
   html_source->SetDefaultResource(IDR_ACCOUNT_MIGRATION_WELCOME_HTML);
 
   web_ui->AddMessageHandler(std::make_unique<MigrationMessageHandler>(

@@ -131,6 +131,11 @@ class FakeConnectionLifecycleListener
 
 class FakePayloadListener : public mojom::PayloadListener {
  public:
+  void OnPayloadReceived(const std::string& endpoint_id,
+                         mojom::PayloadPtr payload) override {
+    payload_cb.Run(endpoint_id, std::move(payload));
+  }
+
   void OnPayloadTransferUpdate(
       const std::string& endpoint_id,
       mojom::PayloadTransferUpdatePtr update) override {
@@ -138,6 +143,8 @@ class FakePayloadListener : public mojom::PayloadListener {
   }
 
   mojo::Receiver<mojom::PayloadListener> receiver{this};
+  base::RepeatingCallback<void(const std::string&, mojom::PayloadPtr)>
+      payload_cb = base::DoNothing();
   base::RepeatingCallback<void(const std::string&,
                                mojom::PayloadTransferUpdatePtr)>
       payload_progress_cb = base::DoNothing();
@@ -145,6 +152,11 @@ class FakePayloadListener : public mojom::PayloadListener {
 
 using ::testing::_;
 using ::testing::Return;
+class MockInputStream : public InputStream {
+ public:
+  MOCK_METHOD(ExceptionOr<ByteArray>, Read, (std::int64_t), (override));
+  MOCK_METHOD(Exception, Close, (), (override));
+};
 
 class NearbyConnectionsTest : public testing::Test {
  public:
@@ -366,30 +378,30 @@ TEST_F(NearbyConnectionsTest, StartDiscovery) {
   ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
 
   base::RunLoop endpoint_found_run_loop;
+  EndpointData endpoint_data = CreateEndpointData(1);
   fake_discovery_listener.endpoint_found_cb =
       base::BindLambdaForTesting([&](const std::string& endpoint_id,
                                      mojom::DiscoveredEndpointInfoPtr info) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
-        EXPECT_EQ(std::vector<uint8_t>(std::begin(kRemoteEndpointInfo),
-                                       std::end(kRemoteEndpointInfo)),
-                  info->endpoint_info);
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        EXPECT_EQ(endpoint_data.remote_endpoint_info, info->endpoint_info);
         EXPECT_EQ(kServiceId, info->service_id);
         endpoint_found_run_loop.Quit();
       });
 
-  client_proxy->OnEndpointFound(kServiceId, kRemoteEndpointId,
-                                std::string(std::begin(kRemoteEndpointInfo),
-                                            std::end(kRemoteEndpointInfo)),
-                                /*mediums=*/{});
+  client_proxy->OnEndpointFound(
+      kServiceId, endpoint_data.remote_endpoint_id,
+      std::string(endpoint_data.remote_endpoint_info.begin(),
+                  endpoint_data.remote_endpoint_info.end()),
+      /*mediums=*/{});
   endpoint_found_run_loop.Run();
 
   base::RunLoop endpoint_lost_run_loop;
   fake_discovery_listener.endpoint_lost_cb =
       base::BindLambdaForTesting([&](const std::string& endpoint_id) {
-        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
         endpoint_lost_run_loop.Quit();
       });
-  client_proxy->OnEndpointLost(kServiceId, kRemoteEndpointId);
+  client_proxy->OnEndpointLost(kServiceId, endpoint_data.remote_endpoint_id);
   endpoint_lost_run_loop.Run();
 }
 
@@ -682,6 +694,64 @@ TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayload) {
 }
 
 // TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayloadCancelled) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+
+  FakeEndpointDiscoveryListener fake_discovery_listener;
+  ClientProxy* client_proxy = StartDiscovery(fake_discovery_listener);
+  EndpointData endpoint_data = CreateEndpointData(1);
+  client_proxy->OnEndpointFound(
+      kServiceId, endpoint_data.remote_endpoint_id,
+      std::string(endpoint_data.remote_endpoint_info.begin(),
+                  endpoint_data.remote_endpoint_info.end()),
+      /*mediums=*/{});
+
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  client_proxy =
+      RequestConnection(fake_connection_life_cycle_listener, endpoint_data);
+
+  FakePayloadListener fake_payload_listener;
+  client_proxy =
+      AcceptConnection(fake_payload_listener, endpoint_data.remote_endpoint_id);
+
+  EXPECT_CALL(*service_controller_ptr_, SendPayload)
+      .WillOnce([&](ClientProxy* client,
+                    const std::vector<std::string>& endpoint_ids,
+                    Payload payload) {
+        ASSERT_EQ(1u, endpoint_ids.size());
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_ids.front());
+        EXPECT_EQ(Payload::Type::kBytes, payload.GetType());
+        std::string payload_bytes(payload.AsBytes());
+        EXPECT_EQ(expected_payload, ByteArrayToMojom(payload.AsBytes()));
+      });
+
+  base::RunLoop send_payload_run_loop;
+  nearby_connections_->SendPayload(
+      {endpoint_data.remote_endpoint_id},
+      mojom::Payload::New(kPayloadId,
+                          mojom::PayloadContent::NewBytes(
+                              mojom::BytesPayload::New(expected_payload))),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        send_payload_run_loop.Quit();
+      }));
+  send_payload_run_loop.Run();
+
+  EXPECT_CALL(*service_controller_ptr_,
+              CancelPayload(testing::_, testing::Eq(kPayloadId)))
+      .WillOnce(testing::Return(Status{Status::kSuccess}));
+
+  base::RunLoop cancel_payload_run_loop;
+  nearby_connections_->CancelPayload(
+      kPayloadId, base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        cancel_payload_run_loop.Quit();
+      }));
+  cancel_payload_run_loop.Run();
+}
+
+// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
 TEST_F(NearbyConnectionsTest, DISABLED_SendFilePayload) {
   const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                               std::end(kPayload));
@@ -735,6 +805,7 @@ TEST_F(NearbyConnectionsTest, DISABLED_SendFilePayload) {
       }));
   send_payload_run_loop.Run();
 }
+
 TEST_F(NearbyConnectionsTest, StartAdvertisingRejected) {
   FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
   EndpointData endpoint_data = CreateEndpointData(1);
@@ -959,6 +1030,192 @@ TEST_F(NearbyConnectionsTest, InitiateBandwidthUpgradeAfterConnectionSucceeds) {
         bandwidth_upgrade_run_loop.Quit();
       }));
   bandwidth_upgrade_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, ReceiveBytesPayload) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  EndpointData endpoint_data = CreateEndpointData(1);
+  StartAdvertising(fake_connection_life_cycle_listener, endpoint_data);
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+
+  FakePayloadListener fake_payload_listener;
+  ClientProxy* client_proxy =
+      AcceptConnection(fake_payload_listener, endpoint_data.remote_endpoint_id);
+  accepted_run_loop.Run();
+
+  base::RunLoop payload_run_loop;
+  fake_payload_listener.payload_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::PayloadPtr payload) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        EXPECT_EQ(kPayloadId, payload->id);
+        ASSERT_TRUE(payload->content->is_bytes());
+        EXPECT_EQ(expected_payload, payload->content->get_bytes()->bytes);
+        payload_run_loop.Quit();
+      });
+
+  client_proxy->OnPayload(
+      endpoint_data.remote_endpoint_id,
+      Payload(kPayloadId, ByteArrayFromMojom(expected_payload)));
+  payload_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, ReceiveFilePayload) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  EndpointData endpoint_data = CreateEndpointData(1);
+  StartAdvertising(fake_connection_life_cycle_listener, endpoint_data);
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+
+  FakePayloadListener fake_payload_listener;
+  ClientProxy* client_proxy =
+      AcceptConnection(fake_payload_listener, endpoint_data.remote_endpoint_id);
+  accepted_run_loop.Run();
+
+  base::FilePath path;
+  EXPECT_TRUE(base::CreateTemporaryFile(&path));
+  base::File output_file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                                   base::File::Flags::FLAG_WRITE);
+  EXPECT_TRUE(output_file.IsValid());
+  base::File input_file(
+      path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  EXPECT_TRUE(input_file.IsValid());
+
+  base::RunLoop register_payload_run_loop;
+  nearby_connections_->RegisterPayloadFile(
+      kPayloadId, std::move(input_file), std::move(output_file),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kSuccess, status);
+        register_payload_run_loop.Quit();
+      }));
+  register_payload_run_loop.Run();
+
+  // Can start writing to OutputFile once registered.
+  OutputFile core_output_file(kPayloadId);
+  EXPECT_TRUE(
+      core_output_file.Write(ByteArrayFromMojom(expected_payload)).Ok());
+  EXPECT_TRUE(core_output_file.Flush().Ok());
+  EXPECT_TRUE(core_output_file.Close().Ok());
+
+  base::RunLoop payload_run_loop;
+  fake_payload_listener.payload_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::PayloadPtr payload) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        EXPECT_EQ(kPayloadId, payload->id);
+        ASSERT_TRUE(payload->content->is_file());
+
+        base::File& file = payload->content->get_file()->file;
+        std::vector<uint8_t> buffer(file.GetLength());
+        EXPECT_TRUE(file.ReadAndCheck(/*offset=*/0, base::make_span(buffer)));
+        EXPECT_EQ(expected_payload, buffer);
+
+        payload_run_loop.Quit();
+      });
+
+  client_proxy->OnPayload(
+      endpoint_data.remote_endpoint_id,
+      Payload(kPayloadId, InputFile(kPayloadId, expected_payload.size())));
+  payload_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, ReceiveFilePayloadNotRegistered) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  EndpointData endpoint_data = CreateEndpointData(1);
+  StartAdvertising(fake_connection_life_cycle_listener, endpoint_data);
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+
+  FakePayloadListener fake_payload_listener;
+  ClientProxy* client_proxy =
+      AcceptConnection(fake_payload_listener, endpoint_data.remote_endpoint_id);
+  accepted_run_loop.Run();
+
+  fake_payload_listener.payload_cb = base::BindLambdaForTesting(
+      [&](const std::string& endpoint_id, mojom::PayloadPtr payload) {
+        NOTREACHED();
+      });
+
+  EXPECT_CALL(*service_controller_ptr_,
+              CancelPayload(testing::_, testing::Eq(kPayloadId)))
+      .WillOnce(testing::Return(Status{Status::kSuccess}));
+
+  client_proxy->OnPayload(
+      endpoint_data.remote_endpoint_id,
+      Payload(kPayloadId, InputFile(kPayloadId, expected_payload.size())));
+
+  // All file oepeartion will throw IOException.
+  OutputFile core_output_file(kPayloadId);
+  EXPECT_TRUE(core_output_file.Write(ByteArrayFromMojom(expected_payload))
+                  .Raised(Exception::kIo));
+  EXPECT_TRUE(core_output_file.Flush().Raised(Exception::kIo));
+  EXPECT_TRUE(core_output_file.Close().Raised(Exception::kIo));
+}
+
+TEST_F(NearbyConnectionsTest, RegisterPayloadFileInvalid) {
+  base::RunLoop register_payload_run_loop;
+  nearby_connections_->RegisterPayloadFile(
+      kPayloadId, base::File(), base::File(),
+      base::BindLambdaForTesting([&](mojom::Status status) {
+        EXPECT_EQ(mojom::Status::kError, status);
+        register_payload_run_loop.Quit();
+      }));
+  register_payload_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsTest, ReceiveStreamPayload) {
+  const std::vector<uint8_t> expected_payload(std::begin(kPayload),
+                                              std::end(kPayload));
+  FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
+  EndpointData endpoint_data = CreateEndpointData(1);
+  StartAdvertising(fake_connection_life_cycle_listener, endpoint_data);
+
+  base::RunLoop accepted_run_loop;
+  fake_connection_life_cycle_listener.accepted_cb =
+      base::BindLambdaForTesting([&](const std::string& endpoint_id) {
+        EXPECT_EQ(endpoint_data.remote_endpoint_id, endpoint_id);
+        accepted_run_loop.Quit();
+      });
+
+  FakePayloadListener fake_payload_listener;
+  ClientProxy* client_proxy =
+      AcceptConnection(fake_payload_listener, endpoint_data.remote_endpoint_id);
+  accepted_run_loop.Run();
+
+  fake_payload_listener.payload_cb = base::BindLambdaForTesting(
+      [](const std::string& endpoint_id, mojom::PayloadPtr payload) {
+        NOTREACHED();
+      });
+
+  EXPECT_CALL(*service_controller_ptr_,
+              CancelPayload(testing::_, testing::Eq(kPayloadId)))
+      .WillOnce(testing::Return(Status{Status::kSuccess}));
+
+  testing::NiceMock<MockInputStream> input_stream;
+  client_proxy->OnPayload(
+      endpoint_data.remote_endpoint_id,
+      Payload(kPayloadId,
+              [&input_stream]() -> InputStream& { return input_stream; }));
 }
 
 }  // namespace connections

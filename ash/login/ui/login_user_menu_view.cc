@@ -50,7 +50,8 @@ class RemoveUserButton : public SystemLabelButton {
             listener,
             l10n_util::GetStringUTF16(
                 IDS_ASH_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME),
-            SystemLabelButton::DisplayType::DEFAULT),
+            SystemLabelButton::DisplayType::DEFAULT,
+            /*multiline*/ true),
         bubble_(bubble) {}
 
   ~RemoveUserButton() override = default;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/nearby_connection.h"
@@ -113,6 +114,11 @@ class NearbyConnectionsManager {
   virtual void RegisterPayloadStatusListener(
       int64_t payload_id,
       PayloadStatusListener* listener) = 0;
+
+  // Register a |file_path| for receiving incoming payload with |payload_id|.
+  virtual void RegisterPayloadPath(int64_t payload_id,
+                                   const base::FilePath& file_path,
+                                   ConnectionsCallback callback) = 0;
 
   // Gets the payload associated with |payload_id| if available.
   virtual Payload* GetIncomingPayload(int64_t payload_id) = 0;

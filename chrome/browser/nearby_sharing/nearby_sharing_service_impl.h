@@ -211,12 +211,17 @@ class NearbySharingServiceImpl
       base::Optional<NearbyShareDecryptedPublicCertificate> certificate,
       bool is_incoming);
 
-  IncomingShareTargetInfo& GetIncomingShareTargetInfo(
+  ShareTargetInfo& GetOrCreateShareTargetInfo(const ShareTarget& share_target,
+                                              const std::string& endpoint_id);
+
+  ShareTargetInfo* GetShareTargetInfo(const ShareTarget& share_target);
+  IncomingShareTargetInfo* GetIncomingShareTargetInfo(
       const ShareTarget& share_target);
-  NearbyConnection* GetIncomingConnection(const ShareTarget& share_target);
-  OutgoingShareTargetInfo& GetOrCreateOutgoingShareTargetInfo(
-      const ShareTarget& share_target,
-      const std::string& endpoint_id);
+  OutgoingShareTargetInfo* GetOutgoingShareTargetInfo(
+      const ShareTarget& share_target);
+
+  NearbyConnection* GetConnection(const ShareTarget& share_target);
+
   void ClearOutgoingShareTargetInfoMap();
   void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);
   base::Optional<int64_t> GetAttachmentPayloadId(int64_t attachment_id);

@@ -29,4 +29,6 @@
   <dimen name="compromised_credential_row_padding_start">16dp</dimen>
   <dimen name="compromised_credential_row_padding_top">12dp</dimen>
   <dimen name="compromised_credential_row_reason_margin_top">2dp</dimen>
+
+  <dimen name="view_dialog_compromised_password_margin">24dp</dimen>
 </resources>

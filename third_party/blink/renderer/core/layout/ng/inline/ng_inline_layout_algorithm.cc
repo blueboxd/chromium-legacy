@@ -373,7 +373,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   const FontHeight& line_box_metrics =
       UNLIKELY(Node().HasLineEvenIfEmpty())
-          ? FontHeight(line_info->LineStyle())
+          ? line_info->LineStyle().GetFontHeight()
           : box_states_->LineBoxState().metrics;
 
   // Place out-of-flow positioned objects.

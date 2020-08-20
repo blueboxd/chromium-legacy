@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import android.app.Activity;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.url.GURL;
@@ -152,6 +154,13 @@ class PasswordCheckBridge {
                 mNativePasswordCheckBridge, credentials);
     }
 
+    /**
+     * Launch the password check in the Google Account.
+     */
+    void launchCheckupInAccount(Activity activity) {
+        PasswordCheckBridgeJni.get().launchCheckupInAccount(mNativePasswordCheckBridge, activity);
+    }
+
     void updateCredential(CompromisedCredential credential, String newPassword) {
         PasswordCheckBridgeJni.get().updateCredential(
                 mNativePasswordCheckBridge, credential, newPassword);
@@ -186,6 +195,7 @@ class PasswordCheckBridge {
         int getSavedPasswordsCount(long nativePasswordCheckBridge);
         void getCompromisedCredentials(
                 long nativePasswordCheckBridge, CompromisedCredential[] credentials);
+        void launchCheckupInAccount(long nativePasswordCheckBridge, Activity activity);
         void updateCredential(long nativePasswordCheckBridge, CompromisedCredential credential,
                 String newPassword);
         void removeCredential(long nativePasswordCheckBridge, CompromisedCredential credentials);

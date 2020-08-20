@@ -9,6 +9,9 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
+#include "base/strings/utf_string_conversions.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +22,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -39,6 +48,55 @@ class ImageDownloaderImpl : public RemoteAppsManager::ImageDownloader {
     image_downloader->Download(url, NO_TRAFFIC_ANNOTATION_YET,
                                std::move(callback));
   }
+};
+
+// Placeholder icon which shows the first letter of the app's name on top of a
+// gray circle.
+class RemoteAppsPlaceholderIcon : public gfx::CanvasImageSource {
+ public:
+  RemoteAppsPlaceholderIcon(const std::string& name, int32_t size)
+      : gfx::CanvasImageSource(gfx::Size(size, size)) {
+    base::string16 sanitized_name = base::UTF8ToUTF16(std::string(name));
+    base::i18n::UnadjustStringForLocaleDirection(&sanitized_name);
+    letter_ = sanitized_name.substr(0, 1);
+
+    if (size <= 16)
+      font_style_ = ui::ResourceBundle::SmallFont;
+    else if (size <= 32)
+      font_style_ = ui::ResourceBundle::MediumFont;
+    else
+      font_style_ = ui::ResourceBundle::LargeFont;
+  }
+  RemoteAppsPlaceholderIcon(const RemoteAppsPlaceholderIcon&) = delete;
+  RemoteAppsPlaceholderIcon& operator=(const RemoteAppsPlaceholderIcon&) =
+      delete;
+  ~RemoteAppsPlaceholderIcon() override = default;
+
+ private:
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    const gfx::Size& icon_size = size();
+    float width = static_cast<float>(icon_size.width());
+    float height = static_cast<float>(icon_size.height());
+
+    // Draw gray circle.
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(SK_ColorGRAY);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawCircle(gfx::PointF(width / 2, height / 2), width / 2, flags);
+
+    // Draw the letter on top.
+    canvas->DrawStringRectWithFlags(
+        letter_,
+        ui::ResourceBundle::GetSharedInstance().GetFontList(font_style_),
+        SK_ColorWHITE, gfx::Rect(icon_size.width(), icon_size.height()),
+        gfx::Canvas::TEXT_ALIGN_CENTER);
+  }
+
+  // The first letter of the app's name.
+  base::string16 letter_;
+  ui::ResourceBundle::FontStyle font_style_ = ui::ResourceBundle::MediumFont;
 };
 
 }  // namespace
@@ -159,6 +217,18 @@ gfx::ImageSkia RemoteAppsManager::GetIcon(const std::string& id) {
     return gfx::ImageSkia();
 
   return model_->GetAppInfo(id).icon;
+}
+
+gfx::ImageSkia RemoteAppsManager::GetPlaceholderIcon(const std::string& id,
+                                                     int32_t size_hint_in_dip) {
+  if (!model_->HasApp(id))
+    return gfx::ImageSkia();
+
+  gfx::ImageSkia icon(std::make_unique<RemoteAppsPlaceholderIcon>(
+                          model_->GetAppInfo(id).name, size_hint_in_dip),
+                      gfx::Size(size_hint_in_dip, size_hint_in_dip));
+  icon.EnsureRepsForSupportedScales();
+  return icon;
 }
 
 apps::mojom::MenuItemsPtr RemoteAppsManager::GetMenuModel(

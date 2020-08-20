@@ -3,7 +3,7 @@ PASS Accelerometer: Feature-Policy allow='accelerometer' attribute allows same-o
 PASS Accelerometer: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation
 PASS LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute allows same-origin relocation
 PASS LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation
-FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute allows same-origin relocation assert_true: expected true got false
-FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation assert_true: expected true got false
+FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute allows same-origin relocation assert_implements: GravitySensor is not supported. undefined
+FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation assert_implements: GravitySensor is not supported. undefined
 Harness: the test ran to completion.
 

@@ -4,12 +4,13 @@
 
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
+#include "base/files/file_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
+#include "chrome/services/sharing/nearby/platform_v2/input_file.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
-#include "third_party/nearby/src/cpp/platform_v2/public/file.h"
-#include "third_party/nearby/src/cpp/platform_v2/public/single_thread_executor.h"
 
 namespace location {
 namespace nearby {
@@ -283,19 +284,66 @@ void NearbyConnections::AcceptConnection(
     mojo::PendingRemote<mojom::PayloadListener> listener,
     AcceptConnectionCallback callback) {
   mojo::SharedRemote<mojom::PayloadListener> remote(std::move(listener));
+  // Capturing Core* is safe as Core owns PayloadListener.
   PayloadListener payload_listener = {
-      .payload_progress_cb = [remote](const std::string& endpoint_id,
-                                      const PayloadProgressInfo& info) {
-        if (!remote)
-          return;
+      .payload_cb =
+          [remote, core = core_.get()](const std::string& endpoint_id,
+                                       Payload payload) {
+            if (!remote)
+              return;
 
-        DCHECK_GE(info.total_bytes, 0);
-        DCHECK_GE(info.bytes_transferred, 0);
-        remote->OnPayloadTransferUpdate(
-            endpoint_id, mojom::PayloadTransferUpdate::New(
-                             info.payload_id, PayloadStatusToMojom(info.status),
-                             info.total_bytes, info.bytes_transferred));
-      }};
+            switch (payload.GetType()) {
+              case Payload::Type::kBytes: {
+                mojom::BytesPayloadPtr bytes_payload = mojom::BytesPayload::New(
+                    ByteArrayToMojom(payload.AsBytes()));
+                remote->OnPayloadReceived(
+                    endpoint_id,
+                    mojom::Payload::New(payload.GetId(),
+                                        mojom::PayloadContent::NewBytes(
+                                            std::move(bytes_payload))));
+                break;
+              }
+              case Payload::Type::kFile: {
+                DCHECK(payload.AsFile());
+                // InputFile is created by Chrome, so it's safe to downcast.
+                chrome::InputFile& input_file = static_cast<chrome::InputFile&>(
+                    payload.AsFile()->GetInputStream());
+                base::File file = input_file.ExtractUnderlyingFile();
+                if (!file.IsValid()) {
+                  core->CancelPayload(payload.GetId(), /*callback=*/{});
+                  return;
+                }
+
+                mojom::FilePayloadPtr file_payload =
+                    mojom::FilePayload::New(std::move(file));
+                remote->OnPayloadReceived(
+                    endpoint_id,
+                    mojom::Payload::New(payload.GetId(),
+                                        mojom::PayloadContent::NewFile(
+                                            std::move(file_payload))));
+                break;
+              }
+              case Payload::Type::kStream:
+                // Stream payload is not supported.
+              case Payload::Type::kUnknown:
+                core->CancelPayload(payload.GetId(), /*callback=*/{});
+                return;
+            }
+          },
+      .payload_progress_cb =
+          [remote](const std::string& endpoint_id,
+                   const PayloadProgressInfo& info) {
+            if (!remote)
+              return;
+
+            DCHECK_GE(info.total_bytes, 0);
+            DCHECK_GE(info.bytes_transferred, 0);
+            remote->OnPayloadTransferUpdate(
+                endpoint_id,
+                mojom::PayloadTransferUpdate::New(
+                    info.payload_id, PayloadStatusToMojom(info.status),
+                    info.total_bytes, info.bytes_transferred));
+          }};
 
   core_->AcceptConnection(endpoint_id, std::move(payload_listener),
                           ResultCallbackFromMojom(std::move(callback)));
@@ -320,8 +368,11 @@ void NearbyConnections::SendPayload(
       break;
     case mojom::PayloadContent::Tag::FILE:
       int64_t file_size = payload->content->get_file()->file.GetLength();
-      outgoing_file_map_.insert_or_assign(
-          payload->id, std::move(payload->content->get_file()->file));
+      {
+        base::AutoLock al(input_file_lock_);
+        input_file_map_.insert_or_assign(
+            payload->id, std::move(payload->content->get_file()->file));
+      }
       core_payload = std::make_unique<Payload>(
           payload->id, InputFile(payload->id, file_size));
       break;
@@ -348,16 +399,49 @@ void NearbyConnections::InitiateBandwidthUpgrade(
                                   ResultCallbackFromMojom(std::move(callback)));
 }
 
-base::File NearbyConnections::ExtractFileForPayload(int64_t payload_id) {
-  auto file_it = outgoing_file_map_.find(payload_id);
-  if (file_it == outgoing_file_map_.end())
+void NearbyConnections::RegisterPayloadFile(
+    int64_t payload_id,
+    base::File input_file,
+    base::File output_file,
+    RegisterPayloadFileCallback callback) {
+  if (!input_file.IsValid() || !output_file.IsValid()) {
+    std::move(callback).Run(mojom::Status::kError);
+    return;
+  }
+
+  {
+    base::AutoLock al(input_file_lock_);
+    input_file_map_.insert_or_assign(payload_id, std::move(input_file));
+  }
+
+  {
+    base::AutoLock al(output_file_lock_);
+    output_file_map_.insert_or_assign(payload_id, std::move(output_file));
+  }
+
+  std::move(callback).Run(mojom::Status::kSuccess);
+}
+
+base::File NearbyConnections::ExtractInputFile(int64_t payload_id) {
+  base::AutoLock al(input_file_lock_);
+  auto file_it = input_file_map_.find(payload_id);
+  if (file_it == input_file_map_.end())
     return base::File();
 
   base::File file = std::move(file_it->second);
-  outgoing_file_map_.erase(file_it);
+  input_file_map_.erase(file_it);
   return file;
+}
 
-  // TOOD(crbug/1076008): Handle incoming file payload.
+base::File NearbyConnections::ExtractOutputFile(int64_t payload_id) {
+  base::AutoLock al(output_file_lock_);
+  auto file_it = output_file_map_.find(payload_id);
+  if (file_it == output_file_map_.end())
+    return base::File();
+
+  base::File file = std::move(file_it->second);
+  output_file_map_.erase(file_it);
+  return file;
 }
 
 }  // namespace connections

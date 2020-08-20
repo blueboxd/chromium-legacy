@@ -17,7 +17,8 @@ class ASH_EXPORT SystemLabelButton : public views::LabelButton {
 
   SystemLabelButton(views::ButtonListener* listener,
                     const base::string16& text,
-                    DisplayType display_type);
+                    DisplayType display_type,
+                    bool multiline = false);
   SystemLabelButton(const SystemLabelButton&) = delete;
   SystemLabelButton& operator=(const SystemLabelButton&) = delete;
   ~SystemLabelButton() override = default;

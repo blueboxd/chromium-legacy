@@ -105,6 +105,8 @@ class ContentAutofillDriver : public AutofillDriver,
   net::IsolationInfo IsolationInfo() override;
 
   // mojom::AutofillDriver:
+  void SetFormToBeProbablySubmitted(
+      const base::Optional<FormData>& form) override;
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form,
@@ -135,6 +137,8 @@ class ContentAutofillDriver : public AutofillDriver,
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
+
+  void ProbablyFormSubmitted();
 
   // DidNavigateFrame() is called on the frame's driver, respectively, when a
   // navigation occurs in that specific frame.
@@ -187,6 +191,15 @@ class ContentAutofillDriver : public AutofillDriver,
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_;
+
+  // The form pushed from the AutofillAgent to the AutofillDriver. When the
+  // ProbablyFormSubmitted() event is fired, this form is considered the
+  // submitted one.
+  base::Optional<FormData> potentially_submitted_form_;
+
+  // Keeps track of the forms for which FormSubmitted() event has been triggered
+  // to avoid duplicates fired by AutofillAgent.
+  std::set<FormRendererId> submitted_forms_;
 
   // AutofillHandler instance via which this object drives the shared Autofill
   // code.

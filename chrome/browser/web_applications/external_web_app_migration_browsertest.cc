@@ -185,7 +185,8 @@ class ExternalWebAppMigrationBrowserTest : public InProcessBrowserTest {
 
     WebAppProvider::Get(profile())
         ->external_web_app_manager_for_testing()
-        .SynchronizeAppsForTesting({external_web_app_config},
+        .SynchronizeAppsForTesting(std::make_unique<FileUtilsWrapper>(),
+                                   {external_web_app_config},
                                    std::move(callback));
 
     run_loop.Run();

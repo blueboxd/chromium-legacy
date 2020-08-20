@@ -28,6 +28,7 @@ AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
   html_source->DisableTrustedTypesCSP();
 
   html_source->UseStringsJs();
+  html_source->EnableReplaceI18nInJS();
 
   html_source->AddLocalizedString(
       "secondaryAccountsDisabledErrorTitle",
@@ -53,14 +54,12 @@ AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
                                IDR_FAMILY_LINK_LOGO_SVG);
 
   // Add required resources.
-  html_source->AddResourcePath("account_manager_shared.css",
-                               IDR_ACCOUNT_MANAGER_SHARED_CSS);
-  html_source->AddResourcePath("account_manager_browser_proxy.html",
-                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("account_manager_shared_css.js",
+                               IDR_ACCOUNT_MANAGER_SHARED_CSS_JS);
   html_source->AddResourcePath("account_manager_browser_proxy.js",
                                IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS);
-  html_source->AddResourcePath("account_manager_error.js",
-                               IDR_ACCOUNT_MANAGER_ERROR_JS);
+  html_source->AddResourcePath("account_manager_error_app.js",
+                               IDR_ACCOUNT_MANAGER_ERROR_APP_JS);
 
   html_source->SetDefaultResource(IDR_ACCOUNT_MANAGER_ERROR_HTML);
 

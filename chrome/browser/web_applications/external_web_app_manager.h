@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/file_utils_wrapper.h"
 
 namespace base {
 class FilePath;
@@ -38,8 +39,10 @@ class ExternalWebAppManager {
   //
   // This function performs file I/O, and must not be scheduled on UI threads.
   static std::vector<ExternalInstallOptions>
-  ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
-                                      Profile* profile);
+  ScanDirForExternalWebAppsForTesting(
+      std::unique_ptr<FileUtilsWrapper> file_utils,
+      const base::FilePath& dir,
+      Profile* profile);
 
   using ScanCallback =
       base::OnceCallback<void(std::vector<ExternalInstallOptions>)>;
@@ -49,11 +52,14 @@ class ExternalWebAppManager {
   static void SkipStartupScanForTesting();
 
   void SynchronizeAppsForTesting(
+      std::unique_ptr<FileUtilsWrapper> file_utils,
       std::vector<std::string> app_configs,
       PendingAppManager::SynchronizeCallback callback);
 
  private:
-  void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);
+  void SynchronizeExternalInstallOptions(
+      PendingAppManager::SynchronizeCallback callback,
+      std::vector<ExternalInstallOptions>);
 
   PendingAppManager* pending_app_manager_ = nullptr;
   Profile* const profile_;

@@ -12,7 +12,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/initial_preferences.h"
 
 class GURL;
 class Profile;
@@ -166,7 +166,7 @@ std::unique_ptr<installer::InitialPreferences> LoadInitialPrefs();
 // This function overwrites any existing Preferences file and is only meant to
 // be invoked on first run.
 //
-// See chrome/installer/util/master_preferences.h for a description of
+// See chrome/installer/util/initial_preferences.h for a description of
 // 'master_preferences' file.
 ProcessInitialPreferencesResult ProcessInitialPreferences(
     const base::FilePath& user_data_dir,

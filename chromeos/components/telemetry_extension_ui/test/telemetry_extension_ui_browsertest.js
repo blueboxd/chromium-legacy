@@ -145,6 +145,17 @@ TEST_F(
           telemetryProxy.convert({a: {x: null, y: undefined, z: 'zZz'}}),
           {a: {z: 'zZz'}});
 
+      // covnert arrays.
+      assertDeepEquals(telemetryProxy.convert([]), []);
+      assertDeepEquals(telemetryProxy.convert([null, undefined]), []);
+      assertDeepEquals(telemetryProxy.convert([{value: 1}]), [1]);
+      assertDeepEquals(
+          telemetryProxy.convert([null, undefined, {a: 1}, []]), [{a: 1}, []]);
+      assertDeepEquals(
+          telemetryProxy.convert(
+              [{a: null, b: undefined}, {x: 'xxx', y: null}]),
+          [{x: 'xxx'}]);
+
       // convert objects without properties to null.
       assertEquals(telemetryProxy.convert({}), null);
       assertEquals(telemetryProxy.convert({a: null, b: undefined}), null);

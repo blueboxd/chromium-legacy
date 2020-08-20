@@ -1369,6 +1369,13 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
   EXPECT_TRUE(button1->IsHotTracked());
   EXPECT_EQ(button1, GetHotButton());
 
+  // Setting the hot tracked state twice on the same button via the
+  // menu controller should still set the hot tracked state on the button again.
+  button1->SetHotTracked(false);
+  SetHotTrackedButton(button1);
+  EXPECT_TRUE(button1->IsHotTracked());
+  EXPECT_EQ(button1, GetHotButton());
+
   ExitMenuRun();
   EXPECT_FALSE(button1->IsHotTracked());
   EXPECT_TRUE(button2->IsHotTracked());

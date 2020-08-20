@@ -921,8 +921,8 @@ TEST_F('MediaAppUIBrowserTest', 'RequestSaveFileIPC', async () => {
   const lastToken = [...tokenMap.keys()].slice(-1)[0];
   assertMatch(result.testQueryResult, lastToken);
   assertEquals(options.types.length, 1);
-  assertEquals(options.types[0].description, 'png');
-  assertDeepEquals(options.types[0].accept['image/png'], ['png']);
+  assertEquals(options.types[0].description, '.png');
+  assertDeepEquals(options.types[0].accept['image/png'], ['.png']);
   testDone();
 });
 

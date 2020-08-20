@@ -8,10 +8,12 @@ source_set("nearby") {
     "nearby_connections.h",
     "nearby_connections_conversions.cc",
     "nearby_connections_conversions.h",
+    "platform.cc",
   ]
 
   public_deps = [
     "decoder",
+    "platform_v2",
     "//base",
     "//chrome/services/sharing/public/cpp",
     "//chrome/services/sharing/public/mojom",

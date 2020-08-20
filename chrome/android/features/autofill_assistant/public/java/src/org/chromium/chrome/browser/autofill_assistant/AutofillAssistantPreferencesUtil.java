@@ -14,7 +14,7 @@ class AutofillAssistantPreferencesUtil {
      * this experience and never see a lite script again. Note: this is only temporarily in place
      * until we have a better and more user-friendly solution, see crbug.com/1110887.
      */
-    private static final int LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT = 3;
+    private static final int LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT = 2;
 
     // Avoid instantiation by accident.
     private AutofillAssistantPreferencesUtil() {}

@@ -24235,7 +24235,7 @@
           "--platform",
           "iPhone X",
           "--version",
-          "13.6",
+          "13.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -24246,7 +24246,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "cronet_test_iPhone X 13.6",
+        "name": "cronet_test_iPhone X 13.4",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

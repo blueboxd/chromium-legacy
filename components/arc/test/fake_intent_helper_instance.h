@@ -85,10 +85,6 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
   void HandleUrl(const std::string& url,
                  const std::string& package_name) override;
 
-  void HandleUrlListDeprecated(std::vector<mojom::UrlWithMimeTypePtr> urls,
-                               mojom::ActivityNamePtr activity,
-                               mojom::ActionType action) override;
-
   void InitDeprecated(
       mojo::PendingRemote<mojom::IntentHelperHost> host_remote) override;
 

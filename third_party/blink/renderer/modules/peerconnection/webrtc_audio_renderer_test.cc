@@ -24,6 +24,8 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -120,7 +122,24 @@ class WebRtcAudioRendererTest : public testing::Test {
   }
 
  protected:
-  WebRtcAudioRendererTest() : source_(new MockAudioRendererSource()) {
+  WebRtcAudioRendererTest()
+      : source_(new MockAudioRendererSource())
+// Tests crash on Android if these are defined. https://crbug.com/1119689
+#if !defined(OS_ANDROID)
+        ,
+        web_view_(blink::WebView::Create(/*client=*/nullptr,
+                                         /*is_hidden=*/false,
+                                         /*is_inside_portal=*/false,
+                                         /*compositing_enabled=*/false,
+                                         nullptr,
+                                         mojo::NullAssociatedReceiver())),
+        web_local_frame_(blink::WebLocalFrame::CreateMainFrame(
+            web_view_,
+            &web_local_frame_client_,
+            nullptr,
+            base::UnguessableToken::Create()))
+#endif
+  {
     MediaStreamSourceVector dummy_components;
     stream_descriptor_ = MakeGarbageCollected<MediaStreamDescriptor>(
         String::FromUTF8("new stream"), dummy_components, dummy_components);
@@ -131,14 +150,14 @@ class WebRtcAudioRendererTest : public testing::Test {
   void SetupRenderer(const String& device_id) {
     renderer_ = new blink::WebRtcAudioRenderer(
         scheduler::GetSingleThreadTaskRunnerForTesting(), stream_descriptor_,
-        nullptr, base::UnguessableToken::Create(), device_id,
+        web_local_frame_, base::UnguessableToken::Create(), device_id,
         base::RepeatingCallback<void()>());
 
     media::AudioSinkParameters params;
     EXPECT_CALL(
         *audio_device_factory_platform_,
         MockNewAudioRendererSink(blink::WebAudioDeviceSourceType::kWebRtc,
-                                 nullptr /*blink::WebLocalFrame*/, _))
+                                 web_local_frame_, _))
         .Times(testing::AtLeast(1))
         .WillRepeatedly(DoAll(SaveArg<2>(&params), InvokeWithoutArgs([&]() {
                                 EXPECT_EQ(params.device_id, device_id.Utf8());
@@ -189,6 +208,9 @@ class WebRtcAudioRendererTest : public testing::Test {
       base::UnguessableToken::Create();
   std::unique_ptr<MockAudioRendererSource> source_;
   Persistent<MediaStreamDescriptor> stream_descriptor_;
+  WebView* web_view_ = nullptr;
+  WebLocalFrameClient web_local_frame_client_;
+  WebLocalFrame* web_local_frame_ = nullptr;
   scoped_refptr<blink::WebRtcAudioRenderer> renderer_;
   scoped_refptr<blink::WebMediaStreamAudioRenderer> renderer_proxy_;
 };

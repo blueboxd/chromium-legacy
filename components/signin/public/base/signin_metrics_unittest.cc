@@ -145,6 +145,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "AccountRenamed";
       case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
         return "WebSignIn";
+      case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+        return "SafetyCheck";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

@@ -85,7 +85,7 @@ public class SigninFragmentTest {
     public void testSigninFragmentNewAccount() throws IOException {
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoAddAccountFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoAddAccountFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER);
                 });
         mRenderTestRule.render(mSigninActivity.findViewById(R.id.fragment_container),
@@ -100,7 +100,7 @@ public class SigninFragmentTest {
         mSyncTestRule.addAccount("test.second.account@gmail.com");
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoChooseAccountFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
                             account.name);
                 });
@@ -117,7 +117,7 @@ public class SigninFragmentTest {
         mSyncTestRule.addAccount(secondAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoChooseAccountFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
                             secondAccountName);
                 });
@@ -132,7 +132,7 @@ public class SigninFragmentTest {
         Account account = mSyncTestRule.addTestAccount();
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
                             account.name);
                 });
@@ -146,7 +146,7 @@ public class SigninFragmentTest {
         Account account = mSyncTestRule.addTestAccount();
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS, account.name);
                 });
         onView(withText(account.name)).check(matches(isDisplayed()));
@@ -170,7 +170,7 @@ public class SigninFragmentTest {
     public void testSigninFragmentWithDefaultFlow() {
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivity(
+                    SigninActivityLauncherImpl.get().launchActivity(
                             mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS);
                 });
         onView(withId(R.id.positive_button)).check(matches(withText(R.string.signin_add_account)));
@@ -185,7 +185,7 @@ public class SigninFragmentTest {
         mSyncTestRule.addAccount(nonDefaultAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                    SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
                             mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
                             defaultAccount.name);
                 });

@@ -119,7 +119,8 @@ bool ForceInstalledMetrics::IsMisconfiguration(
     if (detail == CrxInstallErrorDetail::KIOSK_MODE_ONLY)
       return true;
 
-    if (detail == CrxInstallErrorDetail::DISALLOWED_BY_POLICY &&
+    if (installation_data.extension_type &&
+        detail == CrxInstallErrorDetail::DISALLOWED_BY_POLICY &&
         !management->IsAllowedManifestType(
             installation_data.extension_type.value(), id)) {
       return true;
@@ -172,8 +173,8 @@ void ForceInstalledMetrics::ReportMetrics() {
     } else {
       InstallStageTracker::InstallationData installation =
           install_stage_tracker->Get(extension.first);
-      if (installation.download_manifest_finish_time) {
-        DCHECK(installation.download_manifest_started_time);
+      if (installation.download_manifest_finish_time &&
+          installation.download_manifest_started_time) {
         base::UmaHistogramLongTimes(
             "Extensions.ForceInstalledTime.DownloadingStartTo."
             "ManifestDownloadComplete",
@@ -198,31 +199,31 @@ void ForceInstalledMetrics::ReportMetrics() {
             installation.copying_started_time.value() -
                 installation.verification_started_time.value());
       }
-      if (installation.unpacking_started_time) {
-        DCHECK(installation.copying_started_time);
+      if (installation.unpacking_started_time &&
+          installation.copying_started_time) {
         base::UmaHistogramLongTimes(
             "Extensions.ForceInstalledTime.CopyingStartTo.UnpackingStart",
             installation.unpacking_started_time.value() -
                 installation.copying_started_time.value());
       }
-      if (installation.checking_expectations_started_time) {
-        DCHECK(installation.unpacking_started_time);
+      if (installation.checking_expectations_started_time &&
+          installation.unpacking_started_time) {
         base::UmaHistogramLongTimes(
             "Extensions.ForceInstalledTime.UnpackingStartTo."
             "CheckingExpectationsStart",
             installation.checking_expectations_started_time.value() -
                 installation.unpacking_started_time.value());
       }
-      if (installation.finalizing_started_time) {
-        DCHECK(installation.checking_expectations_started_time);
+      if (installation.finalizing_started_time &&
+          installation.checking_expectations_started_time) {
         base::UmaHistogramLongTimes(
             "Extensions.ForceInstalledTime.CheckingExpectationsStartTo."
             "FinalizingStart",
             installation.finalizing_started_time.value() -
                 installation.checking_expectations_started_time.value());
       }
-      if (installation.installation_complete_time) {
-        DCHECK(installation.finalizing_started_time);
+      if (installation.installation_complete_time &&
+          installation.finalizing_started_time) {
         base::UmaHistogramLongTimes(
             "Extensions.ForceInstalledTime.FinalizingStartTo."
             "CRXInstallComplete",

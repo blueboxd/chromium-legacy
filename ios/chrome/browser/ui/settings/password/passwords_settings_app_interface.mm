@@ -162,7 +162,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 }
 
 + (void)dismissSnackBar {
-  [MDCSnackbarManager
+  [[MDCSnackbarManager defaultManager]
       dismissAndCallCompletionBlocksWithCategory:@"PasswordsSnackbarCategory"];
 }
 

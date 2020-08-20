@@ -29,7 +29,8 @@ source_set("platform_v2") {
     "log_message.h",
     "mutex.cc",
     "mutex.h",
-    "platform.cc",
+    "output_file.cc",
+    "output_file.h",
     "recursive_mutex.cc",
     "recursive_mutex.h",
     "scheduled_executor.cc",
@@ -48,7 +49,6 @@ source_set("platform_v2") {
 
   deps = [
     "//base",
-    "//chrome/services/sharing/nearby",
     "//chrome/services/sharing/public/mojom",
     "//chrome/services/sharing/webrtc",
     "//crypto",

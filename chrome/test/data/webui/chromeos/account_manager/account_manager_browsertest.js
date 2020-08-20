@@ -4,32 +4,35 @@
 
 /** @fileoverview Runs UI tests for account manager dialogs. */
 
+// Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "content/public/test/browser_test.h"');
 
-/**
- * @constructor
- * @extends {PolymerTest}
- */
-function AccountManagerBrowserTest() {}
-
-AccountManagerBrowserTest.prototype = {
-  __proto__: PolymerTest.prototype,
+// eslint-disable-next-line no-var
+var AccountMigrationWelcomeTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://account-migration-welcome/test_loader.html?module=chromeos/account_manager/account_migration_welcome_test.js';
+  }
 
   /** @override */
-  browsePreload: 'chrome://account-migration-welcome/',
-
-  /** @override */
-  extraLibraries: [
-    ...PolymerTest.prototype.extraLibraries,
-    '../../test_browser_proxy.js',
-    'test_account_manager_browser_proxy.js',
-    'account_migration_welcome_test.js',
-  ],
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
+  }
 };
 
-TEST_F('AccountManagerBrowserTest', 'AccountMigrationWelcomeTests', () => {
-  account_manager.account_migration_welcome_tests.registerTests();
-  mocha.run();
+TEST_F('AccountMigrationWelcomeTest', 'CloseDialog', () => {
+  this.runMochaTest(
+      account_migration_welcome_test.suiteName,
+      account_migration_welcome_test.TestNames.CloseDialog);
+});
+
+TEST_F('AccountMigrationWelcomeTest', 'MigrateAccount', () => {
+  this.runMochaTest(
+      account_migration_welcome_test.suiteName,
+      account_migration_welcome_test.TestNames.MigrateAccount);
 });

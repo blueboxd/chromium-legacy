@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/common/web_application_info.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -63,6 +64,13 @@ bool IsBrowserOpen(const Browser* test_browser);
 
 // Launches the app for |app| in |profile|.
 void UninstallWebApp(Profile* profile, const AppId& app_id);
+
+// Synchronous read of an app icon pixel.
+SkColor ReadAppIconPixel(Profile* profile,
+                         const AppId& app_id,
+                         SquareSizePx size,
+                         int x,
+                         int y);
 
 }  // namespace web_app
 

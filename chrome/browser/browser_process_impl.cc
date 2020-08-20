@@ -226,18 +226,16 @@ rappor::RapporService* GetBrowserRapporService() {
   return nullptr;
 }
 
-BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
+BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data)
+    : startup_data_(startup_data),
+      browser_policy_connector_(startup_data->chrome_feature_list_creator()
+                                    ->TakeChromeBrowserPolicyConnector()),
+      local_state_(
+          startup_data->chrome_feature_list_creator()->TakePrefService()),
+      platform_part_(std::make_unique<BrowserProcessPlatformPart>()) {
   g_browser_process = this;
 
   DCHECK(startup_data);
-  startup_data_ = startup_data;
-
-  chrome_feature_list_creator_ = startup_data->chrome_feature_list_creator();
-  browser_policy_connector_ =
-      chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
-  created_browser_policy_connector_ = true;
-
-  platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
   // Most work should be done in Init().
 }
 
@@ -700,8 +698,6 @@ ProfileManager* BrowserProcessImpl::profile_manager() {
 
 PrefService* BrowserProcessImpl::local_state() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!local_state_)
-    CreateLocalState();
   return local_state_.get();
 }
 
@@ -749,11 +745,6 @@ NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {
 policy::ChromeBrowserPolicyConnector*
 BrowserProcessImpl::browser_policy_connector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!created_browser_policy_connector_) {
-    DCHECK(!browser_policy_connector_);
-    browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
-    created_browser_policy_connector_ = true;
-  }
   return browser_policy_connector_.get();
 }
 
@@ -1113,13 +1104,6 @@ void BrowserProcessImpl::CreateProfileManager() {
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   profile_manager_ = std::make_unique<ProfileManager>(user_data_dir);
-}
-
-void BrowserProcessImpl::CreateLocalState() {
-  DCHECK(!local_state_);
-
-  local_state_ = chrome_feature_list_creator_->TakePrefService();
-  DCHECK(local_state_);
 }
 
 void BrowserProcessImpl::PreCreateThreads(

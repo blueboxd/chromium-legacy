@@ -23,6 +23,7 @@
 #include <base/optional.h>
 
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/fonts/font_height.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics_override.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -131,6 +132,16 @@ class FontMetrics {
 
   LayoutUnit FixedLineSpacing() const {
     return LayoutUnit::FromFloatRound(line_spacing_);
+  }
+
+  FontHeight GetFontHeight(
+      FontBaseline baseline_type = kAlphabeticBaseline) const {
+    // TODO(kojii): In future, we'd like to use LayoutUnit metrics to support
+    // sub-CSS-pixel layout.
+    if (baseline_type == kAlphabeticBaseline)
+      return FontHeight(LayoutUnit(ascent_int_), LayoutUnit(descent_int_));
+    int height = ascent_int_ + descent_int_;
+    return FontHeight(LayoutUnit(height - height / 2), LayoutUnit(height / 2));
   }
 
   bool HasIdenticalAscentDescentAndLineGap(const FontMetrics& other) const {

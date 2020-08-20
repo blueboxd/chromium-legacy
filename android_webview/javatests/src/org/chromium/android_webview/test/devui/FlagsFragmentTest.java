@@ -17,6 +17,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 
+import static org.chromium.android_webview.test.devui.DeveloperUiTestUtils.withCount;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
@@ -90,29 +92,6 @@ public class FlagsFragmentTest {
 
     private static Matcher<View> withHintText(final String expectedHint) {
         return withHintText(is(expectedHint));
-    }
-
-    private static Matcher<View> withCount(final Matcher<Integer> intMatcher) {
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public boolean matchesSafely(View view) {
-                if (!(view instanceof ListView)) {
-                    return false;
-                }
-                int count = ((ListView) view).getCount();
-                return intMatcher.matches(count);
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("with child-count: ");
-                intMatcher.describeTo(description);
-            }
-        };
-    }
-
-    private static Matcher<View> withCount(final int totalNumFlags) {
-        return withCount(is(totalNumFlags));
     }
 
     @IntDef({CompoundDrawable.START, CompoundDrawable.TOP, CompoundDrawable.END,

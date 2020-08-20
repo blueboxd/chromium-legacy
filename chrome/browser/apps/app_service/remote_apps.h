@@ -40,6 +40,9 @@ class RemoteApps : public apps::PublisherBase {
 
     virtual gfx::ImageSkia GetIcon(const std::string& id) = 0;
 
+    virtual gfx::ImageSkia GetPlaceholderIcon(const std::string& id,
+                                              int32_t size_hint_in_dip) = 0;
+
     virtual void LaunchApp(const std::string& id) = 0;
 
     virtual apps::mojom::MenuItemsPtr GetMenuModel(const std::string& id) = 0;

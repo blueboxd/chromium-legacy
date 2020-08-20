@@ -319,6 +319,11 @@ const base::Feature kCompactSuggestions{"OmniboxCompactSuggestions",
 extern const base::Feature kDeferredKeyboardPopup{
     "OmniboxDeferredKeyboardPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enbaled, frequently visited sites are presented in form of a single row
+// with a carousel of tiles, instead of one URL per row.
+extern const base::Feature kMostVisitedTiles{"OmniboxMostVisitedTiles",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, expands autocompletion to possibly (depending on params) include
 // suggestion titles and non-prefixes as opposed to be restricted to URL
 // prefixes. Will also adjust the location bar UI and omnibox text selection to

@@ -297,6 +297,13 @@ bool FinishFragmentation(NGBlockNode node,
       builder->SetDidBreakSelf();
   }
 
+  LogicalBoxSides sides;
+  if (previously_consumed_block_size)
+    sides.block_start = false;
+  if (builder->DidBreakSelf())
+    sides.block_end = false;
+  builder->SetSidesToInclude(sides);
+
   builder->SetConsumedBlockSize(previously_consumed_block_size +
                                 final_block_size);
   builder->SetFragmentBlockSize(final_block_size);

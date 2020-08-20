@@ -1549,6 +1549,11 @@ const char kOmniboxLocalEntitySuggestionsDescription[] =
     "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
     "will also enable #omnibox-rich-entity-suggestions.";
 
+const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
+const char kOmniboxMostVisitedTilesDescription[] =
+    "Display a list of frquently visited pages from history as a single row "
+    "with a carousel instead of one URL per line.";
+
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
     "Omnibox Trending Zero Prefix Suggestions";
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[] =

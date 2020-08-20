@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_FILE_UTILS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_FILE_UTILS_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
@@ -16,7 +17,13 @@ namespace web_app {
 // A testing implementation to intercept calls to the file system.
 class TestFileUtils : public FileUtilsWrapper {
  public:
-  TestFileUtils();
+  // Initializer list type deduction does not work through std::make_unique so
+  // provide this helper function.
+  static std::unique_ptr<TestFileUtils> Create(
+      std::map<base::FilePath, base::FilePath> read_file_rerouting);
+
+  explicit TestFileUtils(
+      std::map<base::FilePath, base::FilePath> read_file_rerouting = {});
   TestFileUtils(const TestFileUtils&);
   ~TestFileUtils() override;
 
@@ -25,6 +32,8 @@ class TestFileUtils : public FileUtilsWrapper {
   int WriteFile(const base::FilePath& filename,
                 const char* data,
                 int size) override;
+  bool ReadFileToString(const base::FilePath& path,
+                        std::string* contents) override;
   bool DeleteFileRecursively(const base::FilePath& path) override;
 
   static constexpr int kNoLimit = -1;
@@ -35,6 +44,7 @@ class TestFileUtils : public FileUtilsWrapper {
   void SetNextDeleteFileRecursivelyResult(base::Optional<bool> delete_result);
 
  private:
+  std::map<base::FilePath, base::FilePath> read_file_rerouting_;
   base::Optional<bool> delete_file_recursively_result_;
   int remaining_disk_space_ = kNoLimit;
 

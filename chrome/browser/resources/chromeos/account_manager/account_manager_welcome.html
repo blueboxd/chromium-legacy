@@ -1,58 +1,20 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
-  <title>$i18n{welcomeTitle}</title>
   <meta charset="utf-8">
-  <link rel="import" href="chrome://resources/html/polymer.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-  <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-  <link rel="import" href="account_manager_browser_proxy.html">
-
-  <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
-  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="strings.js"></script>
-  <script src="account_manager_welcome.js"></script>
+  <title>$i18n{welcomeTitle}</title>
   <style>
+    html,
     body {
       height: 100%;
       margin: 0;
+      width: 100%;
     }
   </style>
 </head>
-
 <body>
-  <dom-module id="account-manager-welcome">
-    <template>
-      <style include="cr-shared-style">
-        <include src="account_manager_shared.css">
-      </style>
-      <div id="content">
-        <div class="main-container">
-          <if expr="_google_chrome">
-            <img id="google-logo" src="../googleg.svg" alt="">
-          </if>
-          <h1>$i18n{welcomeTitle}</h1>
-          <p>$i18nRaw{welcomeMessage}</p>
-          <div class="image-container">
-            <if expr="_google_chrome">
-              <img id="welcome-image" alt=""
-                  srcset="account_manager_welcome_1x.png 1x,
-                          account_manager_welcome_2x.png 2x">
-            </if>
-          </div>
-        </div>
-        <div class="button-container">
-          <cr-button id="ok-button" class="action-button"
-            on-click="closeDialog_">
-            $i18n{okButton}
-          </cr-button>
-        </div>
-      </div>
-    </template>
-  </dom-module>
   <account-manager-welcome></account-manager-welcome>
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+  <script type="module" src="account_manager_welcome_app.js"></script>
 </body>
-
 </html>

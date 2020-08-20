@@ -68,12 +68,6 @@ const char kCrostiniStretchImageAlias[] = "debian/stretch";
 const char kCrostiniBusterImageAlias[] = "debian/buster";
 const char kCrostiniDlcName[] = "termina-dlc";
 
-const char kCrostiniKernel[] = "vm_kernel";
-const char kCrostiniRootfs[] = "vm_rootfs.img";
-const char kCrostiniToolfs[] = "vm_tools.img";
-const char kCrostiniToolfsMountPath[] = "/opt/google/cros-containers";
-const char kCrostiniToolfsType[] = "ext4";
-
 const base::FilePath::CharType kHomeDirectory[] = FILE_PATH_LITERAL("/home");
 
 namespace {

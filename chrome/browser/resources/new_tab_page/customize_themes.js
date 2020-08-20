@@ -7,10 +7,10 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
 import './theme_icon.js';
 
+import {hexColorToSkColor, skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {hexColorToSkColor, skColorToRgba} from './utils.js';
 
 /** Element that lets the user configure the theme. */
 class CustomizeThemesElement extends PolymerElement {

@@ -23,6 +23,7 @@ namespace features {
 // All features in alphabetical order.
 extern const base::Feature kAutofillAddressEnhancementVotes;
 extern const base::Feature kAutofillAddressNormalizer;
+extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 extern const base::Feature kAutofillAllowHtmlTypeCountryCodesWithFullNames;
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAlwaysFillAddresses;
@@ -49,6 +50,7 @@ extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillPreventMixedFormsFilling;
+extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 extern const base::Feature kAutofillProfileClientValidation;
 extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
 extern const base::Feature kAutofillProfileImportFromUnifiedSection;

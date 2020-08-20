@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -34,6 +35,8 @@
 @property(nonatomic, assign) BOOL isNTP;
 // The last fullscreen progress registered.
 @property(nonatomic, assign) CGFloat previousFullscreenProgress;
+// Pan Gesture Recognizer for the view revealing pan gesture handler.
+@property(nonatomic, weak) UIPanGestureRecognizer* panGestureRecognizer;
 @end
 
 @implementation PrimaryToolbarViewController
@@ -53,6 +56,26 @@
                         completion:^(BOOL finished) {
                           [weakSelf stopProgressBar];
                         }];
+}
+
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler {
+  _panGestureHandler = panGestureHandler;
+  [self.view removeGestureRecognizer:self.panGestureRecognizer];
+
+  UIPanGestureRecognizer* panGestureRecognizer = [[UIPanGestureRecognizer alloc]
+      initWithTarget:panGestureHandler
+              action:@selector(handlePanGesture:)];
+  panGestureRecognizer.maximumNumberOfTouches = 1;
+  [self.view addGestureRecognizer:panGestureRecognizer];
+
+  self.panGestureRecognizer = panGestureRecognizer;
+}
+
+#pragma mark - viewRevealingAnimatee
+
+- (void)animateViewReveal:(BOOL)viewRevealed {
+  self.view.topCornersRounded = !viewRevealed;
 }
 
 #pragma mark - AdaptiveToolbarViewController

@@ -281,7 +281,13 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
     bool is_local_resource =
         launch_url.scheme() == content::kChromeUIScheme ||
         launch_url.scheme() == content::kChromeUIUntrustedScheme;
-    if (!launch_url.is_empty() && !is_local_resource)
+    // TODO(crbug.com/809304): Call CreateWebContentsIfNecessary() instead of
+    // checking web_contents_ once major migration of default hosted apps to web
+    // apps has completed.
+    // Temporarily using offline manifest migrations (in which |web_contents_|
+    // is nullptr) in order to avoid overwhelming migrated-to web apps with hits
+    // for service worker registrations.
+    if (!launch_url.is_empty() && !is_local_resource && web_contents_)
       pending_registrations_.push_back(launch_url);
   }
 

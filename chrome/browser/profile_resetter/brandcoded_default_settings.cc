@@ -7,7 +7,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/initial_preferences_constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/search_engines/search_engines_pref_names.h"
 

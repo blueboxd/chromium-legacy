@@ -11,11 +11,6 @@ Updated nodes from the second session should not contain the first item: true
 Updated nodes from the second session should contain the second item: true
 Updated nodes from the second session should contain the third item: true
 Updated nodes from the second session should not contain the fourth item: true
-Sending a request before the previous one is resolved should fail with an error message:
-{
-    code : -32000
-    message : A previous request has not been resolved yet.
-}
 Sending a request while no style is being tracked should fail with an error message:
 {
     code : -32000

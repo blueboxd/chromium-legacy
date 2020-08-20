@@ -424,7 +424,10 @@ group("closure_compile") {
     # TODO(crbug.com/1000989): Add page specific targets here.
   ]
   if (is_chromeos) {
-    deps += [ "chromeos/gaia_action_buttons:closure_compile" ]
+    deps += [
+      "chromeos/account_manager:closure_compile",
+      "chromeos/gaia_action_buttons:closure_compile",
+    ]
   }
   if (enable_tab_search) {
     deps += [ "tab_search/test:closure_compile" ]

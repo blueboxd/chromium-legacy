@@ -345,6 +345,7 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-none.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-aspect-ratio.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-position.html [ Failure ]
 
 # Ref results are wrong on the background and list case, not sure on border result
 crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
@@ -990,6 +991,12 @@ crbug.com/982194 [ Win10 ] paint/invalidation/outline/focus-ring-on-inline-conti
 
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-001.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-002.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-003.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-004.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/borders-005.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-002.html [ Pass ]
@@ -1051,7 +1058,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-002.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-003.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-006.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
 crbug.com/994172 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-007.html [ Pass Crash ]
 crbug.com/924142 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
@@ -2625,6 +2631,7 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/content-security-policy/frame-src/frame-src-same-document.sub.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
@@ -3383,6 +3390,12 @@ crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-002.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-003.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-004.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/borders-005.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-002.html [ Failure ]

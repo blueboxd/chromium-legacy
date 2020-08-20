@@ -327,6 +327,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
+// Deprecated method ID: 7
 // Next method ID: 20
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
@@ -360,11 +361,6 @@ interface IntentHelperInstance {
   // Handles the URL by sending an ACTION_VIEW intent to the package. The
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
-
-  // DEPRECATED. Use FileSystemInstance.OpenUrlsWithPermission() instead.
-  [MinVersion=5] HandleUrlListDeprecated@7(array<UrlWithMimeType> urls,
-                                           ActivityName activity,
-                                           ActionType action_type);
 
   // DEPRECATED: Please use Init@13 instead.
   InitDeprecated@0(pending_remote<IntentHelperHost> host_remote);

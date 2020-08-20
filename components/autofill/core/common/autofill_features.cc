@@ -29,6 +29,14 @@ const base::Feature kAutofillAddressEnhancementVotes{
 const base::Feature kAutofillAddressNormalizer{
     "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// By default, AutofillAgent and, if |kAutofillProbableFormSubmissionInBrowser|
+// is enabled, also ContentAutofillDriver omit duplicate form submissions, even
+// though the form's data may have changed substantially. If enabled, the
+// below feature allows duplicate form submissions.
+// TODO(crbug/1117451): Remove once the form-submission experiment is over.
+const base::Feature kAutofillAllowDuplicateFormSubmissions{
+    "AutofillAllowDuplicateFormSubmissions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls if a full country name instead of a country code in a field with a
 // type derived from HTML_TYPE_COUNTRY_CODE can be used to set the profile
 // country.
@@ -166,6 +174,13 @@ const base::Feature kAutofillPreferServerNamePredictions{
 // HTTPS sites that submit over HTTP).
 const base::Feature kAutofillPreventMixedFormsFilling{
     "AutofillPreventMixedFormsFilling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If the feature is enabled, FormTracker's probable-form-submission detection
+// is disabled and replaced with browser-side detection.
+// TODO(crbug/1117451): Remove once it works.
+const base::Feature kAutofillProbableFormSubmissionInBrowser{
+    "AutofillProbableFormSubmissionInBrowser",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillProfileClientValidation{
     "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};

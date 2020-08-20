@@ -29,6 +29,7 @@ namespace ash {
 
 class LoginPasswordView;
 class LoginPinView;
+class LoginPinInputView;
 
 // Wraps a UserView which also has authentication available. Adds additional
 // views below the UserView instance which show authentication UIs.
@@ -64,13 +65,15 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     size_t autosubmit_pin_length = 0;
   };
 
-  // Possible states that the input field might be in.
-  // This is determined by the current authentication methods
+  // Possible states that the input fields (PasswordView & PinInputView)
+  // might be in. This is determined by the current authentication methods
   // that a user has.
   enum class InputFieldMode {
     NONE,              // Not showing any input field.
     PASSWORD_ONLY,     // No PIN set. Password only field.
-    PIN_AND_PASSWORD,  // PIN set.
+    PIN_AND_PASSWORD,  // PIN set, but auto-submit feature disabled.
+    PIN_WITH_TOGGLE,   // PIN field for auto submit.
+    PWD_WITH_TOGGLE    // PWD field when auto submit enabled.
   };
 
   // TestApi is used for tests to get internal implementation details.
@@ -82,6 +85,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     LoginUserView* user_view() const;
     LoginPasswordView* password_view() const;
     LoginPinView* pin_view() const;
+    LoginPinInputView* pin_input_view() const;
+    views::Button* pin_password_toggle() const;
     views::Button* online_sign_in_message() const;
     views::View* disabled_auth_message() const;
     views::Button* challenge_response_button();
@@ -162,7 +167,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
 
   // Provides the view that should be the anchor to message bubbles. Either the
   // password field, or the PIN field.
-  views::View* GetAnchorView();
+  views::View* GetActiveInputView();
   LoginPasswordView* password_view() { return password_view_; }
   LoginUserView* user_view() { return user_view_; }
 
@@ -199,6 +204,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Called from LoginPinView, forwards the calls to the active input field.
   void OnPinPadBackspace();
   void OnPinPadInsertDigit(int digit);
+  // Called from both input fields, forwards the call to LoginPinView (pin pad)
+  void OnPasswordTextChanged(bool is_empty);
+  void OnPinTextChanged(bool is_empty);
 
   // Helper method to check if an auth method is enable. Use it like this:
   // bool has_tap = HasAuthMethod(AUTH_TAP).
@@ -215,6 +223,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Updates the element in focus. Used in `ApplyAnimationPostLayout`.
   void UpdateFocus();
 
+  // Updates the UI internally when the switch button is clicked to toggle
+  // between pin and password.
+  void OnSwitchButtonClicked();
+
   // Determines the mode of the input field based on the available
   // authentication methods.
   void UpdateInputFieldMode();
@@ -222,12 +234,15 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Convenience methods to determine element visibility.
   bool ShouldShowPinPad() const;
   bool ShouldShowPasswordField() const;
+  bool ShouldShowPinInputField() const;
+  bool ShouldShowToggle() const;
 
   // Convenience methods to determine the necessary paddings.
   gfx::Size GetPaddingBelowUserView() const;
   gfx::Size GetPaddingBelowPasswordView() const;
 
   // Convenience methods to determine UI text based on the InputFieldMode.
+  base::string16 GetPinPasswordToggleText();
   base::string16 GetPasswordViewPlaceholder() const;
 
   // Authentication methods available and extra parameters that control the UI.
@@ -240,6 +255,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
   NonAccessibleView* password_view_container_ = nullptr;
+  LoginPinInputView* pin_input_view_ = nullptr;
+  views::LabelButton* pin_password_toggle_ = nullptr;
   LoginPinView* pin_view_ = nullptr;
   views::LabelButton* online_sign_in_message_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;

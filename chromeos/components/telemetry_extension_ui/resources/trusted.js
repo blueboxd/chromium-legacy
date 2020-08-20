@@ -301,9 +301,10 @@ class TelemetryProxy {
 
   /**
    * This method converts Mojo types to WebIDL types applying next rules:
-   *   1. convert objects like { value: X } to X, where X is a number;
-   *   2. omit null/undefined properties;
-   *   3. convert objects without properties to null.
+   *   1. remove null objects from arrays;
+   *   2. convert objects like { value: X } to X, where X is a number;
+   *   3. omit null/undefined properties;
+   *   4. convert objects without properties to null.
    * @param {?Object|string|number|null|undefined} input
    * @return {?Object|string|number|null}
    */
@@ -313,13 +314,25 @@ class TelemetryProxy {
       return null;
     }
 
+    // Rule #1: remove null objects from arrays.
+    if (Array.isArray(input)) {
+      return input
+          .map(
+              (/** @type {?Object|string|number|null} */ item) =>
+                  this.convert(item))
+          .filter(
+              (/** @type {!Object|string|number|null} */ item) =>
+                  item !== null);
+    }
+
+    // After this closure compiler knows that input is {!Object}.
     if (typeof input !== 'object') {
       return input;
     }
 
     // At this point, closure compiler knows that the input is {!Object}.
 
-    // 1 rule: convert objects like { value: X } to X, where X is a number.
+    // Rule #2: convert objects like { value: X } to X, where X is a number.
     if (Object.entries(input).length === 1 &&
         typeof input['value'] === 'number') {
       return input['value'];
@@ -331,13 +344,13 @@ class TelemetryProxy {
       const value = /** @type {?Object|string|number|null|undefined} */ (kv[1]);
       const convertedValue = this.convert(value);
 
-      // 2 rule: omit null/undefined properties.
+      // Rule #3: omit null/undefined properties.
       if (convertedValue !== null && typeof convertedValue !== 'undefined') {
         output[key] = convertedValue;
       }
     });
 
-    // 3 rule. convert objects without properties to null.
+    // Rule #4. convert objects without properties to null.
     if (Object.entries(output).length === 0) {
       return null;
     }

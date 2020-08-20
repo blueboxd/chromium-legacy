@@ -7,11 +7,12 @@ import './realbox_button.js';
 import './realbox_match.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {decodeString16, skColorToRgba} from './utils.js';
+import {decodeString16} from './utils.js';
 
 // A dropdown element that contains autocomplete matches. Provides an API for
 // the embedder (i.e., <ntp-realbox>) to change the selection.

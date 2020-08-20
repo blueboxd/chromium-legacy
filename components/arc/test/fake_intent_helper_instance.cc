@@ -73,11 +73,6 @@ void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
 void FakeIntentHelperInstance::HandleUrl(const std::string& url,
                                          const std::string& package_name) {}
 
-void FakeIntentHelperInstance::HandleUrlListDeprecated(
-    std::vector<mojom::UrlWithMimeTypePtr> urls,
-    mojom::ActivityNamePtr activity,
-    mojom::ActionType action) {}
-
 void FakeIntentHelperInstance::InitDeprecated(
     mojo::PendingRemote<mojom::IntentHelperHost> host_remote) {
   Init(std::move(host_remote), base::DoNothing());

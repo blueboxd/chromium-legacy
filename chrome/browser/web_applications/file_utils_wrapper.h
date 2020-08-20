@@ -54,7 +54,8 @@ class FileUtilsWrapper {
 
   bool IsDirectoryEmpty(const base::FilePath& dir_path);
 
-  bool ReadFileToString(const base::FilePath& path, std::string* contents);
+  virtual bool ReadFileToString(const base::FilePath& path,
+                                std::string* contents);
 
   bool DeleteFile(const base::FilePath& path, bool recursive);
 

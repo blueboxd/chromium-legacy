@@ -5,8 +5,8 @@ PASS Accelerometer: Feature-Policy header accelerometer 'self' disallows cross-o
 PASS LinearAccelerationSensor: Feature-Policy header accelerometer 'self' allows the top-level document.
 PASS LinearAccelerationSensor: Feature-Policy header accelerometer 'self' allows same-origin iframes.
 PASS LinearAccelerationSensor: Feature-Policy header accelerometer 'self' disallows cross-origin iframes.
-FAIL GravitySensor: Feature-Policy header accelerometer 'self' allows the top-level document. assert_true: expected true got false
-FAIL GravitySensor: Feature-Policy header accelerometer 'self' allows same-origin iframes. assert_true: expected true got false
-FAIL GravitySensor: Feature-Policy header accelerometer 'self' disallows cross-origin iframes. assert_true: expected true got false
+FAIL GravitySensor: Feature-Policy header accelerometer 'self' allows the top-level document. assert_implements: GravitySensor is not supported. undefined
+FAIL GravitySensor: Feature-Policy header accelerometer 'self' allows same-origin iframes. assert_implements: GravitySensor is not supported. undefined
+FAIL GravitySensor: Feature-Policy header accelerometer 'self' disallows cross-origin iframes. assert_implements: GravitySensor is not supported. undefined
 Harness: the test ran to completion.
 

@@ -21,6 +21,21 @@ class SafetyCheck {
   // with the JS frontend (safety_check_browser_proxy.js) and |SafetyCheck*|
   // metrics enums in enums.xml.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.safety_check
+  enum class PasswordsStatus {
+    kChecking = 0,
+    kSafe = 1,
+    kCompromisedExist = 2,
+    kOffline = 3,
+    kNoPasswords = 4,
+    kSignedOut = 5,
+    kQuotaLimit = 6,
+    kError = 7,
+    kFeatureUnavailable = 8,
+    // New enum values must go above here.
+    kMaxValue = kFeatureUnavailable,
+  };
+
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.safety_check
   enum class SafeBrowsingStatus {
     kChecking = 0,
     kEnabled = 1,
@@ -32,6 +47,24 @@ class SafetyCheck {
     kEnabledStandardAvailableEnhanced = 7,
     // New enum values must go above here.
     kMaxValue = kEnabledStandardAvailableEnhanced,
+  };
+
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.safety_check
+  enum class UpdateStatus {
+    kChecking = 0,
+    kUpdated = 1,
+    kUpdating = 2,
+    kRelaunch = 3,
+    kDisabledByAdmin = 4,
+    kFailedOffline = 5,
+    kFailed = 6,
+    // Non-Google branded browsers cannot check for updates using
+    // VersionUpdater.
+    kUnknown = 7,
+    // Only used in Android where the user is directed to the Play Store.
+    kOutdated = 8,
+    // New enum values must go above here.
+    kMaxValue = kOutdated,
   };
 
   class SafetyCheckHandlerInterface {

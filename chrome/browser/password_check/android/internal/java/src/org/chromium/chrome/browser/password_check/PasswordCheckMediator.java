@@ -13,9 +13,12 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.LAUNCH_ACCOUNT_CHECKUP_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.VIEW_CREDENTIAL;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.VIEW_DIALOG_HANDLER;
 
 import android.content.DialogInterface;
 import android.util.Pair;
@@ -39,6 +42,7 @@ class PasswordCheckMediator
     private final PasswordCheckChangePasswordHelper mChangePasswordDelegate;
     private PropertyModel mModel;
     private PasswordCheckComponentUi.Delegate mDelegate;
+    private Runnable mLaunchCheckupInAccount;
 
     PasswordCheckMediator(PasswordCheckChangePasswordHelper changePasswordDelegate,
             PasswordCheckReauthenticationHelper reauthenticationHelper) {
@@ -47,9 +51,10 @@ class PasswordCheckMediator
     }
 
     void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate,
-            @PasswordCheckReferrer int passwordCheckReferrer) {
+            @PasswordCheckReferrer int passwordCheckReferrer, Runnable launchCheckupInAccount) {
         mModel = model;
         mDelegate = delegate;
+        mLaunchCheckupInAccount = launchCheckupInAccount;
 
         // If a run is scheduled to happen soon, initialize the UI as running to prevent flickering.
         // Otherwise, initialize the UI with last known state (defaults to IDLE before first run).
@@ -76,6 +81,7 @@ class PasswordCheckMediator
             items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
                     new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
                             .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
+                            .with(LAUNCH_ACCOUNT_CHECKUP_ACTION, mLaunchCheckupInAccount)
                             .with(RESTART_BUTTON_ACTION, this::runCheck)
                             .build()));
         }
@@ -99,6 +105,7 @@ class PasswordCheckMediator
                              .with(CHECK_STATUS, PasswordCheckUIStatus.RUNNING)
                              .with(CHECK_TIMESTAMP, null)
                              .with(COMPROMISED_CREDENTIALS_COUNT, null)
+                             .with(LAUNCH_ACCOUNT_CHECKUP_ACTION, mLaunchCheckupInAccount)
                              .with(RESTART_BUTTON_ACTION, this::runCheck)
                              .build();
         } else {
@@ -181,12 +188,23 @@ class PasswordCheckMediator
             return;
         }
 
-        mReauthenticationHelper.reauthenticate(ReauthReason.VIEW_PASSWORD,
-                reauthSucceeded
-                -> {
-                        // TODO(crbug.com/1117502) Add implementation to view the compromised
-                        // credential
+        mReauthenticationHelper.reauthenticate(ReauthReason.VIEW_PASSWORD, reauthSucceeded -> {
+            if (reauthSucceeded) {
+                mModel.set(VIEW_CREDENTIAL, credential);
+                mModel.set(VIEW_DIALOG_HANDLER, new PasswordCheckViewDialogFragment.Handler() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mModel.set(VIEW_CREDENTIAL, null);
+                        mModel.set(VIEW_DIALOG_HANDLER, null);
+                    }
+
+                    @Override
+                    public void onDismiss() {
+                        mModel.set(VIEW_DIALOG_HANDLER, null);
+                    }
                 });
+            }
+        });
     }
 
     @Override

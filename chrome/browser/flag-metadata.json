@@ -3336,6 +3336,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-most-visited-tiles",
+    "owners": [ "fgorski", "ender", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "omnibox-on-device-head-suggestions-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
     "expiry_milestone": 90

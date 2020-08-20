@@ -563,12 +563,23 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
     DCHECK_NE(state_, UNINITIALIZED);
   }
 
+  auto* web_frame = source_internal_frame_->web_frame();
+#if !defined(OS_ANDROID)
+  // Frames are allowed to be null in Android due to an issue in tests.
+  // In practice, this is not an issue, since Android does not support
+  // setSinkId(). https://crbug.com/1119689
+  if (!web_frame) {
+    SendLogMessage(String::Format("%s => (ERROR: No Frame)", __func__));
+    std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    return;
+  }
+#endif
+
   media::AudioSinkParameters sink_params(session_id_, device_id);
   sink_params.processing_id = source_->GetAudioProcessingId();
   scoped_refptr<media::AudioRendererSink> new_sink =
       Platform::Current()->NewAudioRendererSink(
-          WebAudioDeviceSourceType::kWebRtc,
-          source_internal_frame_->web_frame(), sink_params);
+          WebAudioDeviceSourceType::kWebRtc, web_frame, sink_params);
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
   UMA_HISTOGRAM_ENUMERATION(

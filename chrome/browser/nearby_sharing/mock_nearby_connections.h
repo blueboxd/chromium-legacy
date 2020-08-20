@@ -87,6 +87,13 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
               (const std::string& endpoint_id,
                InitiateBandwidthUpgradeCallback callback),
               (override));
+  MOCK_METHOD(void,
+              RegisterPayloadFile,
+              (int64_t payload_id,
+               base::File input_file,
+               base::File output_file,
+               RegisterPayloadFileCallback callback),
+              (override));
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_

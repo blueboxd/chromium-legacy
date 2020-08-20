@@ -1,3 +1,4 @@
+
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -85,6 +86,7 @@ struct ContextualManagementSourceUpdate {
 #if defined(OS_CHROMEOS)
   base::string16 management_overview;
   base::string16 update_required_eol;
+  bool show_proxy_server_privacy_disclosure;
 #else
   base::string16 browser_management_notice;
 #endif  // defined(OS_CHROMEOS)
@@ -299,6 +301,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if defined(OS_CHROMEOS)
     extracted_.management_overview = ExtractPathFromDict(data, "overview");
     extracted_.update_required_eol = ExtractPathFromDict(data, "eolMessage");
+    base::Optional<bool> showProxyDisclosure =
+        data.FindBoolPath("showProxyServerPrivacyDisclosure");
+    extracted_.show_proxy_server_privacy_disclosure =
+        showProxyDisclosure.has_value() && showProxyDisclosure.value();
 #else
     extracted_.browser_management_notice =
         ExtractPathFromDict(data, "browserManagementNotice");
@@ -458,6 +464,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
   base::string16 GetUpdateRequiredEolMessage() const {
     return extracted_.update_required_eol;
+  }
+
+  bool GetShowProxyServerPrivacyDisclosure() const {
+    return extracted_.show_proxy_server_privacy_disclosure;
   }
 #else
 
@@ -918,32 +928,30 @@ TEST_F(ManagementUIHandlerTests, AllDisabledDeviceReportingInfo) {
                       expected_elements);
 }
 
-TEST_F(ManagementUIHandlerTests, ProxyServerShowReport) {
+TEST_F(ManagementUIHandlerTests, ShowProxyServerDisclosure) {
+  ResetTestConfig();
+  // Set pref to use a proxy.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
   chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
                                                           &local_state_);
-  // Set pref to use a proxy.
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateAutoDetect();
   user_prefs_.SetUserPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
   base::RunLoop().RunUntilIdle();
 
-  ResetTestConfig(false);
-  const base::Value info = SetUpForReportingInfo();
+  GetTestConfig().managed_device = true;
+  SetUpProfileAndHandler();
 
-  const std::map<std::string, std::string> expected_elements = {
-      {kManagementReportProxyServer, "proxy server"}};
-
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
-                      expected_elements);
+  EXPECT_TRUE(GetShowProxyServerPrivacyDisclosure());
 }
 
-TEST_F(ManagementUIHandlerTests, ProxyServerShowReportDeviceOffline) {
+TEST_F(ManagementUIHandlerTests, ProxyServerDisclosureDeviceOffline) {
+  ResetTestConfig();
+  // Simulate network disconnected state.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
   chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
                                                           &local_state_);
-  // Simulate network disconnected state.
   chromeos::NetworkStateHandler::NetworkStateList networks;
   chromeos::NetworkHandler::Get()
       ->network_state_handler()
@@ -962,33 +970,31 @@ TEST_F(ManagementUIHandlerTests, ProxyServerShowReportDeviceOffline) {
   }
   base::RunLoop().RunUntilIdle();
 
-  ResetTestConfig(false);
-  const base::Value info = SetUpForReportingInfo();
+  GetTestConfig().managed_device = true;
+  SetUpProfileAndHandler();
 
-  const std::map<std::string, std::string> expected_elements = {};
+  EXPECT_FALSE(GetShowProxyServerPrivacyDisclosure());
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
-                      expected_elements);
   chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
 }
 
-TEST_F(ManagementUIHandlerTests, ProxyServerHideReportForDirectProxy) {
+TEST_F(ManagementUIHandlerTests, HideProxyServerDisclosureForDirectProxy) {
+  ResetTestConfig();
+  // Set pref not to use proxy.
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
   chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
                                                           &local_state_);
-  // Set pref not to use proxy.
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateDirect();
   user_prefs_.SetUserPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
   base::RunLoop().RunUntilIdle();
 
-  ResetTestConfig(false);
-  const base::Value info = SetUpForReportingInfo();
+  GetTestConfig().managed_device = true;
+  SetUpProfileAndHandler();
 
-  const std::map<std::string, std::string> expected_elements = {};
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
-                      expected_elements);
+  EXPECT_FALSE(GetShowProxyServerPrivacyDisclosure());
+
   chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
 }
 

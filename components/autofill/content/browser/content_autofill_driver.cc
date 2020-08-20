@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -16,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -51,12 +53,8 @@ ContentAutofillDriver::ContentAutofillDriver(
   if (provider) {
     SetAutofillProvider(provider);
   } else {
-    autofill_handler_ = std::make_unique<AutofillManager>(
-        this, client, app_locale, enable_download_manager);
-    autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
-    autofill_external_delegate_ =
-        std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
-    autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+    SetAutofillManager(std::make_unique<AutofillManager>(
+        this, client, app_locale, enable_download_manager));
   }
 }
 
@@ -226,9 +224,32 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
   autofill_handler_->OnFormsSeen(forms, timestamp);
 }
 
+void ContentAutofillDriver::SetFormToBeProbablySubmitted(
+    const base::Optional<FormData>& form) {
+  potentially_submitted_form_ = form;
+}
+
+void ContentAutofillDriver::ProbablyFormSubmitted() {
+  if (potentially_submitted_form_.has_value()) {
+    FormSubmitted(potentially_submitted_form_.value(), false,
+                  mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED);
+  }
+}
+
 void ContentAutofillDriver::FormSubmitted(const FormData& form,
                                           bool known_success,
                                           mojom::SubmissionSource source) {
+  // Omit duplicate form submissions. It may be reasonable to take |source|
+  // into account here as well.
+  // TODO(crbug/1117451): Clean up experiment code.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillProbableFormSubmissionInBrowser) &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillAllowDuplicateFormSubmissions) &&
+      !submitted_forms_.insert(form.unique_renderer_id).second) {
+    return;
+  }
+
   autofill_handler_->OnFormSubmitted(form, known_success, source);
 }
 
@@ -305,6 +326,7 @@ void ContentAutofillDriver::DidNavigateFrame(
     return;
   }
 
+  submitted_forms_.clear();
   autofill_handler_->Reset();
 }
 
@@ -312,6 +334,8 @@ void ContentAutofillDriver::SetAutofillManager(
     std::unique_ptr<AutofillManager> manager) {
   autofill_handler_ = std::move(manager);
   autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
+  autofill_external_delegate_ =
+      std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
 

@@ -81,6 +81,9 @@ Polymer({
     /** @private */
     eolMessage_: String,
 
+    /** @private */
+    showProxyServerPrivacyDisclosure_: Boolean,
+
     // </if>
 
     /** @private */
@@ -267,8 +270,6 @@ Polymer({
         return 'cr:extension';
       case DeviceReportingType.ANDROID_APPLICATION:
         return 'management:play-store';
-      case DeviceReportingType.PROXY_SERVER:
-        return 'management:vpn-lock';
       default:
         return 'cr:computer';
     }
@@ -346,6 +347,8 @@ Polymer({
       this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
       this.eolMessage_ = data.eolMessage;
+      this.showProxyServerPrivacyDisclosure_ =
+          data.showProxyServerPrivacyDisclosure;
       try {
         // Sanitizing the message could throw an error if it contains non
         // supported markup.

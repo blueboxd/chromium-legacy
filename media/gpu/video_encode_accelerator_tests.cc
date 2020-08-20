@@ -110,13 +110,28 @@ class VideoEncoderTest : public ::testing::Test {
       Video* video,
       const VideoEncoderClientConfig& config) {
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
+    const gfx::Rect visible_rect(video->Resolution());
+    const VideoCodec codec =
+        VideoCodecProfileToVideoCodec(config.output_profile);
+    if (g_env->SaveOutputBitstream()) {
+      base::FilePath::StringPieceType extension =
+          codec == VideoCodec::kCodecH264 ? FILE_PATH_LITERAL("h264")
+                                          : FILE_PATH_LITERAL("ivf");
+      auto output_bitstream_filepath =
+          g_env->OutputFolder()
+              .Append(g_env->GetTestOutputFilePath())
+              .Append(video->FilePath().BaseName().ReplaceExtension(extension));
+      auto bitstream_writer = BitstreamFileWriter::Create(
+          output_bitstream_filepath, codec, visible_rect.size(),
+          config.framerate, config.num_frames_to_encode);
+      LOG_ASSERT(bitstream_writer);
+      bitstream_processors.emplace_back(std::move(bitstream_writer));
+    }
+
     if (!g_env->IsBitstreamValidatorEnabled()) {
       return bitstream_processors;
     }
 
-    const gfx::Rect visible_rect(video->Resolution());
-    const VideoCodec codec =
-        VideoCodecProfileToVideoCodec(config.output_profile);
     switch (codec) {
       case kCodecH264:
         bitstream_processors.emplace_back(
@@ -160,49 +175,24 @@ class VideoEncoderTest : public ::testing::Test {
     auto frame_output_config = g_env->ImageOutputConfig();
     base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
                                        .Append(g_env->GetTestOutputFilePath());
-    std::unique_ptr<PSNRVideoFrameValidator> psnr_validator;
-    if (frame_output_config.output_mode == FrameOutputMode::kCorrupt) {
+    if (frame_output_config.output_mode != FrameOutputMode::kNone) {
       image_writer = VideoFrameFileWriter::Create(
           output_folder, frame_output_config.output_format,
           frame_output_config.output_limit);
       LOG_ASSERT(image_writer);
-      psnr_validator = PSNRVideoFrameValidator::Create(get_model_frame_cb,
-                                                       std::move(image_writer));
-    } else {
-      if (frame_output_config.output_mode == FrameOutputMode::kAll) {
-        image_writer = VideoFrameFileWriter::Create(
-            output_folder, frame_output_config.output_format,
-            frame_output_config.output_limit);
-        LOG_ASSERT(image_writer);
+      if (frame_output_config.output_mode == FrameOutputMode::kAll)
         video_frame_processors.push_back(std::move(image_writer));
-      }
-      psnr_validator =
-          PSNRVideoFrameValidator::Create(get_model_frame_cb, nullptr);
     }
-    auto ssim_validator = SSIMVideoFrameValidator::Create(get_model_frame_cb);
-    video_frame_processors.push_back(std::move(psnr_validator));
+    auto ssim_validator = SSIMVideoFrameValidator::Create(
+        get_model_frame_cb, std::move(image_writer),
+        VideoFrameValidator::ValidationMode::kAverage);
+    LOG_ASSERT(ssim_validator);
     video_frame_processors.push_back(std::move(ssim_validator));
     auto bitstream_validator = BitstreamValidator::Create(
         decoder_config, config.num_frames_to_encode - 1,
         std::move(video_frame_processors));
     LOG_ASSERT(bitstream_validator);
     bitstream_processors.emplace_back(std::move(bitstream_validator));
-
-    if (g_env->SaveOutputBitstream()) {
-      base::FilePath::StringPieceType extension =
-          codec == VideoCodec::kCodecH264 ? FILE_PATH_LITERAL("h264")
-                                          : FILE_PATH_LITERAL("ivf");
-      auto output_bitstream_filepath =
-          g_env->OutputFolder()
-              .Append(g_env->GetTestOutputFilePath())
-              .Append(video->FilePath().BaseName().ReplaceExtension(extension));
-      auto bitstream_writer = BitstreamFileWriter::Create(
-          output_bitstream_filepath, codec, visible_rect.size(),
-          config.framerate, config.num_frames_to_encode);
-      LOG_ASSERT(bitstream_writer);
-      bitstream_processors.emplace_back(std::move(bitstream_writer));
-    }
-
     return bitstream_processors;
   }
 

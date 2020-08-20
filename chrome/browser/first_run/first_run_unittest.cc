@@ -12,7 +12,7 @@
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/initial_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace first_run {

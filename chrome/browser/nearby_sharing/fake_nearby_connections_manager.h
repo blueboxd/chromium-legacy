@@ -44,6 +44,9 @@ class FakeNearbyConnectionsManager
             PayloadStatusListener* listener) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
+  void RegisterPayloadPath(int64_t payload_id,
+                           const base::FilePath& file_path,
+                           ConnectionsCallback callback) override;
   Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;

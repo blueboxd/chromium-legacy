@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/PasswordChangeLauncher_jni.h"
-#include "chrome/android/chrome_jni_headers/PasswordCheckupLauncher_jni.h"
+#include "chrome/browser/password_manager/android/password_checkup_launcher_helper.h"
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_view_android.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
@@ -61,10 +61,10 @@ void CredentialLeakControllerAndroid::OnAcceptDialog() {
   if (ShouldCheckPasswords()) {
     if (base::FeatureList::IsEnabled(
             password_manager::features::kPasswordCheck)) {
-      Java_PasswordCheckupLauncher_launchLocalCheckup(
+      PasswordCheckupLauncherHelper::LaunchLocalCheckup(
           env, window_android_->GetJavaObject());
     } else {
-      Java_PasswordCheckupLauncher_launchCheckupInAccount(
+      PasswordCheckupLauncherHelper::LaunchCheckupInAccountWithWindowAndroid(
           env,
           base::android::ConvertUTF8ToJavaString(
               env, password_manager::GetPasswordCheckupURL().spec()),

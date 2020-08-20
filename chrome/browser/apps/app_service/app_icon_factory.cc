@@ -388,7 +388,8 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
         fallback_callback_(std::move(fallback)) {
     icon_size_in_px_ = apps_util::ConvertDipToPx(
         size_hint_in_dip, /*quantize_to_supported_scale_factor=*/true);
-    icon_scale_ = icon_size_in_px_ / size_hint_in_dip;
+    // Both px and dip sizes are integers but the scale factor is fractional.
+    icon_scale_ = static_cast<float>(icon_size_in_px_) / size_hint_in_dip;
   }
 
   IconLoadingPipeline(

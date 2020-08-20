@@ -123,6 +123,8 @@ class RemoteAppsManager : public KeyedService,
   const std::map<std::string, RemoteAppsModel::AppInfo>& GetApps() override;
   void LaunchApp(const std::string& id) override;
   gfx::ImageSkia GetIcon(const std::string& id) override;
+  gfx::ImageSkia GetPlaceholderIcon(const std::string& id,
+                                    int32_t size_hint_in_dip) override;
   apps::mojom::MenuItemsPtr GetMenuModel(const std::string& id) override;
 
   // app_list::AppListSyncableService::Observer:

@@ -25,7 +25,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.signin.SigninActivityLauncher;
+import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestRule;
@@ -65,20 +65,20 @@ public class BookmarkPersonalizedPromoRenderTest {
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Mock
-    private SigninActivityLauncher mMockSigninActivityLauncher;
+    private SigninActivityLauncherImpl mMockSigninActivityLauncherImpl;
 
     @Before
     public void setUp() {
         initMocks(this);
         mAccountManagerTestRule.addAccount(new ProfileDataSource.ProfileData(
                 "test@gmail.com", null, "Full Name", "Given Name"));
-        SigninActivityLauncher.setLauncherForTest(mMockSigninActivityLauncher);
+        SigninActivityLauncherImpl.setLauncherForTest(mMockSigninActivityLauncherImpl);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
-        SigninActivityLauncher.setLauncherForTest(null);
+        SigninActivityLauncherImpl.setLauncherForTest(null);
         BookmarkPromoHeader.forcePromoStateForTests(null);
     }
 

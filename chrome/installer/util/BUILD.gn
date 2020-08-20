@@ -68,12 +68,12 @@ static_library("with_no_strings") {
       "experiment_storage.h",
       "html_dialog.h",
       "html_dialog_impl.cc",
+      "initial_preferences.cc",
+      "initial_preferences.h",
       "logging_installer.cc",
       "logging_installer.h",
       "lzma_util.cc",
       "lzma_util.h",
-      "master_preferences.cc",
-      "master_preferences.h",
       "registry_entry.cc",
       "registry_entry.h",
       "scoped_token_privilege.cc",
@@ -183,8 +183,8 @@ static_library("with_no_strings") {
     ]
   } else {
     sources = [
-      "master_preferences.cc",
-      "master_preferences.h",
+      "initial_preferences.cc",
+      "initial_preferences.h",
     ]
   }
 }
@@ -232,9 +232,9 @@ source_set("strings") {
 }
 
 source_set("constants") {
-  public = [ "master_preferences_constants.h" ]
+  public = [ "initial_preferences_constants.h" ]
 
-  sources = [ "master_preferences_constants.cc" ]
+  sources = [ "initial_preferences_constants.cc" ]
 
   if (is_win) {
     public += [
@@ -311,11 +311,11 @@ if (is_win) {
       "experiment_unittest.cc",
       "google_update_settings_unittest.cc",
       "helper_unittest.cc",
+      "initial_preferences_unittest.cc",
       "install_util_unittest.cc",
       "l10n_string_util_unittest.cc",
       "logging_installer_unittest.cc",
       "lzma_util_unittest.cc",
-      "master_preferences_unittest.cc",
       "move_tree_work_item_unittest.cc",
       "product_state_unittest.cc",
       "product_unittest.cc",

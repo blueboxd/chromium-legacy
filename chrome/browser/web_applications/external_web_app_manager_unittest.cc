@@ -117,7 +117,8 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
   std::vector<ExternalInstallOptions> ScanTestDirForExternalWebApps(
       const std::string& dir) {
     return ExternalWebAppManager::ScanDirForExternalWebAppsForTesting(
-        GetTestDir(dir), CreateProfile().get());
+        std::make_unique<FileUtilsWrapper>(), GetTestDir(dir),
+        CreateProfile().get());
   }
 
   // Helper that creates simple test profile.

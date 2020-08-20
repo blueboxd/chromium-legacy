@@ -30,6 +30,7 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
   html_source->DisableTrustedTypesCSP();
 
   html_source->UseStringsJs();
+  html_source->EnableReplaceI18nInJS();
 
   // Add localized strings.
   html_source->AddLocalizedString("welcomeTitle",
@@ -43,12 +44,10 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
                                   IDS_ACCOUNT_MANAGER_WELCOME_BUTTON);
 
   // Add required resources.
-  html_source->AddResourcePath("account_manager_shared.css",
-                               IDR_ACCOUNT_MANAGER_SHARED_CSS);
-  html_source->AddResourcePath("account_manager_welcome.js",
-                               IDR_ACCOUNT_MANAGER_WELCOME_JS);
-  html_source->AddResourcePath("account_manager_browser_proxy.html",
-                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("account_manager_welcome_app.js",
+                               IDR_ACCOUNT_MANAGER_WELCOME_APP_JS);
+  html_source->AddResourcePath("account_manager_shared_css.js",
+                               IDR_ACCOUNT_MANAGER_SHARED_CSS_JS);
   html_source->AddResourcePath("account_manager_browser_proxy.js",
                                IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

@@ -86,6 +86,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_ASSERT_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/assert.m.js"
                use_base_dir="false" type="BINDATA" />
+      <include name="IDR_WEBUI_JS_COLOR_UTILS_JS"
+               file="js/color_utils.js" type="BINDATA" />
       <include name="IDR_WEBUI_JS_CR_EVENT_TARGET_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/event_target.m.js"
                use_base_dir="false" type="BINDATA" />

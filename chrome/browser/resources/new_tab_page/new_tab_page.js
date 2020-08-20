@@ -20,4 +20,4 @@ export {kaleidoscopeDescriptor} from './modules/kaleidoscope/module.js';
 export {ModuleDescriptor} from './modules/module_descriptor.js';
 export {ModuleRegistry} from './modules/module_registry.js';
 export {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
-export {$$, createScrollBorders, decodeString16, hexColorToSkColor, mojoString16, skColorToRgba} from './utils.js';
+export {$$, createScrollBorders, decodeString16, mojoString16} from './utils.js';

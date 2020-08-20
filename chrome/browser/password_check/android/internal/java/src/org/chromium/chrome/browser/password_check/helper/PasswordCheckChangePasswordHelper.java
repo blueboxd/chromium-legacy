@@ -69,7 +69,7 @@ public class PasswordCheckChangePasswordHelper {
      * @param credential A {@link CompromisedCredential}.
      */
     public void launchCctWithScript(CompromisedCredential credential) {
-        Intent intent = buildIntent(credential.getOrigin().getSpec());
+        Intent intent = buildIntent(credential.getOrigin().getOrigin().getSpec());
         populateAutofillAssistantExtras(intent, credential.getUsername());
         IntentUtils.safeStartActivity(mContext, intent);
     }

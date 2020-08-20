@@ -646,6 +646,10 @@ const char kEnableAccessibilityTabSwitcher[] =
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
+// Forces the device to report being owned by an enterprise. This mimics the
+// presence of an app signaling device ownerhsip.
+const char kForceDeviceOwnership[] = "force-device-ownership";
+
 // Forces the night mode to be enabled.
 const char kForceEnableNightMode[] = "force-enable-night-mode";
 

@@ -39,6 +39,9 @@ class ASH_EXPORT LoginPinInputView : public views::View {
   LoginPinInputView(const LoginPinInputView&) = delete;
   ~LoginPinInputView() override;
 
+  // Checks whether PIN auto submit is supported for the given length.
+  static bool IsAutosubmitSupported(int length);
+
   // `on_submit` is called when the user typed all the digits.
   // `on_changed` is called upon each modification with a boolean indicating if
   // all field are empty. (Drives the visibility of 'Backspace' on the pin pad.)

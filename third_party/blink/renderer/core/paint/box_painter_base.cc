@@ -441,7 +441,7 @@ void DrawTiledBackground(GraphicsContext& context,
     // src rect rotation if necessary.
     if (respect_orientation && !image->HasDefaultOrientation()) {
       visible_src_rect = image->CorrectSrcRectForImageOrientation(
-          visible_src_rect.Size(), visible_src_rect);
+          intrinsic_tile_size, visible_src_rect);
     }
 
     context.DrawImage(image, Image::kSyncDecode, snapped_paint_rect,
@@ -604,7 +604,7 @@ inline bool PaintFastBottomLayer(Node* node,
   // rect rotation if necessaary.
   if (info.respect_image_orientation && !image->HasDefaultOrientation()) {
     src_rect =
-        image->CorrectSrcRectForImageOrientation(src_rect.Size(), src_rect);
+        image->CorrectSrcRectForImageOrientation(intrinsic_tile_size, src_rect);
   }
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
@@ -661,11 +661,14 @@ FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
   }
 
   FloatRectOutsets insets(
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kTop)].Width(),
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kRight)].Width(),
       -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kBottom)].Width(),
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kLeft)].Width());
+          edges[static_cast<unsigned>(BoxSide::kTop)].UsedWidth(),
+      -fractional_inset *
+          edges[static_cast<unsigned>(BoxSide::kRight)].UsedWidth(),
+      -fractional_inset *
+          edges[static_cast<unsigned>(BoxSide::kBottom)].UsedWidth(),
+      -fractional_inset *
+          edges[static_cast<unsigned>(BoxSide::kLeft)].UsedWidth());
 
   FloatRect inset_rect(background_rounded_rect.Rect());
   inset_rect.Expand(insets);

@@ -382,6 +382,11 @@ public class WebLayerShellActivity extends FragmentActivity {
                         .setTextSizeSP(DEFAULT_TEXT_SIZE)
                         .setTextColor(android.R.color.black)
                         .setIconColor(android.R.color.black)
+                        .setTextClickListener(v -> {
+                            mEditUrlView.setText("");
+                            mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW);
+                            mEditUrlView.requestFocus();
+                        })
                         .setTextLongClickListener(v -> {
                             ClipboardManager clipboard =
                                     (ClipboardManager) v.getContext().getSystemService(

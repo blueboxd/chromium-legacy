@@ -10,7 +10,6 @@ source_set("sharing") {
 
   deps = [
     "nearby",
-    "nearby/platform_v2",
     "webrtc",
     "//jingle:webrtc_glue",
     "//third_party/webrtc_overrides:webrtc_component",

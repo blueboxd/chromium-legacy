@@ -54,11 +54,14 @@ SkPath GetSystemButtonHighlightPath(const views::View* view) {
 
 SystemLabelButton::SystemLabelButton(views::ButtonListener* listener,
                                      const base::string16& text,
-                                     DisplayType display_type)
+                                     DisplayType display_type,
+                                     bool multiline)
     : LabelButton(listener, text), display_type_(display_type) {
   SetImageLabelSpacing(kSystemButtonImageLabelSpacing);
-  label()->SetMultiLine(true);
-  label()->SetMaximumWidth(kSystemButtonMaxLabelWidthDp);
+  if (multiline) {
+    label()->SetMultiLine(true);
+    label()->SetMaximumWidth(kSystemButtonMaxLabelWidthDp);
+  }
   label()->SetFontList(
       gfx::FontList().DeriveWithWeight(gfx::Font::Weight::BOLD));
   SetMinSize(gfx::Size(0, kSystemButtonHeight));

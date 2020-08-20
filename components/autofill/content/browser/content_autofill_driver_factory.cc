@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -134,6 +136,24 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
         ->MaybeReportAutofillWebOTPMetrics();
   }
   DeleteForKey(render_frame_host);
+}
+
+void ContentAutofillDriverFactory::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // TODO(crbug/1117451): Clean up experiment code.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillProbableFormSubmissionInBrowser) &&
+      navigation_handle->IsRendererInitiated() &&
+      !navigation_handle->WasInitiatedByLinkClick() &&
+      navigation_handle->IsInMainFrame()) {
+    content::GlobalFrameRoutingId id =
+        navigation_handle->GetPreviousRenderFrameHostId();
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(id);
+    if (render_frame_host) {
+      DriverForFrame(render_frame_host)->ProbablyFormSubmitted();
+    }
+  }
 }
 
 void ContentAutofillDriverFactory::DidFinishNavigation(

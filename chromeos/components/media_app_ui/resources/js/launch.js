@@ -290,7 +290,7 @@ guestMessagePipe.registerHandler(Message.OPEN_FILE, async () => {
  * @return {!Promise<!FileSystemFileHandle>}
  */
 function pickWritableFile(suggestedName, mimeType) {
-  const extension = suggestedName.split('.').reverse()[0];
+  const extension = '.' + suggestedName.split('.').reverse()[0];
   // TODO(b/161087799): Add a default filename when it's supported by the
   // native file api.
   /** @type {!FilePickerOptions} */

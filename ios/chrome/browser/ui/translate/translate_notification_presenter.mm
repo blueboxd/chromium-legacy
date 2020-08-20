@@ -99,8 +99,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
 }
 
 - (void)dismissNotification {
-  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:
-                          kTranslateNotificationSnackbarCategory];
+  [[MDCSnackbarManager defaultManager]
+      dismissAndCallCompletionBlocksWithCategory:
+          kTranslateNotificationSnackbarCategory];
 }
 
 #pragma mark - Private

@@ -148,6 +148,15 @@
                              animated:self.enableAnimationsForOmniboxFocus];
 }
 
+- (id<ViewRevealingAnimatee>)animatee {
+  return self.viewController;
+}
+
+- (void)setPanGestureHandler:
+    (ViewRevealingVerticalPanHandler*)panGestureHandler {
+  self.viewController.panGestureHandler = panGestureHandler;
+}
+
 #pragma mark - PrimaryToolbarViewControllerDelegate
 
 - (void)viewControllerTraitCollectionDidChange:

@@ -39,7 +39,6 @@ extern const char kManagementCrostini[];
 extern const char kManagementCrostiniContainerConfiguration[];
 extern const char kManagementReportExtensions[];
 extern const char kManagementReportAndroidApplications[];
-extern const char kManagementReportProxyServer[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kCloudReportingExtensionId[];
@@ -154,6 +153,11 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   // as per device policy but the device cannot be updated due to End of Life
   // (Auto Update Expiration).
   void AddUpdateRequiredEolInfo(base::Value* response) const;
+
+  // Adds a boolean which indicates if there's a proxy on the device enforced by
+  // the admin. If true, a warning will be added to the transparency panel to
+  // inform the user that the admin may be able to see their network traffic.
+  void AddProxyServerPrivacyDisclosure(base::Value* response) const;
 #endif  // defined(OS_CHROMEOS)
  private:
   void GetManagementStatus(Profile* profile, base::Value* status) const;

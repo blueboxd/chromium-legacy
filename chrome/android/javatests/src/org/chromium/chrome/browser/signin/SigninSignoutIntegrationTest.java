@@ -113,7 +113,7 @@ public class SigninSignoutIntegrationTest {
                 AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         SigninActivity signinActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivity(
+                    SigninActivityLauncherImpl.get().launchActivity(
                             mActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS);
                 });
         assertSignedOut();

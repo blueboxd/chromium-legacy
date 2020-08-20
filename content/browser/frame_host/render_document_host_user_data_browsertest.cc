@@ -284,6 +284,11 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
 // current RFH (of old URL) not alive.
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
                        CheckWithFrameCrashDuringNavigation) {
+  // TODO(sreejakshetty): Investigate why the data is being deleted after crash
+  // when BackForwardCache is enabled.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -682,6 +687,12 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, FailedNavigation) {
   Data::CreateForCurrentDocument(rfh_a);
   base::WeakPtr<Data> data = Data::GetForCurrentDocument(rfh_a)->GetWeakPtr();
   EXPECT_TRUE(data);
+
+  // This test expects old RenderFrameHost to be deleted after navigating to an
+  // error page, disable back-forward cache to ensure that RenderFrameHost gets
+  // deleted.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 3) Browser-initiated navigation to an error page.
   NavigationHandleObserver observer(shell()->web_contents(), error_url);

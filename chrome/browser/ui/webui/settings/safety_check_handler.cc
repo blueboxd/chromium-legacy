@@ -497,6 +497,10 @@ base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
                                         : IDS_VERSION_UI_UNOFFICIAL),
           base::UTF8ToUTF16(chrome::GetChannelName()),
           l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation()));
+    // This state is only used on Android for recording metrics. This codepath
+    // is unreachable.
+    case UpdateStatus::kOutdated:
+      return base::UTF8ToUTF16("");
   }
 }
 

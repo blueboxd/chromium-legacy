@@ -169,6 +169,11 @@
   self.fakeOmniboxTarget = nil;
 }
 
+- (void)setTopCornersRounded:(BOOL)rounded {
+  _topCornersRounded = rounded;
+  self.layer.cornerRadius = rounded ? kTopCornerRadius : 0;
+}
+
 #pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
@@ -195,6 +200,9 @@
 - (void)setUpToolbarBackground {
   self.backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
+  if (base::FeatureList::IsEnabled(kExpandedTabStrip)) {
+    self.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
+  }
 
   self.contentView = self;
 }

@@ -1190,11 +1190,6 @@ void CrostiniManager::StartTerminaVm(std::string name,
   }
 
   vm_tools::concierge::StartVmRequest request;
-  base::FilePath base_path = termina_installer_.GetInstallLocation();
-  request.mutable_vm()->set_kernel(
-      base_path.Append(kCrostiniKernel).AsUTF8Unsafe());
-  request.mutable_vm()->set_rootfs(
-      base_path.Append(kCrostiniRootfs).AsUTF8Unsafe());
   request.set_name(std::move(name));
   request.set_start_termina(true);
   request.set_owner_id(owner_id_);
@@ -1208,24 +1203,11 @@ void CrostiniManager::StartTerminaVm(std::string name,
   DCHECK_LT(0, cpus);
   request.set_cpus(cpus);
 
-  // The stateful disk must be added first because concierge treats it
-  // specially.
-  {
-    vm_tools::concierge::DiskImage* disk_image = request.add_disks();
-    disk_image->set_path(std::move(disk_path_string));
-    disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
-    disk_image->set_writable(true);
-    disk_image->set_do_mount(false);
-  }
-
-  {
-    vm_tools::concierge::DiskImage* disk_image = request.add_disks();
-    disk_image->set_path(base_path.Append(kCrostiniToolfs).AsUTF8Unsafe());
-    disk_image->set_mount_point(kCrostiniToolfsMountPath);
-    disk_image->set_fstype(kCrostiniToolfsType);
-    disk_image->set_writable(false);
-    disk_image->set_do_mount(true);
-  }
+  vm_tools::concierge::DiskImage* disk_image = request.add_disks();
+  disk_image->set_path(std::move(disk_path_string));
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_writable(true);
+  disk_image->set_do_mount(false);
 
   GetConciergeClient()->StartTerminaVm(
       request, base::BindOnce(&CrostiniManager::OnStartTerminaVm,

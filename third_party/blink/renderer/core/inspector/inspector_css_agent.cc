@@ -2616,6 +2616,7 @@ Response InspectorCSSAgent::trackComputedStyleUpdates(
     if (computed_style_updated_callback_) {
       computed_style_updated_callback_->sendSuccess(
           BuildArrayForComputedStyleUpdatedNodes());
+      computed_style_updated_callback_ = nullptr;
     }
     computed_style_updated_node_ids_.clear();
     return Response::Success();

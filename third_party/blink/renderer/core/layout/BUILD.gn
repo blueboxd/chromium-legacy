@@ -385,8 +385,6 @@ blink_core_sources("layout") {
     "ng/inline/ng_line_box_fragment_builder.h",
     "ng/inline/ng_line_breaker.cc",
     "ng/inline/ng_line_breaker.h",
-    "ng/inline/ng_line_height_metrics.cc",
-    "ng/inline/ng_line_height_metrics.h",
     "ng/inline/ng_line_truncator.cc",
     "ng/inline/ng_line_truncator.h",
     "ng/inline/ng_line_utils.cc",

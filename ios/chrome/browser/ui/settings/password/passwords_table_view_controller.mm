@@ -51,6 +51,8 @@
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
@@ -178,6 +180,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     BooleanObserver,
     ChromeIdentityServiceObserver,
     LegacyPasswordDetailsTableViewControllerDelegate,
+    PasswordDetailsCoordinatorDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
@@ -261,6 +264,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 // Current state of the Password Check.
 @property(nonatomic, assign) PasswordCheckUIState passwordCheckState;
+
+// Coordinator for password details.
+@property(nonatomic, strong)
+    PasswordDetailsCoordinator* passwordDetailsCoordinator;
 
 @end
 
@@ -536,6 +543,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [_passwordIssuesCoordinator stop];
   _passwordIssuesCoordinator.delegate = nil;
   _passwordIssuesCoordinator = nil;
+
+  [self.passwordDetailsCoordinator stop];
+  self.passwordDetailsCoordinator.delegate = nil;
+  self.passwordDetailsCoordinator = nil;
 }
 
 #pragma mark - Items
@@ -896,7 +907,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 - (BOOL)willHandlePasswordDeletion:(const autofill::PasswordForm&)password {
-  [self passwordDetailsTableViewController:nil deletePassword:password];
+  [self deletePasswordForm:password];
   return YES;
 }
 
@@ -1208,13 +1219,27 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
-  LegacyPasswordDetailsTableViewController* controller =
-      [[LegacyPasswordDetailsTableViewController alloc]
-            initWithPasswordForm:form
-                        delegate:self
-          reauthenticationModule:_reauthenticationModule];
-  controller.dispatcher = self.dispatcher;
-  [self.navigationController pushViewController:controller animated:YES];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    DCHECK(!self.passwordDetailsCoordinator);
+    self.passwordDetailsCoordinator = [[PasswordDetailsCoordinator alloc]
+        initWithBaseNavigationController:self.navigationController
+                                 browser:_browser
+                                password:form
+                            reauthModule:_reauthenticationModule
+                    passwordCheckManager:_passwordCheck.get()];
+    self.passwordDetailsCoordinator.dispatcher = self.dispatcher;
+    self.passwordDetailsCoordinator.delegate = self;
+    [self.passwordDetailsCoordinator start];
+  } else {
+    LegacyPasswordDetailsTableViewController* controller =
+        [[LegacyPasswordDetailsTableViewController alloc]
+              initWithPasswordForm:form
+                          delegate:self
+            reauthenticationModule:_reauthenticationModule];
+    controller.dispatcher = self.dispatcher;
+    [self.navigationController pushViewController:controller animated:YES];
+  }
 }
 
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
@@ -1470,37 +1495,28 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return cell;
 }
 
+#pragma mark PasswordDetailsCoordinatorDelegate
+
+- (void)passwordDetailsCoordinatorDidRemove:
+    (PasswordDetailsCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordDetailsCoordinator, coordinator);
+  [self.passwordDetailsCoordinator stop];
+  self.passwordDetailsCoordinator.delegate = nil;
+  self.passwordDetailsCoordinator = nil;
+}
+
+- (void)passwordDetailsCoordinator:(PasswordDetailsCoordinator*)coordinator
+                    deletePassword:(const autofill::PasswordForm&)password {
+  DCHECK_EQ(self.passwordDetailsCoordinator, coordinator);
+  [self deletePasswordForm:password];
+}
+
 #pragma mark LegacyPasswordDetailsTableViewControllerDelegate
 
 - (void)passwordDetailsTableViewController:
             (LegacyPasswordDetailsTableViewController*)controller
                             deletePassword:(const autofill::PasswordForm&)form {
-  _passwordStore->RemoveLogin(form);
-
-  std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
-      form.blocked_by_user ? _blockedForms : _savedForms;
-  auto iterator = std::find_if(
-      forms.begin(), forms.end(),
-      [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
-        return *value == form;
-      });
-  DCHECK(iterator != forms.end());
-  forms.erase(iterator);
-
-  password_manager::DuplicatesMap& duplicates = form.blocked_by_user
-                                                    ? _blockedPasswordDuplicates
-                                                    : _savedPasswordDuplicates;
-  std::string key = password_manager::CreateSortKey(form);
-  auto duplicatesRange = duplicates.equal_range(key);
-  for (auto iterator = duplicatesRange.first;
-       iterator != duplicatesRange.second; ++iterator) {
-    _passwordStore->RemoveLogin(*(iterator->second));
-  }
-  duplicates.erase(key);
-
-  [self updateUIForEditState];
-  [self reloadData];
-  [self.navigationController popViewControllerAnimated:YES];
+  [self deletePasswordForm:form];
 }
 
 #pragma mark SuccessfulReauthTimeAccessor
@@ -1659,6 +1675,38 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     self.navigationItem.searchController.searchBar.alpha =
         kTableViewNavigationAlphaForDisabledSearchBar;
   }
+}
+
+// Deletes passed password form and updates list accordingly.
+- (void)deletePasswordForm:(const autofill::PasswordForm&)form {
+  _passwordStore->RemoveLogin(form);
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
+      form.blocked_by_user ? _blockedForms : _savedForms;
+  auto iterator = std::find_if(
+      forms.begin(), forms.end(),
+      [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
+        return *value == form;
+      });
+  DCHECK(iterator != forms.end());
+  forms.erase(iterator);
+
+  password_manager::DuplicatesMap& duplicates = form.blocked_by_user
+                                                    ? _blockedPasswordDuplicates
+                                                    : _savedPasswordDuplicates;
+  std::string key = password_manager::CreateSortKey(form);
+  auto duplicatesRange = duplicates.equal_range(key);
+  for (auto iterator = duplicatesRange.first;
+       iterator != duplicatesRange.second; ++iterator) {
+    _passwordStore->RemoveLogin(*(iterator->second));
+  }
+  duplicates.erase(key);
+
+  [self updateUIForEditState];
+  [self reloadData];
+  // TODO(crbug.com/1096986): Delete this once
+  // LegacyPasswordDetailsTableViewController is removed.
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - Testing

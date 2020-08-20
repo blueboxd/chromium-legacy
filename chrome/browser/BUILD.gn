@@ -2854,6 +2854,8 @@ static_library("browser") {
       "password_manager/android/password_accessory_controller_impl.cc",
       "password_manager/android/password_accessory_controller_impl.h",
       "password_manager/android/password_accessory_metrics_util.h",
+      "password_manager/android/password_checkup_launcher_helper.cc",
+      "password_manager/android/password_checkup_launcher_helper.h",
       "password_manager/android/password_generation_controller.h",
       "password_manager/android/password_generation_controller_impl.cc",
       "password_manager/android/password_generation_controller_impl.h",
@@ -5931,6 +5933,7 @@ grit("resources") {
   }
   if (is_chromeos) {
     deps += [
+      "//chrome/browser/resources/chromeos/account_manager:web_components",
       "//chrome/browser/resources/chromeos/account_manager/components:web_components",
       "//chrome/browser/resources/chromeos/crostini_installer:polymer3_elements",
       "//chrome/browser/resources/chromeos/crostini_upgrader:polymer3_elements",

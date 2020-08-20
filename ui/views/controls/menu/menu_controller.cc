@@ -3121,11 +3121,13 @@ void MenuController::SetNextHotTrackedView(
 }
 
 void MenuController::SetHotTrackedButton(Button* new_hot_button) {
-  if (hot_button_ == new_hot_button)
-    return;
+  // Set hot tracked state and fire a11y events for the hot tracked button.
+  // This must be done whether or not it was the previous hot tracked button.
+  // For example, when a zoom button is pressed, the menu remains open and the
+  // same zoom button should have its hot tracked state set again.
 
   // If we're providing a new hot-tracked button, first remove the existing one.
-  if (hot_button_) {
+  if (hot_button_ && hot_button_ != new_hot_button) {
     hot_button_->SetHotTracked(false);
     hot_button_->GetViewAccessibility().EndPopupFocusOverride();
   }

@@ -386,8 +386,9 @@ enum class PresentedState {
 
 - (void)dismissSnackbar {
   // Dismiss any bookmark related snackbar this controller could have presented.
-  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:
-                          bookmark_utils_ios::kBookmarksSnackbarCategory];
+  [[MDCSnackbarManager defaultManager]
+      dismissAndCallCompletionBlocksWithCategory:
+          bookmark_utils_ios::kBookmarksSnackbarCategory];
 }
 
 #pragma mark - BookmarkEditViewControllerDelegate

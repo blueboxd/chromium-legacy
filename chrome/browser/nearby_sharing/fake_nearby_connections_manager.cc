@@ -78,6 +78,14 @@ void FakeNearbyConnectionsManager::RegisterPayloadStatusListener(
   // TODO(alexchau): Implement.
 }
 
+void FakeNearbyConnectionsManager::RegisterPayloadPath(
+    int64_t payload_id,
+    const base::FilePath& file_path,
+    ConnectionsCallback callback) {
+  DCHECK(!IsShutdown());
+  // TODO(alexchau): Implement.
+}
+
 FakeNearbyConnectionsManager::Payload*
 FakeNearbyConnectionsManager::GetIncomingPayload(int64_t payload_id) {
   DCHECK(!IsShutdown());

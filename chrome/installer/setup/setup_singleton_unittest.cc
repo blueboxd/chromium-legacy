@@ -21,8 +21,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/installer/setup/installer_state.h"
+#include "chrome/installer/util/initial_preferences.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 

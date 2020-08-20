@@ -15,6 +15,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_password_view.h"
+#include "ash/login/ui/login_pin_input_view.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -66,14 +67,18 @@ namespace {
 
 constexpr const char kLoginAuthUserViewClassName[] = "LoginAuthUserView";
 
-// Distance between the user view (ie, the icon and name) and the password
-// textfield.
+// Distance between the user view (ie, the icon and name) and other elements
 const int kDistanceBetweenUserViewAndPasswordDp = 24;
+const int kDistanceBetweenUserViewAndPinInputDp = 32;
 const int kDistanceBetweenUserViewAndOnlineSigninDp = 24;
 const int kDistanceBetweenUserViewAndChallengeResponseDp = 32;
 
 // Distance between the password textfield and the the pin keyboard.
 const int kDistanceBetweenPasswordFieldAndPinKeyboardDp = 16;
+
+// Height of button used for switching between pin and password authentication.
+const int kPinPasswordToggleButtonHeight = 32;
+const int kPinPasswordToggleButtonPaddingTop = 24;
 
 // Distance from the end of pin keyboard to the bottom of the big user view.
 const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
@@ -749,7 +754,9 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
 struct LoginAuthUserView::UiState {
   explicit UiState(const LoginAuthUserView* view) {
     has_password = view->ShouldShowPasswordField();
+    has_pin_input = view->ShouldShowPinInputField();
     has_pinpad = view->ShouldShowPinPad();
+    has_toggle = view->ShouldShowToggle();
     has_fingerprint = view->HasAuthMethod(LoginAuthUserView::AUTH_FINGERPRINT);
     has_challenge_response =
         view->HasAuthMethod(LoginAuthUserView::AUTH_CHALLENGE_RESPONSE);
@@ -762,7 +769,9 @@ struct LoginAuthUserView::UiState {
   }
 
   bool has_password = false;
+  bool has_pin_input = false;
   bool has_pinpad = false;
+  bool has_toggle = false;
   bool has_fingerprint = false;
   bool has_challenge_response = false;
   bool auth_disabled = false;
@@ -786,6 +795,14 @@ LoginPasswordView* LoginAuthUserView::TestApi::password_view() const {
 
 LoginPinView* LoginAuthUserView::TestApi::pin_view() const {
   return view_->pin_view_;
+}
+
+LoginPinInputView* LoginAuthUserView::TestApi::pin_input_view() const {
+  return view_->pin_input_view_;
+}
+
+views::Button* LoginAuthUserView::TestApi::pin_password_toggle() const {
+  return view_->pin_password_toggle_;
 }
 
 views::Button* LoginAuthUserView::TestApi::online_sign_in_message() const {
@@ -850,6 +867,32 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view->layer()->SetFillsBoundsOpaquely(false);
   password_view_->SetDisplayPasswordButtonVisible(
       user.show_display_password_button);
+  password_view->Init(
+      base::BindRepeating(&LoginAuthUserView::OnAuthSubmit,
+                          base::Unretained(this)),
+      base::BindRepeating(&LoginAuthUserView::OnPasswordTextChanged,
+                          base::Unretained(this)),
+      callbacks.on_easy_unlock_icon_hovered,
+      callbacks.on_easy_unlock_icon_tapped);
+
+  auto pin_input_view = std::make_unique<LoginPinInputView>();
+  pin_input_view_ = pin_input_view.get();
+  pin_input_view->Init(base::BindRepeating(&LoginAuthUserView::OnAuthSubmit,
+                                           base::Unretained(this)),
+                       base::BindRepeating(&LoginAuthUserView::OnPinTextChanged,
+                                           base::Unretained(this)));
+
+  auto toggle_container = std::make_unique<NonAccessibleView>();
+  toggle_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(kPinPasswordToggleButtonPaddingTop, 0, 0, 0)));
+  pin_password_toggle_ =
+      toggle_container->AddChildView(std::make_unique<SystemLabelButton>(
+          this, GetPinPasswordToggleText(),
+          SystemLabelButton::DisplayType::DEFAULT,
+          /*multiline*/ false));
+  pin_password_toggle_->SetMaxSize(
+      gfx::Size(/*ignored*/ 0, kPinPasswordToggleButtonHeight));
 
   auto pin_view = std::make_unique<LoginPinView>(
       LoginPinView::Style::kAlphanumeric, palette,
@@ -870,15 +913,6 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       gfx::Size(kNonEmptyWidthDp, kDistanceBetweenUserViewAndPasswordDp));
   padding_below_user_view_ = padding_below_user_view.get();
 
-  // Initialization of |password_view| is deferred because it needs the
-  // |pin_view| pointer.
-  password_view->Init(base::BindRepeating(&LoginAuthUserView::OnAuthSubmit,
-                                          base::Unretained(this)),
-                      base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
-                                          base::Unretained(pin_view.get())),
-                      callbacks.on_easy_unlock_icon_hovered,
-                      callbacks.on_easy_unlock_icon_tapped);
-
   base::string16 button_message =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE);
   if (user.is_signed_in) {
@@ -886,7 +920,8 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
         l10n_util::GetStringUTF16(IDS_ASH_LOCK_SCREEN_VERIFY_ACCOUNT_MESSAGE);
   }
   auto online_sign_in_message = std::make_unique<SystemLabelButton>(
-      this, button_message, SystemLabelButton::DisplayType::ALERT_WITH_ICON);
+      this, button_message, SystemLabelButton::DisplayType::ALERT_WITH_ICON,
+      /*multiline*/ false);
   online_sign_in_message_ = online_sign_in_message.get();
 
   auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();
@@ -916,6 +951,10 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       login_views_utils::WrapViewForPreferredSize(std::move(user_view));
   auto wrapped_pin_view =
       login_views_utils::WrapViewForPreferredSize(std::move(pin_view));
+  auto wrapped_pin_input_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(pin_input_view));
+  auto wrapped_pin_password_toggle_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(toggle_container));
   auto wrapped_fingerprint_view =
       login_views_utils::WrapViewForPreferredSize(std::move(fingerprint_view));
   auto wrapped_challenge_response_view =
@@ -935,7 +974,11 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       AddChildView(std::move(wrapped_online_sign_in_message_view));
   views::View* wrapped_disabled_auth_message_view_ptr =
       AddChildView(std::move(wrapped_disabled_auth_message_view));
+  views::View* wrapped_pin_input_view_ptr =
+      AddChildView(std::move(wrapped_pin_input_view));
   views::View* wrapped_pin_view_ptr = AddChildView(std::move(wrapped_pin_view));
+  views::View* wrapped_pin_password_toggle_view_ptr =
+      AddChildView(std::move(wrapped_pin_password_toggle_view));
   views::View* wrapped_fingerprint_view_ptr =
       AddChildView(std::move(wrapped_fingerprint_view));
   views::View* wrapped_challenge_response_view_ptr =
@@ -971,8 +1014,10 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   add_view(wrapped_password_view_ptr);
   add_view(wrapped_online_sign_in_message_view_ptr);
   add_view(wrapped_disabled_auth_message_view_ptr);
+  add_view(wrapped_pin_input_view_ptr);
   add_view(wrapped_padding_below_password_view_ptr);
   add_view(wrapped_pin_view_ptr);
+  add_view(wrapped_pin_password_toggle_view_ptr);
   add_view(wrapped_fingerprint_view_ptr);
   add_view(wrapped_challenge_response_view_ptr);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
@@ -1010,6 +1055,12 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   password_view_->SetFocusEnabledForChildViews(current_state.has_password);
   password_view_->SetVisible(current_state.has_password);
   password_view_->layer()->SetOpacity(current_state.has_password ? 1 : 0);
+
+  pin_input_view_->UpdateLength(auth_metadata_.autosubmit_pin_length);
+  pin_input_view_->SetVisible(current_state.has_pin_input);
+
+  pin_password_toggle_->SetVisible(current_state.has_toggle);
+  pin_password_toggle_->SetText(GetPinPasswordToggleText());
 
   fingerprint_view_->SetVisible(current_state.has_fingerprint);
   fingerprint_view_->SetCanUsePin(HasAuthMethod(AUTH_PIN));
@@ -1065,6 +1116,7 @@ void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
   stop_animation(pin_view_);
   stop_animation(fingerprint_view_);
   stop_animation(challenge_response_view_);
+  stop_animation(pin_password_toggle_);
 
   DCHECK(!previous_state_);
   previous_state_ = std::make_unique<UiState>(this);
@@ -1133,6 +1185,25 @@ void LoginAuthUserView::ApplyAnimationPostLayout(bool animate) {
   }
 
   ////////
+  // Fade the pin/pwd toggle if its being hidden or shown.
+  if (previous_state_->has_toggle != current_state.has_toggle) {
+    float opacity_start = 0, opacity_end = 1;
+    if (!current_state.has_toggle)
+      std::swap(opacity_start, opacity_end);
+
+    pin_password_toggle_->layer()->SetOpacity(opacity_start);
+
+    {
+      ui::ScopedLayerAnimationSettings settings(
+          pin_password_toggle_->layer()->GetAnimator());
+      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+          login_constants::kChangeUserAnimationDurationMs));
+      settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+      pin_password_toggle_->layer()->SetOpacity(opacity_end);
+    }
+  }
+
+  ////////
   // Grow/shrink the PIN keyboard if it is being hidden or shown.
 
   if (previous_state_->has_pinpad != current_state.has_pinpad) {
@@ -1146,7 +1217,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout(bool animate) {
 
       // Since PIN is disabled, the previous Layout() hid the PIN keyboard.
       // We need to redisplay it where it used to be.
-      pin_view_->SetVisible(true);
+      // pin_view_->SetVisible(true);
       pin_view_->SetBoundsRect(pin_bounds);
     }
 
@@ -1245,7 +1316,10 @@ const LoginUserInfo& LoginAuthUserView::current_user() const {
   return user_view_->current_user();
 }
 
-views::View* LoginAuthUserView::GetAnchorView() {
+views::View* LoginAuthUserView::GetActiveInputView() {
+  if (input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE)
+    return pin_input_view_;
+
   return password_view_;
 }
 
@@ -1263,9 +1337,11 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  DCHECK(sender == online_sign_in_message_);
+  DCHECK(sender == online_sign_in_message_ || sender == pin_password_toggle_);
   if (sender == online_sign_in_message_) {
     OnOnlineSignInMessageTap();
+  } else if (sender == pin_password_toggle_) {
+    OnSwitchButtonClicked();
   }
 }
 
@@ -1339,13 +1415,33 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
 }
 
 void LoginAuthUserView::OnPinPadBackspace() {
+  DCHECK(pin_input_view_);
   DCHECK(password_view_);
-  password_view_->Backspace();
+  if (input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE)
+    pin_input_view_->Backspace();
+  else
+    password_view_->Backspace();
 }
 
 void LoginAuthUserView::OnPinPadInsertDigit(int digit) {
+  DCHECK(pin_input_view_);
   DCHECK(password_view_);
-  password_view_->InsertNumber(digit);
+  if (input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE)
+    pin_input_view_->InsertDigit(digit);
+  else
+    password_view_->InsertNumber(digit);
+}
+
+void LoginAuthUserView::OnPasswordTextChanged(bool is_empty) {
+  DCHECK(pin_view_);
+  if (input_field_mode_ != InputFieldMode::PIN_WITH_TOGGLE)
+    pin_view_->OnPasswordTextChanged(is_empty);
+}
+
+void LoginAuthUserView::OnPinTextChanged(bool is_empty) {
+  DCHECK(pin_view_);
+  if (input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE)
+    pin_view_->OnPasswordTextChanged(is_empty);
 }
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
@@ -1374,10 +1470,34 @@ void LoginAuthUserView::UpdateFocus() {
     challenge_response_view_->RequestFocus();
   if (current_state.has_password && !previous_state_->has_password)
     password_view_->RequestFocus();
+  if (current_state.has_pin_input)
+    pin_input_view_->RequestFocus();
   // Tapping the user view will trigger the online sign-in flow when
   // |force_online_sign_in| is true.
   if (current_state.force_online_sign_in)
     user_view_->RequestFocus();
+}
+
+void LoginAuthUserView::OnSwitchButtonClicked() {
+  // Ignore events from the switch button if no longer present.
+  if (input_field_mode_ != InputFieldMode::PIN_WITH_TOGGLE &&
+      input_field_mode_ != InputFieldMode::PWD_WITH_TOGGLE) {
+    return;
+  }
+
+  // Clear both input fields.
+  password_view_->Reset();
+  pin_input_view_->Reset();
+  // Cache the current state of the UI.
+  CaptureStateForAnimationPreLayout();
+  // Same auth methods, but the input field mode has changed.
+  input_field_mode_ = (input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE)
+                          ? InputFieldMode::PWD_WITH_TOGGLE
+                          : InputFieldMode::PIN_WITH_TOGGLE;
+  SetAuthMethods(auth_methods_, auth_metadata_);
+  // Layout and animate.
+  Layout();
+  ApplyAnimationPostLayout(/*animate*/ true);
 }
 
 void LoginAuthUserView::UpdateInputFieldMode() {
@@ -1399,8 +1519,19 @@ void LoginAuthUserView::UpdateInputFieldMode() {
     return;
   }
 
-  input_field_mode_ = InputFieldMode::PIN_AND_PASSWORD;
-  return;
+  // Default to combined password/pin if autosubmit is disabled.
+  const int pin_length = auth_metadata_.autosubmit_pin_length;
+  if (!LoginPinInputView::IsAutosubmitSupported(pin_length)) {
+    input_field_mode_ = InputFieldMode::PIN_AND_PASSWORD;
+    return;
+  }
+
+  // Defaults to PIN + switch button if not showing the switch button already.
+  if (input_field_mode_ != InputFieldMode::PIN_WITH_TOGGLE &&
+      input_field_mode_ != InputFieldMode::PWD_WITH_TOGGLE) {
+    input_field_mode_ = InputFieldMode::PIN_WITH_TOGGLE;
+    return;
+  }
 }
 
 bool LoginAuthUserView::ShouldShowPinPad() const {
@@ -1410,15 +1541,27 @@ bool LoginAuthUserView::ShouldShowPinPad() const {
     case InputFieldMode::NONE:
       return false;
     case InputFieldMode::PASSWORD_ONLY:
+    case InputFieldMode::PWD_WITH_TOGGLE:
       return auth_metadata_.show_pinpad_for_pw;
     case InputFieldMode::PIN_AND_PASSWORD:
+    case InputFieldMode::PIN_WITH_TOGGLE:
       return true;
   }
 }
 
 bool LoginAuthUserView::ShouldShowPasswordField() const {
   return input_field_mode_ == InputFieldMode::PASSWORD_ONLY ||
-         input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD;
+         input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD ||
+         input_field_mode_ == InputFieldMode::PWD_WITH_TOGGLE;
+}
+
+bool LoginAuthUserView::ShouldShowPinInputField() const {
+  return input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE;
+}
+
+bool LoginAuthUserView::ShouldShowToggle() const {
+  return input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE ||
+         input_field_mode_ == InputFieldMode::PWD_WITH_TOGGLE;
 }
 
 gfx::Size LoginAuthUserView::GetPaddingBelowUserView() const {
@@ -1426,6 +1569,8 @@ gfx::Size LoginAuthUserView::GetPaddingBelowUserView() const {
 
   if (state.has_password)
     return SizeFromHeight(kDistanceBetweenUserViewAndPasswordDp);
+  if (state.has_pin_input)
+    return SizeFromHeight(kDistanceBetweenUserViewAndPinInputDp);
   if (state.force_online_sign_in)
     return SizeFromHeight(kDistanceBetweenUserViewAndOnlineSigninDp);
   if (state.has_challenge_response)
@@ -1445,6 +1590,13 @@ gfx::Size LoginAuthUserView::GetPaddingBelowPasswordView() const {
     return SizeFromHeight(kDistanceBetweenPwdFieldAndChallengeResponseViewDp);
 
   return SizeFromHeight(0);
+}
+
+base::string16 LoginAuthUserView::GetPinPasswordToggleText() {
+  if (input_field_mode_ == InputFieldMode::PWD_WITH_TOGGLE)
+    return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SWITCH_TO_PIN);
+  else
+    return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SWITCH_TO_PASSWORD);
 }
 
 base::string16 LoginAuthUserView::GetPasswordViewPlaceholder() const {

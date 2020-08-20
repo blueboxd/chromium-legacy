@@ -27,8 +27,14 @@ class PasswordCheckProperties {
             new PropertyModel.WritableObjectPropertyKey<>("deletion_confirmation_handler");
     static final PropertyModel.WritableObjectPropertyKey<String> DELETION_ORIGIN =
             new PropertyModel.WritableObjectPropertyKey<>("deletion_origin");
+    static final PropertyModel.WritableObjectPropertyKey<CompromisedCredential> VIEW_CREDENTIAL =
+            new PropertyModel.WritableObjectPropertyKey<>("view_credential");
+    static final PropertyModel.WritableObjectPropertyKey<PasswordCheckViewDialogFragment.Handler>
+            VIEW_DIALOG_HANDLER =
+            new PropertyModel.WritableObjectPropertyKey<>("view_dialog_handler");
 
-    static final PropertyKey[] ALL_KEYS = {ITEMS, DELETION_CONFIRMATION_HANDLER, DELETION_ORIGIN};
+    static final PropertyKey[] ALL_KEYS = {ITEMS, DELETION_CONFIRMATION_HANDLER, DELETION_ORIGIN,
+            VIEW_CREDENTIAL, VIEW_DIALOG_HANDLER};
 
     static PropertyModel createDefaultModel() {
         return new PropertyModel.Builder(ALL_KEYS).with(ITEMS, new ListModel<>()).build();
@@ -67,11 +73,15 @@ class PasswordCheckProperties {
         static final PropertyModel
                 .WritableObjectPropertyKey<Integer> COMPROMISED_CREDENTIALS_COUNT =
                 new PropertyModel.WritableObjectPropertyKey<>("compromised_credentials_count");
+        static final PropertyModel
+                .ReadableObjectPropertyKey<Runnable> LAUNCH_ACCOUNT_CHECKUP_ACTION =
+                new PropertyModel.ReadableObjectPropertyKey<>("launch_account_checkup_action");
         static final PropertyModel.ReadableObjectPropertyKey<Runnable> RESTART_BUTTON_ACTION =
-                new PropertyModel.WritableObjectPropertyKey<>("restart_button_action");
+                new PropertyModel.ReadableObjectPropertyKey<>("restart_button_action");
 
         static final PropertyKey[] ALL_KEYS = {CHECK_PROGRESS, CHECK_STATUS, CHECK_TIMESTAMP,
-                COMPROMISED_CREDENTIALS_COUNT, RESTART_BUTTON_ACTION};
+                COMPROMISED_CREDENTIALS_COUNT, LAUNCH_ACCOUNT_CHECKUP_ACTION,
+                RESTART_BUTTON_ACTION};
 
         static final Pair<Integer, Integer> UNKNOWN_PROGRESS = new Pair<>(-1, -1);
 

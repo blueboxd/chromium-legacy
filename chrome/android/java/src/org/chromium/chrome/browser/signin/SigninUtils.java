@@ -98,7 +98,7 @@ public class SigninUtils {
         SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSignInAllowed()) {
-            SigninActivityLauncher.get().launchActivity(context, accessPoint);
+            SigninActivityLauncherImpl.get().launchActivity(context, accessPoint);
             return true;
         }
         if (signinManager.isSigninDisabledByPolicy()) {

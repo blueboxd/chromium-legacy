@@ -406,7 +406,7 @@ void NearbySharingServiceImpl::Accept(
 void NearbySharingServiceImpl::Reject(
     const ShareTarget& share_target,
     StatusCodesCallback status_codes_callback) {
-  NearbyConnection* connection = GetIncomingConnection(share_target);
+  NearbyConnection* connection = GetConnection(share_target);
   if (!connection) {
     NS_LOG(WARNING) << __func__ << ": Reject invoked for unknown share target";
     std::move(status_codes_callback).Run(StatusCodes::kOutOfOrderApiCall);
@@ -481,10 +481,10 @@ void NearbySharingServiceImpl::OnIncomingConnection(
   DCHECK(connection);
 
   ShareTarget placeholder_share_target;
-  auto& share_target_info =
-      GetIncomingShareTargetInfo(placeholder_share_target);
+  placeholder_share_target.is_incoming = true;
+  ShareTargetInfo& share_target_info =
+      GetOrCreateShareTargetInfo(placeholder_share_target, endpoint_id);
   share_target_info.set_connection(connection);
-  share_target_info.set_endpoint_id(endpoint_id);
 
   connection->SetDisconnectionListener(
       base::BindOnce(&NearbySharingServiceImpl::RefreshUIOnDisconnection,
@@ -575,8 +575,6 @@ void NearbySharingServiceImpl::OnOutgoingDecryptedCertificate(
   NS_LOG(VERBOSE) << __func__
                   << ": An endpoint has been discovered, with an advertisement "
                      "containing a valid share target.";
-  GetOrCreateOutgoingShareTargetInfo(*share_target, endpoint_id)
-      .set_endpoint_id(endpoint_id);
 
   // Notifies the user that we discovered a device.
   for (ShareTargetDiscoveredCallback& discovery_callback :
@@ -1170,11 +1168,12 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::ReceivePayloads(
     const ShareTarget& share_target) {
   mutual_acceptance_timeout_alarm_.Cancel();
 
-  NearbyConnection* connection = GetIncomingConnection(share_target);
-  if (!connection) {
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->connection()) {
     NS_LOG(WARNING) << __func__ << ": Accept invoked for unknown share target";
     return StatusCodes::kOutOfOrderApiCall;
   }
+  NearbyConnection* connection = info->connection();
 
   // TODO(himanshujaju) - Implement payload tracker.
 
@@ -1203,11 +1202,10 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::ReceivePayloads(
       share_target,
       TransferMetadataBuilder()
           .set_status(TransferMetadata::Status::kAwaitingRemoteAcceptance)
-          .set_token(GetIncomingShareTargetInfo(share_target).token())
+          .set_token(info->token())
           .build());
 
-  base::Optional<std::string> endpoint_id =
-      GetIncomingShareTargetInfo(share_target).endpoint_id();
+  base::Optional<std::string> endpoint_id = info->endpoint_id();
   if (endpoint_id) {
     nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
   } else {
@@ -1243,7 +1241,7 @@ void NearbySharingServiceImpl::WriteResponse(
 
 void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
                                     TransferMetadata::Status status) {
-  NearbyConnection* connection = GetIncomingConnection(share_target);
+  NearbyConnection* connection = GetConnection(share_target);
   if (!connection) {
     NS_LOG(WARNING) << __func__ << ": Fail invoked for unknown share target.";
     return;
@@ -1291,7 +1289,7 @@ void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
 
 void NearbySharingServiceImpl::CloseConnection(
     const ShareTarget& share_target) {
-  NearbyConnection* connection = GetIncomingConnection(share_target);
+  NearbyConnection* connection = GetConnection(share_target);
   if (!connection) {
     NS_LOG(WARNING) << __func__ << ": Invalid connection for target - "
                     << share_target.device_name;
@@ -1304,8 +1302,7 @@ void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
     const std::string& endpoint_id,
     ShareTarget placeholder_share_target,
     sharing::mojom::AdvertisementPtr advertisement) {
-  NearbyConnection* connection =
-      GetIncomingConnection(placeholder_share_target);
+  NearbyConnection* connection = GetConnection(placeholder_share_target);
   if (!connection) {
     NS_LOG(VERBOSE) << __func__ << ": Invalid connection for endoint id - "
                     << endpoint_id;
@@ -1335,8 +1332,7 @@ void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
     sharing::mojom::AdvertisementPtr advertisement,
     ShareTarget placeholder_share_target,
     base::Optional<NearbyShareDecryptedPublicCertificate> certificate) {
-  NearbyConnection* connection =
-      GetIncomingConnection(placeholder_share_target);
+  NearbyConnection* connection = GetConnection(placeholder_share_target);
   if (!connection) {
     NS_LOG(VERBOSE) << __func__ << ": Invalid connection for endpoint id - "
                     << endpoint_id;
@@ -1361,10 +1357,9 @@ void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
   NS_LOG(VERBOSE) << __func__ << "Received incoming connection from "
                   << share_target->device_name;
 
-  IncomingShareTargetInfo& share_target_info =
-      GetIncomingShareTargetInfo(*share_target);
-  share_target_info.set_connection(connection);
-  share_target_info.set_endpoint_id(endpoint_id);
+  ShareTargetInfo* share_target_info = GetShareTargetInfo(*share_target);
+  DCHECK(share_target_info);
+  share_target_info->set_connection(connection);
 
   connection->SetDisconnectionListener(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
@@ -1381,18 +1376,18 @@ void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
     return;
   }
 
-  share_target_info.set_frames_reader(std::make_unique<IncomingFramesReader>(
+  share_target_info->set_frames_reader(std::make_unique<IncomingFramesReader>(
       process_manager_, profile_, connection));
 
   bool restrict_to_contacts =
       advertising_power_level_ != PowerLevel::kHighPower;
-  share_target_info.set_key_verification_runner(
+  share_target_info->set_key_verification_runner(
       std::make_unique<PairedKeyVerificationRunner>(
           *share_target, endpoint_id, *token, connection,
-          share_target_info.certificate(), GetCertificateManager(),
+          share_target_info->certificate(), GetCertificateManager(),
           settings_.GetVisibility(), restrict_to_contacts,
-          share_target_info.frames_reader(), kReadFramesTimeout));
-  share_target_info.key_verification_runner()->Run(base::BindOnce(
+          share_target_info->frames_reader(), kReadFramesTimeout));
+  share_target_info->key_verification_runner()->Run(base::BindOnce(
       &NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone,
       weak_ptr_factory_.GetWeakPtr(), std::move(*share_target),
       std::move(token)));
@@ -1402,10 +1397,8 @@ void NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone(
     ShareTarget share_target,
     base::Optional<std::vector<uint8_t>> token,
     PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
-  NearbyConnection* connection = GetIncomingConnection(share_target);
-  const base::Optional<std::string>& endpoint_id =
-      GetIncomingShareTargetInfo(share_target).endpoint_id();
-  if (!connection || !endpoint_id) {
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->connection() || !info->endpoint_id()) {
     NS_LOG(VERBOSE) << __func__ << ": Invalid connection or endpoint id";
     return;
   }
@@ -1418,14 +1411,14 @@ void NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone(
     case PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail:
       NS_LOG(VERBOSE) << __func__
                       << ": Paired key handshake failed, disconnecting.";
-      connection->Close();
+      info->connection()->Close();
       return;
 
     case PairedKeyVerificationRunner::PairedKeyVerificationResult::kSuccess:
       NS_LOG(VERBOSE) << __func__
                       << ": Paired key handshake succeeded for target - "
                       << share_target.device_name;
-      nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
+      nearby_connections_manager_->UpgradeBandwidth(*info->endpoint_id());
       ReceiveIntroduction(share_target, /*token=*/base::nullopt);
       break;
 
@@ -1435,10 +1428,10 @@ void NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone(
                          "receiving connection from target - "
                       << share_target.device_name;
       if (advertising_power_level_ == PowerLevel::kHighPower)
-        nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
+        nearby_connections_manager_->UpgradeBandwidth(*info->endpoint_id());
 
       if (token_string)
-        GetIncomingShareTargetInfo(share_target).set_token(*token_string);
+        info->set_token(*token_string);
 
       ReceiveIntroduction(share_target, std::move(token_string));
       break;
@@ -1447,7 +1440,7 @@ void NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone(
       NS_LOG(VERBOSE)
           << __func__
           << ": Unknown PairedKeyVerificationResult, disconnecting.";
-      connection->Close();
+      info->connection()->Close();
       break;
   }
 }
@@ -1468,17 +1461,10 @@ void NearbySharingServiceImpl::ReceiveIntroduction(
     base::Optional<std::string> token) {
   NS_LOG(INFO) << __func__ << ": Receiving introduction from "
                << share_target.device_name;
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  DCHECK(info && info->connection());
 
-  NearbyConnection* connection = GetIncomingConnection(share_target);
-  if (!connection) {
-    NS_LOG(WARNING)
-        << __func__
-        << ": Ignore introduction, due to no connection established.";
-    return;
-  }
-
-  auto& share_target_info = GetIncomingShareTargetInfo(share_target);
-  share_target_info.frames_reader()->ReadFrame(
+  info->frames_reader()->ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
@@ -1490,13 +1476,14 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     ShareTarget share_target,
     base::Optional<std::string> token,
     base::Optional<sharing::mojom::V1FramePtr> frame) {
-  NearbyConnection* connection = GetIncomingConnection(share_target);
-  if (!connection) {
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->connection()) {
     NS_LOG(WARNING)
         << __func__
         << ": Ignore received introduction, due to no connection established.";
     return;
   }
+  NearbyConnection* connection = info->connection();
 
   if (!frame) {
     connection->Close();
@@ -1599,12 +1586,13 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
     return;
   }
 
-  NearbyConnection* connection = GetIncomingConnection(share_target);
-  if (!connection) {
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->connection()) {
     NS_LOG(WARNING) << __func__ << ": Invalid connection for share target - "
                     << share_target.device_name;
     return;
   }
+  NearbyConnection* connection = info->connection();
 
   mutual_acceptance_timeout_alarm_.Reset(base::BindOnce(
       &NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout,
@@ -1633,8 +1621,7 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
       &NearbySharingServiceImpl::OnIncomingConnectionDisconnected,
       weak_ptr_factory_.GetWeakPtr(), share_target));
 
-  auto* frames_reader =
-      GetIncomingShareTargetInfo(share_target).frames_reader();
+  auto* frames_reader = info->frames_reader();
   if (!frames_reader) {
     NS_LOG(WARNING) << __func__
                     << ": Stopped reading further frames, due to no connection "
@@ -1673,16 +1660,15 @@ void NearbySharingServiceImpl::OnFrameRead(
       break;
   }
 
-  auto* frames_reader =
-      GetIncomingShareTargetInfo(share_target).frames_reader();
-  if (!frames_reader) {
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->frames_reader()) {
     NS_LOG(WARNING) << __func__
                     << ": Stopped reading further frames, due to no connection "
                        "established.";
     return;
   }
 
-  frames_reader->ReadFrame(
+  info->frames_reader()->ReadFrame(
       base::BindOnce(&NearbySharingServiceImpl::OnFrameRead,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
 }
@@ -1742,6 +1728,8 @@ base::Optional<ShareTarget> NearbySharingServiceImpl::CreateShareTarget(
   target.is_incoming = is_incoming;
   target.device_id = GetDeviceId(endpoint_id, certificate);
 
+  ShareTargetInfo& info = GetOrCreateShareTargetInfo(target, endpoint_id);
+
   if (certificate) {
     if (certificate->unencrypted_metadata().has_full_name())
       target.full_name = certificate->unencrypted_metadata().full_name();
@@ -1750,36 +1738,57 @@ base::Optional<ShareTarget> NearbySharingServiceImpl::CreateShareTarget(
       target.image_url = GURL(certificate->unencrypted_metadata().icon_url());
 
     target.is_known = true;
-
-    if (is_incoming)
-      GetIncomingShareTargetInfo(target).set_certificate(
-          std::move(*certificate));
-    else
-      GetOrCreateOutgoingShareTargetInfo(target, endpoint_id)
-          .set_certificate(std::move(*certificate));
+    info.set_certificate(std::move(*certificate));
   }
 
   return target;
 }
 
-IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
-    const ShareTarget& share_target) {
-  return incoming_share_target_info_map_[share_target.id];
-}
-
-NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
-    const ShareTarget& share_target) {
-  return GetIncomingShareTargetInfo(share_target).connection();
-}
-
-OutgoingShareTargetInfo&
-NearbySharingServiceImpl::GetOrCreateOutgoingShareTargetInfo(
+ShareTargetInfo& NearbySharingServiceImpl::GetOrCreateShareTargetInfo(
     const ShareTarget& share_target,
     const std::string& endpoint_id) {
-  // Default initialize outgoing_share_target_map_ as well, since Share Target
-  // needs to have fields explicitly set.
-  outgoing_share_target_map_.emplace(endpoint_id, share_target);
-  return outgoing_share_target_info_map_[share_target.id];
+  if (share_target.is_incoming) {
+    auto& info = incoming_share_target_info_map_[share_target.id];
+    info.set_endpoint_id(endpoint_id);
+    return info;
+  } else {
+    outgoing_share_target_map_.emplace(endpoint_id, share_target);
+    auto& info = outgoing_share_target_info_map_[share_target.id];
+    info.set_endpoint_id(endpoint_id);
+    return info;
+  }
+}
+
+ShareTargetInfo* NearbySharingServiceImpl::GetShareTargetInfo(
+    const ShareTarget& share_target) {
+  if (share_target.is_incoming)
+    return GetIncomingShareTargetInfo(share_target);
+  else
+    return GetOutgoingShareTargetInfo(share_target);
+}
+
+IncomingShareTargetInfo* NearbySharingServiceImpl::GetIncomingShareTargetInfo(
+    const ShareTarget& share_target) {
+  auto it = incoming_share_target_info_map_.find(share_target.id);
+  if (it == incoming_share_target_info_map_.end())
+    return nullptr;
+
+  return &it->second;
+}
+
+OutgoingShareTargetInfo* NearbySharingServiceImpl::GetOutgoingShareTargetInfo(
+    const ShareTarget& share_target) {
+  auto it = outgoing_share_target_info_map_.find(share_target.id);
+  if (it == outgoing_share_target_info_map_.end())
+    return nullptr;
+
+  return &it->second;
+}
+
+NearbyConnection* NearbySharingServiceImpl::GetConnection(
+    const ShareTarget& share_target) {
+  ShareTargetInfo* share_target_info = GetShareTargetInfo(share_target);
+  return share_target_info ? share_target_info->connection() : nullptr;
 }
 
 void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {
@@ -1810,8 +1819,7 @@ void NearbySharingServiceImpl::UnregisterShareTarget(
     if (endpoint_id) {
       NS_LOG(VERBOSE) << __func__ << ": Unregister share target: "
                       << share_target.device_name;
-      GetOrCreateOutgoingShareTargetInfo(share_target, *endpoint_id)
-          .set_endpoint_id(*endpoint_id);
+      GetOrCreateShareTargetInfo(share_target, *endpoint_id);
     } else {
       NS_LOG(VERBOSE)
           << __func__

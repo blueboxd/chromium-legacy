@@ -34,7 +34,7 @@ public class SigninUtilsStartActivityTest {
     private SigninManager mSigninManagerMock;
 
     @Mock
-    private SigninActivityLauncher mLauncherMock;
+    private SigninActivityLauncherImpl mLauncherMock;
 
     @Mock
     private Profile mProfile;
@@ -47,7 +47,7 @@ public class SigninUtilsStartActivityTest {
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
         Profile.setLastUsedProfileForTesting(mProfile);
         when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
-        SigninActivityLauncher.setLauncherForTest(mLauncherMock);
+        SigninActivityLauncherImpl.setLauncherForTest(mLauncherMock);
     }
 
     @Test
@@ -55,7 +55,8 @@ public class SigninUtilsStartActivityTest {
         when(mSigninManagerMock.isSignInAllowed()).thenReturn(true);
         Assert.assertTrue(
                 SigninUtils.startSigninActivityIfAllowed(mContext, SigninAccessPoint.SETTINGS));
-        verify(SigninActivityLauncher.get()).launchActivity(mContext, SigninAccessPoint.SETTINGS);
+        verify(SigninActivityLauncherImpl.get())
+                .launchActivity(mContext, SigninAccessPoint.SETTINGS);
     }
 
     @Test
@@ -66,7 +67,8 @@ public class SigninUtilsStartActivityTest {
         Assert.assertFalse(
                 SigninUtils.startSigninActivityIfAllowed(mContext, SigninAccessPoint.SETTINGS));
         Object toastAfterCall = ShadowToast.getLatestToast();
-        verify(SigninActivityLauncher.get(), never()).launchActivity(any(Context.class), anyInt());
+        verify(SigninActivityLauncherImpl.get(), never())
+                .launchActivity(any(Context.class), anyInt());
         Assert.assertEquals(
                 "No new toast should be made during the call!", toastBeforeCall, toastAfterCall);
     }
@@ -77,7 +79,8 @@ public class SigninUtilsStartActivityTest {
         when(mSigninManagerMock.isSigninDisabledByPolicy()).thenReturn(true);
         Assert.assertFalse(
                 SigninUtils.startSigninActivityIfAllowed(mContext, SigninAccessPoint.SETTINGS));
-        verify(SigninActivityLauncher.get(), never()).launchActivity(any(Context.class), anyInt());
+        verify(SigninActivityLauncherImpl.get(), never())
+                .launchActivity(any(Context.class), anyInt());
         Assert.assertEquals(
                 mContext.getResources().getString(R.string.managed_by_your_organization),
                 ShadowToast.getTextOfLatestToast());

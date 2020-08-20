@@ -19,6 +19,7 @@ const nonGeneratedFiles = [
   'certificate_manager_types.js',
   'certificate_provisioning_browser_proxy.js',
   'certificates_browser_proxy.js',
+  'color_utils.js',
   'cr.m.js',
   'cr_splitter.js',
   'plural_string_proxy.js',

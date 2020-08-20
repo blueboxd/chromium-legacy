@@ -8,6 +8,7 @@ import "chrome/services/sharing/public/mojom/nearby_connections_types.mojom";
 import "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom";
 import "chrome/services/sharing/public/mojom/webrtc.mojom";
 import "device/bluetooth/public/mojom/adapter.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "services/network/public/mojom/p2p.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 
@@ -95,6 +96,16 @@ interface ConnectionLifecycleListener {
 // utiltiiy process, and is used by the browser process to listen for payload
 // status associated with remote endpoints.
 interface PayloadListener {
+  // Called when a Payload is received from a remote endpoint. Depending on the
+  // type of the Payload, all of the data may or may not have been received at
+  // the time of this call. Use OnPayloadTransferUpdate() to get updates on the
+  // status of the data received.
+  //
+  // endpoint_id - The identifier for the remote endpoint that sent the
+  //               payload.
+  // payload     - The Payload object received.
+  OnPayloadReceived(string endpoint_id, Payload payload);
+
   // Called with progress information about an active Payload transfer, either
   // incoming or outgoing.
   //
@@ -254,9 +265,9 @@ interface NearbyConnections {
 
   // Cancels a Payload currently in-flight to or from remote endpoint(s).
   //
-  // payload_id - The identifier for the Payload to be canceled.
+  // payload_id - The identifier for the Payload to be cancelled.
   // Possible return values include:
-  //   Status::kSuccess if the payload got canceled.
+  //   Status::kSuccess if the payload got cancelled.
   CancelPayload(int64 payload_id) => (Status status);
 
    // Disconnects from, and removes all traces of, all connected and/or
@@ -278,6 +289,17 @@ interface NearbyConnections {
   // Possible return values include:
   //   Status::kSuccess if upgraded successfully.
   InitiateBandwidthUpgrade(string endpoint_id) => (Status status);
+
+  // Register a pair of input and output file for handling incoming file
+  // payload associated with |payload_id_|, which is determined by feature
+  // specific design. The |input_file| should be opened for read access, and
+  // |output_file| should be opened for write access.
+  // Possible return values include:
+  //   Status::kSuccess if file is registered successfully.
+  //   Status::kError if file is not opened correctly.
+  RegisterPayloadFile(int64 payload_id, mojo_base.mojom.File input_file,
+                      mojo_base.mojom.File output_file)
+      => (Status status);
 };
 
 // Provide all the dependencies that NearbyConnections library requires.

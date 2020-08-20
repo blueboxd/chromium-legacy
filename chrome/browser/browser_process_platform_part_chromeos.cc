@@ -242,12 +242,6 @@ void BrowserProcessPlatformPart::StartTearDown() {
   profile_helper_.reset();
 }
 
-std::unique_ptr<policy::ChromeBrowserPolicyConnector>
-BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
-  return std::unique_ptr<policy::ChromeBrowserPolicyConnector>(
-      new policy::BrowserPolicyConnectorChromeOS());
-}
-
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
   if (!system_clock_.get())
     system_clock_.reset(new chromeos::system::SystemClock());

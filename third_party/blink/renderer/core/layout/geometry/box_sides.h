@@ -51,26 +51,28 @@ struct PhysicalBoxSides {
   PhysicalBoxSides(bool top, bool right, bool bottom, bool left)
       : top(top), right(right), bottom(bottom), left(left) {}
   PhysicalBoxSides(LogicalBoxSides logical, WritingMode writing_mode) {
-    // TODO(mstensho): This needs some fixing. The block sides in vertical-rl
-    // writing-mode are not handled correctly, for instance.
+    // The values sideways-lr and sideways-rl are not supported by the engine,
+    // although they're part of the WritingMode enum.
+    DCHECK(writing_mode != WritingMode::kSidewaysLr);
+    DCHECK(writing_mode != WritingMode::kSidewaysRl);
+
     if (writing_mode == WritingMode::kHorizontalTb) {
       top = logical.block_start;
       right = logical.line_right;
       bottom = logical.block_end;
       left = logical.line_left;
-      return;
-    }
-    if (writing_mode != WritingMode::kSidewaysLr) {
+    } else {
       top = logical.line_left;
-      right = logical.block_start;
       bottom = logical.line_right;
-      left = logical.block_end;
-      return;
+      if (writing_mode == WritingMode::kVerticalRl) {
+        right = logical.block_start;
+        left = logical.block_end;
+      } else {
+        DCHECK_EQ(writing_mode, WritingMode::kVerticalLr);
+        right = logical.block_end;
+        left = logical.block_start;
+      }
     }
-    top = logical.line_right;
-    right = logical.block_end;
-    bottom = logical.line_left;
-    left = logical.block_start;
   }
 
   bool IsEmpty() const { return !top && !right && !bottom && !left; }

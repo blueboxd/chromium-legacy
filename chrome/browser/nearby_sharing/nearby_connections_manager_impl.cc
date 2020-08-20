@@ -4,7 +4,9 @@
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 
+#include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
@@ -42,6 +44,17 @@ bool ShouldEnableWebRtc(bool is_advertising,
 
   // We're online, the user hasn't disabled WebRTC, let's use it!
   return true;
+}
+
+InitializeFileResult CreateAndOpenFile(base::FilePath file_path) {
+  base::FilePath unique_path = base::GetUniquePath(file_path);
+  InitializeFileResult result;
+  result.output_file.Initialize(
+      unique_path,
+      base::File::Flags::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
+  result.input_file.Initialize(
+      unique_path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  return result;
 }
 
 }  // namespace
@@ -239,10 +252,38 @@ void NearbyConnectionsManagerImpl::RegisterPayloadStatusListener(
   payload_status_listeners_.insert_or_assign(payload_id, listener);
 }
 
+void NearbyConnectionsManagerImpl::RegisterPayloadPath(
+    int64_t payload_id,
+    const base::FilePath& file_path,
+    ConnectionsCallback callback) {
+  if (!nearby_connections_)
+    return;
+
+  DCHECK(!file_path.empty());
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&CreateAndOpenFile, file_path),
+      base::BindOnce(&NearbyConnectionsManagerImpl::OnFileInitialized,
+                     weak_ptr_factory_.GetWeakPtr(), payload_id,
+                     std::move(callback)));
+}
+
+void NearbyConnectionsManagerImpl::OnFileInitialized(
+    int64_t payload_id,
+    ConnectionsCallback callback,
+    InitializeFileResult result) {
+  nearby_connections_->RegisterPayloadFile(
+      payload_id, std::move(result.input_file), std::move(result.output_file),
+      std::move(callback));
+}
+
 NearbyConnectionsManagerImpl::Payload*
 NearbyConnectionsManagerImpl::GetIncomingPayload(int64_t payload_id) {
-  // TOOD(crbug/1076008): Implement.
-  return nullptr;
+  auto it = incoming_payloads_.find(payload_id);
+  if (it == incoming_payloads_.end())
+    return nullptr;
+
+  return it->second.get();
 }
 
 void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
@@ -271,7 +312,7 @@ void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
 }
 
 void NearbyConnectionsManagerImpl::ClearIncomingPayloads() {
-  // TOOD(crbug/1076008): Implement.
+  incoming_payloads_.clear();
 }
 
 base::Optional<std::vector<uint8_t>>
@@ -455,27 +496,57 @@ void NearbyConnectionsManagerImpl::OnBandwidthChanged(
   // TODO(crbug/1111458): Support TransferManager.
 }
 
+void NearbyConnectionsManagerImpl::OnPayloadReceived(
+    const std::string& endpoint_id,
+    PayloadPtr payload) {
+  auto result = incoming_payloads_.emplace(payload->id, std::move(payload));
+  DCHECK(result.second);
+}
+
 void NearbyConnectionsManagerImpl::OnPayloadTransferUpdate(
     const std::string& endpoint_id,
     PayloadTransferUpdatePtr update) {
   // If this is a payload we've registered for, then forward its status to the
   // PayloadStatusListener. We don't need to do anything more with the payload.
-  auto it = payload_status_listeners_.find(update->payload_id);
-  if (it != payload_status_listeners_.end()) {
-    PayloadStatusListener* listener = it->second;
+  auto listener_it = payload_status_listeners_.find(update->payload_id);
+  if (listener_it != payload_status_listeners_.end()) {
+    PayloadStatusListener* listener = listener_it->second;
     switch (update->status) {
       case PayloadStatus::kInProgress:
         break;
       case PayloadStatus::kSuccess:
       case PayloadStatus::kCanceled:
       case PayloadStatus::kFailure:
-        payload_status_listeners_.erase(it);
+        payload_status_listeners_.erase(listener_it);
         break;
     }
     listener->OnStatusUpdate(std::move(update));
+    return;
   }
 
-  // TOOD(crbug/1076008): Handle incoming  payload transfer.
+  // If this is an incoming payload that we have not registered for, then we'll
+  // treat it as a control frame (eg. IntroductionFrame) and forward it to the
+  // associated NearbyConnection.
+  auto payload_it = incoming_payloads_.find(update->payload_id);
+  if (payload_it == incoming_payloads_.end())
+    return;
+
+  if (!payload_it->second->content->is_bytes()) {
+    NS_LOG(WARNING) << "Received unknown payload of file type. Cancelling.";
+    nearby_connections_->CancelPayload(payload_it->first, base::DoNothing());
+    return;
+  }
+
+  if (update->status != PayloadStatus::kSuccess)
+    return;
+
+  auto connections_it = connections_.find(endpoint_id);
+  if (connections_it == connections_.end())
+    return;
+
+  NS_LOG(INFO) << "Writing incoming byte message to NearbyConnection.";
+  connections_it->second->WriteMessage(
+      payload_it->second->content->get_bytes()->bytes);
 }
 
 bool NearbyConnectionsManagerImpl::BindNearbyConnections() {

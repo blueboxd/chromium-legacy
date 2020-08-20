@@ -903,6 +903,9 @@ extern const char
 extern const char kOmniboxLocalEntitySuggestionsName[];
 extern const char kOmniboxLocalEntitySuggestionsDescription[];
 
+extern const char kOmniboxMostVisitedTilesName[];
+extern const char kOmniboxMostVisitedTilesDescription[];
+
 extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
 extern const char kOmniboxRichAutocompletionMinCharName[];

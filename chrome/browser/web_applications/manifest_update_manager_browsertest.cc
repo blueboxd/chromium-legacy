@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
@@ -1051,16 +1052,9 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpdated, 1);
   AwaitShortcutsUpdated(SK_ColorBLUE);
 
-  // Check that the installed icon is now blue.
-  base::RunLoop run_loop;
-  GetProvider().icon_manager().ReadIcons(
-      app_id, IconPurpose::ANY, {192},
-      base::BindLambdaForTesting(
-          [&run_loop](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
-            run_loop.Quit();
-            EXPECT_EQ(icon_bitmaps.at(192).getColor(0, 0), SK_ColorBLUE);
-          }));
-  run_loop.Run();
+  EXPECT_EQ(ReadAppIconPixel(browser()->profile(), app_id, /*size=*/192,
+                             /*x=*/0, /*y=*/0),
+            SK_ColorBLUE);
 }
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
@@ -1114,17 +1108,12 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
   histogram_tester_.ExpectBucketCount(
       kUpdateHistogramName, ManifestUpdateResult::kIconDownloadFailed, 1);
 
-  // Check that the installed icon is still black.
-  base::RunLoop run_loop;
-  GetProvider().icon_manager().ReadIcons(
-      app_id, IconPurpose::ANY, {48, 192},
-      base::BindLambdaForTesting(
-          [&run_loop](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
-            run_loop.Quit();
-            EXPECT_EQ(icon_bitmaps.at(48).getColor(0, 0), SK_ColorBLACK);
-            EXPECT_EQ(icon_bitmaps.at(192).getColor(0, 0), SK_ColorBLACK);
-          }));
-  run_loop.Run();
+  EXPECT_EQ(ReadAppIconPixel(browser()->profile(), app_id, /*size=*/48, /*x=*/0,
+                             /*y=*/0),
+            SK_ColorBLACK);
+  EXPECT_EQ(ReadAppIconPixel(browser()->profile(), app_id, /*size=*/192,
+                             /*x=*/0, /*y=*/0),
+            SK_ColorBLACK);
 }
 
 class ManifestUpdateManagerSystemAppBrowserTest

@@ -59,7 +59,6 @@ using State = password_manager::BulkLeakCheckService::State;
 namespace {
 
 constexpr char kExampleCom[] = "https://example.com";
-constexpr char kExampleOrg[] = "http://www.example.org";
 constexpr char kExampleApp[] = "com.example.app";
 
 constexpr char kUsername1[] = "alice";
@@ -390,49 +389,4 @@ TEST_F(PasswordCheckManagerTest,
           base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
           base::nullopt, "https://example.com/",
           CompromiseTypeFlags::kCredentialLeaked, /*has_script=*/true)));
-}
-
-TEST_F(PasswordCheckManagerTest, GetCompromisedCredentialsOrder) {
-  InitializeManager();
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2));
-  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1));
-  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2));
-  store().AddCompromisedCredentials(
-      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
-                      CompromiseType::kLeaked));
-  store().AddCompromisedCredentials(
-      MakeCompromised(kExampleCom, kUsername2, base::TimeDelta::FromMinutes(5),
-                      CompromiseType::kLeaked));
-  store().AddCompromisedCredentials(
-      MakeCompromised(kExampleCom, kUsername2, base::TimeDelta::FromMinutes(3),
-                      CompromiseType::kPhished));
-  store().AddCompromisedCredentials(
-      MakeCompromised(kExampleOrg, kUsername2, base::TimeDelta::FromMinutes(4),
-                      CompromiseType::kLeaked));
-  store().AddCompromisedCredentials(
-      MakeCompromised(kExampleOrg, kUsername1, base::TimeDelta::FromMinutes(2),
-                      CompromiseType::kPhished));
-  RunUntilIdle();
-  EXPECT_THAT(
-      manager().GetCompromisedCredentials(),
-      ElementsAre(
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.org"),
-              base::nullopt, "http://www.example.org/",
-              CompromiseTypeFlags::kCredentialPhished, /*has_script_=*/false),
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername2), base::ASCIIToUTF16("example.com"),
-              base::nullopt, "https://example.com/",
-              password_manager::CompromiseTypeFlags::kCredentialLeaked |
-                  password_manager::CompromiseTypeFlags::kCredentialPhished,
-              /*has_script_=*/false),
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
-              base::nullopt, "https://example.com/",
-              CompromiseTypeFlags::kCredentialLeaked, /*has_script_=*/false),
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername2), base::ASCIIToUTF16("example.org"),
-              base::nullopt, "http://www.example.org/",
-              CompromiseTypeFlags::kCredentialLeaked, /*has_script_=*/false)));
 }

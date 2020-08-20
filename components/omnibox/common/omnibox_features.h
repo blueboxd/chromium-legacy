@@ -80,6 +80,7 @@ extern const base::Feature kHistoryQuickProviderAllowMidwordContinuations;
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kCompactSuggestions;
 extern const base::Feature kDeferredKeyboardPopup;
+extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxSuggestionButtonRow;

@@ -27,10 +27,12 @@ class InputFile : public api::InputFile {
   ExceptionOr<ByteArray> Read(std::int64_t size) override;
   Exception Close() override;
 
+  // Extract the underlying base::File.
+  base::File ExtractUnderlyingFile();
+
  private:
   // File::GetLength is not const but api::InputFile::GetTotalSize is const.
   mutable base::File file_;
-  bool seek_succeeded_;
 };
 
 }  // namespace chrome

@@ -76,6 +76,34 @@ class SafetyCheckProperties {
         return 0;
     }
 
+    static @PasswordsStatus int passwordsStateToNative(@PasswordsState int state) {
+        switch (state) {
+            case PasswordsState.UNCHECKED:
+                // This is not used.
+                assert false : "PasswordsState.UNCHECKED has no native equivalent.";
+                return PasswordsStatus.ERROR;
+            case PasswordsState.CHECKING:
+                return PasswordsStatus.CHECKING;
+            case PasswordsState.SAFE:
+                return PasswordsStatus.SAFE;
+            case PasswordsState.COMPROMISED_EXIST:
+                return PasswordsStatus.COMPROMISED_EXIST;
+            case PasswordsState.OFFLINE:
+                return PasswordsStatus.OFFLINE;
+            case PasswordsState.NO_PASSWORDS:
+                return PasswordsStatus.NO_PASSWORDS;
+            case PasswordsState.SIGNED_OUT:
+                return PasswordsStatus.SIGNED_OUT;
+            case PasswordsState.QUOTA_LIMIT:
+                return PasswordsStatus.QUOTA_LIMIT;
+            case PasswordsState.ERROR:
+                return PasswordsStatus.ERROR;
+            default:
+                assert false : "Unknown PasswordsState value.";
+                return PasswordsStatus.ERROR;
+        }
+    }
+
     @IntDef({SafeBrowsingState.UNCHECKED, SafeBrowsingState.CHECKING,
             SafeBrowsingState.ENABLED_STANDARD, SafeBrowsingState.ENABLED_ENHANCED,
             SafeBrowsingState.DISABLED, SafeBrowsingState.DISABLED_BY_ADMIN,
@@ -125,6 +153,28 @@ class SafetyCheckProperties {
         int OUTDATED = 3;
         int OFFLINE = 4;
         int ERROR = 5;
+    }
+
+    static @UpdateStatus int updatesStateToNative(@UpdatesState int state) {
+        switch (state) {
+            case UpdatesState.UNCHECKED:
+                // This is not used.
+                assert false : "UpdatesState.UNCHECKED has no native equivalent.";
+                return UpdateStatus.FAILED;
+            case UpdatesState.CHECKING:
+                return UpdateStatus.CHECKING;
+            case UpdatesState.UPDATED:
+                return UpdateStatus.UPDATING;
+            case UpdatesState.OUTDATED:
+                return UpdateStatus.OUTDATED;
+            case UpdatesState.OFFLINE:
+                return UpdateStatus.FAILED_OFFLINE;
+            case UpdatesState.ERROR:
+                return UpdateStatus.FAILED;
+            default:
+                assert false : "Unknown UpdatesState value.";
+                return UpdateStatus.FAILED;
+        }
     }
 
     static final PropertyKey[] ALL_KEYS =

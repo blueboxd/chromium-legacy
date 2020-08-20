@@ -297,20 +297,21 @@ public class SigninPromoController {
     private void signinWithNewAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNewAccountUserActionName);
-        SigninActivityLauncher.get().launchActivityForPromoAddAccountFlow(context, mAccessPoint);
+        SigninActivityLauncherImpl.get().launchActivityForPromoAddAccountFlow(
+                context, mAccessPoint);
     }
 
     private void signinWithDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninWithDefaultUserActionName);
-        SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+        SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
                 context, mAccessPoint, mProfileData.getAccountName());
     }
 
     private void signinWithNotDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNotDefaultUserActionName);
-        SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
+        SigninActivityLauncherImpl.get().launchActivityForPromoChooseAccountFlow(
                 context, mAccessPoint, mProfileData.getAccountName());
     }
 

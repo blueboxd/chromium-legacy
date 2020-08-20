@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import android.app.Activity;
 import android.content.Context;
 
 /**
@@ -103,6 +104,11 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
      * {@link Observer#onSavedPasswordsFetchCompleted}, the returned value is likely invalid.
      */
     int getSavedPasswordsCount();
+
+    /**
+     * Launch the password check in the Google Account.
+     */
+    void launchCheckupInAccount(Activity activity);
 
     /**
      * Starts the password check, if one is not running already.

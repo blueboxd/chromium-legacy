@@ -157,6 +157,22 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
         temperature: 7777777777777777,
       }
     },
+    blockDeviceResult: {
+      blockDeviceInfo: [{
+        path: '/dev/device1',
+        size: 5555555555555555,
+        type: 'NVMe',
+        manufacturerId: 200,
+        name: 'goog',
+        serial: '4287654321',
+        bytesReadSinceLastBoot: 9000000000000000,
+        bytesWrittenSinceLastBoot: 8000000000000000,
+        readTimeSecondsSinceLastBoot: 7000000000000000,
+        writeTimeSecondsSinceLastBoot: 6666666666666666,
+        ioTimeSecondsSinceLastBoot: 1111111111111,
+        discardTimeSecondsSinceLastBoot: 77777777777777
+      }]
+    },
   });
 });
 

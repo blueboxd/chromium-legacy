@@ -119,3 +119,14 @@ var I18nBehaviorModuleTest = class extends WebUIResourceModuleAsyncTest {
 TEST_F('I18nBehaviorModuleTest', 'All', function() {
   mocha.run();
 });
+
+var ColorUtilsModuleTest = class extends WebUIResourceModuleAsyncTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=js/color_utils_test.js';
+  }
+};
+
+TEST_F('ColorUtilsModuleTest', 'All', function() {
+  mocha.run();
+});

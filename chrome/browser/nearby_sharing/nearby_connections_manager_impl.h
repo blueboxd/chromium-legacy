@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
@@ -18,6 +19,11 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 class Profile;
+
+struct InitializeFileResult {
+  base::File input_file;
+  base::File output_file;
+};
 
 // Concrete NearbyConnectionsManager implementation.
 class NearbyConnectionsManagerImpl
@@ -56,6 +62,9 @@ class NearbyConnectionsManagerImpl
             PayloadStatusListener* listener) override;
   void RegisterPayloadStatusListener(int64_t payload_id,
                                      PayloadStatusListener* listener) override;
+  void RegisterPayloadPath(int64_t payload_id,
+                           const base::FilePath& file_path,
+                           ConnectionsCallback callback) override;
   Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;
@@ -112,6 +121,8 @@ class NearbyConnectionsManagerImpl
                           int32_t quality) override;
 
   // PayloadListener:
+  void OnPayloadReceived(const std::string& endpoint_id,
+                         PayloadPtr payload) override;
   void OnPayloadTransferUpdate(const std::string& endpoint_id,
                                PayloadTransferUpdatePtr update) override;
 
@@ -120,6 +131,10 @@ class NearbyConnectionsManagerImpl
                              ConnectionsStatus status);
   bool BindNearbyConnections();
   void Reset();
+
+  void OnFileInitialized(int64_t payload_id,
+                         ConnectionsCallback callback,
+                         InitializeFileResult result);
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;
@@ -136,6 +151,8 @@ class NearbyConnectionsManagerImpl
       connections_;
   // A map of payload_id to PayloadStatusListener*.
   base::flat_map<int64_t, PayloadStatusListener*> payload_status_listeners_;
+  // A map of payload_id to PayloadPtr.
+  base::flat_map<int64_t, PayloadPtr> incoming_payloads_;
 
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};

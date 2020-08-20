@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {skColorToRgba} from './utils.js';
 
 /**
  * @fileoverview The background manager brokers access to background related

@@ -14,8 +14,8 @@ class ComputedStyle;
 class NGLineInfo;
 class NGLogicalLineItems;
 class ShapeResultView;
-struct NGInlineItemResult;
 struct FontHeight;
+struct NGInlineItemResult;
 struct PhysicalRect;
 
 // Adjust the specified |rect| of a text fragment for 'em' height.

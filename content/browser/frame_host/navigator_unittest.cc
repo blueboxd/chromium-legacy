@@ -1072,8 +1072,9 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // current one.
   GURL kUrlSameSiteAs1("http://www.a.com/foo");
   {
-    SiteInstanceDescriptor descriptor(kUrlSameSiteAs1,
-                                      SiteInstanceRelation::RELATED);
+    SiteInstanceDescriptor descriptor(
+        kUrlSameSiteAs1, SiteInstanceRelation::RELATED,
+        false /* is_coop_coep_cross_origin_isolated */);
     scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(current_instance, converted_instance);
@@ -1084,8 +1085,9 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   GURL kUrlSameSiteAs2("http://www.b.com/foo");
   scoped_refptr<SiteInstance> related_instance;
   {
-    SiteInstanceDescriptor descriptor(kUrlSameSiteAs2,
-                                      SiteInstanceRelation::RELATED);
+    SiteInstanceDescriptor descriptor(
+        kUrlSameSiteAs2, SiteInstanceRelation::RELATED,
+        false /* is_coop_coep_cross_origin_isolated */);
     related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // If kUrlSameSiteAs2 requires a dedicated process on this platform, this
     // should return a new instance, related to the current and set to the new
@@ -1108,8 +1110,9 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // 5) Convert a descriptor of an unrelated instance with the same site as the
   // current one, several times, with and without candidate sites.
   {
-    SiteInstanceDescriptor descriptor(kUrlSameSiteAs1,
-                                      SiteInstanceRelation::UNRELATED);
+    SiteInstanceDescriptor descriptor(
+        kUrlSameSiteAs1, SiteInstanceRelation::UNRELATED,
+        false /* is_coop_coep_cross_origin_isolated */);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // Should return a new instance, unrelated to the current one, set to the
@@ -1146,8 +1149,9 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // 6) Convert a descriptor of an unrelated instance with the same site of
   // related_instance and using it as a candidate.
   {
-    SiteInstanceDescriptor descriptor(kUrlSameSiteAs2,
-                                      SiteInstanceRelation::UNRELATED);
+    SiteInstanceDescriptor descriptor(
+        kUrlSameSiteAs2, SiteInstanceRelation::UNRELATED,
+        false /* is_coop_coep_cross_origin_isolated */);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, related_instance.get());
     // Should return a new instance, unrelated to the current, set to the

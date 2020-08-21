@@ -110,8 +110,13 @@ class WizardController {
   // parameter is empty.
   void Init(OobeScreenId first_screen);
 
-  // Advances to screen defined by |screen| and shows it.
+  // Advances to screen defined by |screen| and shows it. Might show HID
+  // detection screen in case HID connection is needed and screen_id ==
+  // OobeScreen::SCREEN_UNKNOWN.
   void AdvanceToScreen(OobeScreenId screen_id);
+
+  // Advances to screen defined by |screen| and shows it.
+  void AdvanceToScreenAfterHIDDetection(OobeScreenId first_screen);
 
   // Returns |true| if accelerator |action| was handled by current screen
   // or WizardController itself.
@@ -188,6 +193,10 @@ class WizardController {
 
   // Set pref value for first run.
   void PrepareFirstRunPrefs();
+
+  OobeScreenId first_screen_for_testing() const {
+    return first_screen_for_testing_;
+  }
 
  private:
   // Create BaseScreen instances. These are owned by |screen_manager_|.
@@ -331,8 +340,6 @@ class WizardController {
     local_state_for_testing_ = local_state;
   }
 
-  OobeScreenId first_screen() const { return first_screen_; }
-
   // Starts a network request to resolve the timezone. Skips the request
   // completely when the timezone is overridden through the command line.
   void StartNetworkTimezoneResolve();
@@ -392,7 +399,7 @@ class WizardController {
   bool is_out_of_box_ = false;
 
   // Value of the screen name that WizardController was started with.
-  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId first_screen_for_testing_ = OobeScreen::SCREEN_UNKNOWN;
 
   // The prescribed enrollment configuration for the device.
   policy::EnrollmentConfig prescribed_enrollment_config_;

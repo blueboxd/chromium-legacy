@@ -7,12 +7,16 @@
 
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/gfx/geometry/size.h"
 
 // The WebUI controller for chrome://profile-picker/.
 class ProfilePickerUI : public content::WebUIController {
  public:
   explicit ProfilePickerUI(content::WebUI* web_ui);
   ~ProfilePickerUI() override;
+
+  // Get the minimum size for the picker UI.
+  static gfx::Size GetMinimumSize();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfilePickerUI);

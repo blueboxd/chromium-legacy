@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Given a viewport {@link Rect} and a matrix of {@link Bitmap} tiles, this class draws the bitmaps
@@ -22,9 +23,12 @@ class PlayerFrameBitmapPainter {
     private Rect mDrawBitmapSrc = new Rect();
     private Rect mDrawBitmapDst = new Rect();
     private Runnable mInvalidateCallback;
+    private Runnable mFirstPaintListener;
 
-    PlayerFrameBitmapPainter(@NonNull Runnable invalidateCallback) {
+    PlayerFrameBitmapPainter(@NonNull Runnable invalidateCallback,
+            @Nullable Runnable firstPaintListener) {
         mInvalidateCallback = invalidateCallback;
+        mFirstPaintListener = firstPaintListener;
     }
 
     void updateTileDimensions(Size tileDimensions) {
@@ -83,6 +87,10 @@ class PlayerFrameBitmapPainter {
                 mDrawBitmapDst.set(canvasLeft, canvasTop, canvasRight, canvasBottom);
 
                 canvas.drawBitmap(tileBitmap, mDrawBitmapSrc, mDrawBitmapDst, null);
+                if (mFirstPaintListener != null) {
+                    mFirstPaintListener.run();
+                    mFirstPaintListener = null;
+                }
             }
         }
     }

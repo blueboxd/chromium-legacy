@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.paint_preview;
 
 import android.content.res.Resources;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -63,6 +64,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         public void onFirstMeaningfulPaint() {
             if (!isShowingAndNeedsBadge()) return;
 
+            mMetricsHelper.onTabLoadFinished();
             long delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                     ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, INITIAL_REMOVE_DELAY_PARAM,
                     DEFAULT_INITIAL_REMOVE_DELAY_MS);
@@ -131,10 +133,13 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
      * Tab before.
      * @param onShown The callback for when the Paint Preview is shown.
      * @param onDismissed The callback for when the Paint Preview is dismissed.
+     * @param activityCreationTimestampMs The hosting activity's creation time in ms from
+     * {@link SystemClock#elapsedRealtime}.
      * @return Whether the Paint Preview started to initialize or is already initializating.
      * Note that if the Paint Preview is already showing, this will return false.
      */
-    public boolean maybeShow(@Nullable Runnable onShown, @Nullable Runnable onDismissed) {
+    public boolean maybeShow(@Nullable Runnable onShown, @Nullable Runnable onDismissed,
+            long activityCreationTimestampMs) {
         if (mInitializing != null) return mInitializing;
 
         // Check if a capture exists. This is a quick check using a cache.
@@ -150,6 +155,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                     onShown.run();
                     mMetricsHelper.onShown();
                 },
+                () -> mMetricsHelper.onFirstPaint(activityCreationTimestampMs),
                 () -> mHasUserInteraction = true,
                 ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
                 () -> removePaintPreview(ExitCause.COMPOSITOR_FAILURE),

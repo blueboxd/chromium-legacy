@@ -40,6 +40,9 @@ class OpenInTabHelper : public web::WebStateObserver,
   // PDF.
   void HandleExportableFile();
 
+  // Tests that files are exportable.
+  bool isExportableFile() const;
+
   // WebStateObserver implementation.
   void PageLoaded(
       web::WebState* web_state,

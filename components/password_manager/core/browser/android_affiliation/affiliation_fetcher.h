@@ -53,14 +53,16 @@ class AffiliationFetcher : public AffiliationFetcherInterface {
   // calls. The caller may pass in NULL to resume using the default factory.
   static void SetFactoryForTesting(TestAffiliationFetcherFactory* factory);
 
-  // Actually starts the request to retrieve affiliations for each facet in
-  // |facet_uris|, and will call the delegate with the results on the same
-  // thread when done. If |this| is destroyed before completion, the in-flight
-  // request is cancelled, and the delegate will not be called. Further details:
+  // Actually starts the request to retrieve affiliations and optionally
+  // groupings for each facet in |facet_uris| along with the details based on
+  // |request_info|. Calls the delegate with the results on the same thread when
+  // done. If |this| is destroyed before completion, the in-flight request is
+  // cancelled, and the delegate will not be called. Further details:
   //   * No cookies are sent/saved with the request.
   //   * In case of network/server errors, the request will not be retried.
   //   * Results are guaranteed to be always fresh and will never be cached.
-  void StartRequest(const std::vector<FacetURI>& facet_uris) override;
+  void StartRequest(const std::vector<FacetURI>& facet_uris,
+                    RequestInfo request_info) override;
 
   const std::vector<FacetURI>& GetRequestedFacetURIs() const override;
 
@@ -73,8 +75,8 @@ class AffiliationFetcher : public AffiliationFetcherInterface {
 
  private:
   // Prepares and returns the serialized protocol buffer message that will be
-  // the payload of the POST request.
-  std::string PreparePayload() const;
+  // the payload of the POST request. Sets mask request based on |request_info|.
+  std::string PreparePayload(RequestInfo request_info) const;
 
   // Parses and validates the response protocol buffer message for a list of
   // equivalence classes, stores them into |result| and returns true on success.

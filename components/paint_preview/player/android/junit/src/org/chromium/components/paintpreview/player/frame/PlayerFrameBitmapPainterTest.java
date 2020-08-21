@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.CallbackHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,7 @@ public class PlayerFrameBitmapPainterTest {
     @Test
     public void testDrawFaultyViewPort() {
         PlayerFrameBitmapPainter painter =
-                new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class));
+                new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class), null);
         painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 3));
         painter.updateTileDimensions(new Size(10, -5));
         painter.updateViewPort(0, 5, 10, -10);
@@ -120,7 +121,7 @@ public class PlayerFrameBitmapPainterTest {
     @Test
     public void testDrawFaultyBitmapMatrix() {
         PlayerFrameBitmapPainter painter =
-                new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class));
+                new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class), null);
         painter.updateBitmapMatrix(new Bitmap[0][0]);
         // This view port is covered by 2 bitmap tiles, so there should be 2 draw operations on
         // the canvas.
@@ -143,7 +144,7 @@ public class PlayerFrameBitmapPainterTest {
     @Test
     public void testDraw() {
         Runnable invalidator = Mockito.mock(Runnable.class);
-        PlayerFrameBitmapPainter painter = new PlayerFrameBitmapPainter(invalidator);
+        PlayerFrameBitmapPainter painter = new PlayerFrameBitmapPainter(invalidator, null);
 
         // Prepare the bitmap matrix.
         Bitmap[][] bitmaps = new Bitmap[2][2];
@@ -172,5 +173,37 @@ public class PlayerFrameBitmapPainterTest {
         canvas.assertDrawBitmap(bitmap10, new Rect(5, 0, 10, 10), new Rect(0, 5, 5, 15));
         canvas.assertDrawBitmap(bitmap01, new Rect(0, 10, 5, 15), new Rect(5, 0, 10, 5));
         canvas.assertDrawBitmap(bitmap11, new Rect(0, 0, 5, 10), new Rect(5, 5, 10, 15));
+    }
+
+    /**
+     * Tests that first paint callback is called on the first paint operation, and the first paint
+     * operation only.
+     */
+    @Test
+    public void testFirstPaintListener() {
+        Runnable invalidator = Mockito.mock(Runnable.class);
+        CallbackHelper firstPaintCallback = new CallbackHelper();
+        PlayerFrameBitmapPainter painter = new PlayerFrameBitmapPainter(invalidator,
+                firstPaintCallback::notifyCalled);
+        MockCanvas canvas = new MockCanvas();
+
+        // Prepare the bitmap matrix.
+        Bitmap[][] bitmaps = new Bitmap[1][1];
+        bitmaps[0][0] = Mockito.mock(Bitmap.class);
+
+        painter.updateBitmapMatrix(bitmaps);
+        painter.updateTileDimensions(new Size(10, 15));
+        painter.updateViewPort(5, 10, 15, 25);
+
+        Assert.assertEquals("First paint listener shouldn't have been called", 0,
+                firstPaintCallback.getCallCount());
+
+        painter.onDraw(canvas);
+        Assert.assertEquals("First paint listener should have been called", 1,
+                firstPaintCallback.getCallCount());
+
+        painter.onDraw(canvas);
+        Assert.assertEquals("First paint listener should have been called only once", 1,
+                firstPaintCallback.getCallCount());
     }
 }

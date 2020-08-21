@@ -18,7 +18,6 @@ class AffiliationFetcherDelegate {
  public:
   // Encapsulates the response to an affiliations request.
   struct Result {
-    // copyable and movable
     Result();
     Result(const Result& other);
     Result(Result&& other);

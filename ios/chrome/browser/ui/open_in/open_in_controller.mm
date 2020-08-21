@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 
+#import <QuickLook/QuickLook.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -71,13 +73,19 @@ void LogOpenInDownloadResult(const OpenInDownloadResult result) {
   UMA_HISTOGRAM_ENUMERATION("IOS.OpenIn.DownloadResult", result);
 }
 
-// Returns true if the file located at |url| is a valid PDF file.
-bool HasValidPdfAtUrl(NSURL* _Nullable url) {
+// Returns true if the file located at |url| is file.
+bool HasValidFileAtUrl(NSURL* _Nullable url) {
   if (!url)
     return false;
-  base::ScopedCFTypeRef<CGPDFDocumentRef> document(
-      CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
-  return document;
+
+  NSString* extension = [[url path] pathExtension];
+  if ([extension isEqualToString:@"pdf"]) {
+    base::ScopedCFTypeRef<CGPDFDocumentRef> document(
+        CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
+    return document;
+  }
+
+  return [QLPreviewController canPreviewItem:url];
 }
 
 }  // anonymous namespace
@@ -608,7 +616,7 @@ class OpenInControllerBridge
   NSURL* fileURL = nil;
   if (!filePath.empty())
     fileURL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
-  if (!_downloadCanceled && HasValidPdfAtUrl(fileURL)) {
+  if (!_downloadCanceled && HasValidFileAtUrl(fileURL)) {
     LogOpenInDownloadResult(OpenInDownloadResult::kSucceeded);
     [self presentOpenInMenuForFileAtURL:fileURL];
     return;

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/google_chrome_strings.h"
@@ -147,4 +148,12 @@ void ProfilePickerView::WindowClosing() {
   // may have already opened a new instance).
   if (g_profile_picker_view == this)
     g_profile_picker_view = nullptr;
+}
+
+gfx::Size ProfilePickerView::GetMinimumSize() const {
+  // On small screens, the preferred size may be smaller than the picker
+  // minimum size. In that case there will be scrollbars on the picker.
+  gfx::Size minimum_size = GetPreferredSize();
+  minimum_size.SetToMin(ProfilePickerUI::GetMinimumSize());
+  return minimum_size;
 }

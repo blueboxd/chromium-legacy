@@ -135,6 +135,8 @@ class MonthPicker extends HTMLElement {
       case 'ArrowRight':
       case 'PageUp':
       case 'PageDown':
+      case 'Home':
+      case 'End':
         if (this.selectedMonth) {
           window.pagePopupController.setValue(this.selectedMonth.toString());
         }

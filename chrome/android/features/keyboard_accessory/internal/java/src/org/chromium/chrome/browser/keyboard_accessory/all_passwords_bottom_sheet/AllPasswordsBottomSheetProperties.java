@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.keyboard_accessory.all_passwords_bottom_shee
 import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -20,8 +21,10 @@ class AllPasswordsBottomSheetProperties {
     static final PropertyModel.ReadableObjectPropertyKey<ListModel<ListItem>> SHEET_ITEMS =
             new PropertyModel.ReadableObjectPropertyKey<>("sheet_items");
 
+    static final PropertyKey[] ALL_KEYS = {VISIBLE, DISMISS_HANDLER, SHEET_ITEMS};
+
     static PropertyModel createDefaultModel(Callback<Integer> handler) {
-        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, DISMISS_HANDLER)
+        return new PropertyModel.Builder(ALL_KEYS)
                 .with(VISIBLE, false)
                 .with(SHEET_ITEMS, new ListModel<>())
                 .with(DISMISS_HANDLER, handler)

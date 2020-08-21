@@ -312,6 +312,18 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   return image_view;
 }
 
+base::TimeDelta GetRegularIPHTimeout() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      feature_engagement::kIPHPasswordsAccountStorageFeature,
+      "account_storage_iph_timeout_seconds_regular", 30));
+}
+
+base::TimeDelta GetShortIPHTimeout() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      feature_engagement::kIPHPasswordsAccountStorageFeature,
+      "account_storage_iph_timeout_seconds_short", 10));
+}
+
 }  // namespace
 
 // TODO(crbug.com/1077706): come up with a more general solution for this.
@@ -733,6 +745,8 @@ void PasswordSaveUpdateWithAccountStoreView::ShowIPH(IPHType type) {
   bubble_params.preferred_width = kAccountStoragePromoWidth;
   bubble_params.activation_action =
       FeaturePromoBubbleParams::ActivationAction::ACTIVATE;
+  bubble_params.timeout_default = GetRegularIPHTimeout();
+  bubble_params.timeout_short = GetShortIPHTimeout();
 
   account_storage_promo_ =
       FeaturePromoBubbleView::Create(std::move(bubble_params));

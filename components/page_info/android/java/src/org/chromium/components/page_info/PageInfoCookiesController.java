@@ -25,6 +25,7 @@ public class PageInfoCookiesController
     private PageInfoMainPageController mMainController;
     private PageInfoRowView mRowView;
     private CookieControlsBridge mBridge;
+    private PageInfoControllerDelegate mDelegate;
     private String mFullUrl;
     private String mTitle;
     private PageInfoCookiesPreference mSubPage;
@@ -35,9 +36,11 @@ public class PageInfoCookiesController
     private boolean mIsEnforced;
 
     public PageInfoCookiesController(PageInfoMainPageController mainController,
-            PageInfoRowView rowView, boolean isVisible, String fullUrl) {
+            PageInfoRowView rowView, PageInfoControllerDelegate delegate, boolean isVisible,
+            String fullUrl) {
         mMainController = mainController;
         mRowView = rowView;
+        mDelegate = delegate;
         mFullUrl = fullUrl;
         mTitle = mRowView.getContext().getResources().getString(R.string.cookies_title);
 
@@ -72,6 +75,7 @@ public class PageInfoCookiesController
                 new PageInfoCookiesPreference.PageInfoCookiesViewParams();
         params.onCheckedChangedCallback = this::onCheckedChangedCallback;
         params.onClearCallback = this::clearData;
+        params.onCookieSettingsLinkClicked = mDelegate::showCookieSettings;
         mSubPage.setParams(params);
         // TODO(crbug.com/1077766): Get storage size.
         mSubPage.setCookiesCount(mAllowedCookies, mBlockedCookies);

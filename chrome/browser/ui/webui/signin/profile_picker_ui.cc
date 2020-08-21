@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "base/feature_list.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -23,6 +24,10 @@
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
+
+// Miniumum size for the picker UI.
+constexpr int kMinimumPickerSizePx = 620;
+
 bool IsProfileCreationAllowed() {
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
@@ -77,6 +82,9 @@ void AddStrings(content::WebUIDataSource* html_source) {
       "signInProfileCreationFlowSupported",
       base::FeatureList::IsEnabled(features::kSignInProfileCreationFlow));
 
+  html_source->AddString("minimumPickerSize",
+                         base::StringPrintf("%ipx", kMinimumPickerSizePx));
+
   // Add policies.
   html_source->AddBoolean("isForceSigninEnabled",
                           signin_util::IsForceSigninEnabled());
@@ -108,3 +116,8 @@ ProfilePickerUI::ProfilePickerUI(content::WebUI* web_ui)
 }
 
 ProfilePickerUI::~ProfilePickerUI() = default;
+
+// static
+gfx::Size ProfilePickerUI::GetMinimumSize() {
+  return gfx::Size(kMinimumPickerSizePx, kMinimumPickerSizePx);
+}

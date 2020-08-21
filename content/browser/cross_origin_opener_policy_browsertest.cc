@@ -632,6 +632,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), coop_page));
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
+    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
+              CoopSameOrigin());
 
     // Ensure it has a RenderFrameHostProxy for another cross-site page.
     Shell* popup_shell = OpenPopup(current_frame_host(), coop_page, "");
@@ -1875,6 +1877,369 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
   EXPECT_NE(group_4, group_1);
 }
 
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedSiteInstance_MainFrame) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL isolated_page_b(
+      https_server()->GetURL("cdn.a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL non_isolated_page(https_server()->GetURL("a.com", "/title1.html"));
+
+  // Navigation from/to cross-origin isolated pages.
+
+  // Initial non cross-origin isolated page.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), non_isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(current_si->IsCoopCoepCrossOriginIsolated());
+  }
+
+  // Navigation to a cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(current_si->IsRelatedSiteInstance(previous_si.get()));
+  }
+
+  // Navigation to the same cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_EQ(current_si, previous_si);
+  }
+
+  // Navigation to a non cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURL(shell(), non_isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(current_si->IsRelatedSiteInstance(previous_si.get()));
+  }
+
+  // Cross origin navigation in between two cross-origin isolated pages.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+    scoped_refptr<SiteInstanceImpl> site_instance_1 =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURL(shell(), isolated_page_b));
+    SiteInstanceImpl* site_instance_2 = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(site_instance_1->IsCoopCoepCrossOriginIsolated());
+    EXPECT_TRUE(site_instance_2->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    CrossOriginOpenerPolicyBrowserTest,
+    CrossOriginIsolatedSiteInstance_MainFrameRendererInitiated) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL isolated_page_b(
+      https_server()->GetURL("cdn.a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL non_isolated_page(https_server()->GetURL("a.com", "/title1.html"));
+
+  // Navigation from/to cross-origin isolated pages.
+
+  // Initial non cross-origin isolated page.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), non_isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(current_si->IsCoopCoepCrossOriginIsolated());
+  }
+
+  // Navigation to a cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURLFromRenderer(shell(), isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(current_si->IsRelatedSiteInstance(previous_si.get()));
+  }
+
+  // Navigation to the same cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURLFromRenderer(shell(), isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_EQ(current_si, previous_si);
+  }
+
+  // Navigation to a non cross-origin isolated page.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURLFromRenderer(shell(), non_isolated_page));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(current_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(current_si->IsRelatedSiteInstance(previous_si.get()));
+  }
+
+  // Cross origin navigation in between two cross-origin isolated pages.
+  {
+    EXPECT_TRUE(NavigateToURLFromRenderer(shell(), isolated_page));
+    scoped_refptr<SiteInstanceImpl> site_instance_1 =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(NavigateToURLFromRenderer(shell(), isolated_page_b));
+    SiteInstanceImpl* site_instance_2 = current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(site_instance_1->IsCoopCoepCrossOriginIsolated());
+    EXPECT_TRUE(site_instance_2->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedSiteInstance_IFrame) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL isolated_page_b(
+      https_server()->GetURL("cdn.a.com",
+                             "/set-header?"
+                             "Cross-Origin-Embedder-Policy: require-corp&"
+                             "Cross-Origin-Resource-Policy: cross-origin"));
+
+  // Initial cross-origin isolated page.
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+  SiteInstanceImpl* main_si = current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(main_si->IsCoopCoepCrossOriginIsolated());
+
+  // Same origin iframe.
+  {
+    TestNavigationManager same_origin_iframe_navigation(web_contents(),
+                                                        isolated_page);
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(),
+               JsReplace("var iframe = document.createElement('iframe'); "
+                         "iframe.src = $1; "
+                         "document.body.appendChild(iframe);",
+                         isolated_page)));
+
+    same_origin_iframe_navigation.WaitForNavigationFinished();
+    EXPECT_TRUE(same_origin_iframe_navigation.was_successful());
+    RenderFrameHostImpl* iframe =
+        current_frame_host()->child_at(0)->current_frame_host();
+    SiteInstanceImpl* iframe_si = iframe->GetSiteInstance();
+    EXPECT_EQ(iframe_si, main_si);
+  }
+
+  // Cross origin iframe.
+  {
+    TestNavigationManager cross_origin_iframe_navigation(web_contents(),
+                                                         isolated_page_b);
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(),
+               JsReplace("var iframe = document.createElement('iframe'); "
+                         "iframe.src = $1; "
+                         "document.body.appendChild(iframe);",
+                         isolated_page_b)));
+
+    cross_origin_iframe_navigation.WaitForNavigationFinished();
+    EXPECT_TRUE(cross_origin_iframe_navigation.was_successful());
+    RenderFrameHostImpl* iframe =
+        current_frame_host()->child_at(1)->current_frame_host();
+    SiteInstanceImpl* iframe_si = iframe->GetSiteInstance();
+    EXPECT_TRUE(iframe_si->IsCoopCoepCrossOriginIsolated());
+    EXPECT_TRUE(iframe_si->IsRelatedSiteInstance(main_si));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedSiteInstance_Popup) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL isolated_page_b(
+      https_server()->GetURL("cdn.a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL non_isolated_page(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // Initial cross-origin isolated page.
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+  SiteInstanceImpl* main_si = current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(main_si->IsCoopCoepCrossOriginIsolated());
+
+  // Open a non isolated popup.
+  {
+    RenderFrameHostImpl* popup_frame =
+        static_cast<WebContentsImpl*>(
+            OpenPopup(current_frame_host(), non_isolated_page, "")
+                ->web_contents())
+            ->GetFrameTree()
+            ->root()
+            ->current_frame_host();
+
+    EXPECT_FALSE(
+        popup_frame->GetSiteInstance()->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(popup_frame->GetSiteInstance()->IsRelatedSiteInstance(
+        current_frame_host()->GetSiteInstance()));
+    EXPECT_FALSE(popup_frame->frame_tree_node()->opener());
+  }
+
+  // Open an isolated popup.
+  {
+    RenderFrameHostImpl* popup_frame =
+        static_cast<WebContentsImpl*>(
+            OpenPopup(current_frame_host(), isolated_page, "")->web_contents())
+            ->GetFrameTree()
+            ->root()
+            ->current_frame_host();
+
+    EXPECT_TRUE(
+        popup_frame->GetSiteInstance()->IsCoopCoepCrossOriginIsolated());
+    EXPECT_EQ(popup_frame->GetSiteInstance(),
+              current_frame_host()->GetSiteInstance());
+  }
+
+  // Open an isolated popup, but cross-origin.
+  {
+    RenderFrameHostImpl* popup_frame =
+        static_cast<WebContentsImpl*>(
+            OpenPopup(current_frame_host(), isolated_page_b, "")
+                ->web_contents())
+            ->GetFrameTree()
+            ->root()
+            ->current_frame_host();
+
+    EXPECT_TRUE(
+        popup_frame->GetSiteInstance()->IsCoopCoepCrossOriginIsolated());
+    EXPECT_FALSE(popup_frame->GetSiteInstance()->IsRelatedSiteInstance(
+        current_frame_host()->GetSiteInstance()));
+    EXPECT_FALSE(popup_frame->frame_tree_node()->opener());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedSiteInstance_ErrorPage) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  GURL non_coep_page(https_server()->GetURL("b.com",
+                                            "/set-header?"
+                                            "Access-Control-Allow-Origin: *"));
+
+  GURL invalid_url(
+      https_server()->GetURL("a.com", "/this_page_does_not_exist.html"));
+
+  GURL error_url(https_server()->GetURL("a.com", "/page404.html"));
+
+  // Initial cross-origin isolated page.
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+  SiteInstanceImpl* main_si = current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(main_si->IsCoopCoepCrossOriginIsolated());
+
+  // Iframe.
+  {
+    TestNavigationManager iframe_navigation(web_contents(), invalid_url);
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(),
+               JsReplace("var iframe = document.createElement('iframe'); "
+                         "iframe.src = $1; "
+                         "document.body.appendChild(iframe);",
+                         invalid_url)));
+
+    iframe_navigation.WaitForNavigationFinished();
+    EXPECT_FALSE(iframe_navigation.was_successful());
+    RenderFrameHostImpl* iframe =
+        current_frame_host()->child_at(0)->current_frame_host();
+    SiteInstanceImpl* iframe_si = iframe->GetSiteInstance();
+    // The load of the document with 404 status code is blocked by COEP.
+    // An error page is expected in lieu of that document.
+    EXPECT_EQ(GURL(kUnreachableWebDataURL),
+              EvalJs(iframe, "document.location.href;"));
+    EXPECT_EQ(iframe_si, main_si);
+    EXPECT_TRUE(iframe_si->IsCoopCoepCrossOriginIsolated());
+  }
+
+  // Iframe with a body added to the HTTP 404.
+  {
+    TestNavigationManager iframe_navigation(web_contents(), error_url);
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(),
+               JsReplace("var iframe = document.createElement('iframe'); "
+                         "iframe.src = $1; "
+                         "document.body.appendChild(iframe);",
+                         error_url)));
+
+    iframe_navigation.WaitForNavigationFinished();
+    EXPECT_FALSE(iframe_navigation.was_successful());
+    RenderFrameHostImpl* iframe =
+        current_frame_host()->child_at(0)->current_frame_host();
+    SiteInstanceImpl* iframe_si = iframe->GetSiteInstance();
+    EXPECT_EQ(iframe_si, main_si);
+    // The load of the document with 404 status code and custom body is blocked
+    // by COEP. An error page is expected in lieu of that document.
+    EXPECT_EQ(GURL(kUnreachableWebDataURL),
+              EvalJs(iframe, "document.location.href;"));
+    EXPECT_TRUE(iframe_si->IsCoopCoepCrossOriginIsolated());
+  }
+
+  // Iframe blocked by coep.
+  {
+    TestNavigationManager iframe_navigation(web_contents(), non_coep_page);
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(),
+               JsReplace("var iframe = document.createElement('iframe'); "
+                         "iframe.src = $1; "
+                         "document.body.appendChild(iframe);",
+                         non_coep_page)));
+
+    iframe_navigation.WaitForNavigationFinished();
+    EXPECT_FALSE(iframe_navigation.was_successful());
+    RenderFrameHostImpl* iframe =
+        current_frame_host()->child_at(0)->current_frame_host();
+    SiteInstanceImpl* iframe_si = iframe->GetSiteInstance();
+    EXPECT_EQ(iframe_si, main_si);
+    EXPECT_TRUE(iframe_si->IsCoopCoepCrossOriginIsolated());
+  }
+
+  // Top frame.
+  {
+    scoped_refptr<SiteInstanceImpl> previous_si =
+        current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(NavigateToURL(shell(), invalid_url));
+    SiteInstanceImpl* current_si = current_frame_host()->GetSiteInstance();
+    EXPECT_FALSE(current_si->IsRelatedSiteInstance(previous_si.get()));
+    EXPECT_FALSE(current_si->IsCoopCoepCrossOriginIsolated());
+  }
+}
+
 // TODO(https://crbug.com/1101339). Test inheritance of the virtual browsing
 // context group when using window.open from an iframe, same-origin and
 // cross-origin.
@@ -2057,8 +2422,9 @@ IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
   EXPECT_EQ("[]", reports);
 }
 
+// TODO(http://crbug.com/1119555): Flaky on multiple builders.
 IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
-                       AccessReportingWithToken) {
+                       DISABLED_AccessReportingWithToken) {
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url != OriginTrialURL())

@@ -471,6 +471,8 @@ viz_source_set("unit_tests") {
     "display/surface_aggregator_pixeltest.cc",
     "display/surface_aggregator_unittest.cc",
     "display/texture_deleter_unittest.cc",
+    "display/viz_pixel_test.cc",
+    "display/viz_pixel_test.h",
     "display_embedder/buffer_queue_unittest.cc",
     "display_embedder/gl_output_surface_buffer_queue_unittest.cc",
     "display_embedder/server_shared_bitmap_manager_unittest.cc",

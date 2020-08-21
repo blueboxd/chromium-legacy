@@ -5832,11 +5832,10 @@ bool ChromeContentBrowserClient::
 #endif
 }
 
-network::mojom::PrivateNetworkRequestPolicy
-ChromeContentBrowserClient::GetPrivateNetworkRequestPolicy(
+bool ChromeContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  return content_settings::GetPrivateNetworkRequestPolicy(
+  return content_settings::ShouldAllowInsecurePrivateNetworkRequests(
       HostContentSettingsMapFactory::GetForProfile(browser_context), url);
 }
 

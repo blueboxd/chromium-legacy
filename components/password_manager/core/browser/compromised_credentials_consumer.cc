@@ -12,4 +12,10 @@ CompromisedCredentialsConsumer::CompromisedCredentialsConsumer() = default;
 
 CompromisedCredentialsConsumer::~CompromisedCredentialsConsumer() = default;
 
+void CompromisedCredentialsConsumer::OnGetCompromisedCredentialsFrom(
+    PasswordStore* store,
+    std::vector<CompromisedCredentials> compromised_credentials) {
+  OnGetCompromisedCredentials(std::move(compromised_credentials));
+}
+
 }  // namespace password_manager

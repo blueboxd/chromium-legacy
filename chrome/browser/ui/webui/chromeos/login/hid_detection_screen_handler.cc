@@ -64,11 +64,6 @@ void HIDDetectionScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void HIDDetectionScreenHandler::CheckIsScreenRequired(
-      const base::Callback<void(bool)>& on_check_done) {
-  screen_->CheckIsScreenRequired(on_check_done);
-}
-
 void HIDDetectionScreenHandler::SetKeyboardState(const std::string& value) {
   keyboard_state_ = value;
   CallJS("login.HIDDetectionScreen.setKeyboardState", value);

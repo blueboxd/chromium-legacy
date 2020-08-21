@@ -130,6 +130,8 @@ class FilesPasswordDialog extends HTMLElement {
     unlockButton.onclick = () => this.unlock_();
 
     this.dialog_.addEventListener('close', () => this.onClose_());
+    this.input_.errorMessage =
+        loadTimeData.getString('PASSWORD_DIALOG_INVALID');
   }
 
   /**
@@ -150,7 +152,11 @@ class FilesPasswordDialog extends HTMLElement {
         this.reject_ = reject;
         if (password != null) {
           this.input_.value = password;
-          // TODO(jboulic) Set visual clue that invalid password was entered.
+          // An invalid password has previously been entered for this file.
+          // Display an 'invalid password' error message.
+          this.input_.invalid = true;
+        } else {
+          this.input_.invalid = false;
         }
         this.showModal_(filename);
         this.input_.focus();

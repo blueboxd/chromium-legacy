@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.all_passwords_bottom_sheet;
 
+import static org.chromium.chrome.browser.keyboard_accessory.all_passwords_bottom_sheet.AllPasswordsBottomSheetProperties.VISIBLE;
+
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -22,11 +24,17 @@ class AllPasswordsBottomSheetMediator {
 
     void showCredentials(Credential[] credentials) {
         assert credentials != null;
-        // Temporary call to destroy native objects to avoid memory leak.
-        mDelegate.onDismissed();
+        mModel.set(VISIBLE, true);
+    }
+
+    void onCredentialSelected(Credential credential) {
+        mModel.set(VISIBLE, false);
+        mDelegate.onCredentialSelected(credential);
     }
 
     void onDismissed(Integer integer) {
+        if (!mModel.get(VISIBLE)) return; // Dismiss only if not dismissed yet.
+        mModel.set(VISIBLE, false);
         mDelegate.onDismissed();
     }
 }

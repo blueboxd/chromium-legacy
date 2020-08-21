@@ -44,6 +44,7 @@
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -743,8 +744,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kProcessPerSite));
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  BrowsingInstance* browsing_instance =
-      new BrowsingInstance(browser_context.get());
+  BrowsingInstance* browsing_instance = new BrowsingInstance(
+      browser_context.get(), false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt /* coop_coep_cross_origin_isolated_origin */);
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
@@ -773,8 +775,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 
   // A visit to the original site in a new BrowsingInstance (same or different
   // browser context) should return a different SiteInstance.
-  BrowsingInstance* browsing_instance2 =
-      new BrowsingInstance(browser_context.get());
+  BrowsingInstance* browsing_instance2 = new BrowsingInstance(
+      browser_context.get(), false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt /* coop_coep_cross_origin_isolated_origin */);
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstanceImpl> site_instance_a2_2(
       browsing_instance2->GetSiteInstanceForURL(url_a2, false));
@@ -815,8 +818,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kProcessPerSite);
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  scoped_refptr<BrowsingInstance> browsing_instance =
-      new BrowsingInstance(browser_context.get());
+  scoped_refptr<BrowsingInstance> browsing_instance = new BrowsingInstance(
+      browser_context.get(), false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt /* coop_coep_cross_origin_isolated_origin */);
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
@@ -845,8 +849,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   // A visit to the original site in a new BrowsingInstance (same browser
   // context) should return a different SiteInstance with the same process.
-  BrowsingInstance* browsing_instance2 =
-      new BrowsingInstance(browser_context.get());
+  BrowsingInstance* browsing_instance2 = new BrowsingInstance(
+      browser_context.get(), false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt /* coop_coep_cross_origin_isolated_origin */);
   scoped_refptr<SiteInstanceImpl> site_instance_a1_2(
       browsing_instance2->GetSiteInstanceForURL(url_a1, false));
   EXPECT_TRUE(site_instance_a1.get() != nullptr);
@@ -857,8 +862,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   // context) should return a different SiteInstance with a different process.
   std::unique_ptr<TestBrowserContext> browser_context2(
       new TestBrowserContext());
-  BrowsingInstance* browsing_instance3 =
-      new BrowsingInstance(browser_context2.get());
+  BrowsingInstance* browsing_instance3 = new BrowsingInstance(
+      browser_context2.get(), false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt /* coop_coep_cross_origin_isolated_origin */);
   scoped_refptr<SiteInstanceImpl> site_instance_a2_3(
       browsing_instance3->GetSiteInstanceForURL(url_a2, false));
   EXPECT_TRUE(site_instance_a2_3.get() != nullptr);

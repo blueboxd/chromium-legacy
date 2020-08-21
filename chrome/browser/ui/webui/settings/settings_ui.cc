@@ -272,6 +272,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck));
 
   html_source->AddBoolean(
+      "passwordsWeaknessCheck",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordsWeaknessCheck));
+
+  html_source->AddBoolean(
       "editPasswordsInSettings",
       base::FeatureList::IsEnabled(
           password_manager::features::kEditPasswordsInDesktopSettings));

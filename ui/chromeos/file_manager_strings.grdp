@@ -981,6 +981,9 @@
   <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
     Unlock
   </message>
+  <message name="IDS_FILE_BROWSER_PASSWORD_DIALOG_INVALID" desc="Error message displayed when the user enters an invalid password.">
+    Invalid password
+  </message>
 
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file

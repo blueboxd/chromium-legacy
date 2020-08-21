@@ -21,6 +21,24 @@ promise_test(() => {
     eventSender.keyDown('PageUp');
     assert_equals(dateElement.value, "2019-02-14", "Previous month hotkey should have decremented month");
 
+    eventSender.keyDown('Home');
+    assert_equals(dateElement.value, "2019-02-01", "Home hotkey should go to the first of the month");
+
+    eventSender.keyDown('Home');
+    assert_equals(dateElement.value, "2019-01-01", "Home hotkey should go to the first of the previous month");
+
+    eventSender.keyDown('Home');
+    assert_equals(dateElement.value, "2018-12-01", "Home hotkey should wrap to previous year");
+
+    eventSender.keyDown('End');
+    assert_equals(dateElement.value, "2018-12-31", "End hotkey should go to the end of the month");
+
+    eventSender.keyDown('End');
+    assert_equals(dateElement.value, "2019-01-31", "End hotkey hotkey should wrap to next year");
+
+    eventSender.keyDown('End');
+    assert_equals(dateElement.value, "2019-02-28", "End hotkey should go to the end of the next month");
+
     eventSender.keyDown('Enter');
     assert_equals(internals.pagePopupWindow, null, "Enter key should have closed popup.");
   });

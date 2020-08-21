@@ -88,6 +88,8 @@ class DateTimeLocalPicker extends HTMLElement {
         break;
       case 'Home':
       case 'End':
+        window.pagePopupController.setValue(this.selectedValue);
+        event.stopPropagation();
         // Prevent an attempt to scroll to the end of
         // of an infinitely looping time picker column.
         event.preventDefault();

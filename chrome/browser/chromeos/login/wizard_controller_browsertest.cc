@@ -2763,10 +2763,6 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
                                 base::Unretained(wizard_controller))));
   }
 
-  OobeScreenId GetFirstScreen() {
-    return WizardController::default_controller()->first_screen();
-  }
-
   std::unique_ptr<MockWelcomeView> mock_welcome_view_;
   MockWelcomeScreen* mock_welcome_screen_;
 
@@ -2801,7 +2797,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
                        ControlFlowResumeInterruptedOobe) {
-  EXPECT_EQ(EnrollmentScreenView::kScreenId.AsId(), GetFirstScreen());
+  EXPECT_EQ(EnrollmentScreenView::kScreenId.AsId(),
+            WizardController::default_controller()->first_screen_for_testing());
 }
 
 class WizardControllerCellularFirstTest : public WizardControllerFlowTest {

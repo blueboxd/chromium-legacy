@@ -274,15 +274,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
       context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PrivateNetworkRequestPolicy) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, ShouldAllowInsecurePrivateNetworkRequests) {
   const auto* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
 
   // By default, we should block requests.
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
-                kBlockFromInsecureToMorePrivate,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://bleep.com")));
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com")));
 
   PolicyMap policies;
   SetPolicy(&policies, key::kInsecurePrivateNetworkRequestsAllowed,
@@ -290,10 +288,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PrivateNetworkRequestPolicy) {
   UpdateProviderPolicy(policies);
 
   // Explicitly-disallowing is the same as not setting the policy.
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
-                kBlockFromInsecureToMorePrivate,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://bleep.com")));
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com")));
 
   base::Value allowlist(base::Value::Type::LIST);
   allowlist.Append(base::Value("http://bleep.com"));
@@ -302,28 +298,20 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PrivateNetworkRequestPolicy) {
             std::move(allowlist));
   UpdateProviderPolicy(policies);
 
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
-                kBlockFromInsecureToMorePrivate,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://default.com")));
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://default.com")));
 
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::kAllow,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://bleep.com/heyo")));
+  EXPECT_TRUE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://bleep.com/heyo")));
 
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
-                kBlockFromInsecureToMorePrivate,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("https://bleep.com")));
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("https://bleep.com")));
 
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::kAllow,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://woohoo.com:1234/index.html")));
+  EXPECT_TRUE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://woohoo.com:1234/index.html")));
 
-  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
-                kBlockFromInsecureToMorePrivate,
-            content_settings::GetPrivateNetworkRequestPolicy(
-                settings_map, GURL("http://woohoo.com/index.html")));
+  EXPECT_FALSE(content_settings::ShouldAllowInsecurePrivateNetworkRequests(
+      settings_map, GURL("http://woohoo.com/index.html")));
 }
 
 class DisallowWildcardPolicyTest : public PolicyTest {

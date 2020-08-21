@@ -30,11 +30,6 @@ class HIDDetectionView {
   virtual void Hide() = 0;
   virtual void Bind(HIDDetectionScreen* screen) = 0;
   virtual void Unbind() = 0;
-  // Checks if we should show the screen or enough devices already present.
-  // Calls corresponding set of actions based on the bool result.
-  virtual void CheckIsScreenRequired(
-      const base::Callback<void(bool)>& on_check_done) = 0;
-
   virtual void SetKeyboardState(const std::string& value) = 0;
   virtual void SetMouseState(const std::string& value) = 0;
   virtual void SetKeyboardPinCode(const std::string& value) = 0;
@@ -52,7 +47,7 @@ class HIDDetectionScreenHandler
  public:
   using TView = HIDDetectionView;
 
-  HIDDetectionScreenHandler(JSCallsContainer* js_calls_container);
+  explicit HIDDetectionScreenHandler(JSCallsContainer* js_calls_container);
   ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionView implementation:
@@ -60,8 +55,6 @@ class HIDDetectionScreenHandler
   void Hide() override;
   void Bind(HIDDetectionScreen* screen) override;
   void Unbind() override;
-  void CheckIsScreenRequired(
-      const base::Callback<void(bool)>& on_check_done) override;
   void SetKeyboardState(const std::string& value) override;
   void SetMouseState(const std::string& value) override;
   void SetKeyboardPinCode(const std::string& value) override;

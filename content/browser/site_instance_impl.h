@@ -154,9 +154,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // are on the SiteInstance::Create* methods with the same name.
   static scoped_refptr<SiteInstanceImpl> Create(
       BrowserContext* browser_context);
+  // |is_coop_coep_cross_origin_isolated| is not exposed in content/public. It
+  // sets the BrowsingInstance is_coop_coep_cross_origin_isolated_ property.
+  // Once this property is set it cannot be changed and is used in process
+  // allocation decisions.
   static scoped_refptr<SiteInstanceImpl> CreateForURL(
       BrowserContext* browser_context,
-      const GURL& url);
+      const GURL& url,
+      bool is_coop_coep_cross_origin_isolated = false);
   static scoped_refptr<SiteInstanceImpl> CreateForGuest(
       content::BrowserContext* browser_context,
       const GURL& guest_site_url);
@@ -483,6 +488,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // AgentSchedulingGroupHost is set will trigger the creation of a new
   // RenderProcessHost (with a new ID).
   AgentSchedulingGroupHost& GetAgentSchedulingGroup();
+
+  // Returns true if the SiteInstance is part of a CoopCoepCrossOriginIsolated
+  // BrowsingInstance.
+  bool IsCoopCoepCrossOriginIsolated() const;
+
+  // If IsCoopCoepCrossOriginIsolated is true, returns the origin shared across
+  // all top level frames in this BrowsingInstance.
+  base::Optional<url::Origin> CoopCoepCrossOriginIsolatedOrigin() const;
 
  private:
   friend class BrowsingInstance;

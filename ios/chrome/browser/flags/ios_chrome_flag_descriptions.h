@@ -222,6 +222,10 @@ extern const char kEnablePersistentDownloadsDescription[];
 extern const char kExpandedTabStripName[];
 extern const char kExpandedTabStripDescription[];
 
+// Title and description for the flag to extend Open in toolbar files support.
+extern const char kExtendOpenInFilesSupportName[];
+extern const char kExtendOpenInFilesSupportDescription[];
+
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];

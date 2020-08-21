@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/open_in/features.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -19,6 +21,49 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// .pptx extension.
+const char kMimeTypeMicrosoftPowerPointOpenXML[] =
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+// .docx extension.
+const char kMimeTypeMicrosoftWordOpenXML[] =
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+// .xlsx extension.
+const char kMimeTypeMicrosoftExcelOpenXML[] =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+// .pdf extension.
+const char kMimeTypePDF[] = "application/pdf";
+
+// .doc extension.
+const char kMimeTypeMicrosoftWord[] = "application/msword";
+
+// .jpeg or .jpg extension.
+const char kMimeTypeJPEG[] = "image/jpeg";
+
+// .png extension.
+const char kMimeTypePNG[] = "image/png";
+
+// .ppt extension.
+const char kMimeTypeMicrosoftPowerPoint[] = "application/vnd.ms-powerpoint";
+
+// .rtf extension.
+const char kMimeTypeRTF[] = "application/rtf";
+
+// .svg extension.
+const char kMimeTypeSVG[] = "image/svg+xml";
+
+// .xls extension.
+const char kMimeTypeMicrosoftExcel[] = "application/vnd.ms-excel";
+
+// .usdz extension.
+const char kMimeTypeUSDZ[] = "model/vnd.usdz+zip";
+
+}  // namespace
 
 // static
 void OpenInTabHelper::CreateForWebState(web::WebState* web_state) {
@@ -42,10 +87,42 @@ OpenInTabHelper::~OpenInTabHelper() {
   }
 }
 
+bool OpenInTabHelper::isExportableFile() const {
+  if (web_state_->GetContentsMimeType() == kMimeTypePDF)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftWord)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftWordOpenXML)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeJPEG)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypePNG)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftPowerPoint)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftPowerPointOpenXML)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeRTF)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeSVG)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftExcel)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeMicrosoftExcelOpenXML)
+    return true;
+  if (web_state_->GetContentsMimeType() == kMimeTypeUSDZ)
+    return true;
+
+  return false;
+}
+
 void OpenInTabHelper::HandleExportableFile() {
-  // Only "application/pdf" is supported for now.
-  if (web_state_->GetContentsMimeType() != "application/pdf")
+  if (base::FeatureList::IsEnabled(kExtendOpenInFilesSupport)) {
+    if (!isExportableFile())
+      return;
+  } else if (web_state_->GetContentsMimeType() != "application/pdf") {
     return;
+  }
 
   // Try to generate a filename by first looking at |content_disposition_|, then
   // at the last component of WebState's last committed URL and if both of these
@@ -61,9 +138,9 @@ void OpenInTabHelper::HandleExportableFile() {
   const GURL& last_committed_url = item ? item->GetURL() : GURL::EmptyGURL();
   base::string16 file_name =
       net::GetSuggestedFilename(last_committed_url, content_disposition,
-                                "",                 // referrer-charset
-                                "",                 // suggested-name
-                                "application/pdf",  // mime-type
+                                "",  // referrer-charset
+                                "",  // suggested-name
+                                web_state_->GetContentsMimeType(),  // mime-type
                                 default_file_name);
   [delegate_ enableOpenInForWebState:web_state_
                      withDocumentURL:last_committed_url

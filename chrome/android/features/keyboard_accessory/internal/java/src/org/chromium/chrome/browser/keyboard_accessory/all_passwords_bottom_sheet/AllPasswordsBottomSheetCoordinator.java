@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Creates the AllPasswordsBottomSheet. AllPasswordsBottomSheet uses a bottom sheet to let the
@@ -15,8 +16,6 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class AllPasswordsBottomSheetCoordinator {
     private final AllPasswordsBottomSheetMediator mMediator = new AllPasswordsBottomSheetMediator();
-    private final PropertyModel mModel =
-            AllPasswordsBottomSheetProperties.createDefaultModel(mMediator::onDismissed);
 
     /**
      * This delegate is called when the AllPasswordsBottomSheet is interacted with (e.g. dismissed
@@ -29,8 +28,8 @@ class AllPasswordsBottomSheetCoordinator {
         void onCredentialSelected(Credential credential);
 
         /**
-         * Called when the user dismisses the AllPasswordsBottomSheet. Not called if a suggestion
-         * was selected.
+         * Called when the user dismisses the AllPasswordsBottomSheet or if the bottom sheet content
+         * failed to be shown.
          */
         void onDismissed();
     }
@@ -39,11 +38,14 @@ class AllPasswordsBottomSheetCoordinator {
      * Initializes the component.
      * @param context A {@link Context} to create views and retrieve resources.
      * @param sheetController A {@link BottomSheetController} used to show/hide the sheet.
-     * @param delegate A {@link Delegate} that handles dismiss events.
+     * @param delegate A {@link Delegate} that handles select and dismiss events.
      */
     public void initialize(Context context, BottomSheetController sheetController,
             AllPasswordsBottomSheetCoordinator.Delegate delegate) {
-        mMediator.initialize(delegate, mModel);
+        PropertyModel model =
+                AllPasswordsBottomSheetProperties.createDefaultModel(mMediator::onDismissed);
+        mMediator.initialize(delegate, model);
+        setUpModelChangeProcessor(model, new AllPasswordsBottomSheetView(context, sheetController));
     }
 
     /**
@@ -52,5 +54,10 @@ class AllPasswordsBottomSheetCoordinator {
      */
     public void showCredentials(Credential[] credentials) {
         mMediator.showCredentials(credentials);
+    }
+
+    static void setUpModelChangeProcessor(PropertyModel model, AllPasswordsBottomSheetView view) {
+        PropertyModelChangeProcessor.create(
+                model, view, AllPasswordsBottomSheetViewBinder::bindAllPasswordsBottomSheet);
     }
 }

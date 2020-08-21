@@ -36,6 +36,7 @@ public class PageInfoCookiesPreference extends PreferenceFragmentCompat {
         // Called when the toggle controlling third-party cookie blocking changes.
         public Callback<Boolean> onCheckedChangedCallback;
         public Runnable onClearCallback;
+        public Runnable onCookieSettingsLinkClicked;
     }
 
     @Override
@@ -43,9 +44,8 @@ public class PageInfoCookiesPreference extends PreferenceFragmentCompat {
         SettingsUtils.addPreferencesFromResource(this, R.xml.page_info_cookie_preference);
 
         Preference cookieSummary = findPreference(COOKIE_SUMMARY_PREFERENCE);
-        // TODO(crbug.com/1077766): Show cookie settings.
-        NoUnderlineClickableSpan linkSpan =
-                new NoUnderlineClickableSpan(getResources(), view -> {});
+        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(
+                getResources(), (view) -> { mParams.onCookieSettingsLinkClicked.run(); });
         cookieSummary.setSummary(
                 SpanApplier.applySpans(getString(R.string.page_info_cookies_description),
                         new SpanApplier.SpanInfo("<link>", "</link>", linkSpan)));

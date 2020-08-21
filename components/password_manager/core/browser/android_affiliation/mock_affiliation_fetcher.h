@@ -17,7 +17,10 @@ class MockAffiliationFetcher : public AffiliationFetcherInterface {
   MockAffiliationFetcher();
   ~MockAffiliationFetcher() override;
 
-  MOCK_METHOD(void, StartRequest, (const std::vector<FacetURI>&), (override));
+  MOCK_METHOD(void,
+              StartRequest,
+              (const std::vector<FacetURI>&, RequestInfo),
+              (override));
   MOCK_METHOD(std::vector<FacetURI>&,
               GetRequestedFacetURIs,
               (),

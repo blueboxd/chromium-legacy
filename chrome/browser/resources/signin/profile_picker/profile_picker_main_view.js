@@ -62,6 +62,7 @@ Polymer({
 
   /** @override */
   attached() {
+    this.setMinimumSize_();
     this.addWebUIListener(
         'profiles-list-changed', this.handleProfilesListChanged_.bind(this));
     this.addWebUIListener(
@@ -123,5 +124,11 @@ Polymer({
         break;
       }
     }
+  },
+
+  /** @private */
+  setMinimumSize_() {
+    this.style.setProperty(
+        '--view-min-size', loadTimeData.getString('minimumPickerSize'));
   },
 });

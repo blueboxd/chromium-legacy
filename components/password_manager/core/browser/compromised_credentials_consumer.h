@@ -12,6 +12,7 @@
 namespace password_manager {
 
 struct CompromisedCredentials;
+class PasswordStore;
 
 // Reads information associated with compromised credentials history from the
 // PasswordStore. Reads are done asynchronously on a separate thread. It
@@ -26,6 +27,15 @@ class CompromisedCredentialsConsumer {
   // the associated |compromised_credentials|.
   virtual void OnGetCompromisedCredentials(
       std::vector<CompromisedCredentials> compromised_credentials) = 0;
+
+  // Like OnGetCompromisedCredentials(), but also receives the originating
+  // PasswordStore as a parameter. This is useful for consumers that query
+  // both the profile-scoped and the account-scoped store. The default
+  // implementation simply calls OnGetCompromisedCredentials(), so consumers
+  // that don't care about the store can just ignore this.
+  virtual void OnGetCompromisedCredentialsFrom(
+      PasswordStore* store,
+      std::vector<CompromisedCredentials> compromised_credentials);
 
   // The base::CancelableTaskTracker can be used for cancelling the tasks
   // associated with the consumer.

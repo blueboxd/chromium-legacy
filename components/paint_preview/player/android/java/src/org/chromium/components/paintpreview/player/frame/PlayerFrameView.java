@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 
@@ -39,11 +40,12 @@ class PlayerFrameView extends FrameLayout {
      */
     PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
             PlayerFrameViewDelegate playerFrameViewDelegate,
-            PlayerFrameGestureDetectorDelegate gestureDetectorDelegate) {
+            PlayerFrameGestureDetectorDelegate gestureDetectorDelegate,
+            @Nullable Runnable firstPaintListener) {
         super(context);
         setWillNotDraw(false);
         mDelegate = playerFrameViewDelegate;
-        mBitmapPainter = new PlayerFrameBitmapPainter(this::invalidate);
+        mBitmapPainter = new PlayerFrameBitmapPainter(this::invalidate, firstPaintListener);
         mGestureDetector =
                 new PlayerFrameGestureDetector(context, canDetectZoom, gestureDetectorDelegate);
     }

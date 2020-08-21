@@ -512,67 +512,71 @@ function initialize() {
               true /* useAppWindow */);
         }
 
-        const legalHelpPageUrlElement = $('legal-help-page-url');
-        if (legalHelpPageUrlElement) {
-          setupLinkHandlers(
-              legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL,
-              false /* useAppWindow */);
-        }
+        // The following URLs don't open on login screen, so hide them.
+        // TODO(crbug.com/1116383): Find a solution to display them properly.
+        if (feedbackInfo.flow != chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+          const legalHelpPageUrlElement = $('legal-help-page-url');
+          if (legalHelpPageUrlElement) {
+            setupLinkHandlers(
+                legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL,
+                false /* useAppWindow */);
+          }
 
-        const privacyPolicyUrlElement = $('privacy-policy-url');
-        if (privacyPolicyUrlElement) {
-          setupLinkHandlers(
-              privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL,
-              false /* useAppWindow */);
-        }
+          const privacyPolicyUrlElement = $('privacy-policy-url');
+          if (privacyPolicyUrlElement) {
+            setupLinkHandlers(
+                privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL,
+                false /* useAppWindow */);
+          }
 
-        const termsOfServiceUrlElement = $('terms-of-service-url');
-        if (termsOfServiceUrlElement) {
-          setupLinkHandlers(
-              termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
-              false /* useAppWindow */);
-        }
+          const termsOfServiceUrlElement = $('terms-of-service-url');
+          if (termsOfServiceUrlElement) {
+            setupLinkHandlers(
+                termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
+                false /* useAppWindow */);
+          }
 
-        const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
-        if (bluetoothLogsInfoLinkElement) {
-          bluetoothLogsInfoLinkElement.onclick = function(e) {
-            e.preventDefault();
-
-            chrome.app.window.create(
-                '/html/bluetooth_logs_info.html',
-                {width: 400, height: 120, resizable: false},
-                function(appWindow) {
-                  appWindow.contentWindow.onload = function() {
-                    i18nTemplate.process(
-                        appWindow.contentWindow.document, loadTimeData);
-                  };
-                });
-
-            bluetoothLogsInfoLinkElement.onauxclick = function(e) {
+          const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
+          if (bluetoothLogsInfoLinkElement) {
+            bluetoothLogsInfoLinkElement.onclick = function(e) {
               e.preventDefault();
+
+              chrome.app.window.create(
+                  '/html/bluetooth_logs_info.html',
+                  {width: 400, height: 120, resizable: false},
+                  function(appWindow) {
+                    appWindow.contentWindow.onload = function() {
+                      i18nTemplate.process(
+                          appWindow.contentWindow.document, loadTimeData);
+                    };
+                  });
+
+              bluetoothLogsInfoLinkElement.onauxclick = function(e) {
+                e.preventDefault();
+              };
             };
-          };
-        }
+          }
 
-        const assistantLogsInfoLinkElement = $('assistant-logs-info-link');
-        if (assistantLogsInfoLinkElement) {
-          assistantLogsInfoLinkElement.onclick = function(e) {
-            e.preventDefault();
-
-            chrome.app.window.create(
-                '/html/assistant_logs_info.html',
-                {width: 400, height: 120, resizable: false, frame: 'none'},
-                function(appWindow) {
-                  appWindow.contentWindow.onload = function() {
-                    i18nTemplate.process(
-                        appWindow.contentWindow.document, loadTimeData);
-                  };
-                });
-
-            assistantLogsInfoLinkElement.onauxclick = function(e) {
+          const assistantLogsInfoLinkElement = $('assistant-logs-info-link');
+          if (assistantLogsInfoLinkElement) {
+            assistantLogsInfoLinkElement.onclick = function(e) {
               e.preventDefault();
+
+              chrome.app.window.create(
+                  '/html/assistant_logs_info.html',
+                  {width: 400, height: 120, resizable: false, frame: 'none'},
+                  function(appWindow) {
+                    appWindow.contentWindow.onload = function() {
+                      i18nTemplate.process(
+                          appWindow.contentWindow.document, loadTimeData);
+                    };
+                  });
+
+              assistantLogsInfoLinkElement.onauxclick = function(e) {
+                e.preventDefault();
+              };
             };
-          };
+          }
         }
 
         // Make sure our focus starts on the description field.

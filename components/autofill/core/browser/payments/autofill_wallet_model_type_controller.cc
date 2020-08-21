@@ -38,7 +38,8 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
-         type == syncer::AUTOFILL_WALLET_METADATA);
+         type == syncer::AUTOFILL_WALLET_METADATA ||
+         type == syncer::AUTOFILL_WALLET_OFFER);
   SubscribeToPrefChanges();
   // TODO(crbug.com/906995): remove this observing mechanism once all sync
   // datatypes are stopped by ProfileSyncService, when sync is paused.
@@ -59,7 +60,8 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
-         type == syncer::AUTOFILL_WALLET_METADATA);
+         type == syncer::AUTOFILL_WALLET_METADATA ||
+         type == syncer::AUTOFILL_WALLET_OFFER);
   SubscribeToPrefChanges();
   // TODO(crbug.com/906995): remove this observing mechanism once all sync
   // datatypes are stopped by ProfileSyncService, when sync is paused.
@@ -76,8 +78,8 @@ void AutofillWalletModelTypeController::Stop(
   DCHECK(CalledOnValidThread());
   switch (shutdown_reason) {
     case syncer::STOP_SYNC:
-      // Special case: For AUTOFILL_WALLET_DATA and AUTOFILL_WALLET_METADATA, we
-      // want to clear all data even when Sync is stopped temporarily.
+      // Special case: For Wallet-related data types, we want to clear all data
+      // even when Sync is stopped temporarily.
       shutdown_reason = syncer::DISABLE_SYNC;
       break;
     case syncer::DISABLE_SYNC:

@@ -271,8 +271,8 @@ public class PageInfoController
                     this, view2.getConnectionRowView(), mWebContents, mDelegate.getVrHandler());
             mPermissionsController = new PageInfoPermissionsController(
                     this, view2.getPermissionsRowView(), mDelegate, mDisplayUrlBuilder.toString());
-            mCookiesController = new PageInfoCookiesController(
-                    this, view2.getCookiesRowView(), viewParams.cookieControlsShown, mFullUrl);
+            mCookiesController = new PageInfoCookiesController(this, view2.getCookiesRowView(),
+                    mDelegate, viewParams.cookieControlsShown, mFullUrl);
         } else {
             mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
             mView.showHttpsImageCompressionInfo(mDelegate.isHttpsImageCompressionApplied());

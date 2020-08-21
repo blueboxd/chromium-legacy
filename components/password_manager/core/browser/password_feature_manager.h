@@ -49,9 +49,9 @@ class PasswordFeatureManager {
   // associated settings (e.g. default store choice).
   virtual void OptOutOfAccountStorageAndClearSettings() = 0;
 
-  // Whether it makes sense to ask the user to move a password or about the
-  // store when saving a  password (i.e. profile or account store). This is true
-  // if the user has opted in already, or hasn't opted in but all other
+  // Whether it makes sense to ask the user to move a password to their account,
+  // or in which store to save a password (i.e. profile or account store). This
+  // is true if the user has opted in already, or hasn't opted in but all other
   // requirements are met (i.e. there is a signed-in user, Sync-the-feature is
   // not enabled, etc).
   virtual bool ShouldShowAccountStorageBubbleUi() const = 0;

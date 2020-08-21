@@ -3189,12 +3189,12 @@ void Document::Shutdown() {
   GetFrame()->GetEventHandlerRegistry().DocumentDetached(*this);
 
   // Signal destruction to mutation observers.
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [](SynchronousMutationObserver* observer) {
         observer->ContextDestroyed();
-        observer->ObserverListWillBeCleared();
+        observer->ObserverSetWillBeCleared();
       });
-  synchronous_mutation_observer_list_.Clear();
+  synchronous_mutation_observer_set_.Clear();
 
   cookie_jar_ = nullptr;  // Not accessible after navigated away.
   fetcher_->ClearContext();
@@ -5410,7 +5410,7 @@ void Document::DidMoveTreeToNewDocument(const Node& root) {
     for (Range* range : ranges)
       range->UpdateOwnerDocumentIfNeeded();
   }
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidMoveTreeToNewDocument(root);
       });
@@ -5429,7 +5429,7 @@ void Document::NodeChildrenWillBeRemoved(ContainerNode& container) {
       ni->NodeWillBeRemoved(n);
   }
 
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->NodeChildrenWillBeRemoved(container);
       });
@@ -5450,7 +5450,7 @@ void Document::NodeWillBeRemoved(Node& n) {
       range->FixupRemovedNodeAcrossShadowBoundary(n);
   }
 
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->NodeWillBeRemoved(n);
       });
@@ -5466,7 +5466,7 @@ void Document::NotifyUpdateCharacterData(CharacterData* character_data,
                                          unsigned offset,
                                          unsigned old_length,
                                          unsigned new_length) {
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidUpdateCharacterData(character_data, offset, old_length,
                                          new_length);
@@ -5474,7 +5474,7 @@ void Document::NotifyUpdateCharacterData(CharacterData* character_data,
 }
 
 void Document::NotifyChangeChildren(const ContainerNode& container) {
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidChangeChildren(container);
       });
@@ -5504,7 +5504,7 @@ void Document::DidMergeTextNodes(const Text& merged_node,
       range->DidMergeTextNodes(node_to_be_removed_with_index, old_length);
   }
 
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidMergeTextNodes(merged_node, node_to_be_removed_with_index,
                                     old_length);
@@ -5517,7 +5517,7 @@ void Document::DidSplitTextNode(const Text& old_node) {
   for (Range* range : ranges_)
     range->DidSplitTextNode(old_node);
 
-  synchronous_mutation_observer_list_.ForEachObserver(
+  synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidSplitTextNode(old_node);
       });
@@ -8202,7 +8202,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(cookie_jar_);
-  visitor->Trace(synchronous_mutation_observer_list_);
+  visitor->Trace(synchronous_mutation_observer_set_);
   visitor->Trace(fragment_directive_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_document_state_);

@@ -421,7 +421,7 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   }
 
   SkPictureRecorder recorder;
-  SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
+  SkCanvas* rec_canvas = recorder.beginRecording(width, height);
   if (compositor_) {
     {
       // Reset scroll back to the origin, will go back to the old

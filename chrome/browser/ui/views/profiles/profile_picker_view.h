@@ -42,6 +42,9 @@ class ProfilePickerView : public views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
   void WindowClosing() override;
 
+  // views::View;
+  gfx::Size GetMinimumSize() const override;
+
   views::WebView* web_view_;
   InitState initialized_;
   base::WeakPtrFactory<ProfilePickerView> weak_ptr_factory_{this};

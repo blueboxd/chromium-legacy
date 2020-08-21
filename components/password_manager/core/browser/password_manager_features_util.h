@@ -73,7 +73,7 @@ void OptOutOfAccountStorageAndClearSettingsForAccount(
     const std::string& gaia_id);
 
 // Whether it makes sense to ask the user to move a password to their account or
-// about the store when saving a password (i.e. profile or account store). This
+// in which store to save a password (i.e. profile or account store). This
 // is true if the user has opted in already, or hasn't opted in but all other
 // requirements are met (i.e. there is a signed-in user, Sync-the-feature is not
 // enabled, etc). |pref_service| must not be null. |sync_service| may be null

@@ -164,17 +164,19 @@ static inline SkBlendMode BlendModeToSkXfermode(BlendMode blend_mode) {
 }
 
 // Explicitly named to be a friend in GLRenderer for shader access.
-class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
+class GLRendererShaderPixelTest : public cc::PixelTest {
  public:
   void SetUp() override {
-    cc::GLRendererPixelTest::SetUp();
+    SetUpGLRenderer(gfx::SurfaceOrigin::kBottomLeft);
     ASSERT_FALSE(renderer()->IsContextLost());
   }
 
   void TearDown() override {
-    cc::GLRendererPixelTest::TearDown();
+    cc::PixelTest::TearDown();
     ASSERT_FALSE(renderer());
   }
+
+  GLRenderer* renderer() { return static_cast<GLRenderer*>(renderer_.get()); }
 
   void TestShaderWithDrawingFrame(
       const ProgramKey& program_key,

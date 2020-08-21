@@ -16,6 +16,20 @@ let cancel;
 let unlock;
 
 /**
+ * Mock LoadTimeData strings.
+ */
+function setUpPage() {
+  window.loadTimeData.getString = id => {
+    switch (id) {
+      case 'PASSWORD_DIALOG_INVALID':
+        return 'Invalid password';
+      default:
+        return id;
+    }
+  };
+}
+
+/**
  * Adds a FilesPasswordDialog element to the page.
  */
 function setUp() {
@@ -118,6 +132,33 @@ async function testUnlockSingleArchive(done) {
 
   // Check that the dialog is closed.
   assertFalse(dialog.open);
+
+  done();
+}
+
+/**
+ * Tests opening the password dialog with an 'Invalid password' message. This
+ * message is displayed when a wrong password was previously entered.
+ */
+async function testDialogWithWrongPassword(done) {
+  // Check that the dialog is closed.
+  assertFalse(dialog.open);
+
+  // Open password prompt.
+  const passwordPromise =
+      passwordDialog.askForPassword('encrypted.zip', 'wrongpassword');
+
+  // Wait until the dialog is open.
+  await waitUntil(() => dialog.open);
+
+  // Check that the name of the encrypted zip displays correctly on the dialog.
+  assertEquals('encrypted.zip', name.innerText);
+
+  // Check that the previous erroneous password is prefilled in the dialog.
+  assertEquals('wrongpassword', input.value);
+
+  // Check that the previous erroneous password is prefilled in the dialog.
+  assertEquals('Invalid password', input.errorMessage);
 
   done();
 }

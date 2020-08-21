@@ -5,19 +5,17 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_PRIVATE_NETWORK_SETTINGS_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_PRIVATE_NETWORK_SETTINGS_H_
 
-#include "components/content_settings/core/common/content_settings.h"
-#include "services/network/public/mojom/network_context.mojom-forward.h"
-
 class GURL;
 class HostContentSettingsMap;
 
 namespace content_settings {
 
-// Returns the private network request policy to use for |url| given |map|.
+// Returns whether |url| should be allowed to make insecure private network
+// requests, given the settings contained in |map|.
 //
 // |map| must not be nullptr. Caller retains ownership.
 // |url| should identify the frame initiating a request.
-network::mojom::PrivateNetworkRequestPolicy GetPrivateNetworkRequestPolicy(
+bool ShouldAllowInsecurePrivateNetworkRequests(
     const HostContentSettingsMap* map,
     const GURL& url);
 

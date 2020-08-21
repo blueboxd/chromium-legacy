@@ -25,9 +25,17 @@ bool ParseLookupAffiliationResponse(
       // Ignore potential future kinds of facet URIs (e.g. for new platforms).
       if (!uri.is_valid())
         continue;
-      affiliated_facets.push_back(
-          {uri, FacetBrandingInfo{facet.branding_info().name(),
-                                  GURL(facet.branding_info().icon_url())}});
+      Facet new_facet = {uri};
+      if (facet.has_branding_info()) {
+        new_facet.branding_info =
+            FacetBrandingInfo{facet.branding_info().name(),
+                              GURL(facet.branding_info().icon_url())};
+      }
+      if (facet.has_change_password_info()) {
+        new_facet.change_password_url =
+            GURL(facet.change_password_info().change_password_url());
+      }
+      affiliated_facets.push_back(new_facet);
     }
 
     // Be lenient and ignore empty (after filtering) equivalence classes.

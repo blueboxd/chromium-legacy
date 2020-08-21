@@ -1127,12 +1127,10 @@ bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
   return false;
 }
 
-network::mojom::PrivateNetworkRequestPolicy
-ContentBrowserClient::GetPrivateNetworkRequestPolicy(
+bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
     const GURL& url) {
-  return network::mojom::PrivateNetworkRequestPolicy::
-      kBlockFromInsecureToMorePrivate;
+  return false;
 }
 
 ukm::UkmService* ContentBrowserClient::GetUkmService() {

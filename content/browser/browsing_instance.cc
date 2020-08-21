@@ -22,13 +22,21 @@ namespace content {
 // invalid BrowsingInstanceId value, which is 0 in its underlying IdType32.
 int BrowsingInstance::next_browsing_instance_id_ = 1;
 
-BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
+BrowsingInstance::BrowsingInstance(
+    BrowserContext* browser_context,
+    bool is_coop_coep_cross_origin_isolated,
+    const base::Optional<url::Origin>& coop_coep_cross_origin_isolated_origin)
     : isolation_context_(
           BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++),
           BrowserOrResourceContext(browser_context)),
       active_contents_count_(0u),
       default_process_(nullptr),
-      default_site_instance_(nullptr) {
+      default_site_instance_(nullptr),
+      is_coop_coep_cross_origin_isolated_(is_coop_coep_cross_origin_isolated),
+      coop_coep_cross_origin_isolated_origin_(
+          coop_coep_cross_origin_isolated_origin) {
+  DCHECK(!is_coop_coep_cross_origin_isolated_ ||
+         coop_coep_cross_origin_isolated_origin_.has_value());
   DCHECK(browser_context);
 }
 

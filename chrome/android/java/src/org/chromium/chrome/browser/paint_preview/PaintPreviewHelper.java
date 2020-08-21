@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.paint_preview;
 
+import android.os.SystemClock;
+
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -28,6 +30,11 @@ public class PaintPreviewHelper {
     private static boolean sHasAttemptedToShowOnRestore;
 
     /**
+     * Tracks the activity creation time in ms from {@link SystemClock#elapsedRealtime}.
+     */
+    private static long sActivityCreationTimeMs;
+
+    /**
      * Initializes the logic required for the Paint Preview on startup feature. Mainly, observes a
      * {@link TabModelSelector} to monitor for initialization completion.
      * @param activity The ChromeActivity that corresponds to the tabModelSelector.
@@ -39,6 +46,8 @@ public class PaintPreviewHelper {
         if (!MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity)) {
             sHasAttemptedToShowOnRestore = false;
         }
+        sActivityCreationTimeMs = activity.getOnCreateTimestampMs();
+
         // TODO(crbug/1074428): verify this doesn't cause a memory leak if the user exits Chrome
         // prior to onTabStateInitialized being called.
         tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
@@ -84,7 +93,7 @@ public class PaintPreviewHelper {
         if (!player.maybeShow(onShown, () -> {
                 onDismissed.run();
                 PageLoadMetrics.removeObserver(observer);
-            })) {
+            }, sActivityCreationTimeMs)) {
             return false;
         }
 

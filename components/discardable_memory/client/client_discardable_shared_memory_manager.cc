@@ -106,14 +106,12 @@ bool ClientDiscardableSharedMemoryManager::DiscardableMemoryImpl::Lock() {
   base::AutoLock lock(manager_->GetLock());
   DCHECK(!is_locked_);
 
-  if (!span_)
-    return false;
+  if (span_ && manager_->LockSpan(span_.get()))
+    is_locked_ = true;
 
-  if (!manager_->LockSpan(span_.get()))
-    return false;
+  UMA_HISTOGRAM_BOOLEAN("Memory.Discardable.LockingSuccess", is_locked_);
 
-  is_locked_ = true;
-  return true;
+  return is_locked_;
 }
 
 void ClientDiscardableSharedMemoryManager::DiscardableMemoryImpl::Unlock() {

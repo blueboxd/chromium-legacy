@@ -13,6 +13,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_delegate.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_interface.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -23,8 +24,6 @@ class SyncService;
 }
 
 namespace password_manager {
-
-class AffiliationFetcherInterface;
 
 class AffiliationServiceImpl : public AffiliationService,
                                public AffiliationFetcherDelegate {
@@ -63,7 +62,9 @@ class AffiliationServiceImpl : public AffiliationService,
       const std::vector<url::SchemeHostPort>& tuple_origins);
 
   // Calls Affiliation Fetcher and starts a request for |facets| affiliations.
-  void RequestFacetsAffiliations(const std::vector<FacetURI>& facets);
+  void RequestFacetsAffiliations(
+      const std::vector<FacetURI>& facets,
+      const AffiliationFetcherInterface::RequestInfo request_info);
 
   syncer::SyncService* sync_service_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

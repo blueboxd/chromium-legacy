@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.paint_preview;
 
+import android.os.SystemClock;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -48,9 +50,22 @@ public class TabbedPaintPreviewMetricsHelper {
     }
 
     private long mShownTime;
+    private boolean mFirstPaintHappened;
 
     void onShown() {
         mShownTime = System.currentTimeMillis();
+    }
+
+    void onFirstPaint(long activityOnCreateTimestamp) {
+        mFirstPaintHappened = true;
+        RecordHistogram.recordLongTimesHistogram(
+                "Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap",
+                SystemClock.elapsedRealtime() - activityOnCreateTimestamp);
+    }
+
+    void onTabLoadFinished() {
+        RecordHistogram.recordBooleanHistogram(
+                "Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad", mFirstPaintHappened);
     }
 
     void recordExitMetrics(int exitCause, int snackbarShownCount) {
@@ -63,9 +78,9 @@ public class TabbedPaintPreviewMetricsHelper {
                 "Browser.PaintPreview.TabbedPlayer.SnackbarCount", snackbarShownCount);
         RecordHistogram.recordEnumeratedHistogram(
                 "Browser.PaintPreview.TabbedPlayer.ExitCause", exitCause, ExitCause.COUNT);
+        if (mShownTime == 0 || !UPTIME_HISTOGRAM_MAP.containsKey(exitCause)) return;
+
         long upTime = System.currentTimeMillis() - mShownTime;
-        if (UPTIME_HISTOGRAM_MAP.containsKey(exitCause)) {
-            RecordHistogram.recordLongTimesHistogram(UPTIME_HISTOGRAM_MAP.get(exitCause), upTime);
-        }
+        RecordHistogram.recordLongTimesHistogram(UPTIME_HISTOGRAM_MAP.get(exitCause), upTime);
     }
 }

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/certificates/common.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/encrypted_metadata.pb.h"
 #include "chrome/browser/nearby_sharing/scheduling/nearby_share_scheduler_factory.h"
@@ -33,6 +35,8 @@ void TryDecryptPublicCertificates(
     std::unique_ptr<std::vector<nearbyshare::proto::PublicCertificate>>
         public_certificates) {
   if (!success || !public_certificates) {
+    NS_LOG(ERROR) << __func__
+                  << ": Failed to read public certificates from storage.";
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -42,10 +46,16 @@ void TryDecryptPublicCertificates(
         NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
             cert, encrypted_metadata_key);
     if (decrypted) {
+      NS_LOG(VERBOSE) << __func__
+                      << ": Successfully decrypted public certificate with ID "
+                      << base::HexEncode(decrypted->id());
       std::move(callback).Run(std::move(decrypted));
       return;
     }
   }
+  NS_LOG(VERBOSE)
+      << __func__
+      << ": Metadata key could not decrypt any public certificates.";
   std::move(callback).Run(base::nullopt);
 }
 
@@ -134,6 +144,9 @@ NearbyShareCertificateManagerImpl::GetValidPrivateCertificate(
     }
   }
   NOTREACHED();
+  NS_LOG(ERROR) << __func__
+                << ": No valid private certificate found with visibility "
+                << static_cast<int>(visibility);
   return NearbySharePrivateCertificate(NearbyShareVisibility::kNoOne,
                                        /*not_before=*/base::Time(),
                                        nearbyshare::proto::EncryptedMetadata());
@@ -171,6 +184,7 @@ void NearbyShareCertificateManagerImpl::OnDownloadPublicCertificatesRequest(
     request.add_secret_ids(id);
   }
 
+  NS_LOG(VERBOSE) << __func__ << ": Downloading public certificates.";
   // TODO(https://crbug.com/1116910): Enforce a timeout for each
   // ListPublicCertificates call.
   client_ = client_factory_->CreateInstance();
@@ -195,6 +209,8 @@ void NearbyShareCertificateManagerImpl::OnRpcSuccess(
 
   client_.reset();
 
+  NS_LOG(VERBOSE) << __func__ << ": " << certs.size()
+                  << " public certificates downloaded.";
   cert_store_->AddPublicCertificates(
       certs, base::BindOnce(
                  &NearbyShareCertificateManagerImpl::OnPublicCertificatesAdded,
@@ -222,6 +238,17 @@ void NearbyShareCertificateManagerImpl::OnPublicCertificatesAdded(
 void NearbyShareCertificateManagerImpl::FinishDownloadPublicCertificates(
     bool success,
     NearbyShareHttpResult http_result) {
+  if (success) {
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Public certificates successfully downloaded and stored.";
+  } else if (http_result == NearbyShareHttpResult::kSuccess) {
+    NS_LOG(ERROR) << __func__ << ": Public certificates not stored.";
+  } else {
+    NS_LOG(ERROR) << __func__
+                  << ": Public certificates download failed with HTTP error: "
+                  << http_result;
+  }
   RecordResultMetrics(http_result);
   download_public_certificates_scheduler_->HandleResult(success);
 }

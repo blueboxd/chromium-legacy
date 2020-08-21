@@ -316,6 +316,9 @@ public class NavigationTest {
             assertEquals(1, navigationController.getNavigationListSize());
         });
 
+        // Verify getter works as expected.
+        assertTrue(params.getShouldReplaceCurrentEntry());
+
         // Verify that a default NavigateParams does not replace.
         final NavigateParams params2 = new NavigateParams();
         navigateAndWaitForCompletion(URL3,

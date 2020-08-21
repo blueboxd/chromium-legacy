@@ -37,6 +37,7 @@ constexpr int EXTENSION_PINNING = 14;
 }  // namespace
 
 // static
+constexpr gfx::Size ExtensionsMenuItemView::kIconSize;
 constexpr char ExtensionsMenuItemView::kClassName[];
 
 ExtensionsMenuItemView::ExtensionsMenuItemView(

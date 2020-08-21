@@ -3062,7 +3062,6 @@ virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onneg
 crbug.com/1110833 external/wpt/webrtc/RTCPeerConnection-explicit-rollback-iceGatheringState.html [ Timeout ]
 
 # Tests that start hanging after implementing RTCRtpTransceiver.stop
-crbug.com/1115080 external/wpt/webrtc/RTCPeerConnection-iceGatheringState.html [ Timeout Pass Failure ]
 crbug.com/1115087 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 
 # See also crbug.com/920100 (sheriff 2019-01-09).
@@ -6569,7 +6568,6 @@ crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-
 
 # Sheriff 2020-06-23
 crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]
-crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
 
 # Sheriff 2020-06-24
 crbug.com/1098676 [ Win ] http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
@@ -6703,3 +6701,7 @@ crbug.com/1069546 [ Mac ] compositing/layer-creation/overflow-scroll-overlap.htm
 
 # Unexpected demuxer success after M86 FFmpeg roll.
 crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
+
+# Sheriff 2020-0-21
+crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
+

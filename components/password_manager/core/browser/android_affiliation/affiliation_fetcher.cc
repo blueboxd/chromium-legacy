@@ -71,7 +71,8 @@ void AffiliationFetcher::SetFactoryForTesting(
   g_testing_factory = factory;
 }
 
-void AffiliationFetcher::StartRequest(const std::vector<FacetURI>& facet_uris) {
+void AffiliationFetcher::StartRequest(const std::vector<FacetURI>& facet_uris,
+                                      RequestInfo request_info) {
   DCHECK(!simple_url_loader_);
   requested_facet_uris_ = facet_uris;
 
@@ -114,7 +115,7 @@ void AffiliationFetcher::StartRequest(const std::vector<FacetURI>& facet_uris) {
   resource_request->method = "POST";
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
-  simple_url_loader_->AttachStringForUpload(PreparePayload(),
+  simple_url_loader_->AttachStringForUpload(PreparePayload(request_info),
                                             "application/x-protobuf");
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
@@ -137,14 +138,18 @@ GURL AffiliationFetcher::BuildQueryURL() {
       "key", google_apis::GetAPIKey());
 }
 
-std::string AffiliationFetcher::PreparePayload() const {
+std::string AffiliationFetcher::PreparePayload(RequestInfo request_info) const {
   affiliation_pb::LookupAffiliationRequest lookup_request;
   for (const FacetURI& uri : requested_facet_uris_)
     lookup_request.add_facet(uri.canonical_spec());
 
-  // Enable request for branding information.
   auto mask = std::make_unique<affiliation_pb::LookupAffiliationMask>();
-  mask->set_branding_info(true);
+
+  mask->set_branding_info(request_info.branding_info);
+  // Change password info requires grouping info enabled.
+  mask->set_grouping_info(request_info.change_password_info);
+  mask->set_change_password_info(request_info.change_password_info);
+
   lookup_request.set_allocated_mask(mask.release());
 
   std::string serialized_request;

@@ -111,6 +111,13 @@ class PasswordStore : protected PasswordStoreSync,
     // Will be called from the UI thread.
     virtual void OnCompromisedCredentialsChanged() = 0;
 
+    // Like OnCompromisedCredentialsChanged(), but also receives the originating
+    // PasswordStore as a parameter. This is useful for observers that observe
+    // changes in both the profile-scoped and the account-scoped store. The
+    // default implementation simply calls OnCompromisedCredentialsChanged(), so
+    // observers that don't care about the store can just ignore this.
+    virtual void OnCompromisedCredentialsChangedIn(PasswordStore* store);
+
    protected:
     virtual ~DatabaseCompromisedCredentialsObserver() = default;
   };

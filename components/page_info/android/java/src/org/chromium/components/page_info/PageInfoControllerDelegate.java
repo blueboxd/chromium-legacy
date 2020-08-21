@@ -200,6 +200,11 @@ public abstract class PageInfoControllerDelegate {
     public abstract void showSiteSettings(String url);
 
     /**
+     * Show cookie settings.
+     */
+    public abstract void showCookieSettings();
+
+    /**
      * Creates Cookie Controls Bridge.
      * @param observer The CookieControlsObserver to create the bridge with.
      * @return the object that facilitates interfacing with native code.

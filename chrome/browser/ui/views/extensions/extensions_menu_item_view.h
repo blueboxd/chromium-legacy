@@ -28,6 +28,7 @@ class ExtensionsMenuItemView : public views::View,
                                public views::ButtonListener {
  public:
   static constexpr int kMenuItemHeightDp = 40;
+  static constexpr gfx::Size kIconSize{28, 28};
   static constexpr const char kClassName[] = "ExtensionsMenuItemView";
 
   ExtensionsMenuItemView(

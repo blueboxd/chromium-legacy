@@ -50,4 +50,13 @@ public class NavigateParams {
     org.chromium.weblayer_private.interfaces.NavigateParams toInterfaceParams() {
         return mInterfaceParams;
     }
+
+    /**
+     * Returns true if the current navigation will be replaced, false otherwise.
+     *
+     * @since 83
+     */
+    public boolean getShouldReplaceCurrentEntry() {
+        return mInterfaceParams.mShouldReplaceCurrentEntry;
+    }
 }

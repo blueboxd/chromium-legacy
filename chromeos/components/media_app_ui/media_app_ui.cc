@@ -50,6 +50,8 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_MEDIA_APP_GALLERY_ICON_16_PNG);
   source->AddResourcePath("system_assets/app_icon_32.png",
                           IDR_MEDIA_APP_GALLERY_ICON_32_PNG);
+  source->AddResourcePath("system_assets/app_icon_48.png",
+                          IDR_MEDIA_APP_GALLERY_ICON_48_PNG);
   source->AddResourcePath("system_assets/app_icon_64.png",
                           IDR_MEDIA_APP_GALLERY_ICON_64_PNG);
   source->AddResourcePath("system_assets/app_icon_96.png",

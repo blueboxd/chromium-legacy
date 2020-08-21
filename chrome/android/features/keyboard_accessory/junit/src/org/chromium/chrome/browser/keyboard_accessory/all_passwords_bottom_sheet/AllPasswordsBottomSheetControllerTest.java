@@ -33,15 +33,18 @@ import org.chromium.ui.modelutil.PropertyModel;
 @Config(manifest = Config.NONE)
 @Features.EnableFeatures(ChromeFeatureList.FILLING_PASSWORDS_FROM_ANY_ORIGIN)
 public class AllPasswordsBottomSheetControllerTest {
+    private static final Credential[] TEST_CREDENTIALS = new Credential[] {
+            new Credential("user1", "password123", "user1", "origin.com", false, false)};
     @Mock
     private AllPasswordsBottomSheetCoordinator.Delegate mMockDelegate;
 
-    private final AllPasswordsBottomSheetMediator mMediator = new AllPasswordsBottomSheetMediator();
+    private AllPasswordsBottomSheetMediator mMediator;
     private PropertyModel mModel;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mMediator = new AllPasswordsBottomSheetMediator();
         mModel = AllPasswordsBottomSheetProperties.createDefaultModel(mMediator::onDismissed);
         mMediator.initialize(mMockDelegate, mModel);
     }
@@ -54,8 +57,24 @@ public class AllPasswordsBottomSheetControllerTest {
     }
 
     @Test
-    public void testCallsDelegateOnDismiss() {
+    public void testShowCredentialsSetsVisibile() {
+        mMediator.showCredentials(TEST_CREDENTIALS);
+        assertThat(mModel.get(VISIBLE), is(true));
+    }
+
+    @Test
+    public void testOnCredentialSelected() {
+        mMediator.showCredentials(TEST_CREDENTIALS);
+        mMediator.onCredentialSelected(TEST_CREDENTIALS[0]);
+        assertThat(mModel.get(VISIBLE), is(false));
+        verify(mMockDelegate).onCredentialSelected(TEST_CREDENTIALS[0]);
+    }
+
+    @Test
+    public void testOnDismiss() {
+        mMediator.showCredentials(TEST_CREDENTIALS);
         mMediator.onDismissed(BottomSheetController.StateChangeReason.BACK_PRESS);
+        assertThat(mModel.get(VISIBLE), is(false));
         verify(mMockDelegate).onDismissed();
     }
 }

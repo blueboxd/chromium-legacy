@@ -89,6 +89,11 @@ void PasswordStore::Observer::OnLoginsChangedIn(
   OnLoginsChanged(changes);
 }
 
+void PasswordStore::DatabaseCompromisedCredentialsObserver::
+    OnCompromisedCredentialsChangedIn(PasswordStore* store) {
+  OnCompromisedCredentialsChanged();
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 PasswordStore::CheckReuseRequest::CheckReuseRequest(
     PasswordReuseDetectorConsumer* consumer)
@@ -786,8 +791,10 @@ void PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange(
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (std::move(callback).Run()) {
     compromised_credentials_observers_->Notify(
-        FROM_HERE, &DatabaseCompromisedCredentialsObserver::
-                       OnCompromisedCredentialsChanged);
+        FROM_HERE,
+        &DatabaseCompromisedCredentialsObserver::
+            OnCompromisedCredentialsChangedIn,
+        base::RetainedRef(this));
   }
 }
 
@@ -926,8 +933,8 @@ void PasswordStore::PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
       base::BindOnce(
-          &CompromisedCredentialsConsumer::OnGetCompromisedCredentials,
-          consumer->GetWeakPtr()));
+          &CompromisedCredentialsConsumer::OnGetCompromisedCredentialsFrom,
+          consumer->GetWeakPtr(), base::RetainedRef(this)));
 }
 
 void PasswordStore::AddLoginInternal(const PasswordForm& form) {

@@ -4,19 +4,11 @@
 
 #include "components/content_settings/core/browser/private_network_settings.h"
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "url/gurl.h"
 
 namespace content_settings {
-namespace {
-
-using Policy = network::mojom::PrivateNetworkRequestPolicy;
-
-}  //  namespace
 
 // There are two inputs that go into the INSECURE_PRIVATE_NETWORK content
 // setting for a URL:
@@ -28,8 +20,9 @@ using Policy = network::mojom::PrivateNetworkRequestPolicy;
 //    - if an origin is listed in this policy, then the content setting is
 //      always ALLOW for URLs of that origin
 //
-Policy GetPrivateNetworkRequestPolicy(const HostContentSettingsMap* map,
-                                      const GURL& url) {
+bool ShouldAllowInsecurePrivateNetworkRequests(
+    const HostContentSettingsMap* map,
+    const GURL& url) {
   const std::string unused_resource_identifier;
   const ContentSetting setting = map->GetContentSetting(
       url, url, ContentSettingsType::INSECURE_PRIVATE_NETWORK,
@@ -37,14 +30,14 @@ Policy GetPrivateNetworkRequestPolicy(const HostContentSettingsMap* map,
 
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
-      return Policy::kAllow;
+      return true;
     case CONTENT_SETTING_BLOCK:
-      return Policy::kBlockFromInsecureToMorePrivate;
+      return false;
     default:
       NOTREACHED()
           << "Invalid content setting for insecure private network requests: "
           << setting;
-      return Policy::kBlockFromInsecureToMorePrivate;
+      return false;
   }
 }
 

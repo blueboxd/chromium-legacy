@@ -12,14 +12,25 @@ source_set("open_in") {
     "open_in_tab_helper_delegate.h",
   ]
   deps = [
+    ":features",
     "//base",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/web/public",
     "//ui/base:base",
     "//url",
   ]
+}
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

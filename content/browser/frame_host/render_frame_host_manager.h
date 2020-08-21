@@ -570,7 +570,8 @@ class CONTENT_EXPORT RenderFrameHostManager
           relation(SiteInstanceRelation::PREEXISTING) {}
 
     SiteInstanceDescriptor(GURL dest_url,
-                           SiteInstanceRelation relation_to_current);
+                           SiteInstanceRelation relation_to_current,
+                           bool is_coop_coep_cross_origin_isolated);
 
     // Set with an existing SiteInstance to be reused.
     content::SiteInstance* existing_site_instance;
@@ -581,6 +582,14 @@ class CONTENT_EXPORT RenderFrameHostManager
     // Specifies how the new site is related to the current BrowsingInstance.
     // This is PREEXISTING iff |existing_site_instance| is defined.
     SiteInstanceRelation relation;
+
+    // A cross-origin isolated page has its top level frame
+    // cross-origin-opener-policy set to "same-origin" and
+    // cross-origin-embedder-policy set to "require-corp".
+    // This allows the use of more powerful features such as SharedArrayBuffer.
+    // A cross-origin isolated SiteInstance hosts such pages and should only
+    // live in cross-origin isolated BrowsingInstances.
+    bool is_coop_coep_cross_origin_isolated = false;
   };
 
   // Create a RenderFrameProxyHost owned by this object.
@@ -629,7 +638,9 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool is_same_document,
       bool cross_origin_opener_policy_mismatch,
       bool was_server_redirect,
-      bool should_replace_current_entry);
+      bool should_replace_current_entry,
+      bool is_coop_coep_cross_origin_isolated,
+      bool is_speculative);
 
   ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
       const GURL& destination_url,
@@ -651,6 +662,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool was_server_redirect,
       bool cross_origin_opener_policy_mismatch,
       bool should_replace_current_entry,
+      bool is_coop_coep_cross_origin_isolated,
+      bool is_speculative,
       bool* did_same_site_proactive_browsing_instance_swap);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
@@ -666,6 +679,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // A is trying to change the src attribute of B, this will cause a navigation
   // where the source SiteInstance is A and B is the current SiteInstance.
   //
+  // |is_speculative| indicates that the SiteInstance is being computed for a
+  // speculative RenderFrameHost, which may change once response is received and
+  // a final RenderFrameHost/SiteInstance is computed. It is true at request
+  // start time, but false for redirects and at OnResponseStarted time.
+  //
   // This is a helper function for GetSiteInstanceForNavigation.
   SiteInstanceDescriptor DetermineSiteInstanceForURL(
       const GURL& dest_url,
@@ -677,7 +695,9 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool force_browsing_instance_swap,
-      bool was_server_redirect);
+      bool was_server_redirect,
+      bool is_coop_coep_cross_origin_isolated,
+      bool is_speculative);
 
   // Returns true if a navigation to |dest_url| that uses the specified
   // PageTransition in the current frame is allowed to swap BrowsingInstances.
@@ -704,7 +724,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool CanUseSourceSiteInstance(const GURL& dest_url,
                                 SiteInstance* source_instance,
                                 bool was_server_redirect,
-                                bool is_failure);
+                                bool is_failure,
+                                bool is_coop_coep_cross_origin_isolated,
+                                bool is_speculative);
 
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the

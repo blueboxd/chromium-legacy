@@ -6344,6 +6344,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kAVIF)},
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
+#if !defined(OS_ANDROID)
+    {"passwords-weakness-check", flag_descriptions::kPasswordsWeaknessCheckName,
+     flag_descriptions::kPasswordsWeaknessCheckDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordsWeaknessCheck)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

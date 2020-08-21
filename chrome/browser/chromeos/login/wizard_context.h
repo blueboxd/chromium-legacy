@@ -49,6 +49,10 @@ class WizardContext {
   // Indicates whether the device has users. Set during the initialization of
   // WizardController.
   bool device_has_users = false;
+
+  // Whether wizard controller should skip to the update screen. Setting this
+  // flag will ignore hid detection results.
+  bool skip_to_update_for_tests = false;
 };
 
 }  // namespace chromeos

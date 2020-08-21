@@ -230,6 +230,8 @@ static_library("browser") {
     "ui/bulk_leak_check_service_adapter.h",
     "ui/compromised_credentials_manager.cc",
     "ui/compromised_credentials_manager.h",
+    "ui/compromised_credentials_reader.cc",
+    "ui/compromised_credentials_reader.h",
     "ui/credential_provider_interface.h",
     "ui/credential_utils.h",
     "ui/export_flow.h",

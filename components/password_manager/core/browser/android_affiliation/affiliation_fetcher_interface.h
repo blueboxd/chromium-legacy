@@ -14,10 +14,20 @@ namespace password_manager {
 
 class AffiliationFetcherInterface {
  public:
+  // A struct that enables to set Affiliation Fetcher request mask.
+  struct RequestInfo {
+    bool branding_info = false;
+    bool change_password_info = false;
+
+    bool operator==(const RequestInfo& other) const {
+      return branding_info == other.branding_info &&
+             change_password_info == other.change_password_info;
+    }
+  };
+
   AffiliationFetcherInterface() = default;
   virtual ~AffiliationFetcherInterface() = default;
 
-  // Not copyable or movable
   AffiliationFetcherInterface(const AffiliationFetcherInterface&) = delete;
   AffiliationFetcherInterface& operator=(const AffiliationFetcherInterface&) =
       delete;
@@ -27,7 +37,8 @@ class AffiliationFetcherInterface {
 
   // Starts the request to retrieve affiliations for each facet in
   // |facet_uris|.
-  virtual void StartRequest(const std::vector<FacetURI>& facet_uris) = 0;
+  virtual void StartRequest(const std::vector<FacetURI>& facet_uris,
+                            RequestInfo request_info) = 0;
 
   // Returns requested facet uris.
   virtual const std::vector<FacetURI>& GetRequestedFacetURIs() const = 0;

@@ -385,7 +385,6 @@ void WizardController::Init(OobeScreenId first_screen) {
                                       ->GetPrescribedEnrollmentConfig();
 
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen;
-  first_screen_ = first_screen;
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
   if (!oobe_complete) {
@@ -406,7 +405,8 @@ void WizardController::Init(OobeScreenId first_screen) {
   // corruption in the case of asynchronious loading.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged()) {
+  const bool is_enterprise_managed = connector->IsEnterpriseManaged();
+  if (!is_enterprise_managed) {
     const PrefService::PrefInitializationStatus status =
         GetLocalState()->GetInitializationStatus();
     if (status == PrefService::INITIALIZATION_STATUS_ERROR) {
@@ -420,17 +420,46 @@ void WizardController::Init(OobeScreenId first_screen) {
     }
   }
 
-  // Use the saved screen preference from Local State.
-  const std::string screen_pref =
-      GetLocalState()->GetString(prefs::kOobeScreenPending);
-  if (is_out_of_box_ && !screen_pref.empty() &&
+  const bool device_is_owned =
+      is_enterprise_managed || wizard_context_->device_has_users;
+  // Do not show the HID Detection screen if device is owned.
+  if (!device_is_owned && CanShowHIDDetectionScreen() &&
       first_screen == OobeScreen::SCREEN_UNKNOWN) {
-    first_screen_ = OobeScreenId(screen_pref);
+    base::Callback<void(bool)> on_check =
+        base::Bind(&WizardController::OnHIDScreenNecessityCheck,
+                   weak_factory_.GetWeakPtr());
+    HIDDetectionScreen::Get(screen_manager())->CheckIsScreenRequired(on_check);
+    return;
   }
 
-  AdvanceToScreen(first_screen_);
+  AdvanceToScreenAfterHIDDetection(first_screen);
+}
+
+void WizardController::AdvanceToScreenAfterHIDDetection(
+    OobeScreenId first_screen) {
+  OobeScreenId actual_first_screen = first_screen;
+  if (actual_first_screen == OobeScreen::SCREEN_UNKNOWN) {
+    if (!is_out_of_box_) {
+      DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+          base::Bind(&WizardController::OnOwnershipStatusCheckDone,
+                     weak_factory_.GetWeakPtr()));
+      return;
+    }
+
+    // Use the saved screen preference from Local State.
+    const std::string screen_pref =
+        GetLocalState()->GetString(prefs::kOobeScreenPending);
+    if (!screen_pref.empty())
+      actual_first_screen = OobeScreenId(screen_pref);
+    else
+      actual_first_screen = WelcomeView::kScreenId;
+  }
+
+  first_screen_for_testing_ = actual_first_screen;
+  AdvanceToScreen(actual_first_screen);
+
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
-      first_screen_ == OobeScreen::SCREEN_UNKNOWN) {
+      first_screen == OobeScreen::SCREEN_UNKNOWN) {
     ShowWrongHWIDScreen();
   }
 
@@ -869,6 +898,7 @@ void WizardController::SkipToLoginForTesting() {
 
 void WizardController::SkipToUpdateForTesting() {
   VLOG(1) << "SkipToUpdateForTesting.";
+  wizard_context_->skip_to_update_for_tests = true;
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
   InitiateOOBEUpdate();
@@ -904,9 +934,7 @@ void WizardController::OnHidDetectionScreenExit(
     return;
   }
 
-  // Check for tests configuration.
-  if (!StartupUtils::IsOobeCompleted())
-    ShowWelcomeScreen();
+  AdvanceToScreenAfterHIDDetection(OobeScreen::SCREEN_UNKNOWN);
 }
 
 void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
@@ -1580,13 +1608,13 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
     return;
 
   // Check for tests configuration.
-  if (StartupUtils::IsEulaAccepted() || StartupUtils::IsOobeCompleted())
+  if (wizard_context_->skip_to_update_for_tests)
     return;
 
   if (screen_needed)
     ShowHIDDetectionScreen();
   else
-    ShowWelcomeScreen();
+    AdvanceToScreenAfterHIDDetection(OobeScreen::SCREEN_UNKNOWN);
 }
 
 void WizardController::UpdateOobeConfiguration() {
@@ -1693,22 +1721,7 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
              screen_id == UserCreationView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
-    if (is_out_of_box_) {
-      if (CanShowHIDDetectionScreen()) {
-        base::Callback<void(bool)> on_check =
-            base::Bind(&WizardController::OnHIDScreenNecessityCheck,
-                       weak_factory_.GetWeakPtr());
-        GetOobeUI()
-            ->GetView<HIDDetectionScreenHandler>()
-            ->CheckIsScreenRequired(on_check);
-      } else {
-        ShowWelcomeScreen();
-      }
-    } else {
-      DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-          base::Bind(&WizardController::OnOwnershipStatusCheckDone,
-                     weak_factory_.GetWeakPtr()));
-    }
+    NOTREACHED();
   }
 }
 

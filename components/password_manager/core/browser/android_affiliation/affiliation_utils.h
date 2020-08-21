@@ -171,6 +171,7 @@ struct FacetBrandingInfo {
 struct Facet {
   FacetURI uri;
   FacetBrandingInfo branding_info;
+  GURL change_password_url;
 };
 
 // A collection of facets affiliated with each other, i.e. an equivalence class.

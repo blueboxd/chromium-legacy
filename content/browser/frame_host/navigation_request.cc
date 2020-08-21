@@ -4176,12 +4176,15 @@ void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
 
     if (base::FeatureList::IsEnabled(
             network::features::kBlockInsecurePrivateNetworkRequests)) {
-      client_security_state_->private_network_request_policy =
-          GetContentClient()->browser()->GetPrivateNetworkRequestPolicy(
-              frame_tree_node_->navigator()
-                  .GetController()
-                  ->GetBrowserContext(),
-              common_params_->url);
+      ContentBrowserClient* client = GetContentClient()->browser();
+      BrowserContext* context =
+          frame_tree_node_->navigator().GetController()->GetBrowserContext();
+
+      if (!client->ShouldAllowInsecurePrivateNetworkRequests(
+              context, common_params_->url)) {
+        client_security_state_->private_network_request_policy = network::
+            mojom::PrivateNetworkRequestPolicy::kBlockFromInsecureToMorePrivate;
+      }
     }
   }
 

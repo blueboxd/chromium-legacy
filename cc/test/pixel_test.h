@@ -27,23 +27,18 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
 class DisplayResourceProvider;
-class GLRenderer;
 class GpuServiceImpl;
 class TestSharedBitmapManager;
 }
 
 namespace cc {
-class DawnSkiaRenderer;
 class FakeOutputSurfaceClient;
-class OutputSurface;
-class VulkanSkiaRenderer;
 
 class PixelTest : public testing::Test {
  protected:
@@ -146,111 +141,6 @@ class PixelTest : public testing::Test {
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 };
-
-template<typename RendererType>
-class RendererPixelTest : public PixelTest {
- public:
-  RendererPixelTest() : PixelTest(backend()) {}
-
-  RendererType* renderer() {
-    return static_cast<RendererType*>(renderer_.get());
-  }
-
-  // Text string for graphics backend of the RendererType. Suitable for
-  // generating separate base line file paths.
-  const char* renderer_type() {
-    if (std::is_base_of<viz::GLRenderer, RendererType>::value)
-      return "gl";
-    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
-      return "dawn";
-    if (std::is_base_of<viz::SkiaRenderer, RendererType>::value)
-      return "skia";
-    if (std::is_base_of<viz::SoftwareRenderer, RendererType>::value)
-      return "software";
-    return "unknown";
-  }
-
-  bool use_gpu() const { return !!child_context_provider_; }
-  GraphicsBackend backend() const {
-    if (std::is_base_of<VulkanSkiaRenderer, RendererType>::value) {
-#if defined(USE_OZONE) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-      // TODO(https://crbug.com/1113577): Enable SkiaVulkan backend for
-      // PixelTests. For example, RendererPixelTest* hadn't been using
-      // SkiaVulkanRenderer until USE_X11 was defined for the OS_LINUX
-      // configuration that uses USE_OZONE. Thus, given the lack of test
-      // coverage, we must fix this test variant so that we do not loose
-      // important test coverage when USE_X11 goes away.
-      if (!features::IsUsingOzonePlatform())
-#endif
-      {
-        return kSkiaVulkan;
-      }
-    }
-    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
-      return kSkiaDawn;
-    return kDefault;
-  }
-
- protected:
-  void SetUp() override;
-};
-
-// Types used with gtest typed tests to specify additional behaviour, eg.
-// should it be a flipped surface or what Skia backend to use.
-class GLRendererWithFlippedSurface : public viz::GLRenderer {};
-class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
-class VulkanSkiaRenderer : public viz::SkiaRenderer {};
-class VulkanSkiaRendererWithFlippedSurface : public VulkanSkiaRenderer {};
-class DawnSkiaRenderer : public viz::SkiaRenderer {};
-class DawnSkiaRendererWithFlippedSurface : public DawnSkiaRenderer {};
-
-template <>
-inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
-  SetUpGLRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
-  SetUpGLRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<viz::SoftwareRenderer>::SetUp() {
-  SetUpSoftwareRenderer();
-}
-
-template <>
-inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<SkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<VulkanSkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<VulkanSkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<DawnSkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<DawnSkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
-typedef RendererPixelTest<viz::SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc
 

@@ -25,7 +25,8 @@ void AffiliationServiceImpl::PrefetchChangePasswordURLs(
     const std::vector<url::SchemeHostPort>& tuple_origins) {
   if (ShouldAffiliationBasedMatchingBeActive(sync_service_)) {
     RequestFacetsAffiliations(
-        ConvertMissingSchemeHostPortsToFacets(tuple_origins));
+        ConvertMissingSchemeHostPortsToFacets(tuple_origins),
+        {.change_password_info = true});
   }
 }
 
@@ -63,9 +64,10 @@ AffiliationServiceImpl::ConvertMissingSchemeHostPortsToFacets(
 // TODO(crbug.com/1117045): New request resets the pointer to
 // AffiliationFetcher, therefore the previous request gets canceled.
 void AffiliationServiceImpl::RequestFacetsAffiliations(
-    const std::vector<FacetURI>& facets) {
+    const std::vector<FacetURI>& facets,
+    const AffiliationFetcherInterface::RequestInfo request_info) {
   fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_, this));
-  fetcher_->StartRequest(facets);
+  fetcher_->StartRequest(facets, request_info);
 }
 
 }  // namespace password_manager

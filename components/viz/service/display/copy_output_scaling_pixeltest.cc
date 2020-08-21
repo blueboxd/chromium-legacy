@@ -11,13 +11,13 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/service/display/viz_pixel_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -30,20 +30,22 @@
 namespace viz {
 namespace {
 
-template <typename RendererType>
 class CopyOutputScalingPixelTest
-    : public cc::RendererPixelTest<RendererType>,
-      public testing::WithParamInterface<
-          std::tuple<gfx::Vector2d, gfx::Vector2d, CopyOutputResult::Format>> {
+    : public VizPixelTest,
+      public testing::WithParamInterface<std::tuple<RendererType,
+                                                    gfx::Vector2d,
+                                                    gfx::Vector2d,
+                                                    CopyOutputResult::Format>> {
  public:
-  // Include the public accessor method from the parent class.
-  using cc::RendererPixelTest<RendererType>::renderer;
+  CopyOutputScalingPixelTest() : VizPixelTest(std::get<0>(GetParam())) {}
+
+  DirectRenderer* renderer() { return renderer_.get(); }
 
   void SetUp() override {
-    cc::RendererPixelTest<RendererType>::SetUp();
-    scale_from_ = std::get<0>(GetParam());
-    scale_to_ = std::get<1>(GetParam());
-    result_format_ = std::get<2>(GetParam());
+    VizPixelTest::SetUp();
+    scale_from_ = std::get<1>(GetParam());
+    scale_to_ = std::get<2>(GetParam());
+    result_format_ = std::get<3>(GetParam());
   }
 
   // This tests that copy requests requesting scaled results execute correctly.
@@ -291,41 +293,27 @@ class CopyOutputScalingPixelTest
 
 // Parameters common to all test instantiations. These are tuples consisting of
 // {scale_from, scale_to, i420_format}.
-const auto kParameters =
-    testing::Combine(testing::Values(gfx::Vector2d(1, 1),
-                                     gfx::Vector2d(2, 1),
-                                     gfx::Vector2d(1, 2),
-                                     gfx::Vector2d(2, 2)),
-                     testing::Values(gfx::Vector2d(1, 1),
-                                     gfx::Vector2d(2, 1),
-                                     gfx::Vector2d(1, 2)),
-                     testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
-                                     CopyOutputResult::Format::I420_PLANES));
-
-using GLCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<GLRenderer>;
-TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
-  RunTest();
-}
-INSTANTIATE_TEST_SUITE_P(All, GLCopyOutputScalingPixelTest, kParameters);
-
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/1052351): Enable after flake is fixed.
-#define MAYBE_ScaledCopyOfDrawnFrame DISABLED_ScaledCopyOfDrawnFrame
-#else
-#define MAYBE_ScaledCopyOfDrawnFrame ScaledCopyOfDrawnFrame
+const auto kParameters = testing::Combine(
+    // TODO(crbug.com/1117587): Don't run with GLRenderer on Fuchsia.
+    testing::Values(RendererType::kGL,
+#if !defined(OS_FUCHSIA)
+                    RendererType::kSkiaGL,
 #endif
-using SkiaCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<SkiaRenderer>;
-TEST_P(SkiaCopyOutputScalingPixelTest, MAYBE_ScaledCopyOfDrawnFrame) {
-  RunTest();
-}
-INSTANTIATE_TEST_SUITE_P(All, SkiaCopyOutputScalingPixelTest, kParameters);
+                    RendererType::kSoftware),
+    testing::Values(gfx::Vector2d(1, 1),
+                    gfx::Vector2d(2, 1),
+                    gfx::Vector2d(1, 2),
+                    gfx::Vector2d(2, 2)),
+    testing::Values(gfx::Vector2d(1, 1),
+                    gfx::Vector2d(2, 1),
+                    gfx::Vector2d(1, 2)),
+    testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
+                    CopyOutputResult::Format::I420_PLANES));
 
-using SoftwareCopyOutputScalingPixelTest =
-    CopyOutputScalingPixelTest<SoftwareRenderer>;
-TEST_P(SoftwareCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
+TEST_P(CopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
-INSTANTIATE_TEST_SUITE_P(All, SoftwareCopyOutputScalingPixelTest, kParameters);
+INSTANTIATE_TEST_SUITE_P(, CopyOutputScalingPixelTest, kParameters);
 
 }  // namespace
 }  // namespace viz

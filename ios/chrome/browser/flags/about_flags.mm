@@ -59,6 +59,7 @@
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#import "ios/chrome/browser/open_in/features.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -668,6 +669,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillPasswordReauthIOSName,
      flag_descriptions::kEnableAutofillPasswordReauthIOSDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableAutofillPasswordReauthIOS)},
+    {"extend-open-in-files-support",
+     flag_descriptions::kExtendOpenInFilesSupportName,
+     flag_descriptions::kExtendOpenInFilesSupportDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kExtendOpenInFilesSupport)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

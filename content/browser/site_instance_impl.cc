@@ -145,18 +145,23 @@ SiteInstanceImpl::~SiteInstanceImpl() {
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::Create(
     BrowserContext* browser_context) {
   DCHECK(browser_context);
-  return base::WrapRefCounted(
-      new SiteInstanceImpl(new BrowsingInstance(browser_context)));
+  return base::WrapRefCounted(new SiteInstanceImpl(new BrowsingInstance(
+      browser_context, false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt)));
 }
 
 // static
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
     BrowserContext* browser_context,
-    const GURL& url) {
+    const GURL& url,
+    bool is_coop_coep_cross_origin_isolated) {
   DCHECK(browser_context);
   // This will create a new SiteInstance and BrowsingInstance.
-  scoped_refptr<BrowsingInstance> instance(
-      new BrowsingInstance(browser_context));
+  scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(
+      browser_context, is_coop_coep_cross_origin_isolated,
+      is_coop_coep_cross_origin_isolated
+          ? base::Optional<url::Origin>(url::Origin::Create(url))
+          : base::nullopt));
 
   // Note: The |allow_default_instance| value used here MUST match the value
   // used in DoesSiteForURLMatch().
@@ -176,8 +181,12 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
     site_instance = CreateForGuest(browser_context, url);
   } else {
     // This will create a new SiteInstance and BrowsingInstance.
-    scoped_refptr<BrowsingInstance> instance(
-        new BrowsingInstance(browser_context));
+    // TODO(ahemery): We need to assess here if the SW operates in a
+    // crossOriginIsolated context and forward that value to the
+    // BrowsingInstance created.
+    scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(
+        browser_context, false /* is_coop_coep_cross_origin_isolated */,
+        base::nullopt));
 
     // We do NOT want to allow the default site instance here because workers
     // need to be kept separate from other sites.
@@ -206,8 +215,10 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForGuest(
     const GURL& guest_site_url) {
   DCHECK(browser_context);
   DCHECK_NE(guest_site_url, GetDefaultSiteURL());
-  scoped_refptr<SiteInstanceImpl> site_instance = base::WrapRefCounted(
-      new SiteInstanceImpl(new BrowsingInstance(browser_context)));
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      base::WrapRefCounted(new SiteInstanceImpl(new BrowsingInstance(
+          browser_context, false /* is_coop_coep_cross_origin_isolated */,
+          base::nullopt)));
 
   site_instance->is_guest_ = true;
 
@@ -227,8 +238,9 @@ SiteInstanceImpl::CreateReusableInstanceForTesting(
     const GURL& url) {
   DCHECK(browser_context);
   // This will create a new SiteInstance and BrowsingInstance.
-  scoped_refptr<BrowsingInstance> instance(
-      new BrowsingInstance(browser_context));
+  scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(
+      browser_context, false /* is_coop_coep_cross_origin_isolated */,
+      base::nullopt));
   auto site_instance =
       instance->GetSiteInstanceForURL(url,
                                       /* allow_default_instance */ false);
@@ -1294,6 +1306,15 @@ void SiteInstanceImpl::LockProcessIfNeeded() {
   // whether a given URL should require a lock or not (a dynamically isolated
   // origin may require a lock in some isolation contexts but not in others).
   policy->IncludeIsolationContext(process_->GetID(), GetIsolationContext());
+}
+
+bool SiteInstanceImpl::IsCoopCoepCrossOriginIsolated() const {
+  return browsing_instance_->is_coop_coep_cross_origin_isolated();
+}
+
+base::Optional<url::Origin>
+SiteInstanceImpl::CoopCoepCrossOriginIsolatedOrigin() const {
+  return browsing_instance_->coop_coep_cross_origin_isolated_origin();
 }
 
 // static

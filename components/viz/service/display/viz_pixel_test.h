@@ -1,0 +1,79 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_VIZ_PIXEL_TEST_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_VIZ_PIXEL_TEST_H_
+
+#include <vector>
+
+#include "cc/test/pixel_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace viz {
+
+enum class RendererType { kSoftware, kGL, kSkiaGL, kSkiaVulkan, kSkiaDawn };
+
+// Return a list containing all RendererTypes.
+std::vector<RendererType> GetRendererTypes();
+
+// Return a list containing all GPU accelerated RendererTypes.
+std::vector<RendererType> GetGpuRendererTypes(bool include_dawn = true);
+
+// Viz pixel test base class. When SetUp() is called the appropriate
+// DirectRenderer implementation is initialized based on RendererType
+// parameter passed to the constructor.
+//
+// Use VizPixelTestWithParam as a pareterized test base class to run the same
+// test with different renderers/graphics backends. If a test requires multiple
+// parameters then VizPixelTest is the appropriate base class. One of the
+// parameters would be passed to the VizPixelTest constructor to select the
+// RendererType.
+class VizPixelTest : public cc::PixelTest {
+ public:
+  explicit VizPixelTest(RendererType type);
+
+  // cc::PixelTest implementation.
+  void SetUp() override;
+
+  RendererType renderer_type() const { return renderer_type_; }
+
+  const char* renderer_str() {
+    switch (renderer_type_) {
+      case RendererType::kSoftware:
+        return "software";
+      case RendererType::kGL:
+        return "gl";
+      case RendererType::kSkiaGL:
+      case RendererType::kSkiaVulkan:
+        return "skia";
+      case RendererType::kSkiaDawn:
+        return "dawn";
+    }
+  }
+
+  bool is_software_renderer() const {
+    return renderer_type_ == RendererType::kSoftware;
+  }
+
+  bool is_gl_renderer() const { return renderer_type_ == RendererType::kGL; }
+
+ protected:
+  static GraphicsBackend RenderTypeToBackend(RendererType renderer_type);
+
+  virtual gfx::SurfaceOrigin GetSurfaceOrigin() const;
+
+ private:
+  const RendererType renderer_type_;
+};
+
+// Parameterized test helper with a single RendererType parameter.
+class VizPixelTestWithParam : public VizPixelTest,
+                              public testing::WithParamInterface<RendererType> {
+ public:
+  VizPixelTestWithParam();
+};
+
+}  // namespace viz
+
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_VIZ_PIXEL_TEST_H_

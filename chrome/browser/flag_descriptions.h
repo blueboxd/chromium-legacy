@@ -1924,6 +1924,9 @@ extern const char kOmniboxKeywordSearchButtonDescription[];
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
 
+extern const char kPasswordsWeaknessCheckName[];
+extern const char kPasswordsWeaknessCheckDescription[];
+
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];
 

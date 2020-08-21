@@ -33,6 +33,7 @@ extern const base::Feature kPasswordCheck;
 extern const base::Feature kPasswordEditingAndroid;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordManagerOnboardingAndroid;
+extern const base::Feature kPasswordsWeaknessCheck;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kUsernameFirstFlow;
 extern const base::Feature kWellKnownChangePassword;

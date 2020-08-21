@@ -687,7 +687,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::GenericPendingReceiver receiver) override;
   bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url) override;
-  network::mojom::PrivateNetworkRequestPolicy GetPrivateNetworkRequestPolicy(
+  bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
       const GURL& url) override;
   ukm::UkmService* GetUkmService() override;

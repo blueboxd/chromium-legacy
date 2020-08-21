@@ -148,16 +148,34 @@ void ExtensionsMenuView::Populate() {
 
   AddChildView(std::make_unique<views::Separator>());
 
+  // TODO(pbos): Consider moving this a footnote view (::SetFootnoteView()).
+  // If so this needs to be created before being added to a widget, constructor
+  // would do.
+  constexpr int kSettingsIconSize = 16;
   auto footer = CreateBubbleMenuItem(
       EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION),
       &button_listener_);
   footer->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kSettingsIcon, 16,
+      gfx::CreateVectorIcon(vector_icons::kSettingsIcon, kSettingsIconSize,
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_MenuIconColor)));
-  footer->SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_BUTTON_HORIZONTAL_PADDING));
+
+  // Extension icons are larger-than-favicon as they contain internal padding
+  // (space for badging). Add the same padding left and right of the icon to
+  // visually align the settings icon and text with extension menu items.
+  // TODO(pbos): Note that this code relies on CreateBubbleMenuItem() and
+  // ExtensionsMenuItemView using the same horizontal border size and
+  // image-label spacing. This dependency should probably be more explicit.
+  constexpr int kSettingsIconHorizontalPadding =
+      (ExtensionsMenuItemView::kIconSize.width() - kSettingsIconSize) / 2;
+
+  footer->SetBorder(views::CreateEmptyBorder(
+      footer->border()->GetInsets() +
+      gfx::Insets(0, kSettingsIconHorizontalPadding, 0, 0)));
+  footer->SetImageLabelSpacing(footer->GetImageLabelSpacing() +
+                               kSettingsIconHorizontalPadding);
+
   manage_extensions_button_for_testing_ = footer.get();
   AddChildView(std::move(footer));
 

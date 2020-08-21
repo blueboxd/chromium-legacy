@@ -35,7 +35,8 @@ public class PlayerFrameCoordinator {
     public PlayerFrameCoordinator(Context context, PlayerCompositorDelegate compositorDelegate,
             UnguessableToken frameGuid, int contentWidth, int contentHeight, int initialScrollX,
             int initialScrollY, boolean canDetectZoom,
-            @Nullable OverscrollHandler overscrollHandler, PlayerGestureListener gestureHandler) {
+            @Nullable OverscrollHandler overscrollHandler, PlayerGestureListener gestureHandler,
+            @Nullable Runnable firstPaintListener) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         OverScroller scroller = new OverScroller(context);
         scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
@@ -54,7 +55,8 @@ public class PlayerFrameCoordinator {
         PlayerFrameGestureDetectorDelegate gestureDelegate = new PlayerFrameGestureDetectorDelegate(
                 scaleController, scrollController, mMediator);
 
-        mView = new PlayerFrameView(context, canDetectZoom, mMediator, gestureDelegate);
+        mView = new PlayerFrameView(context, canDetectZoom, mMediator, gestureDelegate,
+                firstPaintListener);
         if (overscrollHandler != null) {
             scrollController.setOverscrollHandler(overscrollHandler);
         }

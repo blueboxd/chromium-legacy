@@ -104,7 +104,9 @@ TEST_F(AffiliationServiceImplTest, ClearStopsOngoingAffiliationFetcherRequest) {
   EXPECT_CALL(*mock_fetcher_factory(), CreateInstance)
       .WillOnce(Return(mock_fetcher));
   EXPECT_CALL(*mock_fetcher,
-              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins)));
+              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins),
+                           AffiliationFetcherInterface::RequestInfo{
+                               .change_password_info = true}));
 
   service()->PrefetchChangePasswordURLs(tuple_origins);
   EXPECT_NE(nullptr, service()->GetFetcherForTesting());
@@ -127,11 +129,14 @@ TEST_F(AffiliationServiceImplTest,
                           scheme_host_port5};
   MockAffiliationFetcher* mock_fetcher = new MockAffiliationFetcher();
   MockAffiliationFetcher* new_mock_fetcher = new MockAffiliationFetcher();
+  AffiliationFetcher::RequestInfo request_info{.change_password_info = true};
 
-  EXPECT_CALL(*mock_fetcher,
-              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins_1)));
-  EXPECT_CALL(*new_mock_fetcher,
-              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins_2)));
+  EXPECT_CALL(
+      *mock_fetcher,
+      StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins_1), request_info));
+  EXPECT_CALL(
+      *new_mock_fetcher,
+      StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins_2), request_info));
   EXPECT_CALL(*mock_fetcher_factory(), CreateInstance)
       .WillOnce(Return(mock_fetcher))
       .WillOnce(Return(new_mock_fetcher));
@@ -154,7 +159,9 @@ TEST_F(AffiliationServiceImplTest,
   EXPECT_CALL(*mock_fetcher_factory(), CreateInstance)
       .WillOnce(Return(mock_fetcher));
   EXPECT_CALL(*mock_fetcher,
-              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins)));
+              StartRequest(SchemeHostPortsToFacetsURIs(tuple_origins),
+                           AffiliationFetcherInterface::RequestInfo{
+                               .change_password_info = true}));
 
   service()->PrefetchChangePasswordURLs(tuple_origins);
 }

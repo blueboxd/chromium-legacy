@@ -65,6 +65,7 @@ HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
 LegacyTreatAsPartialInterface
+LegacyTreatNonObjectAsNull
 LegacyUnenumerableNamedProperties
 LegacyUnforgeable
 LegacyWindowAlias=*
@@ -107,7 +108,6 @@ Serializable
 SetterCallWith=ExecutionContext|Isolate|ScriptState
 StringContext=TrustedHTML|TrustedScript|TrustedScriptURL
 Transferable
-TreatNonObjectAsNull
 TreatNullAs=EmptyString
 URL
 Unscopable

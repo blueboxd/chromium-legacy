@@ -15,13 +15,14 @@ import org.chromium.ui.modelutil.PropertyModel;
  * List of properties used by NewTabTile component.
  */
 class NewTabTileViewProperties {
-    public static PropertyModel.WritableObjectPropertyKey<View.OnClickListener> ON_CLICK_LISTENER =
+    public static final PropertyModel
+            .WritableObjectPropertyKey<View.OnClickListener> ON_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static PropertyModel.WritableFloatPropertyKey THUMBNAIL_ASPECT_RATIO =
+    public static final PropertyModel.WritableFloatPropertyKey THUMBNAIL_ASPECT_RATIO =
             new PropertyModel.WritableFloatPropertyKey();
-    public static PropertyModel.WritableIntPropertyKey CARD_HEIGHT_INTERCEPT =
+    public static final PropertyModel.WritableIntPropertyKey CARD_HEIGHT_INTERCEPT =
             new PropertyModel.WritableIntPropertyKey();
-    public static PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
+    public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
             new PropertyModel.WritableBooleanPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ON_CLICK_LISTENER,

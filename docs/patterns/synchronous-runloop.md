@@ -133,7 +133,7 @@ notification or callback being fired) vs waiting for a *state* (such as a
 property on a given object).
 
 When waiting for events, it is crucial that the observer is constructed in time
-to see the event (see also [waiting to late](#starting-waiting-too-late)).
+to see the event (see also [waiting too late](#starting-to-wait-for-an-event-too-late)).
 States, on the other hand, can be queried beforehand in the body of a
 Wait()-style function.
 

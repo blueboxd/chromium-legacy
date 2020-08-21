@@ -91,7 +91,8 @@ void StyledMarkupAccumulator::AppendText(Text& text) {
     }
   }
   MarkupFormatter::AppendCharactersReplacingEntities(
-      result_, str, start, length, formatter_.EntityMaskForText(text));
+      result_, StringView(str, start, length),
+      formatter_.EntityMaskForText(text));
 }
 
 void StyledMarkupAccumulator::AppendTextWithInlineStyle(
@@ -119,8 +120,8 @@ void StyledMarkupAccumulator::AppendTextWithInlineStyle(
     String content =
         use_rendered_text ? RenderedText(text) : StringValueForRange(text);
     StringBuilder buffer;
-    MarkupFormatter::AppendCharactersReplacingEntities(
-        buffer, content, 0, content.length(), kEntityMaskInPCDATA);
+    MarkupFormatter::AppendCharactersReplacingEntities(buffer, content,
+                                                       kEntityMaskInPCDATA);
     // Keep collapsible white spaces as is during markup sanitization.
     const String text_to_append =
         IsForMarkupSanitization()

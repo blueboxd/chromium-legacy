@@ -111,6 +111,14 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
          StyleRef().Display() == EDisplay::kTableRowGroup ||
          StyleRef().Display() == EDisplay::kTableHeaderGroup);
 
+  // Legacy tables cannot handle relative/sticky sections.
+  if (StyleRef().HasInFlowPosition()) {
+    scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+    new_style->SetPosition(EPosition::kStatic);
+    SetModifiedStyleOutsideStyleRecalc(new_style,
+                                       LayoutObject::ApplyStyleChanges::kNo);
+  }
+
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
   PropagateStyleToAnonymousChildren();
 

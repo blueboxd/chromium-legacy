@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
@@ -1620,6 +1621,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
                    }),
                    &saw_active_focus_state_change);
 
+  // ATK window activated event will be held until AT-SPI bridge is ready. We
+  // work that around by faking its state.
+  ui::AtkUtilAuraLinux::GetInstance()->SetAtSpiReady(true);
+
   {
     ActivationTester tester(root_atk_object);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
@@ -1641,6 +1646,70 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
     EXPECT_TRUE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
     EXPECT_FALSE(saw_active_focus_state_change);
+  }
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestPostponedAtkWindowActive) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  Init(root);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AtkUtilAuraLinux* atk_util = ui::AtkUtilAuraLinux::GetInstance();
+
+  {
+    ActivationTester tester(root_atk_object);
+    EXPECT_FALSE(tester.IsActivatedInStateSet());
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+
+    // ATK window activated event will be held until AT-SPI bridge is ready.
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+
+    // We force the AT-SPI ready flag to flush any held events.
+    atk_util->SetAtSpiReady(true);
+    EXPECT_TRUE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+    EXPECT_TRUE(tester.IsActivatedInStateSet());
+  }
+
+  {
+    ActivationTester tester(root_atk_object);
+
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_TRUE(tester.saw_deactivate_);
+    EXPECT_FALSE(tester.IsActivatedInStateSet());
+  }
+
+  {
+    atk_util->SetAtSpiReady(false);
+
+    ActivationTester tester(root_atk_object);
+
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+
+    // Window deactivated will cancel the previously held activated event.
+    static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+
+    // We force the AT-SPI ready flag to flush any held events.
+    atk_util->SetAtSpiReady(true);
+
+    // No events seen because they cancelled each other.
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
   }
 
   g_object_unref(root_atk_object);

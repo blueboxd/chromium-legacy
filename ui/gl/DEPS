@@ -24,4 +24,7 @@ specific_include_rules = {
   "gl_surface_egl_unittest.cc": [
     "+ui/platform_window",
   ],
+  "gl_image_egl_pixmap.cc": [
+    "+ui/base/ui_base_features.h",
+  ],
 }

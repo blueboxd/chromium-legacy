@@ -71,7 +71,7 @@ v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(bindings::V8ValueOrS
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  // No [LegacyTreatNonObjectAsNull] presents.  Must be always callable.
   DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 

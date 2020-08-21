@@ -11,9 +11,9 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace {
-class AudioDeviceEntryView;
-}  // anonymous namespace
+namespace views {
+class Button;
+}  // namespace views
 
 class MediaNotificationAudioDeviceSelectorViewDelegate;
 class MediaNotificationService;
@@ -24,30 +24,27 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   MediaNotificationAudioDeviceSelectorView(
       MediaNotificationAudioDeviceSelectorViewDelegate* delegate,
       MediaNotificationService* service,
-      const std::string& current_device_id,
-      const SkColor& foreground_color,
-      const SkColor& background_color);
+      gfx::Size size,
+      const std::string& current_device_id);
+  MediaNotificationAudioDeviceSelectorView(
+      const MediaNotificationAudioDeviceSelectorView&) = delete;
+  MediaNotificationAudioDeviceSelectorView& operator=(
+      const MediaNotificationAudioDeviceSelectorView&) = delete;
   ~MediaNotificationAudioDeviceSelectorView() override;
 
   // Called when audio output devices are discovered.
   void UpdateAvailableAudioDevices(
       const media::AudioDeviceDescriptions& device_descriptions);
+
   // Called when an audio device switch has occurred
-  void UpdateCurrentAudioDevice(const std::string& current_device_id);
-  void OnColorsChanged(const SkColor& foreground_color,
-                       const SkColor& background_color);
+  void UpdateCurrentAudioDevice(std::string current_device_id);
 
-  // ButtonListener
+  // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  static std::string get_entry_label_for_testing(views::View* entry_view);
-  static bool get_entry_is_highlighted_for_testing(views::View* entry_view);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceButtonsCreated);
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
-                           ExpandButtonOpensEntryContainer);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceButtonClickNotifiesContainer);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
@@ -57,26 +54,30 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceButtonsChange);
 
+  void CreateDeviceButton(
+      const media::AudioDeviceDescription& device_description);
+
   bool ShouldBeVisible(
       const media::AudioDeviceDescriptions& device_descriptions);
 
-  void ShowDevices();
-  void HideDevices();
-
-  bool is_expanded_ = false;
   MediaNotificationAudioDeviceSelectorViewDelegate* const delegate_;
-  std::string current_device_id_;
-  SkColor foreground_color_, background_color_;
-  AudioDeviceEntryView* current_device_entry_view_ = nullptr;
-
-  // Child views
-  views::View* expand_button_strip_;
-  views::LabelButton* expand_button_;
-  views::View* audio_device_entries_container_;
+  MediaNotificationService* const service_;
 
   std::unique_ptr<MediaNotificationDeviceProvider::
                       GetOutputDevicesCallbackList::Subscription>
       audio_device_subscription_;
+
+  // Subviews
+  views::View* device_button_container_ = nullptr;
+
+  views::View* expand_button_container_ = nullptr;
+  views::ToggleImageButton* expand_button_ = nullptr;
+
+  views::MdTextButton* current_device_button_ = nullptr;
+  std::string current_device_id_;
+
+  // Maps button pointers to the string ID of the audio sink they represent.
+  std::map<views::Button*, std::string> sink_id_map_;
 
   base::WeakPtrFactory<MediaNotificationAudioDeviceSelectorView>
       weak_ptr_factory_{this};

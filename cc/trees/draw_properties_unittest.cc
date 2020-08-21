@@ -3609,7 +3609,6 @@ TEST_F(TransformInteropTest, BackfaceInvisibleTransform) {
 
   back_facing->SetShouldCheckBackfaceVisibility(true);
   back_facing_double_sided->SetShouldCheckBackfaceVisibility(false);
-  back_facing->SetHasWillChangeTransformHint(true);
   front_facing->SetShouldCheckBackfaceVisibility(true);
 
   auto& back_facing_transform_node = CreateTransformNode(back_facing);
@@ -3618,6 +3617,7 @@ TEST_F(TransformInteropTest, BackfaceInvisibleTransform) {
   gfx::Transform rotate_about_y;
   rotate_about_y.RotateAboutYAxis(180.0);
   back_facing_transform_node.local = rotate_about_y;
+  back_facing_transform_node.will_change_transform = true;
 
   CopyProperties(back_facing, back_facing_double_sided);
 

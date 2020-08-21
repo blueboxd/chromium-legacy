@@ -33,6 +33,8 @@ TransformNode::TransformNode()
       in_subtree_of_page_scale_layer(false),
       transform_changed(false),
       delegates_to_parent_for_backface(false),
+      will_change_transform(false),
+      node_or_ancestors_will_change_transform(false),
       maximum_animation_scale(kNotScaled),
       starting_animation_scale(kNotScaled) {}
 
@@ -64,6 +66,9 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.in_subtree_of_page_scale_layer &&
          delegates_to_parent_for_backface ==
              other.delegates_to_parent_for_backface &&
+         will_change_transform == other.will_change_transform &&
+         node_or_ancestors_will_change_transform ==
+             other.node_or_ancestors_will_change_transform &&
          transform_changed == other.transform_changed &&
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&
@@ -80,8 +85,9 @@ void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("origin", origin, value);
   MathUtil::AddToTracedValue("post_translation", post_translation, value);
   value->SetInteger("sorting_context_id", sorting_context_id);
-  value->SetInteger("flattens_inherited_transform",
+  value->SetBoolean("flattens_inherited_transform",
                     flattens_inherited_transform);
+  value->SetBoolean("will_change_transform", will_change_transform);
   MathUtil::AddToTracedValue("scroll_offset", scroll_offset, value);
   MathUtil::AddToTracedValue("snap_amount", snap_amount, value);
 }

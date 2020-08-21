@@ -12,32 +12,24 @@ import tempfile
 from util import build_utils
 
 
-def FinalizeApk(apksigner_path,
-                zipalign_path,
-                unsigned_apk_path,
-                final_apk_path,
-                key_path,
-                key_passwd,
-                key_name,
-                min_sdk_version,
-                warnings_as_errors=False):
+def FinalizeApk(apksigner_path, zipalign_path, unsigned_apk_path,
+                final_apk_path, key_path, key_passwd, key_name,
+                min_sdk_version):
   # Use a tempfile so that Ctrl-C does not leave the file with a fresh mtime
   # and a corrupted state.
   with tempfile.NamedTemporaryFile() as staging_file:
     if zipalign_path:
       # v2 signing requires that zipalign happen first.
       logging.debug('Running zipalign')
-      zipalign_cmd = [
+      subprocess.check_output([
           zipalign_path, '-p', '-f', '4', unsigned_apk_path, staging_file.name
-      ]
-      build_utils.CheckOutput(zipalign_cmd,
-                              print_stdout=True,
-                              fail_on_output=warnings_as_errors)
+      ])
       signer_input_path = staging_file.name
     else:
       signer_input_path = unsigned_apk_path
 
-    sign_cmd = build_utils.JavaCmd(warnings_as_errors) + [
+    sign_cmd = [
+        build_utils.JAVA_PATH,
         '-jar',
         apksigner_path,
         'sign',
@@ -66,8 +58,6 @@ def FinalizeApk(apksigner_path,
       sign_cmd += ['--min-sdk-version', '1']
 
     logging.debug('Signing apk')
-    build_utils.CheckOutput(sign_cmd,
-                            print_stdout=True,
-                            fail_on_output=warnings_as_errors)
+    subprocess.check_call(sign_cmd)
     shutil.move(staging_file.name, final_apk_path)
     staging_file.delete = False

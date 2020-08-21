@@ -104,6 +104,8 @@ class PushMessagingAppIdentifier {
     expiration_time_ = expiration_time;
   }
 
+  bool IsExpired() const;
+
   base::Optional<base::Time> expiration_time() const {
     DCHECK(!is_null());
     return expiration_time_;

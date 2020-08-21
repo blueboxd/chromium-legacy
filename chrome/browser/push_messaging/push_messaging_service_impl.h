@@ -70,6 +70,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   explicit PushMessagingServiceImpl(Profile* profile);
   ~PushMessagingServiceImpl() override;
 
+  // Check and remove subscriptions that are expired when |this| is initialized
+  void RemoveExpiredSubscriptions();
+
   // Gets the permission status for the given |origin|.
   blink::mojom::PermissionStatus GetPermissionStatus(const GURL& origin,
                                                      bool user_visible);
@@ -150,6 +153,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       base::RepeatingClosure callback);
   void SetServiceWorkerDatabaseWipedCallbackForTesting(
       base::RepeatingClosure callback);
+  void SetRemoveExpiredSubscriptionsCallbackForTesting(
+      base::OnceClosure closure);
 
  private:
   friend class PushMessagingBrowserTest;
@@ -251,15 +256,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // OnContentSettingChanged methods -------------------------------------------
 
-  void UnsubscribePermissionRevoked(
-      const PushMessagingAppIdentifier& app_identifier,
-      UnregisterCallback unregister_callback);
-
-  void DidGetSenderIdUnsubscribePermissionRevoked(
-      const PushMessagingAppIdentifier& app_identifier,
-      UnregisterCallback callback,
-      const std::string& sender_id);
-
   void GetPushSubscriptionFromAppIdentifier(
       const PushMessagingAppIdentifier& app_identifier,
       base::OnceCallback<void(blink::mojom::PushSubscriptionPtr)> callback);
@@ -280,6 +276,25 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::vector<uint8_t>& auth);
 
   // Helper methods ------------------------------------------------------------
+
+  // The subscription given in |identifier| will be unsubscribed (and a
+  // `pushsubscriptionchange` event fires if
+  // features::kPushSubscriptionChangeEvent is enabled)
+  // |completed_closure|
+  void UnexpectedChange(PushMessagingAppIdentifier identifier,
+                        blink::mojom::PushUnregistrationReason reason,
+                        base::OnceClosure completed_closure);
+
+  void UnexpectedUnsubscribe(const PushMessagingAppIdentifier& app_identifier,
+                             blink::mojom::PushUnregistrationReason reason,
+                             UnregisterCallback unregister_callback);
+
+  void DidGetSenderIdUnexpectedUnsubscribe(
+      const PushMessagingAppIdentifier& app_identifier,
+      blink::mojom::PushUnregistrationReason reason,
+      UnregisterCallback callback,
+      const std::string& sender_id);
+
   void FirePushSubscriptionChangeCallback(
       const PushMessagingAppIdentifier& app_identifier,
       blink::mojom::PushEventStatus status);
@@ -334,6 +349,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   base::Closure content_setting_changed_callback_for_testing_;
   base::Closure service_worker_unregistered_callback_for_testing_;
   base::Closure service_worker_database_wiped_callback_for_testing_;
+  base::OnceClosure remove_expired_subscriptions_callback_for_testing_;
 
   PushMessagingNotificationManager notification_manager_;
 

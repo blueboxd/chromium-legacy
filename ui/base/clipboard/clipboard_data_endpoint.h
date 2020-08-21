@@ -15,9 +15,11 @@ namespace ui {
 // destination trying to read the clipboard data.
 // Whenever a new format is supported, a new enum should be added.
 enum class EndpointType {
-  kUrl = 0,  // Website URL e.g. www.example.com
-  kVm = 1,   // Virtual machine: ARC++, PluginVM, Crostini.
-  kMaxValue = kVm
+#if defined(OS_CHROMEOS) || (OS_LINUX) || (OS_FUCHSIA)
+  kGuestOs = 0,  // Guest OS: ARC++, PluginVM, Crostini.
+#endif
+  kUrl = 1,  // Website URL e.g. www.example.com
+  kMaxValue = kUrl
 };
 
 // ClipboardDataEndpoint can represent:

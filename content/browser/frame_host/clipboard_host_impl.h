@@ -175,6 +175,8 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                    ReadImageCallback callback,
                    const SkBitmap& bitmap);
 
+  std::unique_ptr<ui::ClipboardDataEndpoint> CreateDataEndpoint();
+
   mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned
   int render_frame_routing_id_;

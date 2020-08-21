@@ -224,6 +224,8 @@ class SystemWebAppManager {
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, SystemAppInfo> system_apps);
 
+  // Overrides the update policy. If AlwaysReinstallSystemWebApps feature is
+  // enabled, this method does nothing, and system apps will be reinstalled.
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
   void ResetOnAppsSynchronizedForTesting();

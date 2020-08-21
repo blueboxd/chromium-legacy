@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -260,10 +261,7 @@ public class AccountPickerBottomSheetTest {
     @MediumTest
     public void testSignInDefaultAccountOnCollapsedSheet() {
         buildAndShowCollapsedBottomSheet();
-        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-        ThreadUtils.runOnUiThread(
-                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
-        checkSignInInProgressBottomSheet();
+        clickContinueButtonAndCheckSignInInProgressSheet();
     }
 
     @Test
@@ -271,12 +269,9 @@ public class AccountPickerBottomSheetTest {
     public void testSignInAnotherAccount() {
         buildAndShowExpandedBottomSheet();
         onView(withText(PROFILE_DATA2.getAccountName())).perform(click());
-        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-        CriteriaHelper.pollUiThread(
-                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::isShown);
-        ThreadUtils.runOnUiThread(
-                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
-        checkSignInInProgressBottomSheet();
+        CriteriaHelper.pollUiThread(mCoordinator.getBottomSheetViewForTesting().findViewById(
+                R.id.account_picker_continue_as_button)::isShown);
+        clickContinueButtonAndCheckSignInInProgressSheet();
     }
 
     @Test
@@ -346,6 +341,35 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
+    public void testTryAgainButtonOnSignInGeneralErrorSheet() {
+        CoreAccountInfo coreAccountInfo =
+                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        // Throws a connection error during the sign-in action
+        doAnswer(invocation -> {
+            Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
+            onSignInErrorCallback.onResult(new GoogleServiceAuthError(State.CONNECTION_FAILED));
+            return null;
+        })
+                .when(mAccountPickerDelegateMock)
+                .signIn(eq(coreAccountInfo), any());
+
+        buildAndShowCollapsedBottomSheet();
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_selected_account).isShown()
+                    && bottomSheetView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
+                               .isShown();
+        });
+        doNothing().when(mAccountPickerDelegateMock).signIn(eq(coreAccountInfo), any());
+        // Clicking on the |Try again| button should perform the sign-in again and opens the sign-in
+        // in progress page.
+        clickContinueButtonAndCheckSignInInProgressSheet();
+    }
+
+    @Test
+    @MediumTest
     public void testAddAccountOnExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         onView(withText(R.string.signin_add_account_to_device)).perform(click());
@@ -399,8 +423,10 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.incognito_interstitial_bottom_sheet_view)).check(matches(isDisplayed()));
     }
 
-    private void checkSignInInProgressBottomSheet() {
+    private void clickContinueButtonAndCheckSignInInProgressSheet() {
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
         CriteriaHelper.pollUiThread(() -> {
             return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
         });

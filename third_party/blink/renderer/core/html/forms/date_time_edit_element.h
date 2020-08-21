@@ -112,6 +112,7 @@ class DateTimeEditElement final : public HTMLDivElement,
   DateTimeFieldsState ValueAsDateTimeFieldsState() const;
   bool HasField(DateTimeField) const;
   bool IsFirstFieldAMPM() const;
+  wtf_size_t FocusedFieldIndex() const;
 
  private:
   static const wtf_size_t kInvalidFieldIndex = UINT_MAX;
@@ -130,7 +131,6 @@ class DateTimeEditElement final : public HTMLDivElement,
   DateTimeFieldElement* FieldAt(wtf_size_t) const;
   wtf_size_t FieldIndexOf(const DateTimeFieldElement&) const;
   DateTimeFieldElement* FocusedField() const;
-  wtf_size_t FocusedFieldIndex() const;
   bool FocusOnNextFocusableField(wtf_size_t start_index);
   bool IsDisabled() const;
   bool IsReadOnly() const;

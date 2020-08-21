@@ -12,12 +12,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/wm/public/activation_change_observer.h"
-#include "ui/wm/public/activation_client.h"
-#endif
-
 namespace {
 
 // The min / max size available to the TabSearchBubbleView.
@@ -88,48 +82,6 @@ class TabSearchWebView : public views::WebView {
 
 }  // namespace
 
-#if defined(USE_AURA)
-class TabSearchBubbleView::TabSearchWindowObserverAura
-    : public wm::ActivationChangeObserver {
- public:
-  explicit TabSearchWindowObserverAura(TabSearchBubbleView* bubble)
-      : bubble_(bubble) {
-    gfx::NativeView native_view = bubble_->GetWidget()->GetNativeView();
-    // This is removed in the destructor called by
-    // TabSearchBubbleView::OnWidgetDestroying(), which is guaranteed to be
-    // called before the Widget goes away.  It's not safe to use a
-    // ScopedObserver for this, since the activation client may be deleted
-    // without a call back to this class.
-    wm::GetActivationClient(native_view->GetRootWindow())->AddObserver(this);
-  }
-
-  ~TabSearchWindowObserverAura() override {
-    auto* activation_client = wm::GetActivationClient(
-        bubble_->GetWidget()->GetNativeWindow()->GetRootWindow());
-    DCHECK(activation_client);
-    activation_client->RemoveObserver(this);
-  }
-
-  // wm::ActivationChangeObserver:
-  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override {
-    // Close on anchor window activation (i.e. user clicked the browser window).
-    // DesktopNativeWidgetAura does not trigger the expected browser widget
-    // [de]activation events when activating widgets in its own root window.
-    // This additional check handles those cases. See https://crbug.com/320889 .
-    views::Widget* anchor_widget = bubble_->anchor_widget();
-    if (anchor_widget && gained_active == anchor_widget->GetNativeWindow()) {
-      bubble_->GetWidget()->CloseWithReason(
-          views::Widget::ClosedReason::kLostFocus);
-    }
-  }
-
- private:
-  TabSearchBubbleView* bubble_;
-};
-#endif
-
 void TabSearchBubbleView::CreateTabSearchBubble(
     content::BrowserContext* browser_context,
     views::View* anchor_view) {
@@ -144,11 +96,6 @@ TabSearchBubbleView::TabSearchBubbleView(
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       web_view_(AddChildView(
           std::make_unique<TabSearchWebView>(browser_context, this))) {
-  DCHECK(anchor_view);
-  observed_anchor_widget_.Add(anchor_view->GetWidget());
-
-  set_close_on_deactivate(false);
-
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_margins(gfx::Insets());
 
@@ -165,31 +112,6 @@ gfx::Size TabSearchBubbleView::CalculatePreferredSize() const {
   preferred_size.SetToMax(kMinSize);
   preferred_size.SetToMin(kMaxSize);
   return preferred_size;
-}
-
-void TabSearchBubbleView::AddedToWidget() {
-  BubbleDialogDelegateView::AddedToWidget();
-  observed_bubble_widget_.Add(GetWidget());
-#if defined(USE_AURA)
-  // |window_observer_| deals with activation issues relevant to Aura platforms.
-  // This special case handling is not needed on Mac.
-  window_observer_ = std::make_unique<TabSearchWindowObserverAura>(this);
-#endif
-}
-
-void TabSearchBubbleView::OnWidgetActivationChanged(views::Widget* widget,
-                                                    bool active) {
-  // The widget is shown asynchronously and may take a long time to appear, so
-  // only close if it's actually been shown.
-  if (GetWidget()->IsVisible() && widget == anchor_widget() && active)
-    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
-}
-
-void TabSearchBubbleView::OnWidgetDestroying(views::Widget* widget) {
-#if defined(USE_AURA)
-  if (widget == GetWidget())
-    window_observer_.reset();
-#endif
 }
 
 void TabSearchBubbleView::OnWebViewSizeChanged() {

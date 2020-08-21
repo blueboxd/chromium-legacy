@@ -9,8 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -19,6 +22,38 @@ namespace autofill {
 namespace structured_address {
 
 namespace {
+
+struct AddressComponentTestValue {
+  ServerFieldType type;
+  std::string value;
+  VerificationStatus status;
+};
+
+struct AddressComponentTestValues {
+  std::vector<AddressComponentTestValue> values;
+};
+
+void SetTestValues(AddressComponent* component,
+                   const AddressComponentTestValues& test_values,
+                   bool finalize = true) {
+  for (const auto& test_value : test_values.values) {
+    component->SetValueForTypeIfPossible(test_value.type,
+                                         base::UTF8ToUTF16(test_value.value),
+                                         test_value.status);
+  }
+  if (finalize)
+    component->CompleteFullTree();
+}
+
+void VerifyTestValues(AddressComponent* component,
+                      const AddressComponentTestValues test_values) {
+  for (const auto& test_value : test_values.values) {
+    EXPECT_EQ(component->GetValueForType(test_value.type),
+              base::UTF8ToUTF16(test_value.value));
+    EXPECT_EQ(component->GetVerificationStatusForType(test_value.type),
+              test_value.status);
+  }
+}
 
 // A test record that contains all entries of the hybrid-structure name tree.
 struct NameParserTestRecord {
@@ -664,6 +699,134 @@ TEST(AutofillStructuredName, MigrationFromLegacyStructure_WithoutFullName) {
             VerificationStatus::kObserved);
   EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST),
             VerificationStatus::kObserved);
+}
+
+TEST(AutofillStructuredName, MergeSubsetLastname) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMergingSubsetNames);
+  NameFull name;
+  NameFull subset_name;
+
+  AddressComponentTestValues name_values = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_MIDDLE,
+               .value = "Neo",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST,
+               .value = "Anderson y Smith",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  AddressComponentTestValues subset_name_values = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_MIDDLE,
+               .value = "Neo",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST_FIRST,
+               .value = "Anderson",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST_SECOND,
+               .value = "Smith",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  AddressComponentTestValues expectation = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_MIDDLE,
+               .value = "Neo",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST_FIRST,
+               .value = "Anderson",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST_CONJUNCTION,
+               .value = "y",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST_SECOND,
+               .value = "Smith",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  SetTestValues(&name, name_values);
+  SetTestValues(&subset_name, subset_name_values);
+
+  EXPECT_TRUE(name.IsMergeableWithComponent(subset_name));
+  EXPECT_TRUE(name.MergeWithComponent(subset_name));
+
+  VerifyTestValues(&name, name_values);
+}
+
+TEST(AutofillStructuredName, MergeSubsetLastname2) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMergingSubsetNames);
+  NameFull name;
+  NameFull subset_name;
+
+  AddressComponentTestValues name_values = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_MIDDLE,
+               .value = "Neo",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST,
+               .value = "Anderson",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  AddressComponentTestValues subset_name_values = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST,
+               .value = "Anderson",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  AddressComponentTestValues expectation = {
+      .values =
+          {
+              {.type = NAME_FIRST,
+               .value = "Thomas",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_MIDDLE,
+               .value = "Neo",
+               .status = VerificationStatus::kObserved},
+              {.type = NAME_LAST,
+               .value = "Anderson",
+               .status = VerificationStatus::kObserved},
+          },
+  };
+
+  SetTestValues(&name, name_values);
+  SetTestValues(&subset_name, subset_name_values);
+
+  EXPECT_TRUE(name.IsMergeableWithComponent(subset_name));
+  EXPECT_TRUE(name.MergeWithComponent(subset_name));
+
+  VerifyTestValues(&name, name_values);
 }
 
 }  // namespace structured_address

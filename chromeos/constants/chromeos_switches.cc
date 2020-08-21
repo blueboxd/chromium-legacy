@@ -401,6 +401,11 @@ const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";
 
+// If set, the "ignore_dev_conf" field in StartArcVmRequest message will
+// consequently be set such that all development configuration directives in
+// /usr/local/vms/etc/arcvm_dev.conf will be ignored during ARCVM start.
+const char kIgnoreArcVmDevConf[] = "ignore-arcvm-dev-conf";
+
 // If true, profile selection in UserManager will always return active user's
 // profile.
 // TODO(nkostlyev): http://crbug.com/364604 - Get rid of this switch after we

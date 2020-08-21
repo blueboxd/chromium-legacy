@@ -22,6 +22,15 @@
 namespace autofill {
 namespace structured_address {
 
+struct AddressToken {
+  // The original value.
+  base::string16 value;
+  // The normalized value.
+  base::string16 normalized_value;
+  // The token position in the original string.
+  int position;
+};
+
 enum class RegEx;
 
 // Enum to express the few quantifiers needed to parse values.
@@ -33,6 +42,40 @@ enum MatchQuantifier {
   // The capture group is lazy optional meaning that it is avoided if an overall
   // match is possible.
   MATCH_LAZY_OPTIONAL,
+};
+
+// The result status of comparing two sets of sorted tokens.
+enum SortedTokenComparisonStatus {
+  // The tokens are neither the same nor super/sub sets.
+  DISTINCT,
+  // The token exactly match.
+  MATCH,
+  // The first tokens are a superset of the second with only one additional
+  // element.
+  SINGLE_TOKEN_SUPERSET,
+  // The second tokens are a subset of the second with only one additional
+  // element.
+  SINGLE_TOKEN_SUBSET,
+  // The first tokens are a superset of the second with multiple additional
+  // elements.
+  MULTI_TOKEN_SUPERSET,
+  // The second tokens are a subset of the second with multiple additional
+  // elements.
+  MULTI_TOKEN_SUBSET
+};
+
+// The result from comparing two sets of sorted tokens containing the status and
+// the additional tokens in the super/sub sets.
+struct SortedTokenComparisonResult {
+  explicit SortedTokenComparisonResult(
+      SortedTokenComparisonStatus status,
+      std::vector<AddressToken> additional_tokens = {});
+  ~SortedTokenComparisonResult();
+  SortedTokenComparisonResult(const SortedTokenComparisonResult& other);
+  // The status of the token comparison.
+  SortedTokenComparisonStatus status = DISTINCT;
+  // The additional elements in the super/subsets.
+  std::vector<AddressToken> additional_tokens{};
 };
 
 // Options for capturing a named group using the
@@ -176,8 +219,8 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
 base::string16 NormalizeValue(const base::string16& value);
 
 // Returns true of both vectors contain the same tokens in the same order.
-bool AreSortedTokensEqual(const std::vector<base::string16>& first,
-                          const std::vector<base::string16>& second);
+bool AreSortedTokensEqual(const std::vector<AddressToken>& first,
+                          const std::vector<AddressToken>& second);
 
 // Returns true if both strings contain the same tokens after normalization.
 bool AreStringTokenEquivalent(const base::string16& one,
@@ -186,7 +229,13 @@ bool AreStringTokenEquivalent(const base::string16& one,
 // Returns a sorted vector containing the tokens of |value| after |value| was
 // canonicalized. |value| is tokenized by splitting it by white spaces and
 // commas.
-std::vector<base::string16> TokenizeValue(const base::string16 value);
+std::vector<AddressToken> TokenizeValue(const base::string16 value);
+
+// Compares two vectors of sorted AddressTokens and returns the
+// SortedTokenComparisonResult;
+SortedTokenComparisonResult CompareSortedTokens(
+    const std::vector<AddressToken>& first,
+    const std::vector<AddressToken>& second);
 
 }  // namespace structured_address
 

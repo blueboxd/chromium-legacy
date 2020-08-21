@@ -546,17 +546,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 
-  // Sets or gets a hint that the transform on this layer (including its
-  // position) may be changed often in the future. The layer may change its
-  // strategy for generating content as a result. PictureLayers will not attempt
-  // to raster crisply as the transform changes, allowing the client to trade
-  // off crisp content at each scale for a smoother visual and cheaper
-  // animation.
-  void SetHasWillChangeTransformHint(bool has_will_change);
-  bool has_will_change_transform_hint() const {
-    return inputs_.has_will_change_transform_hint;
-  }
-
   // For layer tree mode only.
   // Sets or gets if trilinear filtering should be used to scaling the contents
   // of this layer and its subtree. When set the layer and its subtree will be
@@ -845,8 +834,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool is_drawable : 1;
 
     bool double_sided : 1;
-
-    bool has_will_change_transform_hint : 1;
 
     SkColor background_color;
 

@@ -166,6 +166,14 @@ TEST_F(ArcUtilTest, IsArcVmEnabled) {
   EXPECT_TRUE(IsArcVmEnabled());
 }
 
+TEST_F(ArcUtilTest, IsArcVmDevConfIgnored) {
+  EXPECT_FALSE(IsArcVmDevConfIgnored());
+
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--ignore-arcvm-dev-conf"});
+  EXPECT_TRUE(IsArcVmDevConfIgnored());
+}
+
 // TODO(hidehiko): Add test for IsArcKioskMode().
 // It depends on UserManager, but a utility to inject fake instance is
 // available only in chrome/. To use it in components/, refactoring is needed.

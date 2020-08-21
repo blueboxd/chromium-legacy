@@ -70,7 +70,7 @@ v8::Maybe<bool> V8TreatNonObjectAsNullBooleanFunction::Invoke(bindings::V8ValueO
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   if (!CallbackObject()->IsFunction()) {
-    // Handle the special case of [TreatNonObjectAsNull].
+    // Handle the special case of [LegacyTreatNonObjectAsNull].
     //
     // step 4.2. Return the result of converting undefined to the callback
     //   function's return type.

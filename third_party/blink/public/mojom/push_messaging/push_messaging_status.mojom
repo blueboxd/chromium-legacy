@@ -182,6 +182,10 @@ enum PushUnregistrationReason {
   // The Service Worker database got wiped, most likely due to corruption.
   SERVICE_WORKER_DATABASE_WIPED = 10,
 
+  // The subscription has expired, delete local subscription automatically.
+  // Only happens if features::kPushSubscriptionWithExpirationTime is enabled.
+  SUBSCRIPTION_EXPIRED = 11,
+
   // NOTE: Do not renumber or delete these as that would confuse interpretation
   // of previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync.

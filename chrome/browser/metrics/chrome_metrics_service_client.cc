@@ -148,7 +148,6 @@
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/metrics/cros_healthd_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
 #include "components/metrics/structured/structured_metrics_provider.h"
 #endif
@@ -708,9 +707,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<ChromeOSMetricsProvider>(
           metrics::MetricsLogUploader::UMA));
-
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<CrosHealthdMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<SigninStatusMetricsProviderChromeOS>());

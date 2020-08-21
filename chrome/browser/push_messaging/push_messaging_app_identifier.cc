@@ -252,6 +252,10 @@ PushMessagingAppIdentifier::PushMessagingAppIdentifier(
 
 PushMessagingAppIdentifier::~PushMessagingAppIdentifier() {}
 
+bool PushMessagingAppIdentifier::IsExpired() const {
+  return (expiration_time_) ? *expiration_time_ < base::Time::Now() : false;
+}
+
 void PushMessagingAppIdentifier::PersistToPrefs(Profile* profile) const {
   DCheckValid();
 

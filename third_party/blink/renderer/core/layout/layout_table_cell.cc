@@ -436,9 +436,26 @@ LayoutUnit LayoutTableCell::CellBaselinePosition() const {
   return BorderBefore() + PaddingBefore() + ContentLogicalHeight();
 }
 
+// Legacy code does not support orthogonal table cells, and must match
+// row's writing mode.
+void LayoutTableCell::UpdateStyleWritingModeFromRow(const LayoutObject* row) {
+  DCHECK_NE(StyleRef().GetWritingMode(), row->StyleRef().GetWritingMode());
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+  new_style->SetWritingMode(row->StyleRef().GetWritingMode());
+  new_style->UpdateFontOrientation();
+  SetModifiedStyleOutsideStyleRecalc(new_style,
+                                     LayoutObject::ApplyStyleChanges::kNo);
+  SetHorizontalWritingMode(StyleRef().IsHorizontalWritingMode());
+}
+
 void LayoutTableCell::StyleDidChange(StyleDifference diff,
                                      const ComputedStyle* old_style) {
   DCHECK_EQ(StyleRef().Display(), EDisplay::kTableCell);
+
+  if (Parent() &&
+      StyleRef().GetWritingMode() != Parent()->StyleRef().GetWritingMode()) {
+    UpdateStyleWritingModeFromRow(Parent());
+  }
 
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);

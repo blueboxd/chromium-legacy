@@ -260,6 +260,9 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Add cpus.
   request.set_cpus(cpus);
 
+  // Add ignore_dev_conf setting for dev mode.
+  request.set_ignore_dev_conf(IsArcVmDevConfIgnored());
+
   return request;
 }
 

@@ -1318,6 +1318,25 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Feature({"RenderTest"})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.85"})
+    public void testRenderGrid_withAspectRatioPoint85() throws IOException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabs(3, 0, "about:blank");
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        List<Tab> tabGroup = new ArrayList<>(
+                Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
+        createTabGroup(cta, false, tabGroup);
+        // Make sure all tabs have thumbnail.
+        enterGTSWithThumbnailRetry();
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "aspect_ratio_point_85");
+    }
+
+    @Test
+    @MediumTest
     @Feature("NewTabVariation")
     // clang-format off
     @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",

@@ -5,10 +5,12 @@
 #include "third_party/blink/renderer/core/html/link_web_bundle.h"
 
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -113,7 +115,10 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   KURL url_;
 };
 
-LinkWebBundle::LinkWebBundle(HTMLLinkElement* owner) : LinkResource(owner) {}
+LinkWebBundle::LinkWebBundle(HTMLLinkElement* owner) : LinkResource(owner) {
+  UseCounter::Count(owner_->GetDocument().GetExecutionContext(),
+                    WebFeature::kSubresourceWebBundles);
+}
 LinkWebBundle::~LinkWebBundle() = default;
 
 void LinkWebBundle::Trace(Visitor* visitor) const {

@@ -73,8 +73,8 @@ public class TabProperties {
     public static final PropertyModel.WritableObjectPropertyKey<TabListMediator.TabActionListener>
             SELECTABLE_TAB_CLICKED_LISTENER = new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<SelectionDelegate> TAB_SELECTION_DELEGATE =
-            new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<SelectionDelegate<Integer>>
+            TAB_SELECTION_DELEGATE = new WritableObjectPropertyKey<>();
 
     public static final PropertyModel.ReadableBooleanPropertyKey IS_INCOGNITO =
             new PropertyModel.ReadableBooleanPropertyKey();

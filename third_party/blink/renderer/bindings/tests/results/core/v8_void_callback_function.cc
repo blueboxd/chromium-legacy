@@ -70,7 +70,7 @@ v8::Maybe<void> V8VoidCallbackFunction::Invoke(bindings::V8ValueOrScriptWrappabl
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  // No [LegacyTreatNonObjectAsNull] presents.  Must be always callable.
   DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 

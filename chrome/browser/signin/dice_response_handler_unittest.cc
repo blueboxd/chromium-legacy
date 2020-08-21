@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
@@ -260,6 +261,115 @@ TEST_F(DiceResponseHandlerTest, Signin) {
               account_id)
           .value()
           .is_under_advanced_protection);
+}
+
+// Checks that the account reconcilor is blocked when where was OAuth
+// outage in Dice, and unblocked after the timeout.
+TEST_F(DiceResponseHandlerTest, SupportOAuthOutageInDice) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kSupportOAuthOutageInDice);
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params.signin_info->authorization_code.clear();
+  dice_params.signin_info->no_authorization_code = true;
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Check that the reconcilor was blocked and not unblocked before timeout.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours + 1));
+  // Check that the reconcilor was unblocked.
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+}
+
+// Check that after receiving two headers with no authorization code,
+// timeout still restarts.
+TEST_F(DiceResponseHandlerTest, CheckTimersDuringOutageinDice) {
+  ASSERT_GT(kLockAccountReconcilorTimeoutHours, 3);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kSupportOAuthOutageInDice);
+  // Create params for the first header with no authorization code.
+  DiceResponseParams dice_params_1 = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params_1.signin_info->authorization_code.clear();
+  dice_params_1.signin_info->no_authorization_code = true;
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Check that the reconcilor was blocked and not unblocked before timeout.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  // Wait half of the timeout.
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours / 2));
+  // Create params for the second header with no authorization code.
+  DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params_2.signin_info->authorization_code.clear();
+  dice_params_2.signin_info->no_authorization_code = true;
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params_2, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(
+      (kLockAccountReconcilorTimeoutHours + 1) / 2 + 1));
+  // Check that the reconcilor was not unblocked after the first timeout
+  // passed, timer should be restarted after getting the second header.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromHours((kLockAccountReconcilorTimeoutHours + 1) / 2));
+  // Check that the reconcilor was unblocked.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
+}
+
+// Check that signin works normally (the token is fetched and added to chrome)
+// on valid headers after getting a no_authorization_code header.
+TEST_F(DiceResponseHandlerTest, CheckSigninAfterOutageInDice) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kSupportOAuthOutageInDice);
+  // Create params for the header with no authorization code.
+  DiceResponseParams dice_params_1 = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params_1.signin_info->authorization_code.clear();
+  dice_params_1.signin_info->no_authorization_code = true;
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Create params for the valid header with an authorization code.
+  DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
+  const auto& account_info_2 = dice_params_2.signin_info->account_info;
+  CoreAccountId account_id_2 = identity_manager()->PickAccountIdForAccount(
+      account_info_2.gaia_id, account_info_2.email);
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params_2, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Check that the reconcilor was blocked and not unblocked before timeout.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  // Check that a GaiaAuthFetcher has been created.
+  GaiaAuthConsumer* consumer = signin_client_.GetAndClearConsumer();
+  ASSERT_THAT(consumer, testing::NotNull());
+  // Simulate GaiaAuthFetcher success.
+  consumer->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+      "refresh_token", "access_token", 10, false /* is_child_account */,
+      true /* is_advanced_protection*/));
+  // Check that the token has been inserted in the token service.
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
+  EXPECT_TRUE(auth_error_email_.empty());
+  EXPECT_EQ(GoogleServiceAuthError::NONE, auth_error_.state());
+  // Check HandleTokenExchangeSuccess parameters.
+  EXPECT_EQ(token_exchange_account_id_, account_id_2);
+  EXPECT_TRUE(token_exchange_is_new_account_);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  // Check that the AccountInfo::is_under_advanced_protection is set.
+  EXPECT_TRUE(
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_2)
+          .value()
+          .is_under_advanced_protection);
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours + 1));
+  // Check that the reconcilor was unblocked.
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
 }
 
 // Checks that a SIGNIN action triggers a token exchange request when the

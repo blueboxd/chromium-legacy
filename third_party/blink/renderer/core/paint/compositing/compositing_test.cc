@@ -94,6 +94,11 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
     return LayerTreeHost()->property_trees();
   }
 
+  cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
+    return GetPropertyTrees()->transform_tree.Node(
+        layer->transform_tree_index());
+  }
+
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return GetLocalFrameView()->GetPaintArtifactCompositor();
@@ -223,7 +228,8 @@ TEST_P(CompositingTest, WillChangeTransformHint) {
   )HTML");
   UpdateAllLifecyclePhases();
   auto* layer = CcLayerByDOMElementId("willChange");
-  EXPECT_TRUE(layer->has_will_change_transform_hint());
+  auto* transform_node = GetTransformNode(layer);
+  EXPECT_TRUE(transform_node->will_change_transform);
 }
 
 TEST_P(CompositingTest, WillChangeTransformHintInSVG) {
@@ -243,7 +249,8 @@ TEST_P(CompositingTest, WillChangeTransformHintInSVG) {
   )HTML");
   UpdateAllLifecyclePhases();
   auto* layer = CcLayerByDOMElementId("willChange");
-  EXPECT_TRUE(layer->has_will_change_transform_hint());
+  auto* transform_node = GetTransformNode(layer);
+  EXPECT_TRUE(transform_node->will_change_transform);
 }
 
 TEST_P(CompositingTest, PaintPropertiesWhenCompositingSVG) {

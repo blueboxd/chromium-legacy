@@ -1,5 +1,5 @@
 # Speech recognition
-olka@chromium.org
+file://third_party/blink/renderer/modules/speech/OWNERS
 
 # Text-to-speech
 per-file *tts_*=dmazzoni@chromium.org

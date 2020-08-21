@@ -146,6 +146,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual bool HasBadInput() const;
 
   virtual String RawValue() const;
+  virtual wtf_size_t FocusedFieldIndex() const { return 0; }
 
  protected:
   InputTypeView(HTMLInputElement& element) : element_(&element) {}

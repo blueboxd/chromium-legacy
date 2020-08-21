@@ -263,6 +263,7 @@ component("gl") {
     ]
 
     deps += [
+      "//ui/base:features",
       "//ui/base/x",
       "//ui/events/platform/x11:x11",
     ]

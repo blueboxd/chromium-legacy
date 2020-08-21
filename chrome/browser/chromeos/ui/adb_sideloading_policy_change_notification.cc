@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 constexpr char kAdbSideloadingDisallowedNotificationId[] =
@@ -45,6 +46,7 @@ void AdbSideloadingPolicyChangeNotification::Show(Type type) {
       base::UTF8ToUTF16(g_browser_process->platform_part()
                             ->browser_policy_connector_chromeos()
                             ->GetEnterpriseDisplayDomain());
+  base::string16 device_type = ui::GetChromeOSDeviceName();
 
   switch (type) {
     case Type::kNone:
@@ -59,19 +61,21 @@ void AdbSideloadingPolicyChangeNotification::Show(Type type) {
       notification_id = kAdbSideloadingDisallowedNotificationId;
       break;
     case Type::kPowerwashPlanned:
-      title = l10n_util::GetStringUTF16(
-          IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_PLANNED_NOTIFICATION_TITLE);
+      title = l10n_util::GetStringFUTF16(
+          IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_PLANNED_NOTIFICATION_TITLE,
+          device_type);
       text = l10n_util::GetStringFUTF16(
           IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_NOTIFICATION_MESSAGE,
-          enterprise_display_domain);
+          enterprise_display_domain, device_type);
       notification_id = kAdbSideloadingPowerwashPlannedNotificationId;
       break;
     case Type::kPowerwashOnNextReboot:
-      title = l10n_util::GetStringUTF16(
-          IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_ON_REBOOT_NOTIFICATION_TITLE);
+      title = l10n_util::GetStringFUTF16(
+          IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_ON_REBOOT_NOTIFICATION_TITLE,
+          device_type);
       text = l10n_util::GetStringFUTF16(
           IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_NOTIFICATION_MESSAGE,
-          enterprise_display_domain);
+          enterprise_display_domain, device_type);
       notification_id = kAdbSideloadingPowerwashOnRebootNotificationId;
       pinned = true;
       notification_actions.push_back(

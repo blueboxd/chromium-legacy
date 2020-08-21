@@ -109,6 +109,12 @@ struct CC_EXPORT TransformNode {
   // visibility, not this transform one.
   bool delegates_to_parent_for_backface : 1;
 
+  // Set to true, if the compositing reason is will-change:transform.
+  bool will_change_transform : 1;
+
+  // Set to true, if the node or it's parent |will_change_transform| is true.
+  bool node_or_ancestors_will_change_transform : 1;
+
   gfx::ScrollOffset scroll_offset;
 
   // This value stores the snapped amount whenever we snap. If the snap is due

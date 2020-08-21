@@ -439,6 +439,9 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.in_subtree_of_page_scale_layer =
       transform_node.IsInSubtreeOfPageScale();
 
+  compositor_node.will_change_transform =
+      transform_node.RequiresCompositingForWillChangeTransform();
+
   if (const auto* sticky_constraint = transform_node.GetStickyConstraint()) {
     cc::StickyPositionNodeData& sticky_data =
         GetTransformTree().EnsureStickyPositionData(id);

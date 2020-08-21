@@ -225,6 +225,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnWindowVisibilityChanged();
   void OnScrolledToAnchor();
   void OnAlertShown();
+  void RunPostponedEvents();
 
   void ResendFocusSignalsForCurrentlyFocusedNode();
   bool SupportsSelectionWithAtkSelection();
@@ -425,6 +426,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // The default ATK text attributes for this node.
   TextAttributeList default_text_attributes_;
+
+  bool window_activate_event_postponed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };

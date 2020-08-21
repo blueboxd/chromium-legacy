@@ -48,6 +48,7 @@ void ExpectMouseEventsEqual(const MouseEvent& expected,
 void ExpectMouseWheelEventsEqual(const MouseWheelEvent& expected,
                                  const MouseWheelEvent& actual) {
   EXPECT_EQ(expected.offset(), actual.offset());
+  EXPECT_EQ(expected.tick_120ths(), actual.tick_120ths());
 }
 
 void ExpectKeyEventsEqual(const KeyEvent& expected, const KeyEvent& actual) {
@@ -164,16 +165,17 @@ TEST(StructTraitsTest, MouseEvent) {
 
 TEST(StructTraitsTest, MouseWheelEvent) {
   const MouseWheelEvent kTestData[] = {
-      {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
+      {gfx::Vector2d(11, 15), gfx::PointF(3, 4), gfx::PointF(40, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
-       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
-      {gfx::Vector2d(-5, 3), gfx::Point(40, 3), gfx::Point(4, 0),
+       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON, gfx::Vector2d(1320, 1800)},
+      {gfx::Vector2d(-5, 3), gfx::PointF(40, 3), gfx::PointF(4, 0),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(302),
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
-       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
-      {gfx::Vector2d(1, 0), gfx::Point(3, 4), gfx::Point(40, 30),
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
+       gfx::Vector2d(-600, 360)},
+      {gfx::Vector2d(1, 0), gfx::PointF(3, 4), gfx::PointF(40, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(303), EF_NONE,
-       EF_NONE},
+       EF_NONE, gfx::Vector2d(120, -15)},
   };
 
   for (size_t i = 0; i < base::size(kTestData); i++) {

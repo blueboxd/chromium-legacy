@@ -49,7 +49,10 @@ class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
   void Trace(Visitor*) const override;
 
  private:
-  static void BlobImpl(ScriptPromiseResolver* resolver,
+  static void getTablesImpl(ScriptPromiseResolver* resolver,
+                            const String& postscriptName,
+                            const Vector<String>& tables);
+  static void blobImpl(ScriptPromiseResolver* resolver,
                        const String& postscriptName);
   String postscriptName_;
   String fullName_;

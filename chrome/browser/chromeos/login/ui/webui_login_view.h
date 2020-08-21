@@ -159,10 +159,6 @@ class WebUILoginView : public views::View,
   // Overridden from ash::SystemTrayFocusObserver.
   void OnFocusLeavingSystemTray(bool reverse) override;
 
-  // Attempts to move focus to system tray. Returns whether the attempt was
-  // successful (it might fail if the system tray is not visible).
-  bool MoveFocusToSystemTray(bool reverse);
-
   // Performs series of actions when login prompt is considered
   // to be ready and visible.
   // 1. Emits LoginPromptVisible signal if needed

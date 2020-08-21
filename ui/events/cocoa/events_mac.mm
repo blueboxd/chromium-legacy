@@ -151,6 +151,22 @@ gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& event) {
   }
 }
 
+gfx::Vector2d GetMouseWheelTick120ths(const PlatformEvent& event) {
+  CGEventRef cg_event = [event CGEvent];
+
+  if (!cg_event ||
+      CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventIsContinuous)) {
+    // Since the device does continuous scrolling, it has no concept of ticks.
+    return gfx::Vector2d(0, 0);
+  }
+
+  return gfx::Vector2d(
+      CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventDeltaAxis2) *
+          120,
+      CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventDeltaAxis1) *
+          120);
+}
+
 PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
   return [event copy];
 }

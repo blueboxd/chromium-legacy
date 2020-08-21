@@ -8,6 +8,7 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 
@@ -352,10 +353,6 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
 
     gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
-    // Setting will change transform on mask layer will make it not adjust
-    // raster scale, which will remain 1. This means the mask_layer and render
-    // surface will have a scale of 2 during draw time.
-    mask_layer->SetHasWillChangeTransformHint(true);
     mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);

@@ -259,44 +259,30 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
   return false;
 }
 
-bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
-    content::NavigationHandle* handle) {
-  content::WebContents* web_contents = handle->GetWebContents();
-
-  const GURL& url = handle->GetURL();
-
-  std::vector<apps::IntentPickerAppInfo> apps_for_picker =
-      FindAllAppsForUrl(web_contents, url, {});
-
-  if (apps_for_picker.empty())
-    return false;
-
-  if (GetPickerShowState(apps_for_picker, web_contents, url) ==
-      PickerShowState::kOmnibox) {
-    return false;
+void CommonAppsNavigationThrottle::ShowIntentPickerForApps(
+    content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
+    const GURL& url,
+    std::vector<IntentPickerAppInfo> apps,
+    IntentPickerResponse callback) {
+  if (apps.empty()) {
+    IntentPickerTabHelper::SetShouldShowIcon(web_contents, false);
+    ui_displayed_ = false;
+    return;
   }
 
+  if (GetPickerShowState(apps, web_contents, url) ==
+      PickerShowState::kOmnibox) {
+    ui_displayed_ = false;
+    IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
+    return;
+  }
+
+  ui_displayed_ = true;
   IntentPickerTabHelper::LoadAppIcons(
-      web_contents, std::move(apps_for_picker),
-      base::BindOnce(
-          &CommonAppsNavigationThrottle::OnDeferredNavigationProcessed,
-          weak_factory_.GetWeakPtr()));
-  return true;
-}
-
-void CommonAppsNavigationThrottle::OnDeferredNavigationProcessed(
-    std::vector<apps::IntentPickerAppInfo> apps) {
-  content::NavigationHandle* handle = navigation_handle();
-  content::WebContents* web_contents = handle->GetWebContents();
-  const GURL& url = handle->GetURL();
-
-  ShowIntentPickerForApps(web_contents, ui_auto_display_service_, url,
-                          std::move(apps),
-                          base::BindOnce(&OnIntentPickerClosed, web_contents,
-                                         ui_auto_display_service_, url));
-
-  // We are about to resume the navigation, which may destroy this object.
-  Resume();
+      web_contents, std::move(apps),
+      base::BindOnce(&OnAppIconsLoaded, web_contents, ui_auto_display_service,
+                     url));
 }
 
 bool CommonAppsNavigationThrottle::ShouldAutoDisplayUi(

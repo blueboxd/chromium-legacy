@@ -387,11 +387,6 @@ class CC_EXPORT LayerImpl {
   void NoteLayerPropertyChanged();
   void NoteLayerPropertyChangedFromPropertyTrees();
 
-  void SetHasWillChangeTransformHint(bool has_will_change);
-  bool has_will_change_transform_hint() const {
-    return has_will_change_transform_hint_;
-  }
-
   ElementListType GetElementTypeForAnimation() const;
 
   void set_needs_show_scrollbars(bool yes) { needs_show_scrollbars_ = yes; }
@@ -525,7 +520,6 @@ class CC_EXPORT LayerImpl {
   // |touch_action_region_|.
   mutable std::unique_ptr<Region> all_touch_action_regions_;
 
-  bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
   bool scrollbars_hidden_ : 1;
 

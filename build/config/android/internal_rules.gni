@@ -1367,10 +1367,8 @@ if (enable_java_templates) {
           "--classpath",
           rebase_path("//third_party/jacoco/lib/jacocoagent.jar",
                       root_build_dir),
+          "--noverify",
         ]
-      }
-      if (use_jacoco_coverage || !treat_warnings_as_errors) {
-        args += [ "--noverify" ]
       }
       if (defined(invoker.wrapper_script_args)) {
         args += [ "--" ] + invoker.wrapper_script_args
@@ -1609,9 +1607,6 @@ if (enable_java_templates) {
           }
           if (_input_class_jars != []) {
             args += [ "--class-inputs=${_rebased_input_class_jars}" ]
-          }
-          if (treat_warnings_as_errors) {
-            args += [ "--warnings-as-errors" ]
           }
         }
       }
@@ -2001,9 +1996,6 @@ if (enable_java_templates) {
             "--depfile",
             rebase_path(depfile, root_build_dir),
           ]
-          if (treat_warnings_as_errors) {
-            args += [ "--warnings-as-errors" ]
-          }
         }
 
         _deps = []
@@ -2144,10 +2136,6 @@ if (enable_java_templates) {
 
       if (defined(invoker.max_sdk_version)) {
         args += [ "--max-sdk-version=${invoker.max_sdk_version}" ]
-      }
-
-      if (treat_warnings_as_errors) {
-        args += [ "--warnings-as-errors" ]
       }
     }
   }
@@ -2966,9 +2954,6 @@ if (enable_java_templates) {
     }
     if (_secondary_native_lib_placeholders != []) {
       _args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
-    }
-    if (treat_warnings_as_errors) {
-      _args += [ "--warnings-as-errors" ]
     }
 
     if (defined(invoker.expected_libs_and_assets)) {
@@ -4196,10 +4181,6 @@ template("create_android_app_bundle_module") {
       "--jdk-libs-dex-file",
       rebase_path(_jdk_libs_dex, root_build_dir),
     ]
-  }
-
-  if (treat_warnings_as_errors) {
-    _args += [ "--warnings-as-errors" ]
   }
 
   if (defined(invoker.expected_libs_and_assets)) {

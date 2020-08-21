@@ -132,12 +132,6 @@ Extended attributes are generally not inherited: only extended attributes on the
 
 These are defined in the [ECMAScript-specific extended attributes](http://heycam.github.io/webidl/#es-extended-attributes) section of the [Web IDL spec](http://heycam.github.io/webidl/), and alter the binding behavior.
 
-*** note
-Unsupported: `[LenientThis]`
-
-Undocumented: `[TreatNonObjectAsNull]`
-***
-
 ### [CEReactions] _(m, a)_
 
 Standard: [CEReactions](https://html.spec.whatwg.org/C/#cereactions)

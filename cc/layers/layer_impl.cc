@@ -68,7 +68,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       current_draw_mode_(DRAW_MODE_NONE),
-      has_will_change_transform_hint_(false),
       needs_push_properties_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
@@ -88,10 +87,6 @@ LayerImpl::~LayerImpl() {
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
-}
-
-void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
-  has_will_change_transform_hint_ = has_will_change;
 }
 
 ElementListType LayerImpl::GetElementTypeForAnimation() const {
@@ -392,7 +387,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->effect_tree_index_ = effect_tree_index_;
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
-  layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
@@ -714,9 +708,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("hit_testable", HitTestable());
   state->SetBoolean("contents_opaque", contents_opaque());
-
-  state->SetBoolean("has_will_change_transform_hint",
-                    has_will_change_transform_hint());
 
   if (debug_info_) {
     state->SetString("layer_name", debug_info_->name);

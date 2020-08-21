@@ -70,7 +70,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(bindings::V8ValueOrSc
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   if (!CallbackObject()->IsFunction()) {
-    // Handle the special case of [TreatNonObjectAsNull].
+    // Handle the special case of [LegacyTreatNonObjectAsNull].
     //
     // step 4.1. If the callback function's return type is void, return.
     return v8::JustVoid();

@@ -169,7 +169,7 @@
   },
   {
     "prefix": "font-access",
-    "bases": ["external/wpt/font-access"],
+    "bases": [],
     "args": ["--enable-features=FontAccess"]
   },
   {

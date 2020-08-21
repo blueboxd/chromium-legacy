@@ -431,8 +431,7 @@ void InterceptedRequest::ContinueAfterIntercept() {
             std::make_unique<ProtocolResponseDelegate>(
                 request_.url, weak_factory_.GetWeakPtr()),
             security_options_);
-    loader->Start(base::FeatureList::IsEnabled(
-        features::kWebViewOriginCheckForStreamReader));
+    loader->Start();
     return;
   }
 
@@ -453,8 +452,7 @@ void InterceptedRequest::ContinueAfterInterceptWithOverride(
           std::make_unique<InterceptResponseDelegate>(
               std::move(response), weak_factory_.GetWeakPtr()),
           base::nullopt);
-  loader->Start(base::FeatureList::IsEnabled(
-      features::kWebViewOriginCheckForStreamReader));
+  loader->Start();
 }
 
 namespace {

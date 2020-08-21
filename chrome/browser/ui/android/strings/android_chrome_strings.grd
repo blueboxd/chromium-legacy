@@ -3081,6 +3081,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_WEBSITE" desc="Caption displayed in the Contextual Search bar prompting the user to navigate to a web page.">
         Go to page
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_IPH_ENABLE" desc="An in-product-help message for the Touch to Search feature on Chrome Android. The message encourages users to let Google Search servers have access to the page content to get better translations.">
+        To get better translations, let Google Search use the current page
+      </message>
       <message name="IDS_CONTEXTUAL_SEARCH_IPH_ENTITY" desc="An in-product-help message for the Tap to Search feature on Chrome Android. The message encourages users to open a panel that contains search results for the word or phrase they tapped on.">
         See instant search results in this panel
       </message>

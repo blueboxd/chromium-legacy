@@ -18,6 +18,20 @@
 #define EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE 0x33AE
 #endif /* EGL_ANGLE_platform_angle_null */
 
+#ifndef EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE
+#define EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE 0x348F
+#endif
+
+#ifndef EGL_ANGLE_platform_angle
+#define EGL_ANGLE_platform_angle 1
+#define EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE 0x348F
+#endif /* EGL_ANGLE_platform_angle */
+
+#ifndef EGL_EXT_platform_x11
+#define EGL_EXT_platform_x11 1
+#define EGL_PLATFORM_X11_EXT 0x31D5
+#endif /* EGL_EXT_platform_x11 */
+
 namespace ui {
 
 void GetPlatformExtraDisplayAttribs(EGLenum platform_type,
@@ -30,6 +44,8 @@ void GetPlatformExtraDisplayAttribs(EGLenum platform_type,
         true, &visual_id, nullptr, nullptr, nullptr);
     attributes->push_back(EGL_X11_VISUAL_ID_ANGLE);
     attributes->push_back(static_cast<EGLAttrib>(visual_id));
+    attributes->push_back(EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE);
+    attributes->push_back(EGL_PLATFORM_X11_EXT);
   }
 }
 

@@ -83,6 +83,7 @@ struct MouseData {
   PointerDetails pointer_details;
   // Only used for mouse wheel.
   gfx.mojom.Vector2d wheel_offset;
+  gfx.mojom.Vector2d tick_120ths;
 };
 
 // This is used for TouchEvents.

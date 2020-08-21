@@ -2627,7 +2627,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
 
   std::vector<base::string16> types;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &types);
+      ui::ClipboardBuffer::kCopyPaste, CreateDataEndpoint().get(), &types);
   return !types.empty();
 }
 
@@ -2637,7 +2637,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(),
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
+      ui::ClipboardBuffer::kCopyPaste, CreateDataEndpoint().get());
 }
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
@@ -2684,7 +2684,7 @@ void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
 }
 
 std::unique_ptr<ui::ClipboardDataEndpoint>
-RenderViewContextMenu::CreateDataEndpoint() {
+RenderViewContextMenu::CreateDataEndpoint() const {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (render_frame_host) {
     return std::make_unique<ui::ClipboardDataEndpoint>(

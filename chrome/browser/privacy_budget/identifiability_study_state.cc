@@ -309,13 +309,3 @@ void IdentifiabilityStudyState::ReconcileLoadedPrefs() {
   if (modified)
     WriteToPrefs();
 }
-
-bool IdentifiabilityStudyState::ShouldRecordSurface(
-    uint64_t source_id,
-    blink::IdentifiableSurface surface) {
-  return tracked_surfaces_.ShouldRecord(source_id, surface.ToUkmMetricHash());
-}
-
-void IdentifiabilityStudyState::ResetRecordedSurfaces() {
-  tracked_surfaces_.Reset();
-}

@@ -91,10 +91,12 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   bool ShouldCancelNavigation(content::NavigationHandle* handle) override;
 
-  bool ShouldDeferNavigation(content::NavigationHandle* handle) override;
-
-  void OnDeferredNavigationProcessed(
-      std::vector<apps::IntentPickerAppInfo> apps);
+  void ShowIntentPickerForApps(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url,
+      std::vector<IntentPickerAppInfo> apps,
+      IntentPickerResponse callback) override;
 
   // Whether or not the intent picker UI should be displayed without the user
   // clicking in the omnibox's icon.

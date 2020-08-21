@@ -58,6 +58,8 @@ class MultipleFieldsTemporalInputTypeView final
 
   String RawValue() const override;
 
+  wtf_size_t FocusedFieldIndex() const override;
+
  private:
   // DateTimeEditElement::EditControlOwner functions
   void DidBlurFromControl(mojom::blink::FocusType) final;

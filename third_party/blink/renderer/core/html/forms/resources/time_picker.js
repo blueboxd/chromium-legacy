@@ -240,11 +240,22 @@ class TimePicker extends HTMLElement {
     this.hasSecond_ = config.hasSecond;
     this.hasMillisecond_ = config.hasMillisecond;
     this.hasAMPM_ = config.hasAMPM;
+    this.initialFocusedFieldIndex_ = config.focusedFieldIndex || 0;
   };
 
   onWindowResize_ = (event) => {
     this.timeColumns_.scrollColumnsToSelectedCells();
-    this.timeColumns_.firstChild.focus();
+    if (!this.focusOnFieldIndex(this.initialFocusedFieldIndex_))
+      this.timeColumns_.firstChild.focus();
+  };
+
+  /** Focus on given index if valid. Return true if so. */
+  focusOnFieldIndex = (index) => {
+    if (index >= 0 && index < this.timeColumns_.children.length) {
+      this.timeColumns_.children[index].focus();
+      return true;
+    }
+    return false
   };
 
   onKeyDown_ = (event) => {

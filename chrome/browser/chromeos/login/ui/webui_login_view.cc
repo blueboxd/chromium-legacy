@@ -387,19 +387,8 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   if (!forward_keyboard_event_)
     return false;
 
-  // For default tab order, after login UI, try focusing the system tray.
-  if (!reverse && MoveFocusToSystemTray(reverse))
-    return true;
-
-  // If initial MoveFocusToSystemTray was skipped due to lock screen app being
-  // a preferred option (due to traversal direction), try focusing system tray
-  // again.
-  if (reverse && MoveFocusToSystemTray(reverse))
-    return true;
-
-  // Since neither system tray nor a lock screen app window was focusable, the
-  // focus should stay in the login UI.
-  AboutToRequestFocusFromTabTraversal(reverse);
+  // FocusLoginShelf focuses either system tray or login shelf buttons.
+  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
   return true;
 }
 
@@ -430,11 +419,6 @@ bool WebUILoginView::PreHandleGestureEvent(
 
 void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
   AboutToRequestFocusFromTabTraversal(reverse);
-}
-
-bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
-  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
-  return true;
 }
 
 void WebUILoginView::OnLoginPromptVisible() {

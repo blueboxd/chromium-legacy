@@ -3276,6 +3276,9 @@ AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
 
   DestroyAtkObjects();
 
+  if (window_activate_event_postponed_)
+    AtkUtilAuraLinux::GetInstance()->CancelPostponedEventsFor(this);
+
   SetWeakGPtrToAtkObject(&document_parent_, nullptr);
 }
 
@@ -3992,6 +3995,13 @@ void AXPlatformNodeAuraLinux::OnAlertShown() {
                                  ATK_STATE_SHOWING, TRUE);
 }
 
+void AXPlatformNodeAuraLinux::RunPostponedEvents() {
+  if (window_activate_event_postponed_) {
+    OnWindowActivated();
+    window_activate_event_postponed_ = false;
+  }
+}
+
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   if (!GetOrCreateAtkObject())
@@ -4043,10 +4053,20 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       OnInvalidStatusChanged();
       break;
     case ax::mojom::Event::kWindowActivated:
-      OnWindowActivated();
+      if (AtkUtilAuraLinux::GetInstance()->IsAtSpiReady()) {
+        OnWindowActivated();
+      } else {
+        AtkUtilAuraLinux::GetInstance()->PostponeEventsFor(this);
+        window_activate_event_postponed_ = true;
+      }
       break;
     case ax::mojom::Event::kWindowDeactivated:
-      OnWindowDeactivated();
+      if (AtkUtilAuraLinux::GetInstance()->IsAtSpiReady()) {
+        OnWindowDeactivated();
+      } else {
+        AtkUtilAuraLinux::GetInstance()->CancelPostponedEventsFor(this);
+        window_activate_event_postponed_ = false;
+      }
       break;
     case ax::mojom::Event::kWindowVisibilityChanged:
       OnWindowVisibilityChanged();

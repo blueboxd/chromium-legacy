@@ -16,10 +16,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 class TabGroupUiProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> LEFT_BUTTON_ON_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> RIGHT_BUTTON_ON_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableBooleanPropertyKey IS_MAIN_CONTENT_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey PRIMARY_COLOR =
@@ -32,8 +32,8 @@ class TabGroupUiProperties {
      * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
      * the same value.
      */
-    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
-            new PropertyModel.WritableObjectPropertyKey(true);
+    public static final PropertyModel.WritableObjectPropertyKey<Integer> INITIAL_SCROLL_INDEX =
+            new PropertyModel.WritableObjectPropertyKey<>(true);
     public static final PropertyModel
             .WritableObjectPropertyKey<String> LEFT_BUTTON_CONTENT_DESCRIPTION =
             new PropertyModel.WritableObjectPropertyKey<>();

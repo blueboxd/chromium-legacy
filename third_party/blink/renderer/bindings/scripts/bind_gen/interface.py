@@ -775,8 +775,8 @@ def make_check_argument_length(cg_context):
     elif cg_context.attribute_set:
         idl_type = cg_context.attribute.idl_type
         if not (idl_type.does_include_nullable_or_dict
-                or idl_type.unwrap().is_any or
-                "TreatNonObjectAsNull" in idl_type.unwrap().extended_attributes
+                or idl_type.unwrap().is_any or "LegacyTreatNonObjectAsNull" in
+                idl_type.unwrap().extended_attributes
                 or "PutForwards" in cg_context.attribute.extended_attributes
                 or "Replaceable" in cg_context.attribute.extended_attributes):
             # ES undefined in ${v8_property_value} will cause a TypeError

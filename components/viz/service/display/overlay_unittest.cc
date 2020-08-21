@@ -44,6 +44,10 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/latency/latency_info.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 using testing::_;
 using testing::Mock;
 
@@ -2296,6 +2300,14 @@ class GLRendererWithOverlaysTest : public testing::Test {
 
   ~GLRendererWithOverlaysTest() override {
     child_resource_provider_->ShutdownAndReleaseAllResources();
+  }
+
+  void SetUp() override {
+#if defined(USE_X11)
+    // TODO(1096425): non-Ozone/X11 doesn't seem to support overlays.
+    if (!features::IsUsingOzonePlatform())
+      GTEST_SKIP();
+#endif
   }
 
   void Init(bool use_overlay_processor) {

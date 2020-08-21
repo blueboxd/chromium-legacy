@@ -92,6 +92,10 @@ class CORE_EXPORT HTMLMediaElement
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:
+  // Limits the range of media playback rate.
+  static constexpr double kMinPlaybackRate = 0.0625;
+  static constexpr double kMaxPlaybackRate = 16.0;
+
   bool IsMediaElement() const override { return true; }
 
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
@@ -192,7 +196,6 @@ class CORE_EXPORT HTMLMediaElement
   void setDefaultPlaybackRate(double);
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
-  void UpdatePlaybackRate();
   TimeRanges* played();
   WebTimeRanges SeekableInternal() const;
   TimeRanges* seekable() const;

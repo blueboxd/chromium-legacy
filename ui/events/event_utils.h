@@ -111,6 +111,11 @@ GetMousePointerDetailsFromNative(const PlatformEvent& native_event);
 EVENTS_EXPORT gfx::Vector2d GetMouseWheelOffset(
     const PlatformEvent& native_event);
 
+// Gets the mouse wheel tick counts from a native event, with a value of 120
+// representing a whole tick.
+EVENTS_EXPORT gfx::Vector2d GetMouseWheelTick120ths(
+    const PlatformEvent& native_event);
+
 // Returns a copy of |native_event|. Depending on the platform, this copy may
 // need to be deleted with ReleaseCopiedNativeEvent().
 PlatformEvent CopyNativeEvent(const PlatformEvent& native_event);

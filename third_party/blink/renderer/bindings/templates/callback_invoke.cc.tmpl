@@ -11,7 +11,7 @@
       return_cpp_type = Blink (C++) return type
       return_native_value_traits_tag = tag of NativeValueTraits for return type
       arguments = dict of arguments\' info
-      is_treat_non_object_as_null = True if [TreatNonObjectAsNull]
+      is_treat_non_object_as_null = True if [LegacyTreatNonObjectAsNull]
       bypass_runnability_check = Skip IsCallbackFunctionRunnable check if True
       interface_name = interface name used for exception
       operation_name = interface name used for exception and property lookup
@@ -85,7 +85,7 @@
   // step 4. If ! IsCallable(F) is false:
   {% if is_treat_non_object_as_null %}
   if (!CallbackObject()->IsFunction()) {
-    // Handle the special case of [TreatNonObjectAsNull].
+    // Handle the special case of [LegacyTreatNonObjectAsNull].
     //
     {% if return_cpp_type == 'void' %}
     // step 4.1. If the callback function's return type is void, return.
@@ -108,7 +108,7 @@
   }
   {% else %}
   //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  // No [LegacyTreatNonObjectAsNull] presents.  Must be always callable.
   DCHECK(CallbackObject()->IsFunction());
   {% endif %}
   function = CallbackFunction();

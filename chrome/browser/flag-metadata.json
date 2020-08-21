@@ -141,7 +141,7 @@
   {
     "name": "app-service-intent-handling",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "arc-application-zoom",

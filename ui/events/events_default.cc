@@ -82,6 +82,13 @@ gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
   return event->offset();
 }
 
+gfx::Vector2d GetMouseWheelTick120ths(const PlatformEvent& native_event) {
+  const ui::MouseWheelEvent* event =
+      static_cast<const ui::MouseWheelEvent*>(native_event);
+  DCHECK_EQ(event->type(), ET_MOUSEWHEEL);
+  return event->tick_120ths();
+}
+
 PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
   return NULL;
 }

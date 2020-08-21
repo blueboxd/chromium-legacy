@@ -138,7 +138,7 @@ class Seat::RefCountedScopedClipboardWriter
   explicit RefCountedScopedClipboardWriter()
       : ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste,
                               std::make_unique<ui::ClipboardDataEndpoint>(
-                                  ui::EndpointType::kVm)) {}
+                                  ui::EndpointType::kGuestOs)) {}
 
  private:
   friend class base::RefCounted<RefCountedScopedClipboardWriter>;

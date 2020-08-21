@@ -57,25 +57,37 @@ struct EntityDescription {
 template <typename CharType>
 static inline void AppendCharactersReplacingEntitiesInternal(
     StringBuilder& result,
+    const StringView& source,
     CharType* text,
     unsigned length,
     const EntityDescription entity_maps[],
     unsigned entity_maps_count,
     EntityMask entity_mask) {
   unsigned position_after_last_entity = 0;
-  for (unsigned i = 0; i < length; ++i) {
-    for (unsigned entity_index = 0; entity_index < entity_maps_count;
-         ++entity_index) {
-      if (text[i] == entity_maps[entity_index].entity &&
-          entity_maps[entity_index].mask & entity_mask) {
-        result.Append(text + position_after_last_entity,
-                      i - position_after_last_entity);
-        const std::string& replacement = entity_maps[entity_index].reference;
-        result.Append(replacement.c_str(), replacement.length());
-        position_after_last_entity = i + 1;
-        break;
+  // Avoid scanning the string in cases where the mask is empty, for example
+  // scripTag.innerHTML that use the kEntityMaskInCDATA mask.
+  if (entity_mask) {
+    for (unsigned i = 0; i < length; ++i) {
+      for (unsigned entity_index = 0; entity_index < entity_maps_count;
+           ++entity_index) {
+        if (text[i] == entity_maps[entity_index].entity &&
+            entity_maps[entity_index].mask & entity_mask) {
+          result.Append(text + position_after_last_entity,
+                        i - position_after_last_entity);
+          const std::string& replacement = entity_maps[entity_index].reference;
+          result.Append(replacement.c_str(), replacement.length());
+          position_after_last_entity = i + 1;
+          break;
+        }
       }
     }
+  }
+  // If we didn't find anything to replace use the fast path on StringBuilder
+  // to avoid a copy. This optimizes cases like scriptTag.innerHTML or
+  // p.innerHTML when the <p> contains a single Text.
+  if (!position_after_last_entity) {
+    result.Append(source);
+    return;
   }
   result.Append(text + position_after_last_entity,
                 length - position_after_last_entity);
@@ -83,9 +95,7 @@ static inline void AppendCharactersReplacingEntitiesInternal(
 
 void MarkupFormatter::AppendCharactersReplacingEntities(
     StringBuilder& result,
-    const String& source,
-    unsigned offset,
-    unsigned length,
+    const StringView& source,
     EntityMask entity_mask) {
   DEFINE_STATIC_LOCAL(const std::string, amp_reference, ("&amp;"));
   DEFINE_STATIC_LOCAL(const std::string, lt_reference, ("&lt;"));
@@ -107,14 +117,10 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
       {'\r', carriage_return_reference, kEntityCarriageReturn},
   };
 
-  if (!(offset + length))
-    return;
-
-  DCHECK_LE(offset + length, source.length());
   WTF::VisitCharacters(source, [&](const auto* chars, unsigned) {
     AppendCharactersReplacingEntitiesInternal(
-        result, chars + offset, length, kEntityMaps, base::size(kEntityMaps),
-        entity_mask);
+        result, source, chars, source.length(), kEntityMaps,
+        base::size(kEntityMaps), entity_mask);
   });
 }
 
@@ -203,7 +209,7 @@ void MarkupFormatter::AppendEndMarkup(StringBuilder& result,
 void MarkupFormatter::AppendAttributeValue(StringBuilder& result,
                                            const String& attribute,
                                            bool document_is_html) {
-  AppendCharactersReplacingEntities(result, attribute, 0, attribute.length(),
+  AppendCharactersReplacingEntities(result, attribute,
                                     document_is_html
                                         ? kEntityMaskInHTMLAttributeValue
                                         : kEntityMaskInAttributeValue);
@@ -226,8 +232,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
 }
 
 void MarkupFormatter::AppendText(StringBuilder& result, const Text& text) {
-  const String& str = text.data();
-  AppendCharactersReplacingEntities(result, str, 0, str.length(),
+  AppendCharactersReplacingEntities(result, text.data(),
                                     EntityMaskForText(text));
 }
 

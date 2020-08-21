@@ -759,8 +759,6 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
 }
 
 void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
-  DEFINE_STATIC_LOCAL(const String, timestamp_tag, ("timestamp"));
-
   DCHECK(IsActive());
 
   // An active cue may still not have a display tree, e.g. if its track is
@@ -781,7 +779,7 @@ void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
     is_past_node = false;
 
   for (Node& child : NodeTraversal::DescendantsOf(*display_tree_)) {
-    if (child.nodeName() == timestamp_tag) {
+    if (child.nodeName() == "timestamp") {
       bool check =
           VTTParser::CollectTimeStamp(child.nodeValue(), current_timestamp);
       DCHECK(check);
@@ -797,6 +795,34 @@ void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
         To<Element>(child).SetIdAttribute(id());
     }
   }
+}
+
+base::Optional<double> VTTCue::GetNextIntraCueTime(double movie_time) const {
+  if (!display_tree_) {
+    return base::nullopt;
+  }
+
+  // Iterate through children once, since in a well-formed VTTCue
+  // timestamps will always increase.
+  for (Node const& child : NodeTraversal::DescendantsOf(*display_tree_)) {
+    if (child.nodeName() == "timestamp") {
+      double timestamp = -1;
+      bool const check =
+          VTTParser::CollectTimeStamp(child.nodeValue(), timestamp);
+      DCHECK(check);
+
+      if (timestamp > movie_time) {
+        if (timestamp < endTime()) {
+          return timestamp;
+        } else {
+          // Timestamps should never be greater than the end time of the VTTCue.
+          return base::nullopt;
+        }
+      }
+    }
+  }
+
+  return base::nullopt;
 }
 
 VTTCueBox* VTTCue::GetDisplayTree() {

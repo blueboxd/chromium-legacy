@@ -71,7 +71,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(bindings::V8
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  // No [LegacyTreatNonObjectAsNull] presents.  Must be always callable.
   DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 
@@ -191,7 +191,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const Hea
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  // No [LegacyTreatNonObjectAsNull] presents.  Must be always callable.
   DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 

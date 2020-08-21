@@ -18,12 +18,12 @@ import org.chromium.ui.modelutil.PropertyModel;
 class TabGridPanelProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> COLLAPSE_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> ADD_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableObjectPropertyKey<String> HEADER_TITLE =
-            new PropertyModel.WritableObjectPropertyKey<String>(true);
+            new PropertyModel.WritableObjectPropertyKey<>(true);
     public static final PropertyModel.WritableIntPropertyKey CONTENT_TOP_MARGIN =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey PRIMARY_COLOR =
@@ -38,7 +38,7 @@ class TabGridPanelProperties {
             new PropertyModel.WritableObjectPropertyKey<>(true);
     public static final PropertyModel.WritableIntPropertyKey UNGROUP_BAR_STATUS =
             new PropertyModel.WritableIntPropertyKey();
-    public static final PropertyModel.WritableIntPropertyKey DIALOG_BACKGROUND_RESOUCE_ID =
+    public static final PropertyModel.WritableIntPropertyKey DIALOG_BACKGROUND_RESOURCE_ID =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel
             .WritableIntPropertyKey DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID =
@@ -52,8 +52,8 @@ class TabGridPanelProperties {
      * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
      * the same value.
      */
-    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
-            new PropertyModel.WritableObjectPropertyKey(true);
+    public static final PropertyModel.WritableObjectPropertyKey<Integer> INITIAL_SCROLL_INDEX =
+            new PropertyModel.WritableObjectPropertyKey<>(true);
     public static final PropertyModel.WritableBooleanPropertyKey IS_MAIN_CONTENT_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel
@@ -73,7 +73,7 @@ class TabGridPanelProperties {
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
             IS_DIALOG_VISIBLE, SCRIMVIEW_CLICK_RUNNABLE, ANIMATION_SOURCE_VIEW, UNGROUP_BAR_STATUS,
-            DIALOG_BACKGROUND_RESOUCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
+            DIALOG_BACKGROUND_RESOURCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
             DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
             INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE, MENU_CLICK_LISTENER, TITLE_TEXT_WATCHER,
             TITLE_TEXT_ON_FOCUS_LISTENER, TITLE_CURSOR_VISIBILITY, IS_TITLE_TEXT_FOCUSED,

@@ -69,6 +69,7 @@ struct DateTimeChooserParameters {
   bool has_ampm;
   bool has_second;
   bool has_millisecond;
+  int focused_field_index;
 
  private:
   // DateTimeSuggestionPtr is not copyable.

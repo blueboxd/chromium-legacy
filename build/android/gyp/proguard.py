@@ -251,12 +251,14 @@ def _OptimizeWithR8(options,
       base_dex_context = _DexPathContext('base', options.output_path,
                                          options.input_paths, tmp_output)
 
-    cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+    cmd = [
+        build_utils.JAVA_PATH,
         '-Dcom.android.tools.r8.allowTestProguardOptions=1',
     ]
     if options.disable_outlining:
-      cmd += ['-Dcom.android.tools.r8.disableOutlining=1']
+      cmd += [' -Dcom.android.tools.r8.disableOutlining=1']
     cmd += [
+        '-Xmx1G',
         '-cp',
         options.r8_path,
         'com.android.tools.r8.R8',

@@ -33,6 +33,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -153,6 +154,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/1119548")
     public void testAbortFirstRun() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://test.com"));
         intent.setPackage(mContext.getPackageName());

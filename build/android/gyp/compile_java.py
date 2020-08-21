@@ -395,7 +395,8 @@ def _OnStaleMd5(options, javac_cmd, javac_args, java_files):
       raise Exception('--enable-kythe-annotations requires '
                       'KYTHE_ROOT_DIRECTORY and KYTHE_OUTPUT_DIRECTORY '
                       'environment variables to be set.')
-    javac_extractor_cmd = build_utils.JavaCmd() + [
+    javac_extractor_cmd = [
+        build_utils.JAVA_PATH,
         '-jar',
         _JAVAC_EXTRACTOR,
     ]

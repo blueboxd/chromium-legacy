@@ -52,6 +52,12 @@ gfx::Vector2d GetMouseWheelOffset(const MSG& native_event) {
   return GetMouseWheelOffsetFromMSG(native_event);
 }
 
+gfx::Vector2d GetMouseWheelTick120ths(const MSG& native_event) {
+  // On Windows, the wheel offset is already in 120ths of a tick
+  // (https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-mousewheel).
+  return GetMouseWheelOffsetFromMSG(native_event);
+}
+
 MSG CopyNativeEvent(const MSG& event) {
   return CopyMSGEvent(event);
 }

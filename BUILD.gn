@@ -952,6 +952,8 @@ if (is_chromeos) {
         "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
         "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
+        "//media/gpu:video_encode_accelerator_perf_tests",
+        "//media/gpu:video_encode_accelerator_tests",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
       if (use_vaapi) {

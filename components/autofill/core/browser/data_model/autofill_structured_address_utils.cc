@@ -26,6 +26,16 @@
 namespace autofill {
 namespace structured_address {
 
+SortedTokenComparisonResult::SortedTokenComparisonResult(
+    SortedTokenComparisonStatus status,
+    std::vector<AddressToken> additional_tokens)
+    : status(status), additional_tokens(additional_tokens) {}
+
+SortedTokenComparisonResult::~SortedTokenComparisonResult() = default;
+
+SortedTokenComparisonResult::SortedTokenComparisonResult(
+    const SortedTokenComparisonResult& other) = default;
+
 bool StructuredNamesEnabled() {
   return base::FeatureList::IsEnabled(
       features::kAutofillEnableSupportForMoreStructureInNames);
@@ -241,41 +251,87 @@ bool AreStringTokenEquivalent(const base::string16& one,
   return AreSortedTokensEqual(TokenizeValue(one), TokenizeValue(other));
 }
 
-bool AreSortedTokensEqual(const std::vector<base::string16>& first,
-                          const std::vector<base::string16>& second) {
-  // It is assumed that the vectors are sorted.
-  DCHECK(std::is_sorted(first.begin(), first.end()) &&
-         std::is_sorted(second.begin(), second.end()));
-  // If there is a different number of tokens, it can't be a permutation.
-  if (first.size() != second.size())
-    return false;
-  // Return true if both vectors are component-wise equal.
-  return std::equal(first.begin(), first.end(), second.begin());
+SortedTokenComparisonResult CompareSortedTokens(
+    const std::vector<AddressToken>& first,
+    const std::vector<AddressToken>& second) {
+  // Lambda to compare the normalized values of two AddressTokens.
+  auto cmp_normalized = [](const auto& a, const auto& b) {
+    return a.normalized_value < b.normalized_value;
+  };
+
+  // Verify that the two multi sets are sorted.
+  DCHECK(std::is_sorted(first.begin(), first.end(), cmp_normalized) &&
+         std::is_sorted(second.begin(), second.end(), cmp_normalized));
+
+  bool is_supserset = std::includes(first.begin(), first.end(), second.begin(),
+                                    second.end(), cmp_normalized);
+  bool is_subset = std::includes(second.begin(), second.end(), first.begin(),
+                                 first.end(), cmp_normalized);
+
+  // If first is both a superset and a subset it is the same.
+  if (is_supserset && is_subset)
+    return SortedTokenComparisonResult(MATCH);
+
+  // If it is neither, both are distinct.
+  if (!is_supserset && !is_subset)
+    return SortedTokenComparisonResult(DISTINCT);
+
+  std::vector<AddressToken> additional_tokens;
+
+  // Collect the additional tokens from the superset.
+  // Note, that the superset property is already assured.
+  std::set_symmetric_difference(
+      first.begin(), first.end(), second.begin(), second.end(),
+      std::back_inserter(additional_tokens), cmp_normalized);
+
+  if (is_supserset) {
+    return SortedTokenComparisonResult(additional_tokens.size() == 1
+                                           ? SINGLE_TOKEN_SUPERSET
+                                           : MULTI_TOKEN_SUPERSET,
+                                       additional_tokens);
+  }
+
+  return SortedTokenComparisonResult(
+      additional_tokens.size() == 1 ? SINGLE_TOKEN_SUBSET : MULTI_TOKEN_SUBSET,
+      additional_tokens);
 }
 
-std::vector<base::string16> TokenizeValue(const base::string16 value) {
-  // Canonicalize the value.
-  base::string16 cannonicalized_value = NormalizeValue(value);
+bool AreSortedTokensEqual(const std::vector<AddressToken>& first,
+                          const std::vector<AddressToken>& second) {
+  return CompareSortedTokens(first, second).status == MATCH;
+}
+
+std::vector<AddressToken> TokenizeValue(const base::string16 value) {
+  std::vector<AddressToken> tokens;
+  int index = 0;
 
   // CJK names are a special case and are tokenized by character without the
   // separators.
-  std::vector<base::string16> tokens;
   if (HasCjkNameCharacteristics(base::UTF16ToUTF8(value))) {
     tokens.reserve(value.size());
     for (size_t i = 0; i < value.size(); i++) {
       base::string16 cjk_separators = base::UTF8ToUTF16("・·　 ");
       if (cjk_separators.find(value.substr(i, 1)) == base::string16::npos) {
-        tokens.emplace_back(value.substr(i, 1));
+        tokens.emplace_back(AddressToken{.value = value.substr(i, 1),
+                                         .normalized_value = value.substr(i, 1),
+                                         .position = index++});
       }
     }
   } else {
     // Split it by white spaces and commas into non-empty values.
-    tokens =
-        base::SplitString(cannonicalized_value, base::ASCIIToUTF16(", "),
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& token :
+         base::SplitString(value, base::ASCIIToUTF16(", "),
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+      tokens.emplace_back(
+          AddressToken{.value = token,
+                       .normalized_value = NormalizeValue(token),
+                       .position = index++});
+    }
   }
-  // Sort the tokens lexicographically.
-  std::sort(tokens.begin(), tokens.end());
+  // Sort the tokens lexicographically by their normalized value.
+  std::sort(tokens.begin(), tokens.end(), [](const auto& a, const auto& b) {
+    return a.normalized_value < b.normalized_value;
+  });
 
   return tokens;
 }

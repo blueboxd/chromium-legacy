@@ -49,6 +49,9 @@ void WebLayerBrowserTest::PreRunTestOnMainThread() {
       static_cast<BrowserContextImpl*>(browser_context);
   browser_context_impl->profile_impl()->SetDownloadDirectory(
       browser_context->GetPath());
+  // Accessing a browser context may involve storage partition initialization.
+  // Wait for the initialization to be completed.
+  base::RunLoop().RunUntilIdle();
 }
 
 void WebLayerBrowserTest::PostRunTestOnMainThread() {

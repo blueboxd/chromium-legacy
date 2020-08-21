@@ -40,6 +40,11 @@ const base::Feature kAllowDisableMouseAcceleration{
     "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Always reinstall system web apps, instead of only doing so after version
+// upgrade or locale changes.
+const base::Feature kAlwaysReinstallSystemWebApps{
+    "ReinstallSystemWebApps", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 const base::Feature kAndroidDarkSearch{"AndroidDarkSearch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

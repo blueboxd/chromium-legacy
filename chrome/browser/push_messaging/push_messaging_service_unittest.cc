@@ -14,12 +14,14 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/test/base/testing_profile.h"
@@ -29,6 +31,7 @@
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/permissions/permission_manager.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
@@ -144,6 +147,67 @@ class PushMessagingServiceTest : public ::testing::Test {
     *payload_out = std::move(payload);
   }
 
+  class TestPushSubscription {
+   public:
+    std::string subscription_id_;
+    GURL endpoint_;
+    base::Optional<base::Time> expiration_time_;
+    std::vector<uint8_t> p256dh_;
+    std::vector<uint8_t> auth_;
+    TestPushSubscription(const std::string& subscription_id,
+                         const GURL& endpoint,
+                         const base::Optional<base::Time>& expiration_time,
+                         const std::vector<uint8_t>& p256dh,
+                         const std::vector<uint8_t>& auth)
+        : subscription_id_(subscription_id),
+          endpoint_(endpoint),
+          expiration_time_(expiration_time),
+          p256dh_(p256dh),
+          auth_(auth) {}
+    TestPushSubscription() = default;
+  };
+
+  void Subscribe(PushMessagingServiceImpl* push_service,
+                 const GURL& origin,
+                 TestPushSubscription* subscription = nullptr) {
+    std::string subscription_id;
+    GURL endpoint;
+    base::Optional<base::Time> expiration_time;
+    std::vector<uint8_t> p256dh, auth;
+
+    base::RunLoop run_loop;
+
+    auto options = blink::mojom::PushSubscriptionOptions::New();
+    options->user_visible_only = true;
+    options->application_server_key = std::vector<uint8_t>(
+        kTestSenderId,
+        kTestSenderId + sizeof(kTestSenderId) / sizeof(char) - 1);
+
+    push_service->SubscribeFromWorker(
+        origin, kTestServiceWorkerId, std::move(options),
+        base::BindOnce(&PushMessagingServiceTest::DidRegister,
+                       base::Unretained(this), &subscription_id, &endpoint,
+                       &expiration_time, &p256dh, &auth,
+                       run_loop.QuitClosure()));
+
+    EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
+
+    run_loop.Run();
+
+    ASSERT_GT(subscription_id.size(), 0u);
+    ASSERT_TRUE(endpoint.is_valid());
+    ASSERT_GT(endpoint.spec().size(), 0u);
+    ASSERT_GT(p256dh.size(), 0u);
+    ASSERT_GT(auth.size(), 0u);
+
+    if (subscription) {
+      subscription->subscription_id_ = subscription_id;
+      subscription->endpoint_ = endpoint;
+      subscription->p256dh_ = p256dh;
+      subscription->auth_ = auth;
+    }
+  }
+
  protected:
   PushMessagingTestingProfile* profile() { return &profile_; }
 
@@ -167,36 +231,10 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
             push_service->GetPermissionStatus(origin, true));
 
-  std::string subscription_id;
-  GURL endpoint;
-  base::Optional<base::Time> expiration_time;
-  std::vector<uint8_t> p256dh, auth;
-
-  base::RunLoop run_loop;
-
   // (2) Subscribe for Push Messaging, and verify that we've got the required
   // information in order to be able to create encrypted messages.
-  auto options = blink::mojom::PushSubscriptionOptions::New();
-  options->user_visible_only = true;
-  options->application_server_key = std::vector<uint8_t>(
-      kTestSenderId, kTestSenderId + sizeof(kTestSenderId) / sizeof(char) - 1);
-
-  push_service->SubscribeFromWorker(
-      origin, kTestServiceWorkerId, std::move(options),
-      base::BindOnce(&PushMessagingServiceTest::DidRegister,
-                     base::Unretained(this), &subscription_id, &endpoint,
-                     &expiration_time, &p256dh, &auth, run_loop.QuitClosure()));
-
-  EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
-
-  run_loop.Run();
-
-  ASSERT_GT(subscription_id.size(), 0u);
-  ASSERT_TRUE(endpoint.is_valid());
-  ASSERT_GT(endpoint.spec().size(), 0u);
-  ASSERT_GT(p256dh.size(), 0u);
-  ASSERT_GT(auth.size(), 0u);
-  ASSERT_EQ(expiration_time, base::nullopt);
+  TestPushSubscription subscription;
+  Subscribe(push_service, origin, &subscription);
 
   // (3) Encrypt a message using the public key and authentication secret that
   // are associated with the subscription.
@@ -206,8 +244,10 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   ASSERT_TRUE(gcm::CreateEncryptedPayloadForTesting(
       kTestPayload,
-      base::StringPiece(reinterpret_cast<char*>(p256dh.data()), p256dh.size()),
-      base::StringPiece(reinterpret_cast<char*>(auth.data()), auth.size()),
+      base::StringPiece(reinterpret_cast<char*>(subscription.p256dh_.data()),
+                        subscription.p256dh_.size()),
+      base::StringPiece(reinterpret_cast<char*>(subscription.auth_.data()),
+                        subscription.auth_.size()),
       &message));
 
   ASSERT_GT(message.raw_data.size(), 0u);
@@ -270,4 +310,48 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
   p256dh[0] = 0x05;  // invalidate |p256dh| as a public key.
 
   EXPECT_EQ(p256dh, push_service->NormalizeSenderInfo(p256dh));
+}
+
+TEST_F(PushMessagingServiceTest, RemoveExpiredSubscriptions) {
+  // (1) Enable push subscriptions with expiration time and
+  // `pushsubscriptionchange` events
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      /* enabled features */
+      {features::kPushSubscriptionWithExpirationTime,
+       features::kPushSubscriptionChangeEvent},
+      /* disabled features */
+      {});
+
+  // (2) Set up push service and test origin
+  PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
+  ASSERT_TRUE(push_service);
+  const GURL origin(kTestOrigin);
+
+  // (3) Subscribe origin to push service and find corresponding
+  // |app_identifier|
+  Subscribe(push_service, origin);
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(profile(), origin,
+                                                      kTestServiceWorkerId);
+  ASSERT_FALSE(app_identifier.is_null());
+
+  // (4) Manually set the time as expired, save the time in preferences
+  app_identifier.set_expiration_time(base::Time::UnixEpoch());
+  app_identifier.PersistToPrefs(profile());
+  ASSERT_EQ(1u, PushMessagingAppIdentifier::GetCount(profile()));
+
+  // (3) Remove all expired subscriptions
+  base::RunLoop run_loop;
+  push_service->SetRemoveExpiredSubscriptionsCallbackForTesting(
+      run_loop.QuitClosure());
+  push_service->RemoveExpiredSubscriptions();
+  run_loop.Run();
+
+  // (5) We expect the subscription to be deleted
+  ASSERT_EQ(0u, PushMessagingAppIdentifier::GetCount(profile()));
+  PushMessagingAppIdentifier deleted_identifier =
+      PushMessagingAppIdentifier::FindByAppId(profile(),
+                                              app_identifier.app_id());
+  EXPECT_TRUE(deleted_identifier.is_null());
 }

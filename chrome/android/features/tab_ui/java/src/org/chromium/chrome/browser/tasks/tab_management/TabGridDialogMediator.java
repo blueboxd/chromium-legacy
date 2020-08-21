@@ -192,7 +192,7 @@ public class TabGridDialogMediator {
                         ? R.style.TextAppearance_TextMediumThick_Blue_Light
                         : R.style.TextAppearance_TextMediumThick_Blue;
 
-                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID,
+                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID,
                         dialogBackgroundResource);
                 mModel.set(TabGridPanelProperties.TINT, tintList);
                 mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,

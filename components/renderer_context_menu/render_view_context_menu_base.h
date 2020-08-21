@@ -163,7 +163,7 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   virtual void AppendPlatformEditableItems() {}
 
   // May return nullptr if the frame was deleted while the menu was open.
-  content::RenderFrameHost* GetRenderFrameHost();
+  content::RenderFrameHost* GetRenderFrameHost() const;
 
   bool IsCustomItemChecked(int id) const;
   bool IsCustomItemEnabled(int id) const;

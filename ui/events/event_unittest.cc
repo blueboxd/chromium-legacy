@@ -789,6 +789,16 @@ TEST(EventTest, MouseWheelEventLatencyUIComponentExists) {
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, nullptr));
 }
 
+TEST(EventTest, MouseWheelEventLinearTickCalculation) {
+  const gfx::Point origin;
+  MouseWheelEvent mouse_wheel_ev(
+      gfx::Vector2d(-2 * MouseWheelEvent::kWheelDelta,
+                    MouseWheelEvent::kWheelDelta),
+      origin, origin, EventTimeForNow(), 0, 0);
+  EXPECT_EQ(mouse_wheel_ev.tick_120ths().x(), -240);
+  EXPECT_EQ(mouse_wheel_ev.tick_120ths().y(), 120);
+}
+
 // Checks that Event.Latency.OS.TOUCH_PRESSED, TOUCH_MOVED,
 // and TOUCH_RELEASED histograms are computed properly.
 #if defined(USE_X11)

@@ -295,7 +295,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(
                 normalResourceId, mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());
 
-        mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID, incognitoResourceId);
+        mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID, incognitoResourceId);
 
         Assert.assertEquals(incognitoResourceId,
                 mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());

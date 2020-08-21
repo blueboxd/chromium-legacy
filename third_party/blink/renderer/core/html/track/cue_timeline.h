@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_CUE_TIMELINE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_CUE_TIMELINE_H_
 
+#include "base/optional.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/core/html/track/text_track_cue.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -30,22 +32,46 @@ typedef Vector<CueInterval> CueList;
 // with TextTracks. Owned by a HTMLMediaElement.
 class CueTimeline final : public GarbageCollected<CueTimeline> {
  public:
-  CueTimeline(HTMLMediaElement&);
+  class IgnoreUpdateScope {
+    STACK_ALLOCATED();
+    friend CueTimeline;
+
+   public:
+    ~IgnoreUpdateScope() {
+      DCHECK(cue_timeline_);
+      cue_timeline_->EndIgnoreUpdateScope(util::PassKey<IgnoreUpdateScope>(),
+                                          *this);
+    }
+
+   private:
+    explicit IgnoreUpdateScope(CueTimeline& cue_timeline)
+        : cue_timeline_(&cue_timeline) {}
+
+    CueTimeline* cue_timeline_;
+  };
+
+  explicit CueTimeline(HTMLMediaElement&);
 
   void AddCues(TextTrack*, const TextTrackCueList*);
   void AddCue(TextTrack*, TextTrackCue*);
   void RemoveCues(TextTrack*, const TextTrackCueList*);
   void RemoveCue(TextTrack*, TextTrackCue*);
-
   void HideCues(TextTrack*, const TextTrackCueList*);
 
-  void UpdateActiveCues(double);
-
-  bool IgnoreUpdateRequests() const { return ignore_update_ > 0; }
-  void BeginIgnoringUpdateRequests();
-  void EndIgnoringUpdateRequests();
-
   const CueList& CurrentlyActiveCues() const { return currently_active_cues_; }
+
+  // Methods called by |HTMLMediaElement| which affect cue playback.
+  void InvokeTimeMarchesOn();
+  void OnPause();
+  void OnPlaybackRateUpdated();
+  void OnReadyStateReset();
+
+  bool InsideIgnoreUpdateScope() const { return ignore_update_ > 0; }
+  IgnoreUpdateScope BeginIgnoreUpdateScope();
+  void EndIgnoreUpdateScope(util::PassKey<IgnoreUpdateScope>,
+                            IgnoreUpdateScope const& scope);
+
+  void DidMoveToNewDocument(Document& old_document);
 
   void Trace(Visitor*) const;
 
@@ -54,6 +80,16 @@ class CueTimeline final : public GarbageCollected<CueTimeline> {
 
   void AddCueInternal(TextTrackCue*);
   void RemoveCueInternal(TextTrackCue*);
+  void TimeMarchesOn();
+  void UpdateActiveCuePastAndFutureNodes();
+
+  void CueEventTimerFired(TimerBase*);
+  void SetCueEventTimer();
+  void CancelCueEventTimer();
+
+  void CueTimestampEventTimerFired(TimerBase*);
+  void SetCueTimestampEventTimer();
+  void CancelCueTimestampEventTimer();
 
   Member<HTMLMediaElement> media_element_;
 
@@ -62,24 +98,16 @@ class CueTimeline final : public GarbageCollected<CueTimeline> {
   CueList currently_active_cues_;
   double last_update_time_;
 
+  // Timer data for cue events (start, end)
+  base::Optional<double> next_cue_event_;
+  TaskRunnerTimer<CueTimeline> cue_event_timer_;
+
+  // Timer data for cue timestamps
+  // https://w3c.github.io/webvtt/#ref-for-webvtt-timestamp-6
+  TaskRunnerTimer<CueTimeline> cue_timestamp_event_timer_;
+
   int ignore_update_;
-};
-
-class TrackDisplayUpdateScope {
-  STACK_ALLOCATED();
-
- public:
-  TrackDisplayUpdateScope(CueTimeline& cue_timeline)
-      : cue_timeline_(&cue_timeline) {
-    cue_timeline_->BeginIgnoringUpdateRequests();
-  }
-  ~TrackDisplayUpdateScope() {
-    DCHECK(cue_timeline_);
-    cue_timeline_->EndIgnoringUpdateRequests();
-  }
-
- private:
-  CueTimeline* cue_timeline_;
+  bool update_requested_while_ignoring_;
 };
 
 }  // namespace blink

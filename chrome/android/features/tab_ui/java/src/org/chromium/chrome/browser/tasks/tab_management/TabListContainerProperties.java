@@ -22,8 +22,8 @@ class TabListContainerProperties {
      * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
      * the same value.
      */
-    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
-            new PropertyModel.WritableObjectPropertyKey(true);
+    public static final PropertyModel.WritableObjectPropertyKey<Integer> INITIAL_SCROLL_INDEX =
+            new PropertyModel.WritableObjectPropertyKey<>(true);
 
     public static final PropertyModel.WritableBooleanPropertyKey ANIMATE_VISIBILITY_CHANGES =
             new PropertyModel.WritableBooleanPropertyKey();

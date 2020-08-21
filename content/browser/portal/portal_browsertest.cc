@@ -2368,7 +2368,14 @@ class PortalPixelBrowserTest : public PortalBrowserTest {
 // embedder page. Both page scales should be accounted for so the pattern in
 // the portal should appear the correct size (4x4 checkerboard tiles) as well
 // as be re-rastered for the embedder's zoom so it should appear crisp.
-IN_PROC_BROWSER_TEST_F(PortalPixelBrowserTest, PageScaleRaster) {
+//
+// Flaky on Android: https://crbug.com/1120213
+#if defined(OS_ANDROID)
+#define MAYBE_PageScaleRaster DISABLED_PageScaleRaster
+#else
+#define MAYBE_PageScaleRaster PageScaleRaster
+#endif
+IN_PROC_BROWSER_TEST_F(PortalPixelBrowserTest, MAYBE_PageScaleRaster) {
   ShellContentBrowserClient::Get()->set_override_web_preferences_callback(
       base::BindRepeating([](WebPreferences* prefs) {
         // Enable processing of the viewport <meta> tag in the same way the

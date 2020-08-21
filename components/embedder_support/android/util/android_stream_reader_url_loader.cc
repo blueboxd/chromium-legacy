@@ -145,12 +145,11 @@ void AndroidStreamReaderURLLoader::SetPriority(net::RequestPriority priority,
 void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}
 void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 
-void AndroidStreamReaderURLLoader::Start(bool cors_check) {
+void AndroidStreamReaderURLLoader::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (cors_check && reject_cors_request_ &&
-      response_head_->response_type ==
-          network::mojom::FetchResponseType::kCors) {
+  if (reject_cors_request_ && response_head_->response_type ==
+                                  network::mojom::FetchResponseType::kCors) {
     RequestCompleteWithStatus(
         network::URLLoaderCompletionStatus(network::CorsErrorStatus(
             network::mojom::CorsError::kCorsDisabledScheme)));

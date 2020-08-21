@@ -50,6 +50,9 @@ constexpr int kMinVisibleActionsForExpanding = 4;
 // press as a click.
 constexpr int kMinMovementSquaredToBeDragging = 10;
 
+// The height of the |MediaNotificationAudioDeviceSelectorView|.
+constexpr int kAudioDeviceSelectorViewHeight = 40;
+
 }  // anonymous namespace
 
 class MediaNotificationContainerImplView::DismissButton
@@ -125,8 +128,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       !is_cast_notification) {
     auto audio_device_selector_view =
         std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-            this, service_, audio_sink_id_, foreground_color_,
-            background_color_);
+            this, service_, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight),
+            audio_sink_id_);
     audio_device_selector_view_ =
         AddChildView(std::move(audio_device_selector_view));
     view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
@@ -331,8 +334,6 @@ void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
     background_color_ = background;
     UpdateDismissButtonBackground();
   }
-  if (audio_device_selector_view_)
-    audio_device_selector_view_->OnColorsChanged(foreground, background);
 }
 
 void MediaNotificationContainerImplView::OnHeaderClicked() {
@@ -483,8 +484,6 @@ void MediaNotificationContainerImplView::OnSizeChanged() {
     DCHECK(audio_device_selector_view_size.width() == kWidth);
     new_size.set_height(new_size.height() +
                         audio_device_selector_view_size.height());
-    view_->UpdateAudioDeviceSelectorAvailability(
-        audio_device_selector_view_->GetVisible());
   }
 
   if (overlay_)

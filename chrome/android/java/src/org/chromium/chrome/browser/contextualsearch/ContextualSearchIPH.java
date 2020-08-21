@@ -157,6 +157,9 @@ public class ContextualSearchIPH {
                     stringId = R.string.contextual_search_iph_touch_and_hold;
                 }
                 break;
+            case FeatureConstants.CONTEXTUAL_SEARCH_TRANSLATION_ENABLE_FEATURE:
+                stringId = R.string.contextual_search_iph_enable;
+                break;
         }
 
         assert stringId != 0;

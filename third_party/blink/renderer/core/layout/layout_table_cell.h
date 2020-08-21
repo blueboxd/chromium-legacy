@@ -363,6 +363,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow,
 
   MinMaxSizes PreferredLogicalWidths() const override;
 
+  void UpdateStyleWritingModeFromRow(const LayoutObject* row);
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 

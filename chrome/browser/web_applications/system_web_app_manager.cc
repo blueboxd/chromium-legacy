@@ -734,6 +734,12 @@ void SystemWebAppManager::OnAppsSynchronized(
 }
 
 bool SystemWebAppManager::NeedsUpdate() const {
+  if (base::FeatureList::IsEnabled(features::kAlwaysReinstallSystemWebApps))
+    return true;
+
+  if (update_policy_ == UpdatePolicy::kAlwaysUpdate)
+    return true;
+
   base::Version current_installed_version(
       pref_service_->GetString(prefs::kSystemWebAppLastUpdateVersion));
 
@@ -749,17 +755,7 @@ bool SystemWebAppManager::NeedsUpdate() const {
   // are in sync with current language.
   const bool localeIsDifferent = current_installed_locale != CurrentLocale();
 
-  const bool should_update = versionIsDifferent || localeIsDifferent;
-
-  if (should_update) {
-    return true;
-  }
-
-  if (update_policy_ == UpdatePolicy::kAlwaysUpdate) {
-    return true;
-  }
-
-  return false;
+  return versionIsDifferent || localeIsDifferent;
 }
 
 void SystemWebAppManager::UpdateLastAttemptedInfo() {

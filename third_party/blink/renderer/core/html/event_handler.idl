@@ -7,5 +7,5 @@
 // This definition is different from standard in order to handle special types
 // (OnErrorEventHandler, OnBeforeUnloadEventHandler) in the same type with
 // regular EventHandler.
-[TreatNonObjectAsNull]
+[LegacyTreatNonObjectAsNull]
 callback EventHandlerNonNull = any (any... args);

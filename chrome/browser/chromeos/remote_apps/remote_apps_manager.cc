@@ -34,6 +34,28 @@ namespace chromeos {
 
 namespace {
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("remote_apps_image_downloader", R"(
+        semantics {
+          sender: "Remote Apps Manager"
+          description: "Fetches icons for Remote Apps."
+          trigger:
+            "Triggered when a Remote App is added to the ChromeOS launcher. "
+            "Remote Apps can only be added by allowlisted extensions "
+            "installed by enterprise policy."
+          data: "No user data."
+          destination: OTHER
+          destination_other: "Icon URL of the Remote App"
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This request cannot be disabled."
+          policy_exception_justification:
+            "This request is only performed by allowlisted extensions "
+            "installed by enterprise policy."
+        }
+      )");
+
 class ImageDownloaderImpl : public RemoteAppsManager::ImageDownloader {
  public:
   ImageDownloaderImpl() = default;
@@ -44,9 +66,7 @@ class ImageDownloaderImpl : public RemoteAppsManager::ImageDownloader {
   void Download(const GURL& url, DownloadCallback callback) override {
     ash::ImageDownloader* image_downloader = ash::ImageDownloader::Get();
     DCHECK(image_downloader);
-    // TODO(jityao): Set traffic annotation.
-    image_downloader->Download(url, NO_TRAFFIC_ANNOTATION_YET,
-                               std::move(callback));
+    image_downloader->Download(url, kTrafficAnnotation, std::move(callback));
   }
 };
 

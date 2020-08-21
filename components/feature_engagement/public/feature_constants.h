@@ -42,6 +42,7 @@ extern const base::Feature kIPHChromeDuetSearchFeature;
 extern const base::Feature kIPHChromeDuetTabSwitcherFeature;
 extern const base::Feature kIPHChromeHomeExpandFeature;
 extern const base::Feature kIPHChromeHomePullToRefreshFeature;
+extern const base::Feature kIPHContextualSearchTranslationEnableFeature;
 extern const base::Feature kIPHContextualSearchWebSearchFeature;
 extern const base::Feature kIPHContextualSearchPromoteTapFeature;
 extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;

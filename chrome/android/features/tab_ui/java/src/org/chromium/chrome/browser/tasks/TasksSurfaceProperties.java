@@ -39,35 +39,34 @@ public class TasksSurfaceProperties {
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<View.OnClickListener>
             INCOGNITO_COOKIE_CONTROLS_ICON_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableBooleanPropertyKey INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<OnCheckedChangeListener>
             INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<OnCheckedChangeListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableIntPropertyKey INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<IncognitoCookieControlsManager>
-            INCOGNITO_COOKIE_CONTROLS_MANAGER =
-            new PropertyModel.WritableObjectPropertyKey<IncognitoCookieControlsManager>();
+            INCOGNITO_COOKIE_CONTROLS_MANAGER = new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> INCOGNITO_LEARN_MORE_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> FAKE_SEARCH_BOX_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<TextWatcher> FAKE_SEARCH_BOX_TEXT_WATCHER =
-            new PropertyModel.WritableObjectPropertyKey<TextWatcher>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> MORE_TABS_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableBooleanPropertyKey MV_TILES_VISIBLE = IS_VISIBLE;
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> VOICE_SEARCH_BUTTON_CLICK_LISTENER =
-            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableIntPropertyKey TASKS_SURFACE_BODY_TOP_MARGIN =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey MV_TILES_CONTAINER_TOP_MARGIN =

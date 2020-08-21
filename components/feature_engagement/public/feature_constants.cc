@@ -52,6 +52,8 @@ const base::Feature kIPHChromeHomeExpandFeature{
     "IPH_ChromeHomeExpand", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomePullToRefreshFeature{
     "IPH_ChromeHomePullToRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHContextualSearchTranslationEnableFeature{
+    "IPH_ContextualSearchTranslationEnable", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHContextualSearchWebSearchFeature{
     "IPH_ContextualSearchWebSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHContextualSearchPromoteTapFeature{

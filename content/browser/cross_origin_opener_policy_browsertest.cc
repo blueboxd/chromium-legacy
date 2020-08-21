@@ -1908,19 +1908,8 @@ class CoopReportingOriginTrialBrowserTest : public ContentBrowserTest {
 
   // Origin Trials key generated with:
   //
-  // tools/origin_trials/generate_token.py https://coop.security:9999
-  // CrossOriginOpenerPolicyReporting --version=3 --expire-timestamp=2029708007
-  //
-  // Token details:
-  //   Version: 3
-  //   Origin: https://coop.security:9999
-  //   Is Subdomain: None
-  //   Is Third Party: None
-  //   Usage Restriction: None
-  //   Feature: CrossOriginOpenerPolicyReporting
-  //   Expiry: 2029708007 (2034-04-26 23:46:47 UTC)
-  //   Signature (Base64): lTh1cb2ViGEtK6YOZc05uu3nEnRdWlJ/D/Dur4xjM7OI2cd9yXVlK
-  //                       GMqN5zIRzcTm8O0dX7CIsxuq6QvCGzyAg==
+  // tools/origin_trials/generate_token.py --expire-days 5000 --version 3
+  // https://coop.security:9999 CrossOriginOpenerPolicyReporting
   static std::string OriginTrialToken() {
     return "A5U4dXG9lYhhLSumDmXNObrt5xJ0XVpSfw/"
            "w7q+MYzOziNnHfcl1ZShjKjecyEc3E5vDtHV+"
@@ -1962,13 +1951,6 @@ class CoopReportingOriginTrialBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) final {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-
-    // TODO(https://crbug.com/1119555): Remove this once fixed.
-    // This test relies on the origin-trial's public key to continue to be set
-    // to the default test value. Overriding it would break the test.
-    CHECK(!command_line->HasSwitch("origin-trial-public-key") ||
-          command_line->GetSwitchValueASCII("origin-trial-public-key") ==
-              "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=");
   }
 
  private:
@@ -2006,8 +1988,9 @@ IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
             network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
 }
 
+// TODO(http://crbug.com/1119555): Flaky on android-bfcache-rel.
 IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
-                       CoopStateWithToken) {
+                       DISABLED_CoopStateWithToken) {
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url != OriginTrialURL())
@@ -2035,8 +2018,9 @@ IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
             network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
 }
 
+// TODO(http://crbug.com/1119555): Flaky on android-bfcache-rel.
 IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
-                       AccessReportingWithoutToken) {
+                       DISABLED_AccessReportingWithoutToken) {
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url != OriginTrialURL())

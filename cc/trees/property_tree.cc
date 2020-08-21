@@ -179,6 +179,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateSnapping(node);
   UpdateTransformChanged(node, parent_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
+  UpdateNodeOrAncestorsWillChangeTransform(node, parent_node);
 
   DCHECK(!node->needs_local_transform_update);
 }
@@ -542,6 +543,16 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
     is_invertible = false;
   node->node_and_ancestors_are_animated_or_invertible =
       node->has_potential_animation || is_invertible;
+}
+
+void TransformTree::UpdateNodeOrAncestorsWillChangeTransform(
+    TransformNode* node,
+    TransformNode* parent_node) {
+  node->node_or_ancestors_will_change_transform = node->will_change_transform;
+  if (parent_node) {
+    node->node_or_ancestors_will_change_transform |=
+        parent_node->node_or_ancestors_will_change_transform;
+  }
 }
 
 void TransformTree::SetRootScaleAndTransform(

@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
         FeatureConstants.EPHEMERAL_TAB_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
         FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
+        FeatureConstants.CONTEXTUAL_SEARCH_TRANSLATION_ENABLE_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE,
@@ -64,6 +65,12 @@ public @interface FeatureConstants {
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
     String EXPLORE_SITES_TILE_FEATURE = "IPH_ExploreSitesTile";
+
+    /**
+     * An IPH feature that encourages users to get better translations by enabling access to page
+     * content.
+     */
+    String CONTEXTUAL_SEARCH_TRANSLATION_ENABLE_FEATURE = "IPH_ContextualSearchTranslationEnable";
 
     /**
      * An IPH feature that encourages users who search a query from a web page in a new tab, to use

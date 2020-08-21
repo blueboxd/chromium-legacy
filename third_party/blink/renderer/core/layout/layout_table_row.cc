@@ -64,6 +64,14 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
   DCHECK_EQ(StyleRef().Display(), EDisplay::kTableRow);
 
+  // Legacy tables cannont handle relative/fixed rows.
+  if (StyleRef().HasInFlowPosition()) {
+    scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+    new_style->SetPosition(EPosition::kStatic);
+    SetModifiedStyleOutsideStyleRecalc(new_style,
+                                       LayoutObject::ApplyStyleChanges::kNo);
+  }
+
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
   PropagateStyleToAnonymousChildren();
 
@@ -180,6 +188,12 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
 
   LayoutTableCell* cell = To<LayoutTableCell>(child);
 
+  // In Legacy tables, cell writing mode must match row writing mode.
+  // This adjustment is performed here because is LayoutObject type is
+  // unknown in style_adjuster.cc::AdjustStyleForDisplay
+  if (cell->StyleRef().GetWritingMode() != StyleRef().GetWritingMode()) {
+    cell->UpdateStyleWritingModeFromRow(this);
+  }
   DCHECK(!before_child || before_child->IsTableCell());
   LayoutTableBoxComponent::AddChild(cell, before_child);
 

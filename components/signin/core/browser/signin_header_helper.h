@@ -114,6 +114,9 @@ struct DiceResponseParams {
     AccountInfo account_info;
     // Authorization code to fetch a refresh token.
     std::string authorization_code;
+    // Whether Dice response contains the 'no_authorization_code' header value.
+    // If true then LSO was unavailable for provision of auth code.
+    bool no_authorization_code = false;
   };
 
   // Parameters for the SIGNOUT action.

@@ -35,10 +35,6 @@ const base::Feature kWebViewExtraHeadersSameDomainOnly{
 const base::Feature kWebViewExtraHeadersSameOriginOnly{
     "WebViewExtraHeadersSameOriginOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Activate compatible origin checks for AndroidStreamReaderURLLoader.
-const base::Feature kWebViewOriginCheckForStreamReader{
-    "WebViewOriginCheckForStreamReader", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // A Feature used for WebView variations tests. Not used in production.
 const base::Feature kWebViewTestFeature{"WebViewTestFeature",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

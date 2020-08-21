@@ -4,6 +4,8 @@
 
 #include "ui/base/ui_base_features.h"
 
+#include "build/lacros_buildflags.h"
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -229,7 +231,7 @@ bool IsUsingOzonePlatform() {
   // Only allow enabling and disabling the OzonePlatform on USE_X11 && USE_OZONE
   // builds.
   static const bool using_ozone_platform =
-#if defined(USE_X11) && defined(USE_OZONE)
+#if defined(USE_X11) && defined(USE_OZONE) && !BUILDFLAG(IS_LACROS)
       base::FeatureList::IsEnabled(kUseOzonePlatform);
 #elif defined(USE_X11) && !defined(USE_OZONE)
       // This shouldn't be switchable for pure X11 builds.

@@ -828,6 +828,12 @@ bool PictureLayerImpl::UpdateCanUseLCDText(
   return true;
 }
 
+bool PictureLayerImpl::HasWillChangeTransformHint() const {
+  TransformNode* transform_node =
+      GetTransformTree().Node(transform_tree_index());
+  return transform_node && transform_node->will_change_transform;
+}
+
 LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason(
     bool raster_translation_aligns_pixels) const {
   // No need to use LCD text if there is no text.
@@ -858,7 +864,9 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason(
     return LCDTextDisallowedReason::kNonIntegralTranslation;
   }
 
-  if (has_will_change_transform_hint())
+  TransformNode* transform_node =
+      GetTransformTree().Node(transform_tree_index());
+  if (transform_node->node_or_ancestors_will_change_transform)
     return LCDTextDisallowedReason::kWillChangeTransform;
 
   if (screen_space_transform_is_animating())
@@ -1215,7 +1223,7 @@ bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTranslation(
   // Keep the non-ideal raster translation unchanged for transform animations
   // to avoid re-rasterization during animation.
   if (draw_properties().screen_space_transform_is_animating ||
-      has_will_change_transform_hint())
+      HasWillChangeTransformHint())
     return false;
   // Also avoid re-rasterization during pinch-zoom.
   if (layer_tree_impl()->PinchGestureActive())
@@ -1326,7 +1334,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
       // raster scales because this layer is a directly composited image.
       bool transform_trigger =
           draw_properties().screen_space_transform_is_animating ||
-          has_will_change_transform_hint();
+          HasWillChangeTransformHint();
       UMA_HISTOGRAM_BOOLEAN(
           "Compositing.Renderer.DirectlyCompositedImage."
           "AvoidRasterAdjustmentWithTransformTrigger",
@@ -1341,7 +1349,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
     // will-change: transform hint to preserve maximum resolution tiles
     // needed.
     if (draw_properties().screen_space_transform_is_animating ||
-        !has_will_change_transform_hint())
+        !HasWillChangeTransformHint())
       return true;
   }
 
@@ -1381,7 +1389,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
 
   // Don't update will-change: transform layers if the raster contents scale is
   // at least the native scale (otherwise, we'd need to clamp it).
-  if (has_will_change_transform_hint() &&
+  if (HasWillChangeTransformHint() &&
       raster_contents_scale_ >= raster_page_scale_ * raster_device_scale_) {
     return false;
   }
@@ -1539,7 +1547,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
     else
       animation_desired_scale = 1.f * ideal_page_scale_ * ideal_device_scale_;
 
-    if (has_will_change_transform_hint()) {
+    if (HasWillChangeTransformHint()) {
       // If we have a will-change: transform hint, do not shrink the content
       // raster scale, otherwise we will end up throwing away larger tiles we
       // may need again.
@@ -1551,7 +1559,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
   }
 
   // Clamp will-change: transform layers to be at least the native scale.
-  if (has_will_change_transform_hint()) {
+  if (HasWillChangeTransformHint()) {
     float min_desired_scale = raster_device_scale_ * raster_page_scale_;
     if (raster_contents_scale_ < min_desired_scale) {
       raster_contents_scale_ = min_desired_scale;

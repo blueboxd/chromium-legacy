@@ -20,9 +20,9 @@ callback VoidCallbackFunctionTestInterfaceSequenceArg = void (sequence<TestInter
 callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
 callback VoidCallbackFunctionEnumArg = void (TestEnum arg);
 callback VoidCallbackFunctionTypedef = void (String arg);
-[TreatNonObjectAsNull]
+[LegacyTreatNonObjectAsNull]
 callback TreatNonObjectAsNullVoidFunction = void ();
-[TreatNonObjectAsNull]
+[LegacyTreatNonObjectAsNull]
 callback TreatNonObjectAsNullBooleanFunction = boolean ();
 
 interface TestCallbackFunctions {

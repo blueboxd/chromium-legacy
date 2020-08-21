@@ -41,7 +41,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   bool UpdateCornerRadius(int top_radius, int bottom_radius);
   bool UpdateArtworkMaxWidthPct(double max_width_pct);
   void UpdateFavicon(const gfx::ImageSkia& icon);
-  void UpdateAudioDeviceSelectorAvailability(bool availability);
 
   SkColor GetBackgroundColor(const views::View& owner) const;
   SkColor GetForegroundColor(const views::View& owner) const;
@@ -60,7 +59,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   gfx::Rect GetArtworkBounds(const views::View& owner) const;
   gfx::Rect GetFilledBackgroundBounds(const views::View& owner) const;
   gfx::Rect GetGradientBounds(const views::View& owner) const;
-  gfx::Rect GetBottomGradientBounds(const views::View& owner) const;
   SkPoint GetGradientStartPoint(const gfx::Rect& draw_bounds) const;
   SkPoint GetGradientEndPoint(const gfx::Rect& draw_bounds) const;
   SkColor GetDefaultBackgroundColor(const views::View& owner) const;
@@ -72,7 +70,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   gfx::ImageSkia favicon_;
   gfx::ImageSkia artwork_;
   double artwork_max_width_pct_;
-  bool audio_device_selector_availability_;
 
   base::Optional<SkColor> background_color_;
   base::Optional<SkColor> foreground_color_;

@@ -89,15 +89,6 @@
         ],
         'identifier': 'iPad Air 2 14.0'
     },
-    'SIM_IPAD_AIR_3RD_GEN_12_4': {
-        'args': [
-            '--platform',
-            'iPad Air (3rd generation)',
-            '--version',
-            '12.4'
-        ],
-        'identifier': 'iPad Air (3rd generation) 12.4'
-    },
     'SIM_IPAD_AIR_3RD_GEN_14_0': {
         'args': [
             '--platform',
@@ -106,24 +97,6 @@
             '14.0'
         ],
         'identifier': 'iPad Air (3rd generation) 14.0'
-    },
-    'SIM_IPAD_PRO_2ND_GEN_12_4': {
-        'args': [
-          '--platform',
-          'iPad Pro (12.9-inch) (2nd generation)',
-          '--version',
-          '12.4',
-        ],
-        'identifier': 'iPad Pro (12.9-inch) (2nd generation) 12.4'
-    },
-    'SIM_IPAD_PRO_2ND_GEN_13_6': {
-        'args': [
-          '--platform',
-          'iPad Pro (12.9-inch) (2nd generation)',
-          '--version',
-          '13.6',
-        ],
-        'identifier': 'iPad Pro (12.9-inch) (2nd generation) 13.6'
     },
     # In Xcode 12, "iPad Pro (12.9-inch)" requires a generation suffix in
     # "platform" arg.
@@ -135,15 +108,6 @@
           '14.0',
         ],
         'identifier': 'iPad Pro (12.9-inch) (2nd generation) 14.0'
-    },
-    'SIM_IPAD_6_GEN_12_4': {
-        'args': [
-          '--platform',
-          'iPad (6th generation)',
-          '--version',
-          '12.4',
-        ],
-        'identifier': 'iPad (6th generation) 12.4'
     },
     'SIM_IPAD_6_GEN_14_0': {
         'args': [
@@ -189,15 +153,6 @@
             '14.0',
         ],
         'identifier': 'iPhone 6s 14.0'
-    },
-    'SIM_IPHONE_6S_PLUS_12_4': {
-        'args': [
-            '--platform',
-            'iPhone 6s Plus',
-            '--version',
-            '12.4',
-        ],
-        'identifier': 'iPhone 6s Plus 12.4'
     },
     'SIM_IPHONE_6S_PLUS_13_6': {
         'args': [

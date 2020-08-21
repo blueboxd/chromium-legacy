@@ -112,6 +112,16 @@ void SetLocalTransformChanged(const LayerType* layer) {
 }
 
 template <typename LayerType>
+void SetWillChangeTransform(const LayerType* layer,
+                            bool will_change_transform) {
+  DCHECK(layer->has_transform_node());
+  auto* transform_node = GetTransformNode(layer);
+  transform_node->will_change_transform = will_change_transform;
+  transform_node->transform_changed = true;
+  GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
+}
+
+template <typename LayerType>
 void SetTransform(const LayerType* layer, const gfx::Transform& transform) {
   GetTransformNode(layer)->local = transform;
   SetLocalTransformChanged(layer);

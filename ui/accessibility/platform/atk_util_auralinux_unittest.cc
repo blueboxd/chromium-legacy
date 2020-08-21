@@ -95,4 +95,19 @@ TEST_F(AtkUtilAuraLinuxTest, KeySnooping) {
   EXPECT_EQ(keyval_seen, 0);
 }
 
+TEST_F(AtkUtilAuraLinuxTest, AtSpiReady) {
+  AtkUtilAuraLinux* atk_util = AtkUtilAuraLinux::GetInstance();
+
+  EXPECT_FALSE(atk_util->IsAtSpiReady());
+
+  // In a normal browser execution, when a key event listener is added it means
+  // the AT-SPI bridge has done it as part of its initialization, so it is set
+  // as enabled.
+  AtkKeySnoopFunc key_snoop_func =
+      reinterpret_cast<AtkKeySnoopFunc>(+[](AtkKeyEventStruct* key_event) {});
+  atk_add_key_event_listener(key_snoop_func, nullptr);
+
+  EXPECT_TRUE(atk_util->IsAtSpiReady());
+}
+
 }  // namespace ui

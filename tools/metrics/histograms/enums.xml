@@ -28876,6 +28876,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3440" label="RTCIceCandidateRelatedAddress"/>
   <int value="3441" label="RTCIceCandidateRelatedPort"/>
   <int value="3442" label="SlotAssignNode"/>
+  <int value="3443" label="PluginName"/>
+  <int value="3444" label="PluginFilename"/>
+  <int value="3445" label="PluginDescription"/>
+  <int value="3446" label="SubresourceWebBundles"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34905,7 +34909,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147167998" label="ITF_E_EXTRACT_LOCALIZED_STRINGS_FAILED"/>
   <int value="-2147167997"
       label="ITF_E_EXTRACT_NO_FULL_NAME_OR_POSTSCRIPT_NAME"/>
-  <int value="-2147167996" label="ITF_E_EXTRACT_NO_FAMILY_NAME"/>
   <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
   <int value="-2147024893" label="ERROR_PATH_NOT_FOUND"/>
   <int value="-2147024891" label="E_ACCESSDENIED"/>
@@ -58928,6 +58931,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="subscribe() storage corrupt"/>
   <int value="9" label="getSubscription() storage corrupt"/>
   <int value="10" label="Service Worker database got wiped"/>
+  <int value="11" label="Subscription has expired"/>
 </enum>
 
 <enum name="PushUnregistrationStatus">

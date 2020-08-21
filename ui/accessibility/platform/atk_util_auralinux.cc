@@ -53,10 +53,31 @@ static KeySnoopFuncMap& GetActiveKeySnoopFunctions() {
   return *active_key_snoop_functions;
 }
 
+using AXPlatformNodeSet = std::unordered_set<ui::AXPlatformNodeAuraLinux*>;
+static AXPlatformNodeSet& GetNodesWithPostponedEvents() {
+  static base::NoDestructor<AXPlatformNodeSet> nodes_with_postponed_events_list;
+  return *nodes_with_postponed_events_list;
+}
+
+static void RunPostponedEvents() {
+  for (ui::AXPlatformNodeAuraLinux* entry : GetNodesWithPostponedEvents()) {
+    entry->RunPostponedEvents();
+  }
+  GetNodesWithPostponedEvents().clear();
+}
+
 static guint AtkUtilAuraLinuxAddKeyEventListener(
     AtkKeySnoopFunc key_snoop_function,
     gpointer data) {
   static guint current_key_event_listener_id = 0;
+
+  // AtkUtilAuraLinuxAddKeyEventListener is called by
+  // spi_atk_register_event_listeners in the at-spi2-atk library after it has
+  // initialized all its other listeners. Our internal knowledge of the
+  // internals of the AT-SPI/ATK bridge allows us to use this call as an
+  // indication of AT-SPI being ready, so we can finally run any events that had
+  // been waiting.
+  ui::AtkUtilAuraLinux::GetInstance()->SetAtSpiReady(true);
 
   current_key_event_listener_id++;
   GetActiveKeySnoopFunctions()[current_key_event_listener_id] =
@@ -145,6 +166,24 @@ DiscardAtkKeyEvent AtkUtilAuraLinux::HandleAtkKeyEvent(
       discard = true;
   }
   return discard ? DiscardAtkKeyEvent::Discard : DiscardAtkKeyEvent::Retain;
+}
+
+bool AtkUtilAuraLinux::IsAtSpiReady() {
+  return at_spi_ready_;
+}
+
+void AtkUtilAuraLinux::SetAtSpiReady(bool ready) {
+  at_spi_ready_ = ready;
+  if (ready)
+    RunPostponedEvents();
+}
+
+void AtkUtilAuraLinux::PostponeEventsFor(AXPlatformNodeAuraLinux* node) {
+  GetNodesWithPostponedEvents().insert(node);
+}
+
+void AtkUtilAuraLinux::CancelPostponedEventsFor(AXPlatformNodeAuraLinux* node) {
+  GetNodesWithPostponedEvents().erase(node);
 }
 
 }  // namespace ui

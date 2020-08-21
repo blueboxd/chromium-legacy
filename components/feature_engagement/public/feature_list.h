@@ -68,6 +68,8 @@ DEFINE_VARIATION_PARAM(kIPHChromeReengagementNotification2Feature,
                        "IPH_ChromeReengagementNotification2");
 DEFINE_VARIATION_PARAM(kIPHChromeReengagementNotification3Feature,
                        "IPH_ChromeReengagementNotification3");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchTranslationEnableFeature,
+                       "IPH_ContextualSearchTranslationEnable");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchWebSearchFeature,
                        "IPH_ContextualSearchWebSearch");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchPromoteTapFeature,
@@ -157,6 +159,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHChromeReengagementNotification1Feature),
         VARIATION_ENTRY(kIPHChromeReengagementNotification2Feature),
         VARIATION_ENTRY(kIPHChromeReengagementNotification3Feature),
+        VARIATION_ENTRY(kIPHContextualSearchTranslationEnableFeature),
         VARIATION_ENTRY(kIPHContextualSearchWebSearchFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromoteTapFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),

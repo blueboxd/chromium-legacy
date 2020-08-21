@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -258,6 +259,30 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ShowParentalControls) {
                               ->tab_strip_model()
                               ->GetActiveWebContents()
                               ->GetVisibleURL());
+}
+
+// Test that the Help App opens when Gesture help requested.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppOpenGestures) {
+  WaitForTestSystemAppInstall();
+  base::HistogramTester histogram_tester;
+  const GURL expected_url("chrome://help-app/help/sub/3399710/id/9739838");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  SystemTrayClient::Get()->ShowGestureEducationHelp();
+  navigation_observer.Wait();
+
+  // There should be two browser windows, one regular and one for the help app.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  // Help app should have opened at the gesture article.
+  EXPECT_EQ(expected_url, chrome::FindLastActive()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetVisibleURL());
+  // The HELP app is 18, see DefaultAppName in
+  // src/chrome/browser/apps/app_service/app_service_metrics.cc
+  histogram_tester.ExpectUniqueSample("Apps.DefaultAppLaunch.FromOtherApp", 18,
+                                      1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

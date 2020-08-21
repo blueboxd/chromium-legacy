@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/data_model/autofill_structured_address_constants.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -618,8 +620,19 @@ bool AddressComponent::IsMergeableWithComponent(
   if (*this == newer_component)
     return true;
 
-  return AreSortedTokensEqual(GetSortedTokens(),
-                              newer_component.GetSortedTokens());
+  SortedTokenComparisonResult token_comparison_result =
+      CompareSortedTokens(GetSortedTokens(), newer_component.GetSortedTokens());
+
+  if (token_comparison_result.status == MATCH)
+    return true;
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMergingSubsetNames)) {
+    if (token_comparison_result.status == SINGLE_TOKEN_SUPERSET)
+      return true;
+  }
+
+  return false;
 }
 
 bool AddressComponent::MergeWithComponent(
@@ -628,19 +641,32 @@ bool AddressComponent::MergeWithComponent(
   if (*this == newer_component)
     return true;
 
-  if (!IsMergeableWithComponent(newer_component))
-    return false;
+  SortedTokenComparisonResult token_comparison_result =
+      CompareSortedTokens(GetSortedTokens(), newer_component.GetSortedTokens());
 
-  // Applies the merging strategy for two token-equivalent components.
-  if (AreSortedTokensEqual(GetSortedTokens(),
-                           newer_component.GetSortedTokens())) {
-    return MergeTokenEquivalentComponent(newer_component);
+  switch (token_comparison_result.status) {
+    case MATCH:
+      return MergeTokenEquivalentComponent(newer_component);
+
+    case SINGLE_TOKEN_SUPERSET:
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillEnableSupportForMergingSubsetNames)) {
+        return MergeSubsetComponent(newer_component, token_comparison_result);
+      }
+      break;
+
+    default:
+      return false;
   }
   return false;
 }
 
 bool AddressComponent::MergeTokenEquivalentComponent(
     const AddressComponent& newer_component) {
+  if (!AreSortedTokensEqual(GetSortedTokens(),
+                            newer_component.GetSortedTokens()))
+    return false;
+
   // Assumption:
   // The values of both components are a permutation of the same tokens.
   // The componentization of the components can be different in terms of
@@ -690,7 +716,7 @@ bool AddressComponent::MergeTokenEquivalentComponent(
   const std::vector<AddressComponent*> other_subcomponents =
       newer_component.Subcomponents();
 
-  DCHECK(subcomponents_.size() == newer_component.Subcomponents().size());
+  DCHECK(subcomponents_.size() == other_subcomponents.size());
 
   int this_component_verification_score = 0;
   int newer_component_verification_score = 0;
@@ -705,7 +731,8 @@ bool AddressComponent::MergeTokenEquivalentComponent(
     // If the components can't be merged directly, store the ungermed index and
     // sum the verification scores to decide which component's substructure to
     // use.
-    if (!subcomponents_[i]->MergeWithComponent(*other_subcomponents.at(i))) {
+    if (!subcomponents_[i]->MergeTokenEquivalentComponent(
+            *other_subcomponents.at(i))) {
       this_component_verification_score +=
           subcomponents_[i]->GetStructureVerificationScore();
       newer_component_verification_score +=
@@ -722,6 +749,113 @@ bool AddressComponent::MergeTokenEquivalentComponent(
       *subcomponents_[i] = *other_subcomponents[i];
   }
 
+  return true;
+}
+
+void AddressComponent::ConsumeAdditionalToken(
+    const base::string16& token_value) {
+  if (IsAtomic()) {
+    if (GetValue().empty()) {
+      SetValue(token_value, VerificationStatus::kParsed);
+    } else {
+      SetValue(base::StrCat({GetValue(), base::ASCIIToUTF16(" "), token_value}),
+               VerificationStatus::kParsed);
+    }
+    return;
+  }
+
+  // Try the first free subcomponent.
+  for (auto* subcomponent : subcomponents_) {
+    if (subcomponent->GetValue().empty()) {
+      subcomponent->SetValue(token_value, VerificationStatus::kParsed);
+      return;
+    }
+  }
+
+  // Otherwise append the value to the first component.
+  subcomponents_[0]->SetValue(
+      base::StrCat({GetValue(), base::ASCIIToUTF16(" "), token_value}),
+      VerificationStatus::kParsed);
+}
+
+bool AddressComponent::MergeSubsetComponent(
+    const AddressComponent& subset_component,
+    const SortedTokenComparisonResult& token_comparison_result) {
+  DCHECK(token_comparison_result.status == SINGLE_TOKEN_SUPERSET);
+  DCHECK(token_comparison_result.additional_tokens.size() == 1);
+
+  base::string16 token_to_consume =
+      token_comparison_result.additional_tokens.back().value;
+
+  int this_component_verification_score = 0;
+  int newer_component_verification_score = 0;
+  bool found_subset_component = false;
+
+  std::vector<int> unmerged_indices;
+  unmerged_indices.reserve(subcomponents_.size());
+
+  const std::vector<AddressComponent*>& subset_subcomponents =
+      subset_component.Subcomponents();
+
+  unmerged_indices.reserve(subcomponents_.size());
+
+  for (size_t i = 0; i < subcomponents_.size(); i++) {
+    DCHECK(subcomponents_[i]->GetStorageType() ==
+           subset_subcomponents.at(i)->GetStorageType());
+
+    AddressComponent* subcomponent = subcomponents_[i];
+    const AddressComponent* subset_subcomponent = subset_subcomponents.at(i);
+
+    base::string16 additional_token;
+
+    // If the additional token is the value of this token. Just leave it in.
+    if (!found_subset_component &&
+        subcomponent->GetValue() == token_to_consume &&
+        subset_subcomponent->GetValue().empty()) {
+      found_subset_component = true;
+      continue;
+    }
+
+    SortedTokenComparisonResult subtoken_comparison_result =
+        CompareSortedTokens(subcomponent->GetSortedTokens(),
+                            subset_subcomponent->GetSortedTokens());
+
+    // Recursive case.
+    if (!found_subset_component &&
+        subtoken_comparison_result.status == SINGLE_TOKEN_SUPERSET) {
+      found_subset_component = true;
+      subcomponent->MergeSubsetComponent(*subset_subcomponent,
+                                         subtoken_comparison_result);
+      continue;
+    }
+
+    // If the tokens are the equivalent, they can directly be merged.
+    if (subtoken_comparison_result.status == MATCH) {
+      subcomponent->MergeTokenEquivalentComponent(*subset_subcomponent);
+      continue;
+    }
+
+    // Otherwise calculate the verification score.
+    this_component_verification_score +=
+        subcomponent->GetStructureVerificationScore();
+    newer_component_verification_score +=
+        subset_subcomponent->GetStructureVerificationScore();
+    unmerged_indices.emplace_back(i);
+  }
+
+  // If the total verification score of all unmerged components of the other
+  // component is equal or larger than the score of this component, use its
+  // subcomponents including their substructure for all unmerged components.
+  if (newer_component_verification_score >= this_component_verification_score) {
+    for (size_t i : unmerged_indices)
+      *subcomponents_[i] = *subset_subcomponents[i];
+
+    if (!found_subset_component)
+      this->ConsumeAdditionalToken(token_to_consume);
+  }
+
+  // In the current implementation it is always possible to merge.
+  // Once more tokens are supported this may change.
   return true;
 }
 

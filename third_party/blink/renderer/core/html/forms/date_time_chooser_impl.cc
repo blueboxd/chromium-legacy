@@ -159,6 +159,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       "currentValue",
       ValueToDateTimeString(parameters_->double_value, parameters_->type),
       data);
+  AddProperty("focusedFieldIndex", parameters_->focused_field_index, data);
   AddProperty("locale", parameters_->locale.GetString(), data);
   AddProperty("todayLabel", today_label_string, data);
   AddLocalizedProperty("clearLabel", IDS_FORM_CALENDAR_CLEAR, data);

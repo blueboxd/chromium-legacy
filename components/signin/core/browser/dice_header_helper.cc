@@ -26,6 +26,7 @@ const char kRequestSigninAll[] = "all_accounts";
 const char kSigninActionAttrName[] = "action";
 const char kSigninAuthUserAttrName[] = "authuser";
 const char kSigninAuthorizationCodeAttrName[] = "authorization_code";
+const char kSigninNoAuthorizationCodeAttrName[] = "no_authorization_code";
 const char kSigninEmailAttrName[] = "email";
 const char kSigninIdAttrName[] = "id";
 
@@ -101,6 +102,13 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(
         params.signin_info->authorization_code = value;
       else
         DLOG(WARNING) << "Authorization code expected only with SIGNIN action";
+    } else if (key_name == kSigninNoAuthorizationCodeAttrName) {
+      if (params.signin_info) {
+        params.signin_info->no_authorization_code = true;
+      } else {
+        DLOG(WARNING)
+            << "No authorization code header expected only with SIGNIN action";
+      }
     } else {
       DLOG(WARNING) << "Unexpected Gaia header attribute '" << key_name << "'.";
     }
@@ -112,9 +120,11 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(
     return DiceResponseParams();
   }
 
-  if (params.signin_info && params.signin_info->authorization_code.empty()) {
-    DLOG(WARNING) << "Missing authorization code in Dice SIGNIN header: "
-                  << header_value;
+  if (params.signin_info && params.signin_info->authorization_code.empty() &&
+      !params.signin_info->no_authorization_code) {
+    DLOG(WARNING)
+        << "Missing authorization code  and no authorization code headers"
+        << "in Dice SIGNIN header: " << header_value;
     return DiceResponseParams();
   }
 

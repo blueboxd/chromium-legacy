@@ -98,7 +98,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
  private:
   // The "callback function type" value.
   // Use v8::Object instead of v8::Function in order to handle
-  // [TreatNonObjectAsNull].
+  // [LegacyTreatNonObjectAsNull].
   TraceWrapperV8Reference<v8::Object> callback_function_;
   // The associated Realm of the callback function type value iff it's the same
   // origin-domain. Otherwise, nullptr.

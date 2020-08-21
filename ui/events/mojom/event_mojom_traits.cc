@@ -283,8 +283,10 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::mouse_data(
   mouse_data->changed_button_flags = mouse_event->changed_button_flags();
   mouse_data->pointer_details = mouse_event->pointer_details();
   mouse_data->location = CreateLocationData(mouse_event);
-  if (mouse_event->IsMouseWheelEvent())
+  if (mouse_event->IsMouseWheelEvent()) {
     mouse_data->wheel_offset = mouse_event->AsMouseWheelEvent()->offset();
+    mouse_data->tick_120ths = mouse_event->AsMouseWheelEvent()->tick_120ths();
+  }
   return mouse_data;
 }
 
@@ -435,7 +437,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
         mouse_event = std::make_unique<ui::MouseWheelEvent>(
             mouse_data->wheel_offset, mouse_data->location->relative_location,
             mouse_data->location->root_location, time_stamp, event.flags(),
-            mouse_data->changed_button_flags);
+            mouse_data->changed_button_flags, mouse_data->tick_120ths);
       } else {
         mouse_event = std::make_unique<ui::MouseEvent>(
             mojo::ConvertTo<ui::EventType>(event.action()),

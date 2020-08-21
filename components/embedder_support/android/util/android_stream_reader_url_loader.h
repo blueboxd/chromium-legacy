@@ -76,9 +76,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
       base::Optional<SecurityOptions> security_options);
   ~AndroidStreamReaderURLLoader() override;
 
-  // TODO: remove the boolean once https://crbug.com/1096677 reaches stable and
-  // there are no issues.
-  void Start(bool cors_check);
+  void Start();
 
   // network::mojom::URLLoader overrides:
   void FollowRedirect(

@@ -33,6 +33,12 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 const int kDiceTokenFetchTimeoutSeconds = 10;
+// Timeout for locking the account reconcilor when
+// there was OAuth outage in Dice.
+const int kLockAccountReconcilorTimeoutHours = 12;
+
+const base::Feature kSupportOAuthOutageInDice{
+    "SupportOAuthOutageInDice", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -226,9 +232,9 @@ void DiceResponseHandler::ProcessDiceHeader(
     case signin::DiceAction::SIGNIN: {
       const signin::DiceResponseParams::AccountInfo& info =
           dice_params.signin_info->account_info;
-      ProcessDiceSigninHeader(info.gaia_id, info.email,
-                              dice_params.signin_info->authorization_code,
-                              std::move(delegate));
+      ProcessDiceSigninHeader(
+          info.gaia_id, info.email, dice_params.signin_info->authorization_code,
+          dice_params.signin_info->no_authorization_code, std::move(delegate));
       return;
     }
     case signin::DiceAction::ENABLE_SYNC: {
@@ -252,11 +258,30 @@ size_t DiceResponseHandler::GetPendingDiceTokenFetchersCountForTesting() const {
   return token_fetchers_.size();
 }
 
+void DiceResponseHandler::OnTimeoutUnlockReconcilor() {
+  lock_.reset();
+}
+
 void DiceResponseHandler::ProcessDiceSigninHeader(
     const std::string& gaia_id,
     const std::string& email,
     const std::string& authorization_code,
+    bool no_authorization_code,
     std::unique_ptr<ProcessDiceHeaderDelegate> delegate) {
+  if (no_authorization_code) {
+    if (base::FeatureList::IsEnabled(kSupportOAuthOutageInDice)) {
+      lock_ = std::make_unique<AccountReconcilor::Lock>(account_reconcilor_);
+      // If there is already another lock, the timer will be reset and
+      // we'll wait another full timeout.
+      timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours),
+          base::BindOnce(&DiceResponseHandler::OnTimeoutUnlockReconcilor,
+                         base::Unretained(this)));
+    }
+    return;
+  }
+
   DCHECK(!gaia_id.empty());
   DCHECK(!email.empty());
   DCHECK(!authorization_code.empty());

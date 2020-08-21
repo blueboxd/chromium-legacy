@@ -62,6 +62,11 @@ gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
   return gfx::Vector2d();
 }
 
+gfx::Vector2d GetMouseWheelTick120ths(const PlatformEvent& native_event) {
+  NOTIMPLEMENTED();
+  return gfx::Vector2d();
+}
+
 PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
   NOTIMPLEMENTED() << "Don't know how to copy PlatformEvent for this platform";
   return NULL;

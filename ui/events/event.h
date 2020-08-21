@@ -591,15 +591,18 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model, T* source, T* target)
       : MouseEvent(model, source, target, model.type(), model.flags()),
-        offset_(model.x_offset(), model.y_offset()) {}
+        offset_(model.x_offset(), model.y_offset()),
+        tick_120ths_(model.tick_120ths()) {}
 
   // Used for synthetic events in testing and by the gesture recognizer.
-  MouseWheelEvent(const gfx::Vector2d& offset,
-                  const gfx::PointF& location,
-                  const gfx::PointF& root_location,
-                  base::TimeTicks time_stamp,
-                  int flags,
-                  int changed_button_flags);
+  MouseWheelEvent(
+      const gfx::Vector2d& offset,
+      const gfx::PointF& location,
+      const gfx::PointF& root_location,
+      base::TimeTicks time_stamp,
+      int flags,
+      int changed_button_flags,
+      const base::Optional<gfx::Vector2d> tick_120ths = base::nullopt);
 
   // DEPRECATED: Prefer the constructor that takes gfx::PointF.
   MouseWheelEvent(const gfx::Vector2d& offset,
@@ -609,14 +612,19 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
                   int flags,
                   int changed_button_flags);
 
-  // The amount to scroll. This is in multiples of kWheelDelta.
+  // The amount to scroll. This is not necessarily linearly related to the
+  // amount that the wheel moved, due to scroll acceleration.
   // Note: x_offset() > 0/y_offset() > 0 means scroll left/up.
   int x_offset() const { return offset_.x(); }
   int y_offset() const { return offset_.y(); }
   const gfx::Vector2d& offset() const { return offset_; }
 
+  // The amount the wheel(s) moved, in 120ths of a tick.
+  const gfx::Vector2d& tick_120ths() const { return tick_120ths_; }
+
  private:
   gfx::Vector2d offset_;
+  gfx::Vector2d tick_120ths_;
 };
 
 // NOTE: Pen (stylus) events use TouchEvent with kPen. They were

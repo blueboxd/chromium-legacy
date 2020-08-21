@@ -20,6 +20,9 @@ class RE2;
 namespace autofill {
 namespace structured_address {
 
+struct AddressToken;
+struct SortedTokenComparisonResult;
+
 // Represents the validation status of value stored in the AutofillProfile.
 // The associated integer values used to store the verification code in SQL and
 // should not be modified.
@@ -269,7 +272,7 @@ class AddressComponent {
 
   // Returns a constant reference to the sorted canonicalized tokens of the
   // value of the component.
-  const std::vector<base::string16>& GetSortedTokens() const {
+  const std::vector<AddressToken>& GetSortedTokens() const {
     return sorted_normalized_tokens_;
   }
 
@@ -359,6 +362,17 @@ class AddressComponent {
   // Clears all parsed and formatted values.
   void ClearAllParsedAndFormattedValues();
 
+  // Merge a component that has exactly one token less.
+  bool MergeSubsetComponent(
+      const AddressComponent& subset_component,
+      const SortedTokenComparisonResult& token_comparison_result);
+
+  // Consumes an additional token into the most appropriate subcomponent.
+  // Can be implemented by the specific node types.
+  // The fall-back solution uses the first empty node.
+  // If no empty node is available, it appends the value to the first node.
+  virtual void ConsumeAdditionalToken(const base::string16& token_value);
+
  private:
   // Returns a reference to the constant root node of the tree.
   const AddressComponent& GetRootNode() const;
@@ -410,7 +424,7 @@ class AddressComponent {
   // meaning that it was converted to lower case and diacritics have been
   // removed. |value_| is tokenized by splitting the string by white spaces and
   // commas. It is calculated when |value_| is set.
-  std::vector<base::string16> sorted_normalized_tokens_;
+  std::vector<AddressToken> sorted_normalized_tokens_;
 
   // A pointer to the parent node. It is set to nullptr if the node is the root
   // node of the AddressComponent tree.

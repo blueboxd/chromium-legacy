@@ -148,6 +148,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       TransformNode* node,
       TransformNode* parent_node);
+  void UpdateNodeOrAncestorsWillChangeTransform(TransformNode* node,
+                                                TransformNode* parent_node);
 
   void set_needs_update(bool needs_update) final;
 

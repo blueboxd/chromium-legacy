@@ -537,6 +537,7 @@ viz_source_set("unit_tests") {
       "display_embedder/software_output_device_ozone_unittest.cc",
     ]
     deps += [
+      "//ui/base:features",
       "//ui/compositor:test_support",
       "//ui/ozone",
     ]

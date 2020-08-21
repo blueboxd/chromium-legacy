@@ -888,7 +888,7 @@ TEST_F(LegacySWPictureLayerImplTest, CleanUpTilings) {
   float page_scale = 1.f;
 
   SetupDefaultTrees(layer_bounds);
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
   EXPECT_FLOAT_EQ(2u, active_layer()->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(
       1.f, active_layer()->tilings()->tiling_at(0)->contents_scale_key());
@@ -2068,7 +2068,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   SetInitialDeviceScaleFactor(2.f);
 
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
 
   // One ideal tile exists, this will get used when drawing.
   std::vector<Tile*> ideal_tiles;
@@ -2900,8 +2900,8 @@ TEST_F(LegacySWPictureLayerImplTest,
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
 
-  active_layer()->SetHasWillChangeTransformHint(true);
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
 
   // Starting an animation should cause tiling resolution to get set to the
   // maximum animation scale factor.
@@ -3471,8 +3471,8 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   // If we change the layer contents scale after setting will change
   // will, then it will be updated if it's below the minimum scale (page scale *
   // device scale).
-  active_layer()->SetHasWillChangeTransformHint(true);
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
+  GetTransformNode(pending_layer())->will_change_transform = true;
 
   contents_scale = 0.75f;
 
@@ -3493,8 +3493,8 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
 
   // Disabling the will-change hint will once again make the raster scale update
   // with the ideal scale.
-  active_layer()->SetHasWillChangeTransformHint(false);
-  pending_layer()->SetHasWillChangeTransformHint(false);
+  GetTransformNode(active_layer())->will_change_transform = false;
+  GetTransformNode(pending_layer())->will_change_transform = false;
 
   contents_scale = 3.f;
 
@@ -3758,7 +3758,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   float page_scale = 1.f;
   float scale = 1.f;
 
-  active_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(active_layer())->will_change_transform = true;
   ResetTilingsAndRasterScales();
 
   SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, 0.f,
@@ -5738,7 +5738,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageHistograms) {
       true, 0);
 
   // Set will-change:transform and update tiles with a different ideal scale.
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  GetTransformNode(pending_layer())->will_change_transform = true;
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.6f, 1.f, 1.f, 1.f, 1.f,
                                     false);
   histogram_tester.ExpectBucketCount(
@@ -6084,7 +6084,7 @@ TEST_F(LegacySWPictureLayerImplTest,
             pending_layer()->HighResTiling()->raster_transform().translation());
 
   // Adding will-change:transform will keep the current raster translation.
-  pending_layer()->SetHasWillChangeTransformHint(true);
+  SetWillChangeTransform(pending_layer(), true);
   host_impl()->pending_tree()->set_needs_update_draw_properties();
   UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_TRUE(pending_layer()->contents_opaque());
@@ -6109,7 +6109,7 @@ TEST_F(LegacySWPictureLayerImplTest,
             pending_layer()->HighResTiling()->raster_transform().translation());
 
   // Removing will-change:transform will update raster translation.
-  pending_layer()->SetHasWillChangeTransformHint(false);
+  SetWillChangeTransform(pending_layer(), false);
   host_impl()->pending_tree()->set_needs_update_draw_properties();
   UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_TRUE(pending_layer()->contents_opaque());
@@ -6347,14 +6347,11 @@ TEST_P(LCDTextTest, ContentsNotOpaque) {
 }
 
 TEST_P(LCDTextTest, WillChangeTransform) {
-  layer_->SetHasWillChangeTransformHint(true);
+  SetWillChangeTransform(layer_, true);
   CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform,
-                     "will-change:transform", layer_);
-  // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
-                     "descendant of will-change: transform", descendant_);
+                     "will-change:transform");
 
-  layer_->SetHasWillChangeTransformHint(false);
+  SetWillChangeTransform(layer_, false);
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
                      "no will-change: transform");
 }

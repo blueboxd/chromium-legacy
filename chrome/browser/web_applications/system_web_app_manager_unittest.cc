@@ -998,4 +998,44 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   EXPECT_FALSE(install_requests[6].force_reinstall);
 }
 
+TEST_F(SystemWebAppManagerTest, ForceReinstallFeature) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager().install_requests();
+
+  InitEmptyRegistrar();
+  system_web_app_manager().SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  // Register a test system app.
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+  system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+  // Install the App normally.
+  {
+    PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+    PrepareLoadUrlResults({AppUrl1()});
+    StartAndWaitForAppsToSynchronize();
+
+    EXPECT_EQ(1u, install_requests.size());
+    EXPECT_TRUE(IsInstalled(AppUrl1()));
+  }
+
+  // Enable AlwaysReinstallSystemWebApps feature, verify force_reinstall is set.
+  {
+    base::test::ScopedFeatureList feature_reinstall;
+    feature_reinstall.InitAndEnableFeature(
+        features::kAlwaysReinstallSystemWebApps);
+
+    PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+    PrepareLoadUrlResults({AppUrl1()});
+    StartAndWaitForAppsToSynchronize();
+
+    EXPECT_EQ(2u, install_requests.size());
+    EXPECT_TRUE(install_requests[1].force_reinstall);
+    EXPECT_TRUE(IsInstalled(AppUrl1()));
+  }
+}
+
 }  // namespace web_app

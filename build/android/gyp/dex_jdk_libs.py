@@ -39,7 +39,9 @@ def DexJdkLibJar(r8_path, min_api, desugar_jdk_libs_json, desugar_jdk_libs_jar,
                  warnings_as_errors):
   # TODO(agrieve): Spews a lot of stderr about missing classes.
   with build_utils.TempDir() as tmp_dir:
-    cmd = build_utils.JavaCmd(warnings_as_errors) + [
+    cmd = [
+        build_utils.JAVA_PATH,
+        '-Xmx1G',
         '-cp',
         r8_path,
         'com.android.tools.r8.L8',

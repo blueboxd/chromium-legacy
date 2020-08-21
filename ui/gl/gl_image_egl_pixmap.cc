@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
@@ -18,8 +19,11 @@ namespace gl {
 
 inline EGLDisplay FromXDisplay() {
 #if defined(USE_X11)
-  if (auto* x_display = gfx::GetXDisplay())
-    return eglGetDisplay(x_display);
+  if (!features::IsUsingOzonePlatform()) {
+    if (auto* x_display = gfx::GetXDisplay()) {
+      return eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(x_display));
+    }
+  }
 #endif
   return EGL_NO_DISPLAY;
 }

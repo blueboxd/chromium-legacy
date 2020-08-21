@@ -55,7 +55,7 @@ def callback_function_context(callback_function):
         'idl_type':
         idl_type_str,
         'is_treat_non_object_as_null':
-        'TreatNonObjectAsNull' in callback_function.extended_attributes,
+        'LegacyTreatNonObjectAsNull' in callback_function.extended_attributes,
         'native_value_traits_tag':
         v8_types.idl_type_to_native_value_traits_tag(idl_type),
         'return_cpp_type':

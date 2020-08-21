@@ -11,27 +11,106 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/shape.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
-#include "ui/views/test/widget_test.h"
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
-#include "ui/views/widget/widget.h"
+#include "ui/platform_window/x11/x11_window.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace views {
 
 namespace {
+
+// Waits until the |x11_window| is mapped and becomes viewable.
+class X11VisibilityWaiter : public ui::XEventDispatcher {
+ public:
+  X11VisibilityWaiter() = default;
+  X11VisibilityWaiter(const X11VisibilityWaiter&) = delete;
+  X11VisibilityWaiter& operator=(const X11VisibilityWaiter&) = delete;
+  ~X11VisibilityWaiter() override = default;
+
+  void WaitUntilWindowIsVisible(x11::Window x11_window) {
+    if (ui::IsWindowVisible(x11_window))
+      return;
+
+    auto events = std::make_unique<ui::XScopedEventSelector>(
+        x11_window, StructureNotifyMask | SubstructureNotifyMask);
+    x11_window_ = x11_window;
+
+    dispatcher_ =
+        ui::X11EventSource::GetInstance()->OverrideXEventDispatcher(this);
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  // XEventDispatcher:
+  bool DispatchXEvent(x11::Event* event) override {
+    auto* map = event->As<x11::MapNotifyEvent>();
+    if (map && map->window == x11_window_) {
+      if (!quit_closure_.is_null())
+        std::move(quit_closure_).Run();
+      dispatcher_.reset();
+      return true;
+    }
+    return false;
+  }
+
+  x11::Window x11_window_;
+  std::unique_ptr<ui::ScopedXEventDispatcher> dispatcher_;
+  // Ends the run loop.
+  base::OnceClosure quit_closure_;
+};
+
+class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
+ public:
+  TestPlatformWindowDelegate() = default;
+  TestPlatformWindowDelegate(const TestPlatformWindowDelegate&) = delete;
+  TestPlatformWindowDelegate& operator=(const TestPlatformWindowDelegate&) =
+      delete;
+  ~TestPlatformWindowDelegate() override = default;
+
+  ui::PlatformWindowState state() { return state_; }
+
+  // PlatformWindowDelegate:
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnDamageRect(const gfx::Rect& damaged_region) override {}
+  void DispatchEvent(ui::Event* event) override {}
+  void OnCloseRequest() override {}
+  void OnClosed() override {}
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {
+    state_ = new_state;
+  }
+  void OnLostCapture() override {}
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+    widget_ = widget;
+  }
+  void OnWillDestroyAcceleratedWidget() override {}
+  void OnAcceleratedWidgetDestroyed() override {
+    widget_ = gfx::kNullAcceleratedWidget;
+  }
+  void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
+
+ private:
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
+  ui::PlatformWindowState state_ = ui::PlatformWindowState::kUnknown;
+};
 
 // Waits till |window| is minimized.
 class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
@@ -92,36 +171,44 @@ class StackingClientListWaiter : public ui::X11PropertyChangeWaiter {
 
 }  // namespace
 
-class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
+class X11TopmostWindowFinderTest : public testing::Test {
  public:
-  X11TopmostWindowFinderTest() = default;
+  X11TopmostWindowFinderTest()
+      : task_env_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~X11TopmostWindowFinderTest() override = default;
 
   // DesktopWidgetTestInteractive
   void SetUp() override {
+    auto* connection = x11::Connection::Get();
+    event_source_ = std::make_unique<ui::X11EventSource>(connection);
+
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
     XSynchronize(xdisplay(), x11::True);
-    DesktopWidgetTestInteractive::SetUp();
   }
 
   void TearDown() override {
     XSynchronize(xdisplay(), x11::False);
-    DesktopWidgetTestInteractive::TearDown();
   }
 
-  // Creates and shows a Widget with |bounds|. The caller takes ownership of
-  // the returned widget.
-  std::unique_ptr<Widget> CreateAndShowWidget(const gfx::Rect& bounds) {
-    std::unique_ptr<Widget> toplevel(new Widget);
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.native_widget = new DesktopNativeWidgetAura(toplevel.get());
-    params.bounds = bounds;
-    params.remove_standard_frame = true;
-    toplevel->Init(std::move(params));
-    toplevel->Show();
-    return toplevel;
+  // Creates and shows an X11Window with |bounds|. The caller takes ownership of
+  // the returned window.
+  std::unique_ptr<ui::X11Window> CreateAndShowX11Window(
+      ui::PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds) {
+    ui::PlatformWindowInitProperties init_params(bounds);
+    init_params.remove_standard_frame = true;
+    auto window = std::make_unique<ui::X11Window>(delegate);
+    window->Initialize(std::move(init_params));
+    window->Show(false);
+
+    // Wait until the window becomes visible so that window finder doesn't skip
+    // these windows (it's required to wait because mapping and searching for
+    // toplevel window is a subject to races).
+    X11VisibilityWaiter waiter;
+    waiter.WaitUntilWindowIsVisible(
+        static_cast<x11::Window>(window->GetWidget()));
+    return window;
   }
 
   // Creates and shows an X window with |bounds|.
@@ -135,6 +222,11 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
 
     ui::SetUseOSWindowFrame(window, false);
     ShowAndSetXWindowBounds(window, bounds);
+    // Wait until the window becomes visible so that window finder doesn't skip
+    // these windows (it's required to wait because mapping and searching for
+    // toplevel window is a subject to races).
+    X11VisibilityWaiter waiter;
+    waiter.WaitUntilWindowIsVisible(static_cast<x11::Window>(window));
     return window;
   }
 
@@ -159,38 +251,40 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
     return finder.FindWindowAt(gfx::Point(screen_x, screen_y));
   }
 
-  // Returns the topmost aura::Window at the passed in screen position. Returns
-  // NULL if the topmost window does not have an associated aura::Window.
-  aura::Window* FindTopmostLocalProcessWindowAt(int screen_x, int screen_y) {
+  // Returns the topmost ui::X11Window at the passed in screen position. Returns
+  // nullptr if the topmost window does not have an associated ui::X11Window.
+  ui::X11Window* FindTopmostLocalProcessWindowAt(int screen_x, int screen_y) {
     ui::X11TopmostWindowFinder finder;
-    auto widget = static_cast<gfx::AcceleratedWidget>(
-        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {}));
-    return widget != gfx::kNullAcceleratedWidget
-               ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                     widget)
-               : nullptr;
+    auto x11_window =
+        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {});
+    return x11_window == x11::Window::None
+               ? nullptr
+               : ui::X11WindowManager::GetInstance()->GetWindow(
+                     static_cast<gfx::AcceleratedWidget>(x11_window));
   }
 
-  // Returns the topmost aura::Window at the passed in screen position ignoring
-  // |ignore_window|. Returns NULL if the topmost window does not have an
-  // associated aura::Window.
-  aura::Window* FindTopmostLocalProcessWindowWithIgnore(
+  // Returns the topmost ui::X11Window at the passed in screen position ignoring
+  // |ignore_window|. Returns nullptr if the topmost window does not have an
+  // associated ui::X11Window.
+  ui::X11Window* FindTopmostLocalProcessWindowWithIgnore(
       int screen_x,
       int screen_y,
-      aura::Window* ignore_window) {
+      x11::Window ignore_window) {
     std::set<gfx::AcceleratedWidget> ignore;
-    ignore.insert(ignore_window->GetHost()->GetAcceleratedWidget());
+    ignore.insert(static_cast<gfx::AcceleratedWidget>(ignore_window));
     ui::X11TopmostWindowFinder finder;
-    auto widget =
-        static_cast<gfx::AcceleratedWidget>(finder.FindLocalProcessWindowAt(
-            gfx::Point(screen_x, screen_y), ignore));
-    return widget != gfx::kNullAcceleratedWidget
-               ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                     widget)
-               : nullptr;
+    auto x11_window =
+        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), ignore);
+    return x11_window == x11::Window::None
+               ? nullptr
+               : ui::X11WindowManager::GetInstance()->GetWindow(
+                     static_cast<gfx::AcceleratedWidget>(x11_window));
   }
 
  private:
+  base::test::TaskEnvironment task_env_;
+  std::unique_ptr<ui::X11EventSource> event_source_;
+
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinderTest);
 };
 
@@ -198,19 +292,16 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   // Avoid positioning test windows at 0x0 because window managers often have a
   // panel/launcher along one of the screen edges and do not allow windows to
   // position themselves to overlap the panel/launcher.
-  std::unique_ptr<Widget> widget1(
-      CreateAndShowWidget(gfx::Rect(100, 100, 200, 100)));
-  aura::Window* window1 = widget1->GetNativeWindow();
-  x11::Window x11_window1 =
-      static_cast<x11::Window>(window1->GetHost()->GetAcceleratedWidget());
+  TestPlatformWindowDelegate delegate;
+  auto window1 = CreateAndShowX11Window(&delegate, {100, 100, 200, 100});
+  auto x11_window1 = static_cast<x11::Window>(window1->GetWidget());
 
   x11::Window x11_window2 = CreateAndShowXWindow(gfx::Rect(200, 100, 100, 200));
 
-  std::unique_ptr<Widget> widget3(
-      CreateAndShowWidget(gfx::Rect(100, 190, 200, 110)));
-  aura::Window* window3 = widget3->GetNativeWindow();
-  x11::Window x11_window3 =
-      static_cast<x11::Window>(window3->GetHost()->GetAcceleratedWidget());
+  TestPlatformWindowDelegate delegate2;
+  auto window3 = CreateAndShowX11Window(&delegate2, {100, 190, 200, 110});
+  window3->Show(false);
+  auto x11_window3 = static_cast<x11::Window>(window3->GetWidget());
 
   x11::Window windows[] = {x11_window1, x11_window2, x11_window3};
   StackingClientListWaiter waiter(windows, base::size(windows));
@@ -218,42 +309,41 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
   EXPECT_EQ(x11_window1, FindTopmostXWindowAt(150, 150));
-  EXPECT_EQ(window1, FindTopmostLocalProcessWindowAt(150, 150));
+  EXPECT_EQ(window1.get(), FindTopmostLocalProcessWindowAt(150, 150));
 
   EXPECT_EQ(x11_window2, FindTopmostXWindowAt(250, 150));
   EXPECT_FALSE(FindTopmostLocalProcessWindowAt(250, 150));
 
   EXPECT_EQ(x11_window3, FindTopmostXWindowAt(250, 250));
-  EXPECT_EQ(window3, FindTopmostLocalProcessWindowAt(250, 250));
+  EXPECT_EQ(window3.get(), FindTopmostLocalProcessWindowAt(250, 250));
 
   EXPECT_EQ(x11_window3, FindTopmostXWindowAt(150, 250));
-  EXPECT_EQ(window3, FindTopmostLocalProcessWindowAt(150, 250));
+  EXPECT_EQ(window3.get(), FindTopmostLocalProcessWindowAt(150, 250));
 
   EXPECT_EQ(x11_window3, FindTopmostXWindowAt(150, 195));
-  EXPECT_EQ(window3, FindTopmostLocalProcessWindowAt(150, 195));
+  EXPECT_EQ(window3.get(), FindTopmostLocalProcessWindowAt(150, 195));
 
   EXPECT_NE(x11_window1, FindTopmostXWindowAt(1000, 1000));
   EXPECT_NE(x11_window2, FindTopmostXWindowAt(1000, 1000));
   EXPECT_NE(x11_window3, FindTopmostXWindowAt(1000, 1000));
   EXPECT_FALSE(FindTopmostLocalProcessWindowAt(1000, 1000));
 
-  EXPECT_EQ(window1,
-            FindTopmostLocalProcessWindowWithIgnore(150, 150, window3));
-  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(250, 250, window3));
-  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(150, 250, window3));
-  EXPECT_EQ(window1,
-            FindTopmostLocalProcessWindowWithIgnore(150, 195, window3));
+  EXPECT_EQ(window1.get(),
+            FindTopmostLocalProcessWindowWithIgnore(150, 150, x11_window3));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(250, 250, x11_window3));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(150, 250, x11_window3));
+  EXPECT_EQ(window1.get(),
+            FindTopmostLocalProcessWindowWithIgnore(150, 195, x11_window3));
 
   XDestroyWindow(xdisplay(), static_cast<uint32_t>(x11_window2));
 }
 
 // Test that the minimized state is properly handled.
 TEST_F(X11TopmostWindowFinderTest, Minimized) {
-  std::unique_ptr<Widget> widget1(
-      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  aura::Window* window1 = widget1->GetNativeWindow();
-  x11::Window x11_window1 =
-      static_cast<x11::Window>(window1->GetHost()->GetAcceleratedWidget());
+  TestPlatformWindowDelegate delegate;
+  auto window1 = CreateAndShowX11Window(&delegate, {100, 100, 100, 100});
+  auto x11_window1 = static_cast<x11::Window>(window1->GetWidget());
+
   x11::Window x11_window2 = CreateAndShowXWindow(gfx::Rect(300, 100, 100, 100));
 
   x11::Window windows[] = {x11_window1, x11_window2};
@@ -289,14 +379,16 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
-  std::unique_ptr<Widget> widget1(
-      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 = static_cast<x11::Window>(
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-  auto shape1 = std::make_unique<Widget::ShapeRects>();
+  TestPlatformWindowDelegate delegate;
+  auto x11_window1 = CreateAndShowX11Window(&delegate, {100, 100, 100, 100});
+  auto window1 = static_cast<x11::Window>(x11_window1->GetWidget());
+
+  auto shape1 = std::make_unique<std::vector<gfx::Rect>>();
   shape1->emplace_back(0, 10, 10, 90);
   shape1->emplace_back(10, 0, 90, 100);
-  widget1->SetShape(std::move(shape1));
+  gfx::Transform transform;
+  transform.Scale(1.0f, 1.0f);
+  x11_window1->SetShape(std::move(shape1), transform);
 
   SkRegion skregion2;
   skregion2.op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
@@ -333,14 +425,15 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
-  std::unique_ptr<Widget> widget1(
-      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 = static_cast<x11::Window>(
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-  auto shape1 = std::make_unique<Widget::ShapeRects>();
+  TestPlatformWindowDelegate delegate;
+  auto x11_window1 = CreateAndShowX11Window(&delegate, {100, 100, 100, 100});
+  auto window1 = static_cast<x11::Window>(x11_window1->GetWidget());
+
+  auto shape1 = std::make_unique<std::vector<gfx::Rect>>();
   shape1->emplace_back();
-  // Widget takes ownership of |shape1|.
-  widget1->SetShape(std::move(shape1));
+  gfx::Transform transform;
+  transform.Scale(1.0f, 1.0f);
+  x11_window1->SetShape(std::move(shape1), transform);
 
   x11::Window windows[] = {window1};
   StackingClientListWaiter stack_waiter(windows, base::size(windows));
@@ -355,16 +448,18 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
-  std::unique_ptr<Widget> widget1(
-      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 = static_cast<x11::Window>(
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-  auto shape1 = std::make_unique<Widget::ShapeRects>();
+  TestPlatformWindowDelegate delegate;
+  auto x11_window1 = CreateAndShowX11Window(&delegate, {100, 100, 100, 100});
+  auto window1 = static_cast<x11::Window>(x11_window1->GetWidget());
+
+  auto shape1 = std::make_unique<std::vector<gfx::Rect>>();
   shape1->emplace_back();
-  widget1->SetShape(std::move(shape1));
+  gfx::Transform transform;
+  transform.Scale(1.0f, 1.0f);
+  x11_window1->SetShape(std::move(shape1), transform);
 
   // Remove the shape - this is now just a normal window.
-  widget1->SetShape(nullptr);
+  x11_window1->SetShape(nullptr, transform);
 
   x11::Window windows[] = {window1};
   StackingClientListWaiter stack_waiter(windows, base::size(windows));

@@ -172,10 +172,6 @@ enum class PlayPromiseRejectReason {
 static const base::TimeDelta kStalledNotificationInterval =
     base::TimeDelta::FromSeconds(3);
 
-// Limits the range of media playback rate.
-const double kMinRate = 0.0625;
-const double kMaxRate = 16.0;
-
 void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
   ParsedContentType parsed_content_type(content_type);
@@ -385,7 +381,8 @@ void RecordShowControlsUsage(const HTMLMediaElement* element,
 }
 
 bool IsValidPlaybackRate(double rate) {
-  return rate == 0.0 || (rate >= kMinRate && rate <= kMaxRate);
+  return rate == 0.0 || (rate >= HTMLMediaElement::kMinPlaybackRate &&
+                         rate <= HTMLMediaElement::kMaxPlaybackRate);
 }
 
 std::ostream& operator<<(std::ostream& stream,
@@ -394,6 +391,11 @@ std::ostream& operator<<(std::ostream& stream,
 }
 
 }  // anonymous namespace
+
+// TODO(https://crbug.com/752720): Remove this once C++17 is adopted (and hence,
+// `inline constexpr` is supported).
+constexpr double HTMLMediaElement::kMinPlaybackRate;
+constexpr double HTMLMediaElement::kMaxPlaybackRate;
 
 MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
     const ContentType& content_type) {
@@ -575,6 +577,10 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
 
   autoplay_policy_->DidMoveToNewDocument(old_document);
+
+  if (cue_timeline_) {
+    cue_timeline_->DidMoveToNewDocument(old_document);
+  }
 
   if (should_delay_load_event_) {
     GetDocument().IncrementLoadEventDelayCount();
@@ -945,11 +951,10 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
     // 4.9 - Set the initial playback position to 0.
     SetOfficialPlaybackPosition(0);
     ScheduleTimeupdateEvent(false);
+    GetCueTimeline().OnReadyStateReset();
 
     // 4.10 - Set the timeline offset to Not-a-Number (NaN).
     // 4.11 - Update the duration attribute to Not-a-Number (NaN).
-
-    GetCueTimeline().UpdateActiveCues(0);
   } else if (!paused_) {
     // TODO(foolip): There is a proposal to always reset the paused state
     // in the media element load algorithm, to avoid a bogus play() promise
@@ -1940,6 +1945,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     if (autoplay_policy_->RequestAutoplayByAttribute()) {
       paused_ = false;
       SetShowPosterFlag(false);
+      GetCueTimeline().InvokeTimeMarchesOn();
       ScheduleEvent(event_type_names::kPlay);
       ScheduleNotifyPlaying();
       can_autoplay_ = false;
@@ -1949,7 +1955,6 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
   }
 
   UpdatePlayState();
-  GetCueTimeline().UpdateActiveCues(currentTime());
 }
 
 void HTMLMediaElement::SetShowPosterFlag(bool value) {
@@ -2159,6 +2164,9 @@ void HTMLMediaElement::FinishSeek() {
   // handle this, but may be skipped paused or waiting for data.
   SetOfficialPlaybackPosition(CurrentPlaybackPosition());
 
+  // 15 - Run the time marches on steps.
+  GetCueTimeline().InvokeTimeMarchesOn();
+
   // 16 - Queue a task to fire a simple event named timeupdate at the element.
   ScheduleTimeupdateEvent(false);
 
@@ -2353,25 +2361,23 @@ void HTMLMediaElement::setPlaybackRate(double rate,
     ScheduleEvent(event_type_names::kRatechange);
   }
 
-  UpdatePlaybackRate();
+  // FIXME: remove web_media_player_ check once we figure out how
+  // web_media_player_ is going out of sync with readystate.
+  // web_media_player_ is cleared but readystate is not set to kHaveNothing.
+  if (web_media_player_) {
+    if (PotentiallyPlaying())
+      web_media_player_->SetRate(playbackRate());
+
+    web_media_player_->OnTimeUpdate();
+  }
+
+  if (cue_timeline_ && PotentiallyPlaying())
+    cue_timeline_->OnPlaybackRateUpdated();
 }
 
 HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::GetDirectionOfPlayback()
     const {
   return playback_rate_ >= 0 ? kForward : kBackward;
-}
-
-void HTMLMediaElement::UpdatePlaybackRate() {
-  // FIXME: remove web_media_player_ check once we figure out how
-  // web_media_player_ is going out of sync with readystate.
-  // web_media_player_ is cleared but readystate is not set to kHaveNothing.
-  if (!web_media_player_)
-    return;
-
-  if (PotentiallyPlaying())
-    web_media_player_->SetRate(playbackRate());
-
-  web_media_player_->OnTimeUpdate();
 }
 
 bool HTMLMediaElement::ended() const {
@@ -2537,6 +2543,7 @@ void HTMLMediaElement::PlayInternal() {
   if (paused_) {
     paused_ = false;
     SetShowPosterFlag(false);
+    GetCueTimeline().InvokeTimeMarchesOn();
     ScheduleEvent(event_type_names::kPlay);
 
     if (ready_state_ <= kHaveCurrentData)
@@ -2796,11 +2803,6 @@ void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
 
   if (!seeking_)
     ScheduleTimeupdateEvent(true);
-
-  if (!playbackRate())
-    return;
-
-  GetCueTimeline().UpdateActiveCues(currentTime());
 }
 
 void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
@@ -2995,7 +2997,7 @@ void HTMLMediaElement::ForgetResourceSpecificTracks() {
   // algorithm.  The order is explicitly specified as text, then audio, and
   // finally video.  Also 'removetrack' events should not be fired.
   if (text_tracks_) {
-    TrackDisplayUpdateScope scope(GetCueTimeline());
+    auto scope = GetCueTimeline().BeginIgnoreUpdateScope();
     text_tracks_->RemoveAllInbandTracks();
   }
 
@@ -3334,8 +3336,6 @@ void HTMLMediaElement::SourceWasRemoved(HTMLSourceElement* source) {
 void HTMLMediaElement::TimeChanged() {
   DVLOG(3) << "timeChanged(" << *this << ")";
 
-  GetCueTimeline().UpdateActiveCues(currentTime());
-
   // 4.8.12.9 steps 12-14. Needed if no ReadyState change is associated with the
   // seek.
   if (seeking_ && ready_state_ >= kHaveCurrentData &&
@@ -3360,6 +3360,11 @@ void HTMLMediaElement::TimeChanged() {
       // If the media element has still ended playback, and the direction of
       // playback is still forwards, and paused is false,
       if (!paused_) {
+        // Trigger an update to `official_playback_position_` (if necessary)
+        // BEFORE setting `paused_ = false`, to ensure a final sync with
+        // `WebMediaPlayer()->CurrentPlaybackPosition()`.
+        OfficialPlaybackPosition();
+
         // changes paused to true and fires a simple event named pause at the
         // media element.
         paused_ = true;
@@ -3565,6 +3570,14 @@ void HTMLMediaElement::UpdatePlayState() {
       GetWebMediaPlayer()->SetRate(playbackRate());
       GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
       GetWebMediaPlayer()->Play();
+
+      // These steps should not be necessary, but if `play()` is called before
+      // a source change, we may get into a state where `paused_ == false` and
+      // `show_poster_flag_ == true`. My (cassew@google.com) interpretation of
+      // the spec is that we should not be playing in this scenario.
+      // https://crbug.com/633591
+      SetShowPosterFlag(false);
+      GetCueTimeline().InvokeTimeMarchesOn();
     }
 
     StartPlaybackProgressTimer();
@@ -3579,6 +3592,8 @@ void HTMLMediaElement::UpdatePlayState() {
     double time = currentTime();
     if (time > last_seek_time_)
       AddPlayedRange(last_seek_time_, time);
+
+    GetCueTimeline().OnPause();
   }
 
   UpdateLayoutObject();
@@ -3656,10 +3671,10 @@ void HTMLMediaElement::ContextDestroyed() {
   current_source_node_ = nullptr;
   official_playback_position_ = 0;
   official_playback_position_needs_update_ = true;
-  GetCueTimeline().UpdateActiveCues(0);
   playing_ = false;
   paused_ = true;
   seeking_ = false;
+  GetCueTimeline().OnReadyStateReset();
 
   UpdateLayoutObject();
 
@@ -3977,13 +3992,11 @@ void HTMLMediaElement::ConfigureTextTrackDisplay() {
   if (!have_visible_text_track && !GetMediaControls())
     return;
 
-  GetCueTimeline().UpdateActiveCues(currentTime());
-
-  // Note: The "time marches on" algorithm (updateActiveCues) runs the "rules
-  // for updating the text track rendering" (updateTextTrackDisplay) only for
-  // "affected tracks", i.e. tracks where the the active cues have changed.
-  // This misses cues in tracks that changed mode between hidden and showing.
-  // This appears to be a spec bug, which we work around here:
+  // Note: The "time marches on" algorithm |CueTimeline::TimeMarchesOn| runs
+  // the "rules for updating the text track rendering" (updateTextTrackDisplay)
+  // only for "affected tracks", i.e. tracks where the the active cues have
+  // changed. This misses cues in tracks that changed mode between hidden and
+  // showing. This appears to be a spec bug, which we work around here:
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28236
   UpdateTextTrackDisplay();
 }

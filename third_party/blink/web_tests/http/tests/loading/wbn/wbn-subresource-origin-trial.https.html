@@ -26,11 +26,16 @@ promise_test(async (t) => {
   const wbn_url = 'https://127.0.0.1:8443/loading/wbn/resources/wbn/wbn-subresource-origin-trial.wbn';
   const script_url = 'https://localhost:8443/loading/wbn/resources/server/wbn-subresource-origin-trial/script.js';
 
+  const SubresourceWebBundles = 3446;  // From web_feature.mojom
+  assert_false(window.internals.isUseCounted(document, SubresourceWebBundles));
+
   const link = document.createElement('link');
   link.rel = 'webbundle';
   link.href = wbn_url;
   link.resources.add(script_url);
   document.body.appendChild(link);
+
+  assert_true(window.internals.isUseCounted(document, SubresourceWebBundles));
 
   const result_promise = new Promise((resolve) => {
       // This function will be called from script.js

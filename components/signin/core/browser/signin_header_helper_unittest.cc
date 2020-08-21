@@ -488,7 +488,23 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
   }
 
   {
-    // Missing authorization code.
+    // Signin response with no_authorization_code and missing
+    // authorization_code.
+    DiceResponseParams params = BuildDiceSigninResponseParams(
+        base::StringPrintf("action=SIGNIN,id=%s,email=%s,authuser=%i,no_"
+                           "authorization_code=true",
+                           kGaiaID, kEmail, kSessionIndex));
+    EXPECT_EQ(DiceAction::SIGNIN, params.user_intention);
+    ASSERT_TRUE(params.signin_info);
+    EXPECT_EQ(kGaiaID, params.signin_info->account_info.gaia_id);
+    EXPECT_EQ(kEmail, params.signin_info->account_info.email);
+    EXPECT_EQ(kSessionIndex, params.signin_info->account_info.session_index);
+    EXPECT_TRUE(params.signin_info->authorization_code.empty());
+    EXPECT_TRUE(params.signin_info->no_authorization_code);
+  }
+
+  {
+    // Missing authorization code and no_authorization_code.
     DiceResponseParams params = BuildDiceSigninResponseParams(
         base::StringPrintf("action=SIGNIN,id=%s,email=%s,authuser=%i", kGaiaID,
                            kEmail, kSessionIndex));

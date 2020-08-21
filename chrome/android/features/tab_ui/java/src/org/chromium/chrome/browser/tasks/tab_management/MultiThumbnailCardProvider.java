@@ -18,6 +18,7 @@ import android.graphics.drawable.Drawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.MathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -45,7 +46,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
     private final float mRadius;
     private final float mFaviconCirclePadding;
-    private final int mSize;
+    private final int mThumbnailWidth;
+    private final int mThumbnailHeight;
     private final Paint mEmptyThumbnailPaint;
     private final Paint mThumbnailFramePaint;
     private final Paint mTextPaint;
@@ -81,8 +83,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
         private void initializeAndStartFetching(PseudoTab tab) {
             // Initialize mMultiThumbnailBitmap.
-            int width = mSize;
-            int height = mSize;
+            int width = mThumbnailWidth;
+            int height = mThumbnailHeight;
             mMultiThumbnailBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             mCanvas = new Canvas(mMultiThumbnailBitmap);
             mCanvas.drawColor(Color.TRANSPARENT);
@@ -195,16 +197,19 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     MultiThumbnailCardProvider(Context context, TabContentManager tabContentManager,
             TabModelSelector tabModelSelector) {
         Resources resource = context.getResources();
+        float expectedThumbnailAspectRatio =
+                (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
+        expectedThumbnailAspectRatio = MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
+
+        mThumbnailWidth = (int) resource.getDimension(R.dimen.tab_grid_thumbnail_card_default_size);
+        mThumbnailHeight = (int) (mThumbnailWidth / expectedThumbnailAspectRatio);
 
         mTabContentManager = tabContentManager;
         mTabModelSelector = tabModelSelector;
         mRadius = resource.getDimension(R.dimen.tab_list_mini_card_radius);
-        mSize = (int) resource.getDimension(R.dimen.tab_grid_thumbnail_card_default_size);
         mFaviconCirclePadding =
                 resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_padding);
-        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
+
         mTabListFaviconProvider = new TabListFaviconProvider(context, false);
 
         // Initialize Paints to use.
@@ -243,35 +248,49 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                 resource.getColor(R.color.modern_grey_800_alpha_38));
 
         // Initialize Rects for thumbnails.
-        float thumbnailPadding = resource.getDimension(R.dimen.tab_list_card_padding);
-        float thumbnailFaviconPadding =
-                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_padding);
+        float thumbnailHorizontalPadding = resource.getDimension(R.dimen.tab_list_card_padding);
+        float thumbnailVerticalPadding = thumbnailHorizontalPadding / expectedThumbnailAspectRatio;
         float thumbnailFaviconBackgroundPadding =
                 resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_frame_padding);
+        float thumbnailFaviconPaddingFromBackground =
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_padding_from_frame);
+        float centerX = mThumbnailWidth * 0.5f;
+        float centerY = mThumbnailHeight * 0.5f;
+        float halfThumbnailHorizontalPadding = thumbnailHorizontalPadding / 2;
+        float halfThumbnailVerticalPadding = thumbnailVerticalPadding / 2;
 
-        mThumbnailRects.add(new RectF(thumbnailPadding, thumbnailPadding,
-                mSize / 2 - thumbnailPadding / 2, mSize / 2 - thumbnailPadding / 2));
-        mThumbnailRects.add(new RectF(mSize / 2 + thumbnailPadding / 2, thumbnailPadding,
-                mSize - thumbnailPadding, mSize / 2 - thumbnailPadding / 2));
-        mThumbnailRects.add(new RectF(thumbnailPadding, mSize / 2 + thumbnailPadding / 2,
-                mSize / 2 - thumbnailPadding / 2, mSize - thumbnailPadding));
-        mThumbnailRects.add(
-                new RectF(mSize / 2 + thumbnailPadding / 2, mSize / 2 + thumbnailPadding / 2,
-                        mSize - thumbnailPadding, mSize - thumbnailPadding));
+        mThumbnailRects.add(new RectF(thumbnailHorizontalPadding, thumbnailVerticalPadding,
+                centerX - halfThumbnailHorizontalPadding, centerY - halfThumbnailVerticalPadding));
+        mThumbnailRects.add(new RectF(centerX + halfThumbnailHorizontalPadding,
+                thumbnailVerticalPadding, mThumbnailWidth - thumbnailHorizontalPadding,
+                centerY - halfThumbnailVerticalPadding));
+        mThumbnailRects.add(new RectF(thumbnailHorizontalPadding,
+                centerY + halfThumbnailVerticalPadding, centerX - halfThumbnailHorizontalPadding,
+                mThumbnailHeight - thumbnailVerticalPadding));
+        mThumbnailRects.add(new RectF(centerX + halfThumbnailHorizontalPadding,
+                centerY + halfThumbnailVerticalPadding,
+                mThumbnailWidth - thumbnailHorizontalPadding,
+                mThumbnailHeight - thumbnailVerticalPadding));
 
         // Initialize Rects for favicons and favicon backgrounds.
+        final float faviconBackgroundRadius =
+                mThumbnailRects.get(0).width() / 2f - thumbnailFaviconBackgroundPadding;
         for (int i = 0; i < 4; i++) {
             RectF thumbnailRect = mThumbnailRects.get(i);
-            mFaviconBackgroundRects.add(
-                    new RectF(thumbnailRect.left + thumbnailFaviconBackgroundPadding,
-                            thumbnailRect.top + thumbnailFaviconBackgroundPadding,
-                            thumbnailRect.right - thumbnailFaviconBackgroundPadding,
-                            thumbnailRect.bottom - thumbnailFaviconBackgroundPadding));
 
-            mFaviconRects.add(new Rect(Math.round(thumbnailRect.left + thumbnailFaviconPadding),
-                    Math.round(thumbnailRect.top + thumbnailFaviconPadding),
-                    Math.round(thumbnailRect.right - thumbnailFaviconPadding),
-                    Math.round(thumbnailRect.bottom - thumbnailFaviconPadding)));
+            float thumbnailRectCenterX = thumbnailRect.centerX();
+            float thumbnailRectCenterY = thumbnailRect.centerY();
+            RectF faviconBackgroundRect = new RectF(thumbnailRectCenterX, thumbnailRectCenterY,
+                    thumbnailRectCenterX, thumbnailRectCenterY);
+            faviconBackgroundRect.inset(-faviconBackgroundRadius, -faviconBackgroundRadius);
+            mFaviconBackgroundRects.add(faviconBackgroundRect);
+
+            RectF faviconRectF = new RectF(faviconBackgroundRect);
+            faviconRectF.inset(
+                    thumbnailFaviconPaddingFromBackground, thumbnailFaviconPaddingFromBackground);
+            Rect faviconRect = new Rect();
+            faviconRectF.roundOut(faviconRect);
+            mFaviconRects.add(faviconRect);
         }
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -291,6 +310,9 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     }
 
     public void initWithNative() {
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
         mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
     }
 

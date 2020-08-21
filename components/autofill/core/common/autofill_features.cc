@@ -97,6 +97,12 @@ const base::Feature kAutofillEnableSupportForMoreStructureInNames{
     "AutofillEnableSupportForMoreStructureInNames",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls if Autofill supports merging subset names.
+// TODO(crbug.com/1098943): Remove once launched.
+const base::Feature kAutofillEnableSupportForMergingSubsetNames{
+    "AutofillEnableSupportForMergingSubsetNames",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{

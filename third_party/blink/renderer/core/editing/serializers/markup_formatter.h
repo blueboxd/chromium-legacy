@@ -82,11 +82,9 @@ class MarkupFormatter final {
                               const String& value,
                               bool document_is_html);
   static void AppendCDATASection(StringBuilder&, const String&);
-  static void AppendCharactersReplacingEntities(StringBuilder&,
-                                                const String&,
-                                                unsigned,
-                                                unsigned,
-                                                EntityMask);
+  static void AppendCharactersReplacingEntities(StringBuilder& result,
+                                                const StringView& source,
+                                                EntityMask entity_mask);
   static void AppendComment(StringBuilder&, const String&);
   static void AppendDocumentType(StringBuilder&, const DocumentType&);
   static void AppendProcessingInstruction(StringBuilder&,

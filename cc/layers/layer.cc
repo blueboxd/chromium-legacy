@@ -80,7 +80,6 @@ Layer::Inputs::Inputs(int layer_id)
       contents_opaque_for_text(false),
       is_drawable(false),
       double_sided(true),
-      has_will_change_transform_hint(false),
       background_color(0) {}
 
 Layer::Inputs::~Inputs() = default;
@@ -1353,7 +1352,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->set_needs_show_scrollbars(true);
 
   layer->UnionUpdateRect(inputs_.update_rect);
-  layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
 
   // debug_info_->invalidations, if exist, will be cleared in the function.
@@ -1454,13 +1452,6 @@ void Layer::OnOpacityAnimated(float opacity) {
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   EnsureLayerTreeInputs().transform = transform;
-}
-
-void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
-  if (inputs_.has_will_change_transform_hint == has_will_change)
-    return;
-  inputs_.has_will_change_transform_hint = has_will_change;
-  SetNeedsCommit();
 }
 
 void Layer::SetTrilinearFiltering(bool trilinear_filtering) {

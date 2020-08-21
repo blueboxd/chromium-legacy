@@ -302,25 +302,6 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
 
     canvas->DrawRect(draw_bounds, flags);
   }
-
-  if (audio_device_selector_availability_) {
-    // Draw a gradient to fade the color background of the audio device picker
-    // and the image together.
-    gfx::Rect draw_bounds = GetBottomGradientBounds(*view);
-
-    const SkColor colors[2] = {
-        background_color, SkColorSetA(background_color, SK_AlphaTRANSPARENT)};
-    const SkPoint points[2] = {gfx::PointToSkPoint(draw_bounds.bottom_center()),
-                               gfx::PointToSkPoint(draw_bounds.top_center())};
-
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setShader(cc::PaintShader::MakeLinearGradient(points, colors, nullptr,
-                                                        2, SkTileMode::kClamp));
-
-    canvas->DrawRect(draw_bounds, flags);
-  }
 }
 
 void MediaNotificationBackground::UpdateArtwork(const gfx::ImageSkia& image) {
@@ -361,14 +342,6 @@ void MediaNotificationBackground::UpdateFavicon(const gfx::ImageSkia& icon) {
     return;
 
   UpdateColorsInternal();
-}
-
-void MediaNotificationBackground::UpdateAudioDeviceSelectorAvailability(
-    bool availability) {
-  if (audio_device_selector_availability_ == availability)
-    return;
-
-  audio_device_selector_availability_ = availability;
 }
 
 SkColor MediaNotificationBackground::GetBackgroundColor(
@@ -446,20 +419,6 @@ gfx::Rect MediaNotificationBackground::GetGradientBounds(
   return owner.GetMirroredRect(gfx::Rect(
       view_bounds.width() - GetArtworkVisibleWidth(view_bounds.size()),
       view_bounds.y(), kMediaImageGradientWidth, view_bounds.height()));
-}
-
-gfx::Rect MediaNotificationBackground::GetBottomGradientBounds(
-    const views::View& owner) const {
-  if (artwork_.isNull())
-    return gfx::Rect(0, 0, 0, 0);
-
-  const gfx::Rect& view_bounds = owner.GetContentsBounds();
-  return owner.GetMirroredRect(gfx::Rect(
-      gfx::Point(
-          view_bounds.width() - GetArtworkVisibleWidth(view_bounds.size()),
-          view_bounds.bottom() - kMediaImageGradientWidth),
-      gfx::Size(GetArtworkVisibleWidth(view_bounds.size()),
-                kMediaImageGradientWidth)));
 }
 
 SkPoint MediaNotificationBackground::GetGradientStartPoint(

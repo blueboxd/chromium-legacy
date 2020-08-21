@@ -226,6 +226,11 @@ class CC_EXPORT PictureLayerImpl
   // Returns true if the LCD state changed.
   bool UpdateCanUseLCDText(bool raster_translation_aligns_pixels);
 
+  // TODO(crbug.com/1114504): For now this checks the immediate transform node
+  // only. The callers may actually want to know if this layer or ancestor has
+  // will change transform.
+  bool HasWillChangeTransformHint() const;
+
   PictureLayerImpl* twin_layer_;
 
   std::unique_ptr<PictureLayerTilingSet> tilings_;

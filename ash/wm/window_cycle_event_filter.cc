@@ -32,74 +32,28 @@ WindowCycleEventFilter::~WindowCycleEventFilter() {
 void WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // Until the alt key is released, all key events except the trigger key press
   // (which is handled by the accelerator controller to call Step) are handled
-  // by this window cycle controller: https://crbug.com/340339. When the window
-  // cycle list exists, right + left arrow keys are considered trigger keys and
-  // those two are handled by this.
-  const bool is_trigger_key = IsTriggerKey(event);
-  const bool is_exit_key = IsExitKey(event);
-
+  // by this window cycle controller: https://crbug.com/340339.
+  bool is_trigger_key = event->key_code() == ui::VKEY_TAB ||
+                        (debug::DeveloperAcceleratorsEnabled() &&
+                         event->key_code() == ui::VKEY_W);
   if (!is_trigger_key || event->type() != ui::ET_KEY_PRESSED)
     event->StopPropagation();
-
-  if (is_trigger_key)
-    HandleTriggerKey(event);
-  else if (is_exit_key)
-    Shell::Get()->window_cycle_controller()->CompleteCycling();
-  else if (event->key_code() == ui::VKEY_ESCAPE)
+  if (is_trigger_key) {
+    if (event->type() == ui::ET_KEY_RELEASED) {
+      repeat_timer_.Stop();
+    } else if (event->type() == ui::ET_KEY_PRESSED && event->is_repeat() &&
+               !repeat_timer_.IsRunning()) {
+      repeat_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(180),
+          base::BindRepeating(
+              &WindowCycleController::HandleCycleWindow,
+              base::Unretained(Shell::Get()->window_cycle_controller()),
+              event->IsShiftDown() ? WindowCycleController::BACKWARD
+                                   : WindowCycleController::FORWARD));
+    }
+  } else if (event->key_code() == ui::VKEY_ESCAPE) {
     Shell::Get()->window_cycle_controller()->CancelCycling();
-}
-
-void WindowCycleEventFilter::HandleTriggerKey(ui::KeyEvent* event) {
-  if (event->type() == ui::ET_KEY_RELEASED) {
-    repeat_timer_.Stop();
-  } else if (ShouldRepeatKey(event)) {
-    repeat_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(180),
-        base::BindRepeating(
-            &WindowCycleController::HandleCycleWindow,
-            base::Unretained(Shell::Get()->window_cycle_controller()),
-            GetDirection(event)));
-  } else if (event->key_code() == ui::VKEY_LEFT ||
-             event->key_code() == ui::VKEY_RIGHT) {
-    Shell::Get()->window_cycle_controller()->HandleCycleWindow(
-        GetDirection(event));
   }
-}
-
-bool WindowCycleEventFilter::IsTriggerKey(ui::KeyEvent* event) const {
-  const bool interactive_trigger_key =
-      features::IsInteractiveWindowCycleListEnabled() &&
-      (event->key_code() == ui::VKEY_LEFT ||
-       event->key_code() == ui::VKEY_RIGHT);
-
-  return event->key_code() == ui::VKEY_TAB ||
-         (debug::DeveloperAcceleratorsEnabled() &&
-          event->key_code() == ui::VKEY_W) ||
-         interactive_trigger_key;
-}
-
-bool WindowCycleEventFilter::IsExitKey(ui::KeyEvent* event) const {
-  return features::IsInteractiveWindowCycleListEnabled() &&
-         (event->key_code() == ui::VKEY_RETURN ||
-          event->key_code() == ui::VKEY_SPACE);
-}
-
-bool WindowCycleEventFilter::ShouldRepeatKey(ui::KeyEvent* event) const {
-  return event->type() == ui::ET_KEY_PRESSED && event->is_repeat() &&
-         !repeat_timer_.IsRunning();
-}
-
-WindowCycleController::Direction WindowCycleEventFilter::GetDirection(
-    ui::KeyEvent* event) const {
-  DCHECK(IsTriggerKey(event));
-
-  // Move backward if left arrow, forward if right arrow, tab, or W. Shift flips
-  // the direction.
-  const bool left = event->key_code() == ui::VKEY_LEFT;
-  const bool shift = event->IsShiftDown();
-
-  return (left ^ shift) ? WindowCycleController::BACKWARD
-                        : WindowCycleController::FORWARD;
 }
 
 void WindowCycleEventFilter::OnMouseEvent(ui::MouseEvent* event) {

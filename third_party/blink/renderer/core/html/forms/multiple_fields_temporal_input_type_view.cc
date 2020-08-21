@@ -707,4 +707,8 @@ String MultipleFieldsTemporalInputTypeView::RawValue() const {
   return GetDateTimeEditElement()->innerText();
 }
 
+wtf_size_t MultipleFieldsTemporalInputTypeView::FocusedFieldIndex() const {
+  return GetDateTimeEditElement()->FocusedFieldIndex();
+}
+
 }  // namespace blink

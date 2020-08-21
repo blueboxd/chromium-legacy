@@ -106,6 +106,13 @@ void TimeView::SetTextFont(const gfx::FontList& font_list) {
   vertical_label_minutes_->SetFontList(font_list);
 }
 
+void TimeView::SetTextShadowValues(const gfx::ShadowValues& shadows) {
+  horizontal_label_->SetShadows(shadows);
+
+  vertical_label_hours_->SetShadows(shadows);
+  vertical_label_minutes_->SetShadows(shadows);
+}
+
 void TimeView::OnDateFormatChanged() {
   UpdateTimeFormat();
 }

@@ -256,6 +256,7 @@ ATTRIBUTE_MIN_VERSION = 'MinVersion'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
 ATTRIBUTE_STABLE = 'Stable'
 ATTRIBUTE_SYNC = 'Sync'
+ATTRIBUTE_UNLIMITED_SIZE = 'UnlimitedSize'
 
 
 class NamedValue(object):
@@ -975,6 +976,11 @@ class Method(object):
   def sync(self):
     return self.attributes.get(ATTRIBUTE_SYNC) \
         if self.attributes else None
+
+  @property
+  def unlimited_message_size(self):
+    return self.attributes.get(ATTRIBUTE_UNLIMITED_SIZE) \
+        if self.attributes else False
 
   def __eq__(self, rhs):
     return (isinstance(rhs, Method) and

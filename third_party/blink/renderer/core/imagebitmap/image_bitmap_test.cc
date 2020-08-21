@@ -255,8 +255,9 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
       SharedGpuContext::ContextProviderWrapper();
   CanvasColorParams color_params;
   auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
-      IntSize(100, 100), context_provider_wrapper, kLow_SkFilterQuality,
-      color_params, true /*is_origin_top_left*/, RasterMode::kGPU,
+      IntSize(100, 100), kLow_SkFilterQuality, color_params,
+      CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
+      RasterMode::kGPU, true /*is_origin_top_left*/,
       0u /*shared_image_usage_flags*/);
 
   scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot();

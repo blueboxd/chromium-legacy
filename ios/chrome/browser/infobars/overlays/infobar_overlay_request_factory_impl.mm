@@ -56,8 +56,7 @@ InfobarOverlayRequestFactoryImpl::CreateInfobarRequest(
   DCHECK(infobar);
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   FactoryHelper* factory = factory_storages_[infobar_ios->infobar_type()][type];
-  DCHECK(factory);
-  return factory->CreateInfobarRequest(infobar_ios);
+  return factory ? factory->CreateInfobarRequest(infobar_ios) : nullptr;
 }
 
 void InfobarOverlayRequestFactoryImpl::SetUpFactories(

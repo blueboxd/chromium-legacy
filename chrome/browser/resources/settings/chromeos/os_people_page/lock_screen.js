@@ -18,6 +18,7 @@ Polymer({
   is: 'settings-lock-screen',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     LockStateBehavior,
     WebUIListenerBehavior,
@@ -147,6 +148,18 @@ Polymer({
 
     /** @private */
     showPinAutosubmitDialog_: Boolean,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kLockScreen,
+        chromeos.settings.mojom.Setting.kChangeAuthPin,
+      ]),
+    },
   },
 
   /** @private {?settings.FingerprintBrowserProxy} */
@@ -172,6 +185,7 @@ Polymer({
     if (newRoute == settings.routes.LOCK_SCREEN) {
       this.updateUnlockType(/*activeModesChanged=*/ false);
       this.updateNumFingerprints_();
+      this.attemptDeepLink();
     }
 
     if (this.requestPasswordIfApplicable_()) {
@@ -268,7 +282,13 @@ Polymer({
 
     if (settings.Router.getInstance().getCurrentRoute() ===
         settings.routes.LOCK_SCREEN) {
-      this.focusDefaultElement_();
+      // Show deep links again if the user authentication dialog just closed.
+      this.attemptDeepLink().then(result => {
+        // If there were no supported deep links, focus the default element.
+        if (result.pendingSettingId == null) {
+          this.focusDefaultElement_();
+        }
+      });
     }
   },
 

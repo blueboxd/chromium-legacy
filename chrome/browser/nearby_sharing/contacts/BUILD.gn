@@ -4,6 +4,10 @@
 
 source_set("contacts") {
   sources = [
+    "nearby_share_contact_downloader.cc",
+    "nearby_share_contact_downloader.h",
+    "nearby_share_contact_downloader_impl.cc",
+    "nearby_share_contact_downloader_impl.h",
     "nearby_share_contact_manager.cc",
     "nearby_share_contact_manager.h",
     "nearby_share_contact_manager_impl.cc",
@@ -12,6 +16,9 @@ source_set("contacts") {
 
   deps = [
     "//base",
+    "//chrome/browser/nearby_sharing/client",
+    "//chrome/browser/nearby_sharing/common",
+    "//chrome/browser/nearby_sharing/logging",
     "//chrome/browser/nearby_sharing/proto",
   ]
 }
@@ -20,6 +27,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_nearby_share_contact_downloader.cc",
+    "fake_nearby_share_contact_downloader.h",
     "fake_nearby_share_contact_manager.cc",
     "fake_nearby_share_contact_manager.h",
   ]
@@ -28,5 +37,23 @@ source_set("test_support") {
     ":contacts",
     "//base",
     "//chrome/browser/nearby_sharing/proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "nearby_share_contact_downloader_impl_unittest.cc" ]
+
+  deps = [
+    ":contacts",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/browser/nearby_sharing/client",
+    "//chrome/browser/nearby_sharing/client:test_support",
+    "//chrome/browser/nearby_sharing/common",
+    "//chrome/browser/nearby_sharing/proto",
+    "//testing/gtest",
   ]
 }

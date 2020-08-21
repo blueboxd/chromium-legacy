@@ -206,6 +206,8 @@ android_library("cast_shell_java") {
     if (enable_assistant) {
       deps += [ "//chromecast/internal/assistant/ui:boot_parameters_java" ]
     }
+  } else if (is_android_appliance) {
+    deps += [ "//chromecast/internal/assistant/ui:boot_parameters_java" ]
   }
 }
 

@@ -567,6 +567,10 @@ def AddSkiaGoldTestOptions(parser):
   """Adds Skia Gold test options to |parser|."""
   parser = parser.add_argument_group("Skia Gold arguments")
   parser.add_argument(
+      '--code-review-system',
+      help='A non-default code review system to pass to pass to Gold, if '
+      'applicable')
+  parser.add_argument(
       '--git-revision', help='The git commit currently being tested.')
   parser.add_argument(
       '--gerrit-issue',

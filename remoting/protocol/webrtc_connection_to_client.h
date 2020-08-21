@@ -68,6 +68,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
       scoped_refptr<webrtc::MediaStreamInterface> stream) override;
   void OnWebrtcTransportMediaStreamRemoved(
       scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+  void OnWebrtcTransportRouteChanged(const TransportRoute& route) override;
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;

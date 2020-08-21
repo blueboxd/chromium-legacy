@@ -46,17 +46,6 @@ bool ShouldEnableWebRtc(bool is_advertising,
   return true;
 }
 
-InitializeFileResult CreateAndOpenFile(base::FilePath file_path) {
-  base::FilePath unique_path = base::GetUniquePath(file_path);
-  InitializeFileResult result;
-  result.output_file.Initialize(
-      unique_path,
-      base::File::Flags::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
-  result.input_file.Initialize(
-      unique_path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
-  return result;
-}
-
 }  // namespace
 
 NearbyConnectionsManagerImpl::NearbyConnectionsManagerImpl(
@@ -68,11 +57,11 @@ NearbyConnectionsManagerImpl::NearbyConnectionsManagerImpl(
   nearby_process_observer_.Add(process_manager_);
 }
 
-NearbyConnectionsManagerImpl::~NearbyConnectionsManagerImpl() = default;
+NearbyConnectionsManagerImpl::~NearbyConnectionsManagerImpl() {
+  ClearIncomingPayloads();
+}
 
 void NearbyConnectionsManagerImpl::Shutdown() {
-  // TOOD(crbug/1076008): Implement.
-  // Disconnects from all endpoints and shut down Nearby Connections.
   Reset();
 }
 
@@ -260,18 +249,17 @@ void NearbyConnectionsManagerImpl::RegisterPayloadPath(
     return;
 
   DCHECK(!file_path.empty());
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&CreateAndOpenFile, file_path),
-      base::BindOnce(&NearbyConnectionsManagerImpl::OnFileInitialized,
-                     weak_ptr_factory_.GetWeakPtr(), payload_id,
-                     std::move(callback)));
+
+  file_handler_.CreateFile(
+      file_path, base::BindOnce(&NearbyConnectionsManagerImpl::OnFileCreated,
+                                weak_ptr_factory_.GetWeakPtr(), payload_id,
+                                std::move(callback)));
 }
 
-void NearbyConnectionsManagerImpl::OnFileInitialized(
+void NearbyConnectionsManagerImpl::OnFileCreated(
     int64_t payload_id,
     ConnectionsCallback callback,
-    InitializeFileResult result) {
+    NearbyFileHandler::CreateFileResult result) {
   nearby_connections_->RegisterPayloadFile(
       payload_id, std::move(result.input_file), std::move(result.output_file),
       std::move(callback));
@@ -312,6 +300,11 @@ void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
 }
 
 void NearbyConnectionsManagerImpl::ClearIncomingPayloads() {
+  std::vector<PayloadPtr> payloads;
+  for (auto& it : incoming_payloads_)
+    payloads.push_back(std::move(it.second));
+
+  file_handler_.ReleaseFilePayloads(std::move(payloads));
   incoming_payloads_.clear();
 }
 
@@ -569,6 +562,11 @@ void NearbyConnectionsManagerImpl::Reset() {
   }
   nearby_connections_ = nullptr;
   discovered_endpoints_.clear();
+  pending_outgoing_connections_.clear();
+  payload_status_listeners_.clear();
+  ClearIncomingPayloads();
+  connections_.clear();
+  connection_info_map_.clear();
   discovery_listener_ = nullptr;
   incoming_connection_listener_ = nullptr;
   endpoint_discovery_listener_.reset();

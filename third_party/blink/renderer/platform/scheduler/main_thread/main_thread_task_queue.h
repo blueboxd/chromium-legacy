@@ -97,7 +97,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   enum class QueueClass {
     kNone = 0,
     kLoading = 1,
-    kTimer = 2,
     kCompositor = 4,
 
     kCount = 5,

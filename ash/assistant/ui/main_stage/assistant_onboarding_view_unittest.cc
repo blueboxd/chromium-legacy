@@ -168,90 +168,111 @@ class AssistantOnboardingViewTest : public AssistantAshTestBase {
 // Tests -----------------------------------------------------------------------
 
 TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedGreeting) {
-  // Cache the expected given name.
-  const std::string given_name = Shell::Get()
-                                     ->session_controller()
-                                     ->GetPrimaryUserSession()
-                                     ->user_info.given_name;
+  struct ExpectedGreeting {
+    std::string for_morning;
+    std::string for_afternoon;
+    std::string for_evening;
+    std::string for_night;
+  };
 
-  // Advance clock to midnight tomorrow.
-  AdvanceClock(base::Time::Now().LocalMidnight() +
-               base::TimeDelta::FromHours(24) - base::Time::Now());
+  struct TestCase {
+    std::string display_email;
+    std::string given_name;
+    ExpectedGreeting expected_greeting;
+  };
 
-  {
-    // Verify 4:59 AM.
-    AdvanceClock(base::TimeDelta::FromHours(4) +
-                 base::TimeDelta::FromMinutes(59));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good night %s,", given_name.c_str())));
-  }
+  const std::vector<TestCase> test_cases = {
+      TestCase{/*display_email=*/"empty@test",
+               /*given_name=*/std::string(),
+               ExpectedGreeting{
+                   /*for_morning=*/"Good morning,",
+                   /*for_afternoon=*/"Good afternoon,",
+                   /*for_evening=*/"Good evening,",
+                   /*for_night=*/"Good night,",
+               }},
+      TestCase{/*display_email=*/"david@test",
+               /*given_name=*/"David",
+               ExpectedGreeting{
+                   /*for_morning=*/"Good morning David,",
+                   /*for_afternoon=*/"Good afternoon David,",
+                   /*for_evening=*/"Good evening David,",
+                   /*for_night=*/"Good night David,",
+               }}};
 
-  {
-    // Verify 5:00 AM.
-    AdvanceClock(base::TimeDelta::FromMinutes(1));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good morning %s,", given_name.c_str())));
-  }
+  for (const auto& test_case : test_cases) {
+    CreateAndSwitchActiveUser(test_case.display_email, test_case.given_name);
 
-  {
-    // Verify 11:59 AM.
-    AdvanceClock(base::TimeDelta::FromHours(6) +
-                 base::TimeDelta::FromMinutes(59));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good morning %s,", given_name.c_str())));
-  }
+    // Advance clock to midnight tomorrow.
+    AdvanceClock(base::Time::Now().LocalMidnight() +
+                 base::TimeDelta::FromHours(24) - base::Time::Now());
 
-  {
-    // Verify 12:00 PM.
-    AdvanceClock(base::TimeDelta::FromMinutes(1));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
-                                                   given_name.c_str())));
-  }
+    {
+      // Verify 4:59 AM.
+      AdvanceClock(base::TimeDelta::FromHours(4) +
+                   base::TimeDelta::FromMinutes(59));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_night));
+    }
 
-  {
-    // Verify 4:59 PM.
-    AdvanceClock(base::TimeDelta::FromHours(4) +
-                 base::TimeDelta::FromMinutes(59));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
-                                                   given_name.c_str())));
-  }
+    {
+      // Verify 5:00 AM.
+      AdvanceClock(base::TimeDelta::FromMinutes(1));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_morning));
+    }
 
-  {
-    // Verify 5:00 PM.
-    AdvanceClock(base::TimeDelta::FromMinutes(1));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good evening %s,", given_name.c_str())));
-  }
+    {
+      // Verify 11:59 AM.
+      AdvanceClock(base::TimeDelta::FromHours(6) +
+                   base::TimeDelta::FromMinutes(59));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_morning));
+    }
 
-  {
-    // Verify 10:59 PM.
-    AdvanceClock(base::TimeDelta::FromHours(5) +
-                 base::TimeDelta::FromMinutes(59));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good evening %s,", given_name.c_str())));
-  }
+    {
+      // Verify 12:00 PM.
+      AdvanceClock(base::TimeDelta::FromMinutes(1));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_afternoon));
+    }
 
-  {
-    // Verify 11:00 PM.
-    AdvanceClock(base::TimeDelta::FromMinutes(1));
-    ScopedShowUi scoped_show_ui;
-    EXPECT_EQ(greeting_label()->GetText(),
-              base::UTF8ToUTF16(
-                  base::StringPrintf("Good night %s,", given_name.c_str())));
+    {
+      // Verify 4:59 PM.
+      AdvanceClock(base::TimeDelta::FromHours(4) +
+                   base::TimeDelta::FromMinutes(59));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_afternoon));
+    }
+
+    {
+      // Verify 5:00 PM.
+      AdvanceClock(base::TimeDelta::FromMinutes(1));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_evening));
+    }
+
+    {
+      // Verify 10:59 PM.
+      AdvanceClock(base::TimeDelta::FromHours(5) +
+                   base::TimeDelta::FromMinutes(59));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_evening));
+    }
+
+    {
+      // Verify 11:00 PM.
+      AdvanceClock(base::TimeDelta::FromMinutes(1));
+      ScopedShowUi scoped_show_ui;
+      EXPECT_EQ(greeting_label()->GetText(),
+                base::UTF8ToUTF16(test_case.expected_greeting.for_night));
+    }
   }
 }
 

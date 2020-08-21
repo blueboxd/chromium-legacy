@@ -1661,6 +1661,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
       AnimateToIdealBounds();
     }
     drag_view_->layer()->SetOpacity(1.0f);
+    model_->OnItemReturnedFromRipOff(model_->item_count() - 1);
   }
   DestroyDragIconProxy();
 }

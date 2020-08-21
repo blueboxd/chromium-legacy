@@ -90,6 +90,7 @@ void MediaStringView::InitLayout() {
   SetEnabledColor(kTextColor);
   SetFontList(ambient::util::GetDefaultFontlist().DeriveWithSizeDelta(
       kMediaStringFontSizeDip - kDefaultFontSizeDip));
+  SetShadows(ambient::util::GetTextShadowValues());
 
   BindMediaControllerObserver();
 }

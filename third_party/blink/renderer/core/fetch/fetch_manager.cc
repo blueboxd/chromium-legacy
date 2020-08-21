@@ -714,11 +714,6 @@ void FetchManager::Loader::PerformHTTPFetch() {
 
   request.SetCredentialsMode(fetch_request_data_->Credentials());
   for (const auto& header : fetch_request_data_->HeaderList()->List()) {
-    // Since |fetch_request_data_|'s headers are populated with either of the
-    // "request" guard or "request-no-cors" guard, we can assume that none of
-    // the headers have a name listed in the forbidden header names.
-    DCHECK(!cors::IsForbiddenHeaderName(header.first));
-
     request.AddHttpHeaderField(AtomicString(header.first),
                                AtomicString(header.second));
   }

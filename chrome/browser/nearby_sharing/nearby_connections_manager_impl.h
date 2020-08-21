@@ -13,17 +13,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
+#include "chrome/browser/nearby_sharing/nearby_file_handler.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 class Profile;
-
-struct InitializeFileResult {
-  base::File input_file;
-  base::File output_file;
-};
 
 // Concrete NearbyConnectionsManager implementation.
 class NearbyConnectionsManagerImpl
@@ -132,12 +128,13 @@ class NearbyConnectionsManagerImpl
   bool BindNearbyConnections();
   void Reset();
 
-  void OnFileInitialized(int64_t payload_id,
-                         ConnectionsCallback callback,
-                         InitializeFileResult result);
+  void OnFileCreated(int64_t payload_id,
+                     ConnectionsCallback callback,
+                     NearbyFileHandler::CreateFileResult result);
 
   NearbyProcessManager* process_manager_;
   Profile* profile_;
+  NearbyFileHandler file_handler_;
   IncomingConnectionListener* incoming_connection_listener_ = nullptr;
   DiscoveryListener* discovery_listener_ = nullptr;
   base::flat_set<std::string> discovered_endpoints_;

@@ -191,7 +191,7 @@ class LinuxPort(base.Port):
         self._xvfb_process = self.host.executive.popen(
             [
                 'Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi',
-                '96'
+                '96', '-maxclients', '512'
             ],
             stdout=self._xvfb_stdout,
             stderr=self._xvfb_stderr,

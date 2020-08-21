@@ -438,6 +438,25 @@ class SkiaGoldSessionInitializeTest(fake_filesystem_unittest.TestCase):
     assertArgWith(self, call_args, '--cis', 'buildbucket')
 
   @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
+  def test_commandTryjobArgsNonDefaultCrs(self, cmd_mock):
+    cmd_mock.return_value = (None, None)
+    args = createSkiaGoldArgs(code_review_system='foo',
+                              git_revision='a',
+                              gerrit_issue=1,
+                              gerrit_patchset=2,
+                              buildbucket_id=3)
+    sgp = skia_gold_properties.SkiaGoldProperties(args)
+    session = skia_gold_session.SkiaGoldSession(self._working_dir, sgp, None,
+                                                None, None)
+    session.Initialize()
+    call_args = cmd_mock.call_args[0][0]
+    assertArgWith(self, call_args, '--issue', '1')
+    assertArgWith(self, call_args, '--patchset', '2')
+    assertArgWith(self, call_args, '--jobid', '3')
+    assertArgWith(self, call_args, '--crs', 'foo')
+    assertArgWith(self, call_args, '--cis', 'buildbucket')
+
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
   def test_commandTryjobArgsMissing(self, cmd_mock):
     cmd_mock.return_value = (None, None)
     args = createSkiaGoldArgs(git_revision='a')

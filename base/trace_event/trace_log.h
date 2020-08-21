@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/category_registry.h"
@@ -106,10 +107,12 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   int GetNumTracesRecorded();
 
 #if defined(OS_ANDROID)
-  void StartATrace();
+  void StartATrace(const std::string& category_filter);
   void StopATrace();
   void AddClockSyncMetadataEvent();
-#endif
+  void SetupATraceStartupTrace(const std::string& category_filter);
+  Optional<TraceConfig> TakeATraceStartupConfig();
+#endif  // defined(OS_ANDROID)
 
   // Enabled state listeners give a callback when tracing is enabled or
   // disabled. This can be used to tie into other library's tracing systems
@@ -575,6 +578,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   std::atomic<UpdateDurationFunction> update_duration_override_{nullptr};
 
   FilterFactoryForTesting filter_factory_for_testing_;
+
+#if defined(OS_ANDROID)
+  base::Optional<TraceConfig> atrace_startup_config_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };

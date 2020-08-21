@@ -20,6 +20,8 @@
 </cr-button>
 <dom-repeat items="[[contactList_]]" as="contact" id="contact-list"
     hidden="[[!contactList_.length]]">
+  <!-- TODO(https://crbug.com/1120668): Add missing bottom border to contact
+    list. -->
   <template>
     <contact-object item="[[contact]]">
     </contact-object>

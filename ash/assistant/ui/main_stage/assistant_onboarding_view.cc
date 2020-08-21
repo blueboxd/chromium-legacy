@@ -59,33 +59,50 @@ std::string GetGreetingMessage(AssistantViewDelegate* delegate) {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
+  const std::string given_name = delegate->GetPrimaryUserGivenName();
+
   if (now.hour < 5) {
-    return l10n_util::GetStringFUTF8(
-        IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT,
-        base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
+    return given_name.empty()
+               ? l10n_util::GetStringUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT_WITHOUT_NAME)
+               : l10n_util::GetStringFUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT,
+                     base::UTF8ToUTF16(given_name));
   }
 
   if (now.hour < 12) {
-    return l10n_util::GetStringFUTF8(
-        IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING,
-        base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
+    return given_name.empty()
+               ? l10n_util::GetStringUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING_WITHOUT_NAME)
+               : l10n_util::GetStringFUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING,
+                     base::UTF8ToUTF16(given_name));
   }
 
   if (now.hour < 17) {
-    return l10n_util::GetStringFUTF8(
-        IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON,
-        base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
+    return given_name.empty()
+               ? l10n_util::GetStringUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON_WITHOUT_NAME)
+               : l10n_util::GetStringFUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON,
+                     base::UTF8ToUTF16(given_name));
   }
 
   if (now.hour < 23) {
-    return l10n_util::GetStringFUTF8(
-        IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING,
-        base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
+    return given_name.empty()
+               ? l10n_util::GetStringUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING_WITHOUT_NAME)
+               : l10n_util::GetStringFUTF8(
+                     IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING,
+                     base::UTF8ToUTF16(given_name));
   }
 
-  return l10n_util::GetStringFUTF8(
-      IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT,
-      base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
+  return given_name.empty()
+             ? l10n_util::GetStringUTF8(
+                   IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT_WITHOUT_NAME)
+             : l10n_util::GetStringFUTF8(
+                   IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT,
+                   base::UTF8ToUTF16(given_name));
 }
 
 }  // namespace

@@ -490,7 +490,14 @@ bool IsNoCorsSafelistedHeaderName(const std::string& name) {
 }
 
 bool IsPrivilegedNoCorsHeaderName(const std::string& name) {
-  return base::ToLowerASCII(name) == "range";
+  const std::string lower_name = base::ToLowerASCII(name);
+  const std::vector<std::string> privileged_no_cors_header_names =
+      PrivilegedNoCorsHeaderNames();
+  for (const auto& header : privileged_no_cors_header_names) {
+    if (lower_name == header)
+      return true;
+  }
+  return false;
 }
 
 bool IsNoCorsSafelistedHeader(const std::string& name,
@@ -558,6 +565,10 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
                         potentially_unsafe_names.end());
   }
   return header_names;
+}
+
+std::vector<std::string> PrivilegedNoCorsHeaderNames() {
+  return {"range"};
 }
 
 bool IsForbiddenMethod(const std::string& method) {

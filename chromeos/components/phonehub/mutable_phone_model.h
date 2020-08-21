@@ -19,6 +19,8 @@ class MutablePhoneModel : public PhoneModel {
 
   void SetPhoneStatusModel(
       const base::Optional<PhoneStatusModel>& phone_status_model);
+  void SetBrowserTabsModel(
+      const base::Optional<BrowserTabsModel>& browser_tabs_model);
 };
 
 }  // namespace phonehub

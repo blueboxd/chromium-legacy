@@ -564,19 +564,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Let |r| be a new Request object associated with |request| and a new
   // Headers object whose guard is "request"."
   Request* r = Request::Create(script_state, request);
-  // Perform the following steps:
-  // - "Let |headers| be a copy of |r|'s Headers object."
-  // - "If |init|'s headers member is present, set |headers| to |init|'s
-  //   headers member."
-  //
-  // We don't create a copy of r's Headers object when init's headers member
-  // is present.
-  Headers* headers = nullptr;
-  if (!init->hasHeaders()) {
-    headers = r->getHeaders()->Clone();
-  }
-  // "Empty |r|'s request's header list."
-  r->request_->HeaderList()->ClearList();
+
+  // "If |signal| is not null, then make |r|’s signal follow |signal|."
+  if (signal)
+    r->signal_->Follow(signal);
+
   // "If |r|'s request's mode is "no-cors", run these substeps:
   if (r->GetRequest()->Mode() == network::mojom::RequestMode::kNoCors) {
     // "If |r|'s request's method is not a CORS-safelisted method, throw a
@@ -589,19 +581,32 @@ Request* Request::CreateRequestWithRequestOrString(
     // "Set |r|'s Headers object's guard to "request-no-cors"."
     r->getHeaders()->SetGuard(Headers::kRequestNoCorsGuard);
   }
-  // "If |signal| is not null, then make |r|’s signal follow |signal|."
-  if (signal)
-    r->signal_->Follow(signal);
 
-  // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
-  if (init->hasHeaders()) {
-    r->getHeaders()->FillWith(init->headers(), exception_state);
-  } else {
-    DCHECK(headers);
-    r->getHeaders()->FillWith(headers, exception_state);
+  if (AreAnyMembersPresent(init)) {
+    // Perform the following steps:
+    // - "Let |headers| be a copy of |r|'s Headers object."
+    // - "If |init|'s headers member is present, set |headers| to |init|'s
+    //   headers member."
+    //
+    // We don't create a copy of r's Headers object when init's headers member
+    // is present.
+    Headers* headers = nullptr;
+    if (!init->hasHeaders()) {
+      headers = r->getHeaders()->Clone();
+    }
+    // "Empty |r|'s request's header list."
+    r->request_->HeaderList()->ClearList();
+
+    // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
+    if (init->hasHeaders()) {
+      r->getHeaders()->FillWith(init->headers(), exception_state);
+    } else {
+      DCHECK(headers);
+      r->getHeaders()->FillWith(headers, exception_state);
+    }
+    if (exception_state.HadException())
+      return nullptr;
   }
-  if (exception_state.HadException())
-    return nullptr;
 
   // "Let |inputBody| be |input|'s request's body if |input| is a
   //   Request object, and null otherwise."

@@ -10,23 +10,6 @@ js_library("color") {
   deps = [ "../polymer:polymer_bundled" ]
 }
 
-js_library("default-theme") {
-  deps = [
-    ".:color",
-    "../polymer:polymer_bundled",
-  ]
-}
-
-js_library("demo-pages") {
-  deps = [
-    ".:color",
-    ".:shadow",
-    ".:typography",
-    "../iron-flex-layout:iron-flex-layout",
-    "../polymer:polymer_bundled",
-  ]
-}
-
 js_library("shadow") {
   deps = [ "../polymer:polymer_bundled" ]
 }

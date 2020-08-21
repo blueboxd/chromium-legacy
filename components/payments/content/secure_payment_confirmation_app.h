@@ -16,20 +16,28 @@
 #include "base/strings/string16.h"
 #include "components/payments/content/secure_payment_confirmation_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/origin.h"
 
 class SkBitmap;
+
+namespace autofill {
+class InternalAuthenticator;
+}  // namespace autofill
 
 namespace payments {
 
 class SecurePaymentConfirmationApp : public PaymentApp {
  public:
   SecurePaymentConfirmationApp(
+      const std::string& effective_relying_party_identity,
       std::unique_ptr<SkBitmap> icon,
       const base::string16& label,
+      std::vector<std::unique_ptr<std::vector<uint8_t>>> credential_ids,
       const url::Origin& merchant_origin,
       const mojom::PaymentCurrencyAmountPtr& total,
-      const mojom::SecurePaymentConfirmationRequestPtr& request);
+      mojom::SecurePaymentConfirmationRequestPtr request,
+      std::unique_ptr<autofill::InternalAuthenticator> authenticator);
   ~SecurePaymentConfirmationApp() override;
 
   SecurePaymentConfirmationApp(const SecurePaymentConfirmationApp& other) =
@@ -66,11 +74,19 @@ class SecurePaymentConfirmationApp : public PaymentApp {
   void AbortPaymentApp(base::OnceCallback<void(bool)> abort_callback) override;
 
  private:
+  void OnGetAssertion(
+      Delegate* delegate,
+      blink::mojom::AuthenticatorStatus status,
+      blink::mojom::GetAssertionAuthenticatorResponsePtr response);
+
+  const std::string effective_relying_party_identity_;
   const std::unique_ptr<SkBitmap> icon_;
   const base::string16 label_;
+  const std::vector<std::unique_ptr<std::vector<uint8_t>>> credential_ids_;
   const url::Origin merchant_origin_;
   const mojom::PaymentCurrencyAmountPtr total_;
   const mojom::SecurePaymentConfirmationRequestPtr request_;
+  const std::unique_ptr<autofill::InternalAuthenticator> authenticator_;
 
   base::WeakPtrFactory<SecurePaymentConfirmationApp> weak_ptr_factory_{this};
 };

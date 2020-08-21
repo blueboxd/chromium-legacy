@@ -152,7 +152,7 @@ interface CoreProbes {
   void BreakableLocation(ExecutionContext* context, const char* name);
   RecalculateStyle(Document* document);
   UpdateLayout(Document* document);
-  ExecuteScript([Keep] ExecutionContext* context, const String& script_url);
+  ExecuteScript([Keep] ExecutionContext* context, const String& script_url, int script_id);
   CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
   UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomic_name, bool recurring, EventTarget* event_target = nullptr);
   V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);

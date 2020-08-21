@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -181,6 +182,8 @@ constexpr base::TimeDelta kDelta = base::TimeDelta::FromMilliseconds(100);
 
 const char kServiceId[] = "NearbySharing";
 const char kDeviceName[] = "test_device_name";
+const nearby_share::mojom::ShareTargetType kDeviceType =
+    nearby_share::mojom::ShareTargetType::kPhone;
 const char kEndpointId[] = "test_endpoint_id";
 const char kTextPayload[] = "Test text payload";
 
@@ -263,20 +266,6 @@ int64_t GetFreeSpaceInDownloadPath(Profile* profile) {
   return free_space;
 }
 
-base::FilePath CreateTestFile(const std::string& content) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath path;
-  EXPECT_TRUE(base::CreateTemporaryFile(&path));
-  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
-                            base::File::Flags::FLAG_READ |
-                            base::File::Flags::FLAG_WRITE);
-  EXPECT_TRUE(file.WriteAndCheck(
-      /*offset=*/0, base::as_bytes(base::make_span(content))));
-  EXPECT_TRUE(file.Flush());
-  file.Close();
-  return path;
-}
-
 class NearbySharingServiceImplTest : public testing::Test {
  public:
   NearbySharingServiceImplTest()
@@ -288,6 +277,7 @@ class NearbySharingServiceImplTest : public testing::Test {
   ~NearbySharingServiceImplTest() override = default;
 
   void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(profile_manager_.SetUp());
     network_notifier_ = net::test::MockNetworkChangeNotifier::Create();
 
@@ -487,7 +477,7 @@ class NearbySharingServiceImplTest : public testing::Test {
                   sharing::mojom::Advertisement::New(
                       GetNearbyShareTestEncryptedMetadataKey().salt(),
                       GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
-                      kDeviceName);
+                      kDeviceType, kDeviceName);
               std::move(callback).Run(std::move(advertisement));
             }));
   }
@@ -631,10 +621,11 @@ class NearbySharingServiceImplTest : public testing::Test {
     EXPECT_EQ(status, frame.v1().connection_response().status());
   }
 
-  void ExpectIntroductionFrame() {
+  sharing::nearby::IntroductionFrame ExpectIntroductionFrame() {
     sharing::nearby::Frame frame = GetWrittenFrame();
-    ASSERT_TRUE(frame.has_v1());
-    ASSERT_TRUE(frame.v1().has_introduction());
+    EXPECT_TRUE(frame.has_v1());
+    EXPECT_TRUE(frame.v1().has_introduction());
+    return frame.v1().introduction();
   }
 
   void ExpectTransferUpdates(
@@ -671,7 +662,22 @@ class NearbySharingServiceImplTest : public testing::Test {
     return certificate_manager_factory_.instances().back();
   }
 
+  base::FilePath CreateTestFile(const std::string& name,
+                                const std::vector<uint8_t>& content) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath path = temp_dir_.GetPath().AppendASCII(name);
+    base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                              base::File::Flags::FLAG_READ |
+                              base::File::Flags::FLAG_WRITE);
+    EXPECT_TRUE(file.WriteAndCheck(
+        /*offset=*/0, base::make_span(content)));
+    EXPECT_TRUE(file.Flush());
+    file.Close();
+    return path;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::ScopedTempDir temp_dir_;
   // We need to ensure that |network_notifier_| is created and destroyed after
   // |task_environment_| to avoid UAF issues when using
   // ChromeDownloadManagerDelegate.
@@ -1018,8 +1024,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_FALSE(share_target.has_attachments());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -1077,8 +1082,7 @@ TEST_F(NearbySharingServiceImplTest, RegisterSendSurfaceEmptyCertificate) {
         EXPECT_FALSE(share_target.has_attachments());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_FALSE(share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_EQ(kEndpointId, share_target.device_id);
         EXPECT_FALSE(share_target.full_name);
@@ -1660,8 +1664,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_FALSE(share_target.has_attachments());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -1713,8 +1716,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_EQ(0u, share_target.file_attachments.size());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_FALSE(share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_EQ(kEndpointId, share_target.device_id);
         EXPECT_FALSE(share_target.full_name);
 
@@ -1829,8 +1831,7 @@ TEST_F(NearbySharingServiceImplTest, IncomingConnection_OutOfStorage) {
         EXPECT_EQ(1u, share_target.file_attachments.size());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -1903,8 +1904,7 @@ TEST_F(NearbySharingServiceImplTest, IncomingConnection_FileSizeOverflow) {
         EXPECT_TRUE(share_target.is_known);
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -1948,8 +1948,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_EQ(0u, share_target.file_attachments.size());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -2102,8 +2101,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_EQ(0u, share_target.file_attachments.size());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -2156,8 +2154,7 @@ TEST_F(NearbySharingServiceImplTest,
         EXPECT_EQ(0u, share_target.file_attachments.size());
         EXPECT_EQ(kDeviceName, share_target.device_name);
         EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
-        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
-                  share_target.type);
+        EXPECT_EQ(kDeviceType, share_target.type);
         EXPECT_TRUE(share_target.device_id);
         EXPECT_NE(kEndpointId, share_target.device_id);
         EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
@@ -2362,12 +2359,10 @@ TEST_F(NearbySharingServiceImplTest, SendText_FailedKeyVerification) {
       DiscoverShareTarget(transfer_callback, discovery_callback);
 
   base::RunLoop run_loop;
-  ExpectTransferUpdates(
-      transfer_callback, target,
-      {TransferMetadata::Status::kConnecting, TransferMetadata::Status::kFailed,
-       // TODO(crbug.com/1085067): Filter updates after the first final one.
-       TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed},
-      run_loop.QuitClosure());
+  ExpectTransferUpdates(transfer_callback, target,
+                        {TransferMetadata::Status::kConnecting,
+                         TransferMetadata::Status::kFailed},
+                        run_loop.QuitClosure());
 
   SetUpKeyVerification(/*is_incoming=*/false,
                        sharing::mojom::PairedKeyResultFrame_Status::kFail);
@@ -2432,12 +2427,47 @@ TEST_P(NearbySharingServiceImplSendFailureTest, SendText_RemoteFailure) {
 
   // We're now waiting for the remote device to respond with the accept result.
   base::RunLoop reject_run_loop;
-  ExpectTransferUpdates(
-      transfer_callback, target,
-      {GetParam().expected_status,
-       // TODO(crbug.com/1085067): Filter updates after the first final one.
-       TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed},
-      reject_run_loop.QuitClosure());
+  ExpectTransferUpdates(transfer_callback, target, {GetParam().expected_status},
+                        reject_run_loop.QuitClosure());
+
+  // Cancel the transfer by rejecting it.
+  SendConnectionResponse(GetParam().response_status);
+  reject_run_loop.Run();
+
+  EXPECT_TRUE(connection_.IsClosed());
+
+  service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
+}
+
+TEST_P(NearbySharingServiceImplSendFailureTest, SendFiles_RemoteFailure) {
+  MockTransferUpdateCallback transfer_callback;
+  MockShareTargetDiscoveredCallback discovery_callback;
+  ShareTarget target =
+      SetUpOutgoingShareTarget(transfer_callback, discovery_callback);
+
+  std::vector<uint8_t> test_data = {'T', 'e', 's', 't'};
+  base::FilePath path = CreateTestFile("text.txt", test_data);
+
+  base::RunLoop introduction_run_loop;
+  ExpectTransferUpdates(transfer_callback, target,
+                        {TransferMetadata::Status::kConnecting,
+                         TransferMetadata::Status::kAwaitingLocalConfirmation,
+                         TransferMetadata::Status::kAwaitingRemoteAcceptance},
+                        introduction_run_loop.QuitClosure());
+
+  EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
+            service_->SendFiles(target, {path}));
+  introduction_run_loop.Run();
+
+  // Verify data sent to the remote device so far.
+  ExpectPairedKeyEncryptionFrame();
+  ExpectPairedKeyResultFrame();
+  ExpectIntroductionFrame();
+
+  // We're now waiting for the remote device to respond with the accept result.
+  base::RunLoop reject_run_loop;
+  ExpectTransferUpdates(transfer_callback, target, {GetParam().expected_status},
+                        reject_run_loop.QuitClosure());
 
   // Cancel the transfer by rejecting it.
   SendConnectionResponse(GetParam().response_status);
@@ -2472,7 +2502,14 @@ TEST_F(NearbySharingServiceImplTest, SendText_Success) {
   // Verify data sent to the remote device so far.
   ExpectPairedKeyEncryptionFrame();
   ExpectPairedKeyResultFrame();
-  ExpectIntroductionFrame();
+  auto intro = ExpectIntroductionFrame();
+
+  ASSERT_EQ(1, intro.text_metadata_size());
+  auto meta = intro.text_metadata(0);
+
+  EXPECT_EQ(kTextPayload, meta.text_title());
+  EXPECT_EQ(strlen(kTextPayload), static_cast<size_t>(meta.size()));
+  EXPECT_EQ(sharing::nearby::TextMetadata_Type_TEXT, meta.type());
 
   // Expect the text payload to be sent in the end.
   base::RunLoop payload_run_loop;
@@ -2502,24 +2539,72 @@ TEST_F(NearbySharingServiceImplTest, SendText_Success) {
   service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
 }
 
-TEST_F(NearbySharingServiceImplTest, SendFiles) {
+TEST_F(NearbySharingServiceImplTest, SendFiles_Success) {
   MockTransferUpdateCallback transfer_callback;
   MockShareTargetDiscoveredCallback discovery_callback;
   ShareTarget target =
       SetUpOutgoingShareTarget(transfer_callback, discovery_callback);
 
-  base::FilePath path = CreateTestFile("Example file");
+  std::vector<uint8_t> test_data = {'T', 'e', 's', 't'};
+  std::string file_name = "test.txt";
+  base::FilePath path = CreateTestFile(file_name, test_data);
 
-  base::RunLoop run_loop;
+  base::RunLoop introduction_run_loop;
   ExpectTransferUpdates(transfer_callback, target,
                         {TransferMetadata::Status::kConnecting,
                          TransferMetadata::Status::kAwaitingLocalConfirmation,
                          TransferMetadata::Status::kAwaitingRemoteAcceptance},
-                        run_loop.QuitClosure());
+                        introduction_run_loop.QuitClosure());
 
   EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
             service_->SendFiles(target, {path}));
-  run_loop.Run();
+  introduction_run_loop.Run();
+
+  // Verify data sent to the remote device so far.
+  ExpectPairedKeyEncryptionFrame();
+  ExpectPairedKeyResultFrame();
+  auto intro = ExpectIntroductionFrame();
+
+  ASSERT_EQ(1, intro.file_metadata_size());
+  auto meta = intro.file_metadata(0);
+
+  EXPECT_EQ(file_name, meta.name());
+  EXPECT_EQ("text/plain", meta.mime_type());
+  EXPECT_EQ(test_data.size(), static_cast<size_t>(meta.size()));
+  EXPECT_EQ(sharing::nearby::FileMetadata_Type_UNKNOWN, meta.type());
+
+  // Expect the file payload to be sent in the end.
+  base::RunLoop payload_run_loop;
+  fake_nearby_connections_manager_->set_send_payload_callback(
+      base::BindLambdaForTesting(
+          [&](NearbyConnectionsManager::PayloadPtr payload) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+
+            ASSERT_TRUE(payload->content->is_file());
+            base::File file = std::move(payload->content->get_file()->file);
+            ASSERT_TRUE(file.IsValid());
+
+            std::vector<uint8_t> payload_bytes(test_data.size());
+            EXPECT_TRUE(file.ReadAndCheck(/*offset=*/0,
+                                          base::make_span(payload_bytes)));
+            EXPECT_EQ(test_data, payload_bytes);
+            file.Close();
+
+            payload_run_loop.Quit();
+          }));
+
+  // We're now waiting for the remote device to respond with the accept result.
+  base::RunLoop accept_run_loop;
+  ExpectTransferUpdates(transfer_callback, target,
+                        {TransferMetadata::Status::kInProgress},
+                        accept_run_loop.QuitClosure());
+
+  // Kick off send process by accepting the transfer from the remote device.
+  SendConnectionResponse(
+      sharing::mojom::ConnectionResponseFrame::Status::kAccept);
+
+  accept_run_loop.Run();
+  payload_run_loop.Run();
 
   service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
 }

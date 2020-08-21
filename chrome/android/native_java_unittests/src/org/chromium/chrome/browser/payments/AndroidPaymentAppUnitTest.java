@@ -14,10 +14,10 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
-import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.SupportedDelegations;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -93,7 +93,7 @@ public class AndroidPaymentAppUnitTest {
                         mReadyToPayResponse = isReadyToPay;
                     }
                 });
-        UnitTestUtils.pollUiThread(() -> mReadyToPayQueryFinished);
+        CriteriaHelper.pollUiThreadNested(() -> mReadyToPayQueryFinished);
         Assert.assertTrue("Payment app should be ready to pay", mReadyToPayResponse);
 
         PaymentItem total = new PaymentItem();
@@ -131,6 +131,6 @@ public class AndroidPaymentAppUnitTest {
         intentResult.data.putExtras(extras);
         app.onIntentCompletedForTesting(intentResult);
 
-        UnitTestUtils.pollUiThread(() -> mInvokePaymentAppFinished);
+        CriteriaHelper.pollUiThreadNested(() -> mInvokePaymentAppFinished);
     }
 }

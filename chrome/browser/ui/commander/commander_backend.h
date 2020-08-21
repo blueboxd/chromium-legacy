@@ -37,6 +37,9 @@ class CommanderBackend {
   // synchronous with user input, since some command sources may be async or
   // provide incremental results.
   virtual void SetUpdateCallback(ViewModelUpdateCallback callback) = 0;
+  // Called when the UI layer is closed. This is a hook to allow the backend
+  // to release any bound state.
+  virtual void Reset() {}
 };
 
 }  // namespace commander

@@ -753,12 +753,6 @@ void NodeChannel::OnChannelError(Channel::Error error) {
 }
 
 void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
-  // Force a crash if this process attempts to send a message larger than the
-  // maximum allowed size. This is more useful than killing a Channel when we
-  // *receive* an oversized message, as we should consider oversized message
-  // transmission to be a bug and this helps easily identify offending code.
-  CHECK_LT(message->data_num_bytes(), GetConfiguration().max_message_num_bytes);
-
   base::AutoLock lock(channel_lock_);
   if (!channel_)
     DLOG(ERROR) << "Dropping message on closed channel.";

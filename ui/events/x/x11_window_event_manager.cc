@@ -5,7 +5,6 @@
 #include "ui/events/x/x11_window_event_manager.h"
 
 #include <stddef.h>
-#include <xcb/xcb.h>
 
 #include "base/memory/singleton.h"
 #include "ui/gfx/x/x11.h"
@@ -16,14 +15,15 @@ namespace {
 
 // Asks the X server to set |window|'s event mask to |new_mask|.
 void SetEventMask(x11::Window window, uint32_t new_mask) {
-  XDisplay* display = gfx::GetXDisplay();
-  xcb_connection_t* connection = XGetXCBConnection(display);
-  auto cookie = xcb_change_window_attributes(
-      connection, static_cast<uint32_t>(window), XCB_CW_EVENT_MASK, &new_mask);
+  auto* connection = x11::Connection::Get();
   // Window |window| may already be destroyed at this point, so the
   // change_attributes request may give a BadWindow error.  In this case, just
   // ignore the error.
-  xcb_discard_reply(connection, cookie.sequence);
+  connection
+      ->ChangeWindowAttributes(
+          {.window = window,
+           .event_mask = static_cast<x11::EventMask>(new_mask)})
+      .IgnoreError();
 }
 
 }  // anonymous namespace

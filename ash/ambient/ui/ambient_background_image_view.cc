@@ -97,6 +97,7 @@ void AmbientBackgroundImageView::InitLayout() {
   details_label_->SetFontList(
       ambient::util::GetDefaultFontlist().DeriveWithSizeDelta(
           kDetailsFontSizeDip - kDefaultFontSizeDip));
+  details_label_->SetShadows(ambient::util::GetTextShadowValues());
   details_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   details_label_->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_BOTTOM);
 }

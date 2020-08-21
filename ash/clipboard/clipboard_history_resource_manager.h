@@ -33,6 +33,11 @@ class ASH_EXPORT ClipboardHistoryResourceManager
   // Returns the label to display for the specified clipboard history |item|.
   base::string16 GetLabel(const ClipboardHistoryItem& item) const;
 
+  // Returns the main format of the specified clipboard history |item|. Note
+  // that one `ClipboardHistoryItem` instance may own multiple formats.
+  ui::ClipboardInternalFormat CalculateMainFormat(
+      const ClipboardHistoryItem& item) const;
+
  private:
   struct CachedImageModel {
     CachedImageModel();

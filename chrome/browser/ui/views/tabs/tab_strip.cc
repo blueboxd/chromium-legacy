@@ -3598,12 +3598,6 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     if (event.type() == ui::ET_GESTURE_TAP)
       TouchUMA::RecordGestureAction(TouchUMA::kGestureNewTabTap);
   }
-#if BUILDFLAG(ENABLE_TAB_SEARCH)
-  if (sender == tab_search_button_) {
-    TabSearchBubbleView::CreateTabSearchBubble(controller()->GetProfile(),
-                                               tab_search_button_);
-  }
-#endif
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.

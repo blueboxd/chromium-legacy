@@ -24,6 +24,7 @@ class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace signin
 
+class KaleidoscopeMetricsRecorder;
 class Profile;
 
 class KaleidoscopeDataProviderImpl
@@ -31,7 +32,8 @@ class KaleidoscopeDataProviderImpl
  public:
   KaleidoscopeDataProviderImpl(
       mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider> receiver,
-      Profile* profile);
+      Profile* profile,
+      KaleidoscopeMetricsRecorder* metrics_recorder);
   KaleidoscopeDataProviderImpl(const KaleidoscopeDataProviderImpl&) = delete;
   KaleidoscopeDataProviderImpl& operator=(const KaleidoscopeDataProviderImpl&) =
       delete;
@@ -50,6 +52,8 @@ class KaleidoscopeDataProviderImpl
   void GetShouldShowFirstRunExperience(
       GetShouldShowFirstRunExperienceCallback cb) override;
   void SetFirstRunExperienceCompleted() override;
+  void SetFirstRunExperienceStep(
+      media::mojom::KaleidoscopeFirstRunExperienceStep step) override;
   void GetAllMediaFeeds(GetAllMediaFeedsCallback cb) override;
   void SetMediaFeedsConsent(
       bool accepted_media_feeds,
@@ -87,6 +91,8 @@ class KaleidoscopeDataProviderImpl
   signin::IdentityManager* identity_manager_;
 
   Profile* const profile_;
+
+  KaleidoscopeMetricsRecorder* const metrics_recorder_;
 
   mojo::Receiver<media::mojom::KaleidoscopeDataProvider> receiver_;
 

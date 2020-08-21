@@ -375,6 +375,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               bool stay_hidden) override;
   void DecrementCapturerCount(bool stay_hidden) override;
   bool IsBeingCaptured() override;
+  bool IsBeingVisiblyCaptured() override;
   bool IsAudioMuted() override;
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;

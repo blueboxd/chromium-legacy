@@ -126,6 +126,10 @@ void Headers::append(const String& name,
   }
   // "7. Append |name|/|value| to header list."
   header_list_->Append(name, normalized_value);
+  // "8. If this’s guard is |request-no-cors|, then remove privileged no-CORS
+  // request headers from this."
+  if (guard_ == kRequestNoCorsGuard)
+    RemovePrivilegedNoCorsRequestHeaders();
 }
 
 void Headers::remove(const String& name, ExceptionState& exception_state) {
@@ -158,8 +162,15 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
       FetchUtils::IsForbiddenResponseHeaderName(name)) {
     return;
   }
-  // "6. Delete |name| from header list."
+  // "6. If this’s header list does not contain |name|, then return."
+  if (!header_list_->Has(name))
+    return;
+  // "7. Delete |name| from header list."
   header_list_->Remove(name);
+  // "8. If this’s guard is |request-no-cors|, then remove privileged no-CORS
+  // request headers from this."
+  if (guard_ == kRequestNoCorsGuard)
+    RemovePrivilegedNoCorsRequestHeaders();
 }
 
 String Headers::get(const String& name, ExceptionState& exception_state) {
@@ -228,6 +239,10 @@ void Headers::set(const String& name,
   }
   // "7. Set |name|/|value| in header list."
   header_list_->Set(name, normalized_value);
+  // "8. If this’s guard is |request-no-cors|, then remove privileged no-CORS
+  // request headers from this."
+  if (guard_ == kRequestNoCorsGuard)
+    RemovePrivilegedNoCorsRequestHeaders();
 }
 
 // This overload is not called directly by Web APIs, but rather by other C++
@@ -283,6 +298,13 @@ void Headers::FillWith(const Vector<std::pair<String, String>>& object,
     if (exception_state.HadException())
       return;
   }
+}
+
+void Headers::RemovePrivilegedNoCorsRequestHeaders() {
+  const Vector<String> privileged_no_cors_header_names =
+      cors::PrivilegedNoCorsHeaderNames();
+  for (const auto& header : privileged_no_cors_header_names)
+    header_list_->Remove(header);
 }
 
 Headers::Headers()

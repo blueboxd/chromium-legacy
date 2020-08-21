@@ -200,12 +200,12 @@ void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                   base::UTF16ToUTF8(desk_->name()));
 
-    if (desk_->is_active()) {
-      node_data->AddStringAttribute(
-          ax::mojom::StringAttribute::kValue,
-          l10n_util::GetStringUTF8(
-              IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP));
-    }
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kValue,
+        l10n_util::GetStringUTF8(
+            desk_->is_active()
+                ? IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP
+                : IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP));
   }
 
   if (DesksController::Get()->CanRemoveDesks()) {

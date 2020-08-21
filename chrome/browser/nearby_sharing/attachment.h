@@ -22,6 +22,7 @@ class Attachment {
   int64_t id() const { return id_; }
   Family family() const { return family_; }
   int64_t size() const { return size_; }
+  void set_size(int64_t size) { size_ = size; }
 
  private:
   int64_t id_;

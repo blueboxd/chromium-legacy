@@ -5713,7 +5713,6 @@
           'caption': '''Do not allow any site to access sensors''',
         }
       ],
-      'supported_on': [],
       'future_on': ['chrome.*', 'chrome_os', 'android'],
       'features': {
         'dynamic_refresh': True,
@@ -6583,7 +6582,6 @@
       ],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [],
       'future_on': [
         'chrome.*',
         'chrome_os',
@@ -6625,7 +6623,6 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': [],
       'future_on': [
         'chrome.*',
         'chrome_os',
@@ -6847,7 +6844,6 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': [],
       'future_on': ['chrome.*', 'chrome_os', 'android'],
       'features': {
         'dynamic_refresh': True,
@@ -6873,7 +6869,6 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': [],
       'future_on': ['chrome.*', 'chrome_os', 'android'],
       'features': {
         'dynamic_refresh': True,
@@ -16236,7 +16231,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'future_on': ['chrome_os'],
-      'supported_on': [],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -18637,8 +18631,8 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:70-','android:70-','chrome_os:70-'],
-      'internal_only': True,
       'features': {
+        'internal_only': True,
         'dynamic_refresh': True,
         'per_profile': True,
       },
@@ -23218,7 +23212,6 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['skym@chromium.org', 'wenyufu@chromium.org', 'twellington@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [],
       'future_on': ['android'],
       'features': {
         'dynamic_refresh': False,

@@ -47,5 +47,7 @@ void FakeWebrtcConnection::OnWebrtcTransportMediaStreamAdded(
 void FakeWebrtcConnection::OnWebrtcTransportMediaStreamRemoved(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {}
 
+void FakeWebrtcConnection::OnWebrtcTransportRouteChanged(
+    const protocol::TransportRoute& route) {}
 }  // namespace test
 }  // namespace remoting

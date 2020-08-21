@@ -1725,6 +1725,10 @@ bool WebContentsImpl::IsBeingCaptured() {
   return visible_capturer_count_ + hidden_capturer_count_ > 0;
 }
 
+bool WebContentsImpl::IsBeingVisiblyCaptured() {
+  return visible_capturer_count_ > 0;
+}
+
 bool WebContentsImpl::IsAudioMuted() {
   return audio_stream_factory_ && audio_stream_factory_->IsMuted();
 }

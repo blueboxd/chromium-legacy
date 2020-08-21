@@ -4,8 +4,12 @@
 
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 
+#include "base/scoped_observer.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 constexpr int kIconSize = 20;
@@ -13,9 +17,36 @@ constexpr int kIconSize = 20;
 
 TabSearchButton::TabSearchButton(TabStrip* tab_strip,
                                  views::ButtonListener* listener)
-    : NewTabButton(tab_strip, listener) {
+    : NewTabButton(tab_strip, nullptr) {
   SetImageHorizontalAlignment(HorizontalAlignment::ALIGN_CENTER);
   SetImageVerticalAlignment(VerticalAlignment::ALIGN_MIDDLE);
+
+  auto menu_button_controller = std::make_unique<views::MenuButtonController>(
+      this, this,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(this));
+  menu_button_controller_ = menu_button_controller.get();
+  SetButtonController(std::move(menu_button_controller));
+}
+
+TabSearchButton::~TabSearchButton() = default;
+
+void TabSearchButton::ButtonPressed(views::Button* sender,
+                                    const ui::Event& event) {
+  if (bubble_)
+    return;
+  bubble_ = TabSearchBubbleView::CreateTabSearchBubble(
+      tab_strip()->controller()->GetProfile(), this);
+  observed_bubble_widget_.Add(bubble_);
+
+  // Hold the pressed lock while the |bubble_| is active.
+  pressed_lock_ = menu_button_controller_->TakeLock();
+}
+
+void TabSearchButton::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(bubble_, widget);
+  observed_bubble_widget_.Remove(bubble_);
+  bubble_ = nullptr;
+  pressed_lock_.reset();
 }
 
 void TabSearchButton::PaintIcon(gfx::Canvas* canvas) {

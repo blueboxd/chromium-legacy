@@ -13,6 +13,8 @@ namespace content {
 class WebUIDataSource;
 }  // namespace content
 
+class KaleidoscopeMetricsRecorder;
+
 class KaleidoscopeUI : public ui::MojoWebUIController {
  public:
   explicit KaleidoscopeUI(content::WebUI* web_ui);
@@ -28,6 +30,7 @@ class KaleidoscopeUI : public ui::MojoWebUIController {
   static content::WebUIDataSource* CreateUntrustedWebUIDataSource();
 
  private:
+  std::unique_ptr<KaleidoscopeMetricsRecorder> metrics_recorder_;
   std::unique_ptr<media::mojom::KaleidoscopeDataProvider> provider_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();

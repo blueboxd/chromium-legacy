@@ -193,10 +193,10 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
-          size, SharedGpuContext::ContextProviderWrapper(),
-          kLow_SkFilterQuality, CanvasColorParams(),
-          true /*is_origin_top_left*/, RasterMode::kGPU,
-          0u /*shared_image_usage_flags*/);
+          size, kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kNo,
+          SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
+          true /*is_origin_top_left*/, 0u /*shared_image_usage_flags*/);
   EXPECT_FALSE(resource_provider);
 }
 
@@ -220,10 +220,10 @@ TEST_F(SharedGpuContextTestViz, AccelerateImageBufferSurfaceAutoRecovery) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
-          size, SharedGpuContext::ContextProviderWrapper(),
-          kLow_SkFilterQuality, CanvasColorParams(),
-          true /*is_origin_top_left*/, RasterMode::kGPU,
-          0u /*shared_image_usage_flags*/);
+          size, kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kNo,
+          SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
+          true /*is_origin_top_left*/, 0u /*shared_image_usage_flags*/);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   EXPECT_TRUE(resource_provider->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
@@ -231,4 +231,4 @@ TEST_F(SharedGpuContextTestViz, AccelerateImageBufferSurfaceAutoRecovery) {
 
 }  // unnamed namespace
 
-}  // blink
+}  // namespace blink

@@ -21,7 +21,7 @@ class MockCastSoundsManager : public CastSoundsManager {
   ~MockCastSoundsManager() override;
   MOCK_METHOD4(AddSound, void(int, int, bool, bool));
   MOCK_METHOD4(AddSoundWithAudioData, void(int, const std::string, bool, bool));
-  MOCK_METHOD1(Play, void(int));
+  MOCK_METHOD2(Play, void(int, AudioContentType));
   MOCK_METHOD1(Stop, void(int));
   void GetDuration(int key, DurationCallback callback) override {
     DoGetDuration(key, &callback);

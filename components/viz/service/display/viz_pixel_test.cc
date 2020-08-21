@@ -27,7 +27,27 @@ std::vector<RendererType> GetRendererTypes(bool include_software,
   return types;
 }
 
+// Provides a test suffix appropriate for |type|.
+const char* RendererTypeTestSuffix(RendererType type) {
+  switch (type) {
+    case RendererType::kSoftware:
+      return "Software";
+    case RendererType::kGL:
+      return "GL";
+    case RendererType::kSkiaGL:
+      return "SkiaGL";
+    case RendererType::kSkiaVulkan:
+      return "SkiaVulkan";
+    case RendererType::kSkiaDawn:
+      return "SkiaDawn";
+  }
+}
+
 }  // namespace
+
+void PrintTo(RendererType type, std::ostream* os) {
+  *os << RendererTypeTestSuffix(type);
+}
 
 std::vector<RendererType> GetRendererTypes() {
   return GetRendererTypes(true, true);

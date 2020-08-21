@@ -337,7 +337,11 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
 
 bool TestPasswordStore::AddCompromisedCredentialsImpl(
     const CompromisedCredentials& compromised_credentials) {
-  return compromised_credentials_.insert(compromised_credentials).second;
+  CompromisedCredentials cred = compromised_credentials;
+  cred.in_store = is_account_store_
+                      ? autofill::PasswordForm::Store::kAccountStore
+                      : autofill::PasswordForm::Store::kProfileStore;
+  return compromised_credentials_.insert(std::move(cred)).second;
 }
 
 bool TestPasswordStore::RemoveCompromisedCredentialsImpl(

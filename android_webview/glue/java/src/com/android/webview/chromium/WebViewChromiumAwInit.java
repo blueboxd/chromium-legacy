@@ -16,8 +16,6 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.WebStorage;
 import android.webkit.WebViewDatabase;
 
-import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
-
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
@@ -97,6 +95,8 @@ public class WebViewChromiumAwInit {
         mFactory = factory;
         // Do not make calls into 'factory' in this ctor - this ctor is called from the
         // WebViewChromiumFactoryProvider ctor, so 'factory' is not properly initialized yet.
+        TraceEvent.maybeEnableEarlyTracing(
+                TraceEvent.ATRACE_TAG_WEBVIEW, /*readCommandLine=*/false);
     }
 
     public AwTracingController getAwTracingController() {
@@ -126,7 +126,6 @@ public class WebViewChromiumAwInit {
     protected void startChromiumLocked() {
         try (ScopedSysTraceEvent event =
                         ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.startChromiumLocked")) {
-            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
             assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
             // The post-condition of this method is everything is ready, so notify now to cover all
@@ -177,14 +176,6 @@ public class WebViewChromiumAwInit {
             if (BuildInfo.isDebugAndroid()) {
                 mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
             }
-
-            mFactory.getWebViewDelegate().setOnTraceEnabledChangeListener(
-                    new WebViewDelegate.OnTraceEnabledChangeListener() {
-                        @Override
-                        public void onTraceEnabledChange(boolean enabled) {
-                            TraceEvent.setATraceEnabled(enabled);
-                        }
-                    });
 
             mStarted = true;
 

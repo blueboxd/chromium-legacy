@@ -31,7 +31,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
  public:
   XShmImagePool(x11::Connection* connection,
                 x11::Drawable drawable,
-                Visual* visual,
+                x11::VisualId visual,
                 int depth,
                 std::size_t max_frames_pending);
 
@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
   // Obtain state for the current frame.
   SkBitmap& CurrentBitmap();
   SkCanvas* CurrentCanvas();
-  XImage* CurrentImage();
+  x11::Shm::Seg CurrentSegment();
 
   // Switch to the next cached frame.  CurrentBitmap() and CurrentImage() will
   // change to reflect the new frame.
@@ -61,9 +61,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
     FrameState();
     ~FrameState();
 
-    XShmSegmentInfo shminfo_{};
-    bool shmem_attached_to_server_ = false;
-    XScopedImage image;
+    x11::Shm::Seg shmseg{};
+    int shmid = 0;
+    void* shmaddr = nullptr;
+    bool shmem_attached_to_server = false;
     SkBitmap bitmap;
     std::unique_ptr<SkCanvas> canvas;
   };
@@ -73,7 +74,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
     ~SwapClosure();
 
     base::OnceClosure closure;
-    ShmSeg shmseg;
+    x11::Shm::Seg shmseg{};
   };
 
   // XEventDispatcher:
@@ -82,9 +83,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
   void Cleanup();
 
   x11::Connection* const connection_;
-  XDisplay* const display_;
   const x11::Drawable drawable_;
-  Visual* const visual_;
+  const x11::VisualId visual_;
   const int depth_;
 
   bool ready_ = false;

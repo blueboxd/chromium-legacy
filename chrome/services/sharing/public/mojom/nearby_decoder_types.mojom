@@ -4,6 +4,7 @@
 
 module sharing.mojom;
 
+import "chrome/services/sharing/public/mojom/nearby_share_target_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 // An advertisement send by a device in receiving mode.
@@ -16,6 +17,9 @@ struct Advertisement {
   // metadata. The key can be decrypted using |salt| and the corresponding
   // public certificate's secret/authenticity key.
   array<uint8, 14> encrypted_metadata_key;
+
+  // Type of the device.
+  nearby_share.mojom.ShareTargetType device_type;
 
   // If present, the device is visible to everyone rather than contacts only.
   string? device_name;

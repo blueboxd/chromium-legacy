@@ -31,9 +31,12 @@ const std::vector<uint8_t> kSalt(Advertisement::kSaltSize, 0);
 static const std::vector<uint8_t> kEncryptedMetadataKey(
     Advertisement::kMetadataEncryptionKeyHashByteSize,
     0);
+const nearby_share::mojom::ShareTargetType kDeviceType =
+    nearby_share::mojom::ShareTargetType::kPhone;
 
 void ExpectEquals(const Advertisement& self,
                   const mojom::AdvertisementPtr& other) {
+  EXPECT_EQ(self.device_type(), other->device_type);
   EXPECT_EQ(self.device_name(), other->device_name);
   EXPECT_EQ(self.salt(), other->salt);
   EXPECT_EQ(self.encrypted_metadata_key(), other->encrypted_metadata_key);
@@ -226,9 +229,9 @@ class NearbySharingDecoderTest : public testing::Test {
 TEST_F(NearbySharingDecoderTest, V1VisibleToEveryoneAdvertisementDecoding) {
   const std::unique_ptr<sharing::Advertisement> advertisement =
       sharing::Advertisement::NewInstance(kSalt, kEncryptedMetadataKey,
-                                          kDeviceName);
+                                          kDeviceType, kDeviceName);
   std::vector<uint8_t> v1EndpointInfo = {
-      0, 0, 0, 0,  0,   0,   0,   0,   0,  0,   0,  0,  0,   0,
+      2, 0, 0, 0,  0,   0,   0,   0,   0,  0,   0,  0,  0,   0,
       0, 0, 0, 10, 100, 101, 118, 105, 99, 101, 78, 97, 109, 101};
   base::RunLoop run_loop;
   auto callback =
@@ -242,7 +245,7 @@ TEST_F(NearbySharingDecoderTest, V1VisibleToEveryoneAdvertisementDecoding) {
 
 TEST_F(NearbySharingDecoderTest, InvalidDeviceNameAdvertisementDecoding) {
   std::vector<uint8_t> v1EndpointInfo = {
-      0, 0, 0, 0,  0,   0,  0,   0,   0,  0,   0,  0,  0,   0,
+      2, 0, 0, 0,  0,   0,  0,   0,   0,  0,   0,  0,  0,   0,
       0, 0, 0, 10, 226, 40, 161, 105, 99, 101, 78, 97, 109, 101,
   };
   auto callback = base::BindLambdaForTesting(

@@ -16,8 +16,9 @@ to set the default value. Can also be accessed through `ci.defaults`.
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys")
 load("//project.star", "settings")
-load("./builders.star", "builders")
 load("./args.star", "args")
+load("./branches.star", "branches")
+load("./builders.star", "builders")
 
 defaults = args.defaults(
     extends = builders.defaults,
@@ -29,7 +30,10 @@ defaults = args.defaults(
     repo = None,
 )
 
-def declare_bucket(milestone_vars):
+def declare_bucket(milestone_vars, *, branch_selector = branches.MAIN_ONLY):
+    if not branches.matches(branch_selector):
+        return
+
     luci.bucket(
         name = milestone_vars.ci_bucket,
         acls = [
@@ -63,6 +67,7 @@ def declare_bucket(milestone_vars):
     ):
         ci.overview_console_view(
             name = name,
+            branch_selector = branch_selector,
             header = "//chromium-header.textpb",
             repo = "https://chromium.googlesource.com/chromium/src",
             refs = [milestone_vars.ref],
@@ -310,7 +315,7 @@ def ordering(*, short_names = None, categories = None):
         categories = categories or [],
     )
 
-def console_view(*, name, ordering = None, **kwargs):
+def console_view(*, name, branch_selector = branches.MAIN_ONLY, ordering = None, **kwargs):
     """Create a console view, optionally providing an entry ordering.
 
     Args:
@@ -341,6 +346,9 @@ def console_view(*, name, ordering = None, **kwargs):
         `luci.console_view`. The header and repo arguments support
          module-level defaults.
     """
+    if not branches.matches(branch_selector):
+        return
+
     kwargs["header"] = defaults.get_value_from_kwargs("header", kwargs)
     kwargs["repo"] = defaults.get_value_from_kwargs("repo", kwargs)
     luci.console_view(
@@ -353,7 +361,7 @@ def console_view(*, name, ordering = None, **kwargs):
         ordering = ordering or {},
     )
 
-def overview_console_view(*, name, top_level_ordering, **kwargs):
+def overview_console_view(*, name, top_level_ordering, branch_selector = branches.MAIN_ONLY, **kwargs):
     """Create an overview console view.
 
     An overview console view is a console view that contains a subset of
@@ -406,6 +414,7 @@ def console_view_entry(*, category = None, short_name = None):
 def ci_builder(
         *,
         name,
+        branch_selector = branches.MAIN_ONLY,
         add_to_console_view = args.DEFAULT,
         console_view = args.DEFAULT,
         main_console_view = args.DEFAULT,
@@ -418,6 +427,9 @@ def ci_builder(
 
     Arguments:
       name - name of the builder, will show up in UIs and logs. Required.
+      branch_selector - A branch selector value controlling whether the
+        builder definition is executed. See branches.star for more
+        information.
       add_to_console_view - A bool indicating whether an entry should be
         created for the builder in the console identified by
         `console_view`. Supports a module-level default that defaults to
@@ -444,6 +456,8 @@ def ci_builder(
         'chromium-tree-closer' config in notifiers.star for the full criteria.
       notifies - Any extra notifiers to attach to this builder.
     """
+    if not branches.matches(branch_selector):
+        return
 
     # Branch builders should never close the tree, only builders from the main
     # "ci" bucket.
@@ -453,8 +467,9 @@ def ci_builder(
 
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
-    ret = builders.builder(
+    builders.builder(
         name = name,
+        branch_selector = branch_selector,
         resultdb_bigquery_exports = [resultdb.export_test_results(
             bq_table = "luci-resultdb.chromium.ci_test_results",
         )],
@@ -487,12 +502,15 @@ def ci_builder(
                     short_name = console_view_entry.short_name,
                 )
 
+            overview_console_category = console_view
+            if console_view_entry.category:
+                overview_console_category = "|".join([console_view, console_view_entry.category])
             main_console_view = defaults.get_value("main_console_view", main_console_view)
             if main_console_view:
                 luci.console_view_entry(
                     builder = builder,
                     console_view = main_console_view,
-                    category = "|".join([console_view, console_view_entry.category]),
+                    category = overview_console_category,
                     short_name = console_view_entry.short_name,
                 )
 
@@ -504,11 +522,9 @@ def ci_builder(
                 luci.console_view_entry(
                     builder = builder,
                     console_view = cq_mirrors_console_view,
-                    category = "|".join([console_view, console_view_entry.category]),
+                    category = overview_console_category,
                     short_name = console_view_entry.short_name,
                 )
-
-    return ret
 
 def android_builder(
         *,

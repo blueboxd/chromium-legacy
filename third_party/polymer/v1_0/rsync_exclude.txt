@@ -55,10 +55,12 @@ paper-behaviors/paper-inky-focus-behavior.html
 paper-spinner/paper-spinner.html
 
 # paper-styles
-paper-styles/classes/global.html
-paper-styles/element-styles/paper-item-styles.html
+paper-styles/classes/*
+paper-styles/default-theme.html
+paper-styles/element-styles/*
 paper-styles/paper-styles-classes.html
 paper-styles/paper-styles.html
+paper-styles/typography.html
 
 # Polymer 1
 polymer/*

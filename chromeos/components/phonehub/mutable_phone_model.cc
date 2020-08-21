@@ -20,5 +20,14 @@ void MutablePhoneModel::SetPhoneStatusModel(
   NotifyModelChanged();
 }
 
+void MutablePhoneModel::SetBrowserTabsModel(
+    const base::Optional<BrowserTabsModel>& browser_tabs_model) {
+  if (browser_tabs_model_ == browser_tabs_model)
+    return;
+
+  browser_tabs_model_ = browser_tabs_model;
+  NotifyModelChanged();
+}
+
 }  // namespace phonehub
 }  // namespace chromeos

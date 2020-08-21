@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_DEVICE_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_DEVICE_PROVIDER_IMPL_H_
 
-#include <memory>
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_monitor.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
@@ -15,7 +14,8 @@ class MediaNotificationDeviceProviderImpl
     : public MediaNotificationDeviceProvider,
       public MediaNotificationDeviceMonitor::DevicesChangedObserver {
  public:
-  MediaNotificationDeviceProviderImpl();
+  explicit MediaNotificationDeviceProviderImpl(
+      std::unique_ptr<media::AudioSystem> audio_system);
   MediaNotificationDeviceProviderImpl(
       const MediaNotificationDeviceProviderImpl&) = delete;
   MediaNotificationDeviceProviderImpl& operator=(

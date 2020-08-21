@@ -16,6 +16,7 @@
 #include "components/session_manager/session_manager_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/view.h"
 
 namespace base {
@@ -52,6 +53,9 @@ class ASH_EXPORT TimeView : public ActionableView, public ClockObserver {
 
   // Updates the time text fontlist.
   void SetTextFont(const gfx::FontList& font_list);
+
+  // Updates the time text shadow values.
+  void SetTextShadowValues(const gfx::ShadowValues& shadows);
 
   // ClockObserver:
   void OnDateFormatChanged() override;

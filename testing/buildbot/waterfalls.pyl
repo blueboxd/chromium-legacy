@@ -2343,6 +2343,22 @@
         },
         'use_swarming': False,
       },
+      'mac10.10-omaha-tester-rel': {
+        'mixins': [
+            'mac_10.10',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+        },
+      },
+      'mac10.11-omaha-tester-rel': {
+        'mixins': [
+            'mac_10.11',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+        },
+      },
       'mac10.12-blink-rel-dummy': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -2355,6 +2371,14 @@
               'os': 'Mac-10.12.6',
             },
           ],
+        },
+      },
+      'mac10.12-omaha-tester-rel': {
+        'mixins': [
+            'mac_mini_10.12',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
         },
       },
       'mac10.13-blink-rel-dummy': {
@@ -2374,6 +2398,14 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'mac10.13-omaha-tester-rel': {
+        'mixins': [
+            'mac_10.13',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+        },
+      },
       'mac10.14-blink-rel-dummy': {
         'mixins': [
           'mac_mini_7,1',
@@ -2384,6 +2416,14 @@
         },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'mac10.14-omaha-tester-rel': {
+        'mixins': [
+            'mac_10.14',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
         },
       },
       'mac10.15-blink-rel-dummy': {
@@ -2401,6 +2441,14 @@
         },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'mac10.15-omaha-tester-rel': {
+        'mixins': [
+            'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
         },
       },
       'win-annotator-rel': {
@@ -2450,7 +2498,7 @@
       },
       'win10-omaha-tester-rel': {
         'test_suites': {
-          'gtest_tests': 'omaha_gtests',
+          'gtest_tests': 'updater_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -2481,7 +2529,7 @@
           'x86-64'
         ],
         'test_suites': {
-          'gtest_tests': 'omaha_gtests',
+          'gtest_tests': 'updater_gtests',
         },
         'swarming': {
           'dimension_sets': [

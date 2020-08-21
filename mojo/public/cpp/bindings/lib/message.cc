@@ -99,6 +99,7 @@ void CreateSerializedMessageObject(uint32_t name,
                                    uint32_t trace_id,
                                    size_t payload_size,
                                    size_t payload_interface_id_count,
+                                   MojoCreateMessageFlags create_message_flags,
                                    std::vector<ScopedHandle>* handles,
                                    ScopedMessageHandle* out_handle,
                                    internal::Buffer* out_buffer) {
@@ -107,7 +108,7 @@ void CreateSerializedMessageObject(uint32_t name,
                          TRACE_EVENT_FLAG_FLOW_OUT);
 
   ScopedMessageHandle handle;
-  MojoResult rv = mojo::CreateMessage(&handle);
+  MojoResult rv = CreateMessage(&handle, create_message_flags);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(handle.is_valid());
 
@@ -194,9 +195,10 @@ void DestroyUnserializedContext(uintptr_t context) {
 }
 
 Message CreateUnserializedMessage(
-    std::unique_ptr<internal::UnserializedMessageContext> context) {
+    std::unique_ptr<internal::UnserializedMessageContext> context,
+    MojoCreateMessageFlags create_message_flags) {
   ScopedMessageHandle handle;
-  MojoResult rv = mojo::CreateMessage(&handle);
+  MojoResult rv = CreateMessage(&handle, create_message_flags);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(handle.is_valid());
 
@@ -230,24 +232,39 @@ Message::Message(Message&& other)
 #endif
 }
 
-Message::Message(std::unique_ptr<internal::UnserializedMessageContext> context)
-    : Message(CreateUnserializedMessage(std::move(context))) {}
+Message::Message(std::unique_ptr<internal::UnserializedMessageContext> context,
+                 MojoCreateMessageFlags create_message_flags)
+    : Message(CreateUnserializedMessage(std::move(context),
+                                        create_message_flags)) {}
 
 Message::Message(uint32_t name,
                  uint32_t flags,
                  size_t payload_size,
                  size_t payload_interface_id_count,
+                 MojoCreateMessageFlags create_message_flags,
                  std::vector<ScopedHandle>* handles) {
-  CreateSerializedMessageObject(name, flags, GetTraceId(this), payload_size,
-                                payload_interface_id_count, handles, &handle_,
-                                &payload_buffer_);
+  CreateSerializedMessageObject(
+      name, flags, GetTraceId(this), payload_size, payload_interface_id_count,
+      create_message_flags, handles, &handle_, &payload_buffer_);
   transferable_ = true;
   serialized_ = true;
 }
 
+Message::Message(uint32_t name,
+                 uint32_t flags,
+                 size_t payload_size,
+                 size_t payload_interface_id_count,
+                 std::vector<ScopedHandle>* handles)
+    : Message(name,
+              flags,
+              payload_size,
+              payload_interface_id_count,
+              MOJO_CREATE_MESSAGE_FLAG_NONE,
+              handles) {}
+
 Message::Message(base::span<const uint8_t> payload,
                  base::span<ScopedHandle> handles) {
-  MojoResult rv = mojo::CreateMessage(&handle_);
+  MojoResult rv = CreateMessage(&handle_, MOJO_CREATE_MESSAGE_FLAG_NONE);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(handle_.is_valid());
 

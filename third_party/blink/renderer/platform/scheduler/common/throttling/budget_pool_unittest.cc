@@ -129,8 +129,7 @@ TEST_F(BudgetPoolTest, WakeUpBudgetPool) {
       task_queue_throttler_->CreateWakeUpBudgetPool("test");
 
   scoped_refptr<base::sequence_manager::TaskQueue> queue =
-      scheduler_->NewTimerTaskQueue(
-          MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
 
   pool->SetWakeUpInterval(base::TimeTicks(), base::TimeDelta::FromSeconds(10));
   pool->SetWakeUpDuration(base::TimeDelta::FromMilliseconds(10));

@@ -978,4 +978,11 @@
       ],
     },
   },
+  'xctest': {
+    '$mixin_append': {
+      'args': [
+        '--xctest',
+      ],
+    },
+  },
 }

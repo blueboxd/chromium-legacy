@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -17,7 +16,6 @@ import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
-import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 
@@ -25,7 +23,7 @@ import org.chromium.components.user_prefs.UserPrefs;
  * Fragment containing standard protection settings.
  */
 public class StandardProtectionSettingsFragment
-        extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
+        extends SafeBrowsingSettingsFragmentBase implements Preference.OnPreferenceChangeListener {
     @VisibleForTesting
     static final String PREF_EXTENDED_REPORTING = "extended_reporting";
     @VisibleForTesting
@@ -39,10 +37,7 @@ public class StandardProtectionSettingsFragment
     private final PrefService mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String rootKey) {
-        SettingsUtils.addPreferencesFromResource(this, R.xml.standard_protection_preferences);
-        getActivity().setTitle(R.string.prefs_section_safe_browsing_title);
-
+    protected void onCreatePreferencesInternal(Bundle bundle, String rootKey) {
         mExtendedReportingPreference = findPreference(PREF_EXTENDED_REPORTING);
         mExtendedReportingPreference.setOnPreferenceChangeListener(this);
         // TODO(crbug.com/1108604): Set ManagedPreferenceDelegate for mExtendedReportingPreference
@@ -53,6 +48,11 @@ public class StandardProtectionSettingsFragment
         mPasswordLeakDetectionPreference.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         updateLeakDetectionAndExtendedReportingPreferences();
+    }
+
+    @Override
+    protected int getPreferenceResource() {
+        return R.xml.standard_protection_preferences;
     }
 
     /**

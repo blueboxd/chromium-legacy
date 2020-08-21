@@ -12,6 +12,7 @@ Polymer({
   is: 'settings-account-manager',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
@@ -53,7 +54,19 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
       },
-    }
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kAddAccount,
+        chromeos.settings.mojom.Setting.kRemoveAccount,
+      ]),
+    },
   },
 
   /** @private {?settings.AccountManagerBrowserProxy} */
@@ -75,9 +88,12 @@ Polymer({
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged(newRoute, oldRoute) {
-    if (newRoute == settings.routes.ACCOUNT_MANAGER) {
-      this.browserProxy_.showWelcomeDialogIfRequired();
+    if (newRoute !== settings.routes.ACCOUNT_MANAGER) {
+      return;
     }
+
+    this.browserProxy_.showWelcomeDialogIfRequired();
+    this.attemptDeepLink();
   },
 
   /**

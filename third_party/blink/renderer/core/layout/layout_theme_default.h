@@ -35,24 +35,10 @@
 
 namespace blink {
 
-class LayoutProgress;
-
 class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
  public:
   String ExtraDefaultStyleSheet() override;
   String ExtraQuirksStyleSheet() override;
-
-  Color SystemColor(CSSValueID, WebColorScheme color_scheme) const override;
-
-  // List Box selection color
-  virtual Color ActiveListBoxSelectionBackgroundColor(
-      WebColorScheme color_scheme) const;
-  virtual Color ActiveListBoxSelectionForegroundColor(
-      WebColorScheme color_scheme) const;
-  virtual Color InactiveListBoxSelectionBackgroundColor(
-      WebColorScheme color_scheme) const;
-  virtual Color InactiveListBoxSelectionForegroundColor(
-      WebColorScheme color_scheme) const;
 
   Color PlatformActiveSelectionBackgroundColor(
       WebColorScheme color_scheme) const override;
@@ -72,9 +58,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   void AdjustInnerSpinButtonStyle(ComputedStyle&) const override;
   void AdjustButtonStyle(ComputedStyle&) const override;
 
-  bool PopsMenuByReturnKey() const override;
-  bool PopsMenuByAltDownUpOrF4Key() const override { return true; }
-
   Color PlatformTapHighlightColor() const override {
     return Color(kDefaultTapHighlightColor);
   }
@@ -84,13 +67,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
                           Color inactive_background_color,
                           Color inactive_foreground_color) override;
   Color PlatformFocusRingColor() const override;
-
-  // System fonts.
-  void SystemFont(CSSValueID system_font_id,
-                  FontSelectionValue& font_slope,
-                  FontSelectionValue& font_weight,
-                  float& font_size,
-                  AtomicString& font_family) const override;
 
   void AdjustSearchFieldStyle(ComputedStyle&) const override;
   void AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
@@ -123,11 +99,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
  protected:
   LayoutThemeDefault();
   ~LayoutThemeDefault() override;
-
-  IntRect DeterminateProgressValueRectFor(LayoutProgress*,
-                                          const IntRect&) const;
-  IntRect IndeterminateProgressValueRectFor(LayoutProgress*,
-                                            const IntRect&) const;
 
  private:
   ThemePainter& Painter() override { return painter_; }

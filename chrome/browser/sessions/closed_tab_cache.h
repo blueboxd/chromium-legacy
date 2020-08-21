@@ -4,11 +4,11 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_CLOSED_TAB_CACHE_H_
 #define CHROME_BROWSER_SESSIONS_CLOSED_TAB_CACHE_H_
-#endif
 
 #include <list>
 #include <memory>
 
+#include "base/memory/memory_pressure_listener.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -29,9 +29,7 @@ class WebContents;
 // - evicts cache entries after a timeout.
 // - evicts the least recently closed tab when the cache is full.
 //
-// TODO(aebacanu): Make ClosedTabCache listen to MemoryPressureListener and
-// clear the cache if memory is tight. Hook ClosedTabCache into the navigation
-// flow.
+// TODO(aebacanu): Hook ClosedTabCache into the tab restore flow.
 class ClosedTabCache {
  public:
   ClosedTabCache();
@@ -98,6 +96,13 @@ class ClosedTabCache {
   // nothing if the entry cannot be found.
   void EvictEntryById(SessionID id);
 
+  // Flush the cache if memory is tight.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
+  // Evict all entries from the ClosedTabCache.
+  void Flush();
+
   // The set of stored Entries.
   // Invariants:
   // - Ordered from the most recently closed tab to the least recently closed.
@@ -108,4 +113,10 @@ class ClosedTabCache {
 
   // Task runner used for evicting cache entries after timeout.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Listener that sets up a callback to flush the cache if there is not enough
+  // memory available.
+  std::unique_ptr<base::MemoryPressureListener> listener_;
 };
+
+#endif  // CHROME_BROWSER_SESSIONS_CLOSED_TAB_CACHE_H_

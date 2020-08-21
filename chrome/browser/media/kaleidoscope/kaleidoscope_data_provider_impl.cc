@@ -11,6 +11,7 @@
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/kaleidoscope/constants.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_metrics_recorder.h"
 #include "chrome/browser/media/kaleidoscope/kaleidoscope_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -68,9 +69,11 @@ base::Optional<media_feeds::mojom::MediaFeedItemType> GetFeedItemTypeForTab(
 
 KaleidoscopeDataProviderImpl::KaleidoscopeDataProviderImpl(
     mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider> receiver,
-    Profile* profile)
+    Profile* profile,
+    KaleidoscopeMetricsRecorder* metrics_recorder)
     : credentials_(media::mojom::Credentials::New()),
       profile_(profile),
+      metrics_recorder_(metrics_recorder),
       receiver_(this, std::move(receiver)) {
   DCHECK(profile);
 
@@ -157,6 +160,19 @@ void KaleidoscopeDataProviderImpl::GetShouldShowFirstRunExperience(
 }
 
 void KaleidoscopeDataProviderImpl::SetFirstRunExperienceCompleted() {
+  SetFirstRunExperienceStep(
+      media::mojom::KaleidoscopeFirstRunExperienceStep::kCompleted);
+}
+
+void KaleidoscopeDataProviderImpl::SetFirstRunExperienceStep(
+    media::mojom::KaleidoscopeFirstRunExperienceStep step) {
+  if (metrics_recorder_)
+    metrics_recorder_->OnFirstRunExperienceStepChanged(step);
+
+  // If the FRE is completed, then store a pref so we know to not show it again.
+  if (step != media::mojom::KaleidoscopeFirstRunExperienceStep::kCompleted)
+    return;
+
   auto* prefs = profile_->GetPrefs();
   if (!prefs)
     return;

@@ -50,7 +50,6 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   // WidgetDelegate overrides:
   bool CanMinimize() const override;
   View* GetInitiallyFocusedView() override;
-  ui::ModalType GetModalType() const override;
   void WindowClosing() override;
 
   // TextfieldController overrides:

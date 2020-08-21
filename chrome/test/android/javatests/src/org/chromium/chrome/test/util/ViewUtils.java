@@ -133,7 +133,7 @@ public class ViewUtils {
             Matcher<View> viewMatcher, @ExpectedViewState int viewState) {
         return (View view, NoMatchingViewException noMatchException) -> {
             if (noMatchException != null) throw noMatchException;
-            CriteriaHelper.pollUiThread(
+            CriteriaHelper.pollUiThreadNested(
                     new ExpectedViewCriteria(viewMatcher, viewState, (ViewGroup) view));
         };
     }
@@ -167,12 +167,13 @@ public class ViewUtils {
      * @return An interaction on the matching view.
      */
     public static ViewInteraction onViewWaiting(Matcher<View> viewMatcher) {
-        Espresso.onView(ViewMatchers.isRoot())
-                .check((View view, NoMatchingViewException noMatchException) -> {
-                    if (noMatchException != null) throw noMatchException;
-                    CriteriaHelper.pollUiThread(
-                            new ExpectedViewCriteria(viewMatcher, VIEW_VISIBLE, (ViewGroup) view));
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Espresso.onView(ViewMatchers.isRoot())
+                    .check((View view, NoMatchingViewException noMatchException) -> {
+                        if (noMatchException != null) throw noMatchException;
+                        new ExpectedViewCriteria(viewMatcher, VIEW_VISIBLE, (ViewGroup) view).run();
+                    });
+        });
         return Espresso.onView(viewMatcher);
     }
 

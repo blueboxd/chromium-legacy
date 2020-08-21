@@ -8,6 +8,8 @@ assert(is_chromeos, "Phone Hub is Chrome OS only")
 
 static_library("phonehub") {
   sources = [
+    "browser_tabs_model.cc",
+    "browser_tabs_model.h",
     "feature_status.cc",
     "feature_status.h",
     "feature_status_provider.cc",
@@ -41,6 +43,8 @@ static_library("phonehub") {
     "//components/keyed_service/core",
     "//components/prefs",
     "//device/bluetooth",
+    "//ui/gfx",
+    "//url",
   ]
 }
 
@@ -65,6 +69,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "browser_tabs_model_unittest.cc",
     "feature_status_provider_impl_unittest.cc",
     "mutable_phone_model_unittest.cc",
     "notification_access_manager_impl_unittest.cc",

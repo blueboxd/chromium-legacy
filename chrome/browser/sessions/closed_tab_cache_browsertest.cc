@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sessions/closed_tab_cache.h"
 
+#include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -32,6 +35,8 @@ class ClosedTabCacheTest : public InProcessBrowserTest {
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
+
+  util::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
 };
 
 // Add an entry to the cache when the cache is empty.
@@ -193,4 +198,60 @@ IN_PROC_BROWSER_TEST_F(ClosedTabCacheTest, EvictEntryOnTimeout) {
 
   // Expect the entry to have been evicted.
   EXPECT_EQ(cache.EntriesCount(), 0U);
+}
+
+// Check that the cache is cleared if the memory pressure level is critical and
+// the threshold is critical.
+IN_PROC_BROWSER_TEST_F(ClosedTabCacheTest, MemoryPressureLevelCritical) {
+  ClosedTabCache cache;
+
+  AddTab(browser());
+  ASSERT_EQ(browser()->tab_strip_model()->count(), 2);
+
+  std::unique_ptr<WebContents> wc =
+      browser()->tab_strip_model()->DetachWebContentsAt(0);
+
+  ASSERT_TRUE(cache.IsEmpty())
+      << "Expected cache to be empty at the start of the test.";
+
+  cache.StoreEntry(SessionID::NewUnique(), std::move(wc),
+                   base::TimeTicks::Now());
+  EXPECT_EQ(cache.EntriesCount(), 1U);
+
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+
+  // Wait for all the pressure callbacks to be run.
+  base::RunLoop().RunUntilIdle();
+
+  // Expect the cache to have been cleared since the memory pressure level is
+  // at the threshold.
+  EXPECT_EQ(cache.EntriesCount(), 0U);
+}
+
+// Check that the cache is not cleared if the memory pressure level is moderate
+// and the threshold is critical.
+IN_PROC_BROWSER_TEST_F(ClosedTabCacheTest, MemoryPressureLevelModerate) {
+  ClosedTabCache cache;
+
+  AddTab(browser());
+  ASSERT_EQ(browser()->tab_strip_model()->count(), 2);
+
+  std::unique_ptr<WebContents> wc =
+      browser()->tab_strip_model()->DetachWebContentsAt(0);
+
+  ASSERT_TRUE(cache.IsEmpty())
+      << "Expected cache to be empty at the start of the test.";
+
+  cache.StoreEntry(SessionID::NewUnique(), std::move(wc),
+                   base::TimeTicks::Now());
+  EXPECT_EQ(cache.EntriesCount(), 1U);
+
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+
+  // Expect the cache to not have been cleared since the memory pressure level
+  // is below the threshold.
+  EXPECT_EQ(cache.EntriesCount(), 1U);
 }

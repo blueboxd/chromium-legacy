@@ -10,6 +10,7 @@
 
 #include "pdf/pdf_engine.h"
 #include "pdf/pdf_init.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chrome_pdf {
 
@@ -61,7 +62,7 @@ bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   PDFEngineExports::RenderingSettings settings(
       dpi_x, dpi_y,
-      pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
+      gfx::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
       autorotate, use_color);
   return engine_exports->RenderPDFPageToDC(pdf_buffer, page_number, settings,
@@ -128,7 +129,7 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   PDFEngineExports::RenderingSettings settings(
-      dpi_x, dpi_y, pp::Rect(bitmap_width, bitmap_height),
+      dpi_x, dpi_y, gfx::Rect(bitmap_width, bitmap_height),
       /*fit_to_bounds=*/true, stretch_to_bounds, keep_aspect_ratio,
       /*center_in_bounds=*/true, autorotate, use_color);
   return engine_exports->RenderPDFPageToBitmap(pdf_buffer, page_number,

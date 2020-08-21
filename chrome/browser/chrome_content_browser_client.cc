@@ -3558,6 +3558,12 @@ bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
     BrowserURLHandler* handler) {
+  // The group policy NTP URL handler must be registered before the other NTP
+  // URL handlers below. Also register it before the "parts" handlers, so the
+  // NTP policy takes precedence over extensions that override the NTP.
+  handler->AddHandlerPair(&HandleNewTabPageLocationOverride,
+                          BrowserURLHandler::null_handler());
+
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->BrowserURLHandlerCreated(handler);
 
@@ -3566,11 +3572,6 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // actually handle them.  Also relies on a preliminary fixup phase.
   handler->SetFixupHandler(&FixupBrowserAboutURL);
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
-                          BrowserURLHandler::null_handler());
-
-  // The group policy NTP URL handler must be registered before the other NTP
-  // URL handlers below.
-  handler->AddHandlerPair(&HandleNewTabPageLocationOverride,
                           BrowserURLHandler::null_handler());
 
 #if defined(OS_ANDROID)

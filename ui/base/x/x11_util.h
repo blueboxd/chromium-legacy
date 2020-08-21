@@ -265,9 +265,6 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsXInput2Available();
 // Return true iff the display supports MIT-SHM.
 COMPONENT_EXPORT(UI_BASE_X) bool QueryShmSupport();
 
-// Returns the first event ID for the MIT-SHM extension, if available.
-COMPONENT_EXPORT(UI_BASE_X) int ShmEventBase();
-
 // Coalesce all pending motion events (touch or mouse) that are at the top of
 // the queue, and return the number eliminated, storing the last one in
 // |last_event|.
@@ -297,9 +294,6 @@ enum HideTitlebarWhenMaximized : uint32_t {
 COMPONENT_EXPORT(UI_BASE_X)
 void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
                                           HideTitlebarWhenMaximized property);
-
-// Clears all regions of X11's default root window by filling black pixels.
-COMPONENT_EXPORT(UI_BASE_X) void ClearX11DefaultRootWindow();
 
 // Returns true if |window| is visible.
 COMPONENT_EXPORT(UI_BASE_X) bool IsWindowVisible(x11::Window window);

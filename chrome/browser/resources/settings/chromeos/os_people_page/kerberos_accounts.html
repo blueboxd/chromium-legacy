@@ -13,7 +13,9 @@
 <link rel="import" href="../../people_page/account_manager_browser_proxy.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../metrics_recorder.html">
+<link rel="import" href="../os_route.html">
 <link rel="import" href="kerberos_accounts_browser_proxy.html">
 <link rel="import" href="kerberos_add_account_dialog.html">
 
@@ -93,7 +95,8 @@
         </cr-policy-indicator>
       </template>
       <cr-button id="add-account-button" on-click="onAddAccountClick_"
-          disabled="[[!addAccountsAllowed_]]">
+          disabled="[[!addAccountsAllowed_]]"
+          deep-link-focus-id$="[[Setting.kAddKerberosTicket]]">
         <div id="add-account-icon"></div>
         $i18n{kerberosAccountsAddAccountLabel}
       </cr-button>
@@ -143,7 +146,9 @@
           <!-- Hamburger menu -->
           <cr-icon-button class="icon-more-vert more-actions"
               title="$i18n{moreActions}"
-              on-click="onAccountActionsMenuButtonClick_">
+              on-click="onAccountActionsMenuButtonClick_"
+              deep-link-focus-id$="[[Setting.kRemoveKerberosTicket]]
+                  [[Setting.kSetActiveKerberosTicket]]">
           </cr-icon-button>
         </div>
       </template>

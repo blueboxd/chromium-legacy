@@ -31,7 +31,8 @@ namespace debug {
 BASE_EXPORT bool NOT_TAIL_CALLED DumpWithoutCrashing();
 
 // Sets a function that'll be invoked to dump the current process when
-// DumpWithoutCrashing() is called.
+// DumpWithoutCrashing() is called. May be called with null to remove a
+// previously set function.
 BASE_EXPORT void SetDumpWithoutCrashingFunction(void (CDECL *function)());
 
 }  // namespace debug

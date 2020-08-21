@@ -72,6 +72,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   };
 
   DialogDelegate();
+  ~DialogDelegate() override;
 
   // Creates a widget at a default location.
   static Widget* CreateDialogWidget(WidgetDelegate* delegate,
@@ -278,8 +279,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void WindowWillClose();
 
  protected:
-  ~DialogDelegate() override;
-
   // Overridden from WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() override;
 

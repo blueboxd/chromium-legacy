@@ -131,6 +131,8 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->response_start = base::TimeTicks::Now();
   response->encoded_data_length = request->GetTotalReceivedBytes();
   response->auth_challenge_info = request->auth_challenge_info();
+  response->has_range_requested = request->extra_request_headers().HasHeader(
+      net::HttpRequestHeaders::kRange);
 }
 
 // A subclass of net::UploadBytesElementReader which owns

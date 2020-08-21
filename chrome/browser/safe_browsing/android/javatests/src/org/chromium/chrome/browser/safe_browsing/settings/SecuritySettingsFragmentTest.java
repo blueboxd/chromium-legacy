@@ -9,6 +9,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import androidx.test.filters.SmallTest;
@@ -23,8 +24,10 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -58,6 +61,9 @@ public class SecuritySettingsFragmentTest {
 
     @Mock
     private SettingsLauncher mSettingsLauncher;
+
+    @Mock
+    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     private SecuritySettingsFragment mSecuritySettingsFragment;
     private RadioButtonGroupSafeBrowsingPreference mSafeBrowsingPreference;
@@ -294,6 +300,22 @@ public class SecuritySettingsFragmentTest {
             // To disclose information, aux buttons should be enabled under managed mode.
             Assert.assertTrue(getEnhancedProtectionButton().getAuxButtonForTests().isEnabled());
             Assert.assertTrue(getStandardProtectionButton().getAuxButtonForTests().isEnabled());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    public void testHelpButtonClicked() {
+        launchSettingsActivity();
+        mSecuritySettingsFragment.setHelpAndFeedbackLauncher(mHelpAndFeedbackLauncher);
+        onView(withId(R.id.menu_id_targeted_help)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Mockito.verify(mHelpAndFeedbackLauncher)
+                    .show(mSecuritySettingsFragment.getActivity(),
+                            mSecuritySettingsFragment.getString(
+                                    R.string.help_context_safe_browsing),
+                            Profile.getLastUsedRegularProfile(), null);
         });
     }
 

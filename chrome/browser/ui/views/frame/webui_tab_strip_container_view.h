@@ -40,6 +40,7 @@ class WebView;
 class Browser;
 class BrowserView;
 enum class WebUITabStripDragDirection;
+enum class WebUITabStripOpenCloseReason;
 class ImmersiveRevealedLock;
 
 class WebUITabStripContainerView : public TabStripUIEmbedder,
@@ -96,7 +97,8 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void EndDragToOpen(base::Optional<WebUITabStripDragDirection>
                          fling_direction = base::nullopt);
 
-  void SetContainerTargetVisibility(bool target_visible);
+  void SetContainerTargetVisibility(bool target_visible,
+                                    WebUITabStripOpenCloseReason reason);
 
   // Passed to the AutoCloser to handle closing.
   void CloseForEventOutsideTabStrip(TabStripUICloseAction reason);

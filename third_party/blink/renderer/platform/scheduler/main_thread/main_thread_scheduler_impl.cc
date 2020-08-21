@@ -714,7 +714,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   return task_queue;
 }
 
-// TODO(sreejakshetty): Cleanup NewLoadingTaskQueue and NewTimerTaskQueue.
+// TODO(sreejakshetty): Cleanup NewLoadingTaskQueue.
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
     MainThreadTaskQueue::QueueType queue_type,
     FrameSchedulerImpl* frame_scheduler) {
@@ -727,12 +727,11 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
                           .SetFrameScheduler(frame_scheduler));
 }
 
-scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
-    MainThreadTaskQueue::QueueType queue_type,
+scoped_refptr<MainThreadTaskQueue>
+MainThreadSchedulerImpl::NewThrottleableTaskQueueForTest(
     FrameSchedulerImpl* frame_scheduler) {
-  DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
-            MainThreadTaskQueue::QueueClass::kTimer);
-  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
+  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+                          MainThreadTaskQueue::QueueType::kFrameThrottleable)
                           .SetCanBePaused(true)
                           .SetCanBeFrozen(true)
                           .SetCanBeDeferred(true)
@@ -1456,7 +1455,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     case UseCase::kTouchstart:
       new_policy.rail_mode() = RAILMode::kResponse;
       new_policy.loading_queue_policy().is_deferred = true;
-      new_policy.timer_queue_policy().is_deferred = true;
+      new_policy.default_queue_policy().is_deferred = true;
       break;
 
     case UseCase::kNone:
@@ -1487,17 +1486,16 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   if (main_thread_only().renderer_pause_count != 0) {
     new_policy.loading_queue_policy().is_paused = true;
-    new_policy.timer_queue_policy().is_paused = true;
+    new_policy.default_queue_policy().is_paused = true;
   }
   if (main_thread_only().pause_timers_for_webview) {
-    new_policy.timer_queue_policy().is_paused = true;
+    new_policy.default_queue_policy().is_paused = true;
   }
 
   if (main_thread_only().use_virtual_time) {
     new_policy.compositor_queue_policy().use_virtual_time = true;
     new_policy.default_queue_policy().use_virtual_time = true;
     new_policy.loading_queue_policy().use_virtual_time = true;
-    new_policy.timer_queue_policy().use_virtual_time = true;
   }
 
   if (scheduling_settings_
@@ -2094,10 +2092,6 @@ void MainThreadSchedulerImpl::Policy::AsValueInto(
 
   state->BeginDictionary("loading_queue_policy");
   loading_queue_policy().AsValueInto(state);
-  state->EndDictionary();
-
-  state->BeginDictionary("timer_queue_policy");
-  timer_queue_policy().AsValueInto(state);
   state->EndDictionary();
 
   state->BeginDictionary("default_queue_policy");

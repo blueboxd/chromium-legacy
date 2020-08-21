@@ -27,6 +27,7 @@ through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 
 load("//project.star", "settings")
 load("./args.star", "args")
+load("./branches.star", "branches")
 
 ################################################################################
 # Constants for use with the builder function                                  #
@@ -273,6 +274,7 @@ defaults = args.defaults(
 def builder(
         *,
         name,
+        branch_selector = branches.MAIN_ONLY,
         bucket = args.DEFAULT,
         executable = args.DEFAULT,
         triggered_by = args.DEFAULT,
@@ -317,6 +319,8 @@ def builder(
 
     Arguments:
       * name - name of the builder, will show up in UIs and logs. Required.
+      * branch_selector - A branch selector value controlling whether the
+        builder definition is executed. See branches.star for more information.
       * bucket - a bucket the build is in, see luci.bucket(...) rule. Required
         (may be specified by module-level default).
       * executable - an executable to run, e.g. a luci.recipe(...). Required (may
@@ -527,8 +531,9 @@ def builder(
     if triggered_by != args.COMPUTE:
         kwargs["triggered_by"] = triggered_by
 
-    return luci.builder(
+    return branches.builder(
         name = name,
+        branch_selector = branch_selector,
         dimensions = dimensions,
         properties = properties,
         resultdb_settings = resultdb.settings(

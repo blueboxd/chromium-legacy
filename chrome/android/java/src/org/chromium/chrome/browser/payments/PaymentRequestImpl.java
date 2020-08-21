@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.CanMakePaymentQuery;
@@ -80,7 +79,6 @@ import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.Section;
 import org.chromium.components.payments.UrlUtil;
 import org.chromium.components.security_state.SecurityStateModel;
-import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
@@ -200,17 +198,9 @@ public class PaymentRequestImpl
     };
 
     private final Handler mHandler = new Handler();
-    private final RenderFrameHost mRenderFrameHost;
     private final Delegate mDelegate;
     private final WebContents mWebContents;
-    private final String mTopLevelOrigin;
-    private final String mPaymentRequestOrigin;
-    private final Origin mPaymentRequestSecurityOrigin;
-    private final String mMerchantName;
-    @Nullable
-    private final byte[][] mCertificateChain;
     private final JourneyLogger mJourneyLogger;
-    private final boolean mIsOffTheRecord;
 
     private final PaymentUIsManager mPaymentUIsManager;
 
@@ -261,7 +251,6 @@ public class PaymentRequestImpl
     private MinimalUICoordinator mMinimalUi;
     private PaymentApp mInvokedPaymentApp;
     private boolean mHideServerAutofillCards;
-    private boolean mHasRecordedAbortReason;
     private boolean mWaitForUpdatedDetails;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
@@ -335,32 +324,20 @@ public class PaymentRequestImpl
     /**
      * Builds the PaymentRequest service implementation.
      *
-     * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      * @param componentPaymentRequestImpl The component side of the PaymentRequest implementation.
-     * @param isOffTheRecord Whether the merchant page is shown in an off-the-record tab.
      * @param delegate The delegate of this class.
      */
-    public PaymentRequestImpl(RenderFrameHost renderFrameHost,
-            ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
-            Delegate delegate) {
-        assert renderFrameHost != null;
+    public PaymentRequestImpl(
+            ComponentPaymentRequestImpl componentPaymentRequestImpl, Delegate delegate) {
         assert componentPaymentRequestImpl != null;
         assert delegate != null;
 
-        mRenderFrameHost = renderFrameHost;
         mDelegate = delegate;
         mWebContents = componentPaymentRequestImpl.getWebContents();
-        mPaymentRequestOrigin =
-                UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
-        mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
-        mTopLevelOrigin =
-                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
-        mMerchantName = mWebContents.getTitle();
-        mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
-        mIsOffTheRecord = isOffTheRecord;
         mJourneyLogger = componentPaymentRequestImpl.getJourneyLogger();
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
-                /*params=*/this, mWebContents, mIsOffTheRecord, mJourneyLogger);
+                /*params=*/this, mWebContents, componentPaymentRequestImpl.isOffTheRecord(),
+                mJourneyLogger);
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
         mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
     }
@@ -581,7 +558,9 @@ public class PaymentRequestImpl
 
         mPaymentUIsManager.setPaymentRequestUI(new PaymentRequestUI(activity, this,
                 mPaymentUIsManager.merchantSupportsAutofillCards(),
-                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
+                !PaymentPreferencesUtil.isPaymentCompleteOnce(),
+                mComponentPaymentRequestImpl.getMerchantName(),
+                mComponentPaymentRequestImpl.getTopLevelOrigin(),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType),
                 mPaymentUIsManager.getPaymentUisShowStateReconciler(),
@@ -988,8 +967,8 @@ public class PaymentRequestImpl
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
 
-        boolean success = mPaymentUIsManager.showPaymentHandlerUI(
-                mWebContents, url, paymentHandlerWebContentsObserver, mIsOffTheRecord);
+        boolean success = mPaymentUIsManager.showPaymentHandlerUI(mWebContents, url,
+                paymentHandlerWebContentsObserver, mComponentPaymentRequestImpl.isOffTheRecord());
         if (success) {
             // UKM for payment app origin should get recorded only when the origin of the invoked
             // payment app is shown to the user.
@@ -1424,10 +1403,13 @@ public class PaymentRequestImpl
                 mInvokedPaymentApp.handlesShippingAddress()
                 ? mRawShippingOptions
                 : Collections.unmodifiableList(new ArrayList<>());
-        mInvokedPaymentApp.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin,
-                mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
-                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), paymentOptions,
-                redactedShippingOptions, this);
+        mInvokedPaymentApp.invokePaymentApp(mId, mComponentPaymentRequestImpl.getMerchantName(),
+                mComponentPaymentRequestImpl.getTopLevelOrigin(),
+                mComponentPaymentRequestImpl.getPaymentRequestOrigin(),
+                mComponentPaymentRequestImpl.getCertificateChain(),
+                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
+                Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
+                this);
 
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         boolean isAutofillCard = mInvokedPaymentApp.isAutofillInstrument();
@@ -1608,7 +1590,8 @@ public class PaymentRequestImpl
                         ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
                         : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
-        mJourneyLogger.setCanMakePaymentValue(response || mIsOffTheRecord);
+        mJourneyLogger.setCanMakePaymentValue(
+                response || mComponentPaymentRequestImpl.isOffTheRecord());
 
         if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
             ComponentPaymentRequestImpl.getObserverForTest()
@@ -1641,8 +1624,9 @@ public class PaymentRequestImpl
 
         mIsHasEnrolledInstrumentResponsePending = false;
 
-        if (CanMakePaymentQuery.canQuery(
-                    mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mQueryForQuota)) {
+        if (CanMakePaymentQuery.canQuery(mWebContents,
+                    mComponentPaymentRequestImpl.getTopLevelOrigin(),
+                    mComponentPaymentRequestImpl.getPaymentRequestOrigin(), mQueryForQuota)) {
             mComponentPaymentRequestImpl.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
@@ -1655,7 +1639,8 @@ public class PaymentRequestImpl
                             : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
 
-        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
+        mJourneyLogger.setHasEnrolledInstrumentValue(
+                response || mComponentPaymentRequestImpl.isOffTheRecord());
 
         if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
             ComponentPaymentRequestImpl.getObserverForTest()
@@ -1702,7 +1687,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryParams implementation.
     @Override
     public RenderFrameHost getRenderFrameHost() {
-        return mRenderFrameHost;
+        return mComponentPaymentRequestImpl.getRenderFrameHost();
     }
 
     // PaymentAppFactoryParams implementation.
@@ -1720,26 +1705,26 @@ public class PaymentRequestImpl
     // PaymentAppFactoryParams implementation.
     @Override
     public String getTopLevelOrigin() {
-        return mTopLevelOrigin;
+        return mComponentPaymentRequestImpl.getTopLevelOrigin();
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     public String getPaymentRequestOrigin() {
-        return mPaymentRequestOrigin;
+        return mComponentPaymentRequestImpl.getPaymentRequestOrigin();
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     public Origin getPaymentRequestSecurityOrigin() {
-        return mPaymentRequestSecurityOrigin;
+        return mComponentPaymentRequestImpl.getPaymentRequestSecurityOrigin();
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     @Nullable
     public byte[][] getCertificateChain() {
-        return mCertificateChain;
+        return mComponentPaymentRequestImpl.getCertificateChain();
     }
 
     // PaymentAppFactoryParams implementation.
@@ -1983,7 +1968,7 @@ public class PaymentRequestImpl
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
                 disconnectFromClientWithDebugMessage(
                         mRejectShowErrorMessage, PaymentErrorReason.NOT_SUPPORTED);
-            } else if (mIsOffTheRecord) {
+            } else if (mComponentPaymentRequestImpl.isOffTheRecord()) {
                 // If the user is in the OffTheRecord mode, hide the absence of their payment
                 // methods from the merchant site.
                 disconnectFromClientWithDebugMessage(

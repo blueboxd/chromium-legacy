@@ -141,6 +141,13 @@ const KURL* FetchResponseData::Url() const {
   return &url_list_.back();
 }
 
+uint16_t FetchResponseData::InternalStatus() const {
+  if (internal_response_) {
+    return internal_response_->Status();
+  }
+  return Status();
+}
+
 FetchHeaderList* FetchResponseData::InternalHeaderList() const {
   if (internal_response_) {
     return internal_response_->HeaderList();
@@ -199,6 +206,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
   new_response->alpn_negotiated_protocol_ = alpn_negotiated_protocol_;
   new_response->loaded_with_credentials_ = loaded_with_credentials_;
   new_response->was_fetched_via_spdy_ = was_fetched_via_spdy_;
+  new_response->has_range_requested_ = has_range_requested_;
 
   switch (type_) {
     case Type::kBasic:
@@ -272,6 +280,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->alpn_negotiated_protocol = alpn_negotiated_protocol_;
   response->loaded_with_credentials = loaded_with_credentials_;
   response->was_fetched_via_spdy = was_fetched_via_spdy_;
+  response->has_range_requested = has_range_requested_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
   response->parsed_headers = ParseHeaders(
@@ -336,6 +345,8 @@ void FetchResponseData::InitFromResourceResponse(
       request_credentials == network::mojom::CredentialsMode::kInclude ||
       (request_credentials == network::mojom::CredentialsMode::kSameOrigin &&
        tainting == FetchRequestData::kBasicTainting));
+
+  SetHasRangeRequested(response.HasRangeRequested());
 }
 
 FetchResponseData::FetchResponseData(Type type,
@@ -351,7 +362,8 @@ FetchResponseData::FetchResponseData(Type type,
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       alpn_negotiated_protocol_("unknown"),
       loaded_with_credentials_(false),
-      was_fetched_via_spdy_(false) {}
+      was_fetched_via_spdy_(false),
+      has_range_requested_(false) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   if (type_ == Type::kBasic || type_ == Type::kCors) {

@@ -88,6 +88,7 @@ class PolicyDetails:
     features = policy.get('features', {})
     self.can_be_recommended = features.get('can_be_recommended', False)
     self.can_be_mandatory = features.get('can_be_mandatory', True)
+    self.internal_only = features.get('internal_only', False)
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
     self.is_future = policy.get('future', False)
@@ -1658,8 +1659,9 @@ def _WriteAppRestrictions(policies, policy_atomic_groups, target_platform, f,
   f.write('<restrictions xmlns:android="'
           'http://schemas.android.com/apk/res/android">\n\n')
   for policy in policies:
-    if (policy.is_supported and policy.restriction_type != 'invalid' and
-        not policy.is_deprecated and not policy.is_future):
+    if (policy.is_supported and policy.restriction_type != 'invalid'
+        and not policy.is_deprecated and not policy.is_future
+        and not policy.internal_only):
       WriteAppRestriction(policy)
   f.write('</restrictions>')
 

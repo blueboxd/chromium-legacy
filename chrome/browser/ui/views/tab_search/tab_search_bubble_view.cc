@@ -82,12 +82,13 @@ class TabSearchWebView : public views::WebView {
 
 }  // namespace
 
-void TabSearchBubbleView::CreateTabSearchBubble(
+// static.
+views::Widget* TabSearchBubbleView::CreateTabSearchBubble(
     content::BrowserContext* browser_context,
     views::View* anchor_view) {
   auto delegate =
       std::make_unique<TabSearchBubbleView>(browser_context, anchor_view);
-  BubbleDialogDelegateView::CreateBubble(delegate.release());
+  return BubbleDialogDelegateView::CreateBubble(delegate.release());
 }
 
 TabSearchBubbleView::TabSearchBubbleView(
@@ -103,8 +104,6 @@ TabSearchBubbleView::TabSearchBubbleView(
   web_view_->EnableSizingFromWebContents(kMinSize, kMaxSize);
   web_view_->LoadInitialURL(GURL(chrome::kChromeUITabSearchURL));
 }
-
-TabSearchBubbleView::~TabSearchBubbleView() = default;
 
 gfx::Size TabSearchBubbleView::CalculatePreferredSize() const {
   // Constrain the size to popup min/max.

@@ -35,6 +35,12 @@ enum KaleidoscopeTab {
   kMovies,
 };
 
+enum KaleidoscopeFirstRunExperienceStep {
+  kCompleted,
+  kProviderSelection,
+  kMediaFeedsConsent,
+};
+
 // Provides data for the kaleidoscope page.
 interface KaleidoscopeDataProvider {
   // Returns all the Media Feeds that Kaleidoscope might decide to show.
@@ -56,7 +62,13 @@ interface KaleidoscopeDataProvider {
   GetShouldShowFirstRunExperience() => (bool should_show_first_run);
 
   // Called when the user successfully completes the first run experience.
+  // DEPRECATED: will be removed as soon as a private-side CL also lands.
   SetFirstRunExperienceCompleted();
+
+  // While the user is on the First Run Experience, this will be called each
+  // time they move onto a different step. Used to set prefs and record metrics
+  // on what step the user stopped at.
+  SetFirstRunExperienceStep(KaleidoscopeFirstRunExperienceStep step);
 
   // Returns all the Media Feeds so the user can choose which ones they want to enable/disable.
   GetAllMediaFeeds() => (array<media_feeds.mojom.MediaFeed> feeds);

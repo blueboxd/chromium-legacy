@@ -81,7 +81,79 @@
 // can use it in module local methods.
 enum class WebUITabStripDragDirection { kUp, kDown };
 
+// Represents which type of event is causing the WebUI tab strip to open or
+// close. Note that currently |kDragRelease| and |kOther| behave the same but
+// they're conceptually different and could use different logic in the future.
+enum class WebUITabStripOpenCloseReason {
+  // User drags the toolbar up or down and releases it partway.
+  kDragRelease,
+  // User flings, flicks, or swipes the toolbar up or down (possibly during a
+  // drag).
+  kFling,
+  // The tabstrip is opened or closed as the result of some other action or
+  // event not tied to the user directly manipulating the toolbar.
+  kOther
+};
+
 namespace {
+
+// Returns the animation curve to use for different types of events that could
+// cause the tabstrip to be revealed or hidden.
+gfx::Tween::Type GetTweenTypeForTabstripOpenClose(
+    WebUITabStripOpenCloseReason reason) {
+  switch (reason) {
+    case WebUITabStripOpenCloseReason::kDragRelease:
+      // case falls through
+    case WebUITabStripOpenCloseReason::kOther:
+      return gfx::Tween::FAST_OUT_SLOW_IN;
+    case WebUITabStripOpenCloseReason::kFling:
+      return gfx::Tween::LINEAR_OUT_SLOW_IN;
+  }
+}
+
+// Returns the base duration of the animation used to open or close the
+// tabstrip, before changes are made for shade positioning, gesture velocity,
+// etc.
+base::TimeDelta GetBaseTabstripOpenCloseAnimationDuration(
+    WebUITabStripDragDirection direction) {
+  // These values were determined by UX; in the future we may want to change
+  // values for fling animations to be consistent for both open and close
+  // gestures.
+  constexpr base::TimeDelta kHideAnimationDuration =
+      base::TimeDelta::FromMilliseconds(200);
+  constexpr base::TimeDelta kShowAnimationDuration =
+      base::TimeDelta::FromMilliseconds(250);
+  switch (direction) {
+    case WebUITabStripDragDirection::kUp:
+      return kHideAnimationDuration;
+    case WebUITabStripDragDirection::kDown:
+      return kShowAnimationDuration;
+  }
+}
+
+// Returns the actual duration of the animation used to open or close the
+// tabstrip based on open/close reason, movement direction, and the current
+// position of the toolbar.
+base::TimeDelta GetTimeDeltaForTabstripOpenClose(
+    WebUITabStripOpenCloseReason reason,
+    WebUITabStripDragDirection direction,
+    double percent_remaining) {
+  base::TimeDelta duration =
+      GetBaseTabstripOpenCloseAnimationDuration(direction);
+
+  // Fling gestures get shortened based on how little space is left for the
+  // toolbar to move. Ideally we'd base it on fling velocity instead but (a) the
+  // animation is already very fast, and (b) the event reporting around drag vs.
+  // fling is not granular enough to give consistent results.
+  if (reason == WebUITabStripOpenCloseReason::kFling) {
+    constexpr base::TimeDelta kMinimumAnimationDuration =
+        base::TimeDelta::FromMilliseconds(75);
+    duration =
+        std::max(kMinimumAnimationDuration, duration * percent_remaining);
+  }
+
+  return duration;
+}
 
 // Converts a y-delta to a drag direction.
 WebUITabStripDragDirection DragDirectionFromDelta(float delta) {
@@ -455,7 +527,6 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           browser_view->feature_promo_controller())) {
   TRACE_EVENT0("ui", "WebUITabStripContainerView.Init");
   DCHECK(UseTouchableTabStrip(browser_));
-  animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
   SetVisible(false);
   animation_.Reset(0.0);
@@ -547,7 +618,7 @@ void WebUITabStripContainerView::OpenForTabDrag() {
     return;
 
   RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTabDraggedIntoWindow);
-  SetContainerTargetVisibility(true);
+  SetContainerTargetVisibility(true, WebUITabStripOpenCloseReason::kOther);
 }
 
 views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
@@ -569,7 +640,7 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
 }
 
 void WebUITabStripContainerView::SetVisibleForTesting(bool visible) {
-  SetContainerTargetVisibility(visible);
+  SetContainerTargetVisibility(visible, WebUITabStripOpenCloseReason::kOther);
   FinishAnimationForTesting();
 }
 
@@ -588,7 +659,7 @@ WebUITabStripContainerView::GetAcceleratorProvider() const {
 }
 
 void WebUITabStripContainerView::CloseContainer() {
-  SetContainerTargetVisibility(false);
+  SetContainerTargetVisibility(false, WebUITabStripOpenCloseReason::kOther);
   iph_controller_->NotifyClosed();
 }
 
@@ -643,11 +714,15 @@ void WebUITabStripContainerView::EndDragToOpen(
   }
 
   animation_.Reset(open_proportion);
-  SetContainerTargetVisibility(opening);
+  SetContainerTargetVisibility(
+      opening, fling_direction.has_value()
+                   ? WebUITabStripOpenCloseReason::kFling
+                   : WebUITabStripOpenCloseReason::kDragRelease);
 }
 
 void WebUITabStripContainerView::SetContainerTargetVisibility(
-    bool target_visible) {
+    bool target_visible,
+    WebUITabStripOpenCloseReason reason) {
   if (target_visible) {
     immersive_revealed_lock_.reset(
         BrowserView::GetBrowserViewForBrowser(browser_)
@@ -656,8 +731,12 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
 
     SetVisible(true);
     PreferredSizeChanged();
-    if (animation_.GetCurrentValue() < 1.0) {
-      animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
+    const double current_value = animation_.GetCurrentValue();
+    if (current_value < 1.0) {
+      animation_.SetSlideDuration(GetTimeDeltaForTabstripOpenClose(
+          reason, WebUITabStripDragDirection::kDown,
+          /* percent_remaining */ 1.0 - current_value));
+      animation_.SetTweenType(GetTweenTypeForTabstripOpenClose(reason));
       animation_.Show();
     }
 
@@ -678,8 +757,12 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
       time_at_open_ = base::nullopt;
     }
 
-    if (animation_.GetCurrentValue() > 0.0) {
-      animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
+    const double current_value = animation_.GetCurrentValue();
+    if (current_value > 0.0) {
+      animation_.SetSlideDuration(GetTimeDeltaForTabstripOpenClose(
+          reason, WebUITabStripDragDirection::kUp,
+          /* percent_remaining */ current_value));
+      animation_.SetTweenType(GetTweenTypeForTabstripOpenClose(reason));
       animation_.Hide();
     } else {
       PreferredSizeChanged();
@@ -697,7 +780,7 @@ void WebUITabStripContainerView::CloseForEventOutsideTabStrip(
     TabStripUICloseAction reason) {
   RecordTabStripUICloseHistogram(reason);
   iph_controller_->NotifyClosed();
-  SetContainerTargetVisibility(false);
+  SetContainerTargetVisibility(false, WebUITabStripOpenCloseReason::kOther);
 }
 
 void WebUITabStripContainerView::AnimationEnded(
@@ -784,7 +867,8 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
     iph_controller_->NotifyClosed();
   }
 
-  SetContainerTargetVisibility(new_visibility);
+  SetContainerTargetVisibility(new_visibility,
+                               WebUITabStripOpenCloseReason::kOther);
 
   if (GetVisible() && sender->HasFocus()) {
     // Automatically move focus to the tab strip WebUI if the focus is

@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/css/properties/shorthands.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1011,16 +1011,16 @@ bool ConsumeSystemFont(bool important,
   if (!range.AtEnd())
     return false;
 
-  FontSelectionValue font_style = NormalSlopeValue();
+  FontSelectionValue font_slope = NormalSlopeValue();
   FontSelectionValue font_weight = NormalWeightValue();
   float font_size = 0;
   AtomicString font_family;
-  LayoutTheme::GetTheme().SystemFont(system_font_id, font_style, font_weight,
-                                     font_size, font_family);
+  LayoutThemeFontProvider::SystemFont(system_font_id, font_slope, font_weight,
+                                      font_size, font_family);
 
   css_parsing_utils::AddProperty(
       CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(font_style == ItalicSlopeValue()
+      *CSSIdentifierValue::Create(font_slope == ItalicSlopeValue()
                                       ? CSSValueID::kItalic
                                       : CSSValueID::kNormal),
       important, css_parsing_utils::IsImplicitProperty::kNotImplicit,

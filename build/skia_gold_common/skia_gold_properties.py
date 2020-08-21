@@ -29,10 +29,9 @@ class SkiaGoldProperties(object):
     self._local_pixel_tests = None
     self._no_luci_auth = None
     self._bypass_skia_gold_functionality = None
-
+    self._code_review_system = None
     # Could in theory be configurable, but hard-coded for now since there's
     # no plan to support anything else.
-    self._code_review_system = 'gerrit'
     self._continuous_integration_system = 'buildbucket'
 
     self._InitializeProperties(args)
@@ -46,7 +45,7 @@ class SkiaGoldProperties(object):
 
   @property
   def code_review_system(self):
-    return self._code_review_system
+    return self._code_review_system or 'gerrit'
 
   @property
   def git_revision(self):
@@ -119,6 +118,9 @@ class SkiaGoldProperties(object):
 
     if hasattr(args, 'bypass_skia_gold_functionality'):
       self._bypass_skia_gold_functionality = args.bypass_skia_gold_functionality
+
+    if hasattr(args, 'code_review_system'):
+      self._code_review_system = args.code_review_system
 
     # Will be automatically determined later if needed.
     if not hasattr(args, 'git_revision') or not args.git_revision:

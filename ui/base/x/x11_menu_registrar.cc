@@ -32,13 +32,12 @@ X11MenuRegistrar* X11MenuRegistrar::Get() {
   return g_handler;
 }
 
-X11MenuRegistrar::X11MenuRegistrar()
-    : xdisplay_(gfx::GetXDisplay()), x_root_window_(ui::GetX11RootWindow()) {
+X11MenuRegistrar::X11MenuRegistrar() {
   if (ui::X11EventSource::HasInstance())
     ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
 
   x_root_window_events_ = std::make_unique<ui::XScopedEventSelector>(
-      x_root_window_, StructureNotifyMask | SubstructureNotifyMask);
+      ui::GetX11RootWindow(), StructureNotifyMask | SubstructureNotifyMask);
 }
 
 X11MenuRegistrar::~X11MenuRegistrar() {

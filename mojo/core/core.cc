@@ -343,8 +343,10 @@ MojoResult Core::CreateMessage(const MojoCreateMessageOptions* options,
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
+  const MojoCreateMessageFlags flags =
+      options ? options->flags : MOJO_CREATE_MESSAGE_FLAG_NONE;
   *message_handle = reinterpret_cast<MojoMessageHandle>(
-      UserMessageImpl::CreateEventForNewMessage().release());
+      UserMessageImpl::CreateEventForNewMessage(flags).release());
   return MOJO_RESULT_OK;
 }
 

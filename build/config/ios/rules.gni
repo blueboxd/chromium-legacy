@@ -1256,6 +1256,11 @@ template("ios_framework_bundle") {
   _default_toolchain_root_out_dir =
       get_label_info("$_target_name($default_toolchain)", "root_out_dir")
 
+  _arch_shared_library_source = _target_name + "_arch_shared_library_sources"
+  _arch_shared_library_target = _target_name + "_arch_shared_library"
+  _lipo_shared_library_target = _target_name + "_shared_library"
+  _link_target_name = _target_name + "+link"
+
   if (_has_public_headers) {
     _default_toolchain_target_gen_dir =
         get_label_info("$_target_name($default_toolchain)", "target_gen_dir")
@@ -1266,7 +1271,10 @@ template("ios_framework_bundle") {
     _header_map_filename =
         "$_default_toolchain_target_gen_dir/$_output_name.headers.hmap"
     config(_headers_map_config) {
-      visibility = [ ":${_target_name}_signed_bundle" ]
+      visibility = [
+        ":${_target_name}_signed_bundle",
+        ":${_arch_shared_library_source}",
+      ]
       include_dirs = [ _header_map_filename ]
     }
   }
@@ -1275,11 +1283,6 @@ template("ios_framework_bundle") {
   config(_framework_headers_config) {
     framework_dirs = [ _default_toolchain_root_out_dir ]
   }
-
-  _arch_shared_library_source = _target_name + "_arch_shared_library_sources"
-  _arch_shared_library_target = _target_name + "_arch_shared_library"
-  _lipo_shared_library_target = _target_name + "_shared_library"
-  _link_target_name = _target_name + "+link"
 
   _framework_public_config = _target_name + "_public_config"
   config(_framework_public_config) {

@@ -11,6 +11,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/media/kaleidoscope/constants.h"
 #include "chrome/browser/media/kaleidoscope/kaleidoscope_data_provider_impl.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_metrics_recorder.h"
 #include "chrome/browser/media/kaleidoscope/kaleidoscope_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/webui_url_constants.h"
@@ -213,7 +214,14 @@ KaleidoscopeUI::KaleidoscopeUI(content::WebUI* web_ui)
                                 CreateUntrustedWebUIDataSource());
 }
 
-KaleidoscopeUI::~KaleidoscopeUI() = default;
+KaleidoscopeUI::~KaleidoscopeUI() {
+  metrics_recorder_->OnExitPage();
+
+  // Ensure that the provider is deleted before the metrics recorder, since the
+  // provider has a pointer to the metrics recorder.
+  provider_.reset();
+  metrics_recorder_.reset();
+}
 
 // static
 content::WebUIDataSource* KaleidoscopeUI::CreateWebUIDataSource() {
@@ -341,8 +349,10 @@ content::WebUIDataSource* KaleidoscopeUI::CreateUntrustedWebUIDataSource() {
 
 void KaleidoscopeUI::BindInterface(
     mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider> provider) {
+  metrics_recorder_ = std::make_unique<KaleidoscopeMetricsRecorder>();
   provider_ = std::make_unique<KaleidoscopeDataProviderImpl>(
-      std::move(provider), Profile::FromWebUI(web_ui()));
+      std::move(provider), Profile::FromWebUI(web_ui()),
+      metrics_recorder_.get());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(KaleidoscopeUI)

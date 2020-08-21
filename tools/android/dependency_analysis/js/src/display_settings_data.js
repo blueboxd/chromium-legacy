@@ -93,8 +93,6 @@ class NodeFilterData {
     const deleteIndex = this.filterList.findIndex(
         filterEntry => filterEntry.name === nodeName);
     if (deleteIndex >= 0) {
-      // TODO(yjlong): If order turns out to be unimportant, just swap the
-      // last element and the deleted element, then pop.
       this.filterList.splice(deleteIndex, 1);
     }
   }

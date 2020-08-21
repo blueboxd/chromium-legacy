@@ -17623,6 +17623,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="Download.Service.EntryStates">
+  <obsolete>
+    Removed 08/2020
+  </obsolete>
   <int value="0" label="NEW"/>
   <int value="1" label="AVAILABLE"/>
   <int value="2" label="ACTIVE"/>
@@ -17673,6 +17676,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="Download.Service.ShouldDownload">
+  <obsolete>
+    Removed 08/2020
+  </obsolete>
   <int value="0" label="CONTINUE"/>
   <int value="1" label="ABORT"/>
 </enum>
@@ -38332,6 +38338,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              Fail"/>
   <int value="15"
       label="Del Fail -MaxPathCheck Fail - MoveFileEx Fail - CopyDelDir Fail"/>
+</enum>
+
+<enum name="KaleidoscopeFirstRunProgress">
+  <int value="0" label="Completed"/>
+  <int value="1" label="Provider Selection"/>
+  <int value="2" label="Media Feeds Consent"/>
 </enum>
 
 <enum name="KeepaliveRequestBlockStatus">
@@ -71936,9 +71948,6 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VAJEAEncoderResult">
-  <obsolete>
-    Deprecated as of 8/2020, superseded by VaapiFunctions.
-  </obsolete>
   <int value="0" label="VAAPI_SUCCESS"/>
   <int value="1" label="VAAPI_ERROR"/>
 </enum>

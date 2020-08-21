@@ -75,7 +75,7 @@ bool WidgetDelegate::CanActivate() const {
 }
 
 ui::ModalType WidgetDelegate::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
+  return params_.modal_type;
 }
 
 ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() {
@@ -251,6 +251,11 @@ void WidgetDelegate::SetFocusTraversesOut(bool focus_traverses_out) {
 
 void WidgetDelegate::SetIcon(const gfx::ImageSkia& icon) {
   params_.icon = icon;
+}
+
+void WidgetDelegate::SetModalType(ui::ModalType modal_type) {
+  DCHECK(!GetWidget());
+  params_.modal_type = modal_type;
 }
 
 void WidgetDelegate::SetShowCloseButton(bool show_close_button) {

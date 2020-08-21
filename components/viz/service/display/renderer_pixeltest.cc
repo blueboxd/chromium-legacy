@@ -884,7 +884,8 @@ void CreateTestAxisAlignedQuads(const gfx::Rect& rect,
 using RendererPixelTest = VizPixelTestWithParam;
 INSTANTIATE_TEST_SUITE_P(,
                          RendererPixelTest,
-                         testing::ValuesIn(GetRendererTypes()));
+                         testing::ValuesIn(GetRendererTypes()),
+                         testing::PrintToStringParamName());
 
 // Test GLRenderer as well as SkiaRenderer.
 using GPURendererPixelTest = VizPixelTestWithParam;
@@ -893,13 +894,15 @@ INSTANTIATE_TEST_SUITE_P(
     GPURendererPixelTest,
     // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
     // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)));
+    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
+    testing::PrintToStringParamName());
 
 // TODO(kylechar): Enable in follow up CL for SkiaRenderer. The tests pass.
 using GLOnlyRendererPixelTest = VizPixelTestWithParam;
 INSTANTIATE_TEST_SUITE_P(,
                          GLOnlyRendererPixelTest,
-                         testing::Values(RendererType::kGL));
+                         testing::Values(RendererType::kGL),
+                         testing::PrintToStringParamName());
 
 // Provides an exact comparator for GLRenderer and fuzzy comparator for Skia
 // based (eg. SoftwareRenderer and SkiaRenderer).
@@ -942,7 +945,7 @@ TEST_P(RendererPixelTest, SimpleGreenRect) {
                                  cc::ExactPixelComparator(true)));
 }
 
-TEST_P(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
+TEST_P(RendererPixelTest, SimpleGreenRectNonRootRenderPass) {
   gfx::Rect rect(this->device_viewport_size_);
   gfx::Rect small_rect(100, 100);
 
@@ -1356,7 +1359,8 @@ class IntersectingQuadPixelTest : public VizPixelTestWithParam {
 
 INSTANTIATE_TEST_SUITE_P(,
                          IntersectingQuadPixelTest,
-                         testing::ValuesIn(GetRendererTypes()));
+                         testing::ValuesIn(GetRendererTypes()),
+                         testing::PrintToStringParamName());
 
 class IntersectingVideoQuadPixelTest : public IntersectingQuadPixelTest {
  public:
@@ -1389,13 +1393,15 @@ INSTANTIATE_TEST_SUITE_P(
     IntersectingVideoQuadPixelTest,
     // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
     // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)));
+    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
+    testing::PrintToStringParamName());
 
 class IntersectingQuadSoftwareTest : public IntersectingQuadPixelTest {};
 
 INSTANTIATE_TEST_SUITE_P(,
                          IntersectingQuadSoftwareTest,
-                         testing::Values(RendererType::kSoftware));
+                         testing::Values(RendererType::kSoftware),
+                         testing::PrintToStringParamName());
 
 TEST_P(IntersectingQuadPixelTest, SolidColorQuads) {
   // TODO(crbug.com/1021566): Enable this test for SkiaRenderer Dawn.
@@ -1853,7 +1859,8 @@ INSTANTIATE_TEST_SUITE_P(
     VideoRendererPixelTest,
     // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
     // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)));
+    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
+    testing::PrintToStringParamName());
 
 TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -3021,7 +3028,8 @@ class RendererPixelTestWithBackdropFilter : public VizPixelTestWithParam {
 
 INSTANTIATE_TEST_SUITE_P(,
                          RendererPixelTestWithBackdropFilter,
-                         testing::ValuesIn(GetRendererTypes()));
+                         testing::ValuesIn(GetRendererTypes()),
+                         testing::PrintToStringParamName());
 
 TEST_P(RendererPixelTestWithBackdropFilter, InvertFilter) {
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
@@ -4324,7 +4332,8 @@ class RendererPixelTestWithFlippedOutputSurface : public VizPixelTestWithParam {
 
 INSTANTIATE_TEST_SUITE_P(,
                          RendererPixelTestWithFlippedOutputSurface,
-                         testing::ValuesIn(GetGpuRendererTypes()));
+                         testing::ValuesIn(GetGpuRendererTypes()),
+                         testing::PrintToStringParamName());
 
 TEST_P(RendererPixelTestWithFlippedOutputSurface, ExplicitFlipTest) {
   // This draws a blue rect above a yellow rect with an inverted output surface.
@@ -4992,7 +5001,8 @@ TEST_P(RendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          RendererPixelTestWithOverdrawFeedback,
-                         testing::ValuesIn(GetGpuRendererTypes()));
+                         testing::ValuesIn(GetGpuRendererTypes()),
+                         testing::PrintToStringParamName());
 
 using ColorSpacePair =
     std::tuple<RendererType, gfx::ColorSpace, gfx::ColorSpace, bool>;

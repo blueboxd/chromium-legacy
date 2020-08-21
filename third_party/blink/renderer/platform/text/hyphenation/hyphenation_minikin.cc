@@ -148,9 +148,13 @@ using LocaleMap = HashMap<AtomicString, AtomicString, CaseFoldingHash>;
 
 static LocaleMap CreateLocaleFallbackMap() {
   // This data is from CLDR, compiled by AOSP.
-  // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/Hyphenator.java
+  // https://android.googlesource.com/platform/frameworks/base/+/master/core/jni/android_text_Hyphenator.cpp
   using LocaleFallback = const char * [2];
   static LocaleFallback locale_fallback_data[] = {
+      // English locales that fall back to en-US. The data is from CLDR. It's
+      // all English locales,
+      // minus the locales whose parent is en-001 (from supplementalData.xml,
+      // under <parentLocales>).
       {"en-AS", "en-us"},  // English (American Samoa)
       {"en-GU", "en-us"},  // English (Guam)
       {"en-MH", "en-us"},  // English (Marshall Islands)
@@ -168,12 +172,30 @@ static LocaleMap CreateLocaleFallbackMap() {
       {"de-LI-1901", "de-ch-1901"},
       // Norwegian is very probably Norwegian Bokmål.
       {"no", "nb"},
-      {"mn", "mn-cyrl"},    // Mongolian
+      // Use mn-Cyrl. According to CLDR's likelySubtags.xml, mn is most likely
+      // to be mn-Cyrl.
+      {"mn", "mn-cyrl"},  // Mongolian
+      // Fall back to Ethiopic script for languages likely to be written in
+      // Ethiopic.
+      // Data is from CLDR's likelySubtags.xml.
       {"am", "und-ethi"},   // Amharic
       {"byn", "und-ethi"},  // Blin
       {"gez", "und-ethi"},  // Geʻez
       {"ti", "und-ethi"},   // Tigrinya
       {"wal", "und-ethi"},  // Wolaytta
+      // Use Hindi as a fallback hyphenator for all languages written in
+      // Devanagari, etc. This makes
+      // sense because our Indic patterns are not really linguistic, but
+      // script-based.
+      {"und-Beng", "bn"},  // Bengali
+      {"und-Deva", "hi"},  // Devanagari -> Hindi
+      {"und-Gujr", "gu"},  // Gujarati
+      {"und-Guru", "pa"},  // Gurmukhi -> Punjabi
+      {"und-Knda", "kn"},  // Kannada
+      {"und-Mlym", "ml"},  // Malayalam
+      {"und-Orya", "or"},  // Oriya
+      {"und-Taml", "ta"},  // Tamil
+      {"und-Telu", "te"},  // Telugu
   };
   LocaleMap map;
   for (const auto& it : locale_fallback_data)

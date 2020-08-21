@@ -842,11 +842,16 @@ std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreateBitmapProvider(
     const IntSize& size,
     SkFilterQuality filter_quality,
-    const CanvasColorParams& color_params) {
+    const CanvasColorParams& color_params,
+    ShouldInitialize should_initialize) {
   auto provider = std::make_unique<CanvasResourceProviderBitmap>(
       size, filter_quality, color_params, nullptr /*resource_dispatcher*/);
-  if (provider->IsValid())
+  if (provider->IsValid()) {
+    if (should_initialize ==
+        CanvasResourceProvider::ShouldInitialize::kCallClear)
+      provider->Clear();
     return provider;
+  }
 
   return nullptr;
 }
@@ -856,6 +861,7 @@ CanvasResourceProvider::CreateSharedBitmapProvider(
     const IntSize& size,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
+    ShouldInitialize should_initialize,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
   // SharedBitmapProvider has to have a valid resource_dispatecher to be able to
   // be created.
@@ -864,8 +870,12 @@ CanvasResourceProvider::CreateSharedBitmapProvider(
 
   auto provider = std::make_unique<CanvasResourceProviderSharedBitmap>(
       size, filter_quality, color_params, std::move(resource_dispatcher));
-  if (provider->IsValid())
+  if (provider->IsValid()) {
+    if (should_initialize ==
+        CanvasResourceProvider::ShouldInitialize::kCallClear)
+      provider->Clear();
     return provider;
+  }
 
   return nullptr;
 }
@@ -873,11 +883,12 @@ CanvasResourceProvider::CreateSharedBitmapProvider(
 std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreateSharedImageProvider(
     const IntSize& size,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_origin_top_left,
+    ShouldInitialize should_initialize,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     RasterMode raster_mode,
+    bool is_origin_top_left,
     uint32_t shared_image_usage_flags) {
   if (!context_provider_wrapper)
     return nullptr;
@@ -914,8 +925,12 @@ CanvasResourceProvider::CreateSharedImageProvider(
       size, filter_quality, color_params, context_provider_wrapper,
       is_origin_top_left, raster_mode == RasterMode::kGPU, skia_use_dawn,
       shared_image_usage_flags);
-  if (provider->IsValid())
+  if (provider->IsValid()) {
+    if (should_initialize ==
+        CanvasResourceProvider::ShouldInitialize::kCallClear)
+      provider->Clear();
     return provider;
+  }
 
   return nullptr;
 }
@@ -923,11 +938,11 @@ CanvasResourceProvider::CreateSharedImageProvider(
 std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreatePassThroughProvider(
     const IntSize& size,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_origin_top_left,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+    bool is_origin_top_left) {
   if (!SharedGpuContext::IsGpuCompositingEnabled() || !context_provider_wrapper)
     return nullptr;
 
@@ -947,8 +962,13 @@ CanvasResourceProvider::CreatePassThroughProvider(
   auto provider = std::make_unique<CanvasResourceProviderPassThrough>(
       size, filter_quality, color_params, context_provider_wrapper,
       resource_dispatcher, is_origin_top_left);
-  if (provider->IsValid())
+  if (provider->IsValid()) {
+    // All the other type of resources are doing a clear here. As a
+    // CanvasResourceProvider of type PassThrough is used to delegate the
+    // internal parts of the resource and provider to other classes, we should
+    // not attempt to do a clear here. clear is not needed here.
     return provider;
+  }
 
   return nullptr;
 }
@@ -956,11 +976,12 @@ CanvasResourceProvider::CreatePassThroughProvider(
 std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreateSwapChainProvider(
     const IntSize& size,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_origin_top_left,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
+    ShouldInitialize should_initialize,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+    bool is_origin_top_left) {
   DCHECK(is_origin_top_left);
   if (!SharedGpuContext::IsGpuCompositingEnabled() || !context_provider_wrapper)
     return nullptr;
@@ -976,8 +997,12 @@ CanvasResourceProvider::CreateSwapChainProvider(
   auto provider = std::make_unique<CanvasResourceProviderSwapChain>(
       size, filter_quality, color_params, context_provider_wrapper,
       resource_dispatcher);
-  if (provider->IsValid())
+  if (provider->IsValid()) {
+    if (should_initialize ==
+        CanvasResourceProvider::ShouldInitialize::kCallClear)
+      provider->Clear();
     return provider;
+  }
 
   return nullptr;
 }

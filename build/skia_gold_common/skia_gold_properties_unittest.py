@@ -23,6 +23,8 @@ class SkiaGoldPropertiesInitializationTest(unittest.TestCase):
     self.assertEqual(instance._local_pixel_tests,
                      expected.get('local_pixel_tests'))
     self.assertEqual(instance._no_luci_auth, expected.get('no_luci_auth'))
+    self.assertEqual(instance._code_review_system,
+                     expected.get('code_review_system'))
     self.assertEqual(instance._git_revision, expected.get('git_revision'))
     self.assertEqual(instance._issue, expected.get('gerrit_issue'))
     self.assertEqual(instance._patchset, expected.get('gerrit_patchset'))
@@ -49,6 +51,11 @@ class SkiaGoldPropertiesInitializationTest(unittest.TestCase):
     args = createSkiaGoldArgs(no_luci_auth=True)
     sgp = skia_gold_properties.SkiaGoldProperties(args)
     self.verifySkiaGoldProperties(sgp, {'no_luci_auth': True})
+
+  def test_initializeSkiaGoldAttributes_explicitCrs(self):
+    args = createSkiaGoldArgs(code_review_system='foo')
+    sgp = skia_gold_properties.SkiaGoldProperties(args)
+    self.verifySkiaGoldProperties(sgp, {'code_review_system': 'foo'})
 
   def test_initializeSkiaGoldAttributes_bypassExplicitTrue(self):
     args = createSkiaGoldArgs(bypass_skia_gold_functionality=True)

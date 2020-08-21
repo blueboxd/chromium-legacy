@@ -12,6 +12,8 @@
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {flushTasks} from 'chrome://test/test_util.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 cr.define('settings_people_page_kerberos_accounts', function() {
@@ -306,6 +308,27 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       const account = await browserProxy.whenCalled('removeAccount');
       assertEquals(
           testAccounts[Account.FIRST].principalName, account.principalName);
+    });
+
+    test('Deep link to remove account dropdown', async () => {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+
+      const params = new URLSearchParams;
+      params.append('settingId', '311');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.KERBEROS_ACCOUNTS, params);
+
+      await browserProxy.whenCalled('getAccounts');
+      await test_util.flushTasks();
+      Polymer.dom.flush();
+
+      const deepLinkElement =
+          kerberosAccounts.root.querySelectorAll('cr-icon-button')[0];
+      assertTrue(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Kebab menu should be focused for settingId=311.');
     });
 
     test('RemoveAccountShowsToast', async () => {

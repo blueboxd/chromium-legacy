@@ -67,6 +67,7 @@ source_set("tests") {
     ":test_extra_cpp_template_mojom",
     ":test_mojom",
     "//base/test:test_support",
+    "//mojo/core/test:test_support",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",

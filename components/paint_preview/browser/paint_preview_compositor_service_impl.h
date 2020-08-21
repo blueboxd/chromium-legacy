@@ -34,8 +34,8 @@ class PaintPreviewCompositorServiceImpl : public PaintPreviewCompositorService {
   ~PaintPreviewCompositorServiceImpl() override;
 
   // PaintPreviewCompositorService Implementation.
-  std::unique_ptr<PaintPreviewCompositorClient> CreateCompositor(
-      base::OnceClosure connected_closure) override;
+  std::unique_ptr<PaintPreviewCompositorClient, base::OnTaskRunnerDeleter>
+  CreateCompositor(base::OnceClosure connected_closure) override;
 
   bool HasActiveClients() const override;
 

@@ -38,11 +38,6 @@ COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsVoiceEntryPoint(chromeos::assistant::AssistantEntryPoint entry_point,
                        bool prefer_voice);
 
-// Returns true if the |entry_point| should attempt warmer welcome.
-COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool ShouldAttemptWarmerWelcome(
-    chromeos::assistant::AssistantEntryPoint entry_point);
-
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();
 

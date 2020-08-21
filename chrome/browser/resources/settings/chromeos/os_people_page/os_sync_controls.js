@@ -27,6 +27,7 @@ Polymer({
   is: 'os-sync-controls',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -87,6 +88,15 @@ Polymer({
       computed: `computeDataTypeTogglesDisabled_(osSyncFeatureEnabled,
           osSyncPrefs.syncAllOsTypes)`,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([chromeos.settings.mojom.Setting.kSplitSyncOnOff]),
+    },
   },
 
   /** @private {?settings.OsSyncBrowserProxy} */
@@ -119,6 +129,7 @@ Polymer({
   currentRouteChanged(newRoute, oldRoute) {
     if (newRoute == settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateToOsSyncPage();
+      this.attemptDeepLink();
     }
     if (oldRoute == settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateAwayFromOsSyncPage();

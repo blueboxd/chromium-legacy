@@ -8,10 +8,12 @@
 
 #include "base/check_op.h"
 #include "base/values.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
@@ -116,8 +118,8 @@ void DocumentLayout::ComputeSingleViewLayout(
     }
 
     const gfx::Size& page_size = page_sizes[i];
-    pp::Rect page_rect =
-        draw_utils::GetRectForSingleView(page_size, document_size);
+    pp::Rect page_rect = PPRectFromRect(
+        draw_utils::GetRectForSingleView(page_size, document_size));
     CopyRectIfModified(page_rect, &page_layouts_[i].outer_rect);
     CopyRectIfModified(InsetRect(page_rect, kSingleViewInsets),
                        &page_layouts_[i].inner_rect);
@@ -149,11 +151,11 @@ void DocumentLayout::ComputeTwoUpViewLayout(
 
     pp::Rect page_rect;
     if (i % 2 == 0) {
-      page_rect = draw_utils::GetLeftRectForTwoUpView(
-          page_size, {document_size.width(), document_size.height()});
+      page_rect = PPRectFromRect(draw_utils::GetLeftRectForTwoUpView(
+          page_size, {document_size.width(), document_size.height()}));
     } else {
-      page_rect = draw_utils::GetRightRectForTwoUpView(
-          page_size, {document_size.width(), document_size.height()});
+      page_rect = PPRectFromRect(draw_utils::GetRightRectForTwoUpView(
+          page_size, {document_size.width(), document_size.height()}));
       document_size.Enlarge(
           0, std::max(page_size.height(), page_sizes[i - 1].height()));
     }

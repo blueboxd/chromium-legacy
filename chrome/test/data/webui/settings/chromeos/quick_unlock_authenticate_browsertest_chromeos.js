@@ -329,6 +329,10 @@ cr.define('settings_people_page_quick_unlock', function() {
             });
       });
 
+      teardown(function() {
+        settings.Router.getInstance().resetRouteForTesting();
+      });
+
       // Showing the choose method screen does not make any destructive pref or
       // quickUnlockPrivate calls.
       test('ShowingScreenDoesNotModifyPrefs', function() {
@@ -353,6 +357,23 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(toggle.checked, lockScreenEnabled);
         assertEquals(
             quickUnlockPrivateApi.lockScreenEnabled, lockScreenEnabled);
+      });
+
+      test('Deep link to enable lock screen', async () => {
+        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+
+        const params = new URLSearchParams;
+        params.append('settingId', '303');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.LOCK_SCREEN, params);
+
+        const deepLinkElement =
+            getFromElement('#enableLockScreen').$$('cr-toggle');
+        assert(!!deepLinkElement);
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Lock screen toggle should be focused for settingId=303.');
       });
 
       // The various radio buttons update internal state and do not modify

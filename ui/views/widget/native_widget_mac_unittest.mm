@@ -1082,25 +1082,13 @@ TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
 
 namespace {
 
-// Delegate to make Widgets of a provided ui::ModalType.
-class ModalDialogDelegate : public DialogDelegateView {
- public:
-  explicit ModalDialogDelegate(ui::ModalType modal_type)
-      : modal_type_(modal_type) {}
-
-  void SetButtons(int buttons) {
-    DialogDelegate::SetButtons(buttons);
-    DialogModelChanged();
-  }
-
-  // DialogDelegateView:
-  ui::ModalType GetModalType() const override { return modal_type_; }
-
- private:
-  const ui::ModalType modal_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
-};
+// TODO(ellyjones): Once DialogDelegate::CreateDialogWidget can accept a
+// unique_ptr, return unique_ptr here.
+DialogDelegateView* MakeModalDialog(ui::ModalType modal_type) {
+  auto dialog = std::make_unique<DialogDelegateView>();
+  dialog->SetModalType(modal_type);
+  return dialog.release();
+}
 
 // While in scope, waits for a call to a swizzled objective C method, then quits
 // a nested run loop.
@@ -1159,7 +1147,7 @@ ScopedSwizzleWaiter* ScopedSwizzleWaiter::instance_ = nullptr;
 // animation). However, testing with overlapping swizzlers is tricky.
 Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       [native_parent contentView]);
 
   modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
@@ -1191,7 +1179,7 @@ Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
 // sheet animation is blocking.
 Widget* ShowWindowModalWidget(NSWindow* native_parent) {
   Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_WINDOW), nullptr,
       [native_parent contentView]);
   sheet_widget->Show();
   return sheet_widget;
@@ -1257,7 +1245,7 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
 TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   NSWindow* native_parent = MakeBorderlessNativeParent();
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       [native_parent contentView]);
 
   modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
@@ -1330,7 +1318,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   NSWindow* native_parent = MakeClosableTitledNativeParent();
 
   Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_WINDOW), nullptr,
       [native_parent contentView]);
 
   WidgetChangeObserver widget_observer(sheet_widget);
@@ -1722,7 +1710,7 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
 
   // Create a dialog widget (also TYPE_WINDOW), but with a DialogDelegate.
   Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      MakeModalDialog(ui::MODAL_TYPE_CHILD), nullptr,
       regular_widget->GetNativeView());
   EXPECT_TRUE([dialog_widget->GetNativeWindow().GetNativeNSWindow()
                    canBecomeKeyWindow]);
@@ -2311,7 +2299,7 @@ NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
 
 // Test TouchBar integration.
 TEST_F(NativeWidgetMacTest, TouchBar) {
-  ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
+  DialogDelegate* delegate = MakeModalDialog(ui::MODAL_TYPE_NONE);
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
   NSView* content =
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()

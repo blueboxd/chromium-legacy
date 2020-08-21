@@ -273,9 +273,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       MainThreadTaskQueue::QueueType queue_type,
       FrameSchedulerImpl* frame_scheduler);
 
-  // Returns a new timer task queue. This queue is intended for DOM Timers.
-  scoped_refptr<MainThreadTaskQueue> NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType queue_type,
+  // Returns a new throttleable task queue to be used for tests.
+  scoped_refptr<MainThreadTaskQueue> NewThrottleableTaskQueueForTest(
       FrameSchedulerImpl* frame_scheduler);
 
   using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
@@ -525,15 +524,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     const TaskQueuePolicy& loading_queue_policy() const {
       return policies_[static_cast<size_t>(
           MainThreadTaskQueue::QueueClass::kLoading)];
-    }
-
-    TaskQueuePolicy& timer_queue_policy() {
-      return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::kTimer)];
-    }
-    const TaskQueuePolicy& timer_queue_policy() const {
-      return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::kTimer)];
     }
 
     TaskQueuePolicy& default_queue_policy() {

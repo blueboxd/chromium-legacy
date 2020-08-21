@@ -24,4 +24,7 @@
     <item android:id="@+id/toggle_controls_animations_id"
         android:checkable="true"
         android:title="Animate browser controls changes" />
+    <item android:id="@+id/toggle_dark_mode"
+        android:checkable="true"
+        android:title="Dark Mode" />
 </menu>

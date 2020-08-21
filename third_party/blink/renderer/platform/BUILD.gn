@@ -122,6 +122,8 @@ group("make_platform_generated") {
 import("//build/config/pch.gni")
 
 config("blink_platform_config") {
+  visibility = []
+  visibility = [ "./*" ]
   configs = [
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
@@ -199,10 +201,15 @@ buildflag_header("bindings_buildflags") {
 }
 
 config("blink_platform_implementation") {
+  visibility = []
+  visibility = [ "./*" ]
+
   defines = [ "BLINK_PLATFORM_IMPLEMENTATION=1" ]
 }
 
 config("blink_platform_pch") {
+  visibility = []
+  visibility = [ "./*" ]
   if (enable_precompiled_headers) {
     if (is_win) {
       # This is a string rather than a file GN knows about. It has to match

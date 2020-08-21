@@ -36,6 +36,8 @@ class FakeWebrtcConnection final
       scoped_refptr<webrtc::MediaStreamInterface> stream) override;
   void OnWebrtcTransportMediaStreamRemoved(
       scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+  void OnWebrtcTransportRouteChanged(
+      const protocol::TransportRoute& route) override;
 
   std::unique_ptr<protocol::WebrtcTransport> transport_;
   base::OnceClosure on_closed_;

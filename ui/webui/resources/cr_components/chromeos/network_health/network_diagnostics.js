@@ -28,7 +28,8 @@ let RoutineResponse;
  *   name: string,
  *   type: !RoutineType,
  *   running: boolean,
- *   resultMsg: string,
+ *   verdict: string,
+ *   errorMsg: string,
  *   result: ?RoutineResponse,
  * }}
  */
@@ -56,7 +57,14 @@ const RoutineType = {
  * @return {!Routine} Routine object
  */
 function createRoutine(name, type) {
-  return {name: name, type: type, running: false, resultMsg: '', result: null};
+  return {
+    name: name,
+    type: type,
+    running: false,
+    verdict: '',
+    errorMsg: '',
+    result: null
+  };
 }
 
 Polymer({
@@ -133,8 +141,8 @@ Polymer({
         result['verdict'] =
             this.getRoutineVerdictFeedbackString_(routine.result.verdict);
         if (routine.result.problems && routine.result.problems.length > 0) {
-          result['problems'] = this.getRoutineProblemsFeedbackString_(
-              routine.type, routine.result.problems);
+          result['problems'] = this.getRoutineProblemsString_(
+              routine.type, routine.result.problems, true);
         }
 
         results[name] = result;
@@ -149,7 +157,7 @@ Polymer({
    */
   runRoutine_(type) {
     this.set(`routines_.${type}.running`, true);
-    this.set(`routines_.${type}.resultMsg`, '');
+    this.set(`routines_.${type}.verdict`, '');
     this.set(`routines_.${type}.result`, null);
     const element =
         this.shadowRoot.querySelectorAll('.routine-container')[type];
@@ -197,45 +205,55 @@ Polymer({
 
     const element =
         this.shadowRoot.querySelectorAll('.routine-container')[type];
-    let resultMsg = '';
+    let verdict = '';
+    let errorMsg = '';
 
     switch (result.verdict) {
       case diagnosticsMojom.RoutineVerdict.kNoProblem:
-        resultMsg = this.i18n('NetworkDiagnosticsPassed');
+        verdict = this.i18n('NetworkDiagnosticsPassed');
         element.classList.add('result-passed');
         break;
       case diagnosticsMojom.RoutineVerdict.kProblem:
-        resultMsg = this.i18n('NetworkDiagnosticsFailed');
+        verdict = this.i18n('NetworkDiagnosticsFailed');
         element.classList.add('result-error');
         break;
       case diagnosticsMojom.RoutineVerdict.kNotRun:
-        resultMsg = this.i18n('NetworkDiagnosticsNotRun');
+        verdict = this.i18n('NetworkDiagnosticsNotRun');
         element.classList.add('result-not-run');
         break;
     }
 
+    if (result.problems && result.problems.length) {
+      errorMsg = this.getRoutineProblemsString_(type, result.problems, false);
+    }
+
     this.set(routine + '.result', result);
-    this.set(routine + '.resultMsg', resultMsg);
+    this.set(routine + '.verdict', verdict);
+    this.set(routine + '.errorMsg', errorMsg);
   },
 
   /**
    *
    * @param {!RoutineType} type The type of routine
    * @param {!Array<number>} problems The list of problems for the routine
-   * @return {Array<string>} String for a networking problem used for feedback
+   * @param {boolean} feedback Flag to return a feedback or user display string
+   * @return {Array<string>} List of network diagnostic problem strings
    * @private
    */
-  getRoutineProblemsFeedbackString_(type, problems) {
+  getRoutineProblemsString_(type, problems, feedback) {
+    // Do not localize feedback strings.
+    const getString = s => feedback ? s : this.i18n(s);
+
     const problemStrings = [];
     for (const problem of problems) {
       switch (type) {
         case RoutineType.SIGNAL_STRENGTH:
           switch (problem) {
             case diagnosticsMojom.SignalStrengthProblem.kSignalNotFound:
-              problemStrings.push('Signal Not Found');
+              problemStrings.push(getString('SignalStrengthProblem_NotFound'));
               break;
             case diagnosticsMojom.SignalStrengthProblem.kWeakSignal:
-              problemStrings.push('Weak Signal');
+              problemStrings.push(getString('SignalStrengthProblem_Weak'));
               break;
           }
           break;
@@ -243,24 +261,27 @@ Polymer({
         case RoutineType.GATEWAY_PING:
           switch (problem) {
             case diagnosticsMojom.GatewayCanBePingedProblem.kUnreachableGateway:
-              problemStrings.push('Gateway is Unreachable');
+              problemStrings.push(getString('GatewayPingProblem_Unreachable'));
               break;
             case diagnosticsMojom.GatewayCanBePingedProblem
                 .kFailedToPingDefaultNetwork:
-              problemStrings.push('Failed to ping default network');
+              problemStrings.push(
+                  getString('GatewayPingProblem_NoDefaultPing'));
               break;
             case diagnosticsMojom.GatewayCanBePingedProblem
                 .kDefaultNetworkAboveLatencyThreshold:
-              problemStrings.push('Default network above latency threshold');
+              problemStrings.push(
+                  getString('GatewayPingProblem_DefaultLatency'));
               break;
             case diagnosticsMojom.GatewayCanBePingedProblem
                 .kUnsuccessfulNonDefaultNetworksPings:
-              problemStrings.push('Non-default network has failed pings');
+              problemStrings.push(
+                  getString('GatewayPingProblem_NoNonDefaultPing'));
               break;
             case diagnosticsMojom.GatewayCanBePingedProblem
                 .kNonDefaultNetworksAboveLatencyThreshold:
               problemStrings.push(
-                  'Non-default network is above latency threshold');
+                  getString('GatewayPingProblem_NonDefaultLatency'));
               break;
           }
           break;
@@ -269,19 +290,19 @@ Polymer({
           switch (problem) {
             case diagnosticsMojom.HasSecureWiFiConnectionProblem
                 .kSecurityTypeNone:
-              problemStrings.push('WiFi Network is not secure');
+              problemStrings.push(getString('SecureWifiProblem_None'));
               break;
             case diagnosticsMojom.HasSecureWiFiConnectionProblem
                 .kSecurityTypeWep8021x:
-              problemStrings.push('WiFi Network secured with WEP 802.1x');
+              problemStrings.push(getString('SecureWifiProblem_8021x'));
               break;
             case diagnosticsMojom.HasSecureWiFiConnectionProblem
                 .kSecurityTypeWepPsk:
-              problemStrings.push('WiFi Network secured with WEP PSK');
+              problemStrings.push(getString('SecureWifiProblem_PSK'));
               break;
             case diagnosticsMojom.HasSecureWiFiConnectionProblem
                 .kUnknownSecurityType:
-              problemStrings.push('WiFi Network secured with WEP PSK');
+              problemStrings.push(getString('SecureWifiProblem_Unknown'));
               break;
           }
           break;
@@ -289,14 +310,17 @@ Polymer({
         case RoutineType.DNS_RESOLVER:
           switch (problem) {
             case diagnosticsMojom.DnsResolverPresentProblem.kNoNameServersFound:
-              problemStrings.push('No name servers found');
+              problemStrings.push(
+                  getString('DnsResolverProblem_NoNameServers'));
               break;
             case diagnosticsMojom.DnsResolverPresentProblem
                 .kMalformedNameServers:
-              problemStrings.push('Malformed name servers');
+              problemStrings.push(
+                  getString('DnsResolverProblem_MalformedNameServers'));
               break;
             case diagnosticsMojom.DnsResolverPresentProblem.kEmptyNameServers:
-              problemStrings.push('Empty name servers');
+              problemStrings.push(
+                  getString('DnsResolverProblem_EmptyNameServers'));
               break;
           }
           break;
@@ -304,14 +328,17 @@ Polymer({
         case RoutineType.DNS_LATENCY:
           switch (problem) {
             case diagnosticsMojom.DnsLatencyProblem.kFailedToResolveAllHosts:
-              problemStrings.push('Failed to resolve all hosts');
+              problemStrings.push(
+                  getString('DnsLatencyProblem_FailedResolveHosts'));
               break;
             case diagnosticsMojom.DnsLatencyProblem.kSlightlyAboveThreshold:
-              problemStrings.push('DNS latency slightly above threshold');
+              problemStrings.push(
+                  getString('DnsLatencyProblem_LatencySlightlyAbove'));
               break;
             case diagnosticsMojom.DnsLatencyProblem
                 .kSignificantlyAboveThreshold:
-              problemStrings.push('DNS latency significantly above threshold');
+              problemStrings.push(
+                  getString('DnsLatencyProblem_LatencySignificantlyAbove'));
               break;
           }
           break;
@@ -319,7 +346,8 @@ Polymer({
         case RoutineType.DNS_RESOLUTION:
           switch (problem) {
             case diagnosticsMojom.DnsResolutionProblem.kFailedToResolveHost:
-              problemStrings.push('Failed to resolve host');
+              problemStrings.push(
+                  getString('DnsResolutionProblem_FailedResolve'));
               break;
           }
           break;

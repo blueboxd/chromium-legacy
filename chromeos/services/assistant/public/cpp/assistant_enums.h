@@ -54,7 +54,7 @@ enum class AssistantQuerySource {
   kVoiceInput = 5,
   kProactiveSuggestions = 6,
   kLibAssistantInitiated = 7,
-  kWarmerWelcome = 8,
+  // kWarmerWelcomeDeprecated = 8,
   kConversationStarter = 9,
   kWhatsOnMyScreen = 10,
   kQuickAnswers = 11,

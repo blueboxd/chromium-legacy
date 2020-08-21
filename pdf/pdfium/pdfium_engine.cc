@@ -2342,7 +2342,7 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
     const PP_PdfAccessibilityScrollAlignment& horizontal_scroll_alignment,
     const PP_PdfAccessibilityScrollAlignment& vertical_scroll_alignment) {
   gfx::Vector2d scroll_offset =
-      PointFromPPPoint(GetScreenRect(scroll_rect).point()).OffsetFromOrigin();
+      GetScreenRect(RectFromPPRect(scroll_rect)).OffsetFromOrigin();
   switch (horizontal_scroll_alignment) {
     case PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT:
       scroll_offset.set_x(scroll_offset.x() - plugin_size_.width());
@@ -2397,7 +2397,7 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
 void PDFiumEngine::ScrollToGlobalPoint(const pp::Rect& target_rect,
                                        const gfx::Point& global_point) {
   gfx::Point scroll_offset =
-      PointFromPPPoint(GetScreenRect(target_rect).point());
+      GetScreenRect(RectFromPPRect(target_rect)).origin();
   client_->ScrollBy(scroll_offset - global_point);
 }
 
@@ -2447,8 +2447,8 @@ pp::Rect PDFiumEngine::GetPageBoundsRect(int index) {
   return pages_[index]->rect();
 }
 
-pp::Rect PDFiumEngine::GetPageContentsRect(int index) {
-  return GetScreenRect(pages_[index]->rect());
+gfx::Rect PDFiumEngine::GetPageContentsRect(int index) {
+  return GetScreenRect(RectFromPPRect(pages_[index]->rect()));
 }
 
 int PDFiumEngine::GetVerticalScrollbarYPosition() {
@@ -2896,11 +2896,12 @@ void PDFiumEngine::CalculateVisiblePages() {
   visible_pages_rects.reserve(visible_pages_.size());
   for (int visible_page_index : visible_pages_) {
     visible_pages_rects.push_back(
-        {visible_page_index, pages_[visible_page_index]->rect()});
+        {visible_page_index,
+         RectFromPPRect(pages_[visible_page_index]->rect())});
   }
 
-  int most_visible_page =
-      draw_utils::GetMostVisiblePage(visible_pages_rects, GetVisibleRect());
+  int most_visible_page = draw_utils::GetMostVisiblePage(
+      visible_pages_rects, RectFromPPRect(GetVisibleRect()));
   SetCurrentPage(most_visible_page);
 }
 
@@ -3119,21 +3120,21 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
 
   int page_index = progressive_paints_[progressive_index].page_index();
-  const pp::Rect& dirty_in_screen =
-      progressive_paints_[progressive_index].rect();
+  gfx::Rect dirty_in_screen =
+      RectFromPPRect(progressive_paints_[progressive_index].rect());
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap();
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_.options(), page_index, pages_.size());
 
-  pp::Rect page_rect = pages_[page_index]->rect();
+  gfx::Rect page_rect = RectFromPPRect(pages_[page_index]->rect());
   const bool is_two_up_view = layout_.options().two_up_view_enabled();
   if (page_rect.x() > 0 && (!is_two_up_view || page_index % 2 == 0)) {
     // If in two-up view, only need to draw the left empty space for left pages
     // since the gap between the left and right page will be drawn by the left
     // page.
-    pp::Rect left_in_screen = GetScreenRect(draw_utils::GetLeftFillRect(
+    gfx::Rect left_in_screen = GetScreenRect(draw_utils::GetLeftFillRect(
         page_rect, inset_sizes, DocumentLayout::kBottomSeparator));
-    left_in_screen = left_in_screen.Intersect(dirty_in_screen);
+    left_in_screen.Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, left_in_screen.x() - dirty_in_screen.x(),
                         left_in_screen.y() - dirty_in_screen.y(),
@@ -3142,10 +3143,10 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   if (page_rect.right() < layout_.size().width()) {
-    pp::Rect right_in_screen = GetScreenRect(draw_utils::GetRightFillRect(
+    gfx::Rect right_in_screen = GetScreenRect(draw_utils::GetRightFillRect(
         page_rect, inset_sizes, layout_.size().width(),
         DocumentLayout::kBottomSeparator));
-    right_in_screen = right_in_screen.Intersect(dirty_in_screen);
+    right_in_screen.Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right_in_screen.x() - dirty_in_screen.x(),
                         right_in_screen.y() - dirty_in_screen.y(),
@@ -3153,9 +3154,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                         client_->GetBackgroundColor());
   }
 
-  pp::Rect bottom_in_screen;
+  gfx::Rect bottom_in_screen;
   if (is_two_up_view) {
-    pp::Rect page_in_screen = GetScreenRect(page_rect);
+    gfx::Rect page_in_screen = GetScreenRect(page_rect);
     bottom_in_screen = draw_utils::GetBottomGapBetweenRects(
         page_in_screen.bottom(), dirty_in_screen);
 
@@ -3164,11 +3165,11 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                                                   &bottom_in_screen);
     }
 
-    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+    bottom_in_screen.Intersect(dirty_in_screen);
   } else {
     bottom_in_screen = GetScreenRect(draw_utils::GetBottomFillRect(
         page_rect, inset_sizes, DocumentLayout::kBottomSeparator));
-    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+    bottom_in_screen.Intersect(dirty_in_screen);
   }
 
   FPDFBitmap_FillRect(bitmap, bottom_in_screen.x() - dirty_in_screen.x(),
@@ -3194,7 +3195,7 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
   // different size shadows on the left and right sides even they are defined
   // the same. To fix this issue let's calculate shadow rect and then shrink
   // it by the size of the shadows.
-  shadow_rect = GetScreenRect(shadow_rect);
+  shadow_rect = PPRectFromRect(GetScreenRect(RectFromPPRect(shadow_rect)));
   page_rect = shadow_rect;
   InsetPage(layout_.options(), page_index, pages_.size(),
             /*multiplier=*/current_zoom_, &page_rect);
@@ -3261,7 +3262,7 @@ void PDFiumEngine::PaintUnavailablePage(int page_index,
   FPDFBitmap_FillRect(bitmap.get(), start_x, start_y, size_x, size_y,
                       kPendingPageColor);
 
-  pp::Rect loading_text_in_screen(
+  gfx::Rect loading_text_in_screen(
       pages_[page_index]->rect().width() / 2,
       pages_[page_index]->rect().y() + kLoadingTextVerticalOffset, 0, 0);
   loading_text_in_screen = GetScreenRect(loading_text_in_screen);
@@ -3292,7 +3293,8 @@ void PDFiumEngine::GetPDFiumRect(int page_index,
                                  int* start_y,
                                  int* size_x,
                                  int* size_y) const {
-  pp::Rect page_rect = GetScreenRect(pages_[page_index]->rect());
+  gfx::Rect page_rect =
+      GetScreenRect(RectFromPPRect(pages_[page_index]->rect()));
   page_rect.Offset(-rect.x(), -rect.y());
 
   *start_x = page_rect.x();
@@ -3334,12 +3336,12 @@ pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
         max_page_height, pages_[adjacent_page_index.value()]->rect().height());
   }
 
-  return GetScreenRect(draw_utils::GetSurroundingRect(
+  return PPRectFromRect(GetScreenRect(draw_utils::GetSurroundingRect(
       page_rect.y(), max_page_height, inset_sizes, layout_.size().width(),
-      DocumentLayout::kBottomSeparator));
+      DocumentLayout::kBottomSeparator)));
 }
 
-pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {
+gfx::Rect PDFiumEngine::GetScreenRect(const gfx::Rect& rect) const {
   return draw_utils::GetScreenRect(rect, position_, current_zoom_);
 }
 
@@ -3549,14 +3551,14 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
                                   const pp::Rect& shadow_rc,
                                   const pp::Rect& clip_rc,
                                   SkBitmap& image_data) {
-  pp::Rect page_rect(page_rc);
-  page_rect.Offset(PPPointFromVector(page_offset_));
+  gfx::Rect page_rect(RectFromPPRect(page_rc));
+  page_rect.Offset(page_offset_);
 
-  pp::Rect shadow_rect(shadow_rc);
-  shadow_rect.Offset(PPPointFromVector(page_offset_));
+  gfx::Rect shadow_rect(RectFromPPRect(shadow_rc));
+  shadow_rect.Offset(page_offset_);
 
-  pp::Rect clip_rect(clip_rc);
-  clip_rect.Offset(PPPointFromVector(page_offset_));
+  gfx::Rect clip_rect(RectFromPPRect(clip_rc));
+  clip_rect.Offset(page_offset_);
 
   // Page drop shadow parameters.
   constexpr double factor = 0.5;

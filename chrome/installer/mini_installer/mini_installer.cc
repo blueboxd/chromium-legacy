@@ -103,12 +103,14 @@ void WriteInstallResults(const Configuration& configuration,
   }
 }
 
-// Writes the value |extra_code_1| into ExtraCode1 for reporting by Omaha.
-void WriteExtraCode1(const Configuration& configuration, DWORD extra_code_1) {
-  // Write the value in Chrome ClientState key.
+// Writes the value |installer_error| into InstallerError for reporting by
+// Omaha.
+void WriteInstallerError(const Configuration& configuration,
+                         DWORD installer_error) {
+  // Write the value in Chrome's ClientState key.
   RegKey key;
   if (OpenInstallStateKey(configuration, &key))
-    key.WriteDWValue(kInstallerExtraCode1RegistryValue, extra_code_1);
+    key.WriteDWValue(kInstallerErrorRegistryValue, installer_error);
 }
 
 // This function sets the flag in registry to indicate that Google Update
@@ -916,19 +918,21 @@ ProcessExitResult WMain(HMODULE module) {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (exit_code.IsSuccess()) {
-    // Send up a signal in ExtraCode1 upon successful install where the fallback
-    // work dir location was used. This means that GetWorkDir failed to create a
-    // temporary directory next to the executable (in a directory owned by
-    // Omaha) then succeeded to create one in %TMP% and ultimately resulted in
-    // a successful install/update. If we ~never see this signal, then we know
-    // that it's safe to remove the fallback code and associated cleanup. See
-    // https://crbug.com/516207 for more info.
-    // Pick two arbitrary values that should stand out obviously in queries.
-    constexpr DWORD kSucceededWithFallback = 0x1U << 16;
-    constexpr DWORD kSucceededWithoutFallback = 0x2U << 16;
-    WriteExtraCode1(configuration, work_dir_in_fallback
-                                       ? kSucceededWithFallback
-                                       : kSucceededWithoutFallback);
+    // Send up a signal in InstallerError upon successful install where the
+    // fallback work dir location was used. This means that GetWorkDir failed to
+    // create a temporary directory next to the executable (in a directory owned
+    // by Omaha) then succeeded to create one in %TMP% and ultimately resulted
+    // in a successful install/update. If we ~never see this signal, then we
+    // know that it's safe to remove the fallback code and associated
+    // cleanup. See https://crbug.com/516207 for more info.  Pick two arbitrary
+    // success HRESULT values that should stand out obviously in queries.
+    constexpr HRESULT kSucceededWithFallback =
+        MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_ITF, 0x4001);
+    constexpr HRESULT kSucceededWithoutFallback =
+        MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_ITF, 0x4002);
+    WriteInstallerError(configuration, work_dir_in_fallback
+                                           ? kSucceededWithFallback
+                                           : kSucceededWithoutFallback);
   } else {
     WriteInstallResults(configuration, exit_code);
   }

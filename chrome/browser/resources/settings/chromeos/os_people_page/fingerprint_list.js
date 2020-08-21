@@ -13,6 +13,7 @@ Polymer({
   is: 'settings-fingerprint-list',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
@@ -50,6 +51,18 @@ Polymer({
     allowAddAnotherFinger_: {
       type: Boolean,
       value: true,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kAddFingerprint,
+        chromeos.settings.mojom.Setting.kRemoveFingerprint,
+      ]),
     },
   },
 
@@ -96,7 +109,10 @@ Polymer({
         this.browserProxy_.endCurrentAuthentication();
       }
       this.showSetupFingerprintDialog_ = false;
-    } else if (oldRoute == settings.routes.LOCK_SCREEN) {
+      return;
+    }
+
+    if (oldRoute == settings.routes.LOCK_SCREEN) {
       // Start fingerprint authentication when going from LOCK_SCREEN to
       // FINGERPRINT page.
       this.browserProxy_.startAuthentication();
@@ -105,6 +121,8 @@ Polymer({
     if (this.requestPasswordIfApplicable_()) {
       this.showSetupFingerprintDialog_ = false;
     }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -218,6 +236,13 @@ Polymer({
   onAuthTokenChanged_() {
     if (this.requestPasswordIfApplicable_()) {
       this.showSetupFingerprintDialog_ = false;
+      return;
+    }
+
+    if (settings.Router.getInstance().getCurrentRoute() ===
+        settings.routes.FINGERPRINT) {
+      // Show deep links again if the user authentication dialog just closed.
+      this.attemptDeepLink();
     }
   },
 

@@ -129,14 +129,6 @@ bool LayoutThemeMac::UsesTestModeFocusRingColor() const {
   return WebTestSupport::IsRunningWebTest();
 }
 
-bool LayoutThemeMac::PopsMenuByArrowKeys() const {
-  return true;
-}
-
-bool LayoutThemeMac::PopsMenuByReturnKey() const {
-  return false;
-}
-
 LayoutTheme& LayoutTheme::NativeTheme() {
   DCHECK(features::IsFormControlsRefreshEnabled());
   DEFINE_STATIC_REF(LayoutTheme, layout_theme, (LayoutThemeMac::Create()));

@@ -103,7 +103,11 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
     : compositor_error_(std::move(compositor_error)),
       paint_preview_service_(paint_preview_service),
       key_(key),
-      compress_on_close_(true) {
+      compress_on_close_(true),
+      paint_preview_compositor_service_(nullptr,
+                                        base::OnTaskRunnerDeleter(nullptr)),
+      paint_preview_compositor_client_(nullptr,
+                                       base::OnTaskRunnerDeleter(nullptr)) {
   if (skip_service_launch) {
     paint_preview_service_->GetCapturedPaintPreviewProto(
         key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,

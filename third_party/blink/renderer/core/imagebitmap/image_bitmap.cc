@@ -237,8 +237,9 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
             ->SharedImageInterface()
             ->UsageForMailbox(source_image->GetMailboxHolder().mailbox);
     auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
-        size, context_provider, kLow_SkFilterQuality, color_params,
-        source_image->IsOriginTopLeft(), RasterMode::kGPU, usage_flags);
+        size, kLow_SkFilterQuality, color_params,
+        CanvasResourceProvider::ShouldInitialize::kNo, context_provider,
+        RasterMode::kGPU, source_image->IsOriginTopLeft(), usage_flags);
     if (resource_provider)
       return resource_provider;
 
@@ -247,7 +248,8 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
   }
 
   return CanvasResourceProvider::CreateBitmapProvider(
-      size, kLow_SkFilterQuality, color_params);
+      size, kLow_SkFilterQuality, color_params,
+      CanvasResourceProvider::ShouldInitialize::kNo);
 }
 
 std::unique_ptr<CanvasResourceProvider> CreateProviderForVideoElement(
@@ -264,19 +266,21 @@ std::unique_ptr<CanvasResourceProvider> CreateProviderForVideoElement(
       options->hasResizeWidth() || options->hasResizeHeight()) {
     return CanvasResourceProvider::CreateBitmapProvider(
         IntSize(video->videoWidth(), video->videoHeight()),
-        kLow_SkFilterQuality, CanvasColorParams());
+        kLow_SkFilterQuality, CanvasColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear);
   }
 
   uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
 
   return CanvasResourceProvider::CreateSharedImageProvider(
-      IntSize(video->videoWidth(), video->videoHeight()),
-      SharedGpuContext::ContextProviderWrapper(), kLow_SkFilterQuality,
+      IntSize(video->videoWidth(), video->videoHeight()), kLow_SkFilterQuality,
       CanvasColorParams(CanvasColorSpace::kSRGB,
                         CanvasColorParams::GetNativeCanvasPixelFormat(),
-                        kNonOpaque),  // Default canvas settings
+                        kNonOpaque),  // Default canvas settings,
+      CanvasResourceProvider::ShouldInitialize::kCallClear,
+      SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
       false,  // Origin of GL texture is bottom left on screen
-      RasterMode::kGPU, shared_image_usage_flags);
+      shared_image_usage_flags);
 }
 
 scoped_refptr<StaticBitmapImage> FlipImageVertically(

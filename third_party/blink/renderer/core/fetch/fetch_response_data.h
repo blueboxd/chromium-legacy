@@ -68,6 +68,7 @@ class CORE_EXPORT FetchResponseData final
   }
   const KURL* Url() const;
   uint16_t Status() const { return status_; }
+  uint16_t InternalStatus() const;
   AtomicString StatusMessage() const { return status_message_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
   FetchHeaderList* InternalHeaderList() const;
@@ -82,6 +83,7 @@ class CORE_EXPORT FetchResponseData final
   const HTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
   }
+  bool HasRangeRequested() const { return has_range_requested_; }
 
   void SetResponseSource(network::mojom::FetchResponseSource response_source) {
     response_source_ = response_source;
@@ -119,6 +121,9 @@ class CORE_EXPORT FetchResponseData final
   }
   void SetWasFetchedViaSpdy(bool was_fetched_via_spdy) {
     was_fetched_via_spdy_ = was_fetched_via_spdy;
+  }
+  void SetHasRangeRequested(bool has_range_requested) {
+    has_range_requested_ = has_range_requested;
   }
 
   // If the type is Default, replaces |buffer_|.
@@ -160,6 +165,7 @@ class CORE_EXPORT FetchResponseData final
   AtomicString alpn_negotiated_protocol_;
   bool loaded_with_credentials_;
   bool was_fetched_via_spdy_;
+  bool has_range_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

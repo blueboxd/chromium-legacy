@@ -157,7 +157,8 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <div id="sidenav-container" closed$="[[sidenavCollapsed_]]">
+    <div id="sidenav-container" closed$="[[sidenavCollapsed_]]"
+        hidden$="[[!toolbarEnabled_]]">
       <viewer-pdf-sidenav id="sidenav"
           bookmarks="[[bookmarks_]]" doc-length="[[docLength_]]"
           on-change-page="onChangePage_"

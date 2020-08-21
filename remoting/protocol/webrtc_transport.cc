@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/webrtc_transport.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,11 +23,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "jingle/glue/utils.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/sdp_message.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
+#include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_audio_module.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
@@ -188,6 +191,22 @@ base::Optional<bool> IsConnectionRelayed(
   std::string remote_candidate_type = *remote_candidate->candidate_type;
 
   return local_candidate_type == "relay" || remote_candidate_type == "relay";
+}
+
+// Utility function to map a cricket::Candidate string type to a
+// TransportRoute::RouteType enum value.
+TransportRoute::RouteType CandidateTypeToTransportRouteType(
+    const std::string& candidate_type) {
+  if (candidate_type == "local") {
+    return TransportRoute::DIRECT;
+  } else if (candidate_type == "stun" || candidate_type == "prflx") {
+    return TransportRoute::STUN;
+  } else if (candidate_type == "relay") {
+    return TransportRoute::RELAY;
+  } else {
+    LOG(ERROR) << "Unknown candidate type: " << candidate_type;
+    return TransportRoute::DIRECT;
+  }
 }
 
 // A webrtc::CreateSessionDescriptionObserver implementation used to receive the
@@ -400,6 +419,11 @@ class WebrtcTransport::PeerConnectionWrapper
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
     if (transport_)
       transport_->OnIceCandidate(candidate);
+  }
+  void OnIceSelectedCandidatePairChanged(
+      const cricket::CandidatePairChangeEvent& event) override {
+    if (transport_)
+      transport_->OnIceSelectedCandidatePairChanged(event);
   }
 
  private:
@@ -949,6 +973,37 @@ void WebrtcTransport::OnIceCandidate(
 
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->AddElement(candidate_element.release());
+}
+
+void WebrtcTransport::OnIceSelectedCandidatePairChanged(
+    const cricket::CandidatePairChangeEvent& event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const cricket::Candidate& local_candidate =
+      event.selected_candidate_pair.local_candidate();
+  const cricket::Candidate& remote_candidate =
+      event.selected_candidate_pair.remote_candidate();
+
+  TransportRoute route;
+  static_assert(TransportRoute::DIRECT < TransportRoute::STUN &&
+                    TransportRoute::STUN < TransportRoute::RELAY,
+                "Route type enum values are ordered by 'indirectness'");
+  route.type =
+      std::max(CandidateTypeToTransportRouteType(local_candidate.type()),
+               CandidateTypeToTransportRouteType(remote_candidate.type()));
+
+  if (!jingle_glue::SocketAddressToIPEndPoint(remote_candidate.address(),
+                                              &route.remote_address)) {
+    LOG(ERROR) << "Failed to convert peer IP address.";
+    return;
+  }
+  if (!jingle_glue::SocketAddressToIPEndPoint(local_candidate.address(),
+                                              &route.local_address)) {
+    LOG(ERROR) << "Failed to convert local IP address.";
+    return;
+  }
+
+  event_handler_->OnWebrtcTransportRouteChanged(route);
 }
 
 void WebrtcTransport::OnStatsDelivered(

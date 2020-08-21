@@ -29,6 +29,7 @@ class CommanderController : public CommanderBackend {
   void OnTextChanged(const base::string16& text, Browser* browser) override;
   void OnCommandSelected(size_t command_index, int result_set_id) override;
   void SetUpdateCallback(ViewModelUpdateCallback callback) override;
+  void Reset() override;
 
   static std::unique_ptr<CommanderController> CreateWithSourcesForTesting(
       CommandSources sources);

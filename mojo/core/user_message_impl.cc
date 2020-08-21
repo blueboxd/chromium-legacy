@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -16,6 +17,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/core/configuration.h"
 #include "mojo/core/core.h"
 #include "mojo/core/node_channel.h"
 #include "mojo/core/node_controller.h"
@@ -342,10 +344,10 @@ UserMessageImpl::~UserMessageImpl() {
 
 // static
 std::unique_ptr<ports::UserMessageEvent>
-UserMessageImpl::CreateEventForNewMessage() {
+UserMessageImpl::CreateEventForNewMessage(MojoCreateMessageFlags flags) {
   auto message_event = std::make_unique<ports::UserMessageEvent>(0);
   message_event->AttachMessage(
-      base::WrapUnique(new UserMessageImpl(message_event.get())));
+      base::WrapUnique(new UserMessageImpl(message_event.get(), flags)));
   return message_event;
 }
 
@@ -533,6 +535,16 @@ MojoResult UserMessageImpl::CommitSize() {
     pending_handle_attachments_.clear();
   }
 
+  if (!unlimited_size_ &&
+      user_payload_size_ > GetConfiguration().max_message_num_bytes) {
+    // We want to be aware of new undocumented cases of very large IPCs. Crashes
+    // which result from this stack should be addressed by either marking the
+    // corresponding mojom interface method with an [UnlimitedSize] attribute;
+    // or preferably by refactoring to avoid such large message contents, for
+    // example by batching calls or leveraging shared memory where feasible.
+    base::debug::DumpWithoutCrashing();
+  }
+
   is_committed_ = true;
   return MOJO_RESULT_OK;
 }
@@ -653,8 +665,11 @@ void UserMessageImpl::FailHandleSerializationForTesting(bool fail) {
   g_always_fail_handle_serialization = fail;
 }
 
-UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event)
-    : ports::UserMessage(&kUserMessageTypeInfo), message_event_(message_event) {
+UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
+                                 MojoCreateMessageFlags flags)
+    : ports::UserMessage(&kUserMessageTypeInfo),
+      message_event_(message_event),
+      unlimited_size_((flags & MOJO_CREATE_MESSAGE_FLAG_UNLIMITED_SIZE) != 0) {
   EnsureMemoryDumpProviderExists();
   IncrementMessageCount();
 }

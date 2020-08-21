@@ -87,10 +87,8 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
   is_valid_size_ = IsValidImageSize(Host()->Size());
 
   // Clear the background transparent or opaque.
-  if (IsCanvas2DBufferValid()) {
-    GetCanvasResourceProvider()->Clear();
+  if (IsCanvas2DBufferValid())
     DidDraw();
-  }
 
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {

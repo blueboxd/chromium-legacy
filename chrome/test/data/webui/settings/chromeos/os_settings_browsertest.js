@@ -1056,6 +1056,7 @@ var OSSettingsPeoplePageAccountManagerTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'people_page_account_manager_test.js',
     ]);
   }
@@ -1236,7 +1237,7 @@ var OSSettingsPeoplePageSyncControlsTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      'os_sync_controls_test.js'
+      BROWSER_SETTINGS_PATH + '../test_util.js', 'os_sync_controls_test.js'
     ]);
   }
 };
@@ -1261,6 +1262,7 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + 'sync_test_util.js',
       BROWSER_SETTINGS_PATH + 'test_profile_info_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_sync_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH +
           '../settings/chromeos/fake_quick_unlock_private.js',
       'os_people_page_test.js',

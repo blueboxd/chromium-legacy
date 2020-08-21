@@ -199,8 +199,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         return ComponentPaymentRequestImpl.createPaymentRequest(mRenderFrameHost,
                 /*isOffTheRecord=*/delegate.isOffTheRecord(webContents),
                 /*skipUiForBasicCard=*/delegate.skipUiForBasicCard(),
-                (renderFrameHost, componentPaymentRequest, isOffTheRecord)
-                        -> new PaymentRequestImpl(renderFrameHost, componentPaymentRequest,
-                                isOffTheRecord, delegate));
+                (componentPaymentRequest)
+                        -> new PaymentRequestImpl(componentPaymentRequest, delegate));
     }
 }

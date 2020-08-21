@@ -6,7 +6,6 @@ package org.chromium.components.payments;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
@@ -22,15 +21,12 @@ public interface BrowserPaymentRequest {
     interface Factory {
         /**
          * Create an instance of {@link BrowserPaymentRequest}.
-         * @param renderFrameHost The RenderFrameHost of the merchant page.
          * @param componentPaymentRequestImpl The ComponentPaymentRequestImpl to work together with
-         *         the BrowserPaymentRequest instance.
-         * @param isOffTheRecord Whether the merchant page is in an OffTheRecord (e.g., incognito,
-         *         guest mode) Tab.
+         *         the BrowserPaymentRequest instance, cannot be null.
          * @return An instance of BrowserPaymentRequest, cannot be null.
          */
-        BrowserPaymentRequest createBrowserPaymentRequest(RenderFrameHost renderFrameHost,
-                ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord);
+        BrowserPaymentRequest createBrowserPaymentRequest(
+                ComponentPaymentRequestImpl componentPaymentRequestImpl);
     }
 
     /**

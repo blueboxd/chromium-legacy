@@ -172,6 +172,9 @@ void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
     video_adapter_.reset();
 }
 
+void WebrtcConnectionToHost::OnWebrtcTransportRouteChanged(
+    const TransportRoute& route) {}
+
 void WebrtcConnectionToHost::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   NotifyIfChannelsReady();

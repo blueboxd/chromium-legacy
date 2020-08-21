@@ -91,7 +91,8 @@ def main(argv):
 
   run_dir = os.path.dirname(options.output)
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
-  java_path = os.path.relpath(build_utils.JAVA_PATH, run_dir)
+  java_path = os.path.relpath(
+      os.path.join(build_utils.JAVA_HOME, 'bin', 'java'), run_dir)
 
   with build_utils.AtomicOutput(options.output) as script:
     script.write(

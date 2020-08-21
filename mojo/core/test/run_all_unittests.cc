@@ -15,6 +15,7 @@
 #include "mojo/core/embedder/configuration.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/core/test/mojo_test_base.h"
 #include "mojo/core/test/multiprocess_test_helper.h"
 #include "mojo/core/test/test_support_impl.h"
 #include "mojo/public/tests/test_support_private.h"
@@ -39,6 +40,10 @@ int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
   mojo::core::Configuration mojo_config;
+
+  // A relatively low limit to make it easier to test behavior at the limit.
+  mojo_config.max_message_num_bytes =
+      mojo::core::test::MojoTestBase::kMaxMessageSizeInTests;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestChildProcess)) {
     mojo_config.is_broker_process = true;

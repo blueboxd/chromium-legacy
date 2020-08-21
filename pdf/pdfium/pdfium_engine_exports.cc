@@ -13,7 +13,6 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_print.h"
-#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "printing/nup_parameters.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -34,7 +33,7 @@ namespace {
 
 int CalculatePosition(FPDF_PAGE page,
                       const PDFiumEngineExports::RenderingSettings& settings,
-                      pp::Rect* dest) {
+                      gfx::Rect* dest) {
   // settings.bounds is in terms of the max DPI. Convert page sizes to match.
   int dpi = std::max(settings.dpi_x, settings.dpi_y);
   int page_width = static_cast<int>(
@@ -97,7 +96,7 @@ int CalculatePosition(FPDF_PAGE page,
     gfx::Vector2d offset(
         (settings.bounds.width() * settings.dpi_x / dpi - dest->width()) / 2,
         (settings.bounds.height() * settings.dpi_y / dpi - dest->height()) / 2);
-    dest->Offset(PPPointFromVector(offset));
+    dest->Offset(offset);
   }
   return rotate;
 }
@@ -184,7 +183,7 @@ base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
 
 PDFEngineExports::RenderingSettings::RenderingSettings(int dpi_x,
                                                        int dpi_y,
-                                                       const pp::Rect& bounds,
+                                                       const gfx::Rect& bounds,
                                                        bool fit_to_bounds,
                                                        bool stretch_to_bounds,
                                                        bool keep_aspect_ratio,
@@ -243,7 +242,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(
   if (new_settings.dpi_y == -1)
     new_settings.dpi_y = GetDeviceCaps(dc, LOGPIXELSY);
 
-  pp::Rect dest;
+  gfx::Rect dest;
   int rotate = CalculatePosition(page.get(), new_settings, &dest);
 
   int save_state = SaveDC(dc);
@@ -322,7 +321,7 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   if (!page)
     return false;
 
-  pp::Rect dest;
+  gfx::Rect dest;
   int rotate = CalculatePosition(page.get(), settings, &dest);
 
   ScopedFPDFBitmap bitmap(FPDFBitmap_CreateEx(
@@ -332,7 +331,7 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   FPDFBitmap_FillRect(bitmap.get(), 0, 0, settings.bounds.width(),
                       settings.bounds.height(), 0xFFFFFFFF);
   // Shift top-left corner of bounds to (0, 0) if it's not there.
-  dest.set_point(dest.point() - settings.bounds.point());
+  dest.set_origin(dest.origin() - settings.bounds.OffsetFromOrigin());
 
   int flags = FPDF_ANNOT | FPDF_PRINTING;
   if (!settings.use_color)

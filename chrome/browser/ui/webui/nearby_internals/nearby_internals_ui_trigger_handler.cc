@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
-#include "chrome/browser/ui/webui/nearby_share/nearby_share_target_types.mojom.h"
+#include "chrome/services/sharing/public/mojom/nearby_share_target_types.mojom.h"
 
 namespace {
 

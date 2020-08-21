@@ -4880,6 +4880,9 @@ if (enable_java_templates) {
           invoker.compress_shared_libraries) {
         args += [ "--compress-shared-libraries" ]
       }
+      if (treat_warnings_as_errors) {
+        args += [ "--warnings-as-errors" ]
+      }
 
       if (_enable_language_splits) {
         args += [
@@ -4901,6 +4904,13 @@ if (enable_java_templates) {
               "$_rebased_build_config:deps_info:module_pathmap_path)",
           "--module-name=" + _module.name,
         ]
+      }
+
+      # http://crbug.com/725224. Fix for bots running out of memory.
+      if (defined(java_cmd_pool_size)) {
+        pool = "//build/config/android:java_cmd_pool($default_toolchain)"
+      } else {
+        pool = "//build/toolchain:link_pool($default_toolchain)"
       }
     }
 
@@ -5084,6 +5094,13 @@ if (enable_java_templates) {
       }
       if (defined(invoker.static_library_provider)) {
         metadata.install_artifacts_barrier = []
+      }
+
+      # http://crbug.com/725224. Fix for bots running out of memory.
+      if (defined(java_cmd_pool_size)) {
+        pool = "//build/config/android:java_cmd_pool($default_toolchain)"
+      } else {
+        pool = "//build/toolchain:link_pool($default_toolchain)"
       }
     }
   }

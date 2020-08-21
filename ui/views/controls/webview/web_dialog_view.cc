@@ -81,6 +81,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
       delegate_(delegate),
       web_view_(new ObservableWebView(context, delegate)),
       use_dialog_frame_(use_dialog_frame) {
+  SetModalType(GetDialogModalType());
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
   set_contents_view(web_view_);
@@ -182,10 +183,6 @@ bool WebDialogView::CanResize() const {
   if (delegate_)
     return delegate_->CanResizeDialog();
   return true;
-}
-
-ui::ModalType WebDialogView::GetModalType() const {
-  return GetDialogModalType();
 }
 
 base::string16 WebDialogView::GetWindowTitle() const {

@@ -15,6 +15,7 @@
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chrome_pdf {
 
@@ -390,7 +391,7 @@ void PDFiumFormFiller::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
     return;
   }
 
-  pp::Rect page_view_rect = engine->GetPageContentsRect(page_index);
+  gfx::Rect page_view_rect = engine->GetPageContentsRect(page_index);
 
   float toolbar_height_in_screen_coords =
       engine->GetToolbarHeightInScreenCoords();

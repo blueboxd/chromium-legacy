@@ -33,6 +33,8 @@ js_type_check("closure_compile") {
 
 js_library("account_manager") {
   deps = [
+    "..:deep_linking_behavior",
+    "..:os_route",
     "../..:router",
     "../../people_page:account_manager_browser_proxy",
     "../localized_link:localized_link",
@@ -50,6 +52,7 @@ js_library("fingerprint_browser_proxy") {
 js_library("fingerprint_list") {
   deps = [
     ":fingerprint_browser_proxy",
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
     "..:os_route",
     "../..:router",
@@ -66,7 +69,9 @@ js_library("fingerprint_list") {
 js_library("kerberos_accounts") {
   deps = [
     ":kerberos_accounts_browser_proxy",
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
+    "..:os_route",
     "../..:router",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -96,6 +101,7 @@ js_library("lock_screen") {
     ":fingerprint_browser_proxy",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
+    "..:deep_linking_behavior",
     "..:os_route",
     "../..:router",
     "../../controls:settings_dropdown_menu",
@@ -133,11 +139,13 @@ js_library("os_people_page") {
     ":lock_screen",
     ":lock_state_behavior",
     ":os_sync_controls",
+    "..:deep_linking_behavior",
     "..:os_page_visibility",
     "..:os_route",
     "../..:router",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",
+    "../parental_controls_page:parental_controls_page",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",
     "//chrome/browser/resources/settings/people_page:signout_dialog",
     "//chrome/browser/resources/settings/people_page:sync_browser_proxy",
@@ -162,7 +170,9 @@ js_library("os_sync_browser_proxy") {
 js_library("os_sync_controls") {
   deps = [
     ":os_sync_browser_proxy",
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
+    "..:os_route",
     "../../:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
@@ -213,6 +223,9 @@ js_library("users_page") {
   deps = [
     ":user_list",
     ":users_add_user_dialog",
+    "..:deep_linking_behavior",
+    "..:os_route",
+    "../..:router",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
@@ -244,12 +257,14 @@ js_type_check("closure_compile_module") {
 js_library("account_manager.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/account_manager.m.js" ]
   deps = [
+    "..:deep_linking_behavior.m",
+    "..:os_route.m",
     "../..:router.m",
     "../../people_page:account_manager_browser_proxy.m",
     "../localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -270,6 +285,7 @@ js_library("fingerprint_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/fingerprint_list.m.js" ]
   deps = [
     ":fingerprint_browser_proxy.m",
+    "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
     "../..:router.m",
@@ -289,7 +305,9 @@ js_library("kerberos_accounts.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/kerberos_accounts.m.js" ]
   deps = [
     ":kerberos_accounts_browser_proxy.m",
+    "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
+    "..:os_route.m",
     "../..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
@@ -331,6 +349,7 @@ js_library("lock_screen.m") {
     ":fingerprint_browser_proxy.m",
     ":lock_screen_password_prompt_dialog.m",
     ":lock_state_behavior.m",
+    "..:deep_linking_behavior.m",
     "..:os_route.m",
     "../..:router.m",
     "../../controls:settings_dropdown_menu.m",
@@ -377,11 +396,13 @@ js_library("os_people_page.m") {
     ":lock_screen.m",
     ":lock_state_behavior.m",
     ":os_sync_controls.m",
+    "..:deep_linking_behavior.m",
     "..:os_page_visibility.m",
     "..:os_route.m",
     "../..:router.m",
     "../../settings_page:settings_animated_pages.m",
     "../localized_link:localized_link.m",
+    "../parental_controls_page:parental_controls_page.m",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy.m",
     "//chrome/browser/resources/settings/people_page:signout_dialog.m",
     "//chrome/browser/resources/settings/people_page:sync_browser_proxy.m",
@@ -412,7 +433,9 @@ js_library("os_sync_controls.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/os_sync_controls.m.js" ]
   deps = [
     ":os_sync_browser_proxy.m",
+    "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
+    "..:os_route.m",
     "../../:router.m",
     "../localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -481,6 +504,9 @@ js_library("users_page.m") {
   deps = [
     ":user_list.m",
     ":users_add_user_dialog.m",
+    "..:deep_linking_behavior.m",
+    "..:os_route.m",
+    "../..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
@@ -507,9 +533,9 @@ group("polymer3_elements") {
     ":user_list_module",
     ":users_add_user_dialog_module",
     ":users_page_module",
+    "../../:icons_module",
     "../../people_page:polymer3_elements",
     "../../privacy_page:polymer3_elements",
-    "../../:icons_module",
   ]
 }
 

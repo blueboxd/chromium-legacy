@@ -21,6 +21,14 @@ static constexpr size_t kClosedTabCacheLimit = 1;
 // The default time to live in seconds for entries in the ClosedTabCache.
 static constexpr base::TimeDelta kDefaultTimeToLiveInClosedTabCacheInSeconds =
     base::TimeDelta::FromSeconds(15);
+
+// The memory pressure level from which we should evict all entries from the
+// cache to preserve memory.
+// TODO(https://crbug.com/1119368): Integrate memory pressure logic with
+// PerformanceManager.
+static constexpr base::MemoryPressureListener::MemoryPressureLevel
+    kClosedTabCacheMemoryPressureThreshold =
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 }  // namespace
 
 ClosedTabCache::Entry::Entry(SessionID id,
@@ -32,7 +40,11 @@ ClosedTabCache::Entry::~Entry() = default;
 ClosedTabCache::ClosedTabCache()
     : cache_size_limit_(kClosedTabCacheLimit),
       task_runner_(
-          content::GetUIThreadTaskRunner(content::BrowserTaskTraits())) {}
+          content::GetUIThreadTaskRunner(content::BrowserTaskTraits())) {
+  listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&ClosedTabCache::OnMemoryPressure,
+                                     base::Unretained(this)));
+}
 ClosedTabCache::~ClosedTabCache() = default;
 
 base::TimeDelta ClosedTabCache::GetTimeToLiveInClosedTabCache() {
@@ -130,4 +142,15 @@ bool ClosedTabCache::IsEmpty() {
 
 size_t ClosedTabCache::EntriesCount() {
   return entries_.size();
+}
+
+void ClosedTabCache::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (level >= kClosedTabCacheMemoryPressureThreshold)
+    Flush();
+}
+
+void ClosedTabCache::Flush() {
+  TRACE_EVENT0("browser", "ClosedTabCache::Flush");
+  entries_.clear();
 }

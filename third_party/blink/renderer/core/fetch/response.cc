@@ -389,6 +389,7 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   response->SetLoadedWithCredentials(
       fetch_api_response.loaded_with_credentials);
   response->SetWasFetchedViaSpdy(fetch_api_response.was_fetched_via_spdy);
+  response->SetHasRangeRequested(fetch_api_response.has_range_requested);
 
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);

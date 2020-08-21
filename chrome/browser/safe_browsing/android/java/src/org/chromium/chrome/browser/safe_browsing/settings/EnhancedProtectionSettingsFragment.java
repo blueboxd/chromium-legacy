@@ -4,19 +4,12 @@
 
 package org.chromium.chrome.browser.safe_browsing.settings;
 
-import android.os.Bundle;
-
-import androidx.preference.PreferenceFragmentCompat;
-
-import org.chromium.components.browser_ui.settings.SettingsUtils;
-
 /**
  * Fragment containing enhanced protection settings.
  */
-public class EnhancedProtectionSettingsFragment extends PreferenceFragmentCompat {
+public class EnhancedProtectionSettingsFragment extends SafeBrowsingSettingsFragmentBase {
     @Override
-    public void onCreatePreferences(Bundle bundle, String rootKey) {
-        SettingsUtils.addPreferencesFromResource(this, R.xml.enhanced_protection_preferences);
-        getActivity().setTitle(R.string.prefs_section_safe_browsing_title);
+    protected int getPreferenceResource() {
+        return R.xml.enhanced_protection_preferences;
     }
 }

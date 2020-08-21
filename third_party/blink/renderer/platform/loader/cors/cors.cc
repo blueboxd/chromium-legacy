@@ -356,6 +356,13 @@ Vector<String> CorsUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
   return header_names;
 }
 
+PLATFORM_EXPORT Vector<String> PrivilegedNoCorsHeaderNames() {
+  Vector<String> header_names;
+  for (const auto& name : network::cors::PrivilegedNoCorsHeaderNames())
+    header_names.push_back(WebString::FromLatin1(name));
+  return header_names;
+}
+
 bool IsForbiddenHeaderName(const String& name) {
   return !net::HttpUtil::IsSafeHeader(name.Latin1());
 }

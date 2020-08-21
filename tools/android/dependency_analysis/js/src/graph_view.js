@@ -2,11 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview Exports a class GraphView, which encapsulates all the D3 logic
+ * in the graph visualization.
+ *
+ * D3 uses the concept of "data joins" to bind data to the SVG, and might be
+ * difficult to read at first glance. This (https://bost.ocks.org/mike/join/) is
+ * a good resource if you are unfamiliar with data joins.
+ */
+
 import {DisplaySettingsData} from './display_settings_data.js';
 import {GraphNode, D3GraphData} from './graph_model.js';
 import {GraphEdgeColor} from './display_settings_data.js';
 
 import * as d3 from 'd3';
+
+// The radius of each node in the visualization.
+const NODE_RADIUS = 5;
 
 // Category10 colors pulled from https://observablehq.com/@d3/color-schemes.
 const HULL_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
@@ -26,8 +38,8 @@ const DEFAULT_EDGE_COLOR = '#999';
 
 // A map from GraphEdgeColor to its start and end color codes. The property
 // `targetDefId` will be used as the unique ID of the colored arrow in the SVG
-// defs (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs), and the
-// arrowhead will be referred to by `url(#targetDefId)` in the SVG.
+// defs, and the arrowhead will be referred to by `url(#targetDefId)` in the
+// SVG.
 const EDGE_COLORS = {
   [GraphEdgeColor.DEFAULT]: {
     source: DEFAULT_EDGE_COLOR,
@@ -114,8 +126,7 @@ function addArrowMarkerDef(defs, id, color, length, width) {
   defs.append('marker')
       .attr('id', id) // 'graph-arrowhead-*'
       .attr('viewBox', `0 -${halfWidth} ${length} ${width}`)
-      // TODO(yjlong): 5 is the hardcoded radius, change for dynamic radius.
-      .attr('refX', length + 5)
+      .attr('refX', length + NODE_RADIUS)
       .attr('refY', 0)
       .attr('orient', 'auto')
       .attr('markerWidth', length)
@@ -318,6 +329,8 @@ class GraphView {
     /** @private {!HullColorManager} */
     this.hullColorManager_ = new HullColorManager();
 
+    // Event handler callbacks, to be registered externally and called when the
+    // relevant event is triggered.
     /** @private @type {?GetNodeGroupCallback} */
     this.getNodeGroup_ = null;
     /** @private @type {?OnNodeClickedCallback} */
@@ -326,7 +339,10 @@ class GraphView {
     this.onNodeDoubleClicked_ = null;
 
     const svg = d3.select('#graph-svg');
-    const graphGroup = svg.append('g'); // Contains entire graph (for zoom/pan).
+    // An SVG group containing the entire graph as its children (for zoom/pan).
+    const graphGroup = svg.append('g');
+    // The defs element for the entire SVG
+    // (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs).
     this.svgDefs_ = svg.append('defs');
 
     // Add an arrowhead def for every possible edge target color.
@@ -342,26 +358,43 @@ class GraphView {
         ))
         .on('dblclick.zoom', null);
 
+    // Each group here will have a collection of SVG elements as their children.
     // The order of these groups decide the SVG paint order (since we append
-    // sequentially), we want hulls below edges below nodes below labels.
-    /** @private {*} */
+    // sequentially), earlier groups will be painted below later ones.
+    /**
+     * @private {*} The convex hulls displayed around node groupings. Contains
+     * <path/> elements as children, each hull is one <path/>.
+     */
     this.hullGroup_ = graphGroup.append('g')
         .classed('graph-hull', true)
         .attr('stroke-width', 1)
         .attr('fill-opacity', 0.1);
-    /** @private {*} */
+    /**
+     * @private {*} The edges of the graph. Contains <path/> elements as
+     * children, each edge is one <path/>.
+     */
     this.edgeGroup_ = graphGroup.append('g')
         .classed('graph-edges', true)
         .attr('stroke-width', 1)
         .attr('fill', 'transparent');
-    /** @private {*} */
+    /**
+     * @private {*} The nodes of the graph. Contains <circle/> elements as
+     * children, each node is one <circle/>.
+     */
     this.nodeGroup_ = graphGroup.append('g')
         .classed('graph-nodes', true);
-    /** @private {*} */
+    /**
+     * @private {*} The labels for the convex hulls contained in
+     * `this.hullGroup_`. Contains <text/> elements as children, each hull label
+     * is one <text/>.
+     */
     this.hullLabelGroup_ = graphGroup.append('g')
         .classed('graph-hull-labels', true)
         .attr('pointer-events', 'none');
-    /** @private {*} */
+    /**
+     * @private {*} The labels for the nodes in `this.nodeGroup_`. Contains
+     * <text/> elements as children, each node label is one <text/>.
+     */
     this.labelGroup_ = graphGroup.append('g')
         .classed('graph-labels', true)
         .attr('pointer-events', 'none');
@@ -374,6 +407,8 @@ class GraphView {
     const width = parseInt(svg.style('width'), 10);
     const height = parseInt(svg.style('height'), 10);
 
+    // Initializes forces in the force-directed simulation, which will update
+    // position variables on the input data as the simulation runs.
     const centeringStrengthY = 0.07;
     const centeringStrengthX = centeringStrengthY * (height / width);
     /** @private {*} */
@@ -678,8 +713,16 @@ class GraphView {
   reheatSimulation(shouldEase) {
     let tickNum = 0;
 
-    // The simulation updates position variables in the data every tick, it's up
-    // to us to update the visualization to match.
+    /**
+     * Executed every time the simulation updates.
+     *
+     * Every tick of the simulation, we need to manually sync the visualization
+     * with the updated position variables. For more info on the position
+     * variables, see (https://github.com/d3/d3-force#simulation_nodes).
+     *
+     * Any part of the visualization that need to update on tick (e.g., node
+     * positions) should have their updates be performed in here.
+     */
     const tickActions = () => {
       this.syncEdgePaths();
       this.syncEdgeColors();
@@ -799,8 +842,6 @@ class GraphView {
             .attr('id', edge => edge.id)
             .attr('gradientUnits', 'userSpaceOnUse'));
 
-    // TODO(yjlong): Determine if we ever want to render self-loops (will need
-    // to be a loop instead of a straight line) and handle accordingly.
     this.edgeGroup_.selectAll('path')
         .data(inputEdges, edge => edge.id)
         .join(enter => enter.append('path'));
@@ -847,8 +888,6 @@ class GraphView {
                   node.fx = node.x;
                   node.fy = node.y;
                 }
-                // TODO(yjlong): Change this so the style is tied to whether the
-                // fx/fy are non-null instead of toggling it each time.
                 pageNode.classed('locked', !pageNode.classed('locked'));
               });
         },

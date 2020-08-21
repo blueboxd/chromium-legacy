@@ -268,6 +268,10 @@ void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
   resource_response_->SetIsLegacyTLSVersion(value);
 }
 
+void WebURLResponse::SetHasRangeRequested(bool value) {
+  resource_response_->SetHasRangeRequested(value);
+}
+
 void WebURLResponse::SetTimingAllowPassed(bool value) {
   resource_response_->SetTimingAllowPassed(value);
 }

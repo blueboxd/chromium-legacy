@@ -15,7 +15,8 @@
 namespace blink {
 namespace {
 
-// Arbitrarily chosen limit of 1 hour.
+// Arbitrarily chosen limit of 1 hour. Keep in sync with
+// secure_payment_confirmation_app_factory.cc.
 constexpr uint32_t kMaxTimeoutInMilliseconds = 1000 * 60 * 60;
 
 }  // namespace

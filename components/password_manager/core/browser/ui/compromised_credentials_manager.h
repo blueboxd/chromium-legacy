@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_reader.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "url/gurl.h"
@@ -96,8 +97,7 @@ struct CredentialMetadata;
 // autofill::PasswordForms. It supports an observer interface, and clients can
 // register themselves to get notified about changes to the list.
 class CompromisedCredentialsManager
-    : public PasswordStore::DatabaseCompromisedCredentialsObserver,
-      public CompromisedCredentialsConsumer,
+    : public CompromisedCredentialsReader::Observer,
       public SavedPasswordsPresenter::Observer {
  public:
   using CredentialsView = base::span<const CredentialWithPassword>;
@@ -147,12 +147,10 @@ class CompromisedCredentialsManager
   using CredentialPasswordsMap =
       std::map<CredentialView, CredentialMetadata, PasswordCredentialLess>;
 
-  // PasswordStore::DatabaseCompromisedCredentialsObserver:
-  void OnCompromisedCredentialsChanged() override;
-
-  // CompromisedCredentialsConsumer:
-  void OnGetCompromisedCredentials(
-      std::vector<CompromisedCredentials> compromised_credentials) override;
+  // CompromisedCredentialsReader::Observer:
+  void OnCompromisedCredentialsChanged(
+      const std::vector<CompromisedCredentials>& compromised_credentials)
+      override;
 
   // SavedPasswordsPresenter::Observer:
   void OnSavedPasswordsChanged(
@@ -169,6 +167,10 @@ class CompromisedCredentialsManager
   // credentials with saved passwords. Needs to outlive this instance.
   SavedPasswordsPresenter* presenter_ = nullptr;
 
+  // The reader used to read the compromised credentials from the password
+  // store.
+  CompromisedCredentialsReader compromised_credentials_reader_;
+
   // Cache of the most recently obtained compromised credentials.
   std::vector<CompromisedCredentials> compromised_credentials_;
 
@@ -176,13 +178,11 @@ class CompromisedCredentialsManager
   // create_type and combined compromise type.
   CredentialPasswordsMap credentials_to_forms_;
 
-  // A scoped observer for |store_| to listen changes related to
-  // CompromisedCredentials only.
-  ScopedObserver<PasswordStore,
-                 PasswordStore::DatabaseCompromisedCredentialsObserver,
-                 &PasswordStore::AddDatabaseCompromisedCredentialsObserver,
-                 &PasswordStore::RemoveDatabaseCompromisedCredentialsObserver>
-      observed_password_store_{this};
+  // A scoped observer for |compromised_credentials_reader_| to listen changes
+  // related to CompromisedCredentials only.
+  ScopedObserver<CompromisedCredentialsReader,
+                 CompromisedCredentialsReader::Observer>
+      observed_compromised_credentials_reader_{this};
 
   // A scoped observer for |presenter_|.
   ScopedObserver<SavedPasswordsPresenter, SavedPasswordsPresenter::Observer>

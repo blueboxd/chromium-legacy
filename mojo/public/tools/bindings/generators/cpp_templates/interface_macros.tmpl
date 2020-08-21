@@ -97,11 +97,17 @@ base::OnceCallback<void(
 {%-   endif %}
 {%- endmacro %}
 
-{%- macro build_serialized_message(message_name, param_name_prefix,
+{%- macro build_serialized_message(message_name, method, param_name_prefix,
                                    params_struct, params_description,
                                    flags_text, message_object_name) %}
+{%-   if method.unlimited_message_size %}
+  mojo::Message {{message_object_name}}(
+      {{message_name}}, {{flags_text}}, 0, 0,
+      MOJO_CREATE_MESSAGE_FLAG_UNLIMITED_SIZE, nullptr);
+{%-   else %}
   mojo::Message {{message_object_name}}(
       {{message_name}}, {{flags_text}}, 0, 0, nullptr);
+{%-   endif %}
   auto* buffer = {{message_object_name}}.payload_buffer();
   {{params_struct|get_qualified_name_for_kind(internal=True)}}::BufferWriter
       params;
@@ -160,11 +166,16 @@ class {{message_typename}}
 {%-     for param in parameters %}
           , std::move(param_{{param.name}})
 {%-     endfor %}
-          ));
+          ),
+{%-     if method.unlimited_message_size %}
+          MOJO_CREATE_MESSAGE_FLAG_UNLIMITED_SIZE);
+{%-     else %}
+          MOJO_CREATE_MESSAGE_FLAG_NONE);
+{%-     endif %}
     }
 
     DCHECK(serialize);
-    {{build_serialized_message(message_name, "param_%s", params_struct,
+    {{build_serialized_message(message_name, method, "param_%s", params_struct,
                                params_description, "kFlags", "message")}}
     return message;
   }

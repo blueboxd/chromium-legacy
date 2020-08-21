@@ -635,9 +635,7 @@ Channel::DispatchResult Channel::TryDispatchMessage(
   const Message::LegacyHeader* legacy_header =
       reinterpret_cast<const Message::LegacyHeader*>(buffer.data());
 
-  const size_t kMaxMessageSize = GetConfiguration().max_message_num_bytes;
-  if (legacy_header->num_bytes < sizeof(Message::LegacyHeader) ||
-      legacy_header->num_bytes > kMaxMessageSize) {
+  if (legacy_header->num_bytes < sizeof(Message::LegacyHeader)) {
     LOG(ERROR) << "Invalid message size: " << legacy_header->num_bytes;
     return DispatchResult::kError;
   }

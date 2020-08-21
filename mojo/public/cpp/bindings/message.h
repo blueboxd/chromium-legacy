@@ -51,8 +51,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
 
   // Constructs a new message with an unserialized context attached. This
   // message may be serialized later if necessary.
-  explicit Message(
-      std::unique_ptr<internal::UnserializedMessageContext> context);
+  Message(std::unique_ptr<internal::UnserializedMessageContext> context,
+          MojoCreateMessageFlags create_message_flags);
 
   // Constructs a new serialized Message object with optional handles attached.
   // This message is fully functional and may be exchanged for a
@@ -64,6 +64,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // Note that |payload_size| is only the initially known size of the message
   // payload, if any. The payload can be expanded after construction using the
   // interface returned by |payload_buffer()|.
+  Message(uint32_t name,
+          uint32_t flags,
+          size_t payload_size,
+          size_t payload_interface_id_count,
+          MojoCreateMessageFlags create_message_flags,
+          std::vector<ScopedHandle>* handles);
+
+  // Same as above, but the with default MojoCreateMessageFlags.
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,

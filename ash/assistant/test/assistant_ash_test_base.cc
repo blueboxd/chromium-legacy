@@ -19,6 +19,7 @@
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/test_image_downloader.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/run_loop.h"
@@ -115,27 +116,10 @@ void AssistantAshTestBase::SetUp() {
   // Make the display big enough to hold the app list.
   UpdateDisplay("1024x768");
 
-  // Enable Assistant in settings.
-  test_api_->SetAssistantEnabled(true);
-
-  // Enable screen context in settings.
-  test_api_->SetScreenContextEnabled(true);
-
-  // Set AssistantAllowedState to ALLOWED.
-  test_api_->GetAssistantState()->NotifyFeatureAllowed(
-      chromeos::assistant::AssistantAllowedState::ALLOWED);
-
-  // Set user consent so the suggestion chips are displayed.
-  SetConsentStatus(ConsentStatus::kActivityControlAccepted);
-
-  // At this point our Assistant service is ready for use.
-  // Indicate this by changing status from NOT_READY to READY.
-  test_api_->GetAssistantState()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::READY);
-
   test_api_->DisableAnimations();
-
   EnableKeyboard();
+
+  SetUpActiveUser();
 }
 
 void AssistantAshTestBase::TearDown() {
@@ -143,6 +127,30 @@ void AssistantAshTestBase::TearDown() {
   widgets_.clear();
   DisableKeyboard();
   AshTestBase::TearDown();
+}
+
+void AssistantAshTestBase::CreateAndSwitchActiveUser(
+    const std::string& display_email,
+    const std::string& given_name) {
+  TestSessionControllerClient* session_controller_client =
+      ash_test_helper()->test_session_controller_client();
+
+  session_controller_client->Reset();
+
+  session_controller_client->AddUserSession(
+      display_email, user_manager::USER_TYPE_REGULAR,
+      /*enable_settings=*/true, /*provide_pref_service=*/true,
+      /*is_new_profile=*/false, given_name);
+
+  session_controller_client->SwitchActiveUser(Shell::Get()
+                                                  ->session_controller()
+                                                  ->GetUserSession(0)
+                                                  ->user_info.account_id);
+
+  session_controller_client->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  SetUpActiveUser();
 }
 
 void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
@@ -341,6 +349,26 @@ bool AssistantAshTestBase::IsKeyboardShowing() const {
 
 TestAssistantService* AssistantAshTestBase::assistant_service() {
   return ash_test_helper()->test_assistant_service();
+}
+
+void AssistantAshTestBase::SetUpActiveUser() {
+  // Enable Assistant in settings.
+  test_api_->SetAssistantEnabled(true);
+
+  // Enable screen context in settings.
+  test_api_->SetScreenContextEnabled(true);
+
+  // Set AssistantAllowedState to ALLOWED.
+  test_api_->GetAssistantState()->NotifyFeatureAllowed(
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
+
+  // Set user consent so the suggestion chips are displayed.
+  SetConsentStatus(ConsentStatus::kActivityControlAccepted);
+
+  // At this point our Assistant service is ready for use.
+  // Indicate this by changing status from NOT_READY to READY.
+  test_api_->GetAssistantState()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
 }
 
 }  // namespace ash

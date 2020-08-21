@@ -3737,10 +3737,6 @@
       },
     },
 
-    'omaha_gtests': {
-      'updater_tests': {},
-    },
-
     'opus_tests': {
       'opus_tests': {
         'args': [
@@ -4175,6 +4171,10 @@
         'io_timeout': 14400,
         'script': 'test_traffic_annotation_auditor.py',
       },
+    },
+
+    'updater_gtests': {
+      'updater_tests': {},
     },
 
     'upload_perfetto': {
@@ -5536,6 +5536,9 @@
     # ios13-beta-sim already runs 13.x and 12.4
     'ios14_beta_simulator_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_X_14_0',
         ],
@@ -5559,6 +5562,9 @@
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_0',
           'SIM_IPHONE_X_14_0',
@@ -5569,6 +5575,9 @@
 
     'ios14_sdk_simulator_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           # 14.0 Sims
           'SIM_IPHONE_6S_14_0',
@@ -5593,6 +5602,9 @@
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           # 14.0 Sims
           'SIM_IPHONE_6S_PLUS_14_0',
@@ -5603,12 +5615,18 @@
 
     'ios_asan_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_X_13_6',
           'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_X_13_6',
           'SIM_IPAD_AIR_2_13_6',
@@ -5634,6 +5652,9 @@
 
     'ios_code_coverage_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPHONE_6S_13_6',
@@ -5660,6 +5681,9 @@
         ],
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_6S_PLUS_13_6',
           'SIM_IPHONE_6S_13_6',
@@ -5701,6 +5725,9 @@
 
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPAD_AIR_2_13_6',
         ]
@@ -5718,6 +5745,9 @@
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPAD_AIR_2_13_6',
         ]
@@ -5726,6 +5756,9 @@
 
     'ios_simulator_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPHONE_6S_13_6',
@@ -5739,6 +5772,9 @@
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_6S_PLUS_13_6',
           'SIM_IPHONE_6S_13_6',
@@ -5750,6 +5786,9 @@
 
     'ios_webkit_tot_tests': {
       'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_X_13_5',
           'SIM_IPAD_AIR_2_13_5',
@@ -5770,6 +5809,9 @@
         ]
       },
       'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
         'variants': [
           'SIM_IPHONE_X_13_5',
           'SIM_IPAD_AIR_2_13_5',

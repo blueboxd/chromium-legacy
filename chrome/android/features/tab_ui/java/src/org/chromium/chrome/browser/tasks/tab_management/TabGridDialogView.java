@@ -698,11 +698,13 @@ public class TabGridDialogView extends FrameLayout
      * Hide {@link PopupWindow} for dialog with animation.
      */
     void hideDialog() {
+        // Skip the hideDialog call caused by initializing the dialog visibility as false.
+        if (getVisibility() != VISIBLE) return;
+        assert mScrimCoordinator != null && mScrimPropertyModel != null;
         if (mCurrentDialogAnimator != null && mCurrentDialogAnimator != mHideDialogAnimation) {
             mCurrentDialogAnimator.end();
         }
         mCurrentDialogAnimator = mHideDialogAnimation;
-        if (mScrimCoordinator == null || mScrimPropertyModel == null) return;
         mScrimCoordinator.hideScrim(true);
         mHideDialogAnimation.start();
     }

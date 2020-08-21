@@ -513,6 +513,9 @@ class WebContents : public PageNavigator,
                                       bool stay_hidden) = 0;
   virtual void DecrementCapturerCount(bool stay_hidden) = 0;
   virtual bool IsBeingCaptured() = 0;
+  // Returns true if there is any active capturer that called
+  // IncrementCaptureCount() with |stay_hidden|==false.
+  virtual bool IsBeingVisiblyCaptured() = 0;
 
   // Indicates/Sets whether all audio output from this WebContents is muted.
   virtual bool IsAudioMuted() = 0;

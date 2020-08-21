@@ -34,6 +34,11 @@
   useful to reproduce test failures, the version corresponds to the commit
   position of commits on the master branch, and a list of prebuilt versions can
   be found at: gs://ash-chromium-on-linux-prebuilts/x86_64.
+
+  ./testing/xvfb.py ./build/lacros/test_runner.py test out/lacros/browser_tests
+
+  The above command starts ash-chrome with xvfb instead of an X11 window, and
+  it's useful when running tests without a display attached, such as sshing.
 """
 
 import argparse

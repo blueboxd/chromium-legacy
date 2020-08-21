@@ -657,25 +657,6 @@ TEST_F(NativeWidgetAuraTest, VisibilityOfChildBubbleWindow) {
   EXPECT_TRUE(child.IsVisible());
 }
 
-class ModalWidgetDelegate : public WidgetDelegate {
- public:
-  explicit ModalWidgetDelegate(Widget* widget) : widget_(widget) {}
-  ~ModalWidgetDelegate() override = default;
-
-  // WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-  ui::ModalType GetModalType() const override {
-    return ui::ModalType::MODAL_TYPE_WINDOW;
-  }
-
- private:
-  Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
-};
-
 // Tests that for a child transient window, if its modal type is
 // ui::MODAL_TYPE_WINDOW, then its visibility is controlled by its transient
 // parent's visibility.
@@ -695,7 +676,11 @@ TEST_F(NativeWidgetAuraTest, TransientChildModalWindowVisibility) {
   Widget::InitParams child_params(Widget::InitParams::TYPE_WINDOW);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent.GetNativeWindow();
-  child_params.delegate = new ModalWidgetDelegate(&child);
+  child_params.delegate = new WidgetDelegate;
+  child_params.delegate->RegisterDeleteDelegateCallback(
+      base::BindOnce(&base::DeletePointer<WidgetDelegate>,
+                     base::Unretained(child_params.delegate)));
+  child_params.delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
   child.Init(std::move(child_params));
   child.SetBounds(gfx::Rect(0, 0, 200, 200));
   child.Show();

@@ -95,7 +95,6 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   // WidgetDelegate:
   bool OnCloseRequested(Widget::ClosedReason close_reason) override;
   bool CanResize() const override;
-  ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetAccessibleWindowTitle() const override;
   std::string GetWindowName() const override;
@@ -169,6 +168,11 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
+  //
+  // TODO(ellyjones): Having WebDialogView implement all of WebDialogDelegate,
+  // and plumb all the calls through to |delegate_|, is a lot of code overhead
+  // to support having this view know about dialog closure. There is probably a
+  // lighter-weight way to achieve that.
   ui::WebDialogDelegate* delegate_;
 
   ObservableWebView* web_view_;

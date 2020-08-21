@@ -4732,7 +4732,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always"
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter"
         ],
         "merge": {
           "args": [],
@@ -13549,7 +13550,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always"
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter"
         ],
         "merge": {
           "args": [],

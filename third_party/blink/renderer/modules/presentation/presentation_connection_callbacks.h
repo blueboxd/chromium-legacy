@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_CALLBACKS_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink-forward.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -24,7 +26,7 @@ class ScriptPromiseResolver;
 // ControllerPresentationConnection. In the case of reconnect, the callback may
 // take an existing connection object with which the promise will be resolved
 // on success.
-class PresentationConnectionCallbacks final {
+class MODULES_EXPORT PresentationConnectionCallbacks final {
   USING_FAST_MALLOC(PresentationConnectionCallbacks);
 
  public:
@@ -37,6 +39,11 @@ class PresentationConnectionCallbacks final {
                                   mojom::blink::PresentationErrorPtr);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PresentationConnectionCallbacksTest, HandleError);
+  FRIEND_TEST_ALL_PREFIXES(PresentationConnectionCallbacksTest, HandleSuccess);
+  FRIEND_TEST_ALL_PREFIXES(PresentationConnectionCallbacksTest,
+                           HandleReconnect);
+
   void OnSuccess(const mojom::blink::PresentationInfo&,
                  mojo::PendingRemote<mojom::blink::PresentationConnection>
                      connection_remote,

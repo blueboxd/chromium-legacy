@@ -105,9 +105,14 @@ void HttpRefreshScheduler::NavigateTask() {
   request.SetInputStartTime(refresh->input_timestamp);
   request.SetClientRedirectReason(refresh->reason);
 
-  // We want a new back/forward list item if the refresh timeout is > 1 second.
   WebFrameLoadType load_type = WebFrameLoadType::kStandard;
-  if (EqualIgnoringFragmentIdentifier(document_->Url(), refresh->url)) {
+  // If the urls match, process the refresh as a reload. However, if an initial
+  // empty document has its url modified via document.open() and the refresh is
+  // to that url, it will confuse the browser process to report it as a reload
+  // in a frame where there hasn't actually been a navigation yet. Therefore,
+  // don't treat as a reload if all this frame has ever seen is empty documents.
+  if (EqualIgnoringFragmentIdentifier(document_->Url(), refresh->url) &&
+      document_->GetFrame()->Loader().HasLoadedNonEmptyDocument()) {
     request.GetResourceRequest().SetCacheMode(
         mojom::FetchCacheMode::kValidateCache);
     load_type = WebFrameLoadType::kReload;

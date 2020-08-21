@@ -686,12 +686,9 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         CriteriaHelper.pollUiThread(
                 mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();
-            layoutManager.showOverview(false);
-
-            CriteriaHelper.pollUiThread(layoutManager::overviewVisible);
-        });
+        LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> layoutManager.showOverview(false));
+        CriteriaHelper.pollUiThread(layoutManager::overviewVisible);
     }
 
     private Layout getActiveLayout() {

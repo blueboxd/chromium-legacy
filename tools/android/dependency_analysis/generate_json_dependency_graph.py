@@ -98,7 +98,9 @@ def _run_command(command: List[str]) -> str:
                                     text=True,
                                     check=True)
     except subprocess.CalledProcessError as e:
-        print(f'{command} failed with error:\n{e.output}', file=sys.stderr)
+        print(f'{command} failed with code {e.returncode}.', file=sys.stderr)
+        print(f'\nSTDERR:\n{e.stderr}', file=sys.stderr)
+        print(f'\nSTDOUT:\n{e.stdout}', file=sys.stderr)
         raise
     return run_result.stdout
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -33,7 +34,26 @@ class SecurePaymentConfirmationTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, PaymentSheetShowsApp) {
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoAuthenticator) {
+  test_controller()->SetHasAuthenticator(false);
+  NavigateTo("a.com", "/payment_handler_status.html");
+
+  // EvalJs waits for JavaScript promise to resolve.
+  EXPECT_EQ(
+      "The payment method \"secure-payment-confirmation\" is not supported.",
+      content::EvalJs(GetActiveWebContents(), kInvokePaymentRequest));
+}
+
+#if defined(OS_ANDROID)
+// TODO(https://crbug.com/1110320): Implement SetHasAuthenticator() for Android,
+// so this behavior can be tested on Android as well.
+#define MAYBE_PaymentSheetShowsApp DISABLED_PaymentSheetShowsApp
+#else
+#define MAYBE_PaymentSheetShowsApp PaymentSheetShowsApp
+#endif  // OS_ANDROID
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
+                       MAYBE_PaymentSheetShowsApp) {
+  test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/payment_handler_status.html");
   ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
 
@@ -54,6 +74,7 @@ class SecurePaymentConfirmationDisabledTest
 
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDisabledTest,
                        PaymentMethodNotSupported) {
+  test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/payment_handler_status.html");
 
   // EvalJs waits for JavaScript promise to resolve.

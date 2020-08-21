@@ -68,7 +68,11 @@
         <div class="routine-container">
           <div class="routine-name">[[i18n(routine.name)]]</div>
           <div class="routine-content">
-            <span class="routine-result">[[routine.resultMsg]]</span>
+            <div class="routine-result">
+              <span class="routine-verdict">[[routine.verdict]]</span>
+              <span hidden="[[!routine.errorMsg]]">: </span>
+              <span class="routine-errormsg">[[routine.errorMsg]]</span>
+            </div>
 
             <template is="dom-if" if="[[routine.running]]">
               <paper-spinner-lite active></paper-spinner-lite>

@@ -33,8 +33,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -72,7 +73,12 @@ import java.util.Map;
  */
 // This isn't part of Chrome, so using explicit colors/sizes is ok.
 @SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
-public class WebLayerShellActivity extends FragmentActivity {
+public class WebLayerShellActivity extends AppCompatActivity {
+    public static void setDarkMode(boolean enabled) {
+        AppCompatDelegate.setDefaultNightMode(
+                enabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+    }
+
     private static final String NON_INCOGNITO_PROFILE_NAME = "DefaultProfile";
     private static final String EXTRA_WEBVIEW_COMPAT = "EXTRA_WEBVIEW_COMPAT";
 
@@ -152,6 +158,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private int mTopViewMinHeight;
     private boolean mTopViewPinnedToContentTop;
     private boolean mAnimateControlsChanges;
+    private boolean mSetDarkMode;
     private boolean mInIncognitoMode;
     private boolean mEnableWebViewCompat;
     private boolean mEnableAltTopView;
@@ -159,6 +166,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mSetDarkMode = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES;
         mEnableWebViewCompat = getIntent().getBooleanExtra(EXTRA_WEBVIEW_COMPAT, false);
         if (mEnableWebViewCompat) {
             WebLayer.initializeWebViewCompatibilityMode(getApplicationContext());
@@ -282,6 +291,8 @@ public class WebLayerShellActivity extends FragmentActivity {
         popup.getMenu()
                 .findItem(R.id.toggle_controls_animations_id)
                 .setChecked(mAnimateControlsChanges);
+        popup.getMenu().findItem(R.id.toggle_dark_mode).setChecked(mSetDarkMode);
+
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.toggle_top_view_id) {
                 mIsTopViewVisible = !mIsTopViewVisible;
@@ -320,6 +331,12 @@ public class WebLayerShellActivity extends FragmentActivity {
             if (item.getItemId() == R.id.toggle_controls_animations_id) {
                 mAnimateControlsChanges = !mAnimateControlsChanges;
                 updateTopView();
+                return true;
+            }
+
+            if (item.getItemId() == R.id.toggle_dark_mode) {
+                mSetDarkMode = !mSetDarkMode;
+                setDarkMode(mSetDarkMode);
                 return true;
             }
 

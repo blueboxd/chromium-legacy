@@ -82,7 +82,8 @@ class TestSessionControllerClient : public SessionControllerClient {
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR,
       bool enable_settings = true,
       bool provide_pref_service = true,
-      bool is_new_profile = false);
+      bool is_new_profile = false,
+      const std::string& given_name = std::string());
 
   // Creates a test PrefService and associates it with the user.
   void ProvidePrefServiceForUser(const AccountId& account_id);

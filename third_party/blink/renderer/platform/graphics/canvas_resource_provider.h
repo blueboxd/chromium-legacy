@@ -85,41 +85,49 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // TODO(juanmihd@ bug/1078518) Check whether SkFilterQuality is needed in all
   // these Create methods below, or just call setFilterQuality explicitly.
 
+  // Used to determine if the provider is going to be initialized or not,
+  // ignored by PassThrough
+  enum class ShouldInitialize { kNo, kCallClear };
+
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
-      const IntSize&,
-      SkFilterQuality,
-      const CanvasColorParams&);
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
+      ShouldInitialize initialize_provider);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedBitmapProvider(
-      const IntSize&,
-      SkFilterQuality,
-      const CanvasColorParams&,
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
+      ShouldInitialize initialize_provider,
       base::WeakPtr<CanvasResourceDispatcher>);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
-      const IntSize&,
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
+      ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      SkFilterQuality,
-      const CanvasColorParams&,
-      bool is_origin_top_left,
       RasterMode raster_mode,
+      bool is_origin_top_left,
       uint32_t shared_image_usage_flags);
 
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
-      const IntSize&,
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      SkFilterQuality,
-      const CanvasColorParams&,
-      bool is_origin_top_left,
-      base::WeakPtr<CanvasResourceDispatcher>);
+      base::WeakPtr<CanvasResourceDispatcher>,
+      bool is_origin_top_left);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSwapChainProvider(
-      const IntSize&,
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
+      ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      SkFilterQuality,
-      const CanvasColorParams&,
-      bool is_origin_top_left,
-      base::WeakPtr<CanvasResourceDispatcher>);
+      base::WeakPtr<CanvasResourceDispatcher>,
+      bool is_origin_top_left);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a

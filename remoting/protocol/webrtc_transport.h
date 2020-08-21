@@ -69,6 +69,10 @@ class WebrtcTransport : public Transport,
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
     virtual void OnWebrtcTransportMediaStreamRemoved(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
+
+    // Called when the transport route changes (for example, from relayed to
+    // direct connection). Also called on initial connection.
+    virtual void OnWebrtcTransportRouteChanged(const TransportRoute& route) = 0;
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,
@@ -159,6 +163,8 @@ class WebrtcTransport : public Transport,
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+  void OnIceSelectedCandidatePairChanged(
+      const cricket::CandidatePairChangeEvent& event);
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 

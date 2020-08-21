@@ -495,8 +495,10 @@ class GenXproto(FileWriter):
         if field.type.is_list:
             len_name = field_name + '_len'
             if not self.field_from_scope(len_name):
-                self.write('size_t %s = %s;' %
-                           (len_name, list_size(field_name, field.type)))
+                len_expr = list_size(field_name, field.type)
+                if field.type.is_ref_counted_memory:
+                    len_expr = '%s ? %s : 0' % (field_name, len_expr)
+                self.write('size_t %s = %s;' % (len_name, len_expr))
 
         return 1
 

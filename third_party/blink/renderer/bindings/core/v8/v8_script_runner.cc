@@ -354,7 +354,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
 
     // ToCoreString here should be zero copy due to externalized string
     // unpacked.
-    probe::ExecuteScript probe(context, ToCoreString(script_url));
+    probe::ExecuteScript probe(context, ToCoreString(script_url),
+                               script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
   }
 

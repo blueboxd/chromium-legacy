@@ -980,7 +980,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
       barrier_callback->OnError("Vary header contains *");
       return promise;
     }
-    if (responses[i]->status() == 206) {
+    if (responses[i]->GetResponse()->InternalStatus() == 206) {
       barrier_callback->OnError(
           "Partial response (status code 206) is unsupported");
       return promise;

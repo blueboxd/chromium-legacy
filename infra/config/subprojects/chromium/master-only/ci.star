@@ -1616,19 +1616,84 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "mac-omaha-builder-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "bld",
+    ),
+    os = os.MAC_ANY,
+    cpu = cpu.X86_64,
+    builderless = True,
+)
+
+ci.fyi_builder(
+    name = "mac10.10-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.10",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac10.11-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.11",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac10.12-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.12",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac10.13-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.13",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac10.14-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.14",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "mac10.15-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "updater|mac",
+        short_name = "10.15",
+    ),
+    triggered_by = ["mac-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
     name = "win-omaha-builder-rel",
     console_view_entry = ci.console_view_entry(
-        category = "omaha|win",
+        category = "updater|win",
         short_name = "bld",
     ),
     os = os.WINDOWS_DEFAULT,
-    cpu = cpu.X86_64,
+    cpu = cpu.X86,
 )
 
 ci.fyi_builder(
     name = "win7-omaha-tester-rel",
     console_view_entry = ci.console_view_entry(
-        category = "omaha|win",
+        category = "updater|win",
         short_name = "7",
     ),
     triggered_by = ["win-omaha-builder-rel"],
@@ -1637,7 +1702,7 @@ ci.fyi_builder(
 ci.fyi_builder(
     name = "win10-omaha-tester-rel",
     console_view_entry = ci.console_view_entry(
-        category = "omaha|win",
+        category = "updater|win",
         short_name = "10",
     ),
     os = os.WINDOWS_10,

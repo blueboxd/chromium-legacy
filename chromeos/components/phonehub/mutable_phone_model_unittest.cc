@@ -71,5 +71,28 @@ TEST_F(MutablePhoneModelTest, PhoneStatusModel) {
   EXPECT_EQ(2u, GetNumObserverCalls());
 }
 
+TEST_F(MutablePhoneModelTest, BrowserTabsModel) {
+  // Set the BrowserTabsModel to be null (the default value); observers should
+  // not be notified, since this is not a change.
+  model_.SetBrowserTabsModel(/*browser_tabs_model=*/base::nullopt);
+  EXPECT_FALSE(model_.browser_tabs_model().has_value());
+  EXPECT_EQ(0u, GetNumObserverCalls());
+
+  // Set the BrowserTabsModel; observers should be notified.
+  model_.SetBrowserTabsModel(CreateFakeBrowserTabsModel());
+  EXPECT_EQ(CreateFakeBrowserTabsModel(), model_.browser_tabs_model());
+  EXPECT_EQ(1u, GetNumObserverCalls());
+
+  // Set the same BrowserTabsModel; observers should not be notified.
+  model_.SetBrowserTabsModel(CreateFakeBrowserTabsModel());
+  EXPECT_EQ(CreateFakeBrowserTabsModel(), model_.browser_tabs_model());
+  EXPECT_EQ(1u, GetNumObserverCalls());
+
+  // Set the BrowserTabsModel back to null; observers should be notified.
+  model_.SetBrowserTabsModel(/*browser_tabs_model=*/base::nullopt);
+  EXPECT_FALSE(model_.browser_tabs_model().has_value());
+  EXPECT_EQ(2u, GetNumObserverCalls());
+}
+
 }  // namespace phonehub
 }  // namespace chromeos

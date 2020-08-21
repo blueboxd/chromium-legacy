@@ -13,7 +13,7 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
-#include "chrome/browser/ui/webui/nearby_share/nearby_share_target_types.mojom.h"
+#include "chrome/services/sharing/public/mojom/nearby_share_target_types.mojom.h"
 #include "url/gurl.h"
 
 // A remote device.

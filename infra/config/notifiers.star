@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("//lib/branches.star", "branches")
+
 luci.notifier(
     name = "chromesec-lkgr-failures",
     on_status_change = True,
@@ -48,23 +50,48 @@ TREE_CLOSING_STEPS = [
     "update",
 ]
 
-luci.tree_closer(
+# This results in a notifier with no recipients, so nothing will actually be
+# notified. This still creates a "notifiable" that can be passed to the notifies
+# argument of a builder, so conditional logic doesn't need to be used when
+# setting the argument and erroneous tree closure notifications won't be sent
+# for failures on branches.
+def _empty_notifier(*, name):
+    luci.notifier(
+        name = name,
+        on_new_status = ["INFRA_FAILURE"],
+    )
+
+def tree_closer(*, name, tree_status_host, **kwargs):
+    if branches.matches(branches.MAIN_ONLY):
+        luci.tree_closer(
+            name = name,
+            tree_status_host = tree_status_host,
+            **kwargs
+        )
+    else:
+        _empty_notifier(name = name)
+
+tree_closer(
     name = "chromium-tree-closer",
     tree_status_host = "chromium-status.appspot.com",
     failed_step_regexp = TREE_CLOSING_STEPS,
 )
 
-luci.tree_closer(
+tree_closer(
     name = "close-on-any-step-failure",
     tree_status_host = "chromium-status.appspot.com",
 )
 
-def tree_closure_notifier(**kwargs):
-    return luci.notifier(
-        on_occurrence = ["FAILURE"],
-        failed_step_regexp = TREE_CLOSING_STEPS,
-        **kwargs
-    )
+def tree_closure_notifier(*, name, **kwargs):
+    if branches.matches(branches.MAIN_ONLY):
+        luci.notifier(
+            name = name,
+            on_occurrence = ["FAILURE"],
+            failed_step_regexp = TREE_CLOSING_STEPS,
+            **kwargs
+        )
+    else:
+        _empty_notifier(name = name)
 
 tree_closure_notifier(
     name = "chromium-tree-closer-email",

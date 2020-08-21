@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -25,7 +26,10 @@ class SoundPlayer {
   // |sound_key| so the Stop() function can later identify which sound should be
   // stopped. If |repeat| is true, the sound is repeated until Stop() is called
   // with the same |sound_key| or another sound is played.
-  virtual void Play(int sound_key, int resource_id, bool repeat) = 0;
+  virtual void Play(int sound_key,
+                    int resource_id,
+                    bool repeat,
+                    AudioContentType content_type) = 0;
 
   // Plays the sound using the provided |audio_data|.
   // Once played, audio data is registered with a |sound_key| so the Stop()
@@ -34,14 +38,16 @@ class SoundPlayer {
   // |sound_key| or another sound is played.
   virtual void PlayAudioData(int sound_key,
                              scoped_refptr<AudioData> audio_data,
-                             bool repeat) = 0;
+                             bool repeat,
+                             AudioContentType content_type) = 0;
 
   // Plays the sound resource with |resource_id| starting at |timestamp|.
   // Any sound that is currently playing is stopped immediately.
   // If |audio_channel| is kLeft or kRight, only that channel is played.
   virtual void PlayAtTime(int resource_id,
                           int64_t timestamp,
-                          media::AudioChannel audio_channel) = 0;
+                          media::AudioChannel audio_channel,
+                          AudioContentType content_type) = 0;
 
   // Stops playing the sound resource with |resource_id| if it is currently
   // playing.

@@ -28,9 +28,7 @@ x11::Future<x11::GetPropertyReply> GetWorkspace() {
 }  // namespace
 
 X11WorkspaceHandler::X11WorkspaceHandler(Delegate* delegate)
-    : xdisplay_(gfx::GetXDisplay()),
-      x_root_window_(ui::GetX11RootWindow()),
-      delegate_(delegate) {
+    : x_root_window_(ui::GetX11RootWindow()), delegate_(delegate) {
   DCHECK(delegate_);
   if (ui::X11EventSource::HasInstance())
     ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);

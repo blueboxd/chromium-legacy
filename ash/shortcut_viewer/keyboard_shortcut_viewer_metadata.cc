@@ -1448,16 +1448,15 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
             // highlighted "+" sign between the bubble views and the rest of the
             // text.
             if (!item.shortcut_key_codes.empty())
-              item.shortcut_key_codes.emplace_back(ui::VKEY_UNKNOWN);
-            item.shortcut_key_codes.emplace_back(
-                GetKeyCodeForModifier(modifier));
+              item.shortcut_key_codes.push_back(ui::VKEY_UNKNOWN);
+            item.shortcut_key_codes.push_back(GetKeyCodeForModifier(modifier));
           }
         }
         // For non grouped accelerators, we need to populate the key as well.
         if (item.accelerator_ids.size() == 1) {
           if (!item.shortcut_key_codes.empty())
-            item.shortcut_key_codes.emplace_back(ui::VKEY_UNKNOWN);
-          item.shortcut_key_codes.emplace_back(accelerator_id.keycode);
+            item.shortcut_key_codes.push_back(ui::VKEY_UNKNOWN);
+          item.shortcut_key_codes.push_back(accelerator_id.keycode);
         }
       }
     }

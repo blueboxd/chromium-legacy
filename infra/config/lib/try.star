@@ -19,8 +19,9 @@ to set the default value. Can also be accessed through `try_.defaults`.
 
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys")
-load("./builders.star", "builders")
 load("./args.star", "args")
+load("./branches.star", "branches")
+load("./builders.star", "builders")
 
 DEFAULT_EXCLUDE_REGEXPS = [
     # Contains documentation that doesn't affect the outputs
@@ -37,7 +38,10 @@ defaults = args.defaults(
     main_list_view = None,
 )
 
-def declare_bucket(milestone_vars):
+def declare_bucket(milestone_vars, *, branch_selector = branches.MAIN_ONLY):
+    if not branches.matches(branch_selector):
+        return
+
     luci.bucket(
         name = milestone_vars.try_bucket,
         acls = [
@@ -88,6 +92,7 @@ def declare_bucket(milestone_vars):
 
     try_.list_view(
         name = milestone_vars.main_list_view_name,
+        branch_selector = branch_selector,
         title = milestone_vars.main_list_view_title,
     )
 
@@ -146,8 +151,11 @@ def _sort_console_entries(ctx):
 
 lucicfg.generator(_sort_console_entries)
 
-def list_view(*, name, **kwargs):
-    ret = luci.list_view(
+def list_view(*, name, branch_selector = branches.MAIN_ONLY, **kwargs):
+    if not branches.matches(branch_selector):
+        return
+
+    luci.list_view(
         name = name,
         **kwargs
     )
@@ -155,8 +163,6 @@ def list_view(*, name, **kwargs):
     _sorted_list_view(
         console_name = name,
     )
-
-    return ret
 
 def tryjob(
         *,
@@ -194,6 +200,7 @@ def tryjob(
 def try_builder(
         *,
         name,
+        branch_selector = branches.MAIN_ONLY,
         add_to_list_view = args.DEFAULT,
         cq_group = args.DEFAULT,
         list_view = args.DEFAULT,
@@ -204,6 +211,9 @@ def try_builder(
 
     Arguments:
       name - name of the builder, will show up in UIs and logs. Required.
+      branch_selector - A branch selector value controlling whether the
+        builder definition is executed. See branches.star for more
+        information.
       add_to_list_view - A bool indicating whether an entry should be
         created for the builder in the console identified by
         `list_view`. Supports a module-level default that defaults to
@@ -221,11 +231,14 @@ def try_builder(
       tryjob - A struct containing the details of the tryjob verifier for the
         builder, obtained by calling the `tryjob` function.
     """
+    if not branches.matches(branch_selector):
+        return
 
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
-    ret = builders.builder(
+    builders.builder(
         name = name,
+        branch_selector = branch_selector,
         resultdb_bigquery_exports = [resultdb.export_test_results(
             bq_table = "luci-resultdb.chromium.try_test_results",
         )],
@@ -280,8 +293,6 @@ def try_builder(
             builder = builder,
             list_view = main_list_view,
         )
-
-    return ret
 
 def blink_builder(*, name, goma_backend = None, **kwargs):
     return try_builder(

@@ -17,6 +17,7 @@
 #include "printing/pdf_render_settings.h"
 #include "printing/units.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chrome_pdf {
 
@@ -66,7 +67,7 @@ void CheckPdfRendering(const std::vector<uint8_t>& pdf_data,
       printing::ConvertUnit(size_in_points.height, printing::kPointsPerInch,
                             printing::kDefaultPdfDpi);
 
-  const pp::Rect page_rect(width_in_pixels, height_in_pixels);
+  const gfx::Rect page_rect(width_in_pixels, height_in_pixels);
   std::vector<uint8_t> page_bitmap_data(kColorChannels * page_rect.width() *
                                         page_rect.height());
 

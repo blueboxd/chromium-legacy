@@ -243,10 +243,10 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
               &CreateSyntheticCrashReportForUte,
               cache_dir_path.Append(FILE_PATH_LITERAL("Breakpad")),
               base::SysNSStringToUTF8(info_dict[@"BreakpadProductDisplay"]),
-              base::SysNSStringToUTF8(info_dict[@"BreakpadVersion"]),
               // Separate product makes throttling on the server easier.
               base::SysNSStringToUTF8([NSString
                   stringWithFormat:@"%@_UTE", info_dict[@"BreakpadProduct"]]),
+              base::SysNSStringToUTF8(info_dict[@"BreakpadVersion"]),
               base::SysNSStringToUTF8(info_dict[@"BreakpadURL"])));
     }
   }

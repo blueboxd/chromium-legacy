@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
@@ -83,7 +84,8 @@ GURL GetInlineLoginUrl(const std::string& email,
   }
   // User type is Child.
   if (!features::IsEduCoexistenceEnabled() ||
-      source == InlineLoginDialogChromeOS::Source::kArc) {
+      (!arc::IsSecondaryAccountForChildEnabled() &&
+       source == InlineLoginDialogChromeOS::Source::kArc)) {
     return GURL(chrome::kChromeUIAccountManagerErrorURL);
   }
   return GetUrlWithEmailParam(chrome::kChromeUIEDUCoexistenceLoginURL, email);

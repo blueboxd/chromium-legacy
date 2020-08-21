@@ -13,6 +13,8 @@
 // #import {TestProfileInfoBrowserProxy} from 'chrome://test/settings/test_profile_info_browser_proxy.m.js';
 // #import {TestSyncBrowserProxy} from './test_os_sync_browser_proxy.m.js';
 // #import {FakeQuickUnlockPrivate} from './fake_quick_unlock_private.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 // clang-format on
 
@@ -116,6 +118,7 @@ cr.define('settings_people_page', function() {
 
     teardown(function() {
       peoplePage.remove();
+      settings.Router.getInstance().resetRouteForTesting();
     });
 
     test('Profile name and picture, account manager disabled', async () => {
@@ -172,6 +175,53 @@ cr.define('settings_people_page', function() {
 
       // Setup button is shown and enabled.
       assert(peoplePage.$$('settings-parental-controls-page'));
+    });
+
+    test('Deep link to parental controls page', async () => {
+      loadTimeData.overrideValues({
+        // Simulate parental controls.
+        showParentalControls: true,
+        isDeepLinkingEnabled: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '315');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.OS_PEOPLE, params);
+
+      const deepLinkElement =
+          peoplePage.$$('settings-parental-controls-page').$$('#setupButton');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Setup button should be focused for settingId=315.');
+    });
+
+    test('Deep link to guest browing on users page', async () => {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '305');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.ACCOUNTS, params);
+
+      Polymer.dom.flush();
+
+      await test_util.waitAfterNextRender(peoplePage);
+      assertEquals(
+          peoplePage.$$('settings-users-page')
+              .$$('#allowGuestBrowsing')
+              .$$('cr-toggle'),
+          getDeepActiveElement(),
+          'Allow guest browsing should be focused for settingId=305.');
     });
 
     test('GAIA name and picture, account manager enabled', async () => {

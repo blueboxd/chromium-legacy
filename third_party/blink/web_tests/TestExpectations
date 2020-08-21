@@ -2631,6 +2631,9 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
@@ -6469,9 +6472,6 @@ crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-doubl
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-3.html [ Failure ]
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-to-different-origin-frame.html [ Failure ]
 
-# Flaky timeout in the Debug build
-crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-x-interpolation.html [ Pass Timeout ]
-
 # Sheriff 2020-05-29
 crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
 crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]
@@ -6692,9 +6692,6 @@ crbug.com/1111932 virtual/dark-color-scheme/fast/forms/color-scheme/suggestion-p
 # Sheriff 2020-08-11
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
 crbug.com/1046784 http/tests/devtools/network/network-content-replacement-xhr.js [ Pass Failure ]
-
-# Sheriff 2020-08-14
-crbug.com/1116681 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ Pass Failure ]
 
 # Sheriff 2020-08-17
 crbug.com/1069546 [ Mac ] compositing/layer-creation/overflow-scroll-overlap.html [ Pass Failure ]

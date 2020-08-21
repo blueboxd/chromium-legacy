@@ -40,12 +40,6 @@ class X11MenuRegistrar : public ui::XEventDispatcher {
   // managed by Chrome.
   void OnWindowCreatedOrDestroyed(bool created, x11::Window window);
 
-  // The display and the native X window hosting the root window.
-  XDisplay* xdisplay_;
-
-  // The native root window.
-  x11::Window x_root_window_;
-
   // Events selected on |x_root_window_|.
   std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
 };

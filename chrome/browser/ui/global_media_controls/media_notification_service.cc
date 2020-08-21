@@ -21,6 +21,7 @@
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/media_session_notification_item.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/media_session_service.h"
 #include "media/base/media_switches.h"
@@ -714,7 +715,8 @@ std::unique_ptr<
 MediaNotificationService::RegisterAudioOutputDeviceDescriptionsCallback(
     MediaNotificationDeviceProvider::GetOutputDevicesCallback callback) {
   if (!device_provider_)
-    device_provider_ = std::make_unique<MediaNotificationDeviceProviderImpl>();
+    device_provider_ = std::make_unique<MediaNotificationDeviceProviderImpl>(
+        content::CreateAudioSystemForAudioService());
   return device_provider_->RegisterOutputDeviceDescriptionsCallback(
       std::move(callback));
 }

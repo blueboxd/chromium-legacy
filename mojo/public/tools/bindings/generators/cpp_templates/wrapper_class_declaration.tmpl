@@ -86,7 +86,8 @@ class {{export_attribute}} {{struct.name}} {
   static mojo::Message WrapAsMessage(UserType input) {
     return mojo::Message(std::make_unique<
         internal::{{struct.name}}_UnserializedMessageContext<
-            UserType, {{struct.name}}::DataView>>(0, 0, std::move(input)));
+            UserType, {{struct.name}}::DataView>>(0, 0, std::move(input)),
+        MOJO_CREATE_MESSAGE_FLAG_NONE);
   }
 
   template <typename UserType>

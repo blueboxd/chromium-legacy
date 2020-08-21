@@ -75,55 +75,5 @@ enum ControlPart {
   kTextAreaPart,
 };
 
-enum SelectionPart { kSelectionBackground, kSelectionForeground };
-
-enum ThemeFont {
-  kCaptionFont,
-  kIconFont,
-  kMenuFont,
-  kMessageBoxFont,
-  kSmallCaptionFont,
-  kStatusBarFont,
-  kMiniControlFont,
-  kSmallControlFont,
-  kControlFont
-};
-
-enum ThemeColor {
-  kActiveBorderColor,
-  kActiveCaptionColor,
-  kAppWorkspaceColor,
-  kBackgroundColor,
-  kButtonFaceColor,
-  kButtonHighlightColor,
-  kButtonShadowColor,
-  kButtonTextColor,
-  kCaptionTextColor,
-  kGrayTextColor,
-  kHighlightColor,
-  kHighlightTextColor,
-  kInactiveBorderColor,
-  kInactiveCaptionColor,
-  kInactiveCaptionTextColor,
-  kInfoBackgroundColor,
-  kInfoTextColor,
-  kMatchColor,
-  kMenuTextColor,
-  kScrollbarColor,
-  kThreeDDarkDhasowColor,
-  kThreeDFaceColor,
-  kThreeDHighlightColor,
-  kThreeDLightShadowColor,
-  kThreeDShadowCLor,
-  kWindowColor,
-  kWindowFrameColor,
-  kWindowTextColor,
-  kFocusRingColor,
-  kActiveListBoxSelection,
-  kActiveListBoxSelectionText,
-  kInactiveListBoxSelection,
-  kInactiveListBoxSelectionText
-};
-
 }  // namespace blink
 #endif

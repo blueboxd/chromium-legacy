@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_SEARCH_BUTTON_H_
 
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
+#include "ui/views/controls/button/menu_button_controller.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
 class Canvas;
@@ -13,6 +15,7 @@ class Canvas;
 
 namespace views {
 class ButtonListener;
+class Widget;
 }
 
 class TabStrip;
@@ -24,16 +27,37 @@ class TabStrip;
 //
 // TODO(tluk): Break away common code from the NewTabButton and the
 // TabSearchButton into a TabStripControlButton or similar.
-class TabSearchButton : public NewTabButton {
+class TabSearchButton : public NewTabButton,
+                        public views::ButtonListener,
+                        public views::WidgetObserver {
  public:
   TabSearchButton(TabStrip* tab_strip, views::ButtonListener* listener);
   TabSearchButton(const TabSearchButton&) = delete;
   TabSearchButton& operator=(const TabSearchButton&) = delete;
-  ~TabSearchButton() override = default;
+  ~TabSearchButton() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
 
  protected:
   // NewTabButton:
   void PaintIcon(gfx::Canvas* canvas) override;
+
+ private:
+  views::MenuButtonController* menu_button_controller_ = nullptr;
+
+  // A lock to keep the TabSearchButton pressed while |bubble_| is showing or
+  // in the process of being shown.
+  std::unique_ptr<views::MenuButtonController::PressedLock> pressed_lock_;
+
+  // |bubble_| is non-null while the tab search bubble is active.
+  views::Widget* bubble_ = nullptr;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> observed_bubble_widget_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_SEARCH_BUTTON_H_

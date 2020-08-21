@@ -665,9 +665,9 @@ class PolicyTemplateChecker(object):
                 'policy', policy.get('name', policy))
 
       # All user policies must have a per_profile feature flag.
-      if (not policy.get('device_only', False) and
-          not policy.get('deprecated', False) and
-          not filter(re.compile('^chrome_frame:.*').match, supported_on)):
+      if (not policy.get('device_only', False)
+          and not policy.get('deprecated', False)
+          and not 'chrome_frame' in supported_platforms):
         self._CheckContains(
             features,
             'per_profile',

@@ -234,6 +234,17 @@ void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamRemoved(
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+void WebrtcConnectionToClient::OnWebrtcTransportRouteChanged(
+    const TransportRoute& route) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(event_handler_);
+
+  // WebRTC route-change events are triggered at the transport level, so the
+  // channel name is not meaningful here.
+  std::string channel_name;
+  event_handler_->OnRouteChange(channel_name, route);
+}
+
 void WebrtcConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   DCHECK(thread_checker_.CalledOnValidThread());

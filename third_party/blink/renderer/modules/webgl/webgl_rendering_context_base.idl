@@ -563,7 +563,7 @@ interface mixin WebGLRenderingContextBase {
 
     DOMString?   getShaderSource(WebGLShader shader);
 
-    [HighEntropy, Measure] sequence<DOMString>? getSupportedExtensions();
+    [HighEntropy=Direct, Measure] sequence<DOMString>? getSupportedExtensions();
 
     [CallWith=ScriptState] any getTexParameter(GLenum target, GLenum pname);
 

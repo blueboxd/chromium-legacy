@@ -52,9 +52,9 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
       policies = '<dict/>'
 
     return '''<?xml version="1.0" ?>
-<managedAppConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/com.google.chrome/appconfig/appconfig.xsd">
+<managedAppConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/com.google.chrome.ios/appconfig/appconfig.xsd">
   <version>%s</version>
-  <bundleId>com.google.chrome</bundleId>
+  <bundleId>com.google.chrome.ios</bundleId>
   %s
 </managedAppConfiguration>''' % (version, policies)
 

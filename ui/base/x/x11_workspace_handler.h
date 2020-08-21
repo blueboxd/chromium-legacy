@@ -45,9 +45,6 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
 
   void OnWorkspaceResponse(x11::GetPropertyResponse response);
 
-  // The display and the native X window hosting the root window.
-  XDisplay* xdisplay_;
-
   // The native root window.
   x11::Window x_root_window_;
 

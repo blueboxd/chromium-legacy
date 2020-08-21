@@ -32,6 +32,7 @@ if (enable_pdf) {
     deps = [
       ":internal",
       "//base",
+      "//ui/gfx/geometry",
     ]
   }
 

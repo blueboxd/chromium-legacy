@@ -358,7 +358,8 @@ void FrameLoader::DidExplicitOpen() {
   // Calling document.open counts as committing the first real document load.
   if (!state_machine_.CommittedFirstRealDocumentLoad())
     state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
-  has_loaded_non_empty_document_ = true;
+  if (empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty)
+    empty_document_status_ = EmptyDocumentStatus::kOnlyEmptyButExplicitlyOpened;
 
   // Only model a document.open() as part of a navigation if its parent is not
   // done or in the process of completing.
@@ -510,8 +511,10 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   // both in the renderer and in the browser.
   if (frame_load_type == WebFrameLoadType::kStandard ||
       frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
-    if (frame_->Tree().Parent() && !has_loaded_non_empty_document_)
+    if (frame_->Tree().Parent() &&
+        empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty) {
       return WebFrameLoadType::kReplaceCurrentItem;
+    }
     if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
       if (Opener() && url.IsEmpty())
         return WebFrameLoadType::kReplaceCurrentItem;
@@ -1036,7 +1039,7 @@ void FrameLoader::CommitNavigation(
   tls_version_warning_origins_.clear();
 
   if (!DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url))
-    has_loaded_non_empty_document_ = true;
+    empty_document_status_ = EmptyDocumentStatus::kNonEmpty;
 
   // TODO(dgozman): navigation type should probably be passed by the caller.
   // It seems incorrect to pass |false| for |have_event| and then use

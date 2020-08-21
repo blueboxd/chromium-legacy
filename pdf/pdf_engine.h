@@ -23,12 +23,12 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/private/pdf.h"
-#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var_array.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -53,6 +53,7 @@ class Vector2d;
 
 namespace pp {
 class InputEvent;
+class Rect;
 class VarDictionary;
 }  // namespace pp
 
@@ -406,7 +407,7 @@ class PDFEngine {
   // Gets the rectangle of the page not including the shadow.
   virtual pp::Rect GetPageBoundsRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.
-  virtual pp::Rect GetPageContentsRect(int index) = 0;
+  virtual gfx::Rect GetPageContentsRect(int index) = 0;
   // Returns a page's rect in screen coordinates, as well as its surrounding
   // border areas and bottom separator.
   virtual pp::Rect GetPageScreenRect(int page_index) const = 0;
@@ -497,7 +498,7 @@ class PDFEngineExports {
   struct RenderingSettings {
     RenderingSettings(int dpi_x,
                       int dpi_y,
-                      const pp::Rect& bounds,
+                      const gfx::Rect& bounds,
                       bool fit_to_bounds,
                       bool stretch_to_bounds,
                       bool keep_aspect_ratio,
@@ -508,7 +509,7 @@ class PDFEngineExports {
 
     int dpi_x;
     int dpi_y;
-    pp::Rect bounds;
+    gfx::Rect bounds;
     bool fit_to_bounds;
     bool stretch_to_bounds;
     bool keep_aspect_ratio;

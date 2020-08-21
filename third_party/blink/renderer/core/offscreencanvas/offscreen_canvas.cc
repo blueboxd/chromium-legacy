@@ -379,16 +379,18 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
 
   if (can_use_gpu) {
     provider = CanvasResourceProvider::CreateSharedImageProvider(
-        surface_size, SharedGpuContext::ContextProviderWrapper(),
-        FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
-        RasterMode::kGPU, shared_image_usage_flags);
+        surface_size, FilterQuality(), context_->ColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear,
+        SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
+        false /*is_origin_top_left*/, shared_image_usage_flags);
   } else if (HasPlaceholderCanvas() && composited_mode) {
     // Only try a SoftwareComposited SharedImage if the context has Placeholder
     // canvas and the composited mode is enabled.
     provider = CanvasResourceProvider::CreateSharedImageProvider(
-        surface_size, SharedGpuContext::ContextProviderWrapper(),
-        FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
-        RasterMode::kCPU, shared_image_usage_flags);
+        surface_size, FilterQuality(), context_->ColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear,
+        SharedGpuContext::ContextProviderWrapper(), RasterMode::kCPU,
+        false /*is_origin_top_left*/, shared_image_usage_flags);
   }
 
   if (!provider && HasPlaceholderCanvas()) {
@@ -399,6 +401,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
         GetOrCreateResourceDispatcher()->GetWeakPtr();
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
         surface_size, FilterQuality(), context_->ColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear,
         std::move(dispatcher_weakptr));
   }
 
@@ -406,7 +409,8 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     // If any of the above Create was able to create a valid provider, a
     // BitmapProvider will be created here.
     provider = CanvasResourceProvider::CreateBitmapProvider(
-        surface_size, FilterQuality(), context_->ColorParams());
+        surface_size, FilterQuality(), context_->ColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear);
   }
 
   ReplaceResourceProvider(std::move(provider));
@@ -419,7 +423,6 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
                               ResourceProvider()->IsAccelerated());
     base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
                                   ResourceProvider()->GetType());
-    ResourceProvider()->Clear();
     DidDraw();
 
     if (needs_matrix_clip_restore_) {

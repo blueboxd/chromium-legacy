@@ -6402,6 +6402,9 @@
         "test_id_prefix": "ninja://url:url_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],

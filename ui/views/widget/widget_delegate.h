@@ -64,6 +64,10 @@ class VIEWS_EXPORT WidgetDelegate {
     // The widget's icon, if any.
     gfx::ImageSkia icon;
 
+    // The widget's modality type. Note that MODAL_TYPE_SYSTEM does not work at
+    // all on Mac.
+    ui::ModalType modal_type = ui::MODAL_TYPE_NONE;
+
     // Whether to show a close button in the widget frame.
     bool show_close_button = true;
 
@@ -268,6 +272,7 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetCanResize(bool can_resize);
   void SetFocusTraversesOut(bool focus_traverses_out);
   void SetIcon(const gfx::ImageSkia& icon);
+  void SetModalType(ui::ModalType modal_type);
   void SetShowCloseButton(bool show_close_button);
   void SetShowIcon(bool show_icon);
   void SetShowTitle(bool show_title);

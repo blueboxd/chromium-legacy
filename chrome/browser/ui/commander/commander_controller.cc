@@ -71,13 +71,14 @@ void CommanderController::OnCommandSelected(size_t command_index,
 
   CommandItem* item = current_items_[command_index].get();
   if (item->GetType() == CommandItem::Type::kOneShot) {
+    base::OnceClosure command = std::move(*(item->command));
     // Dismiss the view.
     CommanderViewModel vm;
     vm.result_set_id = ++current_result_set_id_;
     vm.action = CommanderViewModel::Action::kClose;
     callback_.Run(vm);
 
-    std::move(*(item->command)).Run();
+    std::move(command).Run();
   } else {
     delegate_ = std::move(*(item->delegate_factory)).Run();
     // base::Unretained is safe since we own |delegate_|.
@@ -94,6 +95,10 @@ void CommanderController::OnCommandSelected(size_t command_index,
 
 void CommanderController::SetUpdateCallback(ViewModelUpdateCallback callback) {
   callback_ = std::move(callback);
+}
+
+void CommanderController::Reset() {
+  current_items_.clear();
 }
 
 // static

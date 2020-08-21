@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
@@ -124,7 +125,8 @@
           class="action-button"
           on-click="onSyncOnOffButtonClick_"
           aria-labelledby="syncOnOffButton accountTitle accountSubtitle"
-          aria-describedby="featureLabel">
+          aria-describedby="featureLabel"
+          deep-link-focus-id$="[[Setting.kSplitSyncOnOff]]">
         [[getSyncOnOffButtonLabel_(osSyncFeatureEnabled)]]
       </cr-button>
     </div>

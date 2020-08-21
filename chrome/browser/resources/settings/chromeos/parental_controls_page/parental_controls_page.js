@@ -45,6 +45,14 @@ Polymer({
   },
 
   /**
+   * Returns the setup parental controls CrButtonElement.
+   * @return {?CrButtonElement}
+   */
+  getSetupButton() {
+    return /** @type {?CrButtonElement} */ (this.$$('#setupButton'));
+  },
+
+  /**
    * Updates the UI when the device goes offline.
    * @private
    */

@@ -109,16 +109,15 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kTest:
     case QueueType::kV8:
     case QueueType::kNonWaking:
-      return QueueClass::kNone;
-    case QueueType::kFrameLoading:
-    case QueueType::kFrameLoadingControl:
-      return QueueClass::kLoading;
     case QueueType::kFrameThrottleable:
     case QueueType::kFrameDeferrable:
     case QueueType::kFramePausable:
     case QueueType::kFrameUnpausable:
     case QueueType::kWebScheduling:
-      return QueueClass::kTimer;
+      return QueueClass::kNone;
+    case QueueType::kFrameLoading:
+    case QueueType::kFrameLoadingControl:
+      return QueueClass::kLoading;
     case QueueType::kCompositor:
     case QueueType::kInput:
       return QueueClass::kCompositor;

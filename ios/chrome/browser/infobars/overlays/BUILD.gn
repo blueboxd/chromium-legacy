@@ -109,6 +109,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/test",
     "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/overlays",

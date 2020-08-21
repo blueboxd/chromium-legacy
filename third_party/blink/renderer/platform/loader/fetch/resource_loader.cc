@@ -1111,6 +1111,20 @@ void ResourceLoader::DidReceiveResponseInternal(
   const ResourceResponse& response_to_pass =
       response_with_type ? *response_with_type : response;
 
+  // A response should not serve partial content if it was not requested via a
+  // Range header: https://fetch.spec.whatwg.org/#main-fetch
+  if (response_to_pass.GetType() ==
+          network::mojom::FetchResponseType::kOpaque &&
+      response_to_pass.HttpStatusCode() == 206 &&
+      response_to_pass.HasRangeRequested() &&
+      !initial_request.HttpHeaderFields().Contains(
+          net::HttpRequestHeaders::kRange)) {
+    HandleError(ResourceError::CancelledDueToAccessCheckError(
+        response_to_pass.CurrentRequestUrl(),
+        ResourceRequestBlockedReason::kOther));
+    return;
+  }
+
   // FrameType never changes during the lifetime of a request.
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
     ResourceRequest request_for_obserber(initial_request);

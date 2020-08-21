@@ -229,7 +229,12 @@ class CORE_EXPORT FrameLoader final {
 
   bool HasAccessedInitialDocument() { return has_accessed_initial_document_; }
 
-  void SetDidLoadNonEmptyDocument() { has_loaded_non_empty_document_ = true; }
+  void SetDidLoadNonEmptyDocument() {
+    empty_document_status_ = EmptyDocumentStatus::kNonEmpty;
+  }
+  bool HasLoadedNonEmptyDocument() {
+    return empty_document_status_ == EmptyDocumentStatus::kNonEmpty;
+  }
 
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);
 
@@ -310,7 +315,13 @@ class CORE_EXPORT FrameLoader final {
   bool detached_;
   bool committing_navigation_ = false;
   bool has_accessed_initial_document_ = false;
-  bool has_loaded_non_empty_document_ = false;
+
+  enum class EmptyDocumentStatus {
+    kOnlyEmpty,
+    kOnlyEmptyButExplicitlyOpened,
+    kNonEmpty
+  };
+  EmptyDocumentStatus empty_document_status_ = EmptyDocumentStatus::kOnlyEmpty;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
 

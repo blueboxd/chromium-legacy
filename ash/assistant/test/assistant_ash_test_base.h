@@ -50,8 +50,13 @@ class AssistantAshTestBase : public AshTestBase {
   explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
   ~AssistantAshTestBase() override;
 
+  // AshTestBase:
   void SetUp() override;
   void TearDown() override;
+
+  // Creates and switches to a new active user.
+  void CreateAndSwitchActiveUser(const std::string& display_email,
+                                 const std::string& given_name);
 
   // Show the Assistant UI. The optional |entry_point| can be used to emulate
   // the different ways of launching the Assistant.
@@ -199,6 +204,8 @@ class AssistantAshTestBase : public AshTestBase {
   TestAssistantService* assistant_service();
 
  private:
+  void SetUpActiveUser();
+
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;

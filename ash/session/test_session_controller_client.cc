@@ -138,7 +138,8 @@ void TestSessionControllerClient::AddUserSession(
     user_manager::UserType user_type,
     bool enable_settings,
     bool provide_pref_service,
-    bool is_new_profile) {
+    bool is_new_profile,
+    const std::string& given_name) {
   auto account_id = AccountId::FromUserEmail(
       use_lower_case_user_id_ ? GetUserIdFromEmail(display_email)
                               : display_email);
@@ -150,6 +151,7 @@ void TestSessionControllerClient::AddUserSession(
   session.user_info.display_email = display_email;
   session.user_info.is_ephemeral = false;
   session.user_info.is_new_profile = is_new_profile;
+  session.user_info.given_name = given_name;
   session.should_enable_settings = enable_settings;
   session.should_show_notification_tray = true;
   controller_->UpdateUserSession(std::move(session));

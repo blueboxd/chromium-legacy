@@ -18,13 +18,27 @@ constexpr uint8_t kVersionBitmask = 0b111;
 // The bit mask for parsing and writing Visibility.
 constexpr uint8_t kVisibilityBitmask = 0b1;
 
+// The bit mask for parsing and writing Device Type.
+constexpr uint8_t kDeviceTypeBitmask = 0b111;
+
 constexpr uint8_t kMinimumSize =
-    /* Version(3 bits)|Visibility(1 bit)|Reserved(4 bits)= */ 1 +
-    sharing::Advertisement::kSaltSize +
+    /* Version(3 bits)|Visibility(1 bit)|Device Type(3 bits)|Reserved(1 bits)=
+     */
+    1 + sharing::Advertisement::kSaltSize +
     sharing::Advertisement::kMetadataEncryptionKeyHashByteSize;
 
 int ParseVersion(uint8_t b) {
   return (b >> 5) & kVersionBitmask;
+}
+
+nearby_share::mojom::ShareTargetType ParseDeviceType(uint8_t b) {
+  int32_t intermediate = static_cast<int32_t>(b >> 1 & kDeviceTypeBitmask);
+  if (nearby_share::mojom::internal::ShareTargetType_Data::IsKnownValue(
+          intermediate)) {
+    return static_cast<nearby_share::mojom::ShareTargetType>(intermediate);
+  }
+
+  return nearby_share::mojom::ShareTargetType::kUnknown;
 }
 
 bool ParseHasDeviceName(uint8_t b) {
@@ -54,6 +68,8 @@ std::unique_ptr<sharing::Advertisement> AdvertisementDecoder::FromEndpointInfo(
   }
 
   bool has_device_name = ParseHasDeviceName(first_byte);
+  nearby_share::mojom::ShareTargetType device_type =
+      ParseDeviceType(first_byte);
 
   std::vector<uint8_t> salt(iter, iter + sharing::Advertisement::kSaltSize);
   iter += sharing::Advertisement::kSaltSize;
@@ -86,9 +102,9 @@ std::unique_ptr<sharing::Advertisement> AdvertisementDecoder::FromEndpointInfo(
     }
   }
 
-  return sharing::Advertisement::NewInstance(std::move(salt),
-                                             std::move(encrypted_metadata_key),
-                                             std::move(optional_device_name));
+  return sharing::Advertisement::NewInstance(
+      std::move(salt), std::move(encrypted_metadata_key), device_type,
+      std::move(optional_device_name));
 }
 
 }  // namespace sharing

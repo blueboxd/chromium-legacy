@@ -1302,10 +1302,14 @@ test("views_unittests") {
           ]
         }
       }
-      if (use_ozone) {
+      if (use_ozone || use_x11) {
         sources +=
             [ "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc" ]
         deps += [ "//ui/platform_window" ]
+        if (use_x11) {
+          data_deps +=
+              [ "//testing/buildbot/filters:linux_views_unittests_filters" ]
+        }
       }
     }
   }

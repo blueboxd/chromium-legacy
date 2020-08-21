@@ -229,7 +229,7 @@ void NearbySharingDecoder::DecodeAdvertisement(
 
   std::move(callback).Run(mojom::Advertisement::New(
       advertisement->salt(), advertisement->encrypted_metadata_key(),
-      advertisement->device_name()));
+      advertisement->device_type(), advertisement->device_name()));
 }
 
 void NearbySharingDecoder::DecodeFrame(const std::vector<uint8_t>& data,

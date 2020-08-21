@@ -23,6 +23,9 @@ class TokenType : public StrongAlias<TypeMarker, base::UnguessableToken> {
   TokenType() : Super(base::UnguessableToken::Create()) {}
   explicit TokenType(const base::UnguessableToken& token) : Super(token) {}
   TokenType(const TokenType& token) : Super(token.value()) {}
+  TokenType(TokenType&& token) noexcept : Super(token.value()) {}
+  TokenType& operator=(const TokenType& token) = default;
+  TokenType& operator=(TokenType&& token) noexcept = default;
 
   // This object allows default assignment operators for compatibility with
   // STL containers.

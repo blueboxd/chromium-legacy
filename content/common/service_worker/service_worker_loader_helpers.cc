@@ -120,6 +120,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->connection_info = response.connection_info;
   out_head->alpn_negotiated_protocol = response.alpn_negotiated_protocol;
   out_head->was_fetched_via_spdy = response.was_fetched_via_spdy;
+  out_head->has_range_requested = response.has_range_requested;
 }
 
 // static

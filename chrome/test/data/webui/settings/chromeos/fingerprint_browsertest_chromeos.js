@@ -397,6 +397,30 @@ suite('settings-fingerprint-list', function() {
         });
   });
 
+  test('Deep link to remove fingerprint', async () => {
+    loadTimeData.overrideValues({
+      isDeepLinkingEnabled: true,
+    });
+
+    browserProxy.setFingerprints(['Label 1', 'Label 2']);
+    fingerprintList.updateFingerprintsList_();
+    await browserProxy.whenCalled('getFingerprintsList');
+
+    const params = new URLSearchParams;
+    params.append('settingId', '314');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.FINGERPRINT, params);
+
+    Polymer.dom.flush();
+
+    const deepLinkElement =
+        fingerprintList.root.querySelectorAll('cr-icon-button')[0];
+    await test_util.waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Trash can button should be focused for settingId=314.');
+  });
+
   test('ChangeFingerprintLabel', function() {
     browserProxy.setFingerprints(['Label 1']);
     fingerprintList.updateFingerprintsList_();

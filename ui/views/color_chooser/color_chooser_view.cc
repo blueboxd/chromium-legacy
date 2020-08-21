@@ -364,6 +364,8 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
     : listener_(listener) {
   DCHECK(listener_);
 
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+
   SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
   SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
@@ -438,10 +440,6 @@ bool ColorChooserView::CanMinimize() const {
 
 View* ColorChooserView::GetInitiallyFocusedView() {
   return textfield_;
-}
-
-ui::ModalType ColorChooserView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
 }
 
 void ColorChooserView::WindowClosing() {

@@ -222,10 +222,13 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
   UINT config_count = 0;
   hr = video_device_->GetVideoDecoderConfigCount(
       decoder_configurator_->DecoderDescriptor(), &config_count);
-  if (FAILED(hr) || config_count == 0) {
+  if (FAILED(hr)) {
     return Status(StatusCode::kGetDecoderConfigCountFailed)
         .AddCause(HresultToStatus(hr));
   }
+
+  if (config_count == 0)
+    return Status(StatusCode::kGetDecoderConfigCountFailed);
 
   D3D11_VIDEO_DECODER_CONFIG dec_config = {};
   bool found = false;
@@ -277,7 +280,11 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(
       decoder_configurator_->DecoderDescriptor(), &dec_config, &video_decoder);
-  if (!video_decoder.Get() || FAILED(hr)) {
+
+  if (!video_decoder.Get())
+    return Status(StatusCode::kDecoderCreationFailed);
+
+  if (FAILED(hr)) {
     return Status(StatusCode::kDecoderCreationFailed)
         .AddCause(HresultToStatus(hr));
   }
@@ -368,7 +375,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderSkipMultithreaded)) {
     ComD3D11Multithread multi_threaded;
     hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
-    if (!SUCCEEDED(hr)) {
+    if (FAILED(hr)) {
       NotifyError(Status(StatusCode::kQueryID3D11MultithreadFailed)
                       .AddCause(HresultToStatus(hr)));
       return;

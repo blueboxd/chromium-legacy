@@ -12,8 +12,8 @@
 namespace paint_preview {
 
 // Starts the compositor service in a utility process.
-std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
-    base::OnceClosure disconnect_handler);
+std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
+StartCompositorService(base::OnceClosure disconnect_handler);
 
 // Creates a utility process via the service manager that is sandboxed and
 // running an instance of the PaintPreviewCompositorCollectionImpl. This can be

@@ -139,6 +139,7 @@ void GlanceableInfoView::InitLayout() {
   time_view_->SetTextFont(GetTimeFontList());
   time_view_->SetTextColor(kTextColor,
                            /*auto_color_readability_enabled=*/false);
+  time_view_->SetTextShadowValues(ambient::util::GetTextShadowValues());
 
   // Inits and layouts the weather info.
   weather_info_ = AddChildView(std::make_unique<views::View>());
@@ -166,6 +167,7 @@ void GlanceableInfoView::InitLayout() {
   temperature_->SetAutoColorReadabilityEnabled(false);
   temperature_->SetEnabledColor(kTextColor);
   temperature_->SetFontList(GetWeatherTemperatureFontList());
+  temperature_->SetShadows(ambient::util::GetTextShadowValues());
 }
 
 }  // namespace ash

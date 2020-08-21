@@ -159,10 +159,6 @@ void LogServiceApiAction(DownloadClient client, ServiceApiAction action);
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result);
 
-// Logs recovery operations that happened when we had to move from one state
-// to another on startup.
-void LogRecoveryOperation(Entry::State to_state);
-
 // Logs download completion event, download time, and the file size.
 void LogDownloadCompletion(CompletionType type, uint64_t file_size_bytes);
 
@@ -202,10 +198,6 @@ void LogFileLifeTime(const base::TimeDelta& file_life_time);
 void LogFileDirDiskUtilization(int64_t total_disk_space,
                                int64_t free_disk_space,
                                int64_t files_size);
-
-// Logs if the final download file path is different from the requested file
-// path.
-void LogFilePathRenamed(bool renamed);
 
 // Logs an action the Controller takes on an active download.
 void LogEntryEvent(DownloadEvent event);

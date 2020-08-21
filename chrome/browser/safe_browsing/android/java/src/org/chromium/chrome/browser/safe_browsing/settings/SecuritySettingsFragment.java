@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -22,14 +21,13 @@ import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.FragmentSettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
-import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
 
 /**
  * Fragment containing security settings.
  * TODO(crbug.com/1097310): Rename it to SafeBrowsingSettingsFragment.
  */
-public class SecuritySettingsFragment extends PreferenceFragmentCompat
+public class SecuritySettingsFragment extends SafeBrowsingSettingsFragmentBase
         implements FragmentSettingsLauncher,
                    RadioButtonGroupSafeBrowsingPreference.OnSafeBrowsingModeDetailsRequested,
                    Preference.OnPreferenceChangeListener {
@@ -76,10 +74,7 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
     }
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
-        SettingsUtils.addPreferencesFromResource(this, R.xml.security_preferences);
-        getActivity().setTitle(R.string.prefs_safe_browsing_title);
-
+    protected void onCreatePreferencesInternal(Bundle bundle, String s) {
         mAccessPoint =
                 IntentUtils.safeGetInt(getArguments(), ACCESS_POINT, SettingsAccessPoint.DEFAULT);
 
@@ -99,6 +94,11 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
                 mSafeBrowsingPreference));
 
         recordUserActionHistogram(UserAction.SHOWED);
+    }
+
+    @Override
+    protected int getPreferenceResource() {
+        return R.xml.security_preferences;
     }
 
     @Override

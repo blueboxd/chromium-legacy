@@ -30,14 +30,6 @@
     <item type="id" name="translate_infobar_target_spinner" />
     <item type="id" name="subresource_filter_infobar_toggle" />
 
-    <!-- Menu items IDs in Settings -->
-    <item type="id" name="menu_id_close" />
-    <item type="id" name="menu_id_general_help" />
-    <item type="id" name="menu_id_targeted_help" />
-    <item type="id" name="menu_id_reset" />
-    <item type="id" name="menu_id_refresh" />
-    <item type="id" name="menu_id_settings" />
-
     <!-- Cast notification -->
     <item type="id" name="remote_notification" />
 

@@ -39,21 +39,23 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
       uint32_t shared_image_usage_flags =
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
       provider = CanvasResourceProvider::CreateSharedImageProvider(
-          size_, SharedGpuContext::ContextProviderWrapper(),
-          kMedium_SkFilterQuality, CanvasColorParams(),
-          false /*is_origin_top_left*/,
+          size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kCallClear,
+          SharedGpuContext::ContextProviderWrapper(),
           hint == RasterModeHint::kPreferGPU ? RasterMode::kGPU
                                              : RasterMode::kCPU,
-          shared_image_usage_flags);
+          false /*is_origin_top_left*/, shared_image_usage_flags);
     }
     if (!provider) {
       provider = CanvasResourceProvider::CreateSharedBitmapProvider(
           size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kCallClear,
           nullptr /* dispatcher_weakptr */);
     }
     if (!provider) {
       provider = CanvasResourceProvider::CreateBitmapProvider(
-          size_, kMedium_SkFilterQuality, CanvasColorParams());
+          size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kCallClear);
     }
 
     ReplaceResourceProvider(std::move(provider));

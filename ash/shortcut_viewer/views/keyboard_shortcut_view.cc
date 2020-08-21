@@ -383,7 +383,7 @@ void KeyboardShortcutView::InitViews() {
       continue;
 
     for (auto category : item.categories) {
-      shortcut_views_.emplace_back(
+      shortcut_views_.push_back(
           std::make_unique<KeyboardShortcutItemView>(item, category));
       shortcut_views_.back()->set_owned_by_client();
     }
@@ -472,7 +472,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     // Clear any styles used to highlight matched search query in search mode.
     description_label_view->ClearStyleRanges();
     item_list_view->AddChildView(item_view.get());
-    shortcut_items.emplace_back(item_view.get());
+    shortcut_items.push_back(item_view.get());
     // Remove the search query highlight.
     description_label_view->InvalidateLayout();
   }
@@ -557,7 +557,7 @@ void KeyboardShortcutView::ShowSearchResults(
       }
 
       found_items_list_view->AddChildView(item_view.get());
-      found_shortcut_items_.emplace_back(item_view.get());
+      found_shortcut_items_.push_back(item_view.get());
     }
   }
 
@@ -565,7 +565,7 @@ void KeyboardShortcutView::ShowSearchResults(
   const int number_search_results = found_shortcut_items_.size();
   if (!found_items_list_view->children().empty()) {
     UpdateAXNodeDataPosition(found_shortcut_items_);
-    replacement_strings.emplace_back(
+    replacement_strings.push_back(
         base::NumberToString16(number_search_results));
 
     // To offset the padding between the bottom of the |search_box_view_| and
@@ -577,7 +577,7 @@ void KeyboardShortcutView::ShowSearchResults(
     search_container_content_view =
         CreateScrollView(std::move(found_items_list_view)).release();
   }
-  replacement_strings.emplace_back(search_query);
+  replacement_strings.push_back(search_query);
   search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(
       number_search_results == 0
           ? IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITHOUT_RESULTS

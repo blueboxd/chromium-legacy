@@ -16,29 +16,6 @@
 namespace blink {
 namespace {
 
-const int kAlphaThreshold = 100;
-const int kBrightnessThreshold = 50;
-
-// TODO(https://crbug.com/925949): Add detection and classification of
-// background image color. Most sites with dark background images also have a
-// dark background color set, so this is less of a priority than it would be
-// otherwise.
-bool HasLightBackground(const LayoutView& root) {
-  const ComputedStyle& style = root.StyleRef();
-
-  // If we can't easily determine the background color, default to inverting the
-  // page.
-  if (!style.HasBackground())
-    return true;
-
-  Color color = style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
-  if (color.Alpha() < kAlphaThreshold)
-    return true;
-
-  return DarkModeColorClassifier::CalculateColorBrightness(color.Rgb()) >
-         kBrightnessThreshold;
-}
-
 DarkModeInversionAlgorithm GetMode(const Settings& frame_settings) {
   switch (features::kForceDarkInversionMethodParam.Get()) {
     case ForceDarkInversionMethod::kUseBlinkSettings:
@@ -106,26 +83,13 @@ DarkModeSettings GetDisabledSettings() {
 }  // namespace
 
 DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
-                                       const LayoutView& root) {
-  if (frame_settings.GetForceDarkModeEnabled() &&
-      ShouldApplyDarkModeFilterToPage(
-          frame_settings.GetForceDarkModePagePolicy(), root)) {
-    return GetEnabledSettings(frame_settings);
-  }
-  return GetDisabledSettings();
-}
+                                       bool content_has_dark_color_scheme) {
+  if (content_has_dark_color_scheme)
+    return GetDisabledSettings();
 
-bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,
-                                     const LayoutView& root) {
-  if (root.StyleRef().DarkColorScheme())
-    return false;
-
-  switch (policy) {
-    case DarkModePagePolicy::kFilterAll:
-      return true;
-    case DarkModePagePolicy::kFilterByBackground:
-      return HasLightBackground(root);
-  }
+  return frame_settings.GetForceDarkModeEnabled()
+             ? GetEnabledSettings(frame_settings)
+             : GetDisabledSettings();
 }
 
 }  // namespace blink

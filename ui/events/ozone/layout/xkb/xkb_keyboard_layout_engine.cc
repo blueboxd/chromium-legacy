@@ -816,6 +816,10 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutFromBuffer(
     return false;
 
   SetKeymap(keymap);
+
+  // Store the keymap that will be unrefed either on dtor or if a new keymap is
+  // created.
+  key_map_from_buffer_.reset(keymap);
   return true;
 }
 

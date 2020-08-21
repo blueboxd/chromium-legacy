@@ -3799,25 +3799,6 @@ TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
 
 #if defined(OS_WIN)
 
-namespace {
-
-// Provides functionality to create a window modal dialog.
-class ModalDialogDelegate : public DialogDelegateView {
- public:
-  explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  ~ModalDialogDelegate() override = default;
-
-  // WidgetDelegate overrides.
-  ui::ModalType GetModalType() const override { return type_; }
-
- private:
-  const ui::ModalType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
-};
-
-}  // namespace
-
 // Tests the case where an intervening owner popup window is destroyed out from
 // under the currently active modal top-level window. In this instance, the
 // remaining top-level windows should be re-enabled.
@@ -3830,7 +3811,8 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
   const auto create_params = [this](Widget* widget, gfx::NativeView parent) {
     Widget::InitParams init_params =
         CreateParamsForTestWidget(Widget::InitParams::TYPE_WINDOW);
-    init_params.delegate = new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+    init_params.delegate = new WidgetDelegate();
+    init_params.delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
     init_params.parent = parent;
     init_params.native_widget =
         new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(

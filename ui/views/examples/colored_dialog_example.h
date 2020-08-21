@@ -31,7 +31,6 @@ class ColoredDialog : public views::DialogDelegateView,
 
  protected:
   // views::DialogDelegateView
-  ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
 
   // views::TextfieldController

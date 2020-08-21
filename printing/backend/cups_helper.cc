@@ -5,6 +5,7 @@
 #include "printing/backend/cups_helper.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include <vector>
 
@@ -131,6 +132,51 @@ void GetDuplexSettings(ppd_file_t* ppd,
     *duplex_default = mojom::DuplexMode::kShortEdge;
   } else {
     *duplex_default = mojom::DuplexMode::kLongEdge;
+  }
+}
+
+void GetResolutionSettings(ppd_file_t* ppd,
+                           std::vector<gfx::Size>* dpis,
+                           gfx::Size* default_dpi) {
+  static constexpr const char* kResolutions[] = {
+      "Resolution", "JCLResolution",  "SetResolution",
+      "CNRes_PGP",  "HPPrintQuality", "LXResolution"};
+  ppd_option_t* res;
+  for (const char* res_name : kResolutions) {
+    res = ppdFindOption(ppd, res_name);
+    if (res)
+      break;
+  }
+  if (!res)
+    return;
+  for (int i = 0; i < res->num_choices; i++) {
+    char* choice = res->choices[i].choice;
+    DCHECK(choice);
+    int len = strlen(choice);
+    if (len == 0) {
+      VLOG(1) << "Bad PPD resolution choice: null string";
+      continue;
+    }
+    int n = 0;  // number of chars successfully parsed by sscanf()
+    int dpi_x;
+    int dpi_y;
+    sscanf(choice, "%ddpi%n", &dpi_x, &n);
+    if (n == len) {
+      dpi_y = dpi_x;
+    } else {
+      sscanf(choice, "%dx%ddpi%n", &dpi_x, &dpi_y, &n);
+      if (n != len) {
+        VLOG(1) << "Bad PPD resolution choice: " << choice;
+        continue;
+      }
+    }
+    if (dpi_x <= 0 || dpi_y <= 0) {
+      VLOG(1) << "Invalid PPD resolution dimensions: " << dpi_x << " " << dpi_y;
+      continue;
+    }
+    dpis->push_back({dpi_x, dpi_y});
+    if (!strcmp(choice, res->defchoice))
+      *default_dpi = dpis->back();
   }
 }
 
@@ -550,6 +596,7 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
   caps.copies_max = GetCopiesMax(ppd);
 
   GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
+  GetResolutionSettings(ppd, &caps.dpis, &caps.default_dpi);
 
   mojom::ColorModel cm_black = mojom::ColorModel::kUnknownColorModel;
   mojom::ColorModel cm_color = mojom::ColorModel::kUnknownColorModel;

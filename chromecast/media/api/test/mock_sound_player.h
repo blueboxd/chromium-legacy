@@ -19,14 +19,14 @@ class MockSoundPlayer : public SoundPlayer {
   MockSoundPlayer();
   ~MockSoundPlayer() override;
 
-  MOCK_METHOD(void, Play, (int, int, bool), (override));
+  MOCK_METHOD(void, Play, (int, int, bool, AudioContentType), (override));
   MOCK_METHOD(void,
               PlayAudioData,
-              (int, scoped_refptr<AudioData>, bool),
+              (int, scoped_refptr<AudioData>, bool, AudioContentType),
               (override));
   MOCK_METHOD(void,
               PlayAtTime,
-              (int, int64_t, media::AudioChannel),
+              (int, int64_t, media::AudioChannel, AudioContentType),
               (override));
   MOCK_METHOD(void, Stop, (int), (override));
 };

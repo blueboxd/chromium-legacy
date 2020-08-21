@@ -36,7 +36,8 @@ class Accelerator;
 // Implement this class to receive notifications.
 class WEB_DIALOGS_EXPORT WebDialogDelegate {
  public:
-  // Returns true if the contents needs to be run in a modal dialog.
+  // Returns the modal type for this dialog. Only called once, during
+  // WebDialogView creation.
   virtual ModalType GetDialogModalType() const = 0;
 
   // Returns the title of the dialog.

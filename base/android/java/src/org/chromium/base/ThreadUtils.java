@@ -118,18 +118,24 @@ public class ThreadUtils {
                 sUiThreadHandler = new Handler(looper);
             }
         }
+        TraceEvent.onUiThreadReady();
     }
 
     public static Handler getUiThreadHandler() {
+        boolean createdHandler = false;
         synchronized (sLock) {
             if (sUiThreadHandler == null) {
                 if (sWillOverride) {
                     throw new RuntimeException("Did not yet override the UI thread");
                 }
                 sUiThreadHandler = new Handler(Looper.getMainLooper());
+                createdHandler = true;
             }
-            return sUiThreadHandler;
         }
+        if (createdHandler) {
+            TraceEvent.onUiThreadReady();
+        }
+        return sUiThreadHandler;
     }
 
     /**

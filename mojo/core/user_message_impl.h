@@ -49,7 +49,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   ~UserMessageImpl() override;
 
   // Creates a new ports::UserMessageEvent with an attached UserMessageImpl.
-  static std::unique_ptr<ports::UserMessageEvent> CreateEventForNewMessage();
+  static std::unique_ptr<ports::UserMessageEvent> CreateEventForNewMessage(
+      MojoCreateMessageFlags flags);
 
   // Creates a new ports::UserMessageEvent with an attached serialized
   // UserMessageImpl. May fail iff one or more |dispatchers| fails to serialize
@@ -154,7 +155,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   // |thunks|. If the message is ever going to be routed to another node (see
   // |WillBeRoutedExternally()| below), it will be serialized at that time using
   // operations provided by |thunks|.
-  UserMessageImpl(ports::UserMessageEvent* message_event);
+  UserMessageImpl(ports::UserMessageEvent* message_event,
+                  MojoCreateMessageFlags flags);
 
   // Creates a serialized UserMessageImpl backed by an existing Channel::Message
   // object. |header| and |user_payload| must be pointers into
@@ -182,6 +184,10 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   // Serialized message contents. May be null if this is not a serialized
   // message.
   Channel::MessagePtr channel_message_;
+
+  // Whether or not this message should enforce size constraints at
+  // serialization time.
+  const bool unlimited_size_ = false;
 
   // Indicates whether any handles serialized within |channel_message_| have
   // yet to be extracted.

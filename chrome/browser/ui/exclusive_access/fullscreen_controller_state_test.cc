@@ -282,9 +282,9 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
         GetFullscreenController()->ExitFullscreenModeForTab(active_tab);
       }
 
-      // Activating/Deactivating tab fullscreen on a captured tab should not
-      // evoke a state change in the browser window.
-      if (active_tab->IsBeingCaptured())
+      // Activating/Deactivating tab fullscreen on a visibly captured tab
+      // should not evoke a state change in the browser window.
+      if (active_tab->IsBeingVisiblyCaptured())
         state_ = source_state;
       break;
     }

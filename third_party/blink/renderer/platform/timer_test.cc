@@ -599,8 +599,7 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
 TEST_F(TimerTest, UserSuppliedTaskRunner) {
   scoped_refptr<MainThreadTaskQueue> task_queue(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       task_queue->CreateTaskRunner(TaskType::kInternalTest);
@@ -696,8 +695,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   Vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<MainThreadTaskQueue> task_queue1(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
       task_queue1->CreateTaskRunner(TaskType::kInternalTest);
@@ -705,8 +703,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   task_queue1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<MainThreadTaskQueue> task_queue2(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
       task_queue2->CreateTaskRunner(TaskType::kInternalTest);
@@ -738,8 +735,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   Vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<MainThreadTaskQueue> task_queue1(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
       task_queue1->CreateTaskRunner(TaskType::kInternalTest);
@@ -747,8 +743,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   task_queue1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<MainThreadTaskQueue> task_queue2(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
       task_queue2->CreateTaskRunner(TaskType::kInternalTest);
@@ -784,15 +779,13 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 // runner it isn't activated.
 TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
   scoped_refptr<MainThreadTaskQueue> task_queue1(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
       task_queue1->CreateTaskRunner(TaskType::kInternalTest);
 
   scoped_refptr<MainThreadTaskQueue> task_queue2(
-      platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
-          scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
+      platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
           nullptr));
   scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
       task_queue2->CreateTaskRunner(TaskType::kInternalTest);

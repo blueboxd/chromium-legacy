@@ -727,7 +727,7 @@ display items directly.
 
 ### PaintNG
 
-[LayoutNG](../layout/ng/README.md]) is a project that will change how Layout
+[LayoutNG](../layout/ng/README.md) is a project that will change how Layout
 generates geometry/style information for painting. Instead of modifying
 LayoutObjects, LayoutNG will generate an NGFragment tree.
 

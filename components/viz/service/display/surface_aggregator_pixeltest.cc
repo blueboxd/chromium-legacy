@@ -62,7 +62,8 @@ class SurfaceAggregatorPixelTest : public VizPixelTestWithParam {
 
 INSTANTIATE_TEST_SUITE_P(,
                          SurfaceAggregatorPixelTest,
-                         testing::ValuesIn(GetGpuRendererTypes()));
+                         testing::ValuesIn(GetGpuRendererTypes()),
+                         testing::PrintToStringParamName());
 
 SharedQuadState* CreateAndAppendTestSharedQuadState(
     RenderPass* render_pass,

@@ -9,6 +9,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.page_info.CertificateChainHelper;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
@@ -23,6 +25,7 @@ import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+import org.chromium.url.Origin;
 
 import java.util.List;
 
@@ -44,6 +47,14 @@ public class ComponentPaymentRequestImpl {
     private final Runnable mOnClosedListener;
     private final WebContents mWebContents;
     private final JourneyLogger mJourneyLogger;
+    private final RenderFrameHost mRenderFrameHost;
+    private final String mTopLevelOrigin;
+    private final String mPaymentRequestOrigin;
+    private final Origin mPaymentRequestSecurityOrigin;
+    private final String mMerchantName;
+    @Nullable
+    private final byte[][] mCertificateChain;
+    private final boolean mIsOffTheRecord;
     private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
     private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
     private boolean mHasClosed;
@@ -210,8 +221,9 @@ public class ComponentPaymentRequestImpl {
             return null;
         }
 
-        ComponentPaymentRequestImpl instance = new ComponentPaymentRequestImpl(client,
-                renderFrameHost, webContents, journeyLogger, skipUiForBasicCard, onClosedListener);
+        ComponentPaymentRequestImpl instance =
+                new ComponentPaymentRequestImpl(client, renderFrameHost, webContents, journeyLogger,
+                        skipUiForBasicCard, isOffTheRecord, onClosedListener);
         instance.onCreated();
         boolean valid = instance.initAndValidate(renderFrameHost, browserPaymentRequestFactory,
                 methodData, details, options, googlePayBridgeEligible, isOffTheRecord);
@@ -238,15 +250,27 @@ public class ComponentPaymentRequestImpl {
 
     private ComponentPaymentRequestImpl(PaymentRequestClient client,
             RenderFrameHost renderFrameHost, WebContents webContents, JourneyLogger journeyLogger,
-            boolean skipUiForBasicCard, Runnable onClosedListener) {
+            boolean skipUiForBasicCard, boolean isOffTheRecord, Runnable onClosedListener) {
         assert client != null;
         assert renderFrameHost != null;
         assert webContents != null;
         assert journeyLogger != null;
 
+        mRenderFrameHost = renderFrameHost;
+        mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
+        mWebContents = webContents;
+
+        // TODO(crbug.com/992593): replace UrlFormatter with GURL operations.
+        mPaymentRequestOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
+        mTopLevelOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
+
+        mMerchantName = mWebContents.getTitle();
+        mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
+        mIsOffTheRecord = isOffTheRecord;
         mSkipUiForNonUrlPaymentMethodIdentifiers = skipUiForBasicCard;
         mClient = client;
-        mWebContents = webContents;
         mJourneyLogger = journeyLogger;
         mOnClosedListener = onClosedListener;
         mHasClosed = false;
@@ -272,8 +296,7 @@ public class ComponentPaymentRequestImpl {
             BrowserPaymentRequest.Factory factory, @Nullable PaymentMethodData[] methodData,
             @Nullable PaymentDetails details, @Nullable PaymentOptions options,
             boolean googlePayBridgeEligible, boolean isOffTheRecord) {
-        mBrowserPaymentRequest =
-                factory.createBrowserPaymentRequest(renderFrameHost, this, isOffTheRecord);
+        mBrowserPaymentRequest = factory.createBrowserPaymentRequest(this);
         return mBrowserPaymentRequest.initAndValidate(
                 methodData, details, options, googlePayBridgeEligible);
     }
@@ -563,5 +586,44 @@ public class ComponentPaymentRequestImpl {
     /** @return The WebContents of the merchant's page, cannot be null. */
     public WebContents getWebContents() {
         return mWebContents;
+    }
+
+    /** @return Whether the WebContents is currently showing an off-the-record tab. */
+    public boolean isOffTheRecord() {
+        return mIsOffTheRecord;
+    }
+
+    /** @return The certificate chain from the merchant page's WebContents. */
+    public byte[][] getCertificateChain() {
+        return mCertificateChain;
+    }
+
+    /** @return The origin of the page at which the PaymentRequest is created. */
+    public String getPaymentRequestOrigin() {
+        return mPaymentRequestOrigin;
+    }
+
+    /** @return The merchant page's title. */
+    public String getMerchantName() {
+        return mMerchantName;
+    }
+
+    /** @return The origin of the top level frame of the merchant page. */
+    public String getTopLevelOrigin() {
+        return mTopLevelOrigin;
+    }
+
+    /** @return The RendererFrameHost of the merchant page. */
+    public RenderFrameHost getRenderFrameHost() {
+        return mRenderFrameHost;
+    }
+
+    /**
+     * @return The origin of the iframe that invoked the PaymentRequest API. Can be opaque. Used by
+     * security features like 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'. Should not be
+     * null.
+     */
+    public Origin getPaymentRequestSecurityOrigin() {
+        return mPaymentRequestSecurityOrigin;
     }
 }

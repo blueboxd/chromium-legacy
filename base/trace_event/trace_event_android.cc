@@ -34,7 +34,10 @@ void WriteToATrace(int fd, const char* buffer, size_t size) {
       break;
     total_written += written;
   }
-  if (total_written < size) {
+  // Tracing might have been disabled before we were notified about it, which
+  // triggers EBADF. Since enabling and disabling atrace is racy, ignore the
+  // error in that case to avoid logging an error for every trace event.
+  if (total_written < size && errno != EBADF) {
     PLOG(WARNING) << "Failed to write buffer '" << std::string(buffer, size)
                   << "' to " << kATraceMarkerFile;
   }
@@ -73,20 +76,6 @@ void WriteEvent(char phase,
   WriteToATrace(g_atrace_fd, out.c_str(), out.size());
 }
 
-void NoOpOutputCallback(WaitableEvent* complete_event,
-                        const scoped_refptr<RefCountedString>&,
-                        bool has_more_events) {
-  if (!has_more_events)
-    complete_event->Signal();
-}
-
-void EndChromeTracing(TraceLog* trace_log,
-                      WaitableEvent* complete_event) {
-  trace_log->SetDisabled();
-  // Delete the buffered trace events as they have been sent to atrace.
-  trace_log->Flush(BindRepeating(&NoOpOutputCallback, complete_event));
-}
-
 }  // namespace
 
 // These functions support Android systrace.py when 'webview' category is
@@ -99,7 +88,7 @@ void EndChromeTracing(TraceLog* trace_log,
 //   StartATrace, StopATrace and SendToATrace, and perhaps send Java traces
 //   directly to atrace in trace_event_binding.cc.
 
-void TraceLog::StartATrace() {
+void TraceLog::StartATrace(const std::string& category_filter) {
   if (g_atrace_fd != -1)
     return;
 
@@ -108,28 +97,17 @@ void TraceLog::StartATrace() {
     PLOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
     return;
   }
-  TraceConfig trace_config;
+  TraceConfig trace_config(category_filter);
   trace_config.SetTraceRecordMode(RECORD_CONTINUOUSLY);
   SetEnabled(trace_config, TraceLog::RECORDING_MODE);
 }
 
 void TraceLog::StopATrace() {
-  if (g_atrace_fd == -1)
-    return;
-
-  close(g_atrace_fd);
-  g_atrace_fd = -1;
-
-  // TraceLog::Flush() requires the current thread to have a message loop, but
-  // this thread called from Java may not have one, so flush in another thread.
-  Thread end_chrome_tracing_thread("end_chrome_tracing");
-  WaitableEvent complete_event(WaitableEvent::ResetPolicy::AUTOMATIC,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
-  end_chrome_tracing_thread.Start();
-  end_chrome_tracing_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&EndChromeTracing, Unretained(this),
-                                Unretained(&complete_event)));
-  complete_event.Wait();
+  if (g_atrace_fd != -1) {
+    close(g_atrace_fd);
+    g_atrace_fd = -1;
+  }
+  SetDisabled();
 }
 
 void TraceEvent::SendToATrace() {
@@ -196,6 +174,14 @@ void TraceLog::AddClockSyncMetadataEvent() {
       "trace_event_clock_sync: parent_ts=%f\n", now_in_seconds);
   WriteToATrace(atrace_fd, marker.c_str(), marker.size());
   close(atrace_fd);
+}
+
+void TraceLog::SetupATraceStartupTrace(const std::string& category_filter) {
+  atrace_startup_config_ = TraceConfig(category_filter);
+}
+
+Optional<TraceConfig> TraceLog::TakeATraceStartupConfig() {
+  return std::move(atrace_startup_config_);
 }
 
 }  // namespace trace_event

@@ -31,18 +31,6 @@ const unsigned char kSmallGifData[] = {0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01,
                                        0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01,
                                        0x00, 0x00, 0x02, 0x00, 0x3b};
 
-const char kFrameURL[] = "https://example.com/frame.html";
-
-const char kVanillaFontURL[] = "https://example.com/font.woff2";
-const char kVanillaImageURL[] = "https://example.com/pixel.png";
-const char kVanillaScriptURL[] = "https://example.com/script.js";
-const char kVanillaStylesheetURL[] = "https://example.com/style.css";
-const char kVanillaImportedStylesheetURL[] = "https://example.com/imported.css";
-
-String ConvertToAdURL(String vanilla_url) {
-  return vanilla_url + "?ad=true";
-}
-
 // The pages include a div with class="test" to ensure the resources in the
 // stylesheet are loaded.
 const char kPageWithVanillaExternalStylesheet[] = R"HTML(
@@ -205,7 +193,8 @@ class AdTrackerTest : public testing::Test {
   }
 
   void WillExecuteScript(const String& script_url) {
-    ad_tracker_->WillExecuteScript(ExecutionContext(), String(script_url));
+    ad_tracker_->WillExecuteScript(ExecutionContext(), String(script_url),
+                                   v8::Message::kNoScriptIdInfo);
   }
 
   ExecutionContext* ExecutionContext() {
@@ -877,14 +866,15 @@ class AdTrackerVanillaOrAdSimTest : public AdTrackerSimTest,
   bool IsAdRun() { return GetParam(); }
 
   String FlipURLOnAdRun(String vanilla_url) {
-    return IsAdRun() ? ConvertToAdURL(vanilla_url) : vanilla_url;
+    return IsAdRun() ? vanilla_url + "?ad=true" : vanilla_url;
   }
 };
 
 TEST_P(AdTrackerVanillaOrAdSimTest, VanillaExternalStylesheetLoadsResources) {
-  String font_url = FlipURLOnAdRun(kVanillaFontURL);
-  String image_url = FlipURLOnAdRun(kVanillaImageURL);
-  SimSubresourceRequest stylesheet(kVanillaStylesheetURL, "text/css");
+  String vanilla_stylesheet_url = "https://example.com/style.css";
+  String font_url = FlipURLOnAdRun("https://example.com/font.woff2");
+  String image_url = FlipURLOnAdRun("https://example.com/pixel.png");
+  SimSubresourceRequest stylesheet(vanilla_stylesheet_url, "text/css");
   SimSubresourceRequest font(font_url, "font/woff2");
   SimSubresourceRequest image(image_url, "image/png");
 
@@ -901,15 +891,15 @@ TEST_P(AdTrackerVanillaOrAdSimTest, VanillaExternalStylesheetLoadsResources) {
   font.Complete();
   image.Complete();
 
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaStylesheetURL));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_stylesheet_url));
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(font_url), IsAdRun());
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(image_url), IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, AdExternalStylesheetLoadsResources) {
-  String font_url = FlipURLOnAdRun(kVanillaFontURL);
-  String image_url = FlipURLOnAdRun(kVanillaImageURL);
-  String ad_stylesheet_url = ConvertToAdURL(kVanillaStylesheetURL);
+  String ad_stylesheet_url = "https://example.com/style.css?ad=true";
+  String font_url = FlipURLOnAdRun("https://example.com/font.woff2");
+  String image_url = FlipURLOnAdRun("https://example.com/pixel.png");
   SimSubresourceRequest stylesheet(ad_stylesheet_url, "text/css");
   SimSubresourceRequest font(font_url, "font/woff2");
   SimSubresourceRequest image(image_url, "image/png");
@@ -933,11 +923,14 @@ TEST_P(AdTrackerVanillaOrAdSimTest, AdExternalStylesheetLoadsResources) {
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, LinkRelStylesheetAddedByScript) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_stylesheet_url = "https://example.com/style.css";
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest stylesheet(kVanillaStylesheetURL, "text/css");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest stylesheet(vanilla_stylesheet_url, "text/css");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -951,31 +944,35 @@ TEST_P(AdTrackerVanillaOrAdSimTest, LinkRelStylesheetAddedByScript) {
     )SCRIPT");
 
   // Wait for script to run.
-  ad_tracker_->WaitForSubresource(kVanillaStylesheetURL);
+  ad_tracker_->WaitForSubresource(vanilla_stylesheet_url);
 
   stylesheet.Complete(kStylesheetWithVanillaResources);
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaStylesheetURL),
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_stylesheet_url),
             IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
-  SimRequest frame(kFrameURL, "text/html");
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_stylesheet_url = "https://example.com/style.css";
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimRequest frame("https://example.com/frame.html", "text/html");
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest stylesheet(kVanillaStylesheetURL, "text/css");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest stylesheet(vanilla_stylesheet_url, "text/css");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -986,8 +983,8 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
   stylesheet.Complete(kStylesheetWithVanillaResources);
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
@@ -997,17 +994,19 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
   EXPECT_EQ(local_subframe->IsAdSubframe(), IsAdRun());
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaStylesheetURL),
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_stylesheet_url),
             IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 // Note that we skip fonts as at rules aren't valid in inline CSS.
 TEST_P(AdTrackerVanillaOrAdSimTest, InlineCSSSetByScript) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1018,42 +1017,47 @@ TEST_P(AdTrackerVanillaOrAdSimTest, InlineCSSSetByScript) {
     div.style = "background-image: url('pixel.png');";
     )SCRIPT");
 
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_F(AdTrackerSimTest, StyleTagInMainframe) {
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
   main_resource_->Complete(kPageWithStyleTagLoadingVanillaResources);
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL));
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
 }
 
 // This verifies that style tag resources in ad frames are correctly tagged
 // according to the heuristic that all requests from an ad frame should also be
 // tagged as ads.
 TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagInSubframe) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
-  SimRequest frame(kFrameURL, "text/html");
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimRequest frame("https://example.com/frame.html", "text/html");
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1063,8 +1067,8 @@ TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagInSubframe) {
   frame.Complete(kPageWithStyleTagLoadingVanillaResources);
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
@@ -1074,15 +1078,18 @@ TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagInSubframe) {
   EXPECT_EQ(local_subframe->IsAdSubframe(), IsAdRun());
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagAddedByScript) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1098,24 +1105,28 @@ TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagAddedByScript) {
       kStylesheetWithVanillaResources));
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, VanillaImportInStylesheet) {
-  String stylesheet_url = FlipURLOnAdRun(kVanillaStylesheetURL);
+  String stylesheet_url = FlipURLOnAdRun("https://example.com/style.css");
+  String vanilla_imported_stylesheet_url = "https://example.com/imported.css";
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest stylesheet(stylesheet_url, "text/css");
-  SimSubresourceRequest imported_stylesheet(kVanillaImportedStylesheetURL,
+  SimSubresourceRequest imported_stylesheet(vanilla_imported_stylesheet_url,
                                             "text/css");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1127,29 +1138,32 @@ TEST_P(AdTrackerVanillaOrAdSimTest, VanillaImportInStylesheet) {
   imported_stylesheet.Complete(kStylesheetWithVanillaResources);
 
   // Wait for stylesheets to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(stylesheet_url), IsAdRun());
   EXPECT_EQ(
-      ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImportedStylesheetURL),
+      ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_imported_stylesheet_url),
       IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, AdImportInStylesheet) {
-  String stylesheet_url = FlipURLOnAdRun(kVanillaStylesheetURL);
+  String stylesheet_url = FlipURLOnAdRun("https://example.com/style.css");
   String ad_imported_stylesheet_url =
-      ConvertToAdURL(kVanillaImportedStylesheetURL);
+      "https://example.com/imported.css?ad=true";
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest stylesheet(stylesheet_url, "text/css");
   SimSubresourceRequest imported_stylesheet(ad_imported_stylesheet_url,
                                             "text/css");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1161,8 +1175,8 @@ TEST_P(AdTrackerVanillaOrAdSimTest, AdImportInStylesheet) {
   imported_stylesheet.Complete(kStylesheetWithVanillaResources);
 
   // Wait for stylesheets to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
@@ -1170,14 +1184,15 @@ TEST_P(AdTrackerVanillaOrAdSimTest, AdImportInStylesheet) {
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(stylesheet_url), IsAdRun());
   EXPECT_TRUE(
       ad_tracker_->RequestWithUrlTaggedAsAd(ad_imported_stylesheet_url));
-  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL));
-  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, ImageSetInStylesheet) {
-  String stylesheet_url = FlipURLOnAdRun(kVanillaStylesheetURL);
+  String stylesheet_url = FlipURLOnAdRun("https://example.com/style.css");
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest stylesheet(stylesheet_url, "text/css");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1194,19 +1209,22 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ImageSetInStylesheet) {
   )CSS");
 
   // Wait for stylesheet to fetch resource.
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(stylesheet_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, ConstructableCSSCreatedByScript) {
-  String script_url = FlipURLOnAdRun(kVanillaScriptURL);
+  String script_url = FlipURLOnAdRun("https://example.com/script.js");
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest script(script_url, "text/javascript");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1228,25 +1246,29 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ConstructableCSSCreatedByScript) {
   )SCRIPT");
 
   // Wait for stylesheet to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL), IsAdRun());
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
+  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
+            IsAdRun());
 }
 
 // Vanilla resources loaded due to an ad's script's style recalculation
 // shouldn't be tagged.
 TEST_F(AdTrackerSimTest, StyleRecalcCausedByAdScript) {
-  String ad_script_url = ConvertToAdURL(kVanillaScriptURL);
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_stylesheet_url = "https://example.com/style.css";
+  String vanilla_font_url = "https://example.com/font.woff2";
+  String vanilla_image_url = "https://example.com/pixel.png";
   SimSubresourceRequest script(ad_script_url, "text/javascript");
-  SimSubresourceRequest stylesheet(kVanillaStylesheetURL, "text/css");
-  SimSubresourceRequest font(kVanillaFontURL, "font/woff2");
-  SimSubresourceRequest image(kVanillaImageURL, "image/png");
+  SimSubresourceRequest stylesheet(vanilla_stylesheet_url, "text/css");
+  SimSubresourceRequest font(vanilla_font_url, "font/woff2");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
@@ -1262,8 +1284,8 @@ TEST_F(AdTrackerSimTest, StyleRecalcCausedByAdScript) {
   // @font-face rules have fetches set up for src descriptors when the font face
   // is initialized in FontFace::InitCSSFontFace(). The fetch is not actually
   // performed, but the AdTracker is notified.
-  EXPECT_TRUE(ad_tracker_->UrlHasBeenRequested(kVanillaFontURL));
-  EXPECT_FALSE(ad_tracker_->UrlHasBeenRequested(kVanillaImageURL));
+  EXPECT_TRUE(ad_tracker_->UrlHasBeenRequested(vanilla_font_url));
+  EXPECT_FALSE(ad_tracker_->UrlHasBeenRequested(vanilla_image_url));
 
   // We override these to ensure the ad script appears on top of the stack when
   // the requests are made.
@@ -1276,16 +1298,145 @@ TEST_F(AdTrackerSimTest, StyleRecalcCausedByAdScript) {
   )SCRIPT");
 
   // Wait for stylesheets to fetch resources.
-  ad_tracker_->WaitForSubresource(kVanillaFontURL);
-  ad_tracker_->WaitForSubresource(kVanillaImageURL);
+  ad_tracker_->WaitForSubresource(vanilla_font_url);
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   font.Complete();
   image.Complete();
 
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaStylesheetURL));
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaFontURL));
-  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImageURL));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_stylesheet_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+// A dynamically added script with no src is still tagged as an ad if created
+// by an ad script.
+TEST_F(AdTrackerSimTest, DynamicallyAddedScriptNoSrc_StillTagged) {
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_script_url = "https://example.com/script.js";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest ad_script(ad_script_url, "text/javascript");
+  SimSubresourceRequest vanilla_script(vanilla_script_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <body><script src="script.js?ad=true"></script>
+        <script src="script.js"></script></body>
+  )HTML");
+
+  ad_script.Complete(R"SCRIPT(
+    let script = document.createElement("script");
+    let text = document.createTextNode(
+        "function getImage() { fetch('pixel.png'); }");
+    script.appendChild(text);
+    document.body.appendChild(script);
+  )SCRIPT");
+
+  // Fetch a resource using the function defined by dynamically added ad script.
+  vanilla_script.Complete(R"SCRIPT(
+    getImage();
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+// A dynamically added script with no src isn't tagged as an ad if not created
+// by an ad script, even if it's later used by an ad script.
+TEST_F(AdTrackerSimTest,
+       DynamicallyAddedScriptNoSrc_NotTaggedBasedOnUseByAdScript) {
+  String vanilla_script_url = "https://example.com/script.js";
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_script2_url = "https://example.com/script2.js";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest vanilla_script(vanilla_script_url, "text/javascript");
+  SimSubresourceRequest ad_script(ad_script_url, "text/javascript");
+  SimSubresourceRequest vanilla_script2(vanilla_script2_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <body><script src="script.js"></script>
+        <script src="script.js?ad=true"></script>
+        <script src="script2.js"></script></body>
+  )HTML");
+
+  vanilla_script.Complete(R"SCRIPT(
+    let script = document.createElement("script");
+    let text = document.createTextNode(
+        "function doNothing() {} " +
+        "function getImage() { fetch('pixel.png'); }");
+    script.appendChild(text);
+    document.body.appendChild(script);
+  )SCRIPT");
+
+  ad_script.Complete(R"SCRIPT(
+    doNothing();
+  )SCRIPT");
+
+  vanilla_script2.Complete(R"SCRIPT(
+    getImage();
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script2_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+TEST_F(AdTrackerSimTest, VanillaModuleScript_ResourceNotTagged) {
+  String vanilla_script_url = "https://example.com/script.js";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest vanilla_script(vanilla_script_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <head><script type="module" src="script.js"></script></head>
+    <body><div>Test</div></body>
+  )HTML");
+
+  vanilla_script.Complete(R"SCRIPT(
+    fetch('pixel.png');
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+TEST_F(AdTrackerSimTest, AdModuleScript_ResourceTagged) {
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest ad_script(ad_script_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <head><script type="module" src="script.js?ad=true"></script></head>
+    <body><div>Test</div></body>
+  )HTML");
+
+  ad_script.Complete(R"SCRIPT(
+    fetch('pixel.png');
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
 }
 
 class AdTrackerDisabledSimTest : public SimTest,

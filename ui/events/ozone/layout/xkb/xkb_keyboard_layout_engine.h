@@ -22,6 +22,8 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/xkb/xkb_key_code_converter.h"
 
+struct xkb_keymap;
+
 namespace ui {
 
 class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) XkbKeyboardLayoutEngine
@@ -123,6 +125,9 @@ class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) XkbKeyboardLayoutEngine
                       std::unique_ptr<char, base::FreeDeleter> keymap_str);
 
   std::unique_ptr<xkb_context, XkbContextDeleter> xkb_context_;
+
+  // Holds the keymap from xkb_keymap_new_from_buffer.
+  std::unique_ptr<xkb_keymap, XkbKeymapDeleter> key_map_from_buffer_;
 
   std::string current_layout_name_;
 

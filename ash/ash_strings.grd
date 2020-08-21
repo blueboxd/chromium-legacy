@@ -1096,6 +1096,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted active desk mini_view.">
         Active desk.
       </message>
+      <message name="IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted inactive desk mini_view.">
+        Inactive desk.
+      </message>
 
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
@@ -2519,16 +2522,28 @@ This file contains the strings for ash.
         Hi, <ph name="USERNAME">$1</ph>
       </message>
       <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING" desc="Message shown to greet the user in Assistant UI during the morning.">
-        Good morning <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+        Good morning <ph name="GIVEN_NAME">$1<ex>David</ex></ph>,
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING_WITHOUT_NAME" desc="Message shown to greet the user in Assistant UI during the morning.">
+        Good morning,
       </message>
       <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON" desc="Message shown to greet the user in Assistant UI during the afternoon.">
-        Good afternoon <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+        Good afternoon <ph name="GIVEN_NAME">$1<ex>David</ex></ph>,
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON_WITHOUT_NAME" desc="Message shown to greet the user in Assistant UI during the afternoon.">
+        Good afternoon,
       </message>
       <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING" desc="Message shown to greet the user in Assistant UI during the evening.">
-        Good evening <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+        Good evening <ph name="GIVEN_NAME">$1<ex>David</ex></ph>,
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING_WITHOUT_NAME" desc="Message shown to greet the user in Assistant UI during the evening.">
+        Good evening,
       </message>
       <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT" desc="Message shown to greet the user in Assistant UI during the night.">
-        Good night <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+        Good night <ph name="GIVEN_NAME">$1<ex>David</ex></ph>,
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT_WITHOUT_NAME" desc="Message shown to greet the user in Assistant UI during the night.">
+        Good night,
       </message>
       <message name="IDS_ASSISTANT_BETTER_ONBOARDING_INTRO" desc="Message shown to introduce Assistant capabilities to the user.">
         I'm your Google Assistant, here to help you throughout your day!

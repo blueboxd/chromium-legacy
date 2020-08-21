@@ -190,8 +190,12 @@ void StorageManager::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
   if (!quota_host_.is_bound()) {
+    ExecutionContext* execution_context = GetExecutionContext();
+    if (!execution_context)
+      return;
+
     // This method will bind quota_host_.
-    GetQuotaHost(GetExecutionContext());
+    GetQuotaHost(execution_context);
   }
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
@@ -237,10 +241,13 @@ void StorageManager::StartObserving() {
   if (change_listener_receiver_.is_bound())
     return;
 
+  ExecutionContext* execution_context = GetExecutionContext();
+  DCHECK(execution_context);
+
   // Using kMiscPlatformAPI because the Storage specification does not
   // specify a dedicated task queue yet.
   auto task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+      execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI);
   quota_host_->AddChangeListener(
       change_listener_receiver_.BindNewPipeAndPassRemote(task_runner), {});
 }

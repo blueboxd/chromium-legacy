@@ -10,6 +10,11 @@
 Polymer({
   is: 'settings-users-page',
 
+  behaviors: [
+    DeepLinkingBehavior,
+    settings.RouteObserverBehavior,
+  ],
+
   properties: {
     /**
      * Preferences state.
@@ -38,6 +43,21 @@ Polymer({
         return loadTimeData.getBoolean('isSupervised');
       },
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kGuestBrowsing,
+        chromeos.settings.mojom.Setting.kShowUsernamesAndPhotosAtSignIn,
+        chromeos.settings.mojom.Setting.kRestrictSignIn,
+        chromeos.settings.mojom.Setting.kAddToUserWhitelist,
+        chromeos.settings.mojom.Setting.kRemoveFromUserWhitelist,
+      ]),
+    },
   },
 
   /** @override */
@@ -49,6 +69,47 @@ Polymer({
     chrome.usersPrivate.isUserListManaged(isUserListManaged => {
       this.isUserListManaged_ = isUserListManaged;
     });
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    if (settingId !==
+        chromeos.settings.mojom.Setting.kRemoveFromUserWhitelist) {
+      // Continue with deep linking attempt.
+      return true;
+    }
+
+    // Wait for element to load.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const userList = this.$$('settings-user-list');
+      const removeButton = userList.$$('cr-icon-button');
+      if (removeButton) {
+        this.showDeepLinkElement(removeButton);
+        return;
+      }
+      console.warn(`Element with deep link id ${settingId} not focusable.`);
+    });
+    // Stop deep link attempt since we completed it manually.
+    return false;
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.ACCOUNTS) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**

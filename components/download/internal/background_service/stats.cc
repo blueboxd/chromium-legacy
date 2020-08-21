@@ -192,11 +192,6 @@ void LogStartDownloadResult(DownloadClient client,
                                 DownloadParams::StartResult::COUNT);
 }
 
-void LogRecoveryOperation(Entry::State to_state) {
-  UMA_HISTOGRAM_ENUMERATION("Download.Service.Recovery", to_state,
-                            Entry::State::COUNT);
-}
-
 void LogDownloadCompletion(CompletionType type, uint64_t file_size_bytes) {
   // Records completion type.
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Finish.Type", type,
@@ -299,12 +294,6 @@ void LogFileDirDiskUtilization(int64_t total_disk_space,
                                int64_t files_size) {
   UMA_HISTOGRAM_PERCENTAGE("Download.Service.Files.FreeDiskSpace",
                            (free_disk_space * 100) / total_disk_space);
-  UMA_HISTOGRAM_PERCENTAGE("Download.Service.Files.DiskUsed",
-                           (files_size * 100) / total_disk_space);
-}
-
-void LogFilePathRenamed(bool renamed) {
-  UMA_HISTOGRAM_BOOLEAN("Download.Service.Files.PathRenamed", renamed);
 }
 
 void LogEntryEvent(DownloadEvent event) {

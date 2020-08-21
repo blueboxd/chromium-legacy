@@ -43,6 +43,7 @@ const uint64_t kBytesTransferred = 721831;
 const uint8_t kPayload[] = {0x0f, 0x0a, 0x0c, 0x0e};
 
 void VerifyFileReadWrite(base::File& input_file, base::File& output_file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
   const std::vector<uint8_t> expected_bytes(std::begin(kPayload),
                                             std::end(kPayload));
   EXPECT_TRUE(output_file.WriteAndCheck(
@@ -55,6 +56,21 @@ void VerifyFileReadWrite(base::File& input_file, base::File& output_file) {
       /*offset=*/0, base::make_span(payload_bytes)));
   EXPECT_EQ(expected_bytes, payload_bytes);
   input_file.Close();
+}
+
+base::FilePath InitializeTemporaryFile(base::File& file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath path;
+  if (!base::CreateTemporaryFile(&path))
+    return path;
+
+  file.Initialize(path, base::File::Flags::FLAG_CREATE_ALWAYS |
+                            base::File::Flags::FLAG_READ |
+                            base::File::Flags::FLAG_WRITE);
+  EXPECT_TRUE(file.WriteAndCheck(
+      /*offset=*/0, base::make_span(kPayload, sizeof(kPayload))));
+  EXPECT_TRUE(file.Flush());
+  return path;
 }
 
 }  // namespace
@@ -291,13 +307,8 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
     const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                                 std::end(kPayload));
 
-    base::FilePath path;
-    ASSERT_TRUE(base::CreateTemporaryFile(&path));
-    base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
-                              base::File::Flags::FLAG_READ |
-                              base::File::Flags::FLAG_WRITE);
-    EXPECT_TRUE(file.WriteAndCheck(
-        /*offset=*/0, base::make_span(expected_payload)));
+    base::File file;
+    InitializeTemporaryFile(file);
 
     base::RunLoop run_loop;
     EXPECT_CALL(nearby_connections_, SendPayload)
@@ -309,9 +320,10 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
           ASSERT_TRUE(payload);
           ASSERT_EQ(PayloadContent::Tag::FILE, payload->content->which());
 
-          std::vector<uint8_t> payload_bytes(
-              payload->content->get_file()->file.GetLength());
-          EXPECT_TRUE(payload->content->get_file()->file.ReadAndCheck(
+          base::ScopedAllowBlockingForTesting allow_blocking;
+          base::File file = std::move(payload->content->get_file()->file);
+          std::vector<uint8_t> payload_bytes(file.GetLength());
+          EXPECT_TRUE(file.ReadAndCheck(
               /*offset=*/0, base::make_span(payload_bytes)));
           EXPECT_EQ(expected_payload, payload_bytes);
 
@@ -331,6 +343,7 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
   TestingProfile profile_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
       net::test::MockNetworkChangeNotifier::Create();
+  base::ScopedDisallowBlocking disallow_blocking_;
   testing::NiceMock<MockNearbyConnections> nearby_connections_;
   testing::NiceMock<MockNearbyProcessManager> nearby_process_manager_;
   NearbyConnectionsManagerImpl nearby_connections_manager_{
@@ -885,7 +898,11 @@ TEST_F(NearbyConnectionsManagerImplTest, IncomingRegisterPayloadPath) {
           });
 
   base::FilePath path;
-  ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::CreateTemporaryFile(&path));
+  }
+
   base::MockCallback<NearbyConnectionsManager::ConnectionsCallback> callback;
   EXPECT_CALL(callback, Run(testing::Eq(Status::kSuccess)));
   nearby_connections_manager_.RegisterPayloadPath(kPayloadId, path,
@@ -906,15 +923,12 @@ TEST_F(NearbyConnectionsManagerImplTest,
       payload_listener_remote);
   EXPECT_TRUE(connection);
 
-  base::FilePath path;
-  ASSERT_TRUE(base::CreateTemporaryFile(&path));
-  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
-                            base::File::Flags::FLAG_READ |
-                            base::File::Flags::FLAG_WRITE);
-  EXPECT_TRUE(file.WriteAndCheck(
-      /*offset=*/0, base::make_span(kPayload, sizeof(kPayload))));
-  file.Flush();
-  file.Close();
+  base::File file;
+  base::FilePath path = InitializeTemporaryFile(file);
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    file.Close();
+  }
 
   base::RunLoop register_payload_run_loop;
   EXPECT_CALL(nearby_connections_, RegisterPayloadFile)
@@ -997,13 +1011,8 @@ TEST_F(NearbyConnectionsManagerImplTest, IncomingFilePayload) {
   const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                               std::end(kPayload));
 
-  base::FilePath path;
-  ASSERT_TRUE(base::CreateTemporaryFile(&path));
-  base::File file(path, base::File::Flags::FLAG_CREATE_ALWAYS |
-                            base::File::Flags::FLAG_READ |
-                            base::File::Flags::FLAG_WRITE);
-  EXPECT_TRUE(file.WriteAndCheck(
-      /*offset=*/0, base::make_span(expected_payload)));
+  base::File file;
+  InitializeTemporaryFile(file);
 
   payload_listener_remote->OnPayloadReceived(
       kRemoteEndpointId,
@@ -1020,14 +1029,18 @@ TEST_F(NearbyConnectionsManagerImplTest, IncomingFilePayload) {
                                  kTotalSize, /*bytes_transferred=*/kTotalSize));
   payload_run_loop.Run();
 
-  Payload* payload = nearby_connections_manager_.GetIncomingPayload(kPayloadId);
-  ASSERT_TRUE(payload);
-  ASSERT_TRUE(payload->content->is_file());
-  std::vector<uint8_t> payload_bytes(
-      payload->content->get_file()->file.GetLength());
-  EXPECT_TRUE(payload->content->get_file()->file.ReadAndCheck(
-      /*offset=*/0, base::make_span(payload_bytes)));
-  EXPECT_EQ(expected_payload, payload_bytes);
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    Payload* payload =
+        nearby_connections_manager_.GetIncomingPayload(kPayloadId);
+    ASSERT_TRUE(payload);
+    ASSERT_TRUE(payload->content->is_file());
+    std::vector<uint8_t> payload_bytes(
+        payload->content->get_file()->file.GetLength());
+    EXPECT_TRUE(payload->content->get_file()->file.ReadAndCheck(
+        /*offset=*/0, base::make_span(payload_bytes)));
+    EXPECT_EQ(expected_payload, payload_bytes);
+  }
 }
 
 TEST_F(NearbyConnectionsManagerImplTest, ClearIncomingPayloads) {
@@ -1045,9 +1058,13 @@ TEST_F(NearbyConnectionsManagerImplTest, ClearIncomingPayloads) {
   testing::NiceMock<MockPayloadStatusListener> payload_listener;
   nearby_connections_manager_.RegisterPayloadStatusListener(kPayloadId,
                                                             &payload_listener);
+
+  base::File file;
+  InitializeTemporaryFile(file);
   payload_listener_remote->OnPayloadReceived(
       kRemoteEndpointId,
-      Payload::New(kPayloadId, PayloadContent::NewBytes(BytesPayload::New())));
+      Payload::New(kPayloadId,
+                   PayloadContent::NewFile(FilePayload::New(std::move(file)))));
 
   base::RunLoop payload_run_loop;
   EXPECT_CALL(payload_listener, OnStatusUpdate(testing::_))

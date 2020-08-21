@@ -457,7 +457,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
             ->GetTaskQueue(
                 main_frame_scheduler_->LoadingControlTaskQueueTraits())
             ->task_runner();
-    timer_task_runner_ = timer_task_queue()->task_runner();
+    throttleable_task_runner_ = throttleable_task_queue()->task_runner();
     find_in_page_task_runner_ = main_frame_scheduler_->GetTaskRunner(
         blink::TaskType::kInternalFindInPage);
     prioritised_local_frame_task_runner_ = main_frame_scheduler_->GetTaskRunner(
@@ -471,7 +471,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
         .get();
   }
 
-  TaskQueue* timer_task_queue() {
+  TaskQueue* throttleable_task_queue() {
     auto* frame_task_queue_controller =
         main_frame_scheduler_->FrameTaskQueueControllerForTest();
     return frame_task_queue_controller
@@ -714,9 +714,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
     base::RunLoop().Quit();
   }
 
-  void SimulateTimerTask(base::TimeDelta duration) {
+  void SimulateThrottleableTask(base::TimeDelta duration) {
     test_task_runner_->AdvanceMockTickClock(duration);
-    simulate_timer_task_ran_ = true;
+    simulate_throttleable_task_ran_ = true;
   }
 
   void EnableIdleTasks() { DoMainFrame(); }
@@ -795,7 +795,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   // - 'L': Loading task
   // - 'M': Loading Control task
   // - 'I': Idle task
-  // - 'T': Timer task
+  // - 'T': Throttleable task
   // - 'V': kV8 task
   // - 'F': FindInPage task
   // - 'U': Prioritised local frame task
@@ -836,7 +836,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
                                         String::FromUTF8(task)));
           break;
         case 'T':
-          timer_task_runner_->PostTask(
+          throttleable_task_runner_->PostTask(
               FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
                                         String::FromUTF8(task)));
           break;
@@ -952,12 +952,12 @@ class MainThreadSchedulerImplTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_control_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> throttleable_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> find_in_page_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner>
       prioritised_local_frame_task_runner_;
-  bool simulate_timer_task_ran_;
+  bool simulate_throttleable_task_ran_;
   bool initially_ensure_usecase_none_ = true;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 
@@ -1330,7 +1330,7 @@ TEST_F(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   Vector<String> run_order;
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  SimulateExpensiveTasks(timer_task_runner_);
+  SimulateExpensiveTasks(throttleable_task_runner_);
   DoMainFrame();
   // A navigation occurs which creates a new Document thus resetting the task
   // cost estimations.
@@ -1350,8 +1350,8 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
-  // Observation of touchstart should defer execution of timer, idle and loading
-  // tasks.
+  // Observation of touchstart should defer execution of throttleable, idle and
+  // loading tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
@@ -1373,7 +1373,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 
   // Action events like ScrollBegin will kick us back into compositor priority,
-  // allowing service of the timer, loading and idle queues.
+  // allowing service of the throttleable, loading and idle queues.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
@@ -1387,8 +1387,8 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
-  // Observation of touchstart should defer execution of timer, idle and loading
-  // tasks.
+  // Observation of touchstart should defer execution of throttleable, idle and
+  // loading tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
@@ -1417,7 +1417,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 
   // Action events like ScrollBegin will kick us back into compositor priority,
-  // allowing service of the timer, loading and idle queues.
+  // allowing service of the throttleable, loading and idle queues.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
@@ -2455,7 +2455,7 @@ TEST_F(MainThreadSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TimerQueueEnabledByDefault) {
+TEST_F(MainThreadSchedulerImplTest, ThrottleableQueueEnabledByDefault) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
   base::RunLoop().RunUntilIdle();
@@ -2475,14 +2475,14 @@ TEST_F(MainThreadSchedulerImplTest, StopAndResumeRenderer) {
   EXPECT_THAT(run_order, testing::ElementsAre("T1", "T2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, StopAndThrottleTimerQueue) {
+TEST_F(MainThreadSchedulerImplTest, StopAndThrottleThrottleableQueue) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   auto pause_handle = scheduler_->PauseRenderer();
   base::RunLoop().RunUntilIdle();
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
-      timer_task_queue());
+      throttleable_task_queue());
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
@@ -2492,7 +2492,7 @@ TEST_F(MainThreadSchedulerImplTest, ThrottleAndPauseRenderer) {
   PostTestTasks(&run_order, "T1 T2");
 
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
-      timer_task_queue());
+      throttleable_task_queue());
   base::RunLoop().RunUntilIdle();
   auto pause_handle = scheduler_->PauseRenderer();
   base::RunLoop().RunUntilIdle();
@@ -2696,22 +2696,24 @@ TEST_F(MainThreadSchedulerImplTest,
 }
 
 namespace {
-void SlowCountingTask(size_t* count,
-                      scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                      int task_duration,
-                      scoped_refptr<base::SingleThreadTaskRunner> timer_queue) {
+void SlowCountingTask(
+    size_t* count,
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
+    int task_duration,
+    scoped_refptr<base::SingleThreadTaskRunner> throttleable_queue) {
   task_runner->AdvanceMockTickClock(
       base::TimeDelta::FromMilliseconds(task_duration));
   if (++(*count) < 500) {
-    timer_queue->PostTask(FROM_HERE,
-                          base::BindOnce(SlowCountingTask, count, task_runner,
-                                         task_duration, timer_queue));
+    throttleable_queue->PostTask(
+        FROM_HERE, base::BindOnce(SlowCountingTask, count, task_runner,
+                                  task_duration, throttleable_queue));
   }
 }
 }  // namespace
 
-TEST_F(MainThreadSchedulerImplTest,
-       SYNCHRONIZED_GESTURE_TimerTaskThrottling_TimersStopped) {
+TEST_F(
+    MainThreadSchedulerImplTest,
+    SYNCHRONIZED_GESTURE_ThrottleableTaskThrottling_ThrottleableQueuesStopped) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
   base::TimeTicks first_throttled_run_time =
@@ -2719,10 +2721,10 @@ TEST_F(MainThreadSchedulerImplTest,
 
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
-  // 7ms timer task in the 16ms frame.
-  timer_task_runner_->PostTask(
+  // 7ms throttleable task in the 16ms frame.
+  throttleable_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(SlowCountingTask, &count, test_task_runner_, 7,
-                                timer_task_runner_));
+                                throttleable_task_runner_));
 
   std::unique_ptr<WebThreadScheduler::RendererPauseHandle> paused;
   for (int i = 0; i < 1000; i++) {
@@ -2751,32 +2753,32 @@ TEST_F(MainThreadSchedulerImplTest,
     bool expect_queue_enabled = (i == 0) || (Now() > first_throttled_run_time);
     if (paused)
       expect_queue_enabled = false;
-    EXPECT_EQ(expect_queue_enabled, timer_task_queue()->IsQueueEnabled())
+    EXPECT_EQ(expect_queue_enabled, throttleable_task_queue()->IsQueueEnabled())
         << "i = " << i;
 
     // After we've run any expensive tasks suspend the queue.  The throttling
     // helper should /not/ re-enable this queue under any circumstances while
-    // timers are paused.
+    // throttleable queues are paused.
     if (count > 0 && !paused) {
       EXPECT_EQ(2u, count) << "i = " << i;
       paused = scheduler_->PauseRenderer();
     }
   }
 
-  // Make sure the timer queue stayed paused!
+  // Make sure the throttleable queue stayed paused!
   EXPECT_EQ(2u, count);
 }
 
 TEST_F(MainThreadSchedulerImplTest,
-       SYNCHRONIZED_GESTURE_TimerTaskThrottling_task_not_expensive) {
+       SYNCHRONIZED_GESTURE_ThrottleableTaskThrottling_task_not_expensive) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
   size_t count = 0;
   // With the compositor task taking 10ms, there is enough time to run this 6ms
-  // timer task in the 16ms frame.
-  timer_task_runner_->PostTask(
+  // throttleable task in the 16ms frame.
+  throttleable_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(SlowCountingTask, &count, test_task_runner_, 6,
-                                timer_task_runner_));
+                                throttleable_task_runner_));
 
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
@@ -2798,7 +2800,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
-    EXPECT_TRUE(timer_task_queue()->IsQueueEnabled()) << "i = " << i;
+    EXPECT_TRUE(throttleable_task_queue()->IsQueueEnabled()) << "i = " << i;
   }
 
   // Task is not throttled.
@@ -2873,7 +2875,7 @@ TEST_F(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
   }
 
-  // Timer tasks should not have been starved by the expensive compositor
+  // Throttleable tasks should not have been starved by the expensive compositor
   // tasks.
   EXPECT_EQ(TaskQueue::kNormalPriority,
             scheduler_->CompositorTaskQueue()->GetQueuePriority());
@@ -2915,7 +2917,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
         << "i = " << i;
   }
 
-  // Timer tasks should not have been starved by the expensive compositor
+  // Throttleable tasks should not have been starved by the expensive compositor
   // tasks.
   EXPECT_EQ(TaskQueue::kNormalPriority,
             scheduler_->CompositorTaskQueue()->GetQueuePriority());
@@ -2929,8 +2931,8 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
 
   // With the compositor task taking 20ms, there is not enough time to run
   // other tasks in the same 16ms frame. However because this is a main thread
-  // gesture instead of custom main thread input handling, we allow the timer
-  // tasks to be starved.
+  // gesture instead of custom main thread input handling, we allow the
+  // throttleable tasks to be starved.
   Vector<String> run_order;
   for (int i = 0; i < 1000; i++)
     PostTestTasks(&run_order, "T1");
@@ -3057,16 +3059,17 @@ TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
-  // Ensure neither suspension nor timer task throttling affects an unthrottled
-  // task runner.
+  // Ensure neither suspension nor throttleable task throttling affects an
+  // unthrottled task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
   scoped_refptr<TaskQueue> unthrottled_task_queue = NewUnpausableTaskQueue();
 
-  size_t timer_count = 0;
+  size_t throttleable_count = 0;
   size_t unthrottled_count = 0;
-  timer_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(SlowCountingTask, &timer_count,
-                                test_task_runner_, 7, timer_task_runner_));
+  throttleable_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(SlowCountingTask, &throttleable_count, test_task_runner_,
+                     7, throttleable_task_runner_));
   unthrottled_task_queue->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(SlowCountingTask, &unthrottled_count, test_task_runner_, 7,
@@ -3095,17 +3098,18 @@ TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
   }
 
-  EXPECT_EQ(0u, timer_count);
+  EXPECT_EQ(0u, throttleable_count);
   EXPECT_EQ(500u, unthrottled_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
-       VirtualTimePolicyDoesNotAffectNewTimerTaskQueueIfVirtualTimeNotEnabled) {
+TEST_F(
+    MainThreadSchedulerImplTest,
+    VirtualTimePolicyDoesNotAffectNewThrottleableTaskQueueIfVirtualTimeNotEnabled) {
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kPause);
-  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
-  EXPECT_FALSE(timer_tq->HasActiveFence());
+  scoped_refptr<MainThreadTaskQueue> throttleable_tq =
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
+  EXPECT_FALSE(throttleable_tq->HasActiveFence());
 }
 
 TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
@@ -3118,8 +3122,8 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
           MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
   scoped_refptr<TaskQueue> loading_control_tq = scheduler_->NewLoadingTaskQueue(
       MainThreadTaskQueue::QueueType::kFrameLoadingControl, nullptr);
-  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  scoped_refptr<MainThreadTaskQueue> throttleable_tq =
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq = NewUnpausableTaskQueue();
 
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
@@ -3128,7 +3132,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(loading_task_queue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(timer_task_queue()->GetTimeDomain(),
+  EXPECT_EQ(throttleable_task_queue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_->VirtualTimeControlTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
@@ -3142,7 +3146,8 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(loading_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(loading_control_tq->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(timer_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(throttleable_tq->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(unthrottled_tq->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
@@ -3151,11 +3156,9 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
                     MainThreadTaskQueue::QueueType::kFrameLoading, nullptr)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_
-                ->NewTimerTaskQueue(
-                    MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr)
-                ->GetTimeDomain(),
-            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr)->GetTimeDomain(),
+      scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(NewUnpausableTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_
@@ -3172,26 +3175,24 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
       CreateFrameScheduler(page_scheduler.get(), nullptr, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
+  TaskQueue* throttleable_tq =
+      ThrottleableTaskQueue(frame_scheduler.get()).get();
 
   frame_scheduler->SetCrossOriginToMainFrame(true);
   frame_scheduler->SetFrameVisible(false);
-  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
+  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(throttleable_tq));
 
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
-  EXPECT_EQ(timer_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
-  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
+  EXPECT_EQ(throttleable_tq->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_FALSE(
+      scheduler_->task_queue_throttler()->IsThrottled(throttleable_tq));
 }
 
 TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
-
-  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
-  scoped_refptr<MainThreadTaskQueue> unthrottled_tq = NewUnpausableTaskQueue();
-
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
@@ -3199,7 +3200,7 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
             scheduler_->real_time_domain());
   EXPECT_EQ(loading_task_queue()->GetTimeDomain(),
             scheduler_->real_time_domain());
-  EXPECT_EQ(timer_task_queue()->GetTimeDomain(),
+  EXPECT_EQ(throttleable_task_queue()->GetTimeDomain(),
             scheduler_->real_time_domain());
   EXPECT_EQ(scheduler_->ControlTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
@@ -3312,9 +3313,9 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
   CPUTimeBudgetPool* time_budget_pool =
       scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool("test");
 
-  time_budget_pool->AddQueue(base::TimeTicks(), timer_task_queue());
+  time_budget_pool->AddQueue(base::TimeTicks(), throttleable_task_queue());
 
-  timer_task_runner_->PostTask(FROM_HERE, base::BindOnce(NullTask));
+  throttleable_task_runner_->PostTask(FROM_HERE, base::BindOnce(NullTask));
 
   loading_task_queue()->task_runner()->PostDelayedTask(
       FROM_HERE, base::BindOnce(NullTask),
@@ -3372,14 +3373,14 @@ TEST_F(MainThreadSchedulerImplTest,
 
 #if defined(OS_ANDROID)
 TEST_F(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
-  // Tasks in some queues don't fire when the timers are paused.
+  // Tasks in some queues don't fire when the throttleable queues are paused.
   Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
   scheduler_->PauseTimersForAndroidWebView();
   EnableIdleTasks();
   test_task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "L1", "I1"));
-  // The rest queued tasks fire when the timers are resumed.
+  // The rest queued tasks fire when the throttleable queues are resumed.
   run_order.clear();
   scheduler_->ResumeTimersForAndroidWebView();
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -3490,10 +3491,10 @@ TEST_F(MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest,
 TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
   // Ensure that the scheduler clears its references to a task queue after
   // |shutdown| and doesn't try to update its policies.
-  scoped_refptr<MainThreadTaskQueue> queue1 = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
-  scoped_refptr<MainThreadTaskQueue> queue2 = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  scoped_refptr<MainThreadTaskQueue> queue1 =
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
+  scoped_refptr<MainThreadTaskQueue> queue2 =
+      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
 
   EXPECT_EQ(queue1->GetTimeDomain(), scheduler_->real_time_domain());
   EXPECT_EQ(queue2->GetTimeDomain(), scheduler_->real_time_domain());
@@ -3915,18 +3916,18 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  scoped_refptr<TaskQueue> timer_tq = QueueForTaskType(
+  scoped_refptr<TaskQueue> throttleable_tq = QueueForTaskType(
       frame_scheduler.get(), TaskType::kJavascriptTimerDelayed);
   ForceUpdatePolicyAndGetCurrentUseCase();
 
-  EXPECT_FALSE(timer_tq->IsQueueEnabled());
+  EXPECT_FALSE(throttleable_tq->IsQueueEnabled());
 
   ignore_result(
       scheduler_->agent_scheduling_strategy().OnMainFrameFirstMeaningfulPaint(
           *main_frame_scheduler_));
   ForceUpdatePolicyAndGetCurrentUseCase();
 
-  EXPECT_TRUE(timer_tq->IsQueueEnabled());
+  EXPECT_TRUE(throttleable_tq->IsQueueEnabled());
 }
 
 TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
@@ -3954,7 +3955,7 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
   EXPECT_FALSE(timer_tq->IsQueueEnabled());
 
   // Mouse down should cause MTSI to notify the agent scheduling strategy, which
-  // should re-enable the timer queue.
+  // should re-enable the throttleable queue.
   scheduler_->DidHandleInputEventOnCompositorThread(mouse_down_event,
                                                     event_state);
   base::RunLoop().RunUntilIdle();  // Notification is posted to the main thread.

@@ -2934,8 +2934,8 @@ void LocalFrameView::PaintTree(
     } else {
       GraphicsContext graphics_context(*paint_controller_);
       if (Settings* settings = frame_->GetSettings()) {
-        graphics_context.SetDarkMode(
-            BuildDarkModeSettings(*settings, *GetLayoutView()));
+        graphics_context.SetDarkMode(BuildDarkModeSettings(
+            *settings, GetLayoutView()->StyleRef().DarkColorScheme()));
       }
 
       bool painted_full_screen_overlay = false;

@@ -32,8 +32,8 @@ void BindDiscardableSharedMemoryManagerOnIOThread(
 
 }  // namespace
 
-std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
-    base::OnceClosure disconnect_handler) {
+std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
+StartCompositorService(base::OnceClosure disconnect_handler) {
   // Create a dedicated sequence for communicating with the compositor. This
   // sequence will handle message serialization/deserialization of bitmaps so it
   // affects user visible elements. This is an implementation detail and the
@@ -52,9 +52,12 @@ std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
       base::BindOnce(&CreateCompositorCollectionPending,
                      pending_remote.InitWithNewPipeAndPassReceiver()));
 
-  return std::make_unique<PaintPreviewCompositorServiceImpl>(
-      std::move(pending_remote), compositor_task_runner,
-      std::move(disconnect_handler));
+  return std::unique_ptr<PaintPreviewCompositorServiceImpl,
+                         base::OnTaskRunnerDeleter>(
+      new PaintPreviewCompositorServiceImpl(std::move(pending_remote),
+                                            compositor_task_runner,
+                                            std::move(disconnect_handler)),
+      base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
 }
 
 mojo::Remote<mojom::PaintPreviewCompositorCollection>

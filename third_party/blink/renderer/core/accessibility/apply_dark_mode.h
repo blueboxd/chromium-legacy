@@ -7,22 +7,15 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 
 namespace blink {
 
-// Extract dark mode settings from |settings| and modify them as needed
-// based on |root|.
-DarkModeSettings CORE_EXPORT BuildDarkModeSettings(const Settings& settings,
-                                                   const LayoutView& root);
-
-// Determine whether the page with the provided |root| should have its colors
-// inverted, based on the provided |policy|.
-//
-// This method does not check whether Dark Mode is enabled overall.
-bool CORE_EXPORT ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,
-                                                 const LayoutView& root);
+// If content has dark color scheme set then return disabled settings, otherwise
+// return enabled settings based on force dark mode enabled.
+DarkModeSettings CORE_EXPORT
+BuildDarkModeSettings(const Settings& settings,
+                      bool content_has_dark_color_scheme);
 
 }  // namespace blink
 

@@ -51,24 +51,6 @@ bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
   }
 }
 
-bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
-  switch (entry_point) {
-    case AssistantEntryPoint::kDeepLink:
-    case AssistantEntryPoint::kHotword:
-    case AssistantEntryPoint::kLauncherChip:
-    case AssistantEntryPoint::kLauncherSearchBoxIcon:
-    case AssistantEntryPoint::kLauncherSearchResult:
-    case AssistantEntryPoint::kProactiveSuggestions:
-    case AssistantEntryPoint::kStylus:
-      return false;
-    case AssistantEntryPoint::kUnspecified:
-    case AssistantEntryPoint::kHotkey:
-    case AssistantEntryPoint::kLongPressLauncher:
-    case AssistantEntryPoint::kSetup:
-      return true;
-  }
-}
-
 bool IsGoogleDevice() {
   return g_override_is_google_device || chromeos::IsGoogleBrandedDevice();
 }

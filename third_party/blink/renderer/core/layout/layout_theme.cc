@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_mobile.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -621,7 +622,8 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
   FontSelectionValue font_weight = NormalWeightValue();
   float font_size = 0;
   AtomicString font_family;
-  SystemFont(system_font_id, font_slope, font_weight, font_size, font_family);
+  LayoutThemeFontProvider::SystemFont(system_font_id, font_slope, font_weight,
+                                      font_size, font_family);
   font_description.SetStyle(font_slope);
   font_description.SetWeight(font_weight);
   font_description.SetSpecifiedSize(font_size);
@@ -644,7 +646,7 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kBackground:
       return 0xFF6363CE;
     case CSSValueID::kButtonface:
-      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF444444 : 0xFFDDDDDD;
     case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
     case CSSValueID::kButtonshadow:
@@ -676,7 +678,7 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kLinktext:
       return 0xFF0000EE;
     case CSSValueID::kMenu:
-      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFF7F7F7;
     case CSSValueID::kMenutext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kScrollbar:

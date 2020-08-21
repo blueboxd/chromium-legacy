@@ -35,17 +35,11 @@ Event::Event(scoped_refptr<base::RefCountedMemory> event_bytes,
              bool sequence_valid) {
   auto* xcb_event = reinterpret_cast<xcb_generic_event_t*>(
       const_cast<uint8_t*>(event_bytes->data()));
-  XDisplay* display = connection->display();
-
   sequence_valid_ = sequence_valid;
   sequence_ = xcb_event->full_sequence;
   // KeymapNotify events are the only events that don't have a sequence.
   if ((xcb_event->response_type & ~kSendEventMask) !=
       x11::KeymapNotifyEvent::opcode) {
-    // Rewrite the sequence to the last seen sequence so that Xlib doesn't
-    // think the sequence wrapped around.
-    xcb_event->sequence = XLastKnownRequestProcessed(display);
-
     // On the wire, events are 32 bytes except for generic events which are
     // trailed by additional data.  XCB inserts an extended 4-byte sequence
     // between the 32-byte event and the additional data, so we need to shift

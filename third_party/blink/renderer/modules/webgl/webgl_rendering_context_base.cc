@@ -114,6 +114,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -777,15 +778,16 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage() {
   auto color_params = ColorParams();
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
-          size, SharedGpuContext::ContextProviderWrapper(),
-          GetDrawingBuffer()->FilterQuality(), color_params,
-          is_origin_top_left_, RasterMode::kGPU,
-          0u /*shared_image_usage_flags*/);
+          size, GetDrawingBuffer()->FilterQuality(), color_params,
+          CanvasResourceProvider::ShouldInitialize::kNo,
+          SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
+          is_origin_top_left_, 0u /*shared_image_usage_flags*/);
   // todo(bug 1090962) This CPU fallback is needed as it would break
   // webgl_conformance_gles_passthrough_tests on Android FYI for Nexus 5x.
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
-        size, GetDrawingBuffer()->FilterQuality(), color_params);
+        size, GetDrawingBuffer()->FilterQuality(), color_params,
+        CanvasResourceProvider::ShouldInitialize::kNo);
   }
 
   if (!resource_provider || !resource_provider->IsValid())
@@ -3240,6 +3242,58 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(
   }
 }
 
+namespace {
+
+// WebGL parameters which can be used to identify users.
+static const GLenum kIdentifiableGLParams[] = {
+    GL_ALIASED_LINE_WIDTH_RANGE,          // GetWebGLFloatArrayParameter
+    GL_ALIASED_POINT_SIZE_RANGE,          // GetWebGLFloatArrayParameter
+    GL_ALPHA_BITS,                        // GetIntParameter
+    GL_BLUE_BITS,                         // GetIntParameter
+    GL_DEPTH_BITS,                        // GetIntParameter
+    GL_GREEN_BITS,                        // GetIntParameter
+    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,  // GetIntParameter
+    GL_MAX_CUBE_MAP_TEXTURE_SIZE,         // GetIntParameter
+    GL_MAX_FRAGMENT_UNIFORM_VECTORS,      // GetIntParameter
+    GL_MAX_RENDERBUFFER_SIZE,             // GetIntParameter
+    GL_MAX_TEXTURE_IMAGE_UNITS,           // GetIntParameter
+    GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT,    // GetFloatParameter
+    GL_MAX_TEXTURE_SIZE,                  // GetIntParameter
+    GL_MAX_VARYING_VECTORS,               // GetIntParameter
+    GL_MAX_VERTEX_ATTRIBS,                // GetIntParameter
+    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,    // GetIntParameter
+    GL_MAX_VERTEX_UNIFORM_VECTORS,        // GetIntParameter
+    GL_MAX_VIEWPORT_DIMS,                 // GetWebGLIntArrayParameter
+    GL_RED_BITS,                          // GetIntParameter
+    GL_SHADING_LANGUAGE_VERSION,
+    GL_STENCIL_BITS,  // GetIntParameter
+    GL_VERSION,
+    WebGLDebugRendererInfo::kUnmaskedRendererWebgl,
+    WebGLDebugRendererInfo::kUnmaskedVendorWebgl,
+};
+
+bool IsIdentifiableGLParam(GLenum pname) {
+  return std::find(std::begin(kIdentifiableGLParams),
+                   std::end(kIdentifiableGLParams),
+                   pname) != std::end(kIdentifiableGLParams);
+}
+
+}  // namespace
+
+void WebGLRenderingContextBase::RecordIdentifiableGLParameterDigest(
+    GLenum pname,
+    IdentifiableToken value) {
+  if (!IsUserInIdentifiabilityStudy() || !IsIdentifiableGLParam(pname))
+    return;
+  if (base::Optional<UkmParameters> ukm_params = ukm_parameters()) {
+    blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
+        .Set(blink::IdentifiableSurface::FromTypeAndInput(
+                 blink::IdentifiableSurface::Type::kWebGLParameter, pname),
+             value)
+        .Record(ukm_params->ukm_recorder);
+  }
+}
+
 ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
                                                     GLenum pname) {
   if (isContextLost())
@@ -3379,6 +3433,11 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
     case GL_SCISSOR_TEST:
       return GetBooleanParameter(script_state, pname);
     case GL_SHADING_LANGUAGE_VERSION:
+      if (IsUserInIdentifiabilityStudy()) {
+        RecordIdentifiableGLParameterDigest(
+            pname, IdentifiabilityBenignStringToken(String(
+                       ContextGL()->GetString(GL_SHADING_LANGUAGE_VERSION))));
+      }
       return WebGLAny(
           script_state,
           "WebGL GLSL ES 1.0 (" +
@@ -3441,6 +3500,11 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
     case GL_VENDOR:
       return WebGLAny(script_state, String("WebKit"));
     case GL_VERSION:
+      if (IsUserInIdentifiabilityStudy()) {
+        RecordIdentifiableGLParameterDigest(
+            pname, IdentifiabilityBenignStringToken(
+                       String(ContextGL()->GetString(GL_VERSION))));
+      }
       return WebGLAny(
           script_state,
           "WebGL 1.0 (" + String(ContextGL()->GetString(GL_VERSION)) + ")");
@@ -3455,17 +3519,29 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
           "invalid parameter name, OES_standard_derivatives not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
     case WebGLDebugRendererInfo::kUnmaskedRendererWebgl:
-      if (ExtensionEnabled(kWebGLDebugRendererInfoName))
+      if (ExtensionEnabled(kWebGLDebugRendererInfoName)) {
+        if (IsUserInIdentifiabilityStudy()) {
+          RecordIdentifiableGLParameterDigest(
+              pname, IdentifiabilityBenignStringToken(
+                         String(ContextGL()->GetString(GL_RENDERER))));
+        }
         return WebGLAny(script_state,
                         String(ContextGL()->GetString(GL_RENDERER)));
+      }
       SynthesizeGLError(
           GL_INVALID_ENUM, "getParameter",
           "invalid parameter name, WEBGL_debug_renderer_info not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
     case WebGLDebugRendererInfo::kUnmaskedVendorWebgl:
-      if (ExtensionEnabled(kWebGLDebugRendererInfoName))
+      if (ExtensionEnabled(kWebGLDebugRendererInfoName)) {
+        if (IsUserInIdentifiabilityStudy()) {
+          RecordIdentifiableGLParameterDigest(
+              pname, IdentifiabilityBenignStringToken(
+                         String(ContextGL()->GetString(GL_VENDOR))));
+        }
         return WebGLAny(script_state,
                         String(ContextGL()->GetString(GL_VENDOR)));
+      }
       SynthesizeGLError(
           GL_INVALID_ENUM, "getParameter",
           "invalid parameter name, WEBGL_debug_renderer_info not enabled");
@@ -6994,6 +7070,7 @@ ScriptValue WebGLRenderingContextBase::GetFloatParameter(
   GLfloat value = 0;
   if (!isContextLost())
     ContextGL()->GetFloatv(pname, &value);
+  RecordIdentifiableGLParameterDigest(pname, value);
   return WebGLAny(script_state, value);
 }
 
@@ -7057,6 +7134,13 @@ ScriptValue WebGLRenderingContextBase::GetWebGLFloatArrayParameter(
     default:
       NOTIMPLEMENTED();
   }
+  if (IsUserInIdentifiabilityStudy() && IsIdentifiableGLParam(pname)) {
+    blink::IdentifiableTokenBuilder builder;
+    for (unsigned i = 0; i < length; i++) {
+      builder.AddToken(value[i]);
+    }
+    RecordIdentifiableGLParameterDigest(pname, builder.GetToken());
+  }
   return WebGLAny(script_state, DOMFloat32Array::Create(value, length));
 }
 
@@ -7077,6 +7161,13 @@ ScriptValue WebGLRenderingContextBase::GetWebGLIntArrayParameter(
       break;
     default:
       NOTIMPLEMENTED();
+  }
+  if (IsUserInIdentifiabilityStudy() && IsIdentifiableGLParam(pname)) {
+    blink::IdentifiableTokenBuilder builder;
+    for (unsigned i = 0; i < length; i++) {
+      builder.AddToken(value[i]);
+    }
+    RecordIdentifiableGLParameterDigest(pname, builder.GetToken());
   }
   return WebGLAny(script_state, DOMInt32Array::Create(value, length));
 }
@@ -8233,8 +8324,9 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   // TODO(fserb): why is this a BITMAP?
   std::unique_ptr<CanvasResourceProvider> temp(
       CanvasResourceProvider::CreateBitmapProvider(
-          size, kLow_SkFilterQuality,
-          CanvasColorParams()));  // TODO: should this use the canvas's
+          size, kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kNo));  // TODO: should this
+                                                            // use the canvas's
 
   if (!temp)
     return nullptr;

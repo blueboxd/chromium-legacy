@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import org.chromium.base.Callback;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
@@ -52,7 +53,10 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(ConfirmSyncDataIntegrationTest.CONFIRM_SYNC_DATA_BATCH_NAME)
 public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
+    public static final String CONFIRM_SYNC_DATA_BATCH_NAME = "confirm_sync_data";
+
     private static final String OLD_ACCOUNT_NAME = "test.account.old@gmail.com";
     private static final String NEW_ACCOUNT_NAME = "test.account.new@gmail.com";
     private static final String MANAGED_DOMAIN = "managed-domain.com";

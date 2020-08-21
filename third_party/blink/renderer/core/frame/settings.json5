@@ -903,12 +903,6 @@
       invalidate: "ForceDark",
     },
     {
-      name: "forceDarkModePagePolicy",
-      initial: "DarkModePagePolicy::kFilterByBackground",
-      type: "DarkModePagePolicy",
-      invalidate: "ForceDark",
-    },
-    {
       name: "forceDarkModeTextBrightnessThreshold",
       initial: "150",
       type: "int",

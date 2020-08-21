@@ -28,13 +28,6 @@ enum class DarkModeImagePolicy {
   kFilterSmart,
 };
 
-enum class DarkModePagePolicy {
-  // Apply dark-mode filter to all frames, regardless of content.
-  kFilterAll,
-  // Apply dark-mode filter to frames based on background color.
-  kFilterByBackground,
-};
-
 // New variables added to this struct should also be added to
 // BuildDarkModeSettings() in
 //   //src/third_party/blink/renderer/core/accessibility/apply_dark_mode.h

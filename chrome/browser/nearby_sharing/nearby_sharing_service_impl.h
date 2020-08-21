@@ -27,6 +27,7 @@
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_file_handler.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
@@ -162,15 +163,20 @@ class NearbySharingServiceImpl
   StatusCodes ReceivePayloads(const ShareTarget& share_target);
   StatusCodes SendPayloads(const ShareTarget& share_target);
 
-  StatusCodes SendAttachments(const ShareTarget& share_target);
+  StatusCodes SendAttachments(ShareTarget share_target);
   void OnOutgoingConnection(const ShareTarget& share_target,
                             NearbyConnection* connection);
   void SendIntroduction(const ShareTarget& share_target,
                         base::Optional<std::string> four_digit_token);
 
-  bool CreatePayloads(const ShareTarget& share_target);
-  std::vector<location::nearby::connections::mojom::PayloadPtr>
-  CreateFilePayloads(const std::vector<FileAttachment>& attachments);
+  void CreatePayloads(ShareTarget share_target,
+                      base::OnceCallback<void(ShareTarget, bool)> callback);
+  void OnCreatePayloads(std::vector<uint8_t> endpoint_info,
+                        ShareTarget share_target,
+                        bool success);
+  void OnOpenFiles(ShareTarget share_target,
+                   base::OnceCallback<void(ShareTarget, bool)> callback,
+                   std::vector<NearbyFileHandler::FileInfo> files);
   std::vector<location::nearby::connections::mojom::PayloadPtr>
   CreateTextPayloads(const std::vector<TextAttachment>& attachments);
 
@@ -187,9 +193,9 @@ class NearbySharingServiceImpl
       ShareTarget placeholder_share_target,
       sharing::mojom::AdvertisementPtr advertisement);
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
-                                TransferMetadata metadata);
+                                const TransferMetadata& metadata);
   void OnOutgoingTransferUpdate(const ShareTarget& share_target,
-                                TransferMetadata metadata);
+                                const TransferMetadata& metadata);
   void CloseConnection(const ShareTarget& share_target);
   void OnIncomingDecryptedCertificate(
       const std::string& endpoint_id,
@@ -271,6 +277,7 @@ class NearbySharingServiceImpl
   std::unique_ptr<NearbyShareLocalDeviceDataManager> local_device_data_manager_;
   std::unique_ptr<NearbyShareContactManager> contact_manager_;
   std::unique_ptr<NearbyShareCertificateManager> certificate_manager_;
+  NearbyFileHandler file_handler_;
 
   // A list of foreground receivers.
   base::ObserverList<TransferUpdateCallback> foreground_receive_callbacks_;

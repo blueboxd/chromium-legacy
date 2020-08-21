@@ -52,6 +52,10 @@ paper-behaviors/paper-checked-element-behavior.js
 paper-spinner/paper-spinner.js
 
 # paper-styles
+paper-styles/classes/*
+paper-styles/demo-pages.js
+paper-styles/element-styles/*
+paper-styles/default-theme.js
 paper-styles/paper-styles-classes.js
 paper-styles/paper-styles.js
 

@@ -423,6 +423,7 @@ source_set("unit_tests") {
     "presentation/mock_presentation_service.h",
     "presentation/presentation_availability_state_test.cc",
     "presentation/presentation_availability_test.cc",
+    "presentation/presentation_connection_callbacks_test.cc",
     "presentation/presentation_receiver_test.cc",
     "presentation/presentation_request_test.cc",
     "push_messaging/push_manager_test.cc",

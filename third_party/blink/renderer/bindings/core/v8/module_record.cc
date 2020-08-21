@@ -137,7 +137,6 @@ v8::Local<v8::Module> ModuleRecord::Compile(
 
 ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
                                       v8::Local<v8::Module> record,
-
                                       const KURL& source_url) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
@@ -145,7 +144,14 @@ ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
 
   DCHECK(!record.IsEmpty());
   v8::Local<v8::Context> context = script_state->GetContext();
-  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url);
+
+  // Script IDs are not available on errored modules or on non-source text
+  // modules, so we give them a default value.
+  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url,
+                             record->GetStatus() != v8::Module::kErrored &&
+                                     record->IsSourceTextModule()
+                                 ? record->ScriptId()
+                                 : v8::UnboundScript::kNoScriptId);
   bool success;
   if (!record->InstantiateModule(context, &ResolveModuleCallback)
            .To(&success) ||
@@ -168,7 +174,14 @@ ModuleEvaluationResult ModuleRecord::Evaluate(ScriptState* script_state,
   v8::TryCatch try_catch(isolate);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  probe::ExecuteScript probe(execution_context, source_url);
+
+  // Script IDs are not available on errored modules or on non-source text
+  // modules, so we give them a default value.
+  probe::ExecuteScript probe(execution_context, source_url,
+                             record->GetStatus() != v8::Module::kErrored &&
+                                     record->IsSourceTextModule()
+                                 ? record->ScriptId()
+                                 : v8::UnboundScript::kNoScriptId);
 
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::EvaluateModule(isolate, execution_context, record,

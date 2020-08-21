@@ -42,9 +42,10 @@ class DialogExample::Delegate : public virtual DialogType {
   explicit Delegate(DialogExample* parent) : parent_(parent) {
     DialogDelegate::SetButtons(parent_->GetDialogButtons());
     DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                     parent_->ok_button_label_->GetText());
+                                   parent_->ok_button_label_->GetText());
     DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                     parent_->cancel_button_label_->GetText());
+                                   parent_->cancel_button_label_->GetText());
+    WidgetDelegate::SetModalType(parent_->GetModalType());
   }
 
   void InitDelegate() {
@@ -62,11 +63,6 @@ class DialogExample::Delegate : public virtual DialogType {
   }
 
  protected:
-  // WidgetDelegate:
-  ui::ModalType GetModalType() const override {
-    return parent_->GetModalType();
-  }
-
   base::string16 GetWindowTitle() const override {
     return parent_->title_->GetText();
   }
@@ -205,6 +201,10 @@ void DialogExample::AddCheckbox(GridLayout* layout, Checkbox** member) {
 ui::ModalType DialogExample::GetModalType() const {
   // "Fake" modeless happens when a DialogDelegate specifies window-modal, but
   // doesn't provide a parent window.
+  // TODO(ellyjones): This doesn't work on Mac at all - something should happen
+  // other than changing modality on the fly like this. In fact, it should be
+  // impossible to change modality in a live dialog at all, and this example
+  // should stop doing it.
   if (mode_->GetSelectedIndex() == kFakeModeless)
     return ui::MODAL_TYPE_WINDOW;
 

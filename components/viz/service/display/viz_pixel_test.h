@@ -14,6 +14,9 @@ namespace viz {
 
 enum class RendererType { kSoftware, kGL, kSkiaGL, kSkiaVulkan, kSkiaDawn };
 
+// Provides gtest with a string for RendererType to be used for test suffixes.
+void PrintTo(RendererType type, std::ostream* os);
+
 // Return a list containing all RendererTypes.
 std::vector<RendererType> GetRendererTypes();
 

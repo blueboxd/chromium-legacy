@@ -91,11 +91,11 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
       has_invalid_dom_key = true;
       break;
     }
-    replacement_strings.emplace_back(dom_key_string);
+    replacement_strings.push_back(dom_key_string);
 
     base::string16 accessible_name = GetAccessibleNameForKeyboardCode(key_code);
-    accessible_names.emplace_back(accessible_name.empty() ? dom_key_string
-                                                          : accessible_name);
+    accessible_names.push_back(accessible_name.empty() ? dom_key_string
+                                                       : accessible_name);
   }
 
   base::string16 shortcut_string;

@@ -103,7 +103,12 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   friend class AdTrackerSimTest;
   friend class AdTrackerTest;
 
-  void WillExecuteScript(ExecutionContext*, const String& script_name);
+  // |script_name| will be empty in the case of a dynamically added script with
+  // no src attribute set. |script_id| won't be set for module scripts in an
+  // errored state or for non-source text modules.
+  void WillExecuteScript(ExecutionContext*,
+                         const String& script_name,
+                         int script_id);
   void DidExecuteScript();
   bool IsKnownAdScript(ExecutionContext* execution_context, const String& url);
   void AppendToKnownAdScripts(ExecutionContext&, const String& url);
@@ -116,7 +121,8 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
 
   uint32_t num_ads_in_stack_ = 0;
 
-  // The set of ad scripts detected outside of ad-frame contexts.
+  // The set of ad scripts detected outside of ad-frame contexts. Scripts with
+  // no name (i.e. URL) use a String created by GenerateFakeUrlFromScriptId().
   HeapHashMap<WeakMember<ExecutionContext>, HashSet<String>> known_ad_scripts_;
 
   // The number of ad-related async tasks currently running in the stack.

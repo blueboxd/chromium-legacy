@@ -49,6 +49,8 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
@@ -425,6 +427,10 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
   if (metadata.response().has_request_method())
     request_method = metadata.response().request_method();
 
+  // Note that |has_range_requested| can be safely set to false since it only
+  // affects HTTP 206 (Partial) responses, which are blocked from cache storage.
+  // See https://fetch.spec.whatwg.org/#main-fetch for usage of
+  // |has_range_requested|.
   return blink::mojom::FetchAPIResponse::New(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
@@ -443,7 +449,8 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
       static_cast<net::HttpResponseInfo::ConnectionInfo>(
           metadata.response().connection_info()),
       alpn_negotiated_protocol, metadata.response().loaded_with_credentials(),
-      metadata.response().was_fetched_via_spdy());
+      metadata.response().was_fetched_via_spdy(),
+      /* has_range_requested */ false);
 }
 
 // The size of opaque (non-cors) resource responses are padded in order
@@ -1796,6 +1803,7 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   }
 
   proto::CacheResponse* response_metadata = metadata.mutable_response();
+  DCHECK_NE(put_context->response->status_code, net::HTTP_PARTIAL_CONTENT);
   response_metadata->set_status_code(put_context->response->status_code);
   response_metadata->set_status_text(put_context->response->status_text);
   response_metadata->set_response_type(FetchResponseTypeToProtoResponseType(

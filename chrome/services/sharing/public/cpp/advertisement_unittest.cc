@@ -25,39 +25,44 @@ const std::vector<uint8_t> kSalt(Advertisement::kSaltSize, 0);
 static const std::vector<uint8_t> kEncryptedMetadataKey(
     Advertisement::kMetadataEncryptionKeyHashByteSize,
     0);
+const nearby_share::mojom::ShareTargetType kDeviceType =
+    nearby_share::mojom::ShareTargetType::kPhone;
 
 }  // namespace
 
 TEST(AdvertisementTest, CreateNewInstanceWithNullName) {
   std::unique_ptr<sharing::Advertisement> advertisement =
       sharing::Advertisement::NewInstance(kSalt, kEncryptedMetadataKey,
+                                          kDeviceType,
                                           /* device_name=*/base::nullopt);
   EXPECT_FALSE(advertisement->device_name());
-  EXPECT_EQ(advertisement->encrypted_metadata_key(), kEncryptedMetadataKey);
+  EXPECT_EQ(kEncryptedMetadataKey, advertisement->encrypted_metadata_key());
+  EXPECT_EQ(kDeviceType, advertisement->device_type());
   EXPECT_FALSE(advertisement->HasDeviceName());
-  EXPECT_EQ(advertisement->salt(), kSalt);
+  EXPECT_EQ(kSalt, advertisement->salt());
 }
 
 TEST(AdvertisementTest, CreateNewInstance) {
   std::unique_ptr<sharing::Advertisement> advertisement =
       sharing::Advertisement::NewInstance(kSalt, kEncryptedMetadataKey,
-                                          kDeviceName);
-  EXPECT_EQ(advertisement->device_name(), kDeviceName);
-  EXPECT_EQ(advertisement->encrypted_metadata_key(), kEncryptedMetadataKey);
+                                          kDeviceType, kDeviceName);
+  EXPECT_EQ(kDeviceName, advertisement->device_name());
+  EXPECT_EQ(kEncryptedMetadataKey, advertisement->encrypted_metadata_key());
+  EXPECT_EQ(kDeviceType, advertisement->device_type());
   EXPECT_TRUE(advertisement->HasDeviceName());
-  EXPECT_EQ(advertisement->salt(), kSalt);
+  EXPECT_EQ(kSalt, advertisement->salt());
 }
 
 TEST(AdvertisementTest, CreateNewInstanceWithWrongSaltSize) {
   EXPECT_FALSE(sharing::Advertisement::NewInstance(
       /* salt= */ std::vector<uint8_t>(5, 5), kEncryptedMetadataKey,
-      kDeviceName));
+      kDeviceType, kDeviceName));
 }
 
 TEST(AdvertisementTest, CreateNewInstanceWithWrongAccountIdentifierSize) {
   EXPECT_FALSE(sharing::Advertisement::NewInstance(
       kSalt, /* encrypted_metadata_key= */ std::vector<uint8_t>(2, 1),
-      kDeviceName));
+      kDeviceType, kDeviceName));
 }
 
 }  // namespace sharing

@@ -29,40 +29,27 @@ namespace examples {
 
 namespace {
 
-class WidgetDialogExample : public DialogDelegateView {
- public:
-  WidgetDialogExample();
-  ~WidgetDialogExample() override;
-  base::string16 GetWindowTitle() const override;
-};
+// TODO(ellyjones): This should return unique_ptr<> instead, but
+// CreateDialogWidget doesn't yet have an override that takes that, and can't
+// pending sorting out the mess around WidgetDelegate ownership.
+DialogDelegate* MakeExampleDialog(bool modal) {
+  auto dialog = std::make_unique<DialogDelegateView>();
+  dialog->SetTitle(IDS_WIDGET_WINDOW_TITLE);
 
-class ModalDialogExample : public WidgetDialogExample {
- public:
-  ModalDialogExample() = default;
-
-  // WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModalDialogExample);
-};
-
-WidgetDialogExample::WidgetDialogExample() {
-  SetBackground(CreateSolidBackground(SK_ColorGRAY));
-  SetLayoutManager(std::make_unique<BoxLayout>(
+  dialog->SetBackground(CreateSolidBackground(SK_ColorGRAY));
+  dialog->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
-  SetExtraView(std::make_unique<MdTextButton>(
+  dialog->SetExtraView(std::make_unique<MdTextButton>(
       nullptr, GetStringUTF16(IDS_WIDGET_EXTRA_BUTTON)));
-  SetFootnoteView(
+  dialog->SetFootnoteView(
       std::make_unique<Label>(GetStringUTF16(IDS_WIDGET_FOOTNOTE_LABEL)));
-  AddChildView(std::make_unique<Label>(
+  dialog->AddChildView(std::make_unique<Label>(
       GetStringUTF16(IDS_WIDGET_DIALOG_CONTENTS_LABEL)));
-}
 
-WidgetDialogExample::~WidgetDialogExample() = default;
+  if (modal)
+    dialog->SetModalType(ui::MODAL_TYPE_WINDOW);
 
-base::string16 WidgetDialogExample::GetWindowTitle() const {
-  return GetStringUTF16(IDS_WIDGET_WINDOW_TITLE);
+  return dialog.release();
 }
 
 }  // namespace
@@ -126,9 +113,9 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
-      // WidgetDialogExample will be destroyed by the widget when the created
+      // The DialogDelegate will be destroyed by the widget when the created
       // widget is destroyed.
-      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), nullptr,
+      DialogDelegate::CreateDialogWidget(MakeExampleDialog(false), nullptr,
                                          sender->GetWidget()->GetNativeView())
           ->Show();
       break;
@@ -136,7 +123,7 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
     case MODAL_DIALOG: {
       // ModalDialogExample will be destroyed by the widget when the created
       // widget is destroyed.
-      DialogDelegate::CreateDialogWidget(new ModalDialogExample(), nullptr,
+      DialogDelegate::CreateDialogWidget(MakeExampleDialog(true), nullptr,
                                          sender->GetWidget()->GetNativeView())
           ->Show();
       break;

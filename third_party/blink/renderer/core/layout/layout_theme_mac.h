@@ -47,8 +47,8 @@ class LayoutThemeMac final : public LayoutThemeDefault {
   Color PlatformGrammarMarkerUnderlineColor() const override;
   Color FocusRingColor() const override;
   String DisplayNameForFile(const File& file) const override;
-  bool PopsMenuByArrowKeys() const override;
-  bool PopsMenuByReturnKey() const override;
+  bool PopsMenuByArrowKeys() const override { return true; }
+  bool PopsMenuByReturnKey() const override { return false; }
   bool SupportsSelectionForegroundColors() const override { return false; }
 
  protected:

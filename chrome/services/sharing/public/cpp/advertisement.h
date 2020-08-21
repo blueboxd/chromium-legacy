@@ -12,6 +12,7 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "chrome/services/sharing/public/mojom/nearby_share_target_types.mojom.h"
 
 namespace sharing {
 
@@ -24,6 +25,7 @@ class Advertisement {
   static std::unique_ptr<Advertisement> NewInstance(
       std::vector<uint8_t> salt,
       std::vector<uint8_t> encrypted_metadata_key,
+      nearby_share::mojom::ShareTargetType device_type,
       base::Optional<std::string> device_name);
 
   Advertisement(Advertisement&& other);
@@ -38,6 +40,9 @@ class Advertisement {
   const std::vector<uint8_t>& encrypted_metadata_key() const {
     return encrypted_metadata_key_;
   }
+  nearby_share::mojom::ShareTargetType device_type() const {
+    return device_type_;
+  }
   const base::Optional<std::string>& device_name() const {
     return device_name_;
   }
@@ -50,6 +55,7 @@ class Advertisement {
   Advertisement(int version,
                 std::vector<uint8_t> salt,
                 std::vector<uint8_t> encrypted_metadata_key,
+                nearby_share::mojom::ShareTargetType device_type,
                 base::Optional<std::string> device_name);
 
   // The version of the advertisement. Different versions can have different
@@ -65,6 +71,9 @@ class Advertisement {
   // The key can be decrypted using |salt| and the corresponding public
   // certificate's secret/authenticity key.
   std::vector<uint8_t> encrypted_metadata_key_;
+
+  // The type of device that the advertisement identifies.
+  nearby_share::mojom::ShareTargetType device_type_;
 
   // The human readable name of the remote device.
   base::Optional<std::string> device_name_;

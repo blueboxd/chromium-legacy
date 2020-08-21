@@ -4,6 +4,7 @@
 
 #include "ash/clipboard/clipboard_history_resource_manager.h"
 
+#include <array>
 #include <string>
 
 #include "ash/public/cpp/clipboard_image_model_factory.h"
@@ -25,6 +26,13 @@ namespace ash {
 namespace {
 
 constexpr char kFileSystemSourcesType[] = "fs/sources";
+
+// The array of formats in the order of decreasing priority.
+constexpr std::array<ui::ClipboardInternalFormat, 7> kPrioritizedFormats = {
+    ui::ClipboardInternalFormat::kBitmap,   ui::ClipboardInternalFormat::kText,
+    ui::ClipboardInternalFormat::kHtml,     ui::ClipboardInternalFormat::kRtf,
+    ui::ClipboardInternalFormat::kBookmark, ui::ClipboardInternalFormat::kWeb,
+    ui::ClipboardInternalFormat::kCustom};
 
 // Helpers ---------------------------------------------------------------------
 
@@ -119,22 +127,36 @@ ui::ImageModel ClipboardHistoryResourceManager::GetImageModel(
 
 base::string16 ClipboardHistoryResourceManager::GetLabel(
     const ClipboardHistoryItem& item) const {
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kBitmap))
-    return GetLocalizedString(IDS_CLIPBOARD_MENU_IMAGE);
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kText))
-    return base::UTF8ToUTF16(item.data().text());
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kHtml))
-    return base::UTF8ToUTF16(item.data().markup_data());
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kRtf))
-    return GetLocalizedString(IDS_CLIPBOARD_MENU_RTF_CONTENT);
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kBookmark))
-    return base::UTF8ToUTF16(item.data().bookmark_title());
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kWeb))
-    return GetLocalizedString(IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
-  if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kCustom))
-    return GetLabelForCustomData(item.data());
+  const ui::ClipboardData& data = item.data();
+  switch (CalculateMainFormat(item)) {
+    case ui::ClipboardInternalFormat::kBitmap:
+      return GetLocalizedString(IDS_CLIPBOARD_MENU_IMAGE);
+    case ui::ClipboardInternalFormat::kText:
+      return base::UTF8ToUTF16(data.text());
+    case ui::ClipboardInternalFormat::kHtml:
+      return base::UTF8ToUTF16(data.markup_data());
+    case ui::ClipboardInternalFormat::kRtf:
+      return GetLocalizedString(IDS_CLIPBOARD_MENU_RTF_CONTENT);
+    case ui::ClipboardInternalFormat::kBookmark:
+      return base::UTF8ToUTF16(data.bookmark_title());
+    case ui::ClipboardInternalFormat::kWeb:
+      return GetLocalizedString(IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
+    case ui::ClipboardInternalFormat::kCustom:
+      return GetLabelForCustomData(data);
+  }
+}
+
+ui::ClipboardInternalFormat
+ClipboardHistoryResourceManager::CalculateMainFormat(
+    const ClipboardHistoryItem& item) const {
+  const ui::ClipboardData& data = item.data();
+  for (const auto& format : kPrioritizedFormats) {
+    if (ContainsFormat(data, format))
+      return format;
+  }
+
   NOTREACHED();
-  return base::string16();
+  return ui::ClipboardInternalFormat::kText;
 }
 
 ClipboardHistoryResourceManager::CachedImageModel::CachedImageModel() {}

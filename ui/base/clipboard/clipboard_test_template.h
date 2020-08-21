@@ -171,8 +171,12 @@ TYPED_TEST(ClipboardTest, TextTest) {
               Contains(ASCIIToUTF16(kMimeTypeText)));
 #if defined(USE_OZONE) && !defined(OS_CHROMEOS) && !defined(OS_FUCHSIA) && \
     !BUILDFLAG(IS_CHROMECAST) && !BUILDFLAG(IS_LACROS)
-  EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
-              Contains(ASCIIToUTF16(kMimeTypeTextUtf8)));
+  // TODO(https://crbug.com/1096425): remove this if condition. It seems like
+  // we have this condition working for Ozone/Linux, but not for X11/Linux.
+  if (features::IsUsingOzonePlatform()) {
+    EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
+                Contains(ASCIIToUTF16(kMimeTypeTextUtf8)));
+  }
 #endif
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,

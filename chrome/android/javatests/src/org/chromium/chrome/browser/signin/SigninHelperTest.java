@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.signin;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
@@ -20,6 +22,7 @@ import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
  * Instrumentation tests for {@link SigninHelper}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class SigninHelperTest {
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
@@ -29,6 +32,11 @@ public class SigninHelperTest {
     @Before
     public void setUp() {
         mEventChecker = new MockChangeEventChecker();
+    }
+
+    @After
+    public void tearDown() {
+        SigninPreferencesManager.getInstance().clearAccountsStateSharedPrefsForTesting();
     }
 
     @Test

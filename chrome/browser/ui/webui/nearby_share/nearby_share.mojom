@@ -4,7 +4,7 @@
 
 module nearby_share.mojom;
 
-import "chrome/browser/ui/webui/nearby_share/nearby_share_target_types.mojom";
+import "chrome/services/sharing/public/mojom/nearby_share_target_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // Describes a nearby device that is able to receive data via Nearby Share.

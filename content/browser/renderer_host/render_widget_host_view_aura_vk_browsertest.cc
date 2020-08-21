@@ -20,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/text_input_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
@@ -29,6 +30,140 @@
 #include "ui/base/ime/text_input_type.h"
 
 namespace content {
+
+// TextInputManager Observers
+
+// A base class for observing the TextInputManager owned by the given
+// WebContents. Subclasses could observe the TextInputManager for different
+// changes. The class wraps a public tester which accepts callbacks that
+// are run after specific changes in TextInputManager. Different observers can
+// be subclassed from this by providing their specific callback methods.
+class TextInputManagerObserverBase {
+ public:
+  explicit TextInputManagerObserverBase(WebContents* web_contents)
+      : tester_(std::make_unique<TextInputManagerTester>(web_contents)) {}
+  virtual ~TextInputManagerObserverBase() = default;
+
+  TextInputManagerObserverBase(const TextInputManagerObserverBase&) = delete;
+  TextInputManagerObserverBase operator=(const TextInputManagerObserverBase&) =
+      delete;
+
+  // Wait for derived class's definition of success.
+  void Wait() {
+    if (success_)
+      return;
+    run_loop.Run();
+  }
+
+  bool success() const { return success_; }
+
+ protected:
+  TextInputManagerTester* tester() { return tester_.get(); }
+
+  void OnSuccess() {
+    success_ = true;
+    run_loop.Quit();
+
+    // By deleting |tester_| we make sure that the internal observer used in
+    // content/ is removed from the observer list of TextInputManager.
+    tester_.reset(nullptr);
+  }
+
+ private:
+  std::unique_ptr<TextInputManagerTester> tester_;
+  bool success_ = false;
+  base::RunLoop run_loop;
+};
+
+// This class observes TextInputManager for changes in
+// |TextInputState.vk_policy|.
+class TextInputManagerVkPolicyObserver : public TextInputManagerObserverBase {
+ public:
+  TextInputManagerVkPolicyObserver(
+      WebContents* web_contents,
+      ui::mojom::VirtualKeyboardPolicy expected_value)
+      : TextInputManagerObserverBase(web_contents),
+        expected_value_(expected_value) {
+    tester()->SetUpdateTextInputStateCalledCallback(
+        base::BindRepeating(&TextInputManagerVkPolicyObserver::VerifyVkPolicy,
+                            base::Unretained(this)));
+  }
+
+  TextInputManagerVkPolicyObserver(const TextInputManagerVkPolicyObserver&) =
+      delete;
+  TextInputManagerVkPolicyObserver operator=(
+      const TextInputManagerVkPolicyObserver&) = delete;
+
+ private:
+  void VerifyVkPolicy() {
+    ui::mojom::VirtualKeyboardPolicy value;
+    if (tester()->GetTextInputVkPolicy(&value) && expected_value_ == value)
+      OnSuccess();
+  }
+
+  ui::mojom::VirtualKeyboardPolicy expected_value_;
+};
+
+// This class observes TextInputManager for changes in
+// |TextInputState.last_vk_visibility_request|.
+class TextInputManagerVkVisibilityRequestObserver
+    : public TextInputManagerObserverBase {
+ public:
+  TextInputManagerVkVisibilityRequestObserver(
+      WebContents* web_contents,
+      ui::mojom::VirtualKeyboardVisibilityRequest expected_value)
+      : TextInputManagerObserverBase(web_contents),
+        expected_value_(expected_value) {
+    tester()->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
+        &TextInputManagerVkVisibilityRequestObserver::VerifyVkVisibilityRequest,
+        base::Unretained(this)));
+  }
+
+  TextInputManagerVkVisibilityRequestObserver(
+      const TextInputManagerVkVisibilityRequestObserver&) = delete;
+  TextInputManagerVkVisibilityRequestObserver operator=(
+      const TextInputManagerVkVisibilityRequestObserver&) = delete;
+
+ private:
+  void VerifyVkVisibilityRequest() {
+    ui::mojom::VirtualKeyboardVisibilityRequest value;
+    if (tester()->GetTextInputVkVisibilityRequest(&value) &&
+        expected_value_ == value)
+      OnSuccess();
+  }
+
+  ui::mojom::VirtualKeyboardVisibilityRequest expected_value_;
+};
+
+// This class observes TextInputManager for changes in
+// |TextInputState.show_ime_if_needed|.
+class TextInputManagerShowImeIfNeededObserver
+    : public TextInputManagerObserverBase {
+ public:
+  TextInputManagerShowImeIfNeededObserver(WebContents* web_contents,
+                                          bool expected_value)
+      : TextInputManagerObserverBase(web_contents),
+        expected_value_(expected_value) {
+    tester()->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
+        &TextInputManagerShowImeIfNeededObserver::VerifyShowImeIfNeeded,
+        base::Unretained(this)));
+  }
+
+  TextInputManagerShowImeIfNeededObserver(
+      const TextInputManagerShowImeIfNeededObserver&) = delete;
+  TextInputManagerShowImeIfNeededObserver operator=(
+      const TextInputManagerShowImeIfNeededObserver&) = delete;
+
+ private:
+  void VerifyShowImeIfNeeded() {
+    bool show_ime_if_needed;
+    if (tester()->GetTextInputShowImeIfNeeded(&show_ime_if_needed) &&
+        expected_value_ == show_ime_if_needed)
+      OnSuccess();
+  }
+
+  bool expected_value_ = false;
+};
 
 class MockKeyboardController : public ui::InputMethodKeyboardController {
  public:
@@ -112,7 +247,7 @@ class RenderWidgetHostViewAuraBrowserMockIMETest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "VirtualKeyboard");
+                                    "VirtualKeyboard,EditContext");
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -182,6 +317,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   if (base::win::GetVersion() <= base::win::Version::WIN7) {
     return;
   }
+
   const char kVirtualKeyboardDataURL[] =
       "data:text/html,<!DOCTYPE html>"
       "<script>"
@@ -197,13 +333,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       "</script>";
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
 
-  RenderWidgetHostViewAura* rwhvi = GetRenderWidgetHostView();
-
   // Send a touch event so that RenderWidgetHostViewAura will create the
   // keyboard observer (requires last_pointer_type_ to be TOUCH).
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        base::TimeTicks::Now(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  RenderWidgetHostViewAura* rwhvi = GetRenderWidgetHostView();
   rwhvi->OnTouchEvent(&press);
 
   // Emulate input type text focus in the root frame (the only frame), by
@@ -275,6 +410,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   if (base::win::GetVersion() <= base::win::Version::WIN7) {
     return;
   }
+
   const char kVirtualKeyboardDataURL[] =
       "data:text/html,<!DOCTYPE html>"
       "<style>"
@@ -376,12 +512,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   EXPECT_EQ("0px", EvalJs(shell(), "style.getPropertyValue('margin-bottom')")
                        .ExtractString());
 }
+
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
                        VirtualKeyboardAccessibilityFocusTest) {
   // The keyboard input pane events are not supported on Win7.
   if (base::win::GetVersion() <= base::win::Version::WIN7) {
     return;
   }
+
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <div><button>Before</button></div>
       <div contenteditable>Editable text</div>
@@ -407,6 +545,223 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   EXPECT_EQ(focus->GetId(), target->GetId());
 
   EXPECT_EQ(true, mock_keyboard_observer_->IsKeyboardDisplayCalled());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       VirtualKeyboardShowVKTest) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+
+  const char kVirtualKeyboardDataURL[] =
+      "data:text/html,<!DOCTYPE html>"
+      "<body>"
+      "<textarea id='txt3'></textarea>"
+      "<script>"
+      " let elemRect = txt3.getBoundingClientRect();"
+      "</script>"
+      "</body>";
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents->GetFrameTree()->root();
+  web_contents->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
+  // Send a touch event so that RenderWidgetHostViewAura will create the
+  // keyboard observer (requires last_pointer_type_ to be TOUCH).
+  // Tap on the third textarea to open VK.
+  TextInputManagerVkPolicyObserver type_observer_auto(
+      web_contents, ui::mojom::VirtualKeyboardPolicy::AUTO);
+  const int top = EvalJs(shell(), "elemRect.top").ExtractInt();
+  const int left = EvalJs(shell(), "elemRect.left").ExtractInt();
+  SimulateTapDownAt(web_contents, gfx::Point(left + 1, top + 1));
+  SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
+  type_observer_auto.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       DontShowVKOnJSFocus) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+
+  const char kVirtualKeyboardDataURL[] =
+      "data:text/html,<!DOCTYPE html>"
+      "<body>"
+      "<textarea id='txt3'></textarea>"
+      "<script>"
+      " let elemRect = txt3.getBoundingClientRect();"
+      " txt3.focus();"
+      "</script>"
+      "</body>";
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  TextInputManagerShowImeIfNeededObserver show_ime_observer_false(web_contents,
+                                                                  false);
+  // Note: This data URL has JS that focuses the edit control.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
+  show_ime_observer_false.Wait();
+
+  // Send a touch event so that RenderWidgetHostViewAura will create the
+  // keyboard observer (requires last_pointer_type_ to be TOUCH).
+  // Tap on the third textarea to open VK.
+  TextInputManagerShowImeIfNeededObserver show_ime_observer_true(web_contents,
+                                                                 true);
+  const int top = EvalJs(shell(), "elemRect.top").ExtractInt();
+  const int left = EvalJs(shell(), "elemRect.left").ExtractInt();
+  SimulateTapDownAt(web_contents, gfx::Point(left + 1, top + 1));
+  SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
+  show_ime_observer_true.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       ShowAndThenHideVK) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+
+  const char kVirtualKeyboardDataURL[] =
+      "data:text/html,<!DOCTYPE html>"
+      "<body>"
+      "<textarea id='txt3' virtualkeyboardpolicy='manual' "
+      "onfocusin='FocusIn1()' onkeydown='HideVKCalled()'></textarea>"
+      "<script>"
+      " let elemRect = txt3.getBoundingClientRect();"
+      " function FocusIn1() {"
+      "   navigator.virtualKeyboard.show();"
+      "  }"
+      " function HideVKCalled() {"
+      "   navigator.virtualKeyboard.hide();"
+      "  }"
+      "</script>"
+      "</body>";
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents->GetFrameTree()->root();
+  web_contents->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
+  // Send a touch event so that RenderWidgetHostViewAura will create the
+  // keyboard observer (requires last_pointer_type_ to be TOUCH).
+  // Tap on the third textarea to open VK.
+  TextInputManagerVkVisibilityRequestObserver type_observer_show(
+      web_contents, ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
+  const int top = EvalJs(shell(), "elemRect.top").ExtractInt();
+  const int left = EvalJs(shell(), "elemRect.left").ExtractInt();
+  SimulateTapDownAt(web_contents, gfx::Point(left + 1, top + 1));
+  SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
+  type_observer_show.Wait();
+  TextInputManagerVkVisibilityRequestObserver type_observer_hide(
+      web_contents, ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
+  SimulateKeyPress(web_contents, ui::DomKey::ENTER, ui::DomCode::ENTER,
+                   ui::VKEY_RETURN, false, false, false, false);
+  type_observer_hide.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       ShowAndThenHideVKInEditContext) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+
+  const char kVirtualKeyboardDataURL[] =
+      "data:text/html,<!DOCTYPE html>"
+      "<body>"
+      "<textarea id='txt3' virtualkeyboardpolicy='manual' "
+      "onfocusin='FocusIn1()' onkeydown='HideVKCalled()'></textarea>"
+      "<script>"
+      " let elemRect = txt3.getBoundingClientRect();"
+      " const editContext = new EditContext();"
+      " editContext.inputPanelPolicy = \"manual\";"
+      " function FocusIn1() {"
+      "   editContext.focus();"
+      "   navigator.virtualKeyboard.show();"
+      "  }"
+      " function HideVKCalled() {"
+      "   navigator.virtualKeyboard.hide();"
+      "  }"
+      "</script>"
+      "</body>";
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents->GetFrameTree()->root();
+  web_contents->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
+  // Send a touch event so that RenderWidgetHostViewAura will create the
+  // keyboard observer (requires last_pointer_type_ to be TOUCH).
+  // Tap on the third textarea to open VK.
+  TextInputManagerVkVisibilityRequestObserver type_observer_show(
+      web_contents, ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
+  const int top = EvalJs(shell(), "elemRect.top").ExtractInt();
+  const int left = EvalJs(shell(), "elemRect.left").ExtractInt();
+  SimulateTapDownAt(web_contents, gfx::Point(left + 1, top + 1));
+  SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
+  type_observer_show.Wait();
+  TextInputManagerVkVisibilityRequestObserver type_observer_hide(
+      web_contents, ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
+  SimulateKeyPress(web_contents, ui::DomKey::ENTER, ui::DomCode::ENTER,
+                   ui::VKEY_RETURN, false, false, false, false);
+  type_observer_hide.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       VKVisibilityRequestInDeletedDocument) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+
+  const char kVirtualKeyboardDataURL[] =
+      "data:text/html,<!DOCTYPE html>"
+      "<body>"
+      "<textarea id='txt3' virtualkeyboardpolicy='manual' "
+      "onfocusin='FocusIn1()'></textarea>"
+      "<script>"
+      " let elemRect = txt3.getBoundingClientRect();"
+      " function FocusIn1() {"
+      "   navigator.virtualKeyboard.show();"
+      "   const child = document.createElement(\"iframe\");"
+      "   document.body.appendChild(child);"
+      "   const childDocument = child.contentDocument;"
+      "   const textarea = childDocument.createElement('textarea');"
+      "   textarea.setAttribute(\"virtualKeyboardPolicy\", \"manual\");"
+      "   childDocument.body.appendChild(textarea);"
+      "   textarea.addEventListener(\"onfocusin\", e => {"
+      "   child.remove();"
+      "   });"
+      "  child.contentWindow.focus();"
+      "  textarea.focus();"
+      "  }"
+      "</script>"
+      "</body>";
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents->GetFrameTree()->root();
+  web_contents->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
+  // Send a touch event so that RenderWidgetHostViewAura will create the
+  // keyboard observer (requires last_pointer_type_ to be TOUCH).
+  TextInputManagerVkVisibilityRequestObserver type_observer_none(
+      web_contents, ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
+  const int top = EvalJs(shell(), "elemRect.top").ExtractInt();
+  const int left = EvalJs(shell(), "elemRect.left").ExtractInt();
+  SimulateTapDownAt(web_contents, gfx::Point(left + 1, top + 1));
+  SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
+  type_observer_none.Wait();
 }
 #endif  // #ifdef OS_WIN
 

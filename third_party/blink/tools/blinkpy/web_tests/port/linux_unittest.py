@@ -151,7 +151,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             ['xdpyinfo', '-display', ':99'],
             [
                 'Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi',
-                '96'
+                '96', '-maxclients', '512'
             ],
             ['xdpyinfo'],
         ])
@@ -173,7 +173,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             ['xdpyinfo', '-display', ':99'],
             [
                 'Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi',
-                '96'
+                '96', '-maxclients', '512'
             ],
             ['xdpyinfo'],
         ])
@@ -203,7 +203,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
                 ['xdpyinfo', '-display', ':102'],
                 [
                     'Xvfb', ':102', '-screen', '0', '1280x800x24', '-ac',
-                    '-dpi', '96'
+                    '-dpi', '96', '-maxclients', '512'
                 ],
                 ['xdpyinfo'],
             ])
@@ -231,7 +231,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             ['xdpyinfo', '-display', ':99'],
             [
                 'Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi',
-                '96'
+                '96', '-maxclients', '512'
             ],
             ['xdpyinfo'],
             ['xdpyinfo'],
@@ -257,7 +257,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             ['xdpyinfo', '-display', ':99'],
             [
                 'Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi',
-                '96'
+                '96', '-maxclients', '512'
             ],
         ] + [['xdpyinfo']] * 51)
         env = port.setup_environ_for_server()
@@ -286,10 +286,12 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
         self.set_logging_level(logging.DEBUG)
 
         self.assertEqual(port.setup_test_run(), SYS_DEPS_EXIT_STATUS)
-        self.assertEqual(port.host.executive.calls, [[
-            'xdpyinfo', '-display', ':99'
-        ], ['Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi', '96']
-                                                     ])
+        self.assertEqual(port.host.executive.calls,
+                         [['xdpyinfo', '-display', ':99'],
+                          [
+                              'Xvfb', ':99', '-screen', '0', '1280x800x24',
+                              '-ac', '-dpi', '96', '-maxclients', '512'
+                          ]])
         self.assertLog([
             'DEBUG: Starting Xvfb with display ":99".\n',
             'CRITICAL: Failed to start Xvfb on display ":99" (xvfb retcode: 3).\n'

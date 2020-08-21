@@ -149,11 +149,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual base::TimeDelta CaretBlinkInterval() const;
 
   // System fonts and colors for CSS.
-  virtual void SystemFont(CSSValueID system_font_id,
-                          FontSelectionValue& font_slope,
-                          FontSelectionValue& font_weight,
-                          float& font_size,
-                          AtomicString& font_family) const = 0;
   void SystemFont(CSSValueID system_font_id, FontDescription&);
   virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
@@ -183,8 +178,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // DelegatesMenuListRendering() always returns true.
   void SetDelegatesMenuListRenderingForTesting(bool flag);
   virtual bool PopsMenuByArrowKeys() const { return false; }
-  virtual bool PopsMenuByReturnKey() const { return false; }
-  virtual bool PopsMenuByAltDownUpOrF4Key() const { return false; }
+  virtual bool PopsMenuByReturnKey() const { return true; }
 
   virtual String DisplayNameForFile(const File& file) const;
 

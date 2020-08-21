@@ -120,7 +120,7 @@ def GetConfigurationForBuild(defines):
             'Google': 'Google.Policies'  # prefix: namespace
         },
         'linux_policy_path': '/etc/opt/chrome/policies/',
-        'bundle_id': 'com.google.chrome',
+        'bundle_id': 'com.google.chrome.ios',
     }
   else:
     raise Exception('Unknown build')

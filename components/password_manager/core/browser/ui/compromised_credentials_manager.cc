@@ -186,15 +186,18 @@ CredentialWithPassword& CredentialWithPassword::operator=(
 CompromisedCredentialsManager::CompromisedCredentialsManager(
     scoped_refptr<PasswordStore> store,
     SavedPasswordsPresenter* presenter)
-    : store_(std::move(store)), presenter_(presenter) {
-  observed_password_store_.Add(store_.get());
+    : store_(std::move(store)),
+      presenter_(presenter),
+      compromised_credentials_reader_(store_.get()) {
+  observed_compromised_credentials_reader_.Add(
+      &compromised_credentials_reader_);
   observed_saved_password_presenter_.Add(presenter_);
 }
 
 CompromisedCredentialsManager::~CompromisedCredentialsManager() = default;
 
 void CompromisedCredentialsManager::Init() {
-  store_->GetAllCompromisedCredentials(this);
+  compromised_credentials_reader_.Init();
 }
 
 void CompromisedCredentialsManager::SaveCompromisedCredential(
@@ -276,17 +279,11 @@ void CompromisedCredentialsManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void CompromisedCredentialsManager::OnCompromisedCredentialsChanged() {
-  // Cancel ongoing requests to the password store and issue a new request.
-  cancelable_task_tracker()->TryCancelAll();
-  store_->GetAllCompromisedCredentials(this);
-}
-
 // Re-computes the list of compromised credentials with passwords after
 // obtaining a new list of compromised credentials.
-void CompromisedCredentialsManager::OnGetCompromisedCredentials(
-    std::vector<CompromisedCredentials> compromised_credentials) {
-  compromised_credentials_ = std::move(compromised_credentials);
+void CompromisedCredentialsManager::OnCompromisedCredentialsChanged(
+    const std::vector<CompromisedCredentials>& compromised_credentials) {
+  compromised_credentials_ = compromised_credentials;
   UpdateCachedDataAndNotifyObservers(presenter_->GetSavedPasswords());
 }
 

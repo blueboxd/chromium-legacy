@@ -190,6 +190,9 @@ struct URLResponseHead {
   // will be removed in the future.
   bool is_legacy_tls_version = false;
 
+  // https://fetch.spec.whatwg.org/#concept-response-range-requested-flag
+  bool has_range_requested = false;
+
   // https://fetch.spec.whatwg.org/#concept-response-timing-allow-passed
   bool timing_allow_passed = false;
 

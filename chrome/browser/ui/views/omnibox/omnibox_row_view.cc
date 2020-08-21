@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_row_view.h"
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_mouse_enter_exit_handler.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -34,7 +36,11 @@
 class OmniboxRowView::HeaderView : public views::View,
                                    public views::ButtonListener {
  public:
-  explicit HeaderView(OmniboxRowView* row_view) : row_view_(row_view) {
+  explicit HeaderView(OmniboxRowView* row_view)
+      : row_view_(row_view),
+        // Using base::Unretained is correct here. 'this' outlives the callback.
+        mouse_enter_exit_handler_(base::BindRepeating(&HeaderView::UpdateUI,
+                                                      base::Unretained(this))) {
     views::BoxLayout* layout =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal));
@@ -51,6 +57,7 @@ class OmniboxRowView::HeaderView : public views::View,
 
     header_toggle_button_ =
         AddChildView(views::CreateVectorToggleImageButton(this));
+    mouse_enter_exit_handler_.ObserveMouseEnterExitOn(header_toggle_button_);
     views::InstallCircleHighlightPathGenerator(header_toggle_button_);
 
     header_toggle_button_focus_ring_ =
@@ -241,6 +248,9 @@ class OmniboxRowView::HeaderView : public views::View,
   // A pref change registrar for toggling the toggle button's state. This is
   // needed because the preference state can change through multiple UIs.
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Keeps track of mouse-enter and mouse-exit events of child Views.
+  OmniboxMouseEnterExitHandler mouse_enter_exit_handler_;
 };
 
 OmniboxRowView::OmniboxRowView(size_t line,

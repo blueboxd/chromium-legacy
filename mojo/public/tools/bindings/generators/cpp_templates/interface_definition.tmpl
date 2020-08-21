@@ -140,8 +140,8 @@ bool {{proxy_name}}::{{method.name}}(
   {{interface_macros.build_message_flags(False, "kIsSync", "kExpectsResponse",
                                          "kFlags")}}
   {{interface_macros.build_serialized_message(
-      message_name, "param_%s", params_struct, params_description, "kFlags",
-      "message")}}
+      message_name, method, "param_%s", params_struct, params_description,
+      "kFlags", "message")}}
 {%-   endif %}  {#- if method|method_supports_lazy_serialization #}
 
 #if defined(ENABLE_IPC_FUZZER)
@@ -196,8 +196,8 @@ void {{proxy_name}}::{{method.name}}(
   {{interface_macros.build_message_flags(False, "kIsSync", "kExpectsResponse",
                                          "kFlags")}}
   {{interface_macros.build_serialized_message(
-      message_name, "in_%s", params_struct, params_description, "kFlags",
-      "message")}}
+      message_name, method, "in_%s", params_struct, params_description,
+      "kFlags", "message")}}
 {%-   endif %}
 
 #if defined(ENABLE_IPC_FUZZER)
@@ -352,7 +352,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {%-   else %}
   {{interface_macros.build_message_flags(True, "is_sync_", "false", "kFlags")}}
   {{interface_macros.build_serialized_message(
-      message_name, "in_%s", response_params_struct,
+      message_name, method, "in_%s", response_params_struct,
       response_params_description, "kFlags", "message")}}
 {%-   endif %}
 

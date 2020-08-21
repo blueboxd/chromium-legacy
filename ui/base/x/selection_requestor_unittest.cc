@@ -30,7 +30,7 @@ namespace ui {
 
 class SelectionRequestorTest : public testing::Test {
  public:
-  SelectionRequestorTest() : x_display_(gfx::GetXDisplay()) {}
+  explicit SelectionRequestorTest() : connection_(x11::Connection::Get()) {}
 
   ~SelectionRequestorTest() override = default;
 
@@ -61,18 +61,8 @@ class SelectionRequestorTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    // Make X11 synchronous for our display connection.
-    XSynchronize(x_display_, x11::True);
-
     // Create a window for the selection requestor to use.
-    x_window_ = static_cast<x11::Window>(XCreateWindow(
-        x_display_, DefaultRootWindow(x_display_), 0, 0, 10,
-        10,  // x, y, width, height
-        0,   // border width
-        static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
-        static_cast<int>(x11::WindowClass::InputOnly),
-        nullptr,  // visual
-        0, nullptr));
+    x_window_ = CreateDummyWindow();
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
@@ -82,11 +72,10 @@ class SelectionRequestorTest : public testing::Test {
   void TearDown() override {
     requestor_.reset();
     event_source_.reset();
-    XDestroyWindow(x_display_, static_cast<uint32_t>(x_window_));
-    XSynchronize(x_display_, x11::False);
+    connection_->DestroyWindow({x_window_});
   }
 
-  Display* x_display_;
+  x11::Connection* connection_;
 
   // |requestor_|'s window.
   x11::Window x_window_ = x11::Window::None;

@@ -4,15 +4,11 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("nearby_share_target_types") {
-  sources = [ "nearby_share_target_types.mojom" ]
-}
-
 mojom("mojom") {
   sources = [ "nearby_share.mojom" ]
 
   public_deps = [
-    ":nearby_share_target_types",
+    "//chrome/services/sharing/public/mojom:nearby_share_target_types",
     "//mojo/public/mojom/base",
   ]
 

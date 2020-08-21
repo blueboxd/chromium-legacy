@@ -33,7 +33,7 @@ void SetDumpWithoutCrashingFunction(void (CDECL *function)()) {
   // In component builds, the same base is shared between modules
   // so might be initialized several times. However in non-
   // component builds this should never happen.
-  DCHECK(!dump_without_crashing_function_);
+  DCHECK(!dump_without_crashing_function_ || !function);
 #endif
   dump_without_crashing_function_ = function;
 }

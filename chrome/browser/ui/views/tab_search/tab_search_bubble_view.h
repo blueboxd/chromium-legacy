@@ -21,12 +21,13 @@ class TabSearchBubbleView : public views::BubbleDialogDelegateView {
  public:
   // TODO(tluk): Since the Bubble is shown asynchronously, we shouldn't call
   // this if the Widget is hidden and yet to be revealed.
-  static void CreateTabSearchBubble(content::BrowserContext* browser_context,
-                                    views::View* anchor_view);
+  static views::Widget* CreateTabSearchBubble(
+      content::BrowserContext* browser_context,
+      views::View* anchor_view);
 
   TabSearchBubbleView(content::BrowserContext* browser_context,
                       views::View* anchor_view);
-  ~TabSearchBubbleView() override;
+  ~TabSearchBubbleView() override = default;
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;

@@ -678,6 +678,94 @@
             "start_inclusive": "2022-01-01T00:00:00Z",
             "end_exclusive": "2023-01-07T00:00:00Z"
           }
+        },
+        {
+          "description": "Let's Encrypt 'Oak2023' log",
+          "log_id": "tz77JN+cTbp18jnFulj0bF38Qs96nzXEnh0JgSXttJk=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsz0OeL7jrVxEXJu+o4QWQYLKyokXHiPOOKVUL3/TNFFquVzDSer7kZ3gijxzBp98ZTgRgMSaWgCmZ8OD74mFUQ==",
+          "url": "https://oak.ct.letsencrypt.org/2023/",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2020-08-18T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2023-01-01T00:00:00Z",
+            "end_exclusive": "2024-01-07T00:00:00Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "TrustAsia",
+      "email": [
+        "trustasia-ct-logs@trustasia.com"
+      ],
+      "logs": [
+        {
+          "description": "Trust Asia Log2020",
+          "log_id": "pZWUO1NwvukG4AUNH7W7xqQOZfJlroUsdjY/rbIzNu0=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbsWC7ukn2WYOMxTAcqL8gMRZEQTZF9+Ho1MB9WLhHIaCHpHsJSx0DjJdVILW9mtM5xZtWywMWMQ9/R3OBgQEXQ==",
+          "url": "https://ct.trustasia.com/log2020/",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2020-08-18T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2020-01-01T00:00:00Z",
+            "end_exclusive": "2021-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Trust Asia Log2021",
+          "log_id": "Z422Wz50Q7bzo3DV4TqxtDvgoNNR98p0IlDHxvpRqIo=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjwlzYzssDEG4DpPoOS73Ewsdohc0MzaohzRmUz9dih7Z8SHyyviKmnQL1KKfY6VGFnt0ulbVupzGXSaYUAoupA==",
+          "url": "https://ct.trustasia.com/log2021/",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2020-08-18T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2021-01-01T00:00:00Z",
+            "end_exclusive": "2022-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Trust Asia Log2022",
+          "log_id": "w2X5s2VPMoPHnamOk9dBj1ure+MlLJjh0vBLuetCfSM=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEu1LyFs+SC8555lRtwjdTpPX5OqmzBewdvRbsMKwu+HliNRWOGtgWLuRIa/bGE/GWLlwQ/hkeqBi4Dy3DpIZRlw==",
+          "url": "https://ct.trustasia.com/log2022/",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2020-08-18T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2022-01-01T00:00:00Z",
+            "end_exclusive": "2023-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Trust Asia Log2023",
+          "log_id": "6H6nZgvCbPYALvVyXT/g4zG5OTu5L79Y6zuQSdr1Q1o=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpBFS2xdBTpDUVlESMFL4mwPPTJ/4Lji18Vq6+ji50o8agdqVzDPsIShmxlY+YDYhINnUrF36XBmhBX3+ICP89Q==",
+          "url": "https://ct.trustasia.com/log2023/",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2020-08-18T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2023-01-01T00:00:00Z",
+            "end_exclusive": "2024-01-01T00:00:00Z"
+          }
         }
       ]
     }

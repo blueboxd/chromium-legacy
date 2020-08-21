@@ -11,9 +11,9 @@
 
 class SkBitmap;
 
-namespace pp {
+namespace gfx {
 class Rect;
-}  // namespace pp
+}  // namespace gfx
 
 namespace chrome_pdf {
 namespace draw_utils {
@@ -48,9 +48,9 @@ class ShadowMatrix {
 // object_rc - rectangle that drops the shadow
 // clip_rc - clipping region
 void DrawShadow(SkBitmap& image,
-                const pp::Rect& shadow_rc,
-                const pp::Rect& object_rc,
-                const pp::Rect& clip_rc,
+                const gfx::Rect& shadow_rc,
+                const gfx::Rect& object_rc,
+                const gfx::Rect& clip_rc,
                 const ShadowMatrix& matrix);
 
 }  // namespace draw_utils

@@ -3744,6 +3744,7 @@ test("unit_tests") {
       "../browser/media/feeds/media_feeds_converter_unittest.cc",
       "../browser/media/feeds/media_feeds_fetcher_unittest.cc",
       "../browser/media/feeds/media_feeds_service_unittest.cc",
+      "../browser/media/kaleidoscope/kaleidoscope_metrics_recorder_unittest.cc",
       "../browser/media/kaleidoscope/kaleidoscope_switches_unittest.cc",
       "../browser/nearby_sharing/fake_nearby_connection.cc",
       "../browser/nearby_sharing/fake_nearby_connection.h",
@@ -4332,6 +4333,7 @@ test("unit_tests") {
       "../browser/ui/global_media_controls/cast_media_notification_item_unittest.cc",
       "../browser/ui/global_media_controls/cast_media_notification_provider_unittest.cc",
       "../browser/ui/global_media_controls/cast_media_session_controller_unittest.cc",
+      "../browser/ui/global_media_controls/media_notification_device_provider_impl_unittest.cc",
       "../browser/ui/global_media_controls/media_notification_service_unittest.cc",
       "../browser/ui/global_media_controls/media_toolbar_button_controller_unittest.cc",
       "../browser/ui/hid/hid_chooser_controller_unittest.cc",
@@ -4480,6 +4482,7 @@ test("unit_tests") {
       "//chrome/browser/nearby_sharing/certificates:unit_tests",
       "//chrome/browser/nearby_sharing/client:unit_tests",
       "//chrome/browser/nearby_sharing/contacts:test_support",
+      "//chrome/browser/nearby_sharing/contacts:unit_tests",
       "//chrome/browser/nearby_sharing/local_device_data:test_support",
       "//chrome/browser/nearby_sharing/local_device_data:unit_tests",
       "//chrome/browser/nearby_sharing/logging:unit_tests",
@@ -6091,10 +6094,6 @@ if (!is_android) {
       sources += [ "../browser/ui/views/autofill/autofill_accessibility_win_browsertest.cc" ]
     }
 
-    if (is_win) {
-      sources += [ "../browser/virtual_keyboard_policy_uitest_win.cc" ]
-    }
-
     configs += [ "//build/config:precompiled_headers" ]
     if ((is_linux || is_chromeos) && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
@@ -6206,6 +6205,7 @@ if (!is_android) {
         "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h",
         "../browser/ui/views/certificate_selector_browsertest.cc",
+        "../browser/ui/views/commander_frontend_views_browsertest.cc",
         "../browser/ui/views/constrained_window_views_browsertest.cc",
         "../browser/ui/views/exclusive_access_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/extensions/extension_dialog_interactive_uitest.cc",

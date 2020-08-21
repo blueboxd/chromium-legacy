@@ -860,7 +860,6 @@ void ControllerImpl::ResolveInitialRequestStates() {
 
     // Update the Entry::State to the new correct state.
     if (new_state != entry->state) {
-      stats::LogRecoveryOperation(new_state);
       TransitTo(entry, new_state, model_.get());
     }
 
@@ -1150,8 +1149,6 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
 
   if (type == CompletionType::SUCCEED) {
     DCHECK(driver_entry.has_value());
-    stats::LogFilePathRenamed(driver_entry->current_file_path !=
-                              entry->target_file_path);
     entry->target_file_path = driver_entry->current_file_path;
     entry->completion_time = driver_entry->completion_time;
     entry->bytes_downloaded = driver_entry->bytes_downloaded;

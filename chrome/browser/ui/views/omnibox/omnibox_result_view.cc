@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -74,7 +75,11 @@ OmniboxResultView::OmniboxResultView(
     : AnimationDelegateViews(this),
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
-      animation_(new gfx::SlideAnimation(this)) {
+      animation_(new gfx::SlideAnimation(this)),
+      // Using base::Unretained is correct here. 'this' outlives the callback.
+      mouse_enter_exit_handler_(
+          base::BindRepeating(&OmniboxResultView::UpdateHoverState,
+                              base::Unretained(this))) {
   CHECK_GE(model_index, 0u);
 
   suggestion_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
@@ -93,9 +98,7 @@ OmniboxResultView::OmniboxResultView(
   // accessibility node data for removable suggestions.
   remove_suggestion_button_ =
       AddChildView(std::make_unique<OmniboxRemoveSuggestionButton>(this));
-  // The remove suggestion button may receive mouse enter/exit events with very
-  // quick mouse movements. Monitor the button to update our state.
-  update_on_mouse_enter_exit_.emplace(this, remove_suggestion_button_);
+  mouse_enter_exit_handler_.ObserveMouseEnterExitOn(remove_suggestion_button_);
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
   remove_suggestion_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
@@ -110,6 +113,10 @@ OmniboxResultView::OmniboxResultView(
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
     button_row_ = AddChildView(std::make_unique<OmniboxSuggestionButtonRowView>(
         popup_contents_view_, model_index));
+    // Quickly mouse-exiting through the suggestion button row sometimes leaves
+    // the whole row highlighted. This fixes that. It doesn't seem necessary to
+    // further observe the child controls of |button_row_|.
+    mouse_enter_exit_handler_.ObserveMouseEnterExitOn(button_row_);
   }
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
@@ -545,26 +552,6 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, private:
-
-OmniboxResultView::UpdateOnMouseEnterExit::UpdateOnMouseEnterExit(
-    OmniboxResultView* omnibox_result_view,
-    View* target)
-    : omnibox_result_view_(omnibox_result_view), target_(target) {
-  target_->AddPreTargetHandler(this);
-}
-
-OmniboxResultView::UpdateOnMouseEnterExit::~UpdateOnMouseEnterExit() {
-  target_->RemovePreTargetHandler(this);
-}
-
-void OmniboxResultView::UpdateOnMouseEnterExit::OnMouseEvent(
-    ui::MouseEvent* event) {
-  auto event_type = event->type();
-  if (event_type != ui::ET_MOUSE_ENTERED && event_type != ui::ET_MOUSE_EXITED)
-    return;
-
-  omnibox_result_view_->UpdateHoverState();
-}
 
 gfx::Image OmniboxResultView::GetIcon() const {
   return popup_contents_view_->GetMatchIcon(

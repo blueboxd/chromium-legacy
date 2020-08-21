@@ -137,7 +137,7 @@ class PDFiumEngine : public PDFEngine,
       const std::string& destination) override;
   int GetMostVisiblePage() override;
   pp::Rect GetPageBoundsRect(int index) override;
-  pp::Rect GetPageContentsRect(int index) override;
+  gfx::Rect GetPageContentsRect(int index) override;
   pp::Rect GetPageScreenRect(int page_index) const override;
   int GetVerticalScrollbarYPosition() override;
   void SetGrayscale(bool grayscale) override;
@@ -490,7 +490,7 @@ class PDFiumEngine : public PDFEngine,
 
   // Given |rect| in document coordinates, returns the rectangle in screen
   // coordinates. (i.e. 0,0 is top left corner of plugin area)
-  pp::Rect GetScreenRect(const pp::Rect& rect) const;
+  gfx::Rect GetScreenRect(const gfx::Rect& rect) const;
 
   // Given an image |buffer| with |stride|, highlights |rect|.
   // |highlighted_rects| contains the already highlighted rectangles and will be

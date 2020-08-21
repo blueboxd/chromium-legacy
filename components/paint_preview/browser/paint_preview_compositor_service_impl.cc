@@ -57,15 +57,19 @@ PaintPreviewCompositorServiceImpl::PaintPreviewCompositorServiceImpl(
 
 // The destructor for the |compositor_service_| will automatically result in any
 // active compositors being killed.
-PaintPreviewCompositorServiceImpl::~PaintPreviewCompositorServiceImpl() =
-    default;
+PaintPreviewCompositorServiceImpl::~PaintPreviewCompositorServiceImpl() {
+  DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
+}
 
-std::unique_ptr<PaintPreviewCompositorClient>
+std::unique_ptr<PaintPreviewCompositorClient, base::OnTaskRunnerDeleter>
 PaintPreviewCompositorServiceImpl::CreateCompositor(
     base::OnceClosure connected_closure) {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
-  auto compositor = std::make_unique<PaintPreviewCompositorClientImpl>(
-      compositor_task_runner_, weak_ptr_factory_.GetWeakPtr());
+  std::unique_ptr<PaintPreviewCompositorClientImpl, base::OnTaskRunnerDeleter>
+      compositor(
+          new PaintPreviewCompositorClientImpl(compositor_task_runner_,
+                                               weak_ptr_factory_.GetWeakPtr()),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
 
   compositor_task_runner_->PostTask(
       FROM_HERE,

@@ -41,7 +41,7 @@ class NewTabButton : public views::ImageButton,
 
   void AnimateInkDropToStateForTesting(views::InkDropState state);
 
-  // views::View:
+  // views::ImageButton:
   const char* GetClassName() const override;
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
@@ -49,9 +49,11 @@ class NewTabButton : public views::ImageButton,
  protected:
   virtual void PaintIcon(gfx::Canvas* canvas);
 
+  TabStrip* tab_strip() { return tab_strip_; }
+
   SkColor GetForegroundColor() const;
 
-  // views::View:
+  // views::ImageButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:

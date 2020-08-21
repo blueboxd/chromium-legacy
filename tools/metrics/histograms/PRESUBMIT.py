@@ -44,8 +44,8 @@ def GetObsoleteXmlErrors(input_api, output_api, cwd, results):
     results.append(output_api.PresubmitError(error_msg))
 
 
-def GetValidateFormatErrors(input_api, output_api, cwd, results):
-  """Validates the format of merged histograms and enums."""
+def GetValidateHistogramsError(input_api, output_api, cwd, results):
+  """Validates histograms format and index file."""
   exit_code = input_api.subprocess.call(
       [input_api.python_executable, 'validate_format.py'], cwd=cwd)
 
@@ -53,6 +53,15 @@ def GetValidateFormatErrors(input_api, output_api, cwd, results):
     error_msg = (
         'Histograms are not well-formatted; please run %s/validate_format.py '
         'and fix the reported errors.' % cwd)
+    results.append(output_api.PresubmitError(error_msg))
+
+  exit_code = input_api.subprocess.call(
+      [input_api.python_executable, 'validate_histograms_index.py'], cwd=cwd)
+
+  if exit_code != 0:
+    error_msg = (
+        'Histograms index file is not up-to-date. Please run '
+        '%s/histogram_path.py to update it' % cwd)
     results.append(output_api.PresubmitError(error_msg))
 
 
@@ -112,10 +121,10 @@ def CheckChange(input_api, output_api):
         input_api, output_api, file_obj, cwd, results)
     xml_changed = xml_changed or is_changed
 
-  # Run validate_format.py which checks for merge errors, if changed
-  # files contain histograms.xml or enums.xml.
+  # Run validate_format.py and validate_histograms_index.py, if changed files
+  # contain histograms.xml or enums.xml.
   if xml_changed:
-    GetValidateFormatErrors(input_api, output_api, cwd, results)
+    GetValidateHistogramsError(input_api, output_api, cwd, results)
 
   return results
 

@@ -10,6 +10,7 @@ Polymer({
   is: 'os-settings-people-page',
 
   behaviors: [
+    DeepLinkingBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -160,6 +161,16 @@ Polymer({
     setModes_: {
       type: Object,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () =>
+          new Set([chromeos.settings.mojom.Setting.kSetUpParentalControls]),
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -206,8 +217,38 @@ Polymer({
     }
   },
 
-  /** @protected */
-  currentRouteChanged() {
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    // Manually show the deep links for settings nested within elements.
+    assert(
+        settingId === chromeos.settings.mojom.Setting.kSetUpParentalControls);
+
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const parentalPage =
+          /** @type {?SettingsParentalControlsPageElement} */ (
+              this.$$('settings-parental-controls-page'));
+      const deepLinkElement = parentalPage.getSetupButton();
+      if (!deepLinkElement || deepLinkElement.hidden) {
+        console.warn(`Element with deep link id ${settingId} not focusable.`);
+        return;
+      }
+      this.showDeepLinkElement(deepLinkElement);
+    });
+    // Stop deep link attempt since we completed it manually.
+    return false;
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(route, oldRoute) {
     if (settings.Router.getInstance().getCurrentRoute() ==
         settings.routes.OS_SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
@@ -219,6 +260,13 @@ Polymer({
         this.showSignoutDialog_ = true;
       }
     }
+
+    // Only apply deep links to the People page.
+    if (route != settings.routes.OS_PEOPLE) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**

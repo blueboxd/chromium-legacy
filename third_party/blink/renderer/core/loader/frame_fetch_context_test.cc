@@ -215,17 +215,6 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     return reason;
   }
 
-  void AppendExecutingScriptToAdTracker(const String& url) {
-    AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->WillExecuteScript(document->GetExecutionContext(), url);
-  }
-
-  void AppendAdScriptToAdTracker(const KURL& ad_script_url) {
-    AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->AppendToKnownAdScripts(*document->GetExecutionContext(),
-                                       ad_script_url.GetString());
-  }
-
  private:
   base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
       ReportingDisposition reporting_disposition,

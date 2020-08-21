@@ -15,13 +15,22 @@ namespace {
 // The bit mask for parsing and writing Version.
 constexpr uint8_t kVersionBitmask = 0b111;
 
+// The bit mask for parsing and writing Device Type.
+constexpr uint8_t kDeviceTypeBitmask = 0b111;
+
 const uint8_t kMinimumSize =
-    /* Version(3 bits)|Visibility(1 bit)|Reserved(4 bits)= */ 1 +
-    sharing::Advertisement::kSaltSize +
+    /* Version(3 bits)|Visibility(1 bit)|Device Type(3 bits)|Reserved(1 bits)=
+     */
+    1 + sharing::Advertisement::kSaltSize +
     sharing::Advertisement::kMetadataEncryptionKeyHashByteSize;
 
 uint8_t ConvertVersion(int version) {
   return static_cast<uint8_t>((version & kVersionBitmask) << 5);
+}
+
+uint8_t ConvertDeviceType(nearby_share::mojom::ShareTargetType type) {
+  return static_cast<uint8_t>((static_cast<int32_t>(type) & kDeviceTypeBitmask)
+                              << 1);
 }
 
 uint8_t ConvertHasDeviceName(bool hasDeviceName) {
@@ -36,6 +45,7 @@ namespace sharing {
 std::unique_ptr<Advertisement> Advertisement::NewInstance(
     std::vector<uint8_t> salt,
     std::vector<uint8_t> encrypted_metadata_key,
+    nearby_share::mojom::ShareTargetType device_type,
     base::Optional<std::string> device_name) {
   if (salt.size() != sharing::Advertisement::kSaltSize) {
     LOG(ERROR) << "Failed to create advertisement because the salt did "
@@ -63,7 +73,7 @@ std::unique_ptr<Advertisement> Advertisement::NewInstance(
   // Using `new` to access a non-public constructor.
   return base::WrapUnique(new sharing::Advertisement(
       /* version= */ 0, std::move(salt), std::move(encrypted_metadata_key),
-      std::move(device_name)));
+      device_type, std::move(device_name)));
 }
 
 Advertisement::~Advertisement() = default;
@@ -77,7 +87,8 @@ std::vector<uint8_t> Advertisement::ToEndpointInfo() {
   endpoint_info.reserve(size);
   endpoint_info.push_back(
       static_cast<uint8_t>(ConvertVersion(version_) |
-                           ConvertHasDeviceName(device_name_.has_value())));
+                           ConvertHasDeviceName(device_name_.has_value()) |
+                           ConvertDeviceType(device_type_)));
   endpoint_info.insert(endpoint_info.end(), salt_.begin(), salt_.end());
   endpoint_info.insert(endpoint_info.end(), encrypted_metadata_key_.begin(),
                        encrypted_metadata_key_.end());
@@ -94,10 +105,12 @@ std::vector<uint8_t> Advertisement::ToEndpointInfo() {
 Advertisement::Advertisement(int version,
                              std::vector<uint8_t> salt,
                              std::vector<uint8_t> encrypted_metadata_key,
+                             nearby_share::mojom::ShareTargetType device_type,
                              base::Optional<std::string> device_name)
     : version_(version),
       salt_(std::move(salt)),
       encrypted_metadata_key_(std::move(encrypted_metadata_key)),
+      device_type_(device_type),
       device_name_(std::move(device_name)) {}
 
 }  // namespace sharing

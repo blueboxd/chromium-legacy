@@ -278,7 +278,6 @@ public class PersonalDataManager {
             return mIsLocal;
         }
 
-        @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
         }
@@ -299,7 +298,6 @@ public class PersonalDataManager {
             mCompanyName = companyName;
         }
 
-        @VisibleForTesting
         public void setStreetAddress(String streetAddress) {
             mStreetAddress = streetAddress;
         }
@@ -324,7 +322,6 @@ public class PersonalDataManager {
             mSortingCode = sortingCode;
         }
 
-        @VisibleForTesting
         public void setCountryCode(String countryCode) {
             mCountryCode = countryCode;
         }
@@ -337,7 +334,6 @@ public class PersonalDataManager {
             mEmailAddress = emailAddress;
         }
 
-        @VisibleForTesting
         public void setLanguageCode(String languageCode) {
             mLanguageCode = languageCode;
         }
@@ -512,7 +508,6 @@ public class PersonalDataManager {
             return mNickname;
         }
 
-        @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
         }
@@ -525,7 +520,6 @@ public class PersonalDataManager {
             mName = name;
         }
 
-        @VisibleForTesting
         public void setNumber(String number) {
             mNumber = number;
         }
@@ -534,7 +528,6 @@ public class PersonalDataManager {
             mObfuscatedNumber = obfuscatedNumber;
         }
 
-        @VisibleForTesting
         public void setMonth(String month) {
             mMonth = month;
         }

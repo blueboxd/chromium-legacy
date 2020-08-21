@@ -1319,12 +1319,32 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::ReceivePayloads(
 
 NearbySharingService::StatusCodes NearbySharingServiceImpl::SendPayloads(
     const ShareTarget& share_target) {
-  // TODO(crbug.com/1085067) - Implement.
+  NS_LOG(VERBOSE) << __func__ << ": Preparing to send payloads to "
+                  << share_target.device_name;
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  if (!info || !info->connection()) {
+    NS_LOG(WARNING) << "Failed to send payload due to missing connection.";
+    return StatusCodes::kOutOfOrderApiCall;
+  }
+
   OnOutgoingTransferUpdate(
       share_target,
       TransferMetadataBuilder()
+          .set_token(info->token())
           .set_status(TransferMetadata::Status::kAwaitingRemoteAcceptance)
           .build());
+
+  if (!info->endpoint_id()) {
+    OnOutgoingTransferUpdate(share_target,
+                             TransferMetadataBuilder()
+                                 .set_status(TransferMetadata::Status::kFailed)
+                                 .build());
+    info->connection()->Close();
+    NS_LOG(WARNING) << "Failed to send payload due to missing endpoint id.";
+    return StatusCodes::kOutOfOrderApiCall;
+  }
+
+  ReceiveConnectionResponse(share_target);
   return StatusCodes::kOk;
 }
 
@@ -2012,6 +2032,140 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
       base::BindOnce(&NearbySharingServiceImpl::OnStorageCheckCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
                      std::move(four_digit_token)));
+}
+
+void NearbySharingServiceImpl::ReceiveConnectionResponse(
+    ShareTarget share_target) {
+  NS_LOG(VERBOSE) << __func__ << ": Receiving response frame from "
+                  << share_target.device_name;
+  ShareTargetInfo* info = GetShareTargetInfo(share_target);
+  DCHECK(info && info->connection());
+
+  info->frames_reader()->ReadFrame(
+      sharing::mojom::V1Frame::Tag::CONNECTION_RESPONSE,
+      base::BindOnce(&NearbySharingServiceImpl::OnReceiveConnectionResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(share_target)),
+      kReadResponseFrameTimeout);
+}
+
+void NearbySharingServiceImpl::OnReceiveConnectionResponse(
+    ShareTarget share_target,
+    base::Optional<sharing::mojom::V1FramePtr> frame) {
+  OutgoingShareTargetInfo* info = GetOutgoingShareTargetInfo(share_target);
+  if (!info || !info->connection()) {
+    NS_LOG(WARNING) << __func__
+                    << ": Ignore received connection response, due to no "
+                       "connection established.";
+    return;
+  }
+  NearbyConnection* connection = info->connection();
+
+  if (!frame) {
+    NS_LOG(WARNING)
+        << __func__
+        << ": Failed to read a response from the remote device. Disconnecting.";
+    OnOutgoingTransferUpdate(share_target,
+                             TransferMetadataBuilder()
+                                 .set_status(TransferMetadata::Status::kFailed)
+                                 .build());
+    connection->Close();
+    return;
+  }
+
+  mutual_acceptance_timeout_alarm_.Cancel();
+
+  NS_LOG(VERBOSE) << __func__
+                  << ": Successfully read the connection response frame.";
+
+  sharing::mojom::ConnectionResponseFramePtr response =
+      std::move((*frame)->get_connection_response());
+  switch (response->status) {
+    case sharing::mojom::ConnectionResponseFrame::Status::kAccept: {
+      info->frames_reader()->ReadFrame(base::BindOnce(
+          &NearbySharingServiceImpl::OnFrameRead,
+          weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
+
+      OnOutgoingTransferUpdate(
+          share_target, TransferMetadataBuilder()
+                            .set_status(TransferMetadata::Status::kInProgress)
+                            .build());
+
+      // TODO(himanshujaju) - Implement payload tracker.
+      // PayloadTracker tracker = new PayloadTracker(shareTarget, callback);
+      NearbyConnectionsManager::PayloadStatusListener* tracker = nullptr;
+
+      for (auto& payload : info->ExtractTextPayloads()) {
+        nearby_connections_manager_->Send(*info->endpoint_id(),
+                                          std::move(payload), tracker);
+      }
+      for (auto& payload : info->ExtractFilePayloads()) {
+        nearby_connections_manager_->Send(*info->endpoint_id(),
+                                          std::move(payload), tracker);
+      }
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection was accepted. Payloads are now being sent.";
+      break;
+    }
+    case sharing::mojom::ConnectionResponseFrame::Status::kReject:
+      OnOutgoingTransferUpdate(
+          share_target, TransferMetadataBuilder()
+                            .set_status(TransferMetadata::Status::kRejected)
+                            .build());
+      connection->Close();
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection was rejected. The connection has been closed.";
+      break;
+    case sharing::mojom::ConnectionResponseFrame::Status::kNotEnoughSpace:
+      OnOutgoingTransferUpdate(
+          share_target,
+          TransferMetadataBuilder()
+              .set_status(TransferMetadata::Status::kNotEnoughSpace)
+              .build());
+      connection->Close();
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection was rejected because the remote device "
+             "does not have enough space for our attachments. The "
+             "connection has been closed.";
+      break;
+    case sharing::mojom::ConnectionResponseFrame::Status::
+        kUnsupportedAttachmentType:
+      OnOutgoingTransferUpdate(
+          share_target,
+          TransferMetadataBuilder()
+              .set_status(TransferMetadata::Status::kUnsupportedAttachmentType)
+              .build());
+      connection->Close();
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection was rejected because the remote device "
+             "does not support the attachments we were sending. The "
+             "connection has been closed.";
+      break;
+    case sharing::mojom::ConnectionResponseFrame::Status::kTimedOut:
+      OnOutgoingTransferUpdate(
+          share_target, TransferMetadataBuilder()
+                            .set_status(TransferMetadata::Status::kTimedOut)
+                            .build());
+      connection->Close();
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection was rejected because the remote device "
+             "timed out. The connection has been closed.";
+      break;
+    default:
+      OnOutgoingTransferUpdate(
+          share_target, TransferMetadataBuilder()
+                            .set_status(TransferMetadata::Status::kFailed)
+                            .build());
+      connection->Close();
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": The connection failed. The connection has been closed.";
+      break;
+  }
 }
 
 void NearbySharingServiceImpl::OnStorageCheckCompleted(

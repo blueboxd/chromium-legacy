@@ -12,6 +12,8 @@ static_library("core") {
   deps = [
     ":features",
     "//base",
+    "//components/pref_registry",
+    "//components/prefs:prefs",
     "//components/security_interstitials/core",
     "//components/security_state/core:features",
     "//components/strings",

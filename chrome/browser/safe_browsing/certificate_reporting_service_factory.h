@@ -61,7 +61,7 @@ class CertificateReportingServiceFactory
   base::TimeDelta queued_report_ttl_;
   size_t max_queued_report_count_;
   base::Callback<void()> service_reset_callback_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceFactory);
 };

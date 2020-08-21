@@ -19,7 +19,7 @@
 
 namespace net {
 
-class DnsSocketPool;
+class DnsSocketAllocator;
 class NetLog;
 
 // Session parameters and state shared between DnsTransactions for a specific
@@ -36,12 +36,12 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   typedef base::RepeatingCallback<int()> RandCallback;
 
   DnsSession(const DnsConfig& config,
-             std::unique_ptr<DnsSocketPool> socket_pool,
+             std::unique_ptr<DnsSocketAllocator> socket_allocator,
              const RandIntCallback& rand_int_callback,
              NetLog* net_log);
 
   const DnsConfig& config() const { return config_; }
-  DnsSocketPool* socket_pool() { return socket_pool_.get(); }
+  DnsSocketAllocator* socket_allocator() { return socket_allocator_.get(); }
   DnsUdpTracker* udp_tracker() { return &udp_tracker_; }
   NetLog* net_log() const { return net_log_; }
 
@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   ~DnsSession();
 
   const DnsConfig config_;
-  std::unique_ptr<DnsSocketPool> socket_pool_;
+  std::unique_ptr<DnsSocketAllocator> socket_allocator_;
   DnsUdpTracker udp_tracker_;
   RandCallback rand_callback_;
   NetLog* net_log_;

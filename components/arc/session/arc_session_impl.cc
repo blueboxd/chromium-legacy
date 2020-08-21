@@ -614,6 +614,7 @@ void ArcSessionImpl::Stop() {
     case State::WAITING_FOR_LCD_DENSITY:
       // If |Stop()| is called while waiting for LCD density or CPU cores
       // information, it can directly move to stopped state.
+      VLOG(1) << "ARC session is not started. state: " << state_;
       OnStopped(ArcStopReason::SHUTDOWN);
       return;
     case State::STARTING_MINI_INSTANCE:
@@ -642,6 +643,7 @@ void ArcSessionImpl::Stop() {
       return;
 
     case State::STOPPED:
+      VLOG(1) << "ARC session is already stopped.";
       // The instance is already stopped. Do nothing.
       return;
   }
@@ -657,7 +659,9 @@ void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool should_backup_log) {
          state_ == State::CONNECTING_MOJO ||
          state_ == State::RUNNING_FULL_INSTANCE);
 
-  VLOG(2) << "Requesting session_manager to stop ARC instance";
+  VLOG(1) << "Requesting session_manager to stop ARC instance"
+          << " on_shutdown: " << on_shutdown
+          << " should_backup_log: " << should_backup_log;
 
   // When the instance is full instance, change the |state_| in
   // ArcInstanceStopped().
@@ -702,7 +706,9 @@ void ArcSessionImpl::OnStopped(ArcStopReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // OnStopped() should be called once per instance.
   DCHECK_NE(state_, State::STOPPED);
-  VLOG(2) << "ARC session is stopped.";
+  VLOG(1) << "ARC session is stopped."
+          << " reason: " << reason << " state: " << state_;
+
   const bool was_running = (state_ == State::RUNNING_FULL_INSTANCE);
   arc_bridge_host_.reset();
   state_ = State::STOPPED;

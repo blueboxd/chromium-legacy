@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -1396,6 +1397,14 @@ public class TabListMediatorUnitTest {
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void updateTabGroupTitle_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        doAnswer(invocation -> {
+            String title = invocation.getArgument(1);
+            String num = invocation.getArgument(2);
+            return String.format("Expand %s tab group with %s tabs.", title, num);
+        })
+                .when(mContext)
+                .getString(anyInt(), anyString(), anyString());
+        String targetString = "Expand  tab group with 2 tabs.";
         assertThat(mModel.get(POSITION1).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
 
         // Mock that tab1 and newTab are in the same group and group root id is TAB1_ID.
@@ -1409,6 +1418,8 @@ public class TabListMediatorUnitTest {
 
         assertThat(mModel.get(POSITION1).model.get(TabProperties.TITLE),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
+        assertThat(mModel.get(POSITION1).model.get(TabProperties.CONTENT_DESCRIPTION_STRING),
+                equalTo(targetString));
     }
 
     @Test
@@ -2195,6 +2206,42 @@ public class TabListMediatorUnitTest {
         Tab tab = new MockTab(TAB1_ID, false);
         tab.destroy();
         TabListMediator.getDomain(tab);
+    }
+
+    @Test
+    public void testTabDescriptionStringSetup() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        // Setup the string template.
+        doAnswer(invocation -> {
+            String title = invocation.getArgument(1);
+            String num = invocation.getArgument(2);
+            return String.format("Expand %s tab group with %s tabs.", title, num);
+        })
+                .when(mContext)
+                .getString(anyInt(), anyString(), anyString());
+        String targetString = "Expand  tab group with 2 tabs.";
+
+        // Setup a tab group with {tab2, tab3}.
+        List<Tab> tabs = new ArrayList<>();
+        for (int i = 0; i < mTabModel.getCount(); i++) {
+            tabs.add(mTabModel.getTabAt(i));
+        }
+        TabImpl tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+        List<Tab> group1 = new ArrayList<>(Arrays.asList(mTab2, tab3));
+        createTabGroup(group1, TAB2_ID);
+
+        // Reset with show quickly.
+        assertThat(mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false),
+                equalTo(true));
+        assertThat(mModel.get(POSITION2).model.get(TabProperties.CONTENT_DESCRIPTION_STRING),
+                equalTo(targetString));
+
+        // Reset without show quickly.
+        mModel.clear();
+        assertThat(mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false),
+                equalTo(false));
+        assertThat(mModel.get(POSITION2).model.get(TabProperties.CONTENT_DESCRIPTION_STRING),
+                equalTo(targetString));
     }
 
     private void initAndAssertAllProperties() {

@@ -443,6 +443,7 @@ js_library("file_tasks") {
     ":task_history",
     "metadata:metadata_model",
     "ui:file_manager_ui",
+    "//ui/file_manager/file_manager/common/js:async_util",
   ]
   externs_list = [
     "//ui/file_manager/externs/background/crostini.js",

@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "ash/clipboard/clipboard_history_controller.h"
+#include "ash/clipboard/clipboard_history_item.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +38,7 @@ class ClipboardHistoryTest : public AshTestBase {
         Shell::Get()->clipboard_history_controller()->history());
   }
 
-  const std::list<ui::ClipboardData>& GetClipboardHistoryData() {
+  const std::list<ClipboardHistoryItem>& GetClipboardHistoryItems() {
     return clipboard_history_->GetItems();
   }
 
@@ -62,13 +63,13 @@ class ClipboardHistoryTest : public AshTestBase {
   }
 
   void EnsureTextHistory(const std::vector<base::string16>& expected_strings) {
-    const std::list<ui::ClipboardData>& datas = GetClipboardHistoryData();
-    EXPECT_EQ(expected_strings.size(), datas.size());
+    const std::list<ClipboardHistoryItem>& items = GetClipboardHistoryItems();
+    EXPECT_EQ(expected_strings.size(), items.size());
 
     int expected_strings_index = 0;
-    for (auto& data : datas) {
+    for (const auto& item : items) {
       EXPECT_EQ(expected_strings[expected_strings_index++],
-                base::UTF8ToUTF16(data.text()));
+                base::UTF8ToUTF16(item.data().text()));
     }
   }
 
@@ -84,13 +85,13 @@ class ClipboardHistoryTest : public AshTestBase {
       }
       base::RunLoop().RunUntilIdle();
     }
-    const std::list<ui::ClipboardData>& datas = GetClipboardHistoryData();
-    EXPECT_EQ(expected_bitmaps.size(), datas.size());
+    const std::list<ClipboardHistoryItem>& items = GetClipboardHistoryItems();
+    EXPECT_EQ(expected_bitmaps.size(), items.size());
 
     int expected_bitmaps_index = 0;
-    for (auto& data : datas) {
+    for (const auto& item : items) {
       EXPECT_TRUE(gfx::BitmapsAreEqual(
-          expected_bitmaps[expected_bitmaps_index++], data.bitmap()));
+          expected_bitmaps[expected_bitmaps_index++], item.data().bitmap()));
     }
   }
 
@@ -110,12 +111,12 @@ class ClipboardHistoryTest : public AshTestBase {
     }
     base::RunLoop().RunUntilIdle();
 
-    const std::list<ui::ClipboardData> datas = GetClipboardHistoryData();
-    EXPECT_EQ(1u, datas.size());
+    const std::list<ClipboardHistoryItem> items = GetClipboardHistoryItems();
+    EXPECT_EQ(1u, items.size());
 
     std::unordered_map<base::string16, base::string16> actual_data;
-    ui::ReadCustomDataIntoMap(datas.front().custom_data_data().c_str(),
-                              datas.front().custom_data_data().size(),
+    ui::ReadCustomDataIntoMap(items.front().data().custom_data_data().c_str(),
+                              items.front().data().custom_data_data().size(),
                               &actual_data);
 
     EXPECT_EQ(expected_data, actual_data);

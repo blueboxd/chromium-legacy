@@ -1347,6 +1347,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kInsecureFormsWarningsEnabled,
     prefs::kMixedFormsWarningsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kLookalikeWarningAllowlistDomains,
+    prefs::kLookalikeWarningAllowlistDomains,
+    base::Value::Type::LIST },
 
 #if defined(OS_ANDROID)
   { key::kCCTToSDialogEnabled,

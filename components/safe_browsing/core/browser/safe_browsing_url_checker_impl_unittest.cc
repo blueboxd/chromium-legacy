@@ -194,10 +194,11 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
     threat_info.set_threat_type(threat_type);
     threat_info.set_verdict_type(verdict_type);
     *new_threat_info = threat_info;
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                   base::BindOnce(std::move(response_callback),
-                                  /* is_rt_lookup_successful */ true,
-                                  std::move(response)));
+    base::PostTask(
+        FROM_HERE, CreateTaskTraits(ThreadID::IO),
+        base::BindOnce(std::move(response_callback),
+                       /* is_rt_lookup_successful */ true,
+                       /* is_cached_response */ false, std::move(response)));
   }
 
   void SetThreatTypeForUrl(const GURL& gurl, SBThreatType threat_type) {

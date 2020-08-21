@@ -75,6 +75,9 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kInteractiveWindowCycleList{"InteractiveWindowCycleList",
+                                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -187,6 +190,10 @@ bool IsLockScreenInlineReplyEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
+}
+
+bool IsInteractiveWindowCycleListEnabled() {
+  return base::FeatureList::IsEnabled(kInteractiveWindowCycleList);
 }
 
 bool IsManagedDeviceUIRedesignEnabled() {

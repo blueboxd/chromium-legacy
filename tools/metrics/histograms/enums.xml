@@ -16892,6 +16892,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2"
       label="DNS query/response ID mismatches, where response ID is
              unrecognized"/>
+  <int value="3" label="Exhaustion of process-wide UDP socket limit"/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError">
@@ -21511,6 +21512,7 @@ Called by update_document_policy_enum.py.-->
   <int value="779" label="PrintersBulkBlocklist"/>
   <int value="780" label="PrintersBulkAllowlist"/>
   <int value="781" label="CloudPrintWarningsSuppressed"/>
+  <int value="782" label="LookalikeWarningAllowlistDomains"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28629,7 +28631,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3201" label="OBSOLETE_WrongBaselineOfButtonElement"/>
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
   <int value="3203" label="ForceLoadAtTop"/>
-  <int value="3204" label="LegacyLayoutByButton"/>
+  <int value="3204" label="OBSOLETE_LegacyLayoutByButton"/>
   <int value="3205" label="LegacyLayoutByDeprecatedFlexBox"/>
   <int value="3206" label="LegacyLayoutByDetailsMarker"/>
   <int value="3207" label="LegacyLayoutByEditing"/>
@@ -28868,6 +28870,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3434" label="GamepadId"/>
   <int value="3435" label="ElementAttachInternals"/>
   <int value="3436" label="BluetoothDeviceName"/>
+  <int value="3437" label="RTCIceCandidateAddress"/>
+  <int value="3438" label="RTCIceCandidateCandidate"/>
+  <int value="3439" label="RTCIceCandidatePort"/>
+  <int value="3440" label="RTCIceCandidateRelatedAddress"/>
+  <int value="3441" label="RTCIceCandidateRelatedPort"/>
+  <int value="3442" label="SlotAssignNode"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34897,6 +34905,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147167998" label="ITF_E_EXTRACT_LOCALIZED_STRINGS_FAILED"/>
   <int value="-2147167997"
       label="ITF_E_EXTRACT_NO_FULL_NAME_OR_POSTSCRIPT_NAME"/>
+  <int value="-2147167996" label="ITF_E_EXTRACT_NO_FAMILY_NAME"/>
   <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
   <int value="-2147024893" label="ERROR_PATH_NOT_FOUND"/>
   <int value="-2147024891" label="E_ACCESSDENIED"/>
@@ -74989,6 +74998,12 @@ Called by update_scheduler_enums.py.-->
   <int value="4"
       label="[Deprecated] User attempted sign-in flow, then clicked No Thanks"/>
   <int value="5" label="User clicked the 'Sign in' button"/>
+</enum>
+
+<enum name="WellKnownChangePasswordResult">
+  <int value="0" label="Fallback to Origin"/>
+  <int value="1" label="Fallback to Url Override"/>
+  <int value="2" label="Well-Known supported"/>
 </enum>
 
 <enum name="WhitelistedDownloadType">

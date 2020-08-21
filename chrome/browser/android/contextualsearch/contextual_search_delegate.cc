@@ -145,12 +145,10 @@ void ContextualSearchDelegate::StartSearchTermResolutionRequest(
   url_loader_.reset();
 
   // Decide if the URL should be sent with the context.
-  GURL page_url(web_contents->GetURL());
-  if (context_->CanSendBasePageUrl() &&
-      CanSendPageURL(page_url, ProfileManager::GetActiveUserProfile(),
-                     template_url_service_)) {
-    context_->SetBasePageUrl(page_url);
-  }
+  if (context_->CanSendBasePageUrl())
+    context_->SetBasePageUrl(web_contents->GetURL());
+
+  // Issue the resolve request.
   ResolveSearchTermFromContext();
 }
 
@@ -392,41 +390,6 @@ std::string ContextualSearchDelegate::GetDiscourseContext(
   std::replace(encoded_context.begin(), encoded_context.end(), '+', '-');
   std::replace(encoded_context.begin(), encoded_context.end(), '/', '_');
   return kDiscourseContextHeaderPrefix + encoded_context;
-}
-
-bool ContextualSearchDelegate::CanSendPageURL(
-    const GURL& current_page_url,
-    Profile* profile,
-    TemplateURLService* template_url_service) {
-  // Check whether there is a Finch parameter preventing us from sending the
-  // page URL.
-  if (field_trial_->IsSendBasePageURLDisabled())
-    return false;
-
-  // Ensure that the default search provider is Google.
-  const TemplateURL* default_search_provider =
-      template_url_service->GetDefaultSearchProvider();
-  bool is_default_search_provider_google =
-      default_search_provider &&
-      default_search_provider->url_ref().HasGoogleBaseURLs(
-          template_url_service->search_terms_data());
-  if (!is_default_search_provider_google)
-    return false;
-
-  // Only allow HTTP URLs or HTTPS URLs.
-  if (current_page_url.scheme() != url::kHttpScheme &&
-      (current_page_url.scheme() != url::kHttpsScheme))
-    return false;
-
-  // Check whether the user has enabled anonymous URL-keyed data collection
-  // from the unified consent service.
-  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      anonymized_unified_consent_url_helper =
-          UrlKeyedDataCollectionConsentHelper::
-              NewAnonymizedDataCollectionConsentHelper(
-                  ProfileManager::GetActiveUserProfile()->GetPrefs());
-  // If they have, then allow sending of the URL.
-  return anonymized_unified_consent_url_helper->IsEnabled();
 }
 
 // Decodes the given response from the search term resolution request and sets

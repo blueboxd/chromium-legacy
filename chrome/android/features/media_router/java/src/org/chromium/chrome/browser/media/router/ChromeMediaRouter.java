@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.mediarouter.media.MediaRouter;
@@ -67,6 +69,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
     private static boolean sAndroidMediaRouterSetForTest;
+    @SuppressLint("StaticFieldLeak") // This is for test only.
     private static MediaRouter sAndroidMediaRouterForTest;
 
     @VisibleForTesting

@@ -15,6 +15,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/views/view.h"
 
 namespace aura {
 class ScopedWindowTargeter;
@@ -43,6 +44,12 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
 
   // Cycles to the next or previous window based on |direction|.
   void Step(WindowCycleController::Direction direction);
+
+  // Skip window cycle list directly to |window|.
+  void StepToWindow(aura::Window* window);
+
+  // Checks whether |event| occurs within the cycle view.
+  bool IsEventInCycleView(ui::MouseEvent* event);
 
   void set_user_did_accept(bool user_did_accept) {
     user_did_accept_ = user_did_accept;
@@ -75,6 +82,12 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // Selects a window, which either activates it or expands it in the case of
   // PIP.
   void SelectWindow(aura::Window* window);
+
+  // Cycles windows by |offset|.
+  void Step(int offset);
+
+  // Returns the views for the window cycle list.
+  const views::View::Views& GetWindowCycleItemViewsForTesting() const;
 
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the

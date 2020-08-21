@@ -74,6 +74,43 @@ chrome_pdf::InputEventMouseButtonType GetInputEventMouseButtonType(
   }
 }
 
+bool IsKeyboardEventType(chrome_pdf::InputEventType event_type) {
+  switch (event_type) {
+    case chrome_pdf::InputEventType::kRawKeyDown:
+    case chrome_pdf::InputEventType::kKeyDown:
+    case chrome_pdf::InputEventType::kKeyUp:
+    case chrome_pdf::InputEventType::kChar:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsMouseEventType(chrome_pdf::InputEventType event_type) {
+  switch (event_type) {
+    case chrome_pdf::InputEventType::kMouseDown:
+    case chrome_pdf::InputEventType::kMouseUp:
+    case chrome_pdf::InputEventType::kMouseMove:
+    case chrome_pdf::InputEventType::kMouseEnter:
+    case chrome_pdf::InputEventType::kMouseLeave:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsTouchEventType(chrome_pdf::InputEventType event_type) {
+  switch (event_type) {
+    case chrome_pdf::InputEventType::kTouchStart:
+    case chrome_pdf::InputEventType::kTouchMove:
+    case chrome_pdf::InputEventType::kTouchEnd:
+    case chrome_pdf::InputEventType::kTouchCancel:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 namespace chrome_pdf {
@@ -87,7 +124,9 @@ KeyboardInputEvent::KeyboardInputEvent(InputEventType event_type,
       time_stamp_(time_stamp),
       modifiers_(modifiers),
       keyboard_code_(keyboard_code),
-      key_char_(key_char) {}
+      key_char_(key_char) {
+  DCHECK(IsKeyboardEventType(GetEventType()));
+}
 
 KeyboardInputEvent::KeyboardInputEvent(const KeyboardInputEvent& other) =
     default;
@@ -110,7 +149,9 @@ MouseInputEvent::MouseInputEvent(InputEventType event_type,
       mouse_button_type_(mouse_button_type),
       point_(point),
       click_count_(click_count),
-      movement_(movement) {}
+      movement_(movement) {
+  DCHECK(IsMouseEventType(GetEventType()));
+}
 
 MouseInputEvent::MouseInputEvent(const MouseInputEvent& other) = default;
 
@@ -128,7 +169,9 @@ TouchInputEvent::TouchInputEvent(InputEventType event_type,
       time_stamp_(time_stamp),
       modifiers_(modifiers),
       target_touch_point_(target_touch_point),
-      touch_count_(touch_count) {}
+      touch_count_(touch_count) {
+  DCHECK(IsTouchEventType(GetEventType()));
+}
 
 TouchInputEvent::TouchInputEvent(const TouchInputEvent& other) = default;
 

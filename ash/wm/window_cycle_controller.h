@@ -16,6 +16,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class MouseEvent;
+}
+
 namespace ash {
 
 class WindowCycleEventFilter;
@@ -55,6 +59,12 @@ class ASH_EXPORT WindowCycleController {
   // the originally active window should remain active).
   void CompleteCycling();
   void CancelCycling();
+
+  // Skip window cycle list directly to |window|.
+  void StepToWindow(aura::Window* window);
+
+  // Checks whether |event| occurs within the cycle view.
+  bool IsEventInCycleView(ui::MouseEvent* event);
 
   // Returns the WindowCycleList.
   const WindowCycleList* window_cycle_list() const {

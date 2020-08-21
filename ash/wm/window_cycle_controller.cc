@@ -124,11 +124,20 @@ void WindowCycleController::CancelCycling() {
   StopCycling();
 }
 
+void WindowCycleController::StepToWindow(aura::Window* window) {
+  DCHECK(window_cycle_list_);
+  window_cycle_list_->StepToWindow(window);
+}
+
+bool WindowCycleController::IsEventInCycleView(ui::MouseEvent* event) {
+  return window_cycle_list_ && window_cycle_list_->IsEventInCycleView(event);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, private:
 
 void WindowCycleController::Step(Direction direction) {
-  DCHECK(window_cycle_list_.get());
+  DCHECK(window_cycle_list_);
   window_cycle_list_->Step(direction);
 }
 

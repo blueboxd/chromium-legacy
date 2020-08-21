@@ -10,4 +10,7 @@ const char kRecurrentSSLInterstitial[] = "profile.ssl_recurrent_interstitial";
 
 const char kMixedFormsWarningsEnabled[] = "profile.mixed_forms_warnings";
 
+const char kLookalikeWarningAllowlistDomains[] =
+    "profile.lookalike_domain_allowlist";
+
 }  // namespace prefs

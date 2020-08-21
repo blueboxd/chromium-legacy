@@ -45,7 +45,6 @@ class ComputedStyle;
 class Element;
 class File;
 class FontDescription;
-class LengthSize;
 class LocalFrame;
 class Node;
 class ThemePainter;
@@ -62,17 +61,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   static LayoutTheme& GetTheme();
 
   virtual ThemePainter& Painter() = 0;
-
-  static void SetSizeIfAuto(ComputedStyle&, const IntSize&);
-  // Sets the minimum size to |part_size| or |min_part_size| as appropriate
-  // according to the given style, if they are specified.
-  static void SetMinimumSize(ComputedStyle&,
-                             const LengthSize* part_size,
-                             const LengthSize* min_part_size = nullptr);
-  // SetMinimumSizeIfAuto must be called before SetSizeIfAuto, because we
-  // will not set a minimum size if an explicit size is set, and SetSizeIfAuto
-  // sets an explicit size.
-  static void SetMinimumSizeIfAuto(ComputedStyle&, const IntSize&);
 
   // This method is called whenever style has been computed for an element and
   // the appearance property has been set to a value other than "none".
@@ -202,8 +190,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   virtual bool SupportsSelectionForegroundColors() const { return true; }
 
-  virtual bool ShouldUseFallbackTheme(const ComputedStyle&) const;
-
   // Adjust style as per platform selection.
   virtual void AdjustControlPartStyle(ComputedStyle&);
 
@@ -243,9 +229,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual void AdjustSliderThumbStyle(ComputedStyle&) const;
   virtual void AdjustSearchFieldStyle(ComputedStyle&) const;
   virtual void AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const;
-  void AdjustStyleUsingFallbackTheme(ComputedStyle&);
-  void AdjustCheckboxStyleUsingFallbackTheme(ComputedStyle&) const;
-  void AdjustRadioStyleUsingFallbackTheme(ComputedStyle&) const;
 
  public:
   // Methods for state querying

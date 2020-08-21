@@ -20,9 +20,6 @@ class DistantSession;
 // Tells the receiver to show the tab UI for regular tabs. NO-OP if the correct
 // tab UI is already visible. Receiver may also dismiss recent tabs.
 - (void)showActiveRegularTabFromRecentTabs;
-// Tells the receiver to show the tab UI for incognito tabs. NO-OP if the
-// correct tab UI is already visible. Receiver may also dismiss recent tabs.
-- (void)showActiveIncognitoTabFromRecentTabs;
 // Tells the receiver to show the history UI. Receiver may also dismiss recent
 // tabs.
 - (void)showHistoryFromRecentTabs;

@@ -64,6 +64,12 @@ class FileTasks {
 
     /** @private @const {!ProgressCenter} */
     this.progressCenter_ = progressCenter;
+
+    /**
+     * Mutex used to serialize password dialogs.
+     * @private @const {!AsyncUtil.Queue}
+     */
+    this.mutex_ = new AsyncUtil.Queue();
   }
 
   /**
@@ -874,20 +880,39 @@ class FileTasks {
    */
   async mountArchive_(url) {
     // First time, try without providing a password.
-    let password = undefined;
-    const filename = util.extractFilePath(url).split('/').pop();
-    while (true) {
-      try {
-        return await this.volumeManager_.mountArchive(url, password);
-      } catch (error) {
-        // If error is not about needing a password, propagate it.
-        if (error !== VolumeManagerCommon.VolumeError.NEED_PASSWORD) {
-          throw error;
+    try {
+      return await this.volumeManager_.mountArchive(url);
+    } catch (error) {
+      // If error is not about needing a password, propagate it.
+      if (error !== VolumeManagerCommon.VolumeError.NEED_PASSWORD) {
+        throw error;
+      }
+    }
+
+    // We need a password.
+    const unlock = await this.mutex_.lock();
+    try {
+      /** @type {?string} */ let password = null;
+      const filename = util.extractFilePath(url).split('/').pop();
+      while (true) {
+        // Ask for password.
+        do {
+          password =
+              await this.ui_.passwordDialog.askForPassword(filename, password);
+        } while (!password);
+
+        // Mount archive with password.
+        try {
+          return await this.volumeManager_.mountArchive(url, password);
+        } catch (error) {
+          // If error is not about needing a password, propagate it.
+          if (error !== VolumeManagerCommon.VolumeError.NEED_PASSWORD) {
+            throw error;
+          }
         }
       }
-
-      // Prompt password.
-      password = await this.ui_.passwordDialog.askForPassword(filename);
+    } finally {
+      unlock();
     }
   }
 

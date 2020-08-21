@@ -221,7 +221,6 @@ public class Snackbar {
     /**
      * @return The {@link SnackbarController} that controls this snackbar.
      */
-    @VisibleForTesting
     public SnackbarController getController() {
         return mController;
     }

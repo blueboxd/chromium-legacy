@@ -24,6 +24,9 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.net.URL;
@@ -318,16 +321,37 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * Whether sending the URL of the base page to the server may be done for policy reasons.
-     * NOTE: There may be additional privacy reasons why the base page URL should not be sent.
-     * TODO(donnd): Update this API to definitively determine if it's OK to send the URL,
-     * by merging the checks in the native contextual_search_delegate here.
-     * @return {@code true} if the URL may be sent for policy reasons.
-     *         Note that a return value of {@code true} may still require additional checks
-     *         to see if all privacy-related conditions are met to send the base page URL.
+     * Whether this request should include sending the URL of the base page to the server.
+     * Several conditions are checked to make sure it's OK to send the URL, but primarily this is
+     * based on whether the user has checked the setting for "Make searches and browsing better".
+     * @return {@code true} if the URL should be sent.
      */
-    boolean maySendBasePageUrl() {
-        return !isUserUndecided();
+    boolean doSendBasePageUrl() {
+        if (isUserUndecided()) return false;
+
+        // Check whether there is a Field Trial setting preventing us from sending the page URL.
+        if (ContextualSearchFieldTrial.getSwitch(
+                    ContextualSearchSwitch.IS_SEND_BASE_PAGE_URL_DISABLED)) {
+            return false;
+        }
+
+        // Ensure that the default search provider is Google.
+        if (!TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) return false;
+
+        // Only allow HTTP or HTTPS URLs.
+        URL url = mNetworkCommunicator.getBasePageUrl();
+        String urlProtocol = url != null ? url.getProtocol() : "";
+        if (!(urlProtocol.equals(UrlConstants.HTTP_SCHEME)
+                    || urlProtocol.equals(UrlConstants.HTTPS_SCHEME))) {
+            return false;
+        }
+
+        // Check whether the user has enabled anonymous URL-keyed data collection.
+        // This is surfaced on the relatively new "Make searches and browsing better" user setting.
+        // In case an experiment is active for the legacy UI call through the unified consent
+        // service.
+        return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(
+                Profile.getLastUsedRegularProfile());
     }
 
     /**

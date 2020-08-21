@@ -588,6 +588,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     bool is_rt_lookup_successful,
+    bool is_cached_response,
     std::unique_ptr<RTLookupResponse> response) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
   bool is_expected_resource_type =
@@ -616,7 +617,12 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
         RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
             response->threat_info(0).threat_type());
   }
-  OnUrlResult(url, sb_threat_type, ThreatMetadata());
+  if (is_cached_response && sb_threat_type == SB_THREAT_TYPE_SAFE) {
+    // TODO(vakh): Add a UMA metric.
+    PerformHashBasedCheck(url);
+  } else {
+    OnUrlResult(url, sb_threat_type, ThreatMetadata());
+  }
 }
 
 }  // namespace safe_browsing

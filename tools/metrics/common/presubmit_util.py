@@ -27,7 +27,7 @@ def DoPresubmit(argv,
 
   Args:
     argv: command line arguments
-    original_filename: The filename to read from.
+    original_filename: The path to the file to read from.
     backup_filename: When pretty printing, move the old file contents here.
     prettyFn: A function which takes the original xml content and produces
         pretty printed xml.

@@ -12,5 +12,6 @@ js_modulizer("modulize") {
     "network_list_item_test.js",
     "network_list_test.js",
     "network_password_input_test.js",
+    "network_property_list_mojo_test.js",
   ]
 }

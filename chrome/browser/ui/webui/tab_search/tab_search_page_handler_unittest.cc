@@ -18,6 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_utils.h"
 
+using testing::_;
+using testing::Truly;
+
 namespace {
 
 constexpr char kTabUrl1[] = "http://foo/1";
@@ -44,6 +47,7 @@ class MockPage : public tab_search::mojom::Page {
   mojo::Receiver<tab_search::mojom::Page> receiver_{this};
 
   MOCK_METHOD0(TabsChanged, void());
+  MOCK_METHOD1(TabUpdated, void(tab_search::mojom::TabPtr));
 };
 
 void ExpectNewTab(const tab_search::mojom::Tab* tab,
@@ -179,6 +183,7 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
   AddTabWithTitle(browser1(), GURL(kTabUrl1), kTabName1);
 
   EXPECT_CALL(page_, TabsChanged()).Times(1);
+  EXPECT_CALL(page_, TabUpdated(_)).Times(2);
   handler()->mock_debounce_timer()->Fire();
 
   int32_t tab_id2 = 0;
@@ -246,6 +251,7 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
 // timer fires.
 TEST_F(TabSearchPageHandlerTest, TabsChanged) {
   EXPECT_CALL(page_, TabsChanged()).Times(4);
+  EXPECT_CALL(page_, TabUpdated(_)).Times(1);
   FireTimer();  // Will call TabsChanged().
 
   // Add 2 tabs in browser1.
@@ -276,6 +282,7 @@ TEST_F(TabSearchPageHandlerTest, TabsChanged) {
 // will not call TabsChanged().
 TEST_F(TabSearchPageHandlerTest, TabsNotChanged) {
   EXPECT_CALL(page_, TabsChanged()).Times(1);
+  EXPECT_CALL(page_, TabUpdated(_)).Times(0);
   FireTimer();  // Will call TabsChanged().
   ASSERT_FALSE(IsTimerRunning());
   AddTabWithTitle(browser3(), GURL(kTabUrl1),
@@ -284,6 +291,22 @@ TEST_F(TabSearchPageHandlerTest, TabsNotChanged) {
   AddTabWithTitle(browser4(), GURL(kTabUrl2),
                   kTabName2);  // Will not kick off timer.
   ASSERT_FALSE(IsTimerRunning());
+}
+
+bool VerifyTabUpdated(const tab_search::mojom::TabPtr& tab) {
+  ExpectNewTab(tab.get(), kTabUrl1, kTabName1, 1);
+  return true;
+}
+
+// Verify tab update event is called correctly with data
+TEST_F(TabSearchPageHandlerTest, TabUpdated) {
+  EXPECT_CALL(page_, TabsChanged()).Times(1);
+  EXPECT_CALL(page_, TabUpdated(Truly(VerifyTabUpdated))).Times(1);
+  AddTabWithTitle(browser1(), GURL(kTabUrl1), kTabName1);
+  // Adding the following tab will trigger TabUpdated() to the first tab
+  // since the tab index will change from 0 to 1
+  AddTabWithTitle(browser1(), GURL(kTabUrl2), kTabName2);
+  FireTimer();
 }
 
 TEST_F(TabSearchPageHandlerTest, CloseTab) {
@@ -296,6 +319,7 @@ TEST_F(TabSearchPageHandlerTest, CloseTab) {
   int tab_id = extensions::ExtensionTabUtil::GetTabId(
       browser2()->tab_strip_model()->GetWebContentsAt(0));
   EXPECT_CALL(page_, TabsChanged()).Times(1);
+  EXPECT_CALL(page_, TabUpdated(_)).Times(1);
   handler()->CloseTab(tab_id);
   ASSERT_EQ(1, browser1()->tab_strip_model()->count());
   ASSERT_EQ(1, browser2()->tab_strip_model()->count());

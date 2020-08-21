@@ -17,10 +17,6 @@
 
 namespace {
 
-const char kAutomationExtensionBackgroundPage[] =
-    "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
-    "_generated_background_page.html";
-
 // Match to content/browser/devtools/devTools_session const of same name
 const char kTargetClosedMessage[] = "Inspected target navigated or closed";
 
@@ -179,15 +175,7 @@ Status NavigationTracker::IsPendingNavigation(const Timeout* timeout,
       *loading_state_ = kLoading;
       return Status(kOk);
     }
-    // If we're loading the ChromeDriver automation extension background page,
-    // look for a known function to determine the loading status.
-    if (base_url == kAutomationExtensionBackgroundPage) {
-      bool function_exists = false;
-      status = CheckFunctionExists(timeout, &function_exists);
-      if (status.IsError())
-        return MakeNavigationCheckFailedStatus(status);
-      *loading_state_ = function_exists ? kNotLoading : kLoading;
-    }
+
     status = UpdateCurrentLoadingState();
     if (status.code() == kNoSuchExecutionContext)
       *loading_state_ = kLoading;

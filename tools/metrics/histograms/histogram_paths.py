@@ -38,6 +38,10 @@ OBSOLETE_XML_RELATIVE = ('tools/metrics/histograms/histograms_xml/'
 ALL_XMLS_RELATIVE = [ENUMS_XML_RELATIVE, OBSOLETE_XML_RELATIVE
                      ] + HISTOGRAMS_XMLS_RELATIVE
 
+HISTOGRAMS_PREFIX_LIST = [
+    os.path.basename(os.path.dirname(f)) for f in HISTOGRAMS_XMLS_RELATIVE
+]
+
 ENUMS_XML = path_util.GetInputFile(ENUMS_XML_RELATIVE)
 UKM_XML = path_util.GetInputFile('tools/metrics/ukm/ukm.xml')
 HISTOGRAMS_XMLS = [path_util.GetInputFile(f) for f in HISTOGRAMS_XMLS_RELATIVE]

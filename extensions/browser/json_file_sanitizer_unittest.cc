@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,8 @@ class JsonFileSanitizerTest : public testing::Test {
     sanitizer_ = JsonFileSanitizer::CreateAndStart(
         &data_decoder_, file_paths,
         base::BindOnce(&JsonFileSanitizerTest::SanitizationDone,
-                       base::Unretained(this)));
+                       base::Unretained(this)),
+        GetExtensionFileTaskRunner());
   }
 
   JsonFileSanitizer::Status last_reported_status() const {

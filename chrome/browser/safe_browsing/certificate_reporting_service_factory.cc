@@ -5,12 +5,14 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -70,7 +72,7 @@ void CertificateReportingServiceFactory::SetServiceResetCallbackForTesting(
 
 void CertificateReportingServiceFactory::SetURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
-  url_loader_factory_ = factory;
+  test_url_loader_factory_ = factory;
 }
 
 CertificateReportingServiceFactory::CertificateReportingServiceFactory()
@@ -87,20 +89,27 @@ CertificateReportingServiceFactory::CertificateReportingServiceFactory()
 CertificateReportingServiceFactory::~CertificateReportingServiceFactory() {}
 
 KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* browser_context) const {
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
   // In unit tests the safe browsing service can be null, if this happens,
   // return null instead of crashing.
   if (!safe_browsing_service)
     return nullptr;
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (test_url_loader_factory_.get()) {
+    url_loader_factory = test_url_loader_factory_;
+  } else if (base::FeatureList::IsEnabled(
+                 safe_browsing::kSafeBrowsingRemoveCookies)) {
+    url_loader_factory = profile->GetURLLoaderFactory();
+  } else {
+    url_loader_factory = safe_browsing_service->GetURLLoaderFactory();
+  }
   return new CertificateReportingService(
-      safe_browsing_service,
-      url_loader_factory_.get() ? url_loader_factory_
-                                : safe_browsing_service->GetURLLoaderFactory(),
-      static_cast<Profile*>(profile), server_public_key_,
-      server_public_key_version_, max_queued_report_count_, queued_report_ttl_,
-      clock_, service_reset_callback_);
+      safe_browsing_service, url_loader_factory, static_cast<Profile*>(profile),
+      server_public_key_, server_public_key_version_, max_queued_report_count_,
+      queued_report_ttl_, clock_, service_reset_callback_);
 }
 
 content::BrowserContext*

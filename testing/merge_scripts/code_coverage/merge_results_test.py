@@ -237,26 +237,6 @@ class MergeProfilesTest(unittest.TestCase):
     # The mock method should only apply when merging .profraw files.
     self.assertFalse(mock_validate_and_convert_profraws.called)
 
-  @mock.patch('os.remove')
-  def test_mark_invalid_shards(self, mock_rm):
-    merge_results.mark_invalid_shards(['123abc'], [
-        '/tmp/123abc/dummy.json', '/tmp/123abc/dummy2.json',
-        '/tmp/1234abc/dummy.json'
-    ])
-    self.assertEqual([
-        mock.call('/tmp/123abc/dummy.json'),
-        mock.call('/tmp/123abc/dummy2.json')
-    ], mock_rm.call_args_list)
-
-  def test_get_shards_to_retry(self):
-    bad_profiles = [
-        '/b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw',
-        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-1.profraw',
-        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-2.profraw',
-    ]
-    self.assertEqual(set(['44b643576cf39f10', '44b1234567890123']),
-                     merger.get_shards_to_retry(bad_profiles))
-
   @mock.patch('merge_lib._JAVA_PATH', 'java')
   def test_merge_java_exec_files(self):
     mock_input_dir_walk = [

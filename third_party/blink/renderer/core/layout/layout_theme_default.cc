@@ -197,6 +197,27 @@ void LayoutThemeDefault::SetSelectionColors(Color active_background_color,
   PlatformColorsDidChange();
 }
 
+namespace {
+
+void SetSizeIfAuto(const IntSize& size, ComputedStyle& style) {
+  if (style.Width().IsIntrinsicOrAuto())
+    style.SetWidth(Length::Fixed(size.Width()));
+  if (style.Height().IsIntrinsicOrAuto())
+    style.SetHeight(Length::Fixed(size.Height()));
+}
+
+void SetMinimumSizeIfAuto(const IntSize& size, ComputedStyle& style) {
+  // We only want to set a minimum size if no explicit size is specified, to
+  // avoid overriding author intentions.
+  if (style.MinWidth().IsIntrinsicOrAuto() && style.Width().IsIntrinsicOrAuto())
+    style.SetMinWidth(Length::Fixed(size.Width()));
+  if (style.MinHeight().IsIntrinsicOrAuto() &&
+      style.Height().IsIntrinsicOrAuto())
+    style.SetMinHeight(Length::Fixed(size.Height()));
+}
+
+}  // namespace
+
 void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {
   // If the width and height are both specified, then we have nothing to do.
   if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
@@ -207,8 +228,8 @@ void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
-  SetMinimumSizeIfAuto(style, size);
-  SetSizeIfAuto(style, size);
+  SetMinimumSizeIfAuto(size, style);
+  SetSizeIfAuto(size, style);
 }
 
 void LayoutThemeDefault::SetRadioSize(ComputedStyle& style) const {
@@ -221,8 +242,8 @@ void LayoutThemeDefault::SetRadioSize(ComputedStyle& style) const {
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
-  SetMinimumSizeIfAuto(style, size);
-  SetSizeIfAuto(style, size);
+  SetMinimumSizeIfAuto(size, style);
+  SetSizeIfAuto(size, style);
 }
 
 void LayoutThemeDefault::AdjustInnerSpinButtonStyle(

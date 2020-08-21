@@ -116,6 +116,13 @@ class WindowCycleControllerTest : public AshTestBase {
         ->widget();
   }
 
+  const views::View::Views& GetWindowCycleItemViews() const {
+    return Shell::Get()
+        ->window_cycle_controller()
+        ->window_cycle_list()
+        ->GetWindowCycleItemViewsForTesting();
+  }
+
  private:
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
@@ -574,6 +581,11 @@ TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
 
 // While the UI is active, mouse events are captured.
 TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
+  // Set up a second root window
+  UpdateDisplay("1000x600,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+
   // This delegate allows the window to receive mouse events.
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<Window> w0(CreateTestWindowInShellWithDelegate(
@@ -606,6 +618,11 @@ TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   controller->CompleteCycling();
   generator->ClickLeftButton();
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
+
+  // Click somewhere on the second root window.
+  generator->MoveMouseToCenterOf(root_windows[1]);
+  generator->ClickLeftButton();
+  EXPECT_EQ(0, event_count.GetMouseEventCountAndReset());
 }
 
 // Tests that we can cycle past fullscreen windows: https://crbug.com/622396.
@@ -826,6 +843,134 @@ TEST_F(LimitedWindowCycleControllerTest, CycleShowsActiveDeskWindows) {
   EXPECT_TRUE(base::Contains(cycle_windows, win1.get()));
   cycle_controller->CompleteCycling();
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
+}
+
+class InteractiveWindowCycleControllerTest : public WindowCycleControllerTest {
+ public:
+  InteractiveWindowCycleControllerTest() = default;
+  InteractiveWindowCycleControllerTest(const InteractiveWindowCycleControllerTest&) =
+      delete;
+  InteractiveWindowCycleControllerTest& operator=(
+      const InteractiveWindowCycleControllerTest&) = delete;
+  ~InteractiveWindowCycleControllerTest() override = default;
+
+  // WindowCycleControllerTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kInteractiveWindowCycleList);
+    WindowCycleControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// When a user hovers their mouse over an item, it should cycle to it.
+// If a user clicks on an item, it should complete cycling and activate
+// the hovered item.
+TEST_F(InteractiveWindowCycleControllerTest, MouseHoverAndSelect) {
+  std::unique_ptr<Window> w0 = CreateTestWindow();
+  std::unique_ptr<Window> w1 = CreateTestWindow();
+  std::unique_ptr<Window> w2 = CreateTestWindow();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  // Cycle to the third item, mouse over second item, and release alt-tab.
+  // Starting order of windows in cycle list is [2,1,0].
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  generator->MoveMouseTo(
+      GetWindowCycleItemViews()[1]->GetBoundsInScreen().CenterPoint());
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Start cycle, mouse over third item, and release alt-tab.
+  // Starting order of windows in cycle list is [1,2,0].
+  controller->StartCycling();
+  generator->MoveMouseTo(
+      GetWindowCycleItemViews()[2]->GetBoundsInScreen().CenterPoint());
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(w0.get()));
+
+  // Start cycle, mouse over second item, and click.
+  // Starting order of windows in cycle list is [0,1,2].
+  controller->StartCycling();
+  generator->MoveMouseTo(
+      GetWindowCycleItemViews()[1]->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+}
+
+// Tests that the left and right keys cycle after the cycle list has been
+// initialized.
+TEST_F(InteractiveWindowCycleControllerTest, LeftRightCycle) {
+  std::unique_ptr<Window> w0 = CreateTestWindow();
+  std::unique_ptr<Window> w1 = CreateTestWindow();
+  std::unique_ptr<Window> w2 = CreateTestWindow();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  // Start cycle, simulating alt button being held down. Cycle right to the
+  // third item.
+  // Starting order of windows in cycle list is [2,1,0].
+  controller->StartCycling();
+  generator->PressKey(ui::VKEY_RIGHT, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_RIGHT, ui::EF_NONE);
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(w0.get()));
+
+  // Start cycle. Cycle right once, then left two times.
+  // Starting order of windows in cycle list is [0,2,1].
+  controller->StartCycling();
+  generator->PressKey(ui::VKEY_RIGHT, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_LEFT, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_LEFT, ui::EF_NONE);
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Start cycle. Cycle right once, then left once, then right once.
+  // Starting order of windows in cycle list is [0,2,1].
+  controller->StartCycling();
+  generator->PressKey(ui::VKEY_LEFT, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_RIGHT, ui::EF_ALT_DOWN);
+  generator->PressKey(ui::VKEY_LEFT, ui::EF_ALT_DOWN);
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+}
+
+// Tests that pressing the space key, pressing the enter key, or releasing the
+// alt key during window cycle confirms a selection.
+TEST_F(InteractiveWindowCycleControllerTest, KeysConfirmSelection) {
+  std::unique_ptr<Window> w0 = CreateTestWindow();
+  std::unique_ptr<Window> w1 = CreateTestWindow();
+  std::unique_ptr<Window> w2 = CreateTestWindow();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  // Start cycle, simulating alt button being held down. Cycle right once and
+  // complete cycle using space.
+  // Starting order of windows in cycle list is [2,1,0].
+  controller->StartCycling();
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  generator->PressKey(ui::VKEY_SPACE, ui::EF_NONE);
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Start cycle, simulating alt button being held down. Cycle right once and
+  // complete cycle using enter.
+  // Starting order of windows in cycle list is [1,2,0].
+  controller->StartCycling();
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  generator->PressKey(ui::VKEY_RETURN, ui::EF_NONE);
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  // Start cycle, simulating alt button being held down. Cycle right once and
+  // complete cycle by releasing alt key (Views uses VKEY_MENU for both left and
+  // right alt keys).
+  // Starting order of windows in cycle list is [2,1,0].
+  controller->StartCycling();
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  generator->ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 // Tests that frame throttling starts and ends accordingly when window cycling

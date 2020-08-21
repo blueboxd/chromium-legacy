@@ -91,7 +91,7 @@ DEFINE_TEXT_PROTO_FUZZER(
           video_decoder->reset(IGNORE_EXCEPTION_FOR_TESTING);
           break;
         case wc_fuzzer::VideoDecoderApiInvocation::kClose:
-          video_decoder->close();
+          video_decoder->close(IGNORE_EXCEPTION_FOR_TESTING);
           break;
         case wc_fuzzer::VideoDecoderApiInvocation::API_NOT_SET:
           break;

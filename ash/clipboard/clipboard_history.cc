@@ -4,7 +4,6 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
-#include "ash/clipboard/clipboard_history_controller.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -35,12 +34,22 @@ ClipboardHistory::~ClipboardHistory() {
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
 }
 
-const std::list<ui::ClipboardData>& ClipboardHistory::GetItems() const {
+void ClipboardHistory::AddObserver(Observer* observer) const {
+  observers_.AddObserver(observer);
+}
+
+void ClipboardHistory::RemoveObserver(Observer* observer) const {
+  observers_.RemoveObserver(observer);
+}
+
+const std::list<ClipboardHistoryItem>& ClipboardHistory::GetItems() const {
   return history_list_;
 }
 
 void ClipboardHistory::Clear() {
-  history_list_ = std::list<ui::ClipboardData>();
+  history_list_ = std::list<ClipboardHistoryItem>();
+  for (auto& observer : observers_)
+    observer.OnClipboardHistoryCleared();
 }
 
 bool ClipboardHistory::IsEmpty() const {
@@ -75,9 +84,16 @@ void ClipboardHistory::OnClipboardDataChanged() {
 }
 
 void ClipboardHistory::CommitData(ui::ClipboardData data) {
-  history_list_.push_front(std::move(data));
-  if (history_list_.size() > kMaxClipboardItemsShared)
+  history_list_.emplace_front(std::move(data));
+  for (auto& observer : observers_)
+    observer.OnClipboardHistoryItemAdded(history_list_.front());
+
+  if (history_list_.size() > kMaxClipboardItemsShared) {
+    auto removed = std::move(history_list_.back());
     history_list_.pop_back();
+    for (auto& observer : observers_)
+      observer.OnClipboardHistoryItemRemoved(removed);
+  }
 }
 
 void ClipboardHistory::Pause() {

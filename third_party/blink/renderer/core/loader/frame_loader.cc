@@ -649,6 +649,10 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   const KURL& url = resource_request.Url();
   LocalDOMWindow* origin_window = request.GetOriginWindow();
 
+  TRACE_EVENT2("navigation", "FrameLoader::StartNavigation", "url",
+               url.GetString().Utf8(), "load_type",
+               static_cast<int>(frame_load_type));
+
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
 

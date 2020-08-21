@@ -604,4 +604,74 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest, IFrameTraversal) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-traversal.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Text in iframe");
+
+  BrowserAccessibility* root_node = GetRootAndAssertNonNull();
+  BrowserAccessibility* before_iframe_node =
+      FindNodeAfter(root_node, "Before iframe");
+  ASSERT_NE(nullptr, before_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, before_iframe_node->GetRole());
+  before_iframe_node = before_iframe_node->PlatformGetFirstChild();
+  ASSERT_NE(nullptr, before_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kInlineTextBox, before_iframe_node->GetRole());
+
+  BrowserAccessibility* inside_iframe_node =
+      FindNodeAfter(before_iframe_node, "Text in iframe");
+  ASSERT_NE(nullptr, inside_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, inside_iframe_node->GetRole());
+  inside_iframe_node = inside_iframe_node->PlatformGetFirstChild();
+  ASSERT_NE(nullptr, inside_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kInlineTextBox, inside_iframe_node->GetRole());
+
+  BrowserAccessibility* after_iframe_node =
+      FindNodeAfter(inside_iframe_node, "After iframe");
+  ASSERT_NE(nullptr, after_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, after_iframe_node->GetRole());
+  after_iframe_node = after_iframe_node->PlatformGetFirstChild();
+  ASSERT_NE(nullptr, after_iframe_node);
+  ASSERT_EQ(ax::mojom::Role::kInlineTextBox, after_iframe_node->GetRole());
+
+  EXPECT_LT(*before_iframe_node->CreatePositionAt(0),
+            *inside_iframe_node->CreatePositionAt(0));
+  EXPECT_EQ(*before_iframe_node->CreatePositionAt(13),
+            *inside_iframe_node->CreatePositionAt(0));
+  EXPECT_LT(*inside_iframe_node->CreatePositionAt(0),
+            *after_iframe_node->CreatePositionAt(0));
+  EXPECT_EQ(*inside_iframe_node->CreatePositionAt(14),
+            *after_iframe_node->CreatePositionAt(0));
+
+  // Traverse the leaves of the AXTree forwards.
+  BrowserAccessibilityPosition::AXPositionInstance tree_position =
+      root_node->CreatePositionAt(0)->CreateNextLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(before_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(inside_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(after_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsNullPosition());
+
+  // Traverse the leaves of the AXTree backwards.
+  tree_position = after_iframe_node->CreatePositionAt(0)
+                      ->CreatePositionAtEndOfAnchor()
+                      ->AsLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(after_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(inside_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_EQ(before_iframe_node, tree_position->GetAnchor());
+  tree_position = tree_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(tree_position->IsNullPosition());
+}
+
 }  // namespace content

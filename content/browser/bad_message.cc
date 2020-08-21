@@ -69,9 +69,9 @@ void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason) {
   filter->ShutdownForBadMessage();
 }
 
-base::debug::CrashKeyString* GetRequestedSiteURLKey() {
+base::debug::CrashKeyString* GetRequestedSiteInfoKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "requested_site_url", base::debug::CrashKeySize::Size64);
+      "requested_site_info", base::debug::CrashKeySize::Size256);
   return crash_key;
 }
 

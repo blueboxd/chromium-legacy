@@ -982,6 +982,9 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
   // for all requests.
   DCHECK(GetFrame());
   DCHECK(IsReloadLoadType(frame_load_type));
+  TRACE_EVENT1("navigation", "WebLocalFrameImpl::StartReload", "load_type",
+               static_cast<int>(frame_load_type));
+
   ResourceRequest request =
       GetFrame()->Loader().ResourceRequestForReload(frame_load_type);
   if (request.IsNull())
@@ -1010,6 +1013,8 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
   DCHECK(!request.Url().ProtocolIs("javascript"));
+  TRACE_EVENT0("navigation", "WebLocalFrameImpl::StartNavigation");
+
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 

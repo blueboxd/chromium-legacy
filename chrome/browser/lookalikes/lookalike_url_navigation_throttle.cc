@@ -150,6 +150,11 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     return content::NavigationThrottle::PROCEED;
   }
 
+  // If the host is allowlisted by policy, don't show any warning.
+  if (IsAllowedByEnterprisePolicy(profile_->GetPrefs(), url)) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   // If this is a reload and if the current URL is the last URL of the stored
   // redirect chain, the interstitial was probably reloaded. Stop the reload and
   // navigate back to the original lookalike URL so that the whole throttle is

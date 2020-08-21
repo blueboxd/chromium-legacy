@@ -67,19 +67,9 @@ using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
 using State = password_manager::BulkLeakCheckService::State;
 
-std::unique_ptr<std::string> GetChangePasswordUrl(const std::string& url) {
-  // If the WellKnownChangePassword flag is enabled, replace the
-  // change_password_url to the well-known path. The
-  // WellKnownChangePasswordNavigationThrottle will continue process it.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kWellKnownChangePassword)) {
-    return std::make_unique<std::string>(url);
-  }
-  GURL origin = GURL(url).GetOrigin();
-  GURL::Replacements replacements;
-  replacements.SetPathStr(password_manager::kWellKnownChangePasswordPath);
+std::unique_ptr<std::string> GetChangePasswordUrl(const GURL& url) {
   return std::make_unique<std::string>(
-      origin.ReplaceComponents(replacements).spec());
+      password_manager::CreateChangePasswordUrl(url).spec());
 }
 
 }  // namespace
@@ -283,7 +273,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
         api_credential.formatted_origin = android_form.app_display_name;
         api_credential.detailed_origin = android_form.app_display_name;
         api_credential.change_password_url =
-            GetChangePasswordUrl(android_form.affiliated_web_realm);
+            GetChangePasswordUrl(GURL(android_form.affiliated_web_realm));
       } else {
         // In case no affiliation information could be obtained show the
         // formatted package name to the user. An empty change_password_url will
@@ -306,8 +296,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
       api_credential.detailed_origin =
           base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
               credential.url.GetOrigin()));
-      api_credential.change_password_url =
-          GetChangePasswordUrl(credential.url.GetOrigin().spec());
+      api_credential.change_password_url = GetChangePasswordUrl(credential.url);
     }
 
     api_credential.id =

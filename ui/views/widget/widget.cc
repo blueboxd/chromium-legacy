@@ -1599,22 +1599,17 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
   // a window is restored from maximized state, so we can't more accurately
   // track maximized state independently of sizing information.
 
-  // Restore the window's placement from the controller.
-  if (widget_delegate_->GetSavedWindowPlacement(this, bounds, show_state)) {
-    if (!widget_delegate_->ShouldRestoreWindowSize()) {
-      bounds->set_size(non_client_view_->GetPreferredSize());
-    } else {
-      gfx::Size minimum_size = GetMinimumSize();
-      // Make sure the bounds are at least the minimum size.
-      if (bounds->width() < minimum_size.width())
-        bounds->set_width(minimum_size.width());
+  if (!widget_delegate_->GetSavedWindowPlacement(this, bounds, show_state))
+    return false;
 
-      if (bounds->height() < minimum_size.height())
-        bounds->set_height(minimum_size.height());
-    }
-    return true;
-  }
-  return false;
+  gfx::Size minimum_size = GetMinimumSize();
+  // Make sure the bounds are at least the minimum size.
+  if (bounds->width() < minimum_size.width())
+    bounds->set_width(minimum_size.width());
+
+  if (bounds->height() < minimum_size.height())
+    bounds->set_height(minimum_size.height());
+  return true;
 }
 
 const View::Views& Widget::GetViewsWithLayers() {

@@ -575,7 +575,8 @@ TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_ResponseIsAlreadyCached) {
 
   // |request_callback| should not be called.
   EXPECT_CALL(request_callback, Run(_, _)).Times(0);
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ true, _));
 
   task_environment_->RunUntilIdle();
 
@@ -608,7 +609,8 @@ TEST_F(RealTimeUrlLookupServiceTest,
           }),
       response_callback.Get());
 
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ false, _));
 
   WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token_string");
@@ -642,7 +644,8 @@ TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_NoTokenWhenNotSignedIn) {
           }),
       response_callback.Get());
 
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ false, _));
 
   task_environment_->RunUntilIdle();
 
@@ -672,7 +675,8 @@ TEST_F(RealTimeUrlLookupServiceTest,
           }),
       response_callback.Get());
 
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ false, _));
 
   task_environment_->RunUntilIdle();
 

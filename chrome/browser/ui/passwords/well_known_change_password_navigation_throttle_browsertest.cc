@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/change_password_url_service_impl.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -28,6 +29,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -86,6 +88,8 @@ class WellKnownChangePasswordNavigationThrottleBrowserTest
     : public CertVerifierBrowserTest,
       public testing::WithParamInterface<ResponseDelayParams> {
  public:
+  using UkmBuilder =
+      ukm::builders::PasswordManager_WellKnownChangePasswordResult;
   WellKnownChangePasswordNavigationThrottleBrowserTest() {
     feature_list_.InitAndEnableFeature(
         password_manager::features::kWellKnownChangePassword);
@@ -104,7 +108,19 @@ class WellKnownChangePasswordNavigationThrottleBrowserTest
                 base::BindRepeating([](content::BrowserContext* context) {
                   return std::make_unique<TestChangePasswordUrlService>();
                 }));
+    test_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
+
+  void ExpectUkmMetric(WellKnownChangePasswordResult expected) {
+    auto entries = test_recorder_->GetEntriesByName(UkmBuilder::kEntryName);
+    // Expect one recorded metric.
+    ASSERT_EQ(1, static_cast<int>(entries.size()));
+    test_recorder_->ExpectEntryMetric(
+        entries[0], UkmBuilder::kWellKnownChangePasswordResultName,
+        static_cast<int64_t>(expected));
+  }
+
+  ukm::TestAutoSetUkmRecorder* test_recorder() { return test_recorder_.get(); }
 
  protected:
   // Navigates to |kWellKnownChangePasswordPath| from the mock server. It waits
@@ -133,6 +149,7 @@ class WellKnownChangePasswordNavigationThrottleBrowserTest
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
 };
 
 std::unique_ptr<HttpResponse>
@@ -179,6 +196,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
 
   TestNavigationThrottle(kWellKnownChangePasswordPath);
+  ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -193,6 +211,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
   path_response_map_["/change-password"] = {net::HTTP_OK, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/change-password");
+  ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -204,6 +223,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
 
   TestNavigationThrottle(/*expected_path=*/kWellKnownChangePasswordPath);
+  ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -221,6 +241,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
   path_response_map_["/not-found"] = {net::HTTP_NOT_FOUND, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/change-password");
+  ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -232,6 +253,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
 
   TestNavigationThrottle(/*expected_path=*/"/");
+  ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -244,6 +266,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
 
   TestNavigationThrottle(/*expected_path=*/kMockChangePasswordPath);
+  ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOverrideUrl);
 }
 
 // Single page applications often return 200 for all paths
@@ -256,6 +279,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_OK, {}, response_delays.not_exist_delay};
 
   TestNavigationThrottle(/*expected_path=*/"/");
+  ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -272,6 +296,7 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
   path_response_map_["/not-found"] = {net::HTTP_NOT_FOUND, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/");
+  ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
 
 IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
@@ -300,6 +325,9 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
   observer.Wait();
 
   EXPECT_EQ(observer.last_navigation_url(), url);
+  // Expect no UKMs saved.
+  EXPECT_TRUE(
+      test_recorder()->GetEntriesByName(UkmBuilder::kEntryName).empty());
 }
 
 constexpr ResponseDelayParams kDelayParams[] = {{0, 1}, {1, 0}};

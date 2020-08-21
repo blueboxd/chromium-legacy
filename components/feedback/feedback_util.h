@@ -20,6 +20,16 @@ bool ZipString(const base::FilePath& filename,
 // creating a system_logs.txt file attached to feedback reports.
 std::string LogsToString(const FeedbackCommon::SystemLogsMap& sys_info);
 
+#if !defined(OS_WIN)
+// Returns true if the data from the file specified by |path| is read into
+// |contents| successfully.
+// If the file size is greater than |max_size| in bytes, the data will be
+// truncated to |max_size| and put in |contents|.
+bool ReadEndOfFile(const base::FilePath& path,
+                   size_t max_size,
+                   std::string* contents);
+#endif
+
 }  // namespace feedback_util
 
 #endif  // COMPONENTS_FEEDBACK_FEEDBACK_UTIL_H_

@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/lookalikes/core/features.h"
+#include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/features.h"
@@ -550,6 +551,23 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
+// Ensure sites allowed by enterprise policy don't get blocked.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoShowOnEnterpriseAllowlist) {
+  const std::vector<const char*> kUrls = {"site1.com", "bla.site2.com",
+                                          "bla.site3.com"};
+
+  SetSafetyTipBadRepPatterns({"site1.com/", "site2.com/"});
+  SetEnterpriseAllowlistForTesting(browser()->profile()->GetPrefs(),
+                                   {"site1.com", "bla.site2.com", "site3.com"});
+
+  for (auto* const url : kUrls) {
+    NavigateToURL(browser(), GetURL(url), WindowOpenDisposition::CURRENT_TAB);
+    EXPECT_FALSE(IsUIShowing());
+    ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+  }
 }
 
 // After the user clicks 'leave site', the user should end up on a safe domain.

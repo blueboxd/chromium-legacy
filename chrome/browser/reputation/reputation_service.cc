@@ -70,9 +70,15 @@ class ReputationServiceFactory : public BrowserContextKeyedServiceFactory {
 
 // Returns whether or not the Safety Tip should be suppressed for the given URL.
 // Checks SafeBrowsing-style permutations of |url| against the component updater
-// allowlist and returns whether the URL is explicitly allowed. Fails closed, so
-// that warnings are suppressed if the component is unavailable.
-bool ShouldSuppressWarning(const GURL& url) {
+// allowlist, as well as any enterprise-set allowlisting of the hostname, and
+// returns whether the URL is explicitly allowed. Fails closed, so that warnings
+// are suppressed if the component is unavailable.
+bool ShouldSuppressWarning(Profile* profile, const GURL& url) {
+  // Check any policy-set allowlist.
+  if (IsAllowedByEnterprisePolicy(profile->GetPrefs(), url)) {
+    return true;
+  }
+
   auto* proto = GetSafetyTipsRemoteConfigProto();
   if (!proto) {
     // This happens when the component hasn't downloaded yet. This should only
@@ -165,7 +171,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   // 0. Server-side warning suppression.
   // If the URL is on the allowlist list, do nothing else. This is only used to
   // mitigate false positives, so no further processing should be done.
-  if (ShouldSuppressWarning(url)) {
+  if (ShouldSuppressWarning(profile_, url)) {
     done_checking_reputation_status = true;
   }
 

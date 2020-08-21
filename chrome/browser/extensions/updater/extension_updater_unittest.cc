@@ -659,6 +659,13 @@ class ExtensionUpdaterTest : public testing::Test {
            (downloader->manifest_loader_.get() ? 1 : 0);
   }
 
+  std::set<std::string> GetRunningInstallIds(const ExtensionUpdater& updater) {
+    std::set<std::string> ret;
+    for (const auto& pair : updater.running_crx_installs_)
+      ret.insert(pair.second.info.extension_id);
+    return ret;
+  }
+
   void TestExtensionUpdateCheckRequests(bool pending) {
     // Create an extension with an update_url.
     ExtensionDownloaderTestHelper helper;
@@ -2043,7 +2050,7 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.downloader_->extensions_queue_.set_backoff_policy(
         &kNoBackoffPolicy);
 
-    EXPECT_FALSE(updater.crx_install_is_running_);
+    EXPECT_THAT(GetRunningInstallIds(updater), testing::IsEmpty());
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");
@@ -2127,29 +2134,20 @@ class ExtensionUpdaterTest : public testing::Test {
     content::RunAllTasksUntilIdle();
 
     if (updates_start_running) {
-      EXPECT_TRUE(updater.crx_install_is_running_);
+      // Both installations should have launched in parallel.
+      EXPECT_THAT(GetRunningInstallIds(updater),
+                  testing::UnorderedElementsAre(id1, id2));
 
-      // The second install should not have run, because the first has not
-      // sent a notification that it finished.
-      EXPECT_EQ(id1, service.extension_id());
-
-      // Fake install notice.  This should start the second installation,
-      // which will be checked below.
+      // Fake install notice.  This should end the first installation.
       fake_crx1->NotifyCrxInstallComplete(CrxInstallError(
           CrxInstallErrorType::OTHER, CrxInstallErrorDetail::NONE));
+      EXPECT_THAT(GetRunningInstallIds(updater),
+                  testing::UnorderedElementsAre(id2));
 
-      EXPECT_TRUE(updater.crx_install_is_running_);
-    }
-
-    EXPECT_EQ(id2, service.extension_id());
-    EXPECT_FALSE(service.install_path().empty());
-
-    if (updates_start_running) {
-      EXPECT_TRUE(updater.crx_install_is_running_);
       fake_crx2->NotifyCrxInstallComplete(CrxInstallError(
           CrxInstallErrorType::OTHER, CrxInstallErrorDetail::NONE));
     }
-    EXPECT_FALSE(updater.crx_install_is_running_);
+    EXPECT_THAT(GetRunningInstallIds(updater), testing::IsEmpty());
   }
 
   void TestGalleryRequestsWithBrand(bool use_organic_brand_code) {

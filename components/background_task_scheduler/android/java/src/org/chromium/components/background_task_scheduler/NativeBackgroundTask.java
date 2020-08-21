@@ -7,7 +7,6 @@ package org.chromium.components.background_task_scheduler;
 import android.content.Context;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
@@ -233,7 +232,6 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         return getBrowserStartupController().isRunningInServiceManagerMode();
     }
 
-    @VisibleForTesting
     protected BrowserStartupController getBrowserStartupController() {
         return BrowserStartupController.getInstance();
     }

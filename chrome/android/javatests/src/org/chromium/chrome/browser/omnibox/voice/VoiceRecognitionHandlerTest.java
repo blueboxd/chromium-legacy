@@ -16,6 +16,7 @@ import android.speech.RecognizerIntent;
 import android.view.ViewGroup;
 
 import androidx.annotation.ColorRes;
+import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -297,6 +298,7 @@ public class VoiceRecognitionHandlerTest {
      * Test implementation of {@link VoiceRecognitionHandler.Delegate}.
      */
     private class TestDelegate implements VoiceRecognitionHandler.Delegate {
+        private String mUrl;
         private boolean mUpdatedMicButtonState;
         private AutocompleteCoordinator mAutocompleteCoordinator;
 
@@ -309,7 +311,9 @@ public class VoiceRecognitionHandlerTest {
         }
 
         @Override
-        public void loadUrlFromVoice(String url) {}
+        public void loadUrlFromVoice(String url) {
+            mUrl = url;
+        }
 
         @Override
         public void updateMicButtonState() {
@@ -336,6 +340,10 @@ public class VoiceRecognitionHandlerTest {
 
         public boolean updatedMicButtonState() {
             return mUpdatedMicButtonState;
+        }
+
+        public String getUrl() {
+            return mUrl;
         }
     }
 
@@ -709,6 +717,29 @@ public class VoiceRecognitionHandlerTest {
 
     @Test
     @SmallTest
+    public void testCallback_successWithLangues() {
+        // Needs to run on the UI thread because we use the TemplateUrlService on success.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mWindowAndroid.setVoiceResults(createDummyBundle("testing",
+                    VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD, "en-us"));
+            startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
+            Assert.assertEquals(
+                    VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchStartEventSource());
+            Assert.assertEquals(
+                    VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchFinishEventSource());
+            Assert.assertEquals(true, mHandler.getVoiceSearchResult());
+            Assert.assertTrue(VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD
+                    == mHandler.getVoiceConfidenceValue());
+            assertVoiceResultsAreEqual(mAutocompleteVoiceResults, new String[] {"testing"},
+                    new float[] {
+                            VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD},
+                    new String[] {"en-us"});
+            Assert.assertTrue(mDelegate.getUrl().contains("&hl=en-us"));
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testParseResults_EmptyBundle() {
         Assert.assertNull(mHandler.convertBundleToVoiceResults(new Bundle()));
     }
@@ -720,6 +751,8 @@ public class VoiceRecognitionHandlerTest {
                 createDummyBundle(new String[] {"blah"}, new float[] {0f, 1f})));
         Assert.assertNull(mHandler.convertBundleToVoiceResults(
                 createDummyBundle(new String[] {"blah", "foo"}, new float[] {7f})));
+        Assert.assertNull(mHandler.convertBundleToVoiceResults(createDummyBundle(
+                new String[] {"blah", "foo"}, new float[] {7f, 1f}, new String[] {"foo"})));
     }
 
     @Test
@@ -773,29 +806,55 @@ public class VoiceRecognitionHandlerTest {
     }
 
     private static Bundle createDummyBundle(String text, float confidence) {
-        return createDummyBundle(new String[] {text}, new float[] {confidence});
+        return createDummyBundle(new String[] {text}, new float[] {confidence}, null);
+    }
+
+    private static Bundle createDummyBundle(
+            String text, float confidence, @Nullable String language) {
+        return createDummyBundle(new String[] {text}, new float[] {confidence},
+                language == null ? null : new String[] {language});
     }
 
     private static Bundle createDummyBundle(String[] texts, float[] confidences) {
+        return createDummyBundle(texts, confidences, null);
+    }
+
+    private static Bundle createDummyBundle(
+            String[] texts, float[] confidences, @Nullable String[] languages) {
         Bundle b = new Bundle();
 
         b.putStringArrayList(
                 RecognizerIntent.EXTRA_RESULTS, new ArrayList<String>(Arrays.asList(texts)));
         b.putFloatArray(RecognizerIntent.EXTRA_CONFIDENCE_SCORES, confidences);
+        if (languages != null) {
+            b.putStringArrayList(VoiceRecognitionHandler.VOICE_QUERY_RESULT_LANGUAGES,
+                    new ArrayList<String>(Arrays.asList(languages)));
+        }
 
         return b;
     }
 
     private static void assertVoiceResultsAreEqual(
             List<VoiceResult> results, String[] texts, float[] confidences) {
+        assertVoiceResultsAreEqual(results, texts, confidences, null);
+    }
+
+    private static void assertVoiceResultsAreEqual(
+            List<VoiceResult> results, String[] texts, float[] confidences, String[] languages) {
         Assert.assertTrue("Invalid array sizes",
                 results.size() == texts.length && texts.length == confidences.length);
+        if (languages != null) {
+            Assert.assertTrue("Invalid array sizes", confidences.length == languages.length);
+        }
 
         for (int i = 0; i < texts.length; ++i) {
             VoiceResult result = results.get(i);
             Assert.assertEquals("Match text is not equal", texts[i], result.getMatch());
             Assert.assertEquals(
                     "Confidence is not equal", confidences[i], result.getConfidence(), 0);
+            if (languages != null) {
+                Assert.assertEquals("Languages not equal", result.getLanguage(), languages[i]);
+            }
         }
     }
 }

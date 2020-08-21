@@ -9621,6 +9621,31 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PasswordManager.WellKnownChangePasswordResult">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Metrics related to the usage and support of .well-known/change-password. The
+    .well-known/change-password standard is defined to redirect to the sites
+    change password form. We collect whether a site supports the standart or
+    not. https://wicg.github.io/change-password-url/
+  </summary>
+  <metric name="WellKnownChangePasswordResult"
+      enum="WellKnownChangePasswordResult">
+    <summary>
+      Records if a site supports .well-known/change-password and if a url
+      override was used or not.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="PaymentApp.CheckoutEvents">
   <owner>sahel@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>

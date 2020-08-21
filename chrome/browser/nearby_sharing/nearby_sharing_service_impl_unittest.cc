@@ -237,6 +237,17 @@ sharing::mojom::FramePtr GetEmptyIntroductionFrame() {
   return mojo_frame;
 }
 
+sharing::mojom::FramePtr GetConnectionResponseFrame(
+    sharing::mojom::ConnectionResponseFrame::Status status) {
+  sharing::mojom::V1FramePtr mojo_v1frame = sharing::mojom::V1Frame::New();
+  mojo_v1frame->set_connection_response(
+      sharing::mojom::ConnectionResponseFrame::New(status));
+
+  sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+  mojo_frame->set_v1(std::move(mojo_v1frame));
+  return mojo_frame;
+}
+
 int64_t GetFreeSpaceInDownloadPath(Profile* profile) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath file_path =
@@ -495,6 +506,19 @@ class NearbySharingServiceImplTest : public testing::Test {
     connection_.AppendReadableData(bytes);
   }
 
+  void SendConnectionResponse(
+      sharing::mojom::ConnectionResponseFrame::Status status) {
+    std::string intro = "connection_result_frame";
+    std::vector<uint8_t> bytes(intro.begin(), intro.end());
+    EXPECT_CALL(mock_decoder_, DecodeFrame(testing::Eq(bytes), testing::_))
+        .WillOnce(testing::Invoke(
+            [=](const std::vector<uint8_t>& data,
+                MockNearbySharingDecoder::DecodeFrameCallback callback) {
+              std::move(callback).Run(GetConnectionResponseFrame(status));
+            }));
+    connection_.AppendReadableData(bytes);
+  }
+
   ShareTarget SetUpIncomingConnection(
       NiceMock<MockTransferUpdateCallback>& callback) {
     fake_nearby_connections_manager_->SetRawAuthenticationToken(kEndpointId,
@@ -607,6 +631,12 @@ class NearbySharingServiceImplTest : public testing::Test {
     EXPECT_EQ(status, frame.v1().connection_response().status());
   }
 
+  void ExpectIntroductionFrame() {
+    sharing::nearby::Frame frame = GetWrittenFrame();
+    ASSERT_TRUE(frame.has_v1());
+    ASSERT_TRUE(frame.v1().has_introduction());
+  }
+
   void ExpectTransferUpdates(
       MockTransferUpdateCallback& transfer_callback,
       const ShareTarget& target,
@@ -710,6 +740,25 @@ struct InvalidSendSurfaceTestData {
 class NearbySharingServiceImplInvalidSendTest
     : public NearbySharingServiceImplTest,
       public testing::WithParamInterface<InvalidSendSurfaceTestData> {};
+
+using ResponseFrameStatus = sharing::mojom::ConnectionResponseFrame::Status;
+
+struct SendFailureTestData {
+  ResponseFrameStatus response_status;
+  TransferMetadata::Status expected_status;
+} kSendFailureTestData[] = {
+    {ResponseFrameStatus::kReject, TransferMetadata::Status::kRejected},
+    {ResponseFrameStatus::kNotEnoughSpace,
+     TransferMetadata::Status::kNotEnoughSpace},
+    {ResponseFrameStatus::kUnsupportedAttachmentType,
+     TransferMetadata::Status::kUnsupportedAttachmentType},
+    {ResponseFrameStatus::kTimedOut, TransferMetadata::Status::kTimedOut},
+    {ResponseFrameStatus::kUnknown, TransferMetadata::Status::kFailed},
+};
+
+class NearbySharingServiceImplSendFailureTest
+    : public NearbySharingServiceImplTest,
+      public testing::WithParamInterface<SendFailureTestData> {};
 
 }  // namespace
 
@@ -2359,22 +2408,96 @@ TEST_F(NearbySharingServiceImplTest, SendText_UnableToVerifyKey) {
   service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
 }
 
+TEST_P(NearbySharingServiceImplSendFailureTest, SendText_RemoteFailure) {
+  MockTransferUpdateCallback transfer_callback;
+  MockShareTargetDiscoveredCallback discovery_callback;
+  ShareTarget target =
+      SetUpOutgoingShareTarget(transfer_callback, discovery_callback);
+
+  base::RunLoop introduction_run_loop;
+  ExpectTransferUpdates(transfer_callback, target,
+                        {TransferMetadata::Status::kConnecting,
+                         TransferMetadata::Status::kAwaitingLocalConfirmation,
+                         TransferMetadata::Status::kAwaitingRemoteAcceptance},
+                        introduction_run_loop.QuitClosure());
+
+  EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
+            service_->SendText(target, kTextPayload));
+  introduction_run_loop.Run();
+
+  // Verify data sent to the remote device so far.
+  ExpectPairedKeyEncryptionFrame();
+  ExpectPairedKeyResultFrame();
+  ExpectIntroductionFrame();
+
+  // We're now waiting for the remote device to respond with the accept result.
+  base::RunLoop reject_run_loop;
+  ExpectTransferUpdates(
+      transfer_callback, target,
+      {GetParam().expected_status,
+       // TODO(crbug.com/1085067): Filter updates after the first final one.
+       TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed},
+      reject_run_loop.QuitClosure());
+
+  // Cancel the transfer by rejecting it.
+  SendConnectionResponse(GetParam().response_status);
+  reject_run_loop.Run();
+
+  EXPECT_TRUE(connection_.IsClosed());
+
+  service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
+}
+
+INSTANTIATE_TEST_SUITE_P(NearbySharingServiceImplSendFailureTest,
+                         NearbySharingServiceImplSendFailureTest,
+                         testing::ValuesIn(kSendFailureTestData));
+
 TEST_F(NearbySharingServiceImplTest, SendText_Success) {
   MockTransferUpdateCallback transfer_callback;
   MockShareTargetDiscoveredCallback discovery_callback;
   ShareTarget target =
       SetUpOutgoingShareTarget(transfer_callback, discovery_callback);
 
-  base::RunLoop run_loop;
+  base::RunLoop introduction_run_loop;
   ExpectTransferUpdates(transfer_callback, target,
                         {TransferMetadata::Status::kConnecting,
                          TransferMetadata::Status::kAwaitingLocalConfirmation,
                          TransferMetadata::Status::kAwaitingRemoteAcceptance},
-                        run_loop.QuitClosure());
+                        introduction_run_loop.QuitClosure());
 
   EXPECT_EQ(NearbySharingServiceImpl::StatusCodes::kOk,
             service_->SendText(target, kTextPayload));
-  run_loop.Run();
+  introduction_run_loop.Run();
+
+  // Verify data sent to the remote device so far.
+  ExpectPairedKeyEncryptionFrame();
+  ExpectPairedKeyResultFrame();
+  ExpectIntroductionFrame();
+
+  // Expect the text payload to be sent in the end.
+  base::RunLoop payload_run_loop;
+  fake_nearby_connections_manager_->set_send_payload_callback(
+      base::BindLambdaForTesting(
+          [&](NearbyConnectionsManager::PayloadPtr payload) {
+            ASSERT_TRUE(payload->content->is_bytes());
+            std::vector<uint8_t> bytes = payload->content->get_bytes()->bytes;
+            std::string sent = std::string(bytes.begin(), bytes.end());
+            EXPECT_EQ(kTextPayload, sent);
+            payload_run_loop.Quit();
+          }));
+
+  // We're now waiting for the remote device to respond with the accept result.
+  base::RunLoop accept_run_loop;
+  ExpectTransferUpdates(transfer_callback, target,
+                        {TransferMetadata::Status::kInProgress},
+                        accept_run_loop.QuitClosure());
+
+  // Kick off send process by accepting the transfer from the remote device.
+  SendConnectionResponse(
+      sharing::mojom::ConnectionResponseFrame::Status::kAccept);
+
+  accept_run_loop.Run();
+  payload_run_loop.Run();
 
   service_->UnregisterSendSurface(&transfer_callback, &discovery_callback);
 }

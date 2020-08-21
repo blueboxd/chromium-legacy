@@ -12,6 +12,8 @@ namespace video_tutorials {
 
 // Please align this enum with
 // chrome/browser/video_tutorials/proto/video_tutorials.proto.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.video_tutorials
 enum class FeatureType {
   kTest = -1,
   kInvalid = 0,

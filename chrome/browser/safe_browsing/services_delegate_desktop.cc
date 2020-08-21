@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -18,6 +19,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -168,9 +170,14 @@ ServicesDelegateDesktop::CreateResourceRequestDetector() {
 }
 
 void ServicesDelegateDesktop::StartOnIOThread(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> sb_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> browser_url_loader_factory,
     const V4ProtocolConfig& v4_config) {
-  database_manager_->StartOnIOThread(url_loader_factory, v4_config);
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
+    database_manager_->StartOnIOThread(browser_url_loader_factory, v4_config);
+  } else {
+    database_manager_->StartOnIOThread(sb_url_loader_factory, v4_config);
+  }
 }
 
 void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {

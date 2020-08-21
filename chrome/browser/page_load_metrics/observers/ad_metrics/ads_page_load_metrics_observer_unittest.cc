@@ -2389,6 +2389,69 @@ TEST_F(AdsPageLoadMetricsObserverTest,
       FrameData::HeavyAdStatus::kNone, 1);
 }
 
+// Tests that each configurable unload policy allows the intervention to trigger
+// on the correct frames.
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPolicyProvided) {
+  struct {
+    // |policy| maps to a FrameData::HeavyAdUnloadPolicy.
+    std::string policy;
+    bool exceed_network;
+    bool exceed_cpu;
+    bool intervention_expected;
+  } kTestCases[] = {
+      {"0" /* policy */, false /* exceed_network */, false /* exceed_cpu */,
+       false /* intervention_expected */},
+      {"0" /* policy */, true /* exceed_network */, false /* exceed_cpu */,
+       true /* intervention_expected */},
+      {"0" /* policy */, false /* exceed_network */, true /* exceed_cpu */,
+       false /* intervention_expected */},
+      {"0" /* policy */, true /* exceed_network */, true /* exceed_cpu */,
+       true /* intervention_expected */},
+      {"1" /* policy */, false /* exceed_network */, false /* exceed_cpu */,
+       false /* intervention_expected */},
+      {"1" /* policy */, true /* exceed_network */, false /* exceed_cpu */,
+       false /* intervention_expected */},
+      {"1" /* policy */, false /* exceed_network */, true /* exceed_cpu */,
+       true /* intervention_expected */},
+      {"1" /* policy */, true /* exceed_network */, true /* exceed_cpu */,
+       true /* intervention_expected */},
+      {"2" /* policy */, false /* exceed_network */, false /* exceed_cpu */,
+       false /* intervention_expected */},
+      {"2" /* policy */, true /* exceed_network */, false /* exceed_cpu */,
+       true /* intervention_expected */},
+      {"2" /* policy */, false /* exceed_network */, true /* exceed_cpu */,
+       true /* intervention_expected */},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kHeavyAdIntervention, {{"kUnloadPolicy", test_case.policy}});
+    RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+    RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+    ErrorPageWaiter waiter(web_contents());
+    if (test_case.exceed_network) {
+      ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
+                         (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+    }
+    if (test_case.exceed_cpu) {
+      OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(
+                                      heavy_ad_thresholds::kMaxCpuTime + 1));
+    }
+
+    // We should either see an error page if the intervention happened, or not
+    // see any reports.
+    if (test_case.intervention_expected) {
+      waiter.WaitForError();
+    } else {
+      EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+    }
+
+    blocklist()->ClearBlockList(base::Time::Min(), base::Time::Max());
+  }
+}
+
 TEST_F(AdsPageLoadMetricsObserverTest,
        HeavyAdPageNavigated_FrameMarkedAsNotRemoved) {
   base::test::ScopedFeatureList feature_list;
@@ -2665,25 +2728,6 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   EXPECT_EQ(rfh_tester->GetHeavyAdIssueCount(
                 RenderFrameHostTester::HeavyAdIssueType::kAll),
             1);
-}
-
-TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdReportingDisabled_NoReportSent) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kHeavyAdIntervention},
-                                {features::kHeavyAdInterventionWarning});
-
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  ErrorPageWaiter waiter(web_contents());
-
-  // Load enough bytes to trigger the intervention.
-  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
-                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
-
-  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
-
-  waiter.WaitForError();
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, NoFirstContentfulPaint_NotRecorded) {

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/fallback_theme.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -49,27 +48,6 @@
 namespace blink {
 
 namespace {
-
-ui::NativeTheme::State GetFallbackThemeState(const Node* node) {
-  if (!LayoutTheme::IsEnabled(node))
-    return ui::NativeTheme::kDisabled;
-  if (LayoutTheme::IsPressed(node))
-    return ui::NativeTheme::kPressed;
-  if (LayoutTheme::IsHovered(node))
-    return ui::NativeTheme::kHovered;
-
-  return ui::NativeTheme::kNormal;
-}
-
-static ui::NativeTheme::ColorScheme ToNativeColorScheme(
-    WebColorScheme color_scheme) {
-  switch (color_scheme) {
-    case WebColorScheme::kLight:
-      return ui::NativeTheme::ColorScheme::kLight;
-    case WebColorScheme::kDark:
-      return ui::NativeTheme::ColorScheme::kDark;
-  }
-}
 
 bool IsMultipleFieldsTemporalInput(const AtomicString& type) {
 #if !defined(OS_ANDROID)
@@ -119,9 +97,6 @@ bool ThemePainter::Paint(const LayoutObject& o,
   // non-null Element.
   DCHECK(node);
   DCHECK_NE(part, kNoControlPart);
-
-  if (LayoutTheme::GetTheme().ShouldUseFallbackTheme(style))
-    return PaintUsingFallbackTheme(node, style, paint_info, r);
 
   if (part == kButtonPart) {
     if (IsA<HTMLButtonElement>(node)) {
@@ -404,74 +379,6 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
     paint_info.context.FillRect(tick_rect,
                                 o.ResolveColor(GetCSSPropertyColor()));
   }
-}
-
-bool ThemePainter::PaintUsingFallbackTheme(const Node* node,
-                                           const ComputedStyle& style,
-                                           const PaintInfo& paint_info,
-                                           const IntRect& paint_rect) {
-  ControlPart part = style.EffectiveAppearance();
-  switch (part) {
-    case kCheckboxPart:
-      return PaintCheckboxUsingFallbackTheme(node, style, paint_info,
-                                             paint_rect);
-    case kRadioPart:
-      return PaintRadioUsingFallbackTheme(node, style, paint_info, paint_rect);
-    default:
-      break;
-  }
-  return true;
-}
-
-bool ThemePainter::PaintCheckboxUsingFallbackTheme(const Node* node,
-                                                   const ComputedStyle& style,
-                                                   const PaintInfo& paint_info,
-                                                   const IntRect& paint_rect) {
-  ui::NativeTheme::ExtraParams extra_params;
-  extra_params.button.checked = LayoutTheme::IsChecked(node);
-  extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
-
-  float zoom_level = style.EffectiveZoom();
-  GraphicsContextStateSaver state_saver(paint_info.context);
-  IntRect unzoomed_rect = paint_rect;
-  if (zoom_level != 1) {
-    unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
-    paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
-    paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
-  }
-
-  GetFallbackTheme().Paint(
-      paint_info.context.Canvas(), ui::NativeTheme::kCheckbox,
-      GetFallbackThemeState(node), unzoomed_rect, extra_params,
-      ToNativeColorScheme(style.UsedColorScheme()));
-  return false;
-}
-
-bool ThemePainter::PaintRadioUsingFallbackTheme(const Node* node,
-                                                const ComputedStyle& style,
-                                                const PaintInfo& paint_info,
-                                                const IntRect& paint_rect) {
-  ui::NativeTheme::ExtraParams extra_params;
-  extra_params.button.checked = LayoutTheme::IsChecked(node);
-
-  float zoom_level = style.EffectiveZoom();
-  GraphicsContextStateSaver state_saver(paint_info.context);
-  IntRect unzoomed_rect = paint_rect;
-  if (zoom_level != 1) {
-    unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
-    paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
-    paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
-  }
-
-  GetFallbackTheme().Paint(paint_info.context.Canvas(), ui::NativeTheme::kRadio,
-                           GetFallbackThemeState(node), unzoomed_rect,
-                           extra_params,
-                           ToNativeColorScheme(style.UsedColorScheme()));
-  return false;
 }
 
 }  // namespace blink

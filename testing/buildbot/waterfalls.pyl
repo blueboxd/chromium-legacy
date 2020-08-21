@@ -2059,6 +2059,7 @@
       },
       'ios-simulator-code-coverage': {
         'mixins': [
+          'ios_output_disabled_tests',
           'isolate_profile_data',
           'mac_10.15',
           'mac_toolchain',

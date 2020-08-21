@@ -595,9 +595,9 @@ base::Histogram::Sample HashInterfaceNameToHistogramSample(
 // kill.  Note that the commit URL is already reported in a crash key, and
 // additional keys are logged in RenderProcessHostImpl::ShutdownForBadMessage.
 void LogRendererKillCrashKeys(const SiteInfo& site_info) {
-  static auto* site_url_key = base::debug::AllocateCrashKeyString(
-      "current_site_url", base::debug::CrashKeySize::Size64);
-  base::debug::SetCrashKeyString(site_url_key, site_info.GetDebugString());
+  static auto* site_info_key = base::debug::AllocateCrashKeyString(
+      "current_site_info", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(site_info_key, site_info.GetDebugString());
 }
 
 void LogCanCommitOriginAndUrlFailureReason(const std::string& failure_reason) {
@@ -9020,7 +9020,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
-                                            base::debug::CrashKeySize::Size64),
+                                            base::debug::CrashKeySize::Size256),
         navigation_request->GetStartingSiteInstance()
             ->GetSiteInfo()
             .GetDebugString());
@@ -9122,7 +9122,7 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
-                                            base::debug::CrashKeySize::Size64),
+                                            base::debug::CrashKeySize::Size256),
         navigation_request->GetStartingSiteInstance()
             ->GetSiteInfo()
             .GetDebugString());

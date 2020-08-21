@@ -178,12 +178,6 @@ class VIEWS_EXPORT WidgetDelegate {
                                        gfx::Rect* bounds,
                                        ui::WindowShowState* show_state) const;
 
-  // Returns true if the window's size should be restored. If this is false,
-  // only the window's origin is restored and the window is given its
-  // preferred size.
-  // Default is true.
-  virtual bool ShouldRestoreWindowSize() const;
-
   // Hooks for the end of the Widget/Window lifecycle. As of this writing, these
   // callbacks happen like so:
   //   1. Client code calls Widget::CloseWithReason()

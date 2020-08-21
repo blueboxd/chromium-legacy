@@ -4,7 +4,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
 <!-- Width should be large enough to display closed captions button. -->
-<video autoplay controls style="width: 500px">
+<video controls style="width: 500px">
     <track src="captions-webvtt/captions.vtt" kind="captions" label="English" srclang="en" default>
 </video>
 <script>
@@ -13,7 +13,7 @@ async_test(function(t) {
     var video = document.querySelector("video");
     enableTestMode(video);
 
-    video.onplaying = t.step_func(function() {
+    video.oncanplaythrough = t.step_func(function() {
         var track = video.addTextTrack("captions", "French", "fr");
         track.addCue(new VTTCue(0, 1, trackCueText));
         assert_true(isClosedCaptionsButtonEnabled(video));

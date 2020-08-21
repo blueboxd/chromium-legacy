@@ -111,9 +111,15 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 }
 
 - (void)dealloc {
-  [self.discoverFeedVC willMoveToParentViewController:nil];
-  [self.discoverFeedVC.view removeFromSuperview];
-  [self.discoverFeedVC removeFromParentViewController];
+  // Only remove the FeedVC and observer if it was actually added to the
+  // hierarchy. |self.discoverFeedVC| is only added to the hierarchy at the same
+  // time the KVO observer is added to |self.feedView|, so its safe to remove.
+  if (self.discoverFeedVC.parentViewController) {
+    [self.feedView removeObserver:self forKeyPath:@"contentSize"];
+    [self.discoverFeedVC willMoveToParentViewController:nil];
+    [self.discoverFeedVC.view removeFromSuperview];
+    [self.discoverFeedVC removeFromParentViewController];
+  }
   [self.overscrollActionsController invalidate];
 }
 
@@ -419,8 +425,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     UIViewController* newFeedViewController = discoverFeedItem.discoverFeed;
 
     if (newFeedViewController != self.discoverFeedVC) {
-      // If previous VC is not nil, remove it from the view hierarchy.
+      // If previous VC is not nil, remove it from the view hierarchy and stop
+      // osberving its feedView.
       if (self.discoverFeedVC) {
+        [self.feedView removeObserver:self forKeyPath:@"contentSize"];
         [self.discoverFeedVC willMoveToParentViewController:nil];
         [self.discoverFeedVC.view removeFromSuperview];
         [self.discoverFeedVC removeFromParentViewController];

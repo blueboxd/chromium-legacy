@@ -51,6 +51,7 @@ class NET_EXPORT_PRIVATE DnsUdpTracker {
 
   void RecordQuery(uint16_t port, uint16_t query_id);
   void RecordResponseId(uint16_t query_id, uint16_t response_id);
+  void RecordConnectionError(int connection_error);
 
   // If true, the entropy from random UDP port and DNS ID has been detected to
   // potentially be low, e.g. due to exhaustion of the port pool or mismatches

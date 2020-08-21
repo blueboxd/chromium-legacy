@@ -66,15 +66,18 @@ class ImageSanitizer {
       const base::FilePath& image_dir,
       const std::set<base::FilePath>& image_relative_paths,
       ImageDecodedCallback image_decoded_callback,
-      SanitizationDoneCallback done_callback);
+      SanitizationDoneCallback done_callback,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   ~ImageSanitizer();
 
  private:
-  ImageSanitizer(const base::FilePath& image_dir,
-                 const std::set<base::FilePath>& image_relative_paths,
-                 ImageDecodedCallback image_decoded_callback,
-                 SanitizationDoneCallback done_callback);
+  ImageSanitizer(
+      const base::FilePath& image_dir,
+      const std::set<base::FilePath>& image_relative_paths,
+      ImageDecodedCallback image_decoded_callback,
+      SanitizationDoneCallback done_callback,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
   void Start(data_decoder::DataDecoder* decoder);
 
@@ -101,6 +104,7 @@ class ImageSanitizer {
   std::set<base::FilePath> image_paths_;
   ImageDecodedCallback image_decoded_callback_;
   SanitizationDoneCallback done_callback_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   mojo::Remote<data_decoder::mojom::ImageDecoder> image_decoder_;
   base::WeakPtrFactory<ImageSanitizer> weak_factory_{this};
 

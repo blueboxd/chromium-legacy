@@ -20,6 +20,11 @@ extern const char kRecurrentSSLInterstitial[];
 // will be disabled.
 extern const char kMixedFormsWarningsEnabled[];
 
+// A list pref used to enumerate hostnames that should never be identified as
+// possible spoofy lookalike domains. This prevents both the lookalike
+// interstitial and safety tips from displaying.
+extern const char kLookalikeWarningAllowlistDomains[];
+
 }  // namespace prefs
 
 #endif  // COMPONENTS_SECURITY_INTERSTITIALS_CORE_PREF_NAMES_H_

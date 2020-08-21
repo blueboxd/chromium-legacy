@@ -83,16 +83,6 @@
                                            showActiveRegularTabFromRecentTabs];
                                  }]];
 
-    ProceduralBlock incognitoCompletion = ^{
-      [strongSelf.recentTabsPresentationDelegate
-              showActiveIncognitoTabFromRecentTabs];
-    };
-    [menuElements
-        addObject:
-            [actionFactory
-                actionToOpenInNewIncognitoTabWithURL:item.URL
-                                          completion:incognitoCompletion]];
-
     if (IsMultipleScenesSupported()) {
       [menuElements
           addObject:

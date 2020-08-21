@@ -33,13 +33,16 @@ namespace {
 #if defined(OS_WIN)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   std::vector<base::FilePath> installation_locations;
-  base::FilePath local_app_data, program_files, program_files_x86;
+  base::FilePath local_app_data, program_files, program_files_x86,
+      program_files_64_32;
   if (base::PathService::Get(base::DIR_LOCAL_APP_DATA, &local_app_data))
     installation_locations.push_back(local_app_data);
   if (base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files))
     installation_locations.push_back(program_files);
   if (base::PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files_x86))
     installation_locations.push_back(program_files_x86);
+  if (base::PathService::Get(base::DIR_PROGRAM_FILES6432, &program_files_64_32))
+    installation_locations.push_back(program_files_64_32);
 
   for (size_t i = 0; i < installation_locations.size(); ++i) {
     locations->push_back(

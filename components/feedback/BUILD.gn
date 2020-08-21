@@ -30,6 +30,7 @@ static_library("feedback") {
 
   deps = [
     "//base",
+    "//build:lacros_buildflags",
     "//components/feedback/proto",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
@@ -53,6 +54,10 @@ source_set("unit_tests") {
     "feedback_uploader_unittest.cc",
     "redaction_tool_unittest.cc",
   ]
+  if (!is_win) {
+    sources += [ "feedback_util_unittest.cc" ]
+  }
+
   deps = [
     ":feedback",
     "//base",

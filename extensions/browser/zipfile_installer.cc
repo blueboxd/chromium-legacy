@@ -59,9 +59,11 @@ base::Optional<std::string> ReadFileContent(const base::FilePath& path) {
 
 // static
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     DoneCallback done_callback) {
   DCHECK(done_callback);
-  return base::WrapRefCounted(new ZipFileInstaller(std::move(done_callback)));
+  return base::WrapRefCounted(
+      new ZipFileInstaller(io_task_runner, std::move(done_callback)));
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
@@ -89,13 +91,16 @@ void ZipFileInstaller::LoadFromZipFileImpl(const base::FilePath& zip_file,
   }
 
   base::PostTaskAndReplyWithResult(
-      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&PrepareAndGetUnzipDir, zip_file),
       base::BindOnce(&ZipFileInstaller::Unzip, this));
 }
 
-ZipFileInstaller::ZipFileInstaller(DoneCallback done_callback)
-    : done_callback_(std::move(done_callback)) {}
+ZipFileInstaller::ZipFileInstaller(
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+    DoneCallback done_callback)
+    : done_callback_(std::move(done_callback)),
+      io_task_runner_(io_task_runner) {}
 
 ZipFileInstaller::~ZipFileInstaller() = default;
 
@@ -121,7 +126,7 @@ void ZipFileInstaller::ManifestUnzipped(const base::FilePath& unzip_dir,
   }
 
   base::PostTaskAndReplyWithResult(
-      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ReadFileContent, unzip_dir.Append(kManifestFilename)),
       base::BindOnce(&ZipFileInstaller::ManifestRead, this, unzip_dir));
 }

@@ -91,9 +91,18 @@ bool SiteInfo::operator<(const SiteInfo& other) const {
 }
 
 std::string SiteInfo::GetDebugString() const {
-  // TODO(wjmaclean): At some point we should consider adding output about
-  // origin- vs. site-keying.
-  return site_url_.possibly_invalid_spec();
+  std::string debug_string =
+      site_url_.is_empty() ? "empty site" : site_url_.possibly_invalid_spec();
+
+  if (process_lock_url_.is_empty())
+    debug_string += ", empty lock";
+  else if (process_lock_url_ != site_url_)
+    debug_string += ", locked to " + process_lock_url_.possibly_invalid_spec();
+
+  if (is_origin_keyed_)
+    debug_string += ", origin-keyed";
+
+  return debug_string;
 }
 
 std::ostream& operator<<(std::ostream& out, const SiteInfo& site_info) {
@@ -1257,7 +1266,7 @@ void SiteInstanceImpl::LockProcessIfNeeded() {
     } else if (process_lock != lock_to_set) {
       // We should never attempt to reassign a different origin lock to a
       // process.
-      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteInfoKey(),
                                      site_info_.GetDebugString());
       policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to lock a process to " << lock_to_set.ToString()
@@ -1272,7 +1281,7 @@ void SiteInstanceImpl::LockProcessIfNeeded() {
     // process, make sure we aren't putting it in a process for a site that
     // does.
     if (!process_lock.is_empty()) {
-      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteInfoKey(),
                                      site_info_.GetDebugString());
       policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to commit non-isolated site " << site_info_

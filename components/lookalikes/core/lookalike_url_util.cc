@@ -22,7 +22,9 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "base/values.h"
 #include "components/lookalikes/core/features.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
@@ -33,6 +35,10 @@
 namespace lookalikes {
 
 const char kHistogramName[] = "NavigationSuggestion.Event";
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kLookalikeWarningAllowlistDomains);
+}
 
 }  // namespace lookalikes
 
@@ -701,4 +707,26 @@ bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain) {
     case url_formatter::IDNSpoofChecker::Result::kDangerousPattern:
       return true;
   }
+}
+
+bool IsAllowedByEnterprisePolicy(const PrefService* pref_service,
+                                 const GURL& url) {
+  const auto* list =
+      pref_service->GetList(prefs::kLookalikeWarningAllowlistDomains);
+  for (const auto& domain_val : *list) {
+    auto domain = domain_val.GetString();
+    if (url.DomainIs(domain)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void SetEnterpriseAllowlistForTesting(PrefService* pref_service,
+                                      const std::vector<std::string>& hosts) {
+  base::Value list(base::Value::Type::LIST);
+  for (const auto& host : hosts) {
+    list.Append(host);
+  }
+  pref_service->Set(prefs::kLookalikeWarningAllowlistDomains, std::move(list));
 }

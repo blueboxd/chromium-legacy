@@ -562,7 +562,8 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::cellular_setup::mojom::CellularSetup,
-      chromeos::cellular_setup::CellularSetupDialogUI>(map);
+      chromeos::cellular_setup::CellularSetupDialogUI,
+      chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::crostini_installer::mojom::PageHandlerFactory,

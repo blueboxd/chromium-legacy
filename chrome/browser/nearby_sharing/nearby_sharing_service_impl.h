@@ -215,6 +215,10 @@ class NearbySharingServiceImpl
   void OnReceivedIntroduction(ShareTarget share_target,
                               base::Optional<std::string> four_digit_token,
                               base::Optional<sharing::mojom::V1FramePtr> frame);
+  void ReceiveConnectionResponse(ShareTarget share_target);
+  void OnReceiveConnectionResponse(
+      ShareTarget share_target,
+      base::Optional<sharing::mojom::V1FramePtr> frame);
   void OnStorageCheckCompleted(ShareTarget share_target,
                                base::Optional<std::string> four_digit_token,
                                bool is_out_of_storage);

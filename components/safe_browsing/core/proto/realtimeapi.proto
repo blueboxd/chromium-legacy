@@ -35,6 +35,30 @@ message RTLookupRequest {
 
   // The DM Token for Enterprise-enrolled devices (go/uss-dmtoken).
   optional string dm_token = 5;
+
+  // |version| helps the Safe Browsing server understand what verison of the
+  // proto Chrome understands, and also what kinds of behaviours it supports.
+  // It should be incremented when adding new fields and/or when making changes
+  // to how existing fields may be interpreted.
+  // Version 1:
+  //   * Client supports caching with |COVERING_MATCH| verdicts.
+  //   * Client supports the |os_type| field.
+  //   * Client falls back to hash-based checks if there's a SAFE match in the
+  //     cache.
+  optional int32 version = 6 [default = 0];
+
+  // The operating system of the client.
+  enum OSType {
+    OS_TYPE_UNSPECIFIED = 0;
+    OS_TYPE_ANDROID = 1;
+    OS_TYPE_CHROME_OS = 2;
+    OS_TYPE_FUCHSIA = 3;
+    OS_TYPE_IOS = 4;
+    OS_TYPE_LINUX = 5;
+    OS_TYPE_MAC = 6;
+    OS_TYPE_WINDOWS = 7;
+  }
+  optional OSType os_type = 7;
 }
 
 message RTLookupResponse {

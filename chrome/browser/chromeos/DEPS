@@ -52,8 +52,4 @@ specific_include_rules = {
     "+chrome/browser/ui/views/extensions/extension_dialog.h",
     "+chrome/browser/ui/views/select_file_dialog_extension.h",
   ],
-  "server_printers_fetcher\.cc": [
-    # IPP protocol; it is needed for communication with print servers.
-    "+third_party/libipp/libipp/ipp.h",
-  ],
 }

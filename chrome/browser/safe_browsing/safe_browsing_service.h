@@ -223,10 +223,16 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   void SetDatabaseManagerForTest(SafeBrowsingDatabaseManager* database_manager);
 
-  // Called to initialize objects that are used on the io_thread.  This may be
+  // Called to initialize objects that are used on the io_thread. This may be
   // called multiple times during the life of the SafeBrowsingService.
+  // |sb_url_loader_factory| is a SharedURLLoaderFactory attached to the Safe
+  // Browsing NetworkContexts, and |browser_url_loader_factory| is attached to
+  // the global browser process.
+  // TODO(crbug.com/1049833): Remove the sb_url_loader_factory here.
   void StartOnIOThread(std::unique_ptr<network::PendingSharedURLLoaderFactory>
-                           url_loader_factory);
+                           sb_url_loader_factory,
+                       std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                           browser_url_loader_factory);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If

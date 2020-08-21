@@ -13,6 +13,8 @@ import sys
 from xml.dom import minidom
 
 import histogram_configuration_model
+import histogram_paths
+
 
 # The default name of the histograms XML file.
 HISTOGRAMS_XML = 'histograms.xml'
@@ -95,7 +97,7 @@ def _CreateXMLFile(comments, parent_node_string, nodes, output_dir, filename):
     output_file.write(pretty_xml_string)
 
 
-def GetCamelName(histogram_node, depth=0):
+def _GetCamelName(histogram_node, depth=0):
   """Returns the first camelcase name part of the histogram node.
 
   Args:
@@ -137,6 +139,16 @@ def GetCamelName(histogram_node, depth=0):
     return name_part[0:start_index]
 
 
+def GetDirForNode(node):
+  """Returns the correct directory that the given |node| should be placed in."""
+  camel_name = _GetCamelName(node)
+  # Check if the directory of its prefix exists. Return the |camel_name| if the
+  # folder exists. Otherwise, this |node| should be placed in 'others' folder.
+  if camel_name in histogram_paths.HISTOGRAMS_PREFIX_LIST:
+    return camel_name
+  return 'others'
+
+
 def _AddHistogramsToDict(histogram_nodes, depth):
   """Adds histogram nodes to the corresponding keys of a dictionary.
 
@@ -150,7 +162,7 @@ def _AddHistogramsToDict(histogram_nodes, depth):
   """
   document_dict = {}
   for histogram in histogram_nodes:
-    name_part = GetCamelName(histogram, depth)
+    name_part = _GetCamelName(histogram, depth)
     if name_part not in document_dict:
       document_dict[name_part] = []
     document_dict[name_part].append(histogram)

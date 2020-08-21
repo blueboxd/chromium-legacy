@@ -9,11 +9,11 @@
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 
-// Reports the transfer status for an ongoing transfer with a |ShareTarget|.
+// Reports the transfer status for an ongoing transfer with a |share_target|.
 class TransferUpdateCallback : public base::CheckedObserver {
  public:
-  virtual void OnTransferUpdate(const ShareTarget& shareTarget,
-                                const TransferMetadata& transferMetadata) = 0;
+  virtual void OnTransferUpdate(const ShareTarget& share_target,
+                                const TransferMetadata& transfer_metadata) = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_TRANSFER_UPDATE_CALLBACK_H_

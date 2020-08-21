@@ -41,6 +41,8 @@ source_set("public") {
 
   if (is_android) {
     sources += [
+      "android/tutorial_conversion_bridge.cc",
+      "android/tutorial_conversion_bridge.h",
       "android/video_tutorial_service_bridge.cc",
       "android/video_tutorial_service_bridge.h",
     ]
@@ -68,6 +70,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/chrome/browser/video_tutorials/Tutorial.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/VideoTutorialService.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
     ]
 
@@ -78,13 +81,24 @@ if (is_android) {
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
 
+    srcjar_deps = [ ":jni_enums" ]
+
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 
   generate_jni("jni_headers") {
     visibility = [ ":*" ]
 
-    sources = [ "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java" ]
+    sources = [
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
+    ]
+  }
+
+  java_cpp_enum("jni_enums") {
+    visibility = [ "*" ]
+
+    sources = [ "tutorial.h" ]
   }
 }
 

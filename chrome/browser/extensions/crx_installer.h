@@ -268,10 +268,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   ~CrxInstaller() override;
 
   // Converts the source user script to an extension.
-  void ConvertUserScriptOnFileThread();
+  void ConvertUserScriptOnSharedFileThread();
 
   // Converts the source web app to an extension.
-  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
+  void ConvertWebAppOnSharedFileThread(const WebApplicationInfo& web_app);
 
   // Called after OnUnpackSuccess check to see whether the install expectations
   // are met and the install process should continue.
@@ -324,9 +324,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void ReloadExtensionAfterInstall(const base::FilePath& version_dir);
 
   // Result reporting.
-  void ReportFailureFromFileThread(const CrxInstallError& error);
+  void ReportFailureFromSharedFileThread(const CrxInstallError& error);
   void ReportFailureFromUIThread(const CrxInstallError& error);
-  void ReportSuccessFromFileThread();
+  void ReportSuccessFromSharedFileThread();
   void ReportSuccessFromUIThread();
   // Always report from the UI thread.
   void ReportInstallationStage(InstallationStage stage);
@@ -343,6 +343,16 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Show re-enable prompt if the update is initiated from the settings page
   // and needs additional permissions.
   void ConfirmReEnable();
+
+  // OnUnpackSuccess() gets called on the unpacker sequence. It calls this
+  // method on the shared file sequence, to avoid race conditions.
+  virtual void OnUnpackSuccessOnSharedFileThread(
+      base::FilePath temp_dir,
+      base::FilePath extension_dir,
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      scoped_refptr<const Extension> extension,
+      SkBitmap install_icon,
+      declarative_net_request::RulesetChecksums ruleset_checksums);
 
   void set_install_flag(int flag, bool val) {
     if (val)
@@ -489,8 +499,17 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // will continue but the extension will be distabled.
   bool error_on_unsupported_requirements_;
 
-  // Sequenced task runner where file I/O operations will be performed.
-  scoped_refptr<base::SequencedTaskRunner> installer_task_runner_;
+  // Sequenced task runner where most file I/O operations will be performed.
+  scoped_refptr<base::SequencedTaskRunner> shared_file_task_runner_;
+
+  // Sequenced task runner where the SandboxedUnpacker will run. Because the
+  // unpacker uses its own temp dir, it won't hit race conditions, and can use a
+  // separate task runner per instance (for better performance).
+  //
+  // TODO(nicolaso): Adjust this task runner's priority based on the install
+  // location. e.g. default apps shouldn't be USER_VISIBLE, to avoid wasting CPU
+  // time.
+  scoped_refptr<base::SequencedTaskRunner> unpacker_task_runner_;
 
   // Used to show the install dialog.
   ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;

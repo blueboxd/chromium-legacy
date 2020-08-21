@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/tick_clock.h"
+#include "net/base/net_errors.h"
 
 namespace net {
 
@@ -19,7 +20,8 @@ enum class LowEntropyReason {
   kPortReuse = 0,
   kRecognizedIdMismatch = 1,
   kUnrecognizedIdMismatch = 2,
-  kMaxValue = kUnrecognizedIdMismatch,
+  kSocketLimitExhaustion = 3,
+  kMaxValue = kSocketLimitExhaustion,
 };
 
 void RecordLowEntropyUma(LowEntropyReason reason) {
@@ -120,6 +122,16 @@ void DnsUdpTracker::RecordResponseId(uint16_t query_id, uint16_t response_id) {
   }
 
   UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsTransaction.UDP.IdMismatch", status);
+}
+
+void DnsUdpTracker::RecordConnectionError(int connection_error) {
+  if (!low_entropy_ && connection_error == ERR_INSUFFICIENT_RESOURCES) {
+    // On UDP connection, this error signifies that the process is using an
+    // unreasonably large number of UDP sockets, potentially a deliberate
+    // attack to reduce DNS port entropy.
+    low_entropy_ = true;
+    RecordLowEntropyUma(LowEntropyReason::kSocketLimitExhaustion);
+  }
 }
 
 void DnsUdpTracker::PurgeOldRecords() {

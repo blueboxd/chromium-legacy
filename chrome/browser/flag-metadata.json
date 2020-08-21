@@ -2229,13 +2229,13 @@
   },
   {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
-    "owners": [ "chromeos-gfx@google.com" ],
-    "expiry_milestone": 83
+    "owners": [ "andrescj", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-vaapi-webp-image-decode-acceleration",
-    "owners": [ "chromeos-gfx@google.com" ],
-    "expiry_milestone": 83
+    "owners": [ "andrescj", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-virtual-keyboard",
@@ -4090,7 +4090,7 @@
   {
     "name": "show-overdraw-feedback",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "show-taps",

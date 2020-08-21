@@ -9,20 +9,18 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/clipboard/clipboard_history_item.h"
 #include "base/memory/weak_ptr.h"
 
 namespace gfx {
 class Rect;
 }  // namespace gfx
 
-namespace ui {
-class ClipboardData;
-}  // namespace ui
-
 namespace ash {
 
 class ClipboardHistory;
 class ClipboardHistoryMenuModelAdapter;
+class ClipboardHistoryResourceManager;
 
 // Shows a menu with the last few things saved in the clipboard when the
 // keyboard shortcut is pressed.
@@ -45,6 +43,12 @@ class ASH_EXPORT ClipboardHistoryController {
   // Returns the history which tracks what is being copied to the clipboard.
   const ClipboardHistory* history() const { return clipboard_history_.get(); }
 
+  // Returns the resource manager which gets labels and images for items copied
+  // to the clipboard.
+  const ClipboardHistoryResourceManager* resource_manager() const {
+    return resource_manager_.get();
+  }
+
  private:
   class AcceleratorTarget;
   class MenuDelegate;
@@ -60,12 +64,14 @@ class ASH_EXPORT ClipboardHistoryController {
   std::unique_ptr<ClipboardHistoryMenuModelAdapter> context_menu_;
   // Used to keep track of what is being copied to the clipboard.
   std::unique_ptr<ClipboardHistory> clipboard_history_;
+  // Manages resources for clipboard history.
+  std::unique_ptr<ClipboardHistoryResourceManager> resource_manager_;
   // Detects the search+v key combo.
   std::unique_ptr<AcceleratorTarget> accelerator_target_;
   // Handles events on the contextual menu.
   std::unique_ptr<MenuDelegate> menu_delegate_;
   // The items we show in the contextual menu. Saved so we can paste them later.
-  std::vector<ui::ClipboardData> clipboard_items_;
+  std::vector<ClipboardHistoryItem> clipboard_items_;
 
   base::WeakPtrFactory<ClipboardHistoryController> weak_ptr_factory_{this};
 };

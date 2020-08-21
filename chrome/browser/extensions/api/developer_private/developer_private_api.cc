@@ -69,6 +69,7 @@
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -1188,7 +1189,8 @@ DeveloperPrivateInstallDroppedFileFunction::Run() {
 
   ExtensionService* service = GetExtensionService(browser_context());
   if (path.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-    ZipFileInstaller::Create(MakeRegisterInExtensionServiceCallback(service))
+    ZipFileInstaller::Create(GetExtensionFileTaskRunner(),
+                             MakeRegisterInExtensionServiceCallback(service))
         ->LoadFromZipFile(path);
   } else {
     auto prompt = std::make_unique<ExtensionInstallPrompt>(web_contents);

@@ -10,6 +10,8 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "url/gurl.h"
 
@@ -17,6 +19,9 @@ class GURL;
 
 namespace lookalikes {
 extern const char kHistogramName[];
+
+// Register applicable preferences with the provided registry.
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 }
 
 using LookalikeTargetAllowlistChecker =
@@ -188,5 +193,14 @@ TargetEmbeddingType GetTargetEmbeddingType(
 
 // Returns true if a navigation to an IDN should be blocked.
 bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain);
+
+// Checks whether the given url is allowlisted by enterprise policy, and
+// thus no warnings should be shown on that host.
+bool IsAllowedByEnterprisePolicy(const PrefService* pref_service,
+                                 const GURL& url);
+
+// Add the given hosts to the allowlist policy setting.
+void SetEnterpriseAllowlistForTesting(PrefService* pref_service,
+                                      const std::vector<std::string>& hosts);
 
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

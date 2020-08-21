@@ -143,7 +143,8 @@ TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
 
   // |request_callback| should not be called if the verdict is already cached.
   EXPECT_CALL(request_callback, Run(_, _)).Times(0);
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ true, _));
 
   task_environment_.RunUntilIdle();
 }
@@ -174,7 +175,8 @@ TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
           }),
       response_callback.Get());
 
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
+  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true,
+                                     /* is_cached_response */ false, _));
 
   task_environment_.RunUntilIdle();
 

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/file_manager/file_manager.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -26,6 +25,10 @@ class FileManagerUI : public ui::MojoWebUIController,
   explicit FileManagerUI(content::WebUI* web_ui);
   ~FileManagerUI() override;
 
+  // Disallow copy and assign.
+  FileManagerUI(const FileManagerUI&) = delete;
+  FileManagerUI& operator=(const FileManagerUI&) = delete;
+
   void BindInterface(
       mojo::PendingReceiver<mojom::PageHandlerFactory> pending_receiver);
 
@@ -39,7 +42,6 @@ class FileManagerUI : public ui::MojoWebUIController,
   std::unique_ptr<FileManagerPageHandler> page_handler_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
-  DISALLOW_COPY_AND_ASSIGN(FileManagerUI);
 };
 
 }  // namespace file_manager

@@ -1374,8 +1374,8 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-enumeration.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-blob.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
 
 # ====== Style team owned tests from here ======
 
@@ -2631,6 +2631,9 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-insertable-streams/RTCPeerConnection-insertable-streams.https.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/frame-src/frame-src-same-document.sub.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
@@ -5199,6 +5202,7 @@ crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
+crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]

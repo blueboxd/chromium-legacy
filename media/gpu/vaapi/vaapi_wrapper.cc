@@ -745,8 +745,8 @@ bool AreAttribsSupported(const base::Lock* va_lock,
     if (attribs[i].type != required_attribs[i].type ||
         (attribs[i].value & required_attribs[i].value) !=
             required_attribs[i].value) {
-      DVLOG(1) << "Unsupported value " << required_attribs[i].value
-               << " for attribute type " << required_attribs[i].type;
+      DVLOG(1) << "Unsupported value " << required_attribs[i].value << " for "
+               << vaConfigAttribTypeStr(required_attribs[i].type);
       return false;
     }
   }
@@ -2151,6 +2151,7 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                                base::Optional<gfx::Rect> src_rect,
                                base::Optional<gfx::Rect> dest_rect,
                                VideoRotation rotation) {
+  DCHECK_EQ(mode_, kVideoProcess);
   base::AutoLock auto_lock(*va_lock_);
 
   // Create a buffer for VPP if it has not been created.

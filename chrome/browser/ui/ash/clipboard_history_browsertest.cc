@@ -7,6 +7,7 @@
 
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_controller.h"
+#include "ash/clipboard/clipboard_history_item.h"
 #include "ash/shell.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -75,7 +76,7 @@ ash::ClipboardHistoryController* GetClipboardHistoryController() {
   return ash::Shell::Get()->clipboard_history_controller();
 }
 
-const std::list<ui::ClipboardData>& GetClipboardData() {
+const std::list<ash::ClipboardHistoryItem>& GetClipboardItems() {
   return GetClipboardHistoryController()->history()->GetItems();
 }
 
@@ -142,31 +143,31 @@ class ClipboardHistoryWithMultiProfileBrowserTest
 IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
                        VerifyClipboardHistoryAcrossMultiUser) {
   LoginUser(account_id1_);
-  EXPECT_TRUE(GetClipboardData().empty());
+  EXPECT_TRUE(GetClipboardItems().empty());
 
   // Store text when the user1 is active.
   const std::string copypaste_data1("user1_text1");
   SetClipboardText(copypaste_data1);
 
   {
-    const std::list<ui::ClipboardData>& data = GetClipboardData();
-    EXPECT_EQ(1u, data.size());
-    EXPECT_EQ(copypaste_data1, data.front().text());
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(1u, items.size());
+    EXPECT_EQ(copypaste_data1, items.front().data().text());
   }
 
   // Log in as the user2. The clipboard history should be non-empty.
   chromeos::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
-  EXPECT_FALSE(GetClipboardData().empty());
+  EXPECT_FALSE(GetClipboardItems().empty());
 
   // Store text when the user2 is active.
   const std::string copypaste_data2("user2_text1");
   SetClipboardText(copypaste_data2);
 
   {
-    const std::list<ui::ClipboardData>& data = GetClipboardData();
-    EXPECT_EQ(2u, data.size());
-    EXPECT_EQ(copypaste_data2, data.front().text());
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(2u, items.size());
+    EXPECT_EQ(copypaste_data2, items.front().data().text());
   }
 
   // Switch to the user1.
@@ -177,19 +178,19 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   SetClipboardText(copypaste_data3);
 
   {
-    const std::list<ui::ClipboardData>& data = GetClipboardData();
-    EXPECT_EQ(3u, data.size());
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(3u, items.size());
 
     // Note that items in |data| follow the time ordering. The most recent item
     // is always the first one.
-    auto it = data.begin();
-    EXPECT_EQ(copypaste_data3, it->text());
+    auto it = items.begin();
+    EXPECT_EQ(copypaste_data3, it->data().text());
 
     std::advance(it, 1u);
-    EXPECT_EQ(copypaste_data2, it->text());
+    EXPECT_EQ(copypaste_data2, it->data().text());
 
     std::advance(it, 1u);
-    EXPECT_EQ(copypaste_data1, it->text());
+    EXPECT_EQ(copypaste_data1, it->data().text());
   }
 }
 
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   CloseAllBrowsers();
 
   // No clipboard data. So the clipboard history menu should not show.
-  ASSERT_TRUE(GetClipboardData().empty());
+  ASSERT_TRUE(GetClipboardItems().empty());
   ShowContextMenuViaAccelerator();
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 

@@ -145,6 +145,8 @@ class TabGridViewBinder {
             faviconView.setPadding(padding, padding, padding, padding);
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             updateThumbnail(view, model);
+        } else if (TabProperties.CONTENT_DESCRIPTION_STRING == propertyKey) {
+            view.setContentDescription(model.get(TabProperties.CONTENT_DESCRIPTION_STRING));
         }
     }
 

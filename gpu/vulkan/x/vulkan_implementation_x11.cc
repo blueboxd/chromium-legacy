@@ -146,11 +146,7 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
-  std::vector<const char*> extensions = {
-      VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
-      VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-      VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-      VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
+  std::vector<const char*> extensions = {};
   if (using_surface_)
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
   return extensions;
@@ -158,7 +154,11 @@ VulkanImplementationX11::GetRequiredDeviceExtensions() {
 
 std::vector<const char*>
 VulkanImplementationX11::GetOptionalDeviceExtensions() {
-  return {VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME};
+  return {VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+          VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {

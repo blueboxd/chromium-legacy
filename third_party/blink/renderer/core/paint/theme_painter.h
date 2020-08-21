@@ -144,19 +144,6 @@ class ThemePainter {
                                             const IntRect&) {
     return true;
   }
-
-  bool PaintUsingFallbackTheme(const Node*,
-                               const ComputedStyle&,
-                               const PaintInfo&,
-                               const IntRect&);
-  bool PaintCheckboxUsingFallbackTheme(const Node*,
-                                       const ComputedStyle&,
-                                       const PaintInfo&,
-                                       const IntRect&);
-  bool PaintRadioUsingFallbackTheme(const Node*,
-                                    const ComputedStyle&,
-                                    const PaintInfo&,
-                                    const IntRect&);
 };
 
 }  // namespace blink

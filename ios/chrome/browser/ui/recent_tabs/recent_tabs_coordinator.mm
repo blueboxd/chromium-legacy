@@ -189,10 +189,6 @@
   [self dismissRecentTabs];
 }
 
-- (void)showActiveIncognitoTabFromRecentTabs {
-  [self dismissRecentTabs];
-}
-
 - (void)showHistoryFromRecentTabs {
   // Dismiss recent tabs before presenting history.
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();

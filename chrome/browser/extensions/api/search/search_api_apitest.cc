@@ -13,19 +13,22 @@ namespace {
 using SearchApiTest = ExtensionApiTest;
 
 // Test various scenarios, such as the use of input different parameters.
-IN_PROC_BROWSER_TEST_F(SearchApiTest, Normal) {
+// Flaky. See crbug.com/1119846.
+IN_PROC_BROWSER_TEST_F(SearchApiTest, DISABLED_Normal) {
   ASSERT_TRUE(RunExtensionTest("search/query/normal")) << message_;
 }
 
 // Test incognito browser in extension default spanning mode.
-IN_PROC_BROWSER_TEST_F(SearchApiTest, Incognito) {
+// Flaky. See crbug.com/1119846.
+IN_PROC_BROWSER_TEST_F(SearchApiTest, DISABLED_Incognito) {
   ResultCatcher catcher;
   CreateIncognitoBrowser(browser()->profile());
   ASSERT_TRUE(RunExtensionTestIncognito("search/query/incognito")) << message_;
 }
 
 // Test incognito browser in extension split mode.
-IN_PROC_BROWSER_TEST_F(SearchApiTest, IncognitoSplit) {
+// Flaky. See crbug.com/1119846.
+IN_PROC_BROWSER_TEST_F(SearchApiTest, DISABLED_IncognitoSplit) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(
       browser()->profile()->GetPrimaryOTRProfile());

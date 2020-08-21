@@ -17,7 +17,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class AssistantDetailsModel extends PropertyModel {
     // TODO(crbug.com/806868): We might want to split this property into multiple, simpler
     // properties.
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public static final WritableObjectPropertyKey<AssistantDetails> DETAILS =
             new WritableObjectPropertyKey<>();
 

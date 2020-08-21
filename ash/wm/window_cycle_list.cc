@@ -120,6 +120,7 @@ class WindowCycleItemView : public WindowMiniView {
  public:
   explicit WindowCycleItemView(aura::Window* window) : WindowMiniView(window) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_notify_enter_exit_on_child(true);
   }
   WindowCycleItemView(const WindowCycleItemView&) = delete;
   WindowCycleItemView& operator=(const WindowCycleItemView&) = delete;
@@ -134,6 +135,16 @@ class WindowCycleItemView : public WindowMiniView {
     UpdateIconView();
     SetShowPreview(/*show=*/true);
     UpdatePreviewRoundedCorners(/*show=*/true);
+  }
+
+  // views::View:
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    Shell::Get()->window_cycle_controller()->StepToWindow(source_window());
+  }
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    Shell::Get()->window_cycle_controller()->CompleteCycling();
+    return true;
   }
 
  private:
@@ -413,6 +424,10 @@ class WindowCycleView : public views::WidgetDelegateView,
     return window_view_map_[target_window_];
   }
 
+  const views::View::Views& GetPreviewViewsForTesting() const {
+    return mirror_container_->children();
+  }
+
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
     occlusion_tracker_pauser_.reset();
@@ -481,7 +496,7 @@ WindowCycleList::~WindowCycleList() {
   Shell::Get()->frame_throttling_controller()->EndThrottling();
 }
 
-void WindowCycleList::Step(WindowCycleController::Direction direction) {
+void WindowCycleList::Step(int offset) {
   if (windows_.empty())
     return;
 
@@ -499,13 +514,11 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
     // Special case the situation where we're cycling forward but the MRU
     // window is not active. This occurs when all windows are minimized. The
     // starting window should be the first one rather than the second.
-    if (direction == WindowCycleController::FORWARD &&
-        !wm::IsActiveWindow(windows_[0]))
+    if (offset == 1 && !wm::IsActiveWindow(windows_[0]))
       current_index_ = -1;
   }
 
-  // We're in a valid cycle, so step forward or backward.
-  current_index_ += direction == WindowCycleController::FORWARD ? 1 : -1;
+  current_index_ += offset;
 
   // Wrap to window list size.
   current_index_ = (current_index_ + windows_.size()) % windows_.size();
@@ -518,6 +531,23 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
     if (cycle_view_)
       cycle_view_->SetTargetWindow(windows_[current_index_]);
   }
+}
+
+void WindowCycleList::Step(WindowCycleController::Direction direction) {
+  Step(direction == WindowCycleController::FORWARD ? 1 : -1);
+}
+
+void WindowCycleList::StepToWindow(aura::Window* window) {
+  auto target_window = std::find(windows_.begin(), windows_.end(), window);
+  DCHECK(target_window != windows_.end());
+  int target_index = std::distance(windows_.begin(), target_window);
+
+  Step(target_index - current_index_);
+}
+
+bool WindowCycleList::IsEventInCycleView(ui::MouseEvent* event) {
+  return cycle_view_->GetBoundsInScreen().Contains(
+      display::Screen::GetScreen()->GetCursorScreenPoint());
 }
 
 // static
@@ -642,6 +672,11 @@ void WindowCycleList::SelectWindow(aura::Window* window) {
   }
 
   window_selected_ = true;
+}
+
+const views::View::Views& WindowCycleList::GetWindowCycleItemViewsForTesting()
+    const {
+  return cycle_view_->GetPreviewViewsForTesting();
 }
 
 }  // namespace ash

@@ -433,16 +433,10 @@ NativeFileSystemDirectoryHandleImpl::GetChildURL(
         "Name contains invalid characters.");
   }
 
-  std::string escaped_name =
-      net::EscapeQueryParamValue(basename, /*use_plus=*/false);
-
-  GURL parent_url = url().ToGURL();
-  std::string path = base::StrCat({parent_url.path(), "/", escaped_name});
-  GURL::Replacements replacements;
-  replacements.SetPathStr(path);
-  GURL child_url = parent_url.ReplaceComponents(replacements);
-
-  *result = file_system_context()->CrackURL(child_url);
+  const storage::FileSystemURL parent = url();
+  *result = file_system_context()->CreateCrackedFileSystemURL(
+      parent.origin(), parent.mount_type(),
+      parent.virtual_path().Append(base::FilePath::FromUTF8Unsafe(basename)));
   return native_file_system_error::Ok();
 }
 

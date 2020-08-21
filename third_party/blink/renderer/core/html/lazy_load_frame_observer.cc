@@ -159,6 +159,7 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
 void LazyLoadFrameObserver::LoadImmediately() {
   CHECK(IsLazyLoadPending());
   CHECK(lazy_load_request_info_);
+  TRACE_EVENT0("navigation", "LazyLoadFrameObserver::LoadImmediately");
 
   if (was_recorded_as_deferred_) {
     DCHECK(element_->GetDocument().GetFrame());

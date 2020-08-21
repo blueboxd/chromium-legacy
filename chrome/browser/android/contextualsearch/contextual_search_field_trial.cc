@@ -19,7 +19,6 @@ const char kContextualSearchResolverUrl[] = "contextual-search-resolver-url";
 const char kContextualSearchSurroundingSizeParamName[] = "surrounding_size";
 const char kContextualSearchSampleSurroundingSizeParamName[] =
     "sample_surrounding_size";
-const char kContextualSearchSendURLDisabledParamName[] = "disable_send_url";
 const char kContextualSearchDecodeMentionsDisabledParamName[] =
     "disable_decode_mentions";
 
@@ -40,8 +39,6 @@ ContextualSearchFieldTrial::ContextualSearchFieldTrial()
       surrounding_size_(0),
       is_sample_surrounding_size_cached_(false),
       sample_surrounding_size_(0),
-      is_send_base_page_url_disabled_cached_(false),
-      is_send_base_page_url_disabled_(false),
       is_decode_mentions_disabled_cached_(false),
       is_decode_mentions_disabled_(false),
       is_contextual_cards_version_cached_(false),
@@ -71,12 +68,6 @@ int ContextualSearchFieldTrial::GetSampleSurroundingSize() {
       kContextualSearchSampleSurroundingSizeParamName,
       kContextualSearchDefaultSampleSurroundingSize,
       &is_sample_surrounding_size_cached_, &sample_surrounding_size_);
-}
-
-bool ContextualSearchFieldTrial::IsSendBasePageURLDisabled() {
-  return GetBooleanParam(kContextualSearchSendURLDisabledParamName,
-                         &is_send_base_page_url_disabled_cached_,
-                         &is_send_base_page_url_disabled_);
 }
 
 bool ContextualSearchFieldTrial::IsDecodeMentionsDisabled() {

@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
@@ -34,9 +35,12 @@ const size_t kMaxFailuresToEnforceBackoff = 3;
 const size_t kMinBackOffResetDurationInSeconds = 5 * 60;   //  5 minutes.
 const size_t kMaxBackOffResetDurationInSeconds = 30 * 60;  // 30 minutes.
 
-const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
+const size_t kURLLookupTimeoutDurationInSeconds = 3;
 
 constexpr char kAuthHeaderBearer[] = "Bearer ";
+
+// Represents the value stored in the |version| field of |RTLookupRequest|.
+const int kRTLookupRequestVersion = 1;
 
 // UMA helper functions.
 void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
@@ -85,6 +89,25 @@ void RecordNetworkResultWithAndWithoutSuffix(const std::string& metric,
       metric.c_str(), net_error, response_code);
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       (metric + suffix).c_str(), net_error, response_code);
+}
+
+RTLookupRequest::OSType GetRTLookupRequestOSType() {
+#if defined(OS_ANDROID)
+  return RTLookupRequest::OS_TYPE_ANDROID;
+#elif defined(OS_CHROMEOS)
+  return RTLookupRequest::OS_TYPE_CHROME_OS;
+#elif defined(OS_FUCHSIA)
+  return RTLookupRequest::OS_TYPE_FUCHSIA;
+#elif defined(OS_IOS)
+  return RTLookupRequest::OS_TYPE_IOS;
+#elif defined(OS_LINUX)
+  return RTLookupRequest::OS_TYPE_LINUX;
+#elif defined(OS_MAC)
+  return RTLookupRequest::OS_TYPE_MAC;
+#elif defined(OS_WIN)
+  return RTLookupRequest::OS_TYPE_WINDOWS;
+#endif
+  return RTLookupRequest::OS_TYPE_UNSPECIFIED;
 }
 
 }  // namespace
@@ -290,6 +313,7 @@ void RealTimeUrlLookupServiceBase::StartLookup(
     base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
                    base::BindOnce(std::move(response_callback),
                                   /* is_rt_lookup_successful */ true,
+                                  /* is_cached_response */ true,
                                   std::move(cache_response)));
     return;
   }
@@ -392,9 +416,10 @@ void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
                                      GetMetricSuffix(),
                                      response->threat_info_size());
 
-  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                 base::BindOnce(std::move(it->second), is_rt_lookup_successful,
-                                std::move(response)));
+  base::PostTask(
+      FROM_HERE, CreateTaskTraits(ThreadID::IO),
+      base::BindOnce(std::move(it->second), is_rt_lookup_successful,
+                     /* is_cached_response */ false, std::move(response)));
 
   delete it->first;
   pending_requests_.erase(it);
@@ -416,6 +441,8 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupServiceBase::FillRequestProto(
   auto request = std::make_unique<RTLookupRequest>();
   request->set_url(SanitizeURL(url).spec());
   request->set_lookup_type(RTLookupRequest::NAVIGATION);
+  request->set_version(kRTLookupRequestVersion);
+  request->set_os_type(GetRTLookupRequestOSType());
   base::Optional<std::string> dm_token_string = GetDMTokenString();
   if (dm_token_string.has_value()) {
     request->set_dm_token(dm_token_string.value());
@@ -448,10 +475,12 @@ bool RealTimeUrlLookupServiceBase::IsHistorySyncEnabled() {
 
 void RealTimeUrlLookupServiceBase::Shutdown() {
   for (auto& pending : pending_requests_) {
-    // Treat all pending requests as safe.
+    // Treat all pending requests as safe, and not from cache so that a
+    // hash-based check isn't performed.
     auto response = std::make_unique<RTLookupResponse>();
     std::move(pending.second)
-        .Run(/* is_rt_lookup_successful */ true, std::move(response));
+        .Run(/* is_rt_lookup_successful */ true, /* is_cached_response */ false,
+             std::move(response));
     delete pending.first;
   }
   pending_requests_.clear();

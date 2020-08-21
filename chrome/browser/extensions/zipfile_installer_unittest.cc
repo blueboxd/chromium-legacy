@@ -26,6 +26,7 @@
 #include "components/services/unzip/in_process_unzipper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/constants.h"
@@ -135,6 +136,7 @@ class ZipFileInstallerTest : public testing::Test {
                         .AppendASCII(zip_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
     zipfile_installer_ = ZipFileInstaller::Create(
+        GetExtensionFileTaskRunner(),
         MakeRegisterInExtensionServiceCallback(extension_service_));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(

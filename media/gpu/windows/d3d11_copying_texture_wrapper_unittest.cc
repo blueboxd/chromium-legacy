@@ -86,7 +86,9 @@ class MockTexture2DWrapper : public Texture2DWrapper {
  public:
   MockTexture2DWrapper() {}
 
-  Status ProcessTexture(const gfx::ColorSpace& input_color_space,
+  Status ProcessTexture(ComD3D11Texture2D texture,
+                        size_t array_slice,
+                        const gfx::ColorSpace& input_color_space,
                         MailboxHolderArray* mailbox_dest,
                         gfx::ColorSpace* output_color_space) override {
     // Pretend we created an arbitrary color space, so that we're sure that it
@@ -96,9 +98,7 @@ class MockTexture2DWrapper : public Texture2DWrapper {
   }
 
   Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-              GetCommandBufferHelperCB get_helper_cb,
-              ComD3D11Texture2D in_texture,
-              size_t array_slice) override {
+              GetCommandBufferHelperCB get_helper_cb) override {
     gpu_task_runner_ = std::move(gpu_task_runner);
     return MockInit();
   }
@@ -222,19 +222,16 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
   MailboxHolderArray mailboxes;
   gfx::ColorSpace input_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   gfx::ColorSpace output_color_space;
-  EXPECT_EQ(wrapper
-                ->Init(gpu_task_runner_, CreateMockHelperCB(),
-                       /*texture_d3d=*/nullptr, /*array_slice=*/0)
-                .is_ok(),
+  EXPECT_EQ(wrapper->Init(gpu_task_runner_, CreateMockHelperCB()).is_ok(),
             InitSucceeds());
   task_environment_.RunUntilIdle();
   if (GetProcessorProxyInit())
     EXPECT_EQ(texture_wrapper_raw->gpu_task_runner_, gpu_task_runner_);
-  EXPECT_EQ(
-      wrapper
-          ->ProcessTexture(input_color_space, &mailboxes, &output_color_space)
-          .is_ok(),
-      ProcessTextureSucceeds());
+  EXPECT_EQ(wrapper
+                ->ProcessTexture(nullptr, 0, input_color_space, &mailboxes,
+                                 &output_color_space)
+                .is_ok(),
+            ProcessTextureSucceeds());
 
   if (ProcessTextureSucceeds()) {
     // Regardless of what the input space is, the output should be provided by

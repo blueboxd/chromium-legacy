@@ -14,6 +14,7 @@ import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
@@ -42,6 +43,10 @@ public class VoiceRecognitionHandler {
     // response (as opposed to treating it like a typed string in the Omnibox).
     @VisibleForTesting
     public static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
+    // Extra containing the languages for the returned voice transcriptions (ArrayList<String>).
+    // This language is only returned for queries handled by Assistant.
+    @VisibleForTesting
+    static final String VOICE_QUERY_RESULT_LANGUAGES = "android.speech.extra.LANGUAGE";
 
     private final Delegate mDelegate;
     private Long mQueryStartTimeMs;
@@ -112,15 +117,23 @@ public class VoiceRecognitionHandler {
     public static class VoiceResult {
         private final String mMatch;
         private final float mConfidence;
+        @Nullable
+        private final String mLanguage;
+
+        public VoiceResult(String match, float confidence) {
+            this(match, confidence, null);
+        }
 
         /**
          * Creates an instance of a VoiceResult.
          * @param match The text match from the voice recognition.
          * @param confidence The confidence value of the recognition that should go from 0.0 to 1.0.
+         * @param language The language of the returned query.
          */
-        public VoiceResult(String match, float confidence) {
+        public VoiceResult(String match, float confidence, @Nullable String language) {
             mMatch = match;
             mConfidence = confidence;
+            mLanguage = language;
         }
 
         /**
@@ -135,6 +148,13 @@ public class VoiceRecognitionHandler {
          */
         public float getConfidence() {
             return mConfidence;
+        }
+
+        /**
+         * @return The IETF language tag for this result.
+         */
+        public @Nullable String getLanguage() {
+            return mLanguage;
         }
     }
 
@@ -245,6 +265,16 @@ public class VoiceRecognitionHandler {
                 url = TemplateUrlServiceFactory.get()
                               .getUrlForVoiceSearchQuery(topResultQuery)
                               .getSpec();
+
+                // If a language was returned to us from voice recognition, then use it. Currently,
+                // this is only returned when Google is the search engine. Since Google always has
+                // the query as a url parameter so appending this param will always be safe.
+                if (topResult.getLanguage() != null) {
+                    // TODO(crbug.com/1117271): Cleanup these assertions when Assistant launches.
+                    assert url.contains("?") : "URL must contain at least one URL param.";
+                    assert !url.contains("#") : "URL must not contain a fragment.";
+                    url += "&hl=" + topResult.getLanguage();
+                }
             }
 
             // Since voice was used, we need to let the frame know that there was a user gesture.
@@ -271,9 +301,12 @@ public class VoiceRecognitionHandler {
 
         ArrayList<String> strings = extras.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
         float[] confidences = extras.getFloatArray(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
+        ArrayList<String> languages = extras.getStringArrayList(VOICE_QUERY_RESULT_LANGUAGES);
 
         if (strings == null || confidences == null) return null;
         if (strings.size() != confidences.length) return null;
+        // Langues is optional, so only check the size when it's non-null.
+        if (languages != null && languages.size() != strings.size()) return null;
 
         AutocompleteCoordinator autocompleteCoordinator = mDelegate.getAutocompleteCoordinator();
         assert autocompleteCoordinator != null;
@@ -288,8 +321,9 @@ public class VoiceRecognitionHandler {
             // the voice engine.
             String culledString = strings.get(i).replaceAll(" ", "");
             String url = autocompleteCoordinator.qualifyPartialURLQuery(culledString);
-            results.add(
-                    new VoiceResult(url == null ? strings.get(i) : culledString, confidences[i]));
+            String language = languages == null ? null : languages.get(i);
+            results.add(new VoiceResult(
+                    url == null ? strings.get(i) : culledString, confidences[i], language));
         }
         return results;
     }

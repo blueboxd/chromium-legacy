@@ -341,7 +341,8 @@ void SandboxedUnpacker::Unzip(const base::FilePath& crx_path,
 
   DCHECK(crx_path.DirName() == temp_dir_.GetPath());
 
-  ZipFileInstaller::Create(base::BindOnce(&SandboxedUnpacker::UnzipDone, this))
+  ZipFileInstaller::Create(unpacker_io_task_runner_,
+                           base::BindOnce(&SandboxedUnpacker::UnzipDone, this))
       ->LoadFromZipFileInDir(crx_path, unzipped_dir);
 }
 
@@ -472,7 +473,8 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(base::Value manifest) {
   image_sanitizer_ = ImageSanitizer::CreateAndStart(
       &data_decoder_, extension_root_, image_paths,
       base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
-      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this));
+      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this),
+      unpacker_io_task_runner_);
 }
 
 void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
@@ -566,7 +568,8 @@ void SandboxedUnpacker::SanitizeMessageCatalogs(
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   json_file_sanitizer_ = JsonFileSanitizer::CreateAndStart(
       &data_decoder_, message_catalog_paths,
-      base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this));
+      base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this),
+      unpacker_io_task_runner_);
 }
 
 void SandboxedUnpacker::MessageCatalogsSanitized(

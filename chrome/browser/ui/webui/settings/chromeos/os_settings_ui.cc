@@ -24,6 +24,7 @@
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/cellular_setup/cellular_setup_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -115,6 +116,12 @@ OSSettingsUI::~OSSettingsUI() {
                                 /*min=*/base::TimeDelta::FromMicroseconds(500),
                                 /*max=*/base::TimeDelta::FromHours(1),
                                 /*buckets=*/50);
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<cellular_setup::mojom::CellularSetup> receiver) {
+  cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
+      std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(

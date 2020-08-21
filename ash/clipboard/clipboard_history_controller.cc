@@ -6,8 +6,8 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/clipboard/clipboard_history.h"
-#include "ash/clipboard/clipboard_history_helper.h"
 #include "ash/clipboard/clipboard_history_menu_model_adapter.h"
+#include "ash/clipboard/clipboard_history_resource_manager.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -36,32 +36,6 @@
 namespace ash {
 
 namespace {
-
-// TODO(dmblack): Move to clipboard_history_helper.
-ui::ImageModel GetImageModelForClipboardData(const ui::ClipboardData& item) {
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kBitmap)) {
-    // TODO(newcomer): Show a smaller version of the bitmap.
-    return ui::ImageModel();
-  }
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kWeb))
-    return ui::ImageModel::FromVectorIcon(ash::kWebSmartPasteIcon);
-  if (item.format() &
-      static_cast<int>(ui::ClipboardInternalFormat::kBookmark)) {
-    return ui::ImageModel::FromVectorIcon(ash::kWebBookmarkIcon);
-  }
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kHtml))
-    return ui::ImageModel::FromVectorIcon(ash::kHtmlIcon);
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kRtf))
-    return ui::ImageModel::FromVectorIcon(ash::kRtfIcon);
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kText))
-    return ui::ImageModel::FromVectorIcon(ash::kTextIcon);
-  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
-    // TODO(crbug/1108901): Handle file manager case.
-    // TODO(crbug/1108902): Handle fallback case.
-    return ui::ImageModel();
-  }
-  return ui::ImageModel();
-}
 
 ui::ClipboardNonBacked* GetClipboard() {
   auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
@@ -133,6 +107,8 @@ class ClipboardHistoryController::MenuDelegate
 
 ClipboardHistoryController::ClipboardHistoryController()
     : clipboard_history_(std::make_unique<ClipboardHistory>()),
+      resource_manager_(std::make_unique<ClipboardHistoryResourceManager>(
+          clipboard_history_.get())),
       accelerator_target_(std::make_unique<AcceleratorTarget>(this)),
       menu_delegate_(std::make_unique<MenuDelegate>(this)) {}
 
@@ -171,8 +147,8 @@ void ClipboardHistoryController::ShowMenu() {
     return;
 
   clipboard_items_ =
-      std::vector<ui::ClipboardData>(clipboard_history_->GetItems().begin(),
-                                     clipboard_history_->GetItems().end());
+      std::vector<ClipboardHistoryItem>(clipboard_history_->GetItems().begin(),
+                                        clipboard_history_->GetItems().end());
 
   std::unique_ptr<ui::SimpleMenuModel> menu_model =
       std::make_unique<ui::SimpleMenuModel>(menu_delegate_.get());
@@ -181,8 +157,8 @@ void ClipboardHistoryController::ShowMenu() {
           IDS_CLIPBOARD_MENU_CLIPBOARD));
   int index = 0;
   for (const auto& item : clipboard_items_) {
-    menu_model->AddItemWithIcon(index++, clipboard::helper::GetLabel(item),
-                                GetImageModelForClipboardData(item));
+    menu_model->AddItemWithIcon(index++, resource_manager_->GetLabel(item),
+                                resource_manager_->GetImageModel(item));
   }
   menu_model->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
   menu_model->AddItemWithIcon(
@@ -213,14 +189,14 @@ void ClipboardHistoryController::MenuOptionSelected(int index,
   // If necessary, replace the clipboard's |original_data| temporarily so that
   // we can paste the selected history item.
   const bool shift_key_pressed = event_flags & ui::EF_SHIFT_DOWN;
-  if (shift_key_pressed || *it != *clipboard->GetClipboardData()) {
+  if (shift_key_pressed || it->data() != *clipboard->GetClipboardData()) {
     std::unique_ptr<ui::ClipboardData> temp_data;
     if (shift_key_pressed) {
       // When the shift key is pressed, we only paste plain text.
       temp_data = std::make_unique<ui::ClipboardData>();
-      temp_data->set_text(it->text());
+      temp_data->set_text(it->data().text());
     } else {
-      temp_data = std::make_unique<ui::ClipboardData>(*it);
+      temp_data = std::make_unique<ui::ClipboardData>(it->data());
     }
     // Pause clipboard history when manipulating the clipboard for a paste.
     ClipboardHistory::ScopedPause scoped_pause(clipboard_history_.get());

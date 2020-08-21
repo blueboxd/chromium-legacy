@@ -46,6 +46,9 @@ class OutgoingShareTargetInfo : public ShareTargetInfo {
     file_payloads_ = std::move(payloads);
   }
 
+  std::vector<PayloadPtr> ExtractTextPayloads();
+  std::vector<PayloadPtr> ExtractFilePayloads();
+
  private:
   base::Optional<std::string> obfuscated_gaia_id_;
   std::vector<PayloadPtr> text_payloads_;

@@ -22,7 +22,6 @@ class GLSurface;
 namespace gpu {
 class MailboxManager;
 class SharedContextState;
-class SharedImageRepresentationFactory;
 
 namespace gles2 {
 class FeatureInfo;
@@ -35,7 +34,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceGL(
       gpu::MailboxManager* mailbox_manager,
-      gpu::SharedImageRepresentationFactory* representation_factory,
       gpu::SharedContextState* context_state,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
@@ -76,7 +74,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   scoped_refptr<gl::GLImage> GetGLImageForMailbox(const gpu::Mailbox& mailbox);
 
   gpu::MailboxManager* const mailbox_manager_;
-  gpu::SharedImageRepresentationFactory* const representation_factory_;
 
   gpu::SharedContextState* const context_state_;
   scoped_refptr<gl::GLSurface> gl_surface_;

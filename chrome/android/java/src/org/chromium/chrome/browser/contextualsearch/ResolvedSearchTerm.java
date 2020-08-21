@@ -276,8 +276,8 @@ public class ResolvedSearchTerm {
         private String mContextLanguage;
         private String mThumbnailUrl;
         private String mCaption;
-        @QuickActionCategory
         private String mQuickActionUri;
+        @QuickActionCategory
         private int mQuickActionCategory;
         private long mLoggedEventId;
         private String mSearchUrlFull;

@@ -112,7 +112,7 @@ public abstract class ContextualSearchContext {
      * page content.
      * @param homeCountry The country where the user usually resides, or an empty string if not
      *        known.
-     * @param maySendBasePageUrl Whether policy allows sending the base-page URL to the server.
+     * @param doSendBasePageUrl Whether the base-page URL should be sent to the server.
      * @param previousEventId An EventID from the server to send along with the resolve request.
      * @param previousUserInteractions Persisted interaction outcomes to send along with the resolve
      *        request.
@@ -121,7 +121,7 @@ public abstract class ContextualSearchContext {
      *        the user can read fluently, or an empty string.
      * @param doRelatedSearches Whether the activate the Related Searches functionality too.
      */
-    void setResolveProperties(@NonNull String homeCountry, boolean maySendBasePageUrl,
+    void setResolveProperties(@NonNull String homeCountry, boolean doSendBasePageUrl,
             long previousEventId, int previousUserInteractions, @NonNull String targetLanguage,
             @NonNull String fluentLanguages, boolean doRelatedSearches) {
         mHasSetResolveProperties = true;
@@ -129,7 +129,7 @@ public abstract class ContextualSearchContext {
         mPreviousEventId = previousEventId;
         mPreviousUserInteractions = previousUserInteractions;
         ContextualSearchContextJni.get().setResolveProperties(getNativePointer(), this, homeCountry,
-                maySendBasePageUrl, previousEventId, previousUserInteractions, doRelatedSearches);
+                doSendBasePageUrl, previousEventId, previousUserInteractions, doRelatedSearches);
         mTargetLanguage = targetLanguage;
         mFluentLanguages = fluentLanguages;
     }
@@ -599,7 +599,7 @@ public abstract class ContextualSearchContext {
         long init(ContextualSearchContext caller);
         void destroy(long nativeContextualSearchContext, ContextualSearchContext caller);
         void setResolveProperties(long nativeContextualSearchContext,
-                ContextualSearchContext caller, String homeCountry, boolean maySendBasePageUrl,
+                ContextualSearchContext caller, String homeCountry, boolean doSendBasePageUrl,
                 long previousEventId, int previousEventResults, boolean doRelatedSearches);
         void adjustSelection(long nativeContextualSearchContext, ContextualSearchContext caller,
                 int startAdjust, int endAdjust);

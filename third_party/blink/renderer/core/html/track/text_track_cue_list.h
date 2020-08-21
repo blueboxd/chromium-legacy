@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class CORE_EXPORT TextTrackCueList final : public ScriptWrappable {
+class TextTrackCueList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

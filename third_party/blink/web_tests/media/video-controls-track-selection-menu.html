@@ -4,7 +4,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
 <!-- Width should be large enough to display closed captions button. -->
-<video autoplay controls style="width: 500px">
+<video controls style="width: 500px">
     <track src="track/captions-webvtt/captions.vtt" kind="captions" label="Track1">
     <track src="track/captions-webvtt/long-word.vtt" kind="captions" label="Track2">
 </video>
@@ -28,7 +28,7 @@ async_test(function(t) {
         if (numberOfTracksLoaded != 2)
             return;
 
-        video.onplaying = t.step_func(function() {
+        video.oncanplaythrough = t.step_func(function() {
             assert_true(isClosedCaptionsButtonEnabled(video));
             assert_equals(video.textTracks.length, 2);
             assert_equals(video.textTracks[0].mode, "hidden");

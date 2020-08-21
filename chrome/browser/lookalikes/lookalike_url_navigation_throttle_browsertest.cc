@@ -16,6 +16,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -869,6 +870,18 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   // Try a non-HTTP URL. Shouldn't crash.
   TestInterstitialNotShown(browser(), GURL("data:text/html, test"));
+  CheckNoUkm();
+}
+
+// The site is allowed by enterprise policy.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       AllowedByPolicy) {
+  const GURL kNavigatedUrl = GetURL("xn--googl-fsa.com");
+  SetEnterpriseAllowlistForTesting(browser()->profile()->GetPrefs(),
+                                   {"xn--googl-fsa.com"});
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckNoUkm();
 }
 

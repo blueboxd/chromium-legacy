@@ -3347,6 +3347,7 @@ test("unit_tests") {
     "../browser/navigation_predictor/navigation_predictor_renderer_warmup_client_unittest.cc",
     "../browser/navigation_predictor/navigation_predictor_unittest.cc",
     "../browser/net/chrome_network_delegate_unittest.cc",
+    "../browser/net/chrome_report_sender_unittest.cc",
     "../browser/net/dns_probe_runner_unittest.cc",
     "../browser/net/dns_probe_service_factory_unittest.cc",
     "../browser/net/file_downloader_unittest.cc",
@@ -3771,6 +3772,7 @@ test("unit_tests") {
       "../browser/nearby_sharing/nearby_share_settings_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
       "../browser/nearby_sharing/paired_key_verification_runner_unittest.cc",
+      "../browser/nearby_sharing/payload_tracker_unittest.cc",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
       "../browser/password_manager/generated_password_leak_detection_pref_unittest.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.cc",
@@ -5172,6 +5174,10 @@ test("unit_tests") {
         "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
         "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       ]
+    }
+    if (is_mac) {
+      sources +=
+          [ "../browser/ui/startup/mac_system_infobar_delegate_unittest.cc" ]
     }
     if (is_chromeos) {
       sources += [

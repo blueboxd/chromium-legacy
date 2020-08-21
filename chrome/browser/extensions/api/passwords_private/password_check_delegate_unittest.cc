@@ -56,8 +56,8 @@ namespace extensions {
 
 namespace {
 
-constexpr char kExampleCom[] = "https://example.com";
-constexpr char kExampleOrg[] = "http://www.example.org";
+constexpr char kExampleCom[] = "https://example.com/";
+constexpr char kExampleOrg[] = "http://www.example.org/";
 constexpr char kExampleApp[] = "com.example.app";
 
 constexpr char kTestEmail[] = "user@gmail.com";
@@ -452,7 +452,7 @@ TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInjectsAndroid) {
       delegate().GetCompromisedCredentials(),
       ElementsAre(
           ExpectCompromisedCredential(
-              "Example App", "Example App", "https://example.com", kUsername2,
+              "Example App", "Example App", "https://example.com/", kUsername2,
               base::TimeDelta::FromDays(3), "3 days ago",
               api::passwords_private::COMPROMISE_TYPE_PHISHED),
           ExpectCompromisedCredential(

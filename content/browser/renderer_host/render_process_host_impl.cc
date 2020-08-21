@@ -4500,7 +4500,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       !RenderProcessHostImpl::IsSuitableHost(
           render_process_host, site_instance->GetIsolationContext(), site_info,
           site_instance->IsGuest())) {
-    base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+    base::debug::SetCrashKeyString(bad_message::GetRequestedSiteInfoKey(),
                                    site_info.GetDebugString());
     ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
         render_process_host->GetID());

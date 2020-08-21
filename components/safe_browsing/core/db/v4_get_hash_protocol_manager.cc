@@ -340,10 +340,8 @@ void V4GetHashProtocolManager::GetFullHashes(
                        &resource_request->headers);
 
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
-    resource_request->load_flags |=
-        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
-  }
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies))
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> owned_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);

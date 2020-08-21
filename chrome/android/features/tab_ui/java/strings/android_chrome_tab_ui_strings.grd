@@ -243,6 +243,11 @@
         Share group
       </message>
 
+      <!-- Tab Grid Dialog accessibility strings -->
+      <message name="IDS_ACCESSIBILITY_EXPAND_TAB_GROUP" desc="The accessibility text to read when a card representing a tab group is clicked in grid tab switcher. TITLE_OF_GROUP is the title of the group. Note that TITLE_OF_GROUP can be an empty string. NUMBER_OF_TABS is the number of tabs within this group. Note that there are always at least two tabs in a group so plural form should always be used.">
+        Expand <ph name="TITLE_OF_GROUP">%1$s<ex>Shopping cart</ex></ph> tab group with <ph name="NUMBER_OF_TABS">%2$s<ex>2</ex></ph> tabs.
+      </message>
+
       <!-- Tab Grid Drag-and-drop IPH strings -->
       <message name="IDS_IPH_DRAG_AND_DROP_INTRODUCTION" desc="This text shows on the entry point for the in-product help for drag-and-drop. It introduces that this IPH is about how to use drag-and-drop.">
         Drag tabs to group them

@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -57,11 +58,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AutofillCreditCardEditTableViewController ()
-
-// The nickname cell. Need to keep reference to update validation style.
-@property(nonatomic, strong) TableViewTextEditCell* nicknameCell;
-
+@interface AutofillCreditCardEditTableViewController () <
+    TableViewTextEditItemDelegate>
 @end
 
 @implementation AutofillCreditCardEditTableViewController {
@@ -168,10 +166,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSArray<AutofillEditItem*>* editItems;
   if ([self isCardNicknameManagementEnabled]) {
     editItems = @[
-      [self cardholderNameItem:isEditing],
       [self cardNumberItem:isEditing],
       [self expirationMonthItem:isEditing],
       [self expirationYearItem:isEditing],
+      [self cardholderNameItem:isEditing],
       [self nicknameItem:isEditing],
     ];
   } else {
@@ -198,57 +196,42 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - UITextFieldDelegate
+#pragma mark - TableViewTextEditItemDelegate
 
-// This method is called as the text is being typed in, pasted, or deleted. Asks
-// the delegate if the text should be changed. Should always return YES. During
-// typing/pasting text, |newText| contains one or more new characters. When user
-// deletes text, |newText| is empty. |range| is the range of characters to be
-// replaced.
-- (BOOL)textField:(UITextField*)textField
-    shouldChangeCharactersInRange:(NSRange)range
-                replacementString:(NSString*)newText {
-  // Find the respective item for the text field.
-  NSIndexPath* indexPath = [self indexPathForCurrentTextField];
-  DCHECK(indexPath);
-  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-      [self.tableViewModel itemAtIndexPath:indexPath]);
+- (void)tableViewItemDidBeginEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // No op.
+}
 
-  // If the user is typing in the credit card number field, update the card type
-  // icon (e.g. "Visa") to reflect the number being typed.
-  if (item.autofillUIType == AutofillUITypeCreditCardNumber) {
-    // Obtain the text being typed.
-    NSString* updatedText =
-        [textField.text stringByReplacingCharactersInRange:range
-                                                withString:newText];
-    const char* network = autofill::CreditCard::GetCardNetwork(
-        base::SysNSStringToUTF16(updatedText));
-    item.identifyingIcon = [self cardTypeIconFromNetwork:network];
-    // Update the cell.
-    [self reconfigureCellsForItems:@[ item ]];
+- (void)tableViewItemDidChange:(TableViewTextEditItem*)tableViewTextEditItem {
+  if ([tableViewTextEditItem isKindOfClass:[AutofillEditItem class]]) {
+    AutofillEditItem* item = (AutofillEditItem*)tableViewTextEditItem;
+
+    // If the user is typing in the credit card number field, update the card
+    // type icon (e.g. "Visa") to reflect the number being typed.
+    if (item.autofillUIType == AutofillUITypeCreditCardNumber) {
+      const char* network = autofill::CreditCard::GetCardNetwork(
+          base::SysNSStringToUTF16(item.textFieldValue));
+      item.identifyingIcon = [self cardTypeIconFromNetwork:network];
+      [self reconfigureCellsForItems:@[ item ]];
+    }
+
+    if (item.type == ItemTypeNickname) {
+      NSString* trimmedText = [item.textFieldValue
+          stringByTrimmingCharactersInSet:
+              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+      BOOL newNicknameIsValid = autofill::CreditCard::IsNicknameValid(
+          base::SysNSStringToUTF16(trimmedText));
+      self.navigationItem.rightBarButtonItem.enabled = newNicknameIsValid;
+      [item setHasValidText:newNicknameIsValid];
+      [self reconfigureCellsForItems:@[ item ]];
+    }
   }
+}
 
-  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-  if (itemType == ItemTypeNickname) {
-    NSString* updatedText =
-        [textField.text stringByReplacingCharactersInRange:range
-                                                withString:newText];
-    updatedText = [updatedText
-        stringByTrimmingCharactersInSet:[NSCharacterSet
-                                            whitespaceAndNewlineCharacterSet]];
-
-    BOOL validNickname = autofill::CreditCard::IsNicknameValid(
-        base::SysNSStringToUTF16(updatedText));
-    [item setHasValidText:validNickname];
-    [self reconfigureCellsForItems:@[ item ]];
-    TableViewTextEditItemIconType icon =
-        validNickname ? TableViewTextEditItemIconTypeEdit
-                      : TableViewTextEditItemIconTypeError;
-    [self.nicknameCell setIcon:icon];
-    self.navigationItem.rightBarButtonItem.enabled = validNickname;
-  }
-
-  return YES;
+- (void)tableViewItemDidEndEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // No op.
 }
 
 #pragma mark - UITableViewDataSource
@@ -268,10 +251,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeCardNumber:
     case ItemTypeExpirationMonth:
     case ItemTypeExpirationYear:
-      break;
     case ItemTypeNickname:
-      self.nicknameCell =
-          base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
       break;
     case ItemTypeCopiedToChrome: {
       CopiedToChromeCell* copiedToChromeCell =
@@ -365,6 +345,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
   cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;
   cardNumberItem.hideIcon = !isEditing;
+  cardNumberItem.delegate = self;
   // Hide credit card icon when editing.
   if (!isEditing) {
     cardNumberItem.identifyingIcon =
@@ -415,6 +396,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   nicknameItem.textFieldEnabled = isEditing;
   nicknameItem.keyboardType = UIKeyboardTypeDefault;
   nicknameItem.hideIcon = !isEditing;
+  nicknameItem.delegate = self;
   return nicknameItem;
 }
 

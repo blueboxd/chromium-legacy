@@ -5643,6 +5643,10 @@ void RenderFrameImpl::BeginNavigation(
                               blink::ActionAfterPagehide::kNavigation);
   }
 
+  TRACE_EVENT2("navigation", "RenderFrameImpl::BeginNavigation", "url",
+               url.possibly_invalid_spec(), "navigation_type",
+               static_cast<int>(info->navigation_type));
+
   // When an MHTML Archive is present, it should be used to serve iframe
   // content instead of doing a network request. This should never be true for
   // the main frame.

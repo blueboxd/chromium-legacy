@@ -13,3 +13,13 @@ OutgoingShareTargetInfo& OutgoingShareTargetInfo::operator=(
     OutgoingShareTargetInfo&&) = default;
 
 OutgoingShareTargetInfo::~OutgoingShareTargetInfo() = default;
+
+std::vector<OutgoingShareTargetInfo::PayloadPtr>
+OutgoingShareTargetInfo::ExtractTextPayloads() {
+  return std::move(text_payloads_);
+}
+
+std::vector<OutgoingShareTargetInfo::PayloadPtr>
+OutgoingShareTargetInfo::ExtractFilePayloads() {
+  return std::move(file_payloads_);
+}

@@ -119,10 +119,6 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
-    if not params.per_cl_coverage:
-      mark_invalid_shards(
-          profile_merger.get_shards_to_retry(invalid_profiles),
-          params.jsons_to_merge)
   failed = False
 
   # If given, always run the additional merge script, even if we only have one
@@ -162,28 +158,6 @@ def main():
         'script was given.')
 
   return 1 if (failed or bool(invalid_profiles)) else 0
-
-
-def mark_invalid_shards(bad_shards, jsons_to_merge):
-  """Removes results json files from bad shards.
-
-  This is needed so that the caller (e.g. recipe) knows to retry, or otherwise
-  treat the tests in that shard as not having valid results. Note that this only
-  removes the results from the local machine, as these are expected to remain in
-  the shard's isolated output.
-
-  Args:
-    bad_shards: list of task_ids of the shards that are bad or corrupted.
-    jsons_to_merge: The path to the jsons with the results of the tests.
-  """
-  if not bad_shards:
-    return
-  for f in jsons_to_merge:
-    for task_id in bad_shards:
-      if task_id in f:
-        # Remove results json if it corresponds to a bad shard.
-        os.remove(f)
-        break
 
 
 if __name__ == '__main__':

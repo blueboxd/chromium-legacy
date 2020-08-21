@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -746,6 +749,78 @@ public class TabGridDialogTest {
         verifyShowingDialog(cta, 1, null);
     }
 
+    @Test
+    @MediumTest
+    public void testAdjustBackGroundViewAccessibilityImportance() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Verify accessibility importance adjustment when opening dialog from tab switcher.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        verifyBackgroundViewAccessibilityImportance(cta, true);
+        Espresso.pressBack();
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyBackgroundViewAccessibilityImportance(cta, false);
+
+        // Verify accessibility importance adjustment when opening dialog from tab strip.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        clickFirstTabInDialog(cta);
+        waitForDialogHidingAnimation(cta);
+        openDialogFromStripAndVerify(cta, 2, null);
+        verifyBackgroundViewAccessibilityImportance(cta, true);
+        Espresso.pressBack();
+        waitForDialogHidingAnimation(cta);
+        verifyBackgroundViewAccessibilityImportance(cta, false);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testAccessibilityString() throws ExecutionException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Verify the initial content description.
+        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+        View firstItem = recyclerView.findViewHolderForAdapterPosition(0).itemView;
+        String targetString = "Expand  tab group with 3 tabs.";
+        assertEquals(targetString, firstItem.getContentDescription());
+
+        // Content description should update with group title.
+        openDialogFromTabSwitcherAndVerify(cta, 3, null);
+        editDialogTitle(cta, CUSTOMIZED_TITLE1);
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        verifyFirstCardTitle(CUSTOMIZED_TITLE1);
+        targetString = String.format("Expand %s tab group with 3 tabs.", CUSTOMIZED_TITLE1);
+        assertEquals(targetString, firstItem.getContentDescription());
+
+        // Content description should update with group count change.
+        openDialogFromTabSwitcherAndVerify(cta, 3, CUSTOMIZED_TITLE1);
+        closeFirstTabInDialog();
+        verifyShowingDialog(cta, 2, CUSTOMIZED_TITLE1);
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        targetString = String.format("Expand %s tab group with 2 tabs.", CUSTOMIZED_TITLE1);
+        assertEquals(targetString, firstItem.getContentDescription());
+
+        // Content description should restore when the group becomes a single tab.
+        openDialogFromTabSwitcherAndVerify(cta, 2, CUSTOMIZED_TITLE1);
+        closeFirstTabInDialog();
+        verifyShowingDialog(cta, 1, "1 tab");
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimationInTabSwitcher(cta);
+        assertEquals(null, firstItem.getContentDescription());
+    }
+
     private void openDialogFromTabSwitcherAndVerify(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         clickFirstCardFromTabSwitcher(cta);
@@ -954,5 +1029,25 @@ public class TabGridDialogTest {
                     cta.getRootUiCoordinatorForTesting().getScrimCoordinator().getViewForTesting();
             scrimView.performClick();
         });
+    }
+
+    private void verifyBackgroundViewAccessibilityImportance(
+            ChromeTabbedActivity cta, boolean isDialogShowing) {
+        View controlContainer = cta.findViewById(R.id.control_container);
+        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
+                controlContainer.getImportantForAccessibility());
+        View bottomControls = cta.findViewById(R.id.bottom_controls);
+        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
+                bottomControls.getImportantForAccessibility());
+        View compositorViewHolder = cta.getCompositorViewHolder();
+        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
+                compositorViewHolder.getImportantForAccessibility());
+        View bottomContainer = cta.findViewById(R.id.bottom_container);
+        assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                                     : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
+                bottomContainer.getImportantForAccessibility());
     }
 }

@@ -76,11 +76,9 @@ class CellularSetupImplTest : public testing::Test {
         &fake_ota_activator_factory_);
     shill_clients::InitializeFakes();
     NetworkHandler::Initialize();
-    cellular_setup_ = std::make_unique<CellularSetupImpl>();
   }
 
   void TearDown() override {
-    cellular_setup_.reset();
     NetworkHandler::Shutdown();
     shill_clients::Shutdown();
     OtaActivatorImpl::Factory::SetFactoryForTesting(nullptr);
@@ -92,7 +90,7 @@ class CellularSetupImplTest : public testing::Test {
               fake_ota_activator_factory_.created_instances().size());
 
     base::RunLoop run_loop;
-    cellular_setup_->StartActivation(
+    cellular_setup_.StartActivation(
         fake_activation_delegate->GenerateRemote(),
         base::BindOnce(&CellularSetupImplTest::OnCarrierPortalHandlerReceived,
                        base::Unretained(this), run_loop.QuitClosure()));
@@ -117,7 +115,7 @@ class CellularSetupImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   FakeOtaActivatorFactory fake_ota_activator_factory_;
 
-  std::unique_ptr<CellularSetupBase> cellular_setup_;
+  CellularSetupImpl cellular_setup_;
 
   size_t num_carrier_portal_handlers_received_ = 0u;
 

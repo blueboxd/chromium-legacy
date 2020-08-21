@@ -48,6 +48,7 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
     bubble_view_->SetArrow(views::BubbleBorder::BOTTOM_RIGHT);
     bubble_view_->AddChildView(back_button_view_);
     bubble_view_->set_color(SK_ColorTRANSPARENT);
+    bubble_view_->SetPaintToLayer();
     bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
     widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);

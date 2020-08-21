@@ -133,6 +133,12 @@ base::debug::CrashKeyString* GetRequestedOriginCrashKey() {
   return requested_origin_key;
 }
 
+base::debug::CrashKeyString* GetExpectedProcessLockKey() {
+  static auto* expected_process_lock_key = base::debug::AllocateCrashKeyString(
+      "expected_process_lock", base::debug::CrashKeySize::Size64);
+  return expected_process_lock_key;
+}
+
 base::debug::CrashKeyString* GetKilledProcessOriginLockKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "killed_process_origin_lock", base::debug::CrashKeySize::Size64);
@@ -150,7 +156,7 @@ void LogCanAccessDataForOriginCrashKeys(
     const std::string& killed_process_origin_lock,
     const std::string& requested_origin,
     const std::string& failure_reason) {
-  base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+  base::debug::SetCrashKeyString(GetExpectedProcessLockKey(),
                                  expected_process_lock);
   base::debug::SetCrashKeyString(GetKilledProcessOriginLockKey(),
                                  killed_process_origin_lock);
@@ -1607,10 +1613,9 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
 
   // Returning false here will result in a renderer kill.  Set some crash
   // keys that will help understand the circumstances of that kill.
-  LogCanAccessDataForOriginCrashKeys(
-      expected_process_lock.lock_url().possibly_invalid_spec(),
-      GetKilledProcessOriginLock(security_state), url.GetOrigin().spec(),
-      failure_reason);
+  LogCanAccessDataForOriginCrashKeys(expected_process_lock.ToString(),
+                                     GetKilledProcessOriginLock(security_state),
+                                     url.GetOrigin().spec(), failure_reason);
   return false;
 }
 

@@ -25,6 +25,11 @@ extern const char kWellKnownNotExistingResourcePath[];
 // https://wicg.github.io/change-password-url/
 bool IsWellKnownChangePasswordUrl(const GURL& url);
 
+// Creates a change password URL from `url`. In case the WellKnownChangePassword
+// feature is active this returns the origin + `WellKnownChangePasswordPath`,
+// otherwise it returns just the origin.
+GURL CreateChangePasswordUrl(const GURL& url);
+
 // Creates a GURL for a given origin with |kWellKnownNotExistingResourcePath| as
 // path.
 GURL CreateWellKnownNonExistingResourceURL(const GURL& url);

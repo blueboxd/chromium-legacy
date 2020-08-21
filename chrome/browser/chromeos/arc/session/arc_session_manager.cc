@@ -712,6 +712,7 @@ void ArcSessionManager::OnProvisioningFinished(
       result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    VLOG(1) << "Stopping ARC due to provisioning failure";
     ShutdownSession();
     ShowArcSupportHostError(error, 0 /* error_code */, true);
     return;
@@ -824,6 +825,7 @@ void ArcSessionManager::Initialize() {
 }
 
 void ArcSessionManager::Shutdown() {
+  VLOG(1) << "Shutting down session manager";
   enable_requested_ = false;
   ResetArcState();
   arc_session_runner_->OnShutdown();
@@ -851,9 +853,14 @@ void ArcSessionManager::ShutdownSession() {
       // Ignore in NOT_INITIALIZED case. This is called in initial SetProfile
       // invocation.
       // TODO(hidehiko): Remove this along with the clean up.
-      break;
     case State::STOPPED:
       // Currently, ARC is stopped. Do nothing.
+    case State::REMOVING_DATA_DIR:
+      // When data removing is done, |state_| will be set to STOPPED.
+      // Do nothing here.
+    case State::STOPPING:
+      // Now ARC is stopping. Do nothing here.
+      VLOG(1) << "Skipping session shutdown because state is: " << state_;
       break;
     case State::NEGOTIATING_TERMS_OF_SERVICE:
     case State::CHECKING_ANDROID_MANAGEMENT:
@@ -864,9 +871,7 @@ void ArcSessionManager::ShutdownSession() {
       // immediately.
       state_ = State::STOPPED;
       break;
-    case State::REMOVING_DATA_DIR:
-      // When data removing is done, |state_| will be set to STOPPED.
-      // Do nothing here.
+
       break;
     case State::ACTIVE:
       // Request to stop the ARC. |state_| will be set to STOPPED eventually.
@@ -875,9 +880,6 @@ void ArcSessionManager::ShutdownSession() {
       // |state_| might be changed.
       state_ = State::STOPPING;
       arc_session_runner_->RequestStop();
-      break;
-    case State::STOPPING:
-      // Now ARC is stopping. Do nothing here.
       break;
   }
 }
@@ -942,6 +944,7 @@ void ArcSessionManager::CancelAuthCode() {
   }
 
   MaybeUpdateOptInCancelUMA(support_host_.get());
+  VLOG(1) << "Auth cancelled. Stopping ARC. state: " << state_;
   StopArc();
   SetArcPlayStoreEnabledForProfile(profile_, false);
 }
@@ -1508,6 +1511,8 @@ void ArcSessionManager::OnRetryClicked() {
   DCHECK(!g_ui_enabled || !support_host_->HasAuthDelegate());
 
   UpdateOptInActionUMA(OptInActionType::RETRY);
+
+  VLOG(1) << "Retry button clicked";
 
   if (state_ == State::ACTIVE) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping

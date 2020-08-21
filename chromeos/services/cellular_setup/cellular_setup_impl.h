@@ -24,10 +24,19 @@ class OtaActivator;
 // pointer back to the client.
 class CellularSetupImpl : public CellularSetupBase {
  public:
-  CellularSetupImpl();
+  // Creates an instance with a lifetime that is bound to the connection
+  // that is supplying |receiver|.
+  static void CreateAndBindToReciever(
+      mojo::PendingReceiver<mojom::CellularSetup> receiver);
+
   ~CellularSetupImpl() override;
 
  private:
+  friend class CellularSetupImplTest;
+
+  // For unit tests.
+  CellularSetupImpl();
+
   // mojom::CellularSetup:
   void StartActivation(mojo::PendingRemote<mojom::ActivationDelegate> delegate,
                        StartActivationCallback callback) override;

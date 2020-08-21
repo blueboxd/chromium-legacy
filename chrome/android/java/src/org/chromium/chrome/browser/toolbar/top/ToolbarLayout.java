@@ -442,7 +442,6 @@ public abstract class ToolbarLayout
     /**
      * @return The provider for toolbar related data.
      */
-    @VisibleForTesting
     public ToolbarDataProvider getToolbarDataProvider() {
         return mToolbarDataProvider;
     }

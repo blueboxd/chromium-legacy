@@ -7,9 +7,6 @@
  * in a list. This also supports editing fields inline for fields listed in
  * editFieldTypes.
  */
-(function() {
-'use strict';
-
 Polymer({
   is: 'network-property-list-mojo',
 
@@ -382,4 +379,3 @@ Polymer({
     return '';
   },
 });
-})();

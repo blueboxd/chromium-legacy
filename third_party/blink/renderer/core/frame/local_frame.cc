@@ -473,6 +473,11 @@ void LocalFrame::Navigate(FrameLoadRequest& request,
 
   if (!navigation_rate_limiter().CanProceed())
     return;
+
+  TRACE_EVENT2("navigation", "LocalFrame::Navigate", "url",
+               request.GetResourceRequest().Url().GetString().Utf8(),
+               "load_type", static_cast<int>(frame_load_type));
+
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
     probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
                                     base::TimeDelta(),
@@ -713,6 +718,9 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
   DCHECK(IsReloadLoadType(load_type));
   if (!loader_.GetDocumentLoader()->GetHistoryItem())
     return;
+  TRACE_EVENT1("navigation", "LocalFrame::Reload", "load_type",
+               static_cast<int>(load_type));
+
   FrameLoadRequest request(
       nullptr, loader_.ResourceRequestForReload(
                    load_type, ClientRedirectPolicy::kClientRedirect));

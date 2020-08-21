@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -143,7 +144,8 @@ class ImageSanitizerTest : public testing::Test {
       ImageSanitizer::SanitizationDoneCallback done_callback) {
     sanitizer_ = ImageSanitizer::CreateAndStart(
         &data_decoder_, temp_dir_.GetPath(), image_relative_paths,
-        std::move(image_decoded_callback), std::move(done_callback));
+        std::move(image_decoded_callback), std::move(done_callback),
+        GetExtensionFileTaskRunner());
   }
 
   bool WriteBase64DataToFile(const std::string& base64_data,

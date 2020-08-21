@@ -19,7 +19,7 @@ public class MockContextualSearchPolicy extends ContextualSearchPolicy {
     }
 
     @Override
-    public boolean maySendBasePageUrl() {
+    public boolean doSendBasePageUrl() {
         return false;
     }
 

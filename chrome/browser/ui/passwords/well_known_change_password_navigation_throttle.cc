@@ -10,12 +10,15 @@
 #include "components/password_manager/core/browser/well_known_change_password_state.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -79,7 +82,9 @@ WellKnownChangePasswordNavigationThrottle::
     : NavigationThrottle(handle),
       change_password_url_service_(
           ChangePasswordUrlServiceFactory::GetForBrowserContext(
-              handle->GetWebContents()->GetBrowserContext())) {
+              handle->GetWebContents()->GetBrowserContext())),
+      source_id_(
+          ukm::GetSourceIdForWebContentsDocument(handle->GetWebContents())) {
   change_password_url_service_->PrefetchURLs();
 }
 
@@ -125,13 +130,20 @@ const char* WellKnownChangePasswordNavigationThrottle::GetNameForLogging() {
 void WellKnownChangePasswordNavigationThrottle::OnProcessingFinished(
     bool is_supported) {
   if (is_supported) {
+    RecordMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
     Resume();
-  } else {
-    GURL url = navigation_handle()->GetURL();
-    GURL redirect_url = change_password_url_service_->GetChangePasswordUrl(url);
-    Redirect(redirect_url.is_valid() ? redirect_url : url.GetOrigin());
-    CancelDeferredNavigation(NavigationThrottle::CANCEL);
+    return;
   }
+  GURL url = navigation_handle()->GetURL();
+  GURL redirect_url = change_password_url_service_->GetChangePasswordUrl(url);
+  if (redirect_url.is_valid()) {
+    RecordMetric(WellKnownChangePasswordResult::kFallbackToOverrideUrl);
+    Redirect(redirect_url);
+  } else {
+    RecordMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
+    Redirect(url.GetOrigin());
+  }
+  CancelDeferredNavigation(NavigationThrottle::CANCEL);
 }
 
 void WellKnownChangePasswordNavigationThrottle::Redirect(const GURL& url) {
@@ -152,3 +164,9 @@ void WellKnownChangePasswordNavigationThrottle::Redirect(const GURL& url) {
                                 helper->GetWeakPtr(), std::move(params)));
 }
 
+void WellKnownChangePasswordNavigationThrottle::RecordMetric(
+    WellKnownChangePasswordResult result) {
+  ukm::builders::PasswordManager_WellKnownChangePasswordResult(source_id_)
+      .SetWellKnownChangePasswordResult(static_cast<int64_t>(result))
+      .Record(ukm::UkmRecorder::Get());
+}

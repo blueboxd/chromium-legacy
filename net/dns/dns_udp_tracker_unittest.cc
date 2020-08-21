@@ -5,6 +5,7 @@
 #include "net/dns/dns_udp_tracker.h"
 
 #include "base/test/simple_test_tick_clock.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -169,6 +170,18 @@ TEST_F(DnsUdpTrackerTest, ReusedPort_Full) {
     tracker_.RecordResponseId(id /* query_id */, id /* response_id */);
     EXPECT_FALSE(tracker_.low_entropy());
   }
+}
+
+TEST_F(DnsUdpTrackerTest, ConnectionError) {
+  tracker_.RecordConnectionError(ERR_FAILED);
+
+  EXPECT_FALSE(tracker_.low_entropy());
+}
+
+TEST_F(DnsUdpTrackerTest, ConnectionError_InsufficientResources) {
+  tracker_.RecordConnectionError(ERR_INSUFFICIENT_RESOURCES);
+
+  EXPECT_TRUE(tracker_.low_entropy());
 }
 
 }  // namespace

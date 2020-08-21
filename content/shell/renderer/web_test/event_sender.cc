@@ -640,7 +640,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureLongPress(gin::Arguments* args);
   void GestureLongTap(gin::Arguments* args);
   void GestureTwoFingerTap(gin::Arguments* args);
-  void ContinuousMouseScrollBy(gin::Arguments* args);
   void MouseMoveTo(gin::Arguments* args);
   void MouseLeave(gin::Arguments* args);
   void MouseScrollBy(gin::Arguments* args);
@@ -778,8 +777,6 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
       .SetMethod("gestureLongTap", &EventSenderBindings::GestureLongTap)
       .SetMethod("gestureTwoFingerTap",
                  &EventSenderBindings::GestureTwoFingerTap)
-      .SetMethod("continuousMouseScrollBy",
-                 &EventSenderBindings::ContinuousMouseScrollBy)
       .SetMethod("keyDown", &EventSenderBindings::KeyDown)
       .SetMethod("mouseDown", &EventSenderBindings::MouseDown)
       .SetMethod("mouseMoveTo", &EventSenderBindings::MouseMoveTo)
@@ -1019,11 +1016,6 @@ void EventSenderBindings::GestureLongTap(gin::Arguments* args) {
 void EventSenderBindings::GestureTwoFingerTap(gin::Arguments* args) {
   if (sender_)
     sender_->GestureTwoFingerTap(frame_, args);
-}
-
-void EventSenderBindings::ContinuousMouseScrollBy(gin::Arguments* args) {
-  if (sender_)
-    sender_->MouseScrollBy(args, EventSender::MouseScrollType::PIXEL);
 }
 
 void EventSenderBindings::MouseMoveTo(gin::Arguments* args) {

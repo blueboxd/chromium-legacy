@@ -21,6 +21,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "third_party/libipp/libipp/ipp.h"
@@ -58,9 +59,11 @@ class ServerPrintersFetcher::PrivateImplementation
     CHECK(base::SequencedTaskRunnerHandle::IsSet());
     task_runner_for_callback_ = base::SequencedTaskRunnerHandle::Get();
     // Post task to execute.
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&PrivateImplementation::SendQuery,
-                                          base::Unretained(this)));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &PrivateImplementation::SendQuery, base::Unretained(this),
+            g_browser_process->shared_url_loader_factory()->Clone()));
   }
 
   ~PrivateImplementation() override = default;
@@ -141,7 +144,8 @@ class ServerPrintersFetcher::PrivateImplementation
 
  private:
   // The main task. It is scheduled in the constructor.
-  void SendQuery() {
+  void SendQuery(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                     url_loader_factory) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // Preparation of the IPP frame.
@@ -157,22 +161,18 @@ class ServerPrintersFetcher::PrivateImplementation
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = server_url_;
     resource_request->method = "POST";
-    resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                                        "application/ipp");
     resource_request->load_flags =
         net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-    resource_request->request_body =
-        network::ResourceRequestBody::CreateFromBytes(
-            reinterpret_cast<char*>(request_frame.data()),
-            request_frame.size());
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     // TODO(pawliczek): create a traffic annotation for printing network traffic
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), MISSING_TRAFFIC_ANNOTATION);
-    network::mojom::URLLoaderFactory* loader_factory =
-        g_browser_process->system_network_context_manager()
-            ->GetURLLoaderFactory();
-    simple_url_loader_->DownloadAsStream(loader_factory, this);
+    std::string request_body(request_frame.begin(), request_frame.end());
+    simple_url_loader_->AttachStringForUpload(request_body, "application/ipp");
+    simple_url_loader_->DownloadAsStream(
+        network::SharedURLLoaderFactory::Create(std::move(url_loader_factory))
+            .get(),
+        this);
   }
 
   // Posts a response with a list of printers.

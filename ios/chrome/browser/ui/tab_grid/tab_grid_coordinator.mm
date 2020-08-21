@@ -407,12 +407,6 @@
                  focusOmnibox:NO];
 }
 
-- (void)showActiveIncognitoTabFromRecentTabs {
-  [self.delegate tabGrid:self
-      shouldFinishWithBrowser:self.incognitoBrowser
-                 focusOmnibox:NO];
-}
-
 #pragma mark - HistoryPresentationDelegate
 
 - (void)showActiveRegularTabFromHistory {

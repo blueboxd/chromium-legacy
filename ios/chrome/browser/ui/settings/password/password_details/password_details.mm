@@ -9,7 +9,6 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,8 +23,8 @@
         form.signon_realm);
     if (facetUri.IsValidAndroidFacetURI()) {
       if (!form.app_display_name.empty()) {
-        _changePasswordURL =
-            [self changePasswordUrlFor:GURL(form.affiliated_web_realm)];
+        _changePasswordURL = password_manager::CreateChangePasswordUrl(
+            GURL(form.affiliated_web_realm));
         _origin = base::SysUTF8ToNSString(form.app_display_name);
         _website = base::SysUTF8ToNSString(form.app_display_name);
       } else {
@@ -36,22 +35,12 @@
       auto nameWithLink = password_manager::GetShownOriginAndLinkUrl(form);
       _origin = base::SysUTF8ToNSString(nameWithLink.first);
       _website = base::SysUTF8ToNSString(nameWithLink.second.spec());
-      _changePasswordURL = [self changePasswordUrlFor:form.url];
+      _changePasswordURL = password_manager::CreateChangePasswordUrl(form.url);
     }
     _username = base::SysUTF16ToNSString(form.username_value);
     _password = base::SysUTF16ToNSString(form.password_value);
   }
   return self;
-}
-
-- (GURL)changePasswordUrlFor:(const GURL&)url {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kWellKnownChangePassword)) {
-    return url.GetOrigin();
-  }
-
-  return password_manager::CreateWellKnownNonExistingResourceURL(
-      url.GetOrigin());
 }
 
 @end

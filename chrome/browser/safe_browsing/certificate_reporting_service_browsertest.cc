@@ -38,6 +38,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/scheme_host_port.h"
 
 using certificate_reporting_test_utils::CertificateReportingServiceTestHelper;
@@ -715,6 +716,31 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest, Delayed_Reset) {
   // report1 was submitted once and delayed, then succeeded.
   event_histogram_tester()->SetExpectedValues(
       2 /* submitted */, 0 /* failed */, 1 /* successful */, 0 /* dropped */);
+}
+
+IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
+                       OmitsCredentials) {
+  SetExpectedHistogramCountOnTeardown(0);
+
+  certificate_reporting_test_utils::SetCertReportingOptIn(
+      browser(), certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
+  // Make all reports succeed.
+  test_helper()->SetFailureMode(certificate_reporting_test_utils::
+                                    ReportSendingResult::REPORTS_SUCCESSFUL);
+
+  // Trigger a report
+  std::vector<network::ResourceRequest> full_requests;
+  SendReport("report0");
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"report0", RetryStatus::NOT_RETRIED}}),
+      nullptr, &full_requests);
+
+  ASSERT_EQ(full_requests.size(), 1u);
+  EXPECT_EQ(full_requests[0].credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
+  // report0 was successfully submitted.
+  event_histogram_tester()->SetExpectedValues(
+      1 /* submitted */, 0 /* failed */, 1 /* successful */, 0 /* dropped */);
 }
 
 }  // namespace safe_browsing

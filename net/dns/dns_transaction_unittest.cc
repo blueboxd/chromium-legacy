@@ -35,7 +35,7 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
-#include "net/dns/dns_socket_pool.h"
+#include "net/dns/dns_socket_allocator.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_server_config.h"
@@ -639,7 +639,7 @@ class DnsTransactionTestBase : public testing::Test {
     socket_factory_.reset(new TestSocketFactory());
     session_ = new DnsSession(
         config_,
-        std::make_unique<DnsSocketPool>(
+        std::make_unique<DnsSocketAllocator>(
             socket_factory_.get(), config_.nameservers, nullptr /* net_log */),
         base::BindRepeating(&DnsTransactionTestBase::GetNextId,
                             base::Unretained(this)),
@@ -1449,12 +1449,39 @@ TEST_F(DnsTransactionTest, SyncSearchQuery) {
 }
 
 TEST_F(DnsTransactionTest, ConnectFailure) {
-  socket_factory_->fail_next_socket_ = true;
+  // Prep socket factory for a single socket with connection failure.
+  MockConnect connect_data;
+  connect_data.result = ERR_FAILED;
+  StaticSocketDataProvider data_provider;
+  data_provider.set_connect_data(connect_data);
+  socket_factory_->AddSocketDataProvider(&data_provider);
+
   transaction_ids_.push_back(0);  // Needed to make a DnsUDPAttempt.
   TransactionHelper helper0("www.chromium.org", dns_protocol::kTypeA,
                             false /* secure */, ERR_CONNECTION_REFUSED,
                             resolve_context_.get());
+
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+  EXPECT_FALSE(helper0.response());
+  EXPECT_FALSE(session_->udp_tracker()->low_entropy());
+}
+
+TEST_F(DnsTransactionTest, ConnectFailure_SocketLimitReached) {
+  // Prep socket factory for a single socket with connection failure.
+  MockConnect connect_data;
+  connect_data.result = ERR_INSUFFICIENT_RESOURCES;
+  StaticSocketDataProvider data_provider;
+  data_provider.set_connect_data(connect_data);
+  socket_factory_->AddSocketDataProvider(&data_provider);
+
+  transaction_ids_.push_back(0);  // Needed to make a DnsUDPAttempt.
+  TransactionHelper helper0("www.chromium.org", dns_protocol::kTypeA,
+                            false /* secure */, ERR_CONNECTION_REFUSED,
+                            resolve_context_.get());
+
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+  EXPECT_FALSE(helper0.response());
+  EXPECT_TRUE(session_->udp_tracker()->low_entropy());
 }
 
 TEST_F(DnsTransactionTest, ConnectFailureFollowedBySuccess) {

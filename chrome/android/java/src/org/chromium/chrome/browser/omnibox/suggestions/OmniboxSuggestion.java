@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.core.util.ObjectsCompat;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
@@ -21,7 +20,6 @@ import java.util.List;
 /**
  * Container class with information about each omnibox suggestion item.
  */
-@VisibleForTesting
 public class OmniboxSuggestion {
     public static final int INVALID_GROUP = -1;
     public static final int INVALID_TYPE = -1;

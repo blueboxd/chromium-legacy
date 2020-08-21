@@ -15,6 +15,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 
@@ -74,7 +75,8 @@ class RequestObserver {
 
   // Called when a request created or destroyed, depending on whichever one this
   // class observes.
-  void OnRequest(const std::string& serialized_report,
+  void OnRequest(const network::ResourceRequest& url_request,
+                 const std::string& serialized_report,
                  ReportSendingResult report_type);
 
   // These must be called on the UI thread.
@@ -82,6 +84,7 @@ class RequestObserver {
   const ObservedReportMap& failed_reports() const;
   const ObservedReportMap& delayed_reports() const;
   const std::vector<std::string>& full_reports() const;
+  const std::vector<network::ResourceRequest>& full_requests() const;
   void ClearObservedReports();
 
  private:
@@ -94,6 +97,7 @@ class RequestObserver {
   ObservedReportMap delayed_reports_;
 
   std::vector<std::string> full_reports_;
+  std::vector<network::ResourceRequest> full_requests_;
 };
 
 // Class to wait for the CertificateReportingService to reset.
@@ -130,11 +134,15 @@ class CertificateReportingServiceTestHelper
   void ResumeDelayedRequest();
 
   void WaitForRequestsCreated(const ReportExpectation& expectation);
-  void WaitForRequestsCreated(const ReportExpectation& expectation,
-                              std::vector<std::string>* full_reports);
+  void WaitForRequestsCreated(
+      const ReportExpectation& expectation,
+      std::vector<std::string>* full_reports,
+      std::vector<network::ResourceRequest>* full_requests);
   void WaitForRequestsDestroyed(const ReportExpectation& expectation);
-  void WaitForRequestsDestroyed(const ReportExpectation& expectation,
-                                std::vector<std::string>* full_reports);
+  void WaitForRequestsDestroyed(
+      const ReportExpectation& expectation,
+      std::vector<std::string>* full_reports,
+      std::vector<network::ResourceRequest>* full_requests);
 
   // Checks that all requests are destroyed and that there are no in-flight
   // reports in |service|.
@@ -168,6 +176,7 @@ class CertificateReportingServiceTestHelper
 
   mojo::PendingRemote<network::mojom::URLLoaderClient> delayed_client_;
   std::string delayed_report_;
+  network::ResourceRequest delayed_request_;
   ReportSendingResult delayed_result_;
 
   RequestObserver request_created_observer_;

@@ -161,18 +161,12 @@ void NativeViewHostAura::RemovedFromWidget() {
 }
 
 bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
-#if defined(OS_WIN)
-  // TODO(crbug/843250): On Aura, layer masks don't play with HiDPI. Fix this
-  // and enable this on Windows.
-  return false;
-#else
   UninstallMask();
   mask_ = std::move(mask);
   if (mask_)
     mask_->layer()->SetFillsBoundsOpaquely(false);
   InstallMask();
   return true;
-#endif
 }
 
 void NativeViewHostAura::SetHitTestTopInset(int top_inset) {

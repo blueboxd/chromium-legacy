@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "2020-08-19T21:36:03.019733176+00:00",
+  "time_generated": "2020-08-20T20:24:15.027402404+00:00",
   "primary_language_code": "en",
   "locales": [
     {
@@ -2497,6 +2497,8 @@
               "single": true,
               "synonyms": [
                 "this page",
+                "web page",
+                "webpage",
                 "page",
                 "this"
               ]
@@ -2521,6 +2523,7 @@
               "synonyms": [
                 "upgrade",
                 "install",
+                "updates",
                 "update"
               ]
             }
@@ -2934,7 +2937,8 @@
                 "pestaña privada",
                 "ventana privada",
                 "modo privado",
-                "incógnito"
+                "incógnito",
+                "incognito"
               ]
             }
           ]
@@ -3167,7 +3171,8 @@
                 "pestaña privada",
                 "ventana privada",
                 "modo privado",
-                "incógnito"
+                "incógnito",
+                "incognito"
               ]
             }
           ]

@@ -93,6 +93,10 @@ void HttpRefreshScheduler::Schedule(
 }
 
 void HttpRefreshScheduler::NavigateTask() {
+  TRACE_EVENT2("navigation", "HttpRefreshScheduler::NavigateTask",
+               "document_url", document_->Url().GetString().Utf8(),
+               "refresh_url", refresh_->url.GetString().Utf8());
+
   DCHECK(document_->GetFrame());
   std::unique_ptr<ScheduledHttpRefresh> refresh(refresh_.release());
 

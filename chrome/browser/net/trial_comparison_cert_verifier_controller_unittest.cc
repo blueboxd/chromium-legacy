@@ -347,7 +347,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
   std::vector<std::string> full_reports;
   reporting_service_test_helper()->WaitForRequestsDestroyed(
       ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
-      &full_reports);
+      &full_reports, nullptr);
 
   ASSERT_EQ(1U, full_reports.size());
 
@@ -449,7 +449,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   reporting_service_test_helper()->WaitForRequestsDestroyed(
       ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED},
                                      {"127.0.0.2", RetryStatus::NOT_RETRIED}}),
-      &full_reports);
+      &full_reports, nullptr);
 
   ASSERT_EQ(2U, full_reports.size());
 

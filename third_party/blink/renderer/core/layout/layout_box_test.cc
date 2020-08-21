@@ -571,10 +571,6 @@ TEST_P(LayoutBoxTest, DelayedInvalidation) {
 }
 
 TEST_P(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
-  // TODO(crbug.com/878025): The test fails in LayoutNG mode.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       html { font-size: 16px; }
@@ -586,9 +582,16 @@ TEST_P(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
 
   LayoutBox* marker_container =
       ToLayoutBox(GetLayoutObjectByElementId("target")->SlowFirstChild());
-  // Unit marker_container's frame_rect which y-pos starts from 0 and marker's
-  // frame_rect.
-  EXPECT_TRUE(marker_container->LayoutOverflowRect().Height() > LayoutUnit(50));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_GE(marker_container->Location().Y() +
+                  marker_container->LayoutOverflowRect().MaxY(),
+              LayoutUnit(50));
+  } else {
+    // Unit marker_container's frame_rect which y-pos starts from 0 and marker's
+    // frame_rect in Legacy.
+    EXPECT_EQ(LayoutPoint(), marker_container->Location());
+    EXPECT_GE(marker_container->LayoutOverflowRect().MaxY(), LayoutUnit(50));
+  }
 }
 
 static String CommonStyleForGeometryWithScrollbarTests() {

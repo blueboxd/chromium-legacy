@@ -11,9 +11,9 @@
 // Reports newly discovered devices.
 class ShareTargetDiscoveredCallback : public base::CheckedObserver {
  public:
-  virtual void OnShareTargetDiscovered(ShareTarget shareTarget) = 0;
+  virtual void OnShareTargetDiscovered(ShareTarget share_target) = 0;
 
-  virtual void OnShareTargetLost(ShareTarget shareTarget) = 0;
+  virtual void OnShareTargetLost(ShareTarget share_target) = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_DISCOVERED_CALLBACK_H_

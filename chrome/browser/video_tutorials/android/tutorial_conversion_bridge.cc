@@ -1,0 +1,45 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/video_tutorials/android/tutorial_conversion_bridge.h"
+
+#include <memory>
+#include <string>
+
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
+#include "chrome/browser/video_tutorials/jni_headers/TutorialConversionBridge_jni.h"
+
+namespace video_tutorials {
+
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ToJavaArrayOfStrings;
+
+ScopedJavaLocalRef<jobject> CreateJavaTutorialAndMaybeAddToList(
+    JNIEnv* env,
+    ScopedJavaLocalRef<jobject> jlist,
+    const Tutorial& tutorial) {
+  return Java_TutorialConversionBridge_createTutorialAndMaybeAddToList(
+      env, jlist, static_cast<int>(tutorial.feature),
+      ConvertUTF8ToJavaString(env, tutorial.title),
+      ConvertUTF8ToJavaString(env, tutorial.video_url.spec()),
+      ConvertUTF8ToJavaString(env, tutorial.poster_url.spec()),
+      ConvertUTF8ToJavaString(env, tutorial.caption_url.spec()),
+      ConvertUTF8ToJavaString(env, tutorial.share_url.spec()),
+      tutorial.video_length);
+}
+
+ScopedJavaLocalRef<jobject> TutorialConversionBridge::CreateJavaTutorials(
+    JNIEnv* env,
+    const std::vector<Tutorial>& tutorials) {
+  ScopedJavaLocalRef<jobject> jlist =
+      Java_TutorialConversionBridge_createList(env);
+
+  for (const auto& tutorial : tutorials)
+    CreateJavaTutorialAndMaybeAddToList(env, jlist, tutorial);
+
+  return jlist;
+}
+
+}  // namespace video_tutorials

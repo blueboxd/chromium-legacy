@@ -124,13 +124,9 @@ ui::AXPlatformNode* BrowserAccessibility::GetAXPlatformNode() const {
 }
 
 uint32_t BrowserAccessibility::PlatformChildCount() const {
-  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    if (PlatformGetRootOfChildTree())
-      return 1;
+  if (PlatformIsLeaf())
     return 0;
-  }
-
-  return PlatformIsLeaf() ? 0 : InternalChildCount();
+  return PlatformGetRootOfChildTree() ? 1 : InternalChildCount();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
@@ -146,10 +142,8 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetFirstChild() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
-  BrowserAccessibility* last_unignored_child = InternalGetLastChild();
-  if (!last_unignored_child)
-    last_unignored_child = PlatformGetRootOfChildTree();
-  return last_unignored_child;
+  BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
+  return child_tree_root ? child_tree_root : InternalGetLastChild();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetNextSibling() const {
@@ -209,20 +203,12 @@ bool BrowserAccessibility::IsLineBreakObject() const {
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
-  BrowserAccessibility* result = nullptr;
-
-  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    DCHECK_EQ(node_->children().size(), 0u)
-        << "A node should not have both children and a child tree.";
-
-    // child_trees do not have siblings.
-    if (child_index == 0)
-      result = PlatformGetRootOfChildTree();
-  } else {
-    result = InternalGetChild(child_index);
+  BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
+  if (child_tree_root) {
+    // A node with a child tree has only one child.
+    return child_index ? nullptr : child_tree_root;
   }
-
-  return result;
+  return InternalGetChild(child_index);
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetClosestPlatformObject()
@@ -1553,7 +1539,7 @@ bool BrowserAccessibility::IsLeaf() const {
     return !child_count ||
            (child_count == 1 && InternalGetFirstChild()->IsText());
   }
-  return node()->IsLeaf();
+  return PlatformGetRootOfChildTree() ? false : node()->IsLeaf();
 }
 
 bool BrowserAccessibility::IsToplevelBrowserWindow() {
@@ -2145,15 +2131,18 @@ bool BrowserAccessibility::SetHypertextSelection(int start_offset,
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetRootOfChildTree() const {
-  if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
+  std::string child_tree_id;
+  if (!GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                          &child_tree_id)) {
     return nullptr;
-  AXTreeID child_tree_id = AXTreeID::FromString(
-      GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+  }
+  DCHECK_EQ(node_->children().size(), 0u)
+      << "A node should not have both children and a child tree.";
+
   BrowserAccessibilityManager* child_manager =
-      BrowserAccessibilityManager::FromID(child_tree_id);
+      BrowserAccessibilityManager::FromID(AXTreeID::FromString(child_tree_id));
   if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
     return child_manager->GetRoot();
-
   return nullptr;
 }
 

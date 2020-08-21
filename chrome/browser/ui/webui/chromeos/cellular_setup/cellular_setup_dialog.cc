@@ -32,37 +32,6 @@ constexpr int kDialogWidthPx = 650;
 
 CellularSetupDialog* dialog_instance = nullptr;
 
-// Used to attach an instance of the CellularSetup service to a BrowserContext.
-class CellularSetupServiceHolder : public base::SupportsUserData::Data {
- public:
-  CellularSetupServiceHolder() = default;
-  ~CellularSetupServiceHolder() override = default;
-
-  void BindReceiver(mojo::PendingReceiver<mojom::CellularSetup> receiver) {
-    service_.BindReceiver(std::move(receiver));
-  }
-
- private:
-  CellularSetupImpl service_;
-
-  DISALLOW_COPY_AND_ASSIGN(CellularSetupServiceHolder);
-};
-
-const char kCellularSetupServiceHolderKey[] = "cellular_setup_service_holder";
-
-CellularSetupServiceHolder* GetOrCreateServiceHolder(
-    content::BrowserContext* browser_context) {
-  auto* holder = static_cast<CellularSetupServiceHolder*>(
-      browser_context->GetUserData(kCellularSetupServiceHolderKey));
-  if (!holder) {
-    auto new_holder = std::make_unique<CellularSetupServiceHolder>();
-    holder = new_holder.get();
-    browser_context->SetUserData(kCellularSetupServiceHolderKey,
-                                 std::move(new_holder));
-  }
-  return holder;
-}
-
 }  // namespace
 
 // static
@@ -131,8 +100,7 @@ CellularSetupDialogUI::~CellularSetupDialogUI() = default;
 
 void CellularSetupDialogUI::BindInterface(
     mojo::PendingReceiver<mojom::CellularSetup> receiver) {
-  GetOrCreateServiceHolder(web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindReceiver(std::move(receiver));
+  CellularSetupImpl::CreateAndBindToReciever(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(CellularSetupDialogUI)

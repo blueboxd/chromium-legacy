@@ -43,7 +43,13 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MAYBE_Basic) {
   RunBasicTest();
 }
 
@@ -65,7 +71,6 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
-
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&              \
     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
      BUILDFLAG(CFI_ENFORCEMENT_TRAP) || BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC))
@@ -80,8 +85,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
 }
 #undef MAYBE_ReconnectSession
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReconnectSessionSameTab DISABLED_ReconnectSessionSameTab
+#else
+#define MAYBE_ReconnectSessionSameTab ReconnectSessionSameTab
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       ReconnectSessionSameTab) {
+                       MAYBE_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 

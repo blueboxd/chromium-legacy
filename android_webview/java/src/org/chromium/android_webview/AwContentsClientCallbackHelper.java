@@ -10,8 +10,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
 
@@ -23,7 +21,6 @@ import java.util.concurrent.Callable;
  * Most callbacks do no go through here, but get forwarded to AwContentsClient directly. The
  * messages processed here may originate from the IO or UI thread.
  */
-@VisibleForTesting
 public class AwContentsClientCallbackHelper {
     /**
      * Interface to tell CallbackHelper to cancel posted callbacks.

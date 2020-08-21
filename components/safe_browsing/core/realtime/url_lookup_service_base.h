@@ -42,7 +42,7 @@ using RTLookupRequestCallback =
     base::OnceCallback<void(std::unique_ptr<RTLookupRequest>, std::string)>;
 
 using RTLookupResponseCallback =
-    base::OnceCallback<void(bool, std::unique_ptr<RTLookupResponse>)>;
+    base::OnceCallback<void(bool, bool, std::unique_ptr<RTLookupResponse>)>;
 
 class VerdictCacheManager;
 

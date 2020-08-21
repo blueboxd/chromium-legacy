@@ -1286,8 +1286,39 @@ std::string SerializeRTLookupPing(const RTLookupRequestAndToken& ping) {
       lookupType = "DOWNLOAD";
       break;
   }
-
   request_dict.SetKey("lookup_type", base::Value(lookupType));
+
+  request_dict.SetKey("version", base::Value(request.version()));
+
+  std::string os;
+  switch (request.os_type()) {
+    case RTLookupRequest::OS_TYPE_UNSPECIFIED:
+      DCHECK(false) << "RTLookupRequest::os_type is undefined.";
+      os = "UNSPECIFIED";
+      break;
+    case RTLookupRequest::OS_TYPE_LINUX:
+      os = "LINUX";
+      break;
+    case RTLookupRequest::OS_TYPE_WINDOWS:
+      os = "WINDOWS";
+      break;
+    case RTLookupRequest::OS_TYPE_MAC:
+      os = "MAC";
+      break;
+    case RTLookupRequest::OS_TYPE_ANDROID:
+      os = "ANDROID";
+      break;
+    case RTLookupRequest::OS_TYPE_IOS:
+      os = "IOS";
+      break;
+    case RTLookupRequest::OS_TYPE_CHROME_OS:
+      os = "CHROME_OS";
+      break;
+    case RTLookupRequest::OS_TYPE_FUCHSIA:
+      os = "FUCHSIA";
+      break;
+  }
+  request_dict.SetKey("os", base::Value(os));
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);

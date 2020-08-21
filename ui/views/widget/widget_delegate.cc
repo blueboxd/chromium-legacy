@@ -153,10 +153,6 @@ bool WidgetDelegate::GetSavedWindowPlacement(
   return display.bounds().Intersects(*bounds);
 }
 
-bool WidgetDelegate::ShouldRestoreWindowSize() const {
-  return true;
-}
-
 void WidgetDelegate::WidgetInitializing(Widget* widget) {
   widget_ = widget;
   OnWidgetInitializing();

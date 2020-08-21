@@ -11,6 +11,7 @@
 
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -1156,7 +1157,9 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
     content::RenderFrameHost* render_frame_host,
     FrameData* frame_data) {
   DCHECK(render_frame_host);
-  if (!frame_data->MaybeTriggerHeavyAdIntervention())
+  FrameData::HeavyAdAction action =
+      frame_data->MaybeTriggerHeavyAdIntervention();
+  if (action == FrameData::HeavyAdAction::kNone)
     return;
 
   // Don't trigger the heavy ad intervention on reloads. Gate this behind the
@@ -1164,13 +1167,19 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // trigger new navigations to the site to test it).
   if (heavy_ad_privacy_mitigations_enabled_) {
     UMA_HISTOGRAM_BOOLEAN(kIgnoredByReloadHistogramName, page_load_is_reload_);
-    if (page_load_is_reload_)
+    // Skip firing the intervention, but mark that an action occurred on the
+    // frame.
+    if (page_load_is_reload_) {
+      frame_data->set_heavy_ad_action(FrameData::HeavyAdAction::kIgnored);
       return;
+    }
   }
 
   // Check to see if we are allowed to activate on this host.
-  if (IsBlocklisted())
+  if (IsBlocklisted()) {
+    frame_data->set_heavy_ad_action(FrameData::HeavyAdAction::kIgnored);
     return;
+  }
 
   // We should always unload the root of the ad subtree. Find the
   // RenderFrameHost of the root ad frame associated with |frame_data|.
@@ -1186,40 +1195,35 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
                                   frame_data->root_frame_tree_node_id()) {
     render_frame_host = render_frame_host->GetParent();
   }
-  if (!render_frame_host)
+  if (!render_frame_host) {
+    frame_data->set_heavy_ad_action(FrameData::HeavyAdAction::kIgnored);
     return;
+  }
 
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  // We already have a heavy ad at this point so we can query the field trial
-  // params safely.
-  bool will_report_adframe =
-      base::FeatureList::IsEnabled(features::kHeavyAdInterventionWarning);
-  bool will_unload_adframe =
-      base::FeatureList::IsEnabled(features::kHeavyAdIntervention);
+  frame_data->set_heavy_ad_action(action);
 
-  if (will_report_adframe) {
-    // Add an inspector issue for the root of the ad subtree.
-    render_frame_host->ReportHeavyAdIssue(
-        will_unload_adframe
-            ? blink::mojom::HeavyAdResolutionStatus::kHeavyAdBlocked
-            : blink::mojom::HeavyAdResolutionStatus::kHeavyAdWarning,
-        GetHeavyAdReason(frame_data->heavy_ad_status_with_noise()));
+  // Add an inspector issue for the root of the ad subtree.
+  render_frame_host->ReportHeavyAdIssue(
+      action == FrameData::HeavyAdAction::kUnload
+          ? blink::mojom::HeavyAdResolutionStatus::kHeavyAdBlocked
+          : blink::mojom::HeavyAdResolutionStatus::kHeavyAdWarning,
+      GetHeavyAdReason(frame_data->heavy_ad_status_with_policy()));
 
-    // Report to all child frames that will be unloaded. Once all reports are
-    // queued, the frame will be unloaded. Because the IPC messages are ordered
-    // wrt to each frames unload, we do not need to wait before loading the
-    // error page. Reports will be added to ReportingObserver queues
-    // synchronously when the IPC message is handled, which guarantees they will
-    // be available in the the unload handler.
-    const char kReportId[] = "HeavyAdIntervention";
-    std::string report_message =
-        GetHeavyAdReportMessage(*frame_data, will_unload_adframe);
-    for (content::RenderFrameHost* reporting_frame :
-         render_frame_host->GetFramesInSubtree()) {
-      reporting_frame->SendInterventionReport(kReportId, report_message);
-    }
+  // Report to all child frames that will be unloaded. Once all reports are
+  // queued, the frame will be unloaded. Because the IPC messages are ordered
+  // wrt to each frames unload, we do not need to wait before loading the
+  // error page. Reports will be added to ReportingObserver queues
+  // synchronously when the IPC message is handled, which guarantees they will
+  // be available in the the unload handler.
+  const char kReportId[] = "HeavyAdIntervention";
+  std::string report_message = GetHeavyAdReportMessage(
+      *frame_data, action == FrameData::HeavyAdAction::kUnload);
+  for (content::RenderFrameHost* reporting_frame :
+       render_frame_host->GetFramesInSubtree()) {
+    reporting_frame->SendInterventionReport(kReportId, report_message);
   }
 
   // Report intervention to the blocklist.
@@ -1237,12 +1241,12 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
 
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 FrameData::FrameVisibility::kAnyVisibility,
-                frame_data->heavy_ad_status_with_noise());
+                frame_data->heavy_ad_status_with_policy());
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 frame_data->visibility(),
-                frame_data->heavy_ad_status_with_noise());
+                frame_data->heavy_ad_status_with_policy());
 
-  if (!will_unload_adframe)
+  if (action != FrameData::HeavyAdAction::kUnload)
     return;
 
   // Record heavy ad network size only when an ad is unloaded as a result of

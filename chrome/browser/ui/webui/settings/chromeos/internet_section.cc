@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
@@ -661,11 +662,15 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  chromeos::network_element::AddLocalizedStrings(html_source);
-  chromeos::network_element::AddOncLocalizedStrings(html_source);
-  chromeos::network_element::AddDetailsLocalizedStrings(html_source);
-  chromeos::network_element::AddConfigLocalizedStrings(html_source);
-  chromeos::network_element::AddErrorLocalizedStrings(html_source);
+  network_element::AddLocalizedStrings(html_source);
+  network_element::AddOncLocalizedStrings(html_source);
+  network_element::AddDetailsLocalizedStrings(html_source);
+  network_element::AddConfigLocalizedStrings(html_source);
+  network_element::AddErrorLocalizedStrings(html_source);
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kUpdatedCellularActivationUi)) {
+    cellular_setup::AddLocalizedStrings(html_source);
+  }
 
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());

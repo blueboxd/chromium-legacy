@@ -46,6 +46,8 @@ class TransferMetadata {
   TransferMetadata& operator=(const TransferMetadata&);
 
   Status status() const { return status_; }
+
+  // Returns transfer progress as percentage.
   float progress() const { return progress_; }
 
   // Represents the UKey2 token from Nearby Connection. base::nullopt if no

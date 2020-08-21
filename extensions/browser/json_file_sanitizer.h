@@ -59,13 +59,16 @@ class JsonFileSanitizer {
   static std::unique_ptr<JsonFileSanitizer> CreateAndStart(
       data_decoder::DataDecoder* decoder,
       const std::set<base::FilePath>& file_paths,
-      Callback callback);
+      Callback callback,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
   ~JsonFileSanitizer();
 
  private:
-  JsonFileSanitizer(const std::set<base::FilePath>& file_paths,
-                    Callback callback);
+  JsonFileSanitizer(
+      const std::set<base::FilePath>& file_paths,
+      Callback callback,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
   void Start(data_decoder::DataDecoder* decoder);
 
@@ -86,6 +89,7 @@ class JsonFileSanitizer {
 
   std::set<base::FilePath> file_paths_;
   Callback callback_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
   base::WeakPtrFactory<JsonFileSanitizer> weak_factory_{this};
 

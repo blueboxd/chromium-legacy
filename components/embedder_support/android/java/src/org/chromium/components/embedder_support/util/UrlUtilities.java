@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
@@ -158,20 +157,17 @@ public class UrlUtilities {
     }
 
     /** Returns whether a URL is within another URL's scope. */
-    @VisibleForTesting
     public static boolean isUrlWithinScope(String url, String scopeUrl) {
         return UrlUtilitiesJni.get().isUrlWithinScope(url, scopeUrl);
     }
 
     /** @return whether two URLs match, ignoring the #fragment. */
-    @VisibleForTesting
     public static boolean urlsMatchIgnoringFragments(String url, String url2) {
         if (TextUtils.equals(url, url2)) return true;
         return UrlUtilitiesJni.get().urlsMatchIgnoringFragments(url, url2);
     }
 
     /** @return whether the #fragmant differs in two URLs. */
-    @VisibleForTesting
     public static boolean urlsFragmentsDiffer(String url, String url2) {
         if (TextUtils.equals(url, url2)) return false;
         return UrlUtilitiesJni.get().urlsFragmentsDiffer(url, url2);

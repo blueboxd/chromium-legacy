@@ -493,11 +493,9 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
 
   FetchedCRXFile fetched(file, file_ownership_passed, request_ids,
                          std::move(callback));
-  fetched_crx_files_.push(std::move(fetched));
-
-  // MaybeInstallCRXFile() removes extensions from |in_progress_ids_| after
-  // starting the crx installer.
-  MaybeInstallCRXFile();
+  // InstallCRXFile() removes extensions from |in_progress_ids_| after starting
+  // the crx installer.
+  InstallCRXFile(std::move(fetched));
 }
 
 bool ExtensionUpdater::GetPingDataForExtension(
@@ -576,54 +574,45 @@ void ExtensionUpdater::CleanUpCrxFileIfNeeded(const base::FilePath& crx_path,
   }
 }
 
-void ExtensionUpdater::MaybeInstallCRXFile() {
-  if (crx_install_is_running_ || fetched_crx_files_.empty())
-    return;
-
+void ExtensionUpdater::InstallCRXFile(FetchedCRXFile crx_file) {
   std::set<int> request_ids;
 
-  while (!fetched_crx_files_.empty() && !crx_install_is_running_) {
-    FetchedCRXFile& crx_file = fetched_crx_files_.front();
+  VLOG(2) << "updating " << crx_file.info.extension_id << " with "
+          << crx_file.info.path.value();
 
-    VLOG(2) << "updating " << crx_file.info.extension_id
-            << " with " << crx_file.info.path.value();
+  // The ExtensionService is now responsible for cleaning up the temp file
+  // at |crx_file.info.path|.
+  CrxInstaller* installer = nullptr;
+  if (service_->UpdateExtension(crx_file.info, crx_file.file_ownership_passed,
+                                &installer)) {
+    // If the crx file passes the expectations from the update manifest, this
+    // callback inserts an entry in the extension cache and deletes it, if
+    // required.
+    installer->set_expectations_verified_callback(
+        base::BindOnce(&ExtensionUpdater::PutExtensionInCache,
+                       weak_ptr_factory_.GetWeakPtr(), crx_file.info));
 
-    // The ExtensionService is now responsible for cleaning up the temp file
-    // at |crx_file.info.path|.
-    CrxInstaller* installer = NULL;
-    if (service_->UpdateExtension(crx_file.info,
-                                  crx_file.file_ownership_passed,
-                                  &installer)) {
-      crx_install_is_running_ = true;
-      current_crx_file_ = std::move(crx_file);
-      // If the crx file passes the expectations from the update manifest, this
-      // callback inserts an entry in the extension cache and deletes it, if
-      // required.
-      installer->set_expectations_verified_callback(base::BindOnce(
-          &ExtensionUpdater::PutExtensionInCache,
-          weak_ptr_factory_.GetWeakPtr(), current_crx_file_.info));
-
-      for (const int request_id : current_crx_file_.request_ids) {
-        InProgressCheck& request = requests_in_progress_[request_id];
-        if (request.install_immediately) {
-          installer->set_install_immediately(true);
-          break;
-        }
+    for (const int request_id : crx_file.request_ids) {
+      InProgressCheck& request = requests_in_progress_[request_id];
+      if (request.install_immediately) {
+        installer->set_install_immediately(true);
+        break;
       }
-
-      // Source parameter ensures that we only see the completion event for the
-      // the installer we started.
-      registrar_.Add(this, NOTIFICATION_CRX_INSTALLER_DONE,
-                     content::Source<CrxInstaller>(installer));
-    } else {
-      for (const int request_id : crx_file.request_ids) {
-        InProgressCheck& request = requests_in_progress_[request_id];
-        request.in_progress_ids_.erase(crx_file.info.extension_id);
-      }
-      request_ids.insert(crx_file.request_ids.begin(),
-                         crx_file.request_ids.end());
     }
-    fetched_crx_files_.pop();
+
+    running_crx_installs_[installer] = std::move(crx_file);
+
+    // Source parameter ensures that we only see the completion event for an
+    // installer we started.
+    registrar_.Add(this, NOTIFICATION_CRX_INSTALLER_DONE,
+                   content::Source<CrxInstaller>(installer));
+  } else {
+    for (const int request_id : crx_file.request_ids) {
+      InProgressCheck& request = requests_in_progress_[request_id];
+      request.in_progress_ids_.erase(crx_file.info.extension_id);
+    }
+    request_ids.insert(crx_file.request_ids.begin(),
+                       crx_file.request_ids.end());
   }
 
   for (const int request_id : request_ids)
@@ -636,13 +625,14 @@ void ExtensionUpdater::Observe(int type,
   DCHECK_EQ(NOTIFICATION_CRX_INSTALLER_DONE, type);
 
   registrar_.Remove(this, NOTIFICATION_CRX_INSTALLER_DONE, source);
-  crx_install_is_running_ = false;
 
   // If installing this file didn't succeed, we may need to re-download it.
   const Extension* extension = content::Details<const Extension>(details).ptr();
 
   CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
-  FetchedCRXFile& crx_file = current_crx_file_;
+  auto iter = running_crx_installs_.find(installer);
+  DCHECK(iter != running_crx_installs_.end());
+  FetchedCRXFile& crx_file = iter->second;
   if (!extension && installer->verification_check_failed() &&
       !crx_file.callback.is_null()) {
     // If extension downloader asked us to notify it about failed installations,
@@ -662,8 +652,7 @@ void ExtensionUpdater::Observe(int type,
     }
   }
 
-  // If any files are available to update, start one.
-  MaybeInstallCRXFile();
+  running_crx_installs_.erase(iter);
 }
 
 void ExtensionUpdater::NotifyStarted() {

@@ -88,6 +88,7 @@ void SendReport(
   resource_request->url = report_uri;
   resource_request->method = "POST";
   resource_request->load_flags = net::ReportSender::kLoadFlags;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);

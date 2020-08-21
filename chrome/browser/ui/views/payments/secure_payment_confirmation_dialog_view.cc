@@ -323,8 +323,10 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
     DialogViewID icon_id) {
   std::unique_ptr<views::View> row = std::make_unique<views::View>();
 
-  row->SetBorder(
-      views::CreateSolidSidedBorder(0, 0, 1, 0, gfx::kGoogleGrey200));
+  row->SetBorder(views::CreateSolidSidedBorder(
+      0, 0, 1, 0,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SeparatorColor)));
 
   views::GridLayout* layout =
       row->SetLayoutManager(std::make_unique<views::GridLayout>());

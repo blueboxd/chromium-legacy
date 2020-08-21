@@ -35,7 +35,9 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
                                                const std::string& error)>;
 
   // Creates a ZipFileInstaller that invokes |done_callback| when done.
-  static scoped_refptr<ZipFileInstaller> Create(DoneCallback done_callback);
+  static scoped_refptr<ZipFileInstaller> Create(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      DoneCallback done_callback);
 
   // Creates a temporary directory and unzips the extension in it.
   void LoadFromZipFile(const base::FilePath& zip_file);
@@ -50,7 +52,9 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
   FRIEND_TEST_ALL_PREFIXES(ZipFileInstallerTest, Theme_FileExtractionFilter);
   FRIEND_TEST_ALL_PREFIXES(ZipFileInstallerTest, ManifestExtractionFilter);
 
-  explicit ZipFileInstaller(DoneCallback done_callback);
+  explicit ZipFileInstaller(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      DoneCallback done_callback);
   ~ZipFileInstaller();
 
   void LoadFromZipFileImpl(const base::FilePath& zip_file,
@@ -80,6 +84,9 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
 
   // File containing the extension to unzip.
   base::FilePath zip_file_;
+
+  // Task runner for file I/O.
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

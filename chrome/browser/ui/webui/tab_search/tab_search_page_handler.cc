@@ -195,8 +195,12 @@ void TabSearchPageHandler::TabChangedAt(content::WebContents* contents,
                                         TabChangeType change_type) {
   // TODO(crbug.com/1112496): Support more values for TabChangeType and filter
   // out the changes we are not interested in.
-  if (change_type == TabChangeType::kAll)
-    ScheduleDebounce();
+  if (change_type != TabChangeType::kAll)
+    return;
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!browser)
+    return;
+  page_->TabUpdated(GetTabData(browser->tab_strip_model(), contents, index));
 }
 
 void TabSearchPageHandler::ScheduleDebounce() {

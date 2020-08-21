@@ -78,8 +78,6 @@ blink_core_sources("paint") {
     "embedded_content_painter.h",
     "embedded_object_painter.cc",
     "embedded_object_painter.h",
-    "fallback_theme.cc",
-    "fallback_theme.h",
     "fieldset_paint_info.cc",
     "fieldset_paint_info.h",
     "fieldset_painter.cc",

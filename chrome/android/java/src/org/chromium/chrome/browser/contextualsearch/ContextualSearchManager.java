@@ -1607,7 +1607,7 @@ public class ContextualSearchManager
                             mTranslateController.getTranslateServiceFluentLanguages();
                     fluentLanguages = fluentLanguages != null ? fluentLanguages : "";
                     mContext.setResolveProperties(mPolicy.getHomeCountry(mActivity),
-                            mPolicy.maySendBasePageUrl(), interaction.getEventId(),
+                            mPolicy.doSendBasePageUrl(), interaction.getEventId(),
                             interaction.getEncodedUserInteractions(), targetLanguage,
                             fluentLanguages, mPolicy.doRelatedSearches());
                 }

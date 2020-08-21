@@ -2208,11 +2208,20 @@
   <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
     Show lock screen when waking from sleep
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_SCREEN_LOCK_ENABLE_TITLE" desc="The title on the toggle to enable screen lock for current user.">
+    Screen lock
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SCREEN_LOCK_ENABLE_SUBTITLE" desc="The subtitle on the toggle to enable screen lock for current user.">
+    Require password to unlock device for added security
+  </message>
   <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_SHOW" desc="One of options of the lock screen notification mode to show all the notifications and its contents on the lock screen.">
     Show all notification content
   </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_OR_PASSWORD" desc="The account password or a custom PIN can be used to unlock the device.">
     PIN or password
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ENABLE_PIN" desc="Text on the toggle that allows the user to enable PIN in addition to password for the lock screen.">
+    Use PIN in addition to password
   </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_AUTOSUBMIT" desc="Option to enable PIN auto-submit">
     Unlock automatically once PIN is entered
@@ -2294,6 +2303,9 @@
   </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK" desc="Text on the people page which opens up the security and sign-in section.">
     Security and sign-in
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SCREEN_LOCK_TITLE" desc="Text on the people page which opens up the screen lock and sign-in section.">
+    Screen lock and sign-in
   </message>
   <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
     Enter your password to configure screen lock

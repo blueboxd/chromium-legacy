@@ -780,6 +780,7 @@ class TabListMediator {
                     int index = mModel.indexFromId(currentGroupSelectedTab.getId());
                     if (index == TabModel.INVALID_TAB_INDEX) return;
                     mModel.get(index).model.set(TabProperties.TITLE, title);
+                    updateDescriptionString(PseudoTab.fromTab(tab), mModel.get(index).model);
                 }
 
                 @Override
@@ -1018,6 +1019,7 @@ class TabListMediator {
         mModel.get(index).model.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
         mModel.get(index).model.set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).model.set(TabProperties.TITLE, getLatestTitleForTab(pseudoTab));
+        updateDescriptionString(pseudoTab, mModel.get(index).model);
         if (isRealTab) {
             mModel.get(index).model.set(
                     TabProperties.URL_DOMAIN, getDomainForTab(pseudoTab.getTab()));
@@ -1275,6 +1277,7 @@ class TabListMediator {
         } else {
             tabInfo.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
             tabInfo.set(TabProperties.TAB_CLOSED_LISTENER, isRealTab ? mTabClosedListener : null);
+            updateDescriptionString(pseudoTab, tabInfo);
         }
 
         if (index >= mModel.size()) {
@@ -1330,6 +1333,20 @@ class TabListMediator {
         }
         // TODO(1024925): Address i18n issue for the list delimiter.
         return TextUtils.join(", ", domainNames);
+    }
+
+    private void updateDescriptionString(PseudoTab pseudoTab, PropertyModel model) {
+        if (!mActionsOnAllRelatedTabs) return;
+        int numOfRelatedTabs = getRelatedTabsForId(pseudoTab.getId()).size();
+        if (numOfRelatedTabs > 1) {
+            String title = getLatestTitleForTab(pseudoTab);
+            title = title.equals(pseudoTab.getTitle(mTitleProvider)) ? "" : title;
+            model.set(TabProperties.CONTENT_DESCRIPTION_STRING,
+                    mContext.getString(R.string.accessibility_expand_tab_group, title,
+                            String.valueOf(numOfRelatedTabs)));
+        } else {
+            model.set(TabProperties.CONTENT_DESCRIPTION_STRING, null);
+        }
     }
 
     @VisibleForTesting

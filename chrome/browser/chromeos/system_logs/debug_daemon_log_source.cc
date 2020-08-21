@@ -24,6 +24,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "components/feedback/feedback_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,64 +69,6 @@ const int64_t kMaxLogSize = 1024 * 1024;
 
 }  // namespace
 
-bool ReadEndOfFile(const base::FilePath& path,
-                   std::string* contents,
-                   size_t max_size) {
-  if (!contents) {
-    LOG(ERROR) << "contents buffer is null.";
-    return false;
-  }
-
-  if (path.ReferencesParent()) {
-    LOG(ERROR) << "ReadEndOfFile can't be called on file paths with parent "
-                  "references.";
-    return false;
-  }
-
-  base::ScopedFILE fp(base::OpenFile(path, "r"));
-  if (!fp) {
-    PLOG(ERROR) << "Failed to open file " << path.value();
-    return false;
-  }
-
-  std::unique_ptr<char[]> chunk(new char[max_size]);
-  std::unique_ptr<char[]> last_chunk(new char[max_size]);
-  chunk[0] = '\0';
-  last_chunk[0] = '\0';
-
-  size_t total_bytes_read = 0;
-  size_t bytes_read = 0;
-
-  // Since most logs are not seekable, read until the end keeping tracking of
-  // last two chunks.
-  while ((bytes_read = fread(chunk.get(), 1, max_size, fp.get())) == max_size) {
-    total_bytes_read += bytes_read;
-    last_chunk.swap(chunk);
-    chunk[0] = '\0';
-  }
-  total_bytes_read += bytes_read;
-
-  if (total_bytes_read < max_size) {
-    // File is smaller than max_size
-    contents->assign(chunk.get(), bytes_read);
-  } else if (bytes_read == 0) {
-    // File is exactly max_size or a multiple of max_size
-    contents->assign(last_chunk.get(), max_size);
-  } else {
-    // Number of bytes to keep from last_chunk
-    size_t bytes_from_last = max_size - bytes_read;
-
-    // Shift left last_chunk by size of chunk and fit it in the back of
-    // last_chunk.
-    memmove(last_chunk.get(), last_chunk.get() + bytes_read, bytes_from_last);
-    memcpy(last_chunk.get() + bytes_from_last, chunk.get(), bytes_read);
-
-    contents->assign(last_chunk.get(), max_size);
-  }
-
-  return true;
-}
-
 // Reads the contents of the user log files listed in |kUserLogs| and adds them
 // to the |response| parameter.
 void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
@@ -134,9 +77,9 @@ void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
     std::string profile_prefix = "Profile[" + base::NumberToString(i) + "] ";
     for (const auto& log : kUserLogs) {
       std::string value;
-      const bool read_success =
-          ReadEndOfFile(profile_dirs[i].Append(log.log_file_relative_path),
-                        &value, kMaxLogSize);
+      const bool read_success = feedback_util::ReadEndOfFile(
+          profile_dirs[i].Append(log.log_file_relative_path), kMaxLogSize,
+          &value);
 
       if (read_success && value.length() == kMaxLogSize) {
         value.replace(0, strlen(kLogTruncated), kLogTruncated);

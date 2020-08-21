@@ -169,7 +169,10 @@ js_library("tether_connection_dialog") {
 }
 
 js_library("cellular_setup_dialog") {
-  deps = [ "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog" ]
+  deps = [
+    "//ui/webui/resources/cr_components/chromeos/cellular_setup",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+  ]
 }
 
 # TODO: Uncomment as the Polymer3 migration makes progress.

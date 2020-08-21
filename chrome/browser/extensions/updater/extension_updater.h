@@ -31,6 +31,7 @@ class Profile;
 
 namespace extensions {
 
+class CrxInstaller;
 class ExtensionCache;
 class ExtensionPrefs;
 class ExtensionRegistry;
@@ -218,7 +219,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void UpdatePingData(const ExtensionId& id, const PingResult& ping_result);
 
   // Starts installing a crx file that has been fetched but not installed yet.
-  void MaybeInstallCRXFile();
+  void InstallCRXFile(FetchedCRXFile crx_file);
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -281,13 +282,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Observes CRX installs we initiate.
   content::NotificationRegistrar registrar_;
 
-  // True when a CrxInstaller is doing an install.  Used in MaybeUpdateCrxFile()
-  // to keep more than one install from running at once.
-  bool crx_install_is_running_ = false;
-
-  // Fetched CRX files waiting to be installed.
-  std::queue<FetchedCRXFile> fetched_crx_files_;
-  FetchedCRXFile current_crx_file_;
+  // CRX installs that are currently in progress. Used to get the FetchedCRXFile
+  // when we receive NOTIFICATION_CRX_INSTALLER_DONE.
+  std::map<CrxInstaller*, FetchedCRXFile> running_crx_installs_;
 
   ExtensionCache* extension_cache_ = nullptr;
 

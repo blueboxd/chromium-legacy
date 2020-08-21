@@ -130,7 +130,7 @@ bool ShouldForceDirectCompositionRootSurfaceFullDamage() {
     if ((brga_flags & kSupportBits) == 0)
       return false;
     return true;
-  };
+  }();
   return should_force;
 }
 #endif  // OS_WIN

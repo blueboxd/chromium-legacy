@@ -69,6 +69,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 
+// Enables more ways to interact with the window cycle list, i.e. mouse, touch,
+// gestures, and alternate keys.
+// TODO(chinsenj): Remove this when the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kInteractiveWindowCycleList;
+
 // Enables the redesigned managed device info UI in the system tray.
 ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
 
@@ -181,6 +186,8 @@ ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsInteractiveWindowCycleListEnabled();
 
 ASH_PUBLIC_EXPORT bool IsManagedDeviceUIRedesignEnabled();
 

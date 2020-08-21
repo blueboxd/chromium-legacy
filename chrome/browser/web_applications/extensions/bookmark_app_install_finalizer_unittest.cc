@@ -72,12 +72,12 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
               nullptr,
               nullptr) {}
 
-    void OnUnpackSuccess(
-        const base::FilePath& temp_dir,
-        const base::FilePath& extension_dir,
+    void OnUnpackSuccessOnSharedFileThread(
+        base::FilePath temp_dir,
+        base::FilePath extension_dir,
         std::unique_ptr<base::DictionaryValue> original_manifest,
-        const Extension* extension,
-        const SkBitmap& install_icon,
+        scoped_refptr<const Extension> extension,
+        SkBitmap install_icon,
         declarative_net_request::RulesetChecksums ruleset_checksums) override {
       run_loop_.Quit();
     }

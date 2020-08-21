@@ -413,8 +413,10 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   StoresToCheck stores_to_check({GetUrlHighConfidenceAllowlistId()});
-  if (!enabled_ || !CanCheckUrl(url) ||
-      !AreAllStoresAvailableNow(stores_to_check)) {
+  bool all_stores_available = AreAllStoresAvailableNow(stores_to_check);
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.AllStoresAvailable",
+                        all_stores_available);
+  if (!enabled_ || !CanCheckUrl(url) || !all_stores_available) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
     // navigation URL, or if the allowlist isn't ready yet, return MATCH.
     // The full URL check won't be performed, but hash-based check will still

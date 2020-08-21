@@ -193,7 +193,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Called when the |response| from the real-time lookup service is received.
   // |is_rt_lookup_successful| is true if the response code is OK and the
   // response body is successfully parsed.
+  // |is_cached_response| is true if the response is a cache hit. In such a
+  // case, fall back to hash-based checks if the cached verdict is |SAFE|.
   void OnRTLookupResponse(bool is_rt_lookup_successful,
+                          bool is_cached_response,
                           std::unique_ptr<RTLookupResponse> response);
 
   // Logs |request| on any open chrome://safe-browsing pages.

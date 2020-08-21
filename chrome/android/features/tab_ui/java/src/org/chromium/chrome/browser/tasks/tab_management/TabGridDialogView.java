@@ -45,6 +45,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Parent for TabGridDialog component.
@@ -89,6 +91,7 @@ public class TabGridDialogView extends FrameLayout
     private AnimatorSet mHideDialogAnimation;
     private AnimatorListenerAdapter mShowDialogAnimationListener;
     private AnimatorListenerAdapter mHideDialogAnimationListener;
+    private Map<View, Integer> mAccessibilityImportanceMap = new HashMap<>();
     private int mSideMargin;
     private int mTopMargin;
     private int mOrientation;
@@ -190,6 +193,9 @@ public class TabGridDialogView extends FrameLayout
                 mCurrentDialogAnimator = null;
                 mDialogContainerView.requestFocus();
                 mDialogContainerView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+                // TODO(crbug.com/1101561): Move clear/restore accessibility importance logic to
+                // ScrimView so that it can be shared by all components using ScrimView.
+                clearBackgroundViewAccessibilityImportance();
             }
         };
         mHideDialogAnimationListener = new AnimatorListenerAdapter() {
@@ -198,6 +204,7 @@ public class TabGridDialogView extends FrameLayout
                 setVisibility(View.GONE);
                 mCurrentDialogAnimator = null;
                 mDialogContainerView.clearFocus();
+                restoreBackgroundViewAccessibilityImportance();
             }
         };
 
@@ -240,6 +247,35 @@ public class TabGridDialogView extends FrameLayout
                 mCurrentUngroupBarAnimator = null;
             }
         });
+    }
+
+    private void clearBackgroundViewAccessibilityImportance() {
+        assert mAccessibilityImportanceMap.size() == 0;
+
+        ViewGroup parent = (ViewGroup) getParent();
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View view = parent.getChildAt(i);
+            if (view == TabGridDialogView.this) {
+                continue;
+            }
+            mAccessibilityImportanceMap.put(view, view.getImportantForAccessibility());
+            view.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+        }
+    }
+
+    private void restoreBackgroundViewAccessibilityImportance() {
+        ViewGroup parent = (ViewGroup) getParent();
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View view = parent.getChildAt(i);
+            if (view == TabGridDialogView.this) {
+                continue;
+            }
+            assert mAccessibilityImportanceMap.containsKey(view);
+            Integer importance = mAccessibilityImportanceMap.get(view);
+            view.setImportantForAccessibility(
+                    importance == null ? IMPORTANT_FOR_ACCESSIBILITY_AUTO : importance);
+        }
+        mAccessibilityImportanceMap.clear();
     }
 
     void setupDialogAnimation(View sourceView) {

@@ -104,35 +104,6 @@ TEST_F(ContextualSearchFieldTrialTest, IntegerJunkIgnored) {
       field_trial_->GetSampleSurroundingSize());
 }
 
-TEST_F(ContextualSearchFieldTrialTest, BooleanDefaultValue) {
-  // Should return this default value.
-  EXPECT_FALSE(field_trial_->IsSendBasePageURLDisabled());
-}
-
-TEST_F(ContextualSearchFieldTrialTest, BooleanParamOverrides) {
-  // Params override defaults.
-  field_trial_->SetParamValue("any");
-  EXPECT_TRUE(field_trial_->IsSendBasePageURLDisabled());
-}
-
-TEST_F(ContextualSearchFieldTrialTest, BooleanFalseParam) {
-  field_trial_->SetParamValue("false");
-  EXPECT_FALSE(field_trial_->IsSendBasePageURLDisabled());
-}
-
-TEST_F(ContextualSearchFieldTrialTest, BooleanSwitchOverrides) {
-  field_trial_->SetParamValue("false");
-  // Switches override params.
-  field_trial_->SetSwitchValue("any");
-  EXPECT_TRUE(field_trial_->IsSendBasePageURLDisabled());
-}
-
-TEST_F(ContextualSearchFieldTrialTest, BooleanEmptySwitch) {
-  // An empty switch that's present should return true;
-  field_trial_->SetSwitchValue("");
-  EXPECT_TRUE(field_trial_->IsSendBasePageURLDisabled());
-}
-
 TEST_F(ContextualSearchFieldTrialTest, StringDefaultEmpty) {
   // Default should return an empty string.
   EXPECT_TRUE(field_trial_->GetResolverURLPrefix().empty());

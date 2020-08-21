@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -25,20 +26,10 @@
 
 namespace {
 
-constexpr char kWellKnownUrlPath[] = ".well-known/change-password";
-
 base::string16 GetDisplayUsername(const base::string16& username) {
   return username.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : username;
-}
-
-std::string CreateChangeUrl(const GURL& url) {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kWellKnownChangePassword)) {
-    return url.GetOrigin().spec() + kWellKnownUrlPath;
-  }
-  return url.GetOrigin().spec();
 }
 
 }  // namespace
@@ -263,7 +254,8 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
             url_formatter::kFormatUrlOmitTrivialSubdomains |
             url_formatter::kFormatUrlTrimAfterHost,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-    ui_credential.change_password_url = CreateChangeUrl(ui_credential.url);
+    ui_credential.change_password_url =
+        password_manager::CreateChangePasswordUrl(ui_credential.url).spec();
   }
 
   return ui_credential;

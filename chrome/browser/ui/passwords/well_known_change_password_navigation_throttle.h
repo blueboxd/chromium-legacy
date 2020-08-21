@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_throttle.h"
 
 #include "components/password_manager/core/browser/well_known_change_password_state.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 class GURL;
 namespace content {
@@ -20,6 +21,15 @@ class NavigationHandle;
 namespace password_manager {
 class ChangePasswordUrlService;
 }  // namespace password_manager
+
+// Used to report UKMs about the support for .well-known/change-password.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class WellKnownChangePasswordResult {
+  kFallbackToOriginUrl = 0,
+  kFallbackToOverrideUrl = 1,
+  kUsedWellKnownChangePassword = 2,
+};
 
 // This NavigationThrottle checks whether a site supports the
 // .well-known/change-password url. To check whether a site supports the
@@ -52,10 +62,13 @@ class WellKnownChangePasswordNavigationThrottle
   void OnProcessingFinished(bool is_supported) override;
   // Redirects to a given URL in the same tab.
   void Redirect(const GURL& url);
+  // Records the given UKM metric.
+  void RecordMetric(WellKnownChangePasswordResult result);
 
   password_manager::WellKnownChangePasswordState
       well_known_change_password_state_{this};
   password_manager::ChangePasswordUrlService* change_password_url_service_;
+  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_WELL_KNOWN_CHANGE_PASSWORD_NAVIGATION_THROTTLE_H_

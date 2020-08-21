@@ -21,6 +21,7 @@
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/state_store.h"
@@ -310,6 +311,14 @@ size_t RulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {
 void RulesRegistry::DeserializeAndAddRules(const std::string& extension_id,
                                            std::unique_ptr<base::Value> rules) {
   DCHECK_CURRENTLY_ON(owner_thread());
+
+  // Since this is called in response to asynchronously loading rules from
+  // storage, the extension may have been unloaded by the time this is called.
+  if (!ExtensionRegistry::Get(browser_context())
+           ->enabled_extensions()
+           .Contains(extension_id)) {
+    return;
+  }
 
   std::string error = AddRulesNoFill(extension_id, RulesFromValue(rules.get()),
                                      &rules_, nullptr);

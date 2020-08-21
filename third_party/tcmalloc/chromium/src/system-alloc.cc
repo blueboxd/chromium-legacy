@@ -248,8 +248,6 @@ void* AllocWithMmap(size_t length, bool is_aslr_enabled) {
 COMPILE_ASSERT(kAddressBits <= 8 * sizeof(void*),
                address_bits_larger_than_pointer_size);
 
-static SpinLock spinlock(SpinLock::LINKER_INITIALIZED);
-
 #if defined(HAVE_MMAP) || defined(MADV_FREE)
 #ifdef HAVE_GETPAGESIZE
 static size_t pagesize = 0;
@@ -638,6 +636,7 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
   // Discard requests that overflow
   if (size + alignment < size) return NULL;
 
+  static SpinLock spinlock(SpinLock::LINKER_INITIALIZED);
   SpinLockHolder lock_holder(&spinlock);
 
   if (!system_alloc_inited) {

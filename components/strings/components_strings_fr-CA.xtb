@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
 <translation id="1125573121925420732">Les avertissements peuvent être fréquents lorsque les sites Web mettent à jour leurs mesures de sécurité. Cette situation devrait bientôt s'améliorer.</translation>
 <translation id="112840717907525620">Cache de la règle valide</translation>
+<translation id="1130564665089811311">Bouton Traduire la page, appuyez sur la touche Entrée pour traduire cette page avec Google Traduction</translation>
 <translation id="1131264053432022307">L'image que vous avez copiée</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1151972924205500581">Veuillez entrer le mot de passe</translation>
@@ -404,6 +405,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2634124572758952069">Impossible de trouver l'adresse IP du serveur de <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">État :</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour effacer votre historique de navigation, vos témoins, votre cache et plus encore dans les paramètres de Chrome</translation>
 <translation id="2650446666397867134">Accès au fichier refusé</translation>
 <translation id="2653659639078652383">Envoyer</translation>
 <translation id="2660779039299703961">Événement</translation>
@@ -426,6 +428,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2705137772291741111">La copie sauvegardée (mise en cache) de ce site était illisible.</translation>
 <translation id="2709516037105925701">Remplissage automatique</translation>
 <translation id="2713444072780614174">Blanc</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour gérer vos données de paiement et vos cartes de crédit dans les paramètres de Chrome</translation>
 <translation id="2721148159707890343">Demande réussie</translation>
 <translation id="272451190272506600">Touchez le capteur pour payer</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
@@ -636,6 +639,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="3630155396527302611">Si la page est déjà répertoriée comme étant un programme autorisé à accéder
     au réseau, essayez de la supprimer de la liste, puis de la rajouter.</translation>
 <translation id="3631244953324577188">Données biométriques</translation>
+<translation id="3633738897356909127">Bouton Mise à jour de Chrome, appuyez sur la touche Entrée pour mettre à jour Chrome dans les paramètres de Chrome</translation>
 <translation id="3634530185120165534">Bac 5</translation>
 <translation id="3640766068866876100">Fiche, 4 po x 6 po, ext</translation>
 <translation id="3650584904733503804">Validation réussie</translation>
@@ -854,6 +858,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4506599922270137252">De communiquer avec l'administrateur système</translation>
 <translation id="450710068430902550">Partage avec l'administrateur</translation>
 <translation id="4508814173490746936">Impossible d'utiliser Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Entrée pour traduire cette page avec Google Traduction</translation>
 <translation id="4510487217173779431">Enveloppe Chou4</translation>
 <translation id="4515275063822566619">Les cartes et les adresses proviennent de Chrome et de votre compte Google (<ph name="ACCOUNT_EMAIL" />). Vous pouvez les gérer dans <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Enveloppe COM10</translation>
@@ -934,6 +939,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4879725228911483934">Ouvrir et placer des fenêtres sur vos écrans</translation>
 <translation id="4880827082731008257">Rechercher dans l'historique</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
+<translation id="4889420713887366944">Bouton Ouvrir une fenêtre de navigation privée, appuyez sur la touche Entrée pour ouvrir une nouvelle fenêtre de navigation privée afin de naviguer en mode privé</translation>
 <translation id="4892518386797173871">Arrière</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Enregistrer…</translation>
@@ -1095,6 +1101,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="5523118979700054094">Nom de la règle</translation>
 <translation id="55293785478302737">Agrafage par le bord</translation>
 <translation id="553484882784876924">Enveloppe Prc6</translation>
+<translation id="5535133333442455806">Bouton Effacer les données, appuyez sur Entrée pour effacer votre historique de navigation, vos témoins, votre cache et plus encore dans les paramètres de Chrome</translation>
 <translation id="5536214594743852365">Afficher la section « <ph name="SECTION" /> »</translation>
 <translation id="5539243836947087108">Radeau</translation>
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
@@ -1594,6 +1601,7 @@ Détails supplémentaires :
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">La valeur « <ph name="VALUE" /> » est hors limites.</translation>
 <translation id="7613889955535752492">Expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Entrée pour afficher et gérer vos mots de passe dans les paramètres de Chrome</translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez l'entrer ci-dessous.</translation>
 <translation id="7616645509853975347">Votre administrateur a activé les connecteurs Chrome Enterprise dans votre navigateur. Ces connecteurs ont accès à certaines de vos données.</translation>
 <translation id="7619838219691048931">Feuille de fin</translation>
@@ -1850,6 +1858,8 @@ Détails supplémentaires :
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8728672262656704056">Vous êtes passé en mode de navigation privée</translation>
 <translation id="8730621377337864115">Terminé</translation>
+<translation id="8731544501227493793">Bouton Gérer les mots de passe, appuyez sur la touche Entrée pour afficher et gérer vos mots de passe dans les paramètres de Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour ouvrir une nouvelle fenêtre de navigation privée afin de naviguer en mode privé</translation>
 <translation id="8738058698779197622">Pour établir une connexion sécurisée, votre horloge doit être réglée correctement. En effet, les sites Web utilisent des certificats d'authentification valides pour une durée limitée. L'horloge de votre appareil étant incorrecte, Chromium ne peut pas authentifier les certificats.</translation>
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Diagnostic du problème en cours.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> est votre code pour <ph name="ORIGIN" /></translation>
@@ -1866,6 +1876,7 @@ Détails supplémentaires :
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> a activé les connecteurs Chrome Enterprise dans votre navigateur. Ces connecteurs ont accès à certaines de vos données.</translation>
 <translation id="8805819170075074995">Entrée de liste « <ph name="LANGUAGE_ID" /> » : l'entrée a été ignorée, car elle est aussi incluse dans la politique SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Couper après chaque page</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour mettre à jour à jour Chrome dans les paramètres de Chrome</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="883848425547221593">Autres favoris</translation>
 <translation id="884264119367021077">Adresse d'expédition</translation>
@@ -1885,6 +1896,7 @@ Détails supplémentaires :
 <translation id="890493561996401738">Bouton Supprimer la suggestion, appuyez sur Entrée pour supprimer, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Vous êtes passé en mode de navigation privée</translation>
 <translation id="8912362522468806198">Compte Google</translation>
+<translation id="8913778647360618320">Bouton de gestion des modes de paiement, appuyez sur la touche Entrée pour gérer vos données de paiement et vos cartes de crédit dans les paramètres de Chrome</translation>
 <translation id="8918231688545606538">Cette page est suspecte</translation>
 <translation id="892588693504540538">Perforation en haut à droite</translation>
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte sur votre compte Google?</translation>

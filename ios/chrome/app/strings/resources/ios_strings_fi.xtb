@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Uusi ikkuna</translation>
 <translation id="1580783302095112590">Viesti lähetetty.</translation>
 <translation id="1582732959743469162">Tämä keskeyttää nykyisen latauksen edistymisen.</translation>
+<translation id="1605405588277479165">Pois päältä – Ei suositeltu</translation>
 <translation id="1605658421715042784">Kopioi kuva</translation>
 <translation id="1608337082864370066">Hae kopioitua kuvaa</translation>
 <translation id="1612730193129642006">Näytä välilehtiruudukko</translation>
@@ -496,6 +497,7 @@ Sivustot eivät näe selaustoimintaasi eri sivustoilla evästeiden kautta esim. 
 <translation id="6624219055418309072">Estä incognito-tilassa</translation>
 <translation id="6628106477656132239">Virheellinen viimeinen voimassaolopäivä</translation>
 <translation id="6638511529934826365">Zoomaa tekstiä…</translation>
+<translation id="6639730758971422557">Voit laittaa Selaussuojan päälle valitsemalla <ph name="BEGIN_LINK" />Synkronointi ja Google-palvelut<ph name="END_LINK" /> ‑kohdasta Selaussuoja.</translation>
 <translation id="6642362222295953972">Siirry aiemmalle välilehdelle</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6645899968535965230">QR-koodi: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Sivustot eivät näe selaustoimintaasi eri sivustoilla evästeiden kautta esim. 
 <translation id="7561196759112975576">Aina</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Ponn.ikk. estetty (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Poista salasana</translation>
 <translation id="7638584964844754484">Väärä tunnuslause.</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peruuta</translation>
@@ -658,6 +661,7 @@ Sivustot voivat nähdä selaustoimintaasi eri sivustoilta evästeiden kautta esi
 <translation id="8529767659511976195">Uusi</translation>
 <translation id="8532105204136943229">Voimassa (vuosi)</translation>
 <translation id="8533166274275423134">Avoinna muualla</translation>
+<translation id="8533670235862049797">Selaussuoja on päällä</translation>
 <translation id="8534481786647257214">Google+ -viesti julkaistu.</translation>
 <translation id="8548878600947630424">Haku sivulta...</translation>
 <translation id="8574235780160508979">Chromen käyttöehdot muuttuvat 31.3. <ph name="BEGIN_LINK" />Lue ehdot<ph name="END_LINK" /></translation>

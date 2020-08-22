@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Fereastră nouă</translation>
 <translation id="1580783302095112590">E-mail trimis.</translation>
 <translation id="1582732959743469162">Aceasta va opri progresul descărcării actuale.</translation>
+<translation id="1605405588277479165">Dezactivată – Nu este recomandată</translation>
 <translation id="1605658421715042784">Copiază imaginea</translation>
 <translation id="1608337082864370066">Caută imaginea copiată</translation>
 <translation id="1612730193129642006">Afișează Grila de file</translation>
@@ -496,6 +497,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="6624219055418309072">Blochează în modul incognito</translation>
 <translation id="6628106477656132239">Dată de expirare nevalidă</translation>
 <translation id="6638511529934826365">Fă zoom pe text…</translation>
+<translation id="6639730758971422557">Pentru a activa Navigarea sigură, deschide <ph name="BEGIN_LINK" />Sincronizarea și Serviciile Google<ph name="END_LINK" /> și atinge Navigare sigură.</translation>
 <translation id="6642362222295953972">Comută la o filă existentă</translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6645899968535965230">Cod QR: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="7561196759112975576">Întotdeauna</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Pop-upuri blocate (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Șterge parola</translation>
 <translation id="7638584964844754484">Expresie de acces incorectă</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>
@@ -658,6 +661,7 @@ Site-urile pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe
 <translation id="8529767659511976195">Nou</translation>
 <translation id="8532105204136943229">An expirare</translation>
 <translation id="8533166274275423134">Deschisă în altă parte</translation>
+<translation id="8533670235862049797">Navigarea sigură este activată</translation>
 <translation id="8534481786647257214">S-a postat pe Google+.</translation>
 <translation id="8548878600947630424">Găsește în pagină...</translation>
 <translation id="8574235780160508979">Termenii și condițiile Chrome se modifică la 31 martie. <ph name="BEGIN_LINK" />Consultați<ph name="END_LINK" /></translation>

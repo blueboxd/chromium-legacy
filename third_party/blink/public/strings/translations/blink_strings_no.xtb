@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">anerkjennelser</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">node med flere mulige valg – <ph name="SELECTED" /> av <ph name="COUNT" /> er valgt.</translation>
 <translation id="1589122976691792535">område</translation>
 <translation id="1591562245178063882">Denne måneden</translation>
 <translation id="1637811476055996098">Velg filer</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vennligst fyll ut dette feltet.</translation>
 <translation id="2508569020611168319">faneliste</translation>
+<translation id="2530182415807757784">node med flere mulige valg – ingen er valgt.</translation>
 <translation id="2561842179657104141">vis flere mediakontroller</translation>
 <translation id="2572483411312390101">spill av</translation>
 <translation id="2613802280814924224">Skriv inn en gyldig verdi. Den nærmeste, gyldige verdien er <ph name="VALID_VALUE" />.</translation>

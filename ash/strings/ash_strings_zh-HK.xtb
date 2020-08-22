@@ -14,6 +14,7 @@
 <translation id="109942774857561566">我好悶</translation>
 <translation id="1104084341931202936">顯示無障礙功能設定</translation>
 <translation id="1104621072296271835">連結您的裝置，以獲得更佳的體驗</translation>
+<translation id="1119348796022671382">主題顏色模式會使用從您桌布擷取的顏色，為介面添上淡雅色彩。</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1153356358378277386">已配對的裝置</translation>
 <translation id="1175572348579024023">捲動</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">已開啟</translation>
 <translation id="1419738280318246476">解鎖裝置即可執行有關通知的動作</translation>
 <translation id="1420408895951708260">切換「夜燈模式」。<ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">已擷取螢幕擷圖，並儲存至剪貼簿</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1455242230282523554">顯示語言設定</translation>
 <translation id="1460620680449458626">音量校咗靜音。</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">您可在 [設定] &gt; [無障礙功能] 中停用「按鈕控制」。</translation>
 <translation id="1654477262762802994">開始語音查詢</translation>
 <translation id="1665244008632896072">切換「暗光模式」。<ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">中性色模式不會使用從桌布擷取的顏色，而是改用一組中性色的淺色調或深色調。</translation>
 <translation id="1677472565718498478">電量尚餘 <ph name="TIME" /></translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> 計時器 · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">單聲道音效</translation>
 <translation id="3009178788565917040">輸出</translation>
 <translation id="3033545621352269033">已開啟</translation>
+<translation id="3038571455154067151">如要登入帳戶，請輸入 Family Link 家長存取碼</translation>
 <translation id="3051128274746680507">您的受管使用者檔案即將被移除。登入即可瞭解詳情。</translation>
 <translation id="3055162170959710888">您今天的裝置使用時間：<ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">狀態列，時間 <ph name="TIME" />，
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3977512764614765090">電量有 <ph name="PERCENTAGE" />%，宜家差緊電。</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右側後方連接埠)</translation>
+<translation id="40062176907008878">手寫</translation>
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="4021716437419160885">向下捲動</translation>
 <translation id="4028481283645788203">為安全起見，請輸入密碼</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">如要在上鎖畫面上查看通知，請將裝置解鎖並變更相關設定</translation>
 <translation id="4146833061457621061">播音樂</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> 由 <ph name="DOMAIN" /> 管理</translation>
+<translation id="4157822100366708405">深色主題背景設定</translation>
 <translation id="4181841719683918333">語言</translation>
 <translation id="4195877955194704651">自動點擊嘅掣</translation>
 <translation id="4197790712631116042">已關閉</translation>
 <translation id="4212472694152630271">改用 PIN</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
 <translation id="4217571870635786043">語音輸入</translation>
+<translation id="4229328187280698237">切換至平板電腦模式</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">顯示通知設定。通知已關閉</translation>
 <translation id="4269883910223712419">此裝置的管理員擁有下列權限：</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">確認螢幕設定</translation>
 <translation id="5083553833479578423">啟用更多「Google 助理」功能。</translation>
 <translation id="5114495209940374989">螢幕截圖</translation>
+<translation id="5123162024343028706">固定在上方</translation>
 <translation id="5136175204352732067">已連接不同的鍵盤</translation>
 <translation id="5168181903108465623">有可用投放裝置</translation>
 <translation id="5170568018924773124">在資料夾中顯示</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">已關閉</translation>
 <translation id="5302048478445481009">語言</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
+<translation id="5314219114274263156">已錄影螢幕畫面</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左側後方連接埠)</translation>
 <translation id="5379115545237091094">嘗試次數過多</translation>
 <translation id="5397578532367286026">管理員 (<ph name="MANAGER_EMAIL" />) 可以在 chrome.com 瞭解這位使用者的使用情況和記錄。</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5837036133683224804">停止喺<ph name="RECEIVER_NAME" />投放 <ph name="ROUTE_TITLE" /></translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="5876666360658629066">輸入家長存取碼</translation>
 <translation id="5887866489674258948">暗光模式</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">進行此更新時，螢幕顯示空白畫面的時間可能會比平時更長 (最多一分鐘)。請勿在更新期間按下開關按鈕。</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528179044667508675">請勿騷擾</translation>
+<translation id="65320610082834431">Emoji</translation>
 <translation id="6537270692134705506">擷取畫面</translation>
 <translation id="6537924328260219877">訊號強度係 <ph name="SIGNAL_STRENGTH" />，手機電量係 <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">正在投放至<ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">按一下或長按右鍵，「Google 助理」即可顯示選取項目的定義或單位轉換等相關資料。</translation>
 <translation id="7569509451529460200">已啟用點字和 ChromeVox</translation>
 <translation id="7579778809502851308">擷取螢幕畫面</translation>
+<translation id="7590883480672980941">輸入法設定</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
+<translation id="7618774594543487847">中性色</translation>
 <translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" />°</translation>
 <translation id="7642647758716480637">打開<ph name="NETWORK_NAME" />嘅設定，<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />，由管理員管理</translation>
 <translation id="8639760480004882931">剩餘電量：<ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> 計時器</translation>
+<translation id="8647931990447795414">如要新增使用者，請輸入 Family Link 家長存取碼</translation>
 <translation id="8649101189709089199">選取以朗讀</translation>
 <translation id="8652175077544655965">關閉設定</translation>
 <translation id="8653151467777939995">顯示通知設定。通知已開啟</translation>
 <translation id="8660331759611631213">71 嘅平方根</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">顯示網絡清單。<ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">色彩模式</translation>
 <translation id="8673028979667498656">270 度</translation>
 <translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="8683506306463609433">效能追蹤使用中</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="890616557918890486">變更來源</translation>
 <translation id="8909138438987180327">電量剩番 <ph name="PERCENTAGE" />%。</translation>
+<translation id="8913384980486163186">主題 (預設值)</translation>
+<translation id="8918251165865262378">切換至手提電腦模式</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支援這種語言。</translation>
 <translation id="8936501819958976551">已停用</translation>

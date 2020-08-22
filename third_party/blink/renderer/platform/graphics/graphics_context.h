@@ -423,6 +423,12 @@ class PLATFORM_EXPORT GraphicsContext {
                                           FloatPoint& p2,
                                           float stroke_width);
 
+  static Path GetPathForTextLine(const FloatPoint&,
+                                 float width,
+                                 float stroke_thickness,
+                                 StrokeStyle);
+  static bool ShouldUseStrokeForTextLine(StrokeStyle);
+
   static int FocusRingOutsetExtent(int offset, int width);
 
   void SetInDrawingRecorder(bool);

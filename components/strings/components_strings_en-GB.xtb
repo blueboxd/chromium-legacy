@@ -643,6 +643,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="362276910939193118">Show Full History</translation>
 <translation id="3630155396527302611">If it is already listed as a program allowed to access the network, try
       removing it from the list and adding it again.</translation>
+<translation id="3630699740441428070">Administrators of this device have configured your network connection, which may allow them to see your network traffic, including which websites that you visit.</translation>
 <translation id="3631244953324577188">Biometrics</translation>
 <translation id="3633738897356909127">Update Chrome button; press enter to update Chrome from your Chrome settings</translation>
 <translation id="3634530185120165534">Tray 5</translation>

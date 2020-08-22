@@ -5,10 +5,12 @@
 <translation id="1065672644894730302">Your preferences cannot be read.
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
+<translation id="107513968719897256">To separate personal and <ph name="NEW_USER" /> browsing, create a new profile in Chromium</translation>
 <translation id="1098170124587656448">Chromium can help keep you safe from data breaches, bad extensions and more</translation>
 <translation id="1104942323762546749">Chromium wants to export your passwords. Type your Windows password to allow this.</translation>
 <translation id="113122355610423240">Chromium is your default browser</translation>
 <translation id="1185134272377778587">About Chromium</translation>
+<translation id="1315551408014407711">Set up your new Chromium profile</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
 <translation id="1414495520565016063">You're signed in to Chromium!</translation>
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
@@ -44,6 +46,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium checks for unwanted software once a week. Last checked: 1 minute ago.}other{Chromium checks for unwanted software once a week. Last checked: {NUM_MINS} minutes ago.}}</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
+<translation id="2853765747879685679">Ask when I open Chromium</translation>
 <translation id="2885378588091291677">Task Manager</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium is up to date</translation>
@@ -103,9 +106,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4788777615168560705">Chromium can't check your passwords. Try again after 24 hours or <ph name="BEGIN_LINK" />check passwords in your Google Account<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">This uses the same spell checker that's used in Google search. Text that you type in the browser is sent to Google. You can always change this behaviour in settings.</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
+<translation id="4893632094755846570">This will permanently delete your browsing data from this device. To recover the data, sign in to Chromium as</translation>
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="4994636714258228724">Add yourself to Chromium</translation>
+<translation id="5080135079858647714">Create your own profile in Chromium?</translation>
 <translation id="5224391634244552924">No saved passwords. Chromium can check your passwords when you save them.</translation>
 <translation id="5277894862589591112">To apply your changes, relaunch Chromium</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
@@ -164,6 +169,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chromium.</translation>
 <translation id="6734080038664603509">Update &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium is already installed for all users on your computer.</translation>
+<translation id="6762551859069255163">Use different profiles in Chromium to separate work and personal browsing, or for different people who use this device</translation>
 <translation id="6774082503108938489">Your parent has turned off 'Permissions for sites, apps and extensions' for Chromium. Enabling this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
 <translation id="6847869444787758381">Chromium lets you know if your passwords are ever compromised</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
@@ -252,5 +258,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Chromium OS Terms.</translation>
+<translation id="965162752251293939">Who's using Chromium?</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

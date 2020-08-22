@@ -90,7 +90,7 @@ class CompositedLayerMappingTest : public RenderingTest {
 
 TEST_F(CompositedLayerMappingTest, SubpixelAccumulationChange) {
   SetBodyInnerHTML(
-      "<div id='target' style='will-change: transform; background: lightblue; "
+      "<div id='target' style='will-change: opacity; background: lightblue; "
       "position: relative; left: 0.4px; width: 100px; height: 100px'>");
 
   Element* target = GetDocument().getElementById("target");
@@ -113,7 +113,7 @@ TEST_F(CompositedLayerMappingTest,
        SubpixelAccumulationChangeUnderInvalidation) {
   ScopedPaintUnderInvalidationCheckingForTest test(true);
   SetBodyInnerHTML(
-      "<div id='target' style='will-change: transform; background: lightblue; "
+      "<div id='target' style='will-change: opacity; background: lightblue; "
       "position: relative; left: 0.4px; width: 100px; height: 100px'>");
 
   Element* target = GetDocument().getElementById("target");
@@ -124,8 +124,8 @@ TEST_F(CompositedLayerMappingTest,
 
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  // Directly composited layers are not invalidated on subpixel accumulation
-  // change.
+  // Invalidate directly composited layers on subpixel accumulation change
+  // when PaintUnderInvalidationChecking is enabled.
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()
                   ->GetPaintController()
                   .GetPaintArtifact()

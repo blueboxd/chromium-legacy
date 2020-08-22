@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="1125573121925420732">网站在更新其安全设置期间可能会经常显示警告。此问题应该很快就会得到改进。</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
+<translation id="1130564665089811311">“翻译网页”按钮，按 Enter 键即可使用“Google 翻译”服务来翻译此页面</translation>
 <translation id="1131264053432022307">您复制的图片</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1151972924205500581">需要密码</translation>
@@ -404,6 +405,7 @@
 <translation id="2634124572758952069">找不到 <ph name="HOST_NAME" /> 的服务器 IP 地址。</translation>
 <translation id="2639739919103226564">状态：</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" /><ph name="CITY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可在 Chrome 设置中清除您的浏览记录、Cookie、缓存及其他数据</translation>
 <translation id="2650446666397867134">访问文件遭拒</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2660779039299703961">事件</translation>
@@ -426,6 +428,7 @@
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2713444072780614174">白色</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可在 Chrome 设置中管理您的付款和信用卡信息</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="272451190272506600">触摸传感器即可付款</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
@@ -632,6 +635,7 @@
 <translation id="362276910939193118">显示全部历史记录</translation>
 <translation id="3630155396527302611">如果它已在可访问网络的程序列表中，请尝试将它从该列表中移除，然后重新添加到其中。</translation>
 <translation id="3631244953324577188">生物识别</translation>
+<translation id="3633738897356909127">“更新 Chrome”按钮，按 Enter 键即可前往 Chrome 设置以更新 Chrome</translation>
 <translation id="3634530185120165534">纸匣 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">验证成功</translation>
@@ -850,6 +854,7 @@
 <translation id="4506599922270137252">联系系统管理员</translation>
 <translation id="450710068430902550">与管理员分享</translation>
 <translation id="4508814173490746936">无法使用 Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可使用“Google 翻译”服务来翻译此页面</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">信用卡选项和地址选项均来自 Chrome 和您的 Google 帐号 (<ph name="ACCOUNT_EMAIL" />)。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -930,6 +935,7 @@
 <translation id="4879725228911483934">在您的屏幕上打开和放置窗口</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="4881695831933465202">打开</translation>
+<translation id="4889420713887366944">“打开无痕式窗口”按钮，按 Enter 键即可打开一个新的无痕式窗口以进行私密浏览</translation>
 <translation id="4892518386797173871">后方</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">保存…</translation>
@@ -1091,6 +1097,7 @@
 <translation id="5523118979700054094">政策名</translation>
 <translation id="55293785478302737">边缘装订</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">“清除浏览数据”按钮，按 Enter 键即可在 Chrome 设置中清除您的浏览记录、Cookie、缓存及其他数据</translation>
 <translation id="5536214594743852365">显示“<ph name="SECTION" />”部分</translation>
 <translation id="5539243836947087108">筏式</translation>
 <translation id="5540224163453853">找不到请求的文章。</translation>
@@ -1589,6 +1596,7 @@
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可在 Chrome 设置中查看和管理您的密码</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐号密码加密了数据。请在下方输入。</translation>
 <translation id="7616645509853975347">您的管理员已在您的浏览器中启用了 Chrome 企业版接口。这些接口可以访问您的部分数据。</translation>
 <translation id="7619838219691048931">结尾工作表</translation>
@@ -1846,6 +1854,8 @@
 <translation id="8725066075913043281">重试</translation>
 <translation id="8728672262656704056">您已进入无痕模式</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8731544501227493793">“管理密码”按钮，按 Enter 键即可在 Chrome 设置中查看和管理您的密码</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可打开一个新的无痕式窗口以进行私密浏览</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="8742371904523228557">您的 <ph name="ORIGIN" /> 验证码是 <ph name="ONE_TIME_CODE" /></translation>
@@ -1862,6 +1872,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> 在您的浏览器中启用了 Chrome 企业版接口。这些接口可以访问您的部分数据。</translation>
 <translation id="8805819170075074995">列表条目“<ph name="LANGUAGE_ID" />”：该条目因同时存在于 SpellcheckLanguage 政策中而被忽略。</translation>
 <translation id="8807160976559152894">完成每页后裁切</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可前往 Chrome 设置以更新 Chrome</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883848425547221593">其他书签</translation>
 <translation id="884264119367021077">送货地址</translation>
@@ -1881,6 +1892,7 @@
 <translation id="890493561996401738">“移除建议”按钮，按 Enter 键即可移除“<ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />”</translation>
 <translation id="8910670906166981838">您已进入无痕模式</translation>
 <translation id="8912362522468806198">Google 帐号</translation>
+<translation id="8913778647360618320">“管理付款方式”按钮，按 Enter 键即可在 Chrome 设置中管理您的付款和信用卡信息</translation>
 <translation id="8918231688545606538">此网页可疑</translation>
 <translation id="892588693504540538">打孔（右上角）</translation>
 <translation id="8931333241327730545">要将此卡的信息保存到您的 Google 帐号吗？</translation>

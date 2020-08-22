@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="1125573121925420732">Wenn die Sicherheitsfunktionen von Websites aktualisiert werden, können Warnungen häufiger auftreten. Dies sollte sich bald verbessern.</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
+<translation id="1130564665089811311">Schaltfläche "Seite übersetzen" – drücken Sie die Eingabetaste, um diese Seite mit Google Übersetzer übersetzen zu lassen</translation>
 <translation id="1131264053432022307">Von Ihnen kopiertes Bild</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1151972924205500581">Passwort erforderlich</translation>
@@ -404,6 +405,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2634124572758952069">Die Server-IP-Adresse von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="2639739919103226564">Status: </translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Tabulatortaste und dann die Eingabetaste, um in den Chrome-Einstellungen Ihren Browserverlauf, Ihre Cookies und andere Daten zu löschen sowie den Cache zu leeren</translation>
 <translation id="2650446666397867134">Der Zugriff auf die Datei wurde verweigert.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2660779039299703961">Ereignis</translation>
@@ -426,6 +428,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2705137772291741111">Die (im Cache) gespeicherte Kopie dieser Website war nicht lesbar.</translation>
 <translation id="2709516037105925701">Automatisches Ausfüllen</translation>
 <translation id="2713444072780614174">Weiß</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Eingabetaste, um Zahlungen und Kreditkartendaten in den Chrome-Einstellungen zu verwalten</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="272451190272506600">Berühren Sie zum Bezahlen den Sensor</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
@@ -634,6 +637,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="362276910939193118">Gesamtverlauf anzeigen</translation>
 <translation id="3630155396527302611">Falls das Programm schon in der Liste mit erlaubtem Netzwerkzugriff eingetragen ist, entfernen Sie es aus der Liste und fügen Sie es noch einmal hinzu.</translation>
 <translation id="3631244953324577188">Biometrisches Verfahren</translation>
+<translation id="3633738897356909127">Schaltfläche "Chrome aktualisieren" – drücken Sie die Eingabetaste, um Chrome über die Chrome-Einstellungen zu aktualisieren</translation>
 <translation id="3634530185120165534">Fach 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
@@ -852,6 +856,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4506599922270137252">Kontakt mit dem Systemadministrator aufnehmen</translation>
 <translation id="450710068430902550">Datenfreigabe an Administrator</translation>
 <translation id="4508814173490746936">Touch ID konnte nicht verwendet werden</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Tabulatortaste und dann die Eingabetaste, um diese Seite mit Google Übersetzer übersetzen zu lassen</translation>
 <translation id="4510487217173779431">Chou4 (Umschlag)</translation>
 <translation id="4515275063822566619">Karten und Adressen stammen aus Chrome und aus Ihrem Google-Konto (<ph name="ACCOUNT_EMAIL" />). Sie können sie in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> verwalten.</translation>
 <translation id="4517607026994743406">Comm-10 (Umschlag)</translation>
@@ -932,6 +937,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4879725228911483934">Fenster auf Ihren Bildschirmen öffnen und positionieren</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
+<translation id="4889420713887366944">Schaltfläche "Inkognitofenster öffnen" – drücken Sie die Eingabetaste, um ein neues Inkognitofenster zu öffnen und privat zu surfen</translation>
 <translation id="4892518386797173871">Hinten</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Wird gespeichert...</translation>
@@ -1093,6 +1099,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="55293785478302737">Mehrere Heftklammern</translation>
 <translation id="553484882784876924">Prc6 (Umschlag)</translation>
+<translation id="5535133333442455806">Schaltfläche "Browserdaten löschen" – drücken Sie die Eingabetaste, um Ihren Browserverlauf, Ihre Cookies und andere Daten zu löschen sowie den Cache zu leeren</translation>
 <translation id="5536214594743852365">Abschnitt "<ph name="SECTION" />" einblenden</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
@@ -1592,6 +1599,7 @@ Weitere Details:
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Gültig bis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Tabulatortaste und dann die Eingabetaste, um Passwörter in den Chrome-Einstellungen abzurufen und zu verwalten</translation>
 <translation id="7615602087246926389">Sie verfügen bereits über Daten, die mit einem vorherigen Passwort für Ihr Google-Konto verschlüsselt wurden. Bitte geben Sie dieses Passwort unten ein.</translation>
 <translation id="7616645509853975347">Ihr Administrator hat Chrome Enterprise Connectors für Ihren Browser aktiviert. Diese Connectors haben Zugriff auf einen Teil Ihrer Daten.</translation>
 <translation id="7619838219691048931">Endblatt</translation>
@@ -1849,6 +1857,8 @@ Weitere Details:
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="8730621377337864115">Fertig</translation>
+<translation id="8731544501227493793">Schaltfläche "Passwörter verwalten" – drücken Sie die Eingabetaste, um Passwörter in den Chrome-Einstellungen abzurufen und zu verwalten</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Tabulatortaste und dann die Eingabetaste, um ein neues Inkognitofenster zu öffnen und privat zu surfen</translation>
 <translation id="8738058698779197622">Zum Aufbau einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Chromium diese Zertifikate nicht bestätigen.</translation>
 <translation id="8740359287975076522">Die &lt;abbr id="dnsDefinition"&gt;DNS-Adresse&lt;/abbr&gt; von <ph name="HOST_NAME" /> wurde nicht gefunden. Eine Problemdiagnose wird durchgeführt.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> ist Ihr Code für <ph name="ORIGIN" /></translation>
@@ -1865,6 +1875,7 @@ Weitere Details:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> hat Chrome Enterprise Connectors für Ihren Browser aktiviert. Diese Connectors haben Zugriff auf einen Teil Ihrer Daten.</translation>
 <translation id="8805819170075074995">Listeneintrag "<ph name="LANGUAGE_ID" />": Der Eintrag wird ignoriert, weil er auch in der Richtlinie "SpellcheckLanguage" enthalten ist.</translation>
 <translation id="8807160976559152894">Nach jeder Seite zuschneiden</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" /> – drücken Sie die Tabulatortaste und dann die Eingabetaste, um Chrome über die Chrome-Einstellungen zu aktualisieren</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="883848425547221593">Andere Lesezeichen</translation>
 <translation id="884264119367021077">Versandadresse</translation>
@@ -1884,6 +1895,7 @@ Weitere Details:
 <translation id="890493561996401738">Schaltfläche "Vorschlag entfernen", zum Entfernen Eingabetaste drücken, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Sie befinden sich jetzt im Inkognitomodus</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
+<translation id="8913778647360618320">Schaltfläche "Zahlungsmethoden verwalten" – drücken Sie die Eingabetaste, um Zahlungen und Kreditkartendaten in den Chrome-Einstellungen zu verwalten</translation>
 <translation id="8918231688545606538">Diese Seite ist verdächtig</translation>
 <translation id="892588693504540538">Lochung oben rechts</translation>
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>

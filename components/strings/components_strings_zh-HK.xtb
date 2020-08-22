@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="1125573121925420732">在網站進行安全性更新時，可能會經常看到警告。我們會盡快改善此問題。</translation>
 <translation id="112840717907525620">政策快取正確</translation>
+<translation id="1130564665089811311">翻譯網頁按鈕，㩒一下 Enter 鍵就可以透過 Google 翻譯翻譯呢個網頁</translation>
 <translation id="1131264053432022307">您複製的圖片</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦的操作系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="1151972924205500581">請輸入密碼</translation>
@@ -403,6 +404,7 @@
 <translation id="2634124572758952069">找不到 <ph name="HOST_NAME" /> 的伺服器 IP 位址。</translation>
 <translation id="2639739919103226564">狀態：</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" />，<ph name="CITY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以喺 Chrome 設定度清除瀏覽記錄、Cookie、快取同更多資料</translation>
 <translation id="2650446666397867134">存取檔案被拒</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2660779039299703961">活動</translation>
@@ -425,6 +427,7 @@
 <translation id="2705137772291741111">無法讀取此網站已儲存的快取版本。</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2713444072780614174">白色</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以喺 Chrome 設定度管理付款同信用卡資料</translation>
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="272451190272506600">輕觸感應器即可付款</translation>
 <translation id="2728127805433021124">伺服器憑證以防護力較弱的簽章演算法簽署。</translation>
@@ -634,6 +637,7 @@
 <translation id="3630155396527302611">如果程式已列在允許存取網絡的清單中，建議您
       從清單中移除該程式，然後重新加入。</translation>
 <translation id="3631244953324577188">生物識別</translation>
+<translation id="3633738897356909127">更新 Chrome 按鈕，㩒一下 Enter 鍵就可以透過 Chrome 設定更新 Chrome</translation>
 <translation id="3634530185120165534">紙匣 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">驗證成功</translation>
@@ -852,6 +856,7 @@
 <translation id="4506599922270137252">聯絡系統管理員</translation>
 <translation id="450710068430902550">與管理員分享</translation>
 <translation id="4508814173490746936">無法使用 Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以透過 Google 翻譯翻譯呢個頁面</translation>
 <translation id="4510487217173779431">Chou4 (信封)</translation>
 <translation id="4515275063822566619">信用卡和地址選項均來自 Chrome 和您的 Google 帳戶 (<ph name="ACCOUNT_EMAIL" />)。您可在「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」中管理這些選項。</translation>
 <translation id="4517607026994743406">Comm-10 (信封)</translation>
@@ -932,6 +937,7 @@
 <translation id="4879725228911483934">在您的螢幕上開啟並放置視窗</translation>
 <translation id="4880827082731008257">搜尋記錄</translation>
 <translation id="4881695831933465202">開啟</translation>
+<translation id="4889420713887366944">開啟無痕式視窗按鈕，㩒一下 Enter 鍵就可以開新嘅無痕式視窗私下瀏覽</translation>
 <translation id="4892518386797173871">後方</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />，<ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">儲存…</translation>
@@ -1093,6 +1099,7 @@
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="55293785478302737">邊緣釘裝</translation>
 <translation id="553484882784876924">Prc6 (信封)</translation>
+<translation id="5535133333442455806">清除瀏覽資料按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度清除您嘅瀏覽紀錄、Cookie、快取同更多資料</translation>
 <translation id="5536214594743852365">顯示「<ph name="SECTION" />」部分</translation>
 <translation id="5539243836947087108">卡板</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
@@ -1592,6 +1599,7 @@
 <translation id="7600965453749440009">永遠不要翻譯<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE" /> 的範圍。</translation>
 <translation id="7613889955535752492">到期日：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以喺 Chrome 設定度睇同管理密碼</translation>
 <translation id="7615602087246926389">您已經使用其他版本的「Google 帳戶」密碼對數據進行加密，請在下方輸入密碼。</translation>
 <translation id="7616645509853975347">管理員已在您的瀏覽器上啟用 Chrome Enterprise Connectors。這些連接器可存取您的部分資料。</translation>
 <translation id="7619838219691048931">結束工作表</translation>
@@ -1848,6 +1856,8 @@
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728672262656704056">您已進入無痕模式</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8731544501227493793">管理密碼按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度睇同管理密碼</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以開新嘅無痕式視窗私下瀏覽</translation>
 <translation id="8738058698779197622">如要建立安全連線，您時鐘的設定必須正確無誤；因為網站用於自我識別的憑證僅在特定時間內有效。由於您裝置的時鐘設定有誤，Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;網域名稱系統 (DNS) 地址&lt;/abbr&gt;。正在診斷問題。</translation>
 <translation id="8742371904523228557">您的 <ph name="ORIGIN" /> 驗證碼是 <ph name="ONE_TIME_CODE" /></translation>
@@ -1864,6 +1874,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用 Chrome Enterprise Connectors。這些連接器可存取您的部分資料。</translation>
 <translation id="8805819170075074995">清單項目「<ph name="LANGUAGE_ID" />」：此項目同時亦包括在 SpellcheckLanguage 政策中，因此系統會忽略該項目。</translation>
 <translation id="8807160976559152894">完成每頁後修剪</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以透過 Chrome 設定更新 Chrome</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="884264119367021077">運送地址</translation>
@@ -1883,6 +1894,7 @@
 <translation id="890493561996401738">移除建議按鈕，㩒一下 Enter 鍵就可以移除「<ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />」</translation>
 <translation id="8910670906166981838">您已啟用無痕模式</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
+<translation id="8913778647360618320">管理付款方法按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度管理付款同信用卡資料</translation>
 <translation id="8918231688545606538">此網頁包含可疑的內容</translation>
 <translation id="892588693504540538">打孔 (右上方)</translation>
 <translation id="8931333241327730545">要將此信用卡儲存至您的 Google 帳戶嗎？</translation>

@@ -499,8 +499,10 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
       RoundedIntPoint(offset_from_composited_ancestor);
 
   PhysicalOffset subpixel_accumulation;
-  if (!owning_layer_.Transform() ||
-      owning_layer_.Transform()->IsIdentityOrTranslation()) {
+  if ((!owning_layer_.Transform() ||
+       owning_layer_.Transform()->IsIdentityOrTranslation()) &&
+      !(owning_layer_.GetCompositingReasons() &
+        CompositingReason::kPreventingSubpixelAccumulationReasons)) {
     subpixel_accumulation =
         offset_from_composited_ancestor -
         PhysicalOffset(snapped_offset_from_composited_ancestor);

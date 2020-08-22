@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Новое окно</translation>
 <translation id="1580783302095112590">Сообщение отправлено.</translation>
 <translation id="1582732959743469162">Скачивание файлов будет приостановлено.</translation>
+<translation id="1605405588277479165">Отключено (не рекомендуется)</translation>
 <translation id="1605658421715042784">Копировать изображение</translation>
 <translation id="1608337082864370066">Поиск по скопированному изображению</translation>
 <translation id="1612730193129642006">Показать сетку таблицы</translation>
@@ -496,6 +497,7 @@
 <translation id="6624219055418309072">Запретить использование в режиме инкогнито</translation>
 <translation id="6628106477656132239">Неверная дата окончания срока действия</translation>
 <translation id="6638511529934826365">Изменить масштаб текста</translation>
+<translation id="6639730758971422557">Безопасный просмотр можно включить в разделе <ph name="BEGIN_LINK" />Синхронизация сервисов Google<ph name="END_LINK" />.</translation>
 <translation id="6642362222295953972">Переключиться на открытую ранее вкладку</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6645899968535965230">QR-код: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@
 <translation id="7561196759112975576">Всегда</translation>
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Заблок. вспл. окон: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
+<translation id="7607521702806708809">Удалить пароль</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
@@ -658,6 +661,7 @@
 <translation id="8529767659511976195">Новинка</translation>
 <translation id="8532105204136943229">Год</translation>
 <translation id="8533166274275423134">Открыто в другом окне.</translation>
+<translation id="8533670235862049797">Включен</translation>
 <translation id="8534481786647257214">Опубликовано в Google+.</translation>
 <translation id="8548878600947630424">Найти на странице…</translation>
 <translation id="8574235780160508979">Условия использования Chrome будут обновлены 31 марта. Просим вас <ph name="BEGIN_LINK" />ознакомиться с изменениями<ph name="END_LINK" />.</translation>

@@ -633,6 +633,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5864419784173784555">Esperando que finalice otra descarga…</translation>
 <translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
+<translation id="5872013926720995826">No se pudieron verificar los Digital Asset Links en <ph name="VIOLATED_URL" /></translation>
 <translation id="5876056640971328065">Pausar video</translation>
 <translation id="5884076754568147479">Para ayudarte a completar tareas, Google recibirá las URL y los contenidos de los sitios en los que uses el Asistente, así como la información que envías a través de este servicio</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>

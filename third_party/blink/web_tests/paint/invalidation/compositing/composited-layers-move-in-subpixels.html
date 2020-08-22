@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <style>
 div {
-  will-change: transform;
+  /* Not using will-change:transform because it ignores subpixel accumulation. */ 
+  will-change: opacity;
   height: 50.2px;
   border: 1px solid black;
   margin-top: 2px;

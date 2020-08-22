@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="1125573121925420732">ವೆಬ್‌ಸೈಟ್‌ಗಳು ತಮ್ಮ ಸುರಕ್ಷತೆಯನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡುವಾಗ, ಸಾಮಾನ್ಯವಾಗಿ ಎಚ್ಚರಿಕೆಗಳು ಕಾಣಿಸಿಕೊಳ್ಳಬಹುದು. ಇದನ್ನು ಶೀಘ್ರದಲ್ಲೇ ಸುಧಾರಿಸಲಾಗುವುದು.</translation>
 <translation id="112840717907525620">ನೀತಿಯ ಕ್ಯಾಷ್ ಸರಿಯಾಗಿದೆ</translation>
+<translation id="1130564665089811311">ಪುಟ ಅನುವಾದಿಸಿ ಬಟನ್, ಈ ಪುಟವನ್ನು Google Translate ನೊಂದಿಗೆ ಅನುವಾದಿಸಲು Enter ಒತ್ತಿರಿ</translation>
 <translation id="1131264053432022307">ನೀವು ನಕಲಿಸಿದ ಚಿತ್ರ</translation>
 <translation id="1150979032973867961">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ‌ ಪ್ರಕಾರ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲ. ಇದು ತಪ್ಪು ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು.</translation>
 <translation id="1151972924205500581">ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ</translation>
@@ -406,6 +407,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> ನ ಸರ್ವರ್ IP ವಿಳಾಸ ಕಂಡುಬರಲಿಲ್ಲ.</translation>
 <translation id="2639739919103226564">ಸ್ಥಿತಿ: </translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ, ಕುಕೀಗಳು, ಕ್ಯಾಷ್ ಮತ್ತು ಇನ್ನಷ್ಟನ್ನು ತೆರವುಗೊಳಿಸಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿ</translation>
 <translation id="2650446666397867134">ಫೈಲ್‌ಗೆ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸಿ</translation>
 <translation id="2660779039299703961">ಈವೆಂಟ್</translation>
@@ -428,6 +430,7 @@
 <translation id="2705137772291741111">ಈ ಸೈಟ್‌ನ ಉಳಿಸಿದ (ಸಂಗ್ರಹವಾಗಿರುವ) ನಕಲನ್ನು ಓದಲಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
 <translation id="2713444072780614174">ಬಿಳಿ</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾವತಿಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿ.</translation>
 <translation id="2721148159707890343">ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="272451190272506600">ಪಾವತಿಸಲು ಸೆನ್ಸರ್ ಅನ್ನು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="2728127805433021124">ಕ್ಷೀಣವಾದ ಸಹಿ ಅಲ್ಗಾರಿದಮ್ ಬಳಸಿಕೊಂಡು ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರಕ್ಕೆ ಸಹಿ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -635,6 +638,7 @@
 <translation id="362276910939193118">ಪೂರ್ಣ ಇತಿಹಾಸ ತೋರಿಸಿ</translation>
 <translation id="3630155396527302611">ಒಂದು ವೇಳೆ ನೆಟ್‌ವರ್ಕ್ ಪ್ರವೇಶಿಸಲು ಅನುಮತಿಸುವ ಒಂದು ಪ್ರೊಗ್ರಾಂನಂತೆ ಇದನ್ನು ಈಗಾಗಲೇ ಪಟ್ಟಿ ಮಾಡಲಾಗಿದ್ದರೆ, ಅದನ್ನು ಪಟ್ಟಿಯಿಂದ ತೆಗೆಯಲು ಮತ್ತು ಪುನಃ ಅದನ್ನು ಸೇರಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3631244953324577188">ಬಯೋಮೆಟ್ರಿಕ್ಸ್</translation>
+<translation id="3633738897356909127">Chrome ಬಟನ್ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ, ನಿಮ್ಮ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ Chrome ಅನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು Enter ಒತ್ತಿರಿ</translation>
 <translation id="3634530185120165534">ಟ್ರೇ 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">ಊರ್ಜಿತಗೊಳಿಸುವಿಕೆಯು ಯಶಸ್ವಿಯಾಗಿದೆ</translation>
@@ -853,6 +857,7 @@
 <translation id="4506599922270137252">ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="450710068430902550">ನಿರ್ವಾಹಕರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುವುದು</translation>
 <translation id="4508814173490746936">ಸ್ಪರ್ಶ ID ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Translate ನೊಂದಿಗೆ ಈ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿ</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ವಿಳಾಸಗಳನ್ನು ನಿಮ್ಮ Chrome ಮತ್ತು ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ (<ph name="ACCOUNT_EMAIL" />) ಪಡೆಯಲಾಗಿದೆ. ನೀವು ಅವುಗಳನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -933,6 +938,7 @@
 <translation id="4879725228911483934">ವಿಂಡೋಗಳನ್ನು ತೆರೆಯಿರಿ ಮತ್ತು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ಗಳ ಮೇಲೆ ಇರಿಸಿ</translation>
 <translation id="4880827082731008257">ಹುಡುಕಾಟ ಇತಿಹಾಸ</translation>
 <translation id="4881695831933465202">ತೆರೆ</translation>
+<translation id="4889420713887366944">ಅಜ್ಞಾತ ವಿಂಡೋ ಬಟನ್ ತೆರೆಯಿರಿ, ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು ಹೊಸ ಅಜ್ಞಾತ ವಿಂಡೋವನ್ನು ತೆರೆಯಲು Enter ಒತ್ತಿರಿ</translation>
 <translation id="4892518386797173871">ಹಿಂಬದಿ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ಉಳಿಸಿ...</translation>
@@ -1094,6 +1100,7 @@
 <translation id="5523118979700054094">ನೀತಿ ಹೆಸರು</translation>
 <translation id="55293785478302737">ಅಂಚನ್ನು ಹೊಲಿಯಿರಿ</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ಬಟನ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಿ, ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ, ಕುಕೀಗಳು, ಕ್ಯಾಷ್ ಮತ್ತು ಇನ್ನಷ್ಟನ್ನು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ತೆರವುಗೊಳಿಸಲು ಎಂಟರ್ ಒತ್ತಿರಿ</translation>
 <translation id="5536214594743852365">ಈ "<ph name="SECTION" />" ವಿಭಾಗವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5539243836947087108">ರಾಫ್ಟ್</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
@@ -1591,6 +1598,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ಅನ್ನು ಎಂದಿಗೂ ಅನುವಾದಿಸಬೇಡ</translation>
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE" /> ಹೊರಗಿದೆ.</translation>
 <translation id="7613889955535752492">ಅವಧಿ ಮೀರುವ ಸಮಯ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಮತ್ತು ನಿರ್ವಹಿಸಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿರಿ</translation>
 <translation id="7615602087246926389">ನಿಮ್ಮ Google ಖಾತೆಯ ಪಾಸ್‌ವರ್ಡ್‌ನ ಬೇರೆ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿಕೊಂಡು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನೀವು ಈಗಾಗಲೇ ಹೊಂದಿರುವಿರಿ. ದಯವಿಟ್ಟು  ಕೆಳಗೆ ಇದನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="7616645509853975347">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ Chrome Enterprise ಕನೆಕ್ಟರ್‌ಗಳನ್ನು ಆನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಕೆಲವೊಂದು ಡೇಟಾಕ್ಕೆ ಈ ಕನೆಕ್ಟರ್‌ಗಳು ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತವೆ.</translation>
 <translation id="7619838219691048931">ಕೊನೆಯ ಶೀಟ್</translation>
@@ -1848,6 +1856,8 @@
 <translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="8728672262656704056">ನೀವು ಅದೃಶ್ಯರಾಗಿರುವಿರಿ</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
+<translation id="8731544501227493793">ಪಾಸ್‌ವರ್ಡ್‌ಗಳ ಬಟನ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ವೀಕ್ಷಿಸಲು ಮತ್ತು ನಿರ್ವಹಿಸಲು ಎಂಟರ್ ಒತ್ತಿರಿ</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು ಹೊಸ ಅಜ್ಞಾತ ವಿಂಡೋ ಒಂದನ್ನು ತೆರೆಯಲು, Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿ</translation>
 <translation id="8738058698779197622">ಸುರಕ್ಷಿತ ಸಂಪರ್ಕವನ್ನು ಸ್ಥಾಪಿಸಲು, ನಿಮ್ಮ ಗಡಿಯಾರವನ್ನು ಸರಿಯಾಗಿ ಹೊಂದಿಸುವ ಅಗತ್ಯವಿದೆ. ವೆಬ್‌ಸೈಟ್‌ಗಳು ತಮ್ಮನ್ನು ಗುರುತಿಸಲು ಬಳಸುವ ಪ್ರಮಾಣಪತ್ರಗಳು ಸಮಯದ ನಿರ್ದಿಷ್ಟ ಅವಧಿಗಳಲ್ಲಿ ಮಾತ್ರ ಮಾನ್ಯವಾಗಿರುವ ಕಾರಣ ಹೀಗಾಗುತ್ತದೆ. ನಿಮ್ಮ ಸಾಧನದ ಗಡಿಯಾರವು ತಪ್ಪಾಗಿರುವ ಕಾರಣ, Chromium ಗೆ ಈ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ನ &lt;abbr id="dnsDefinition"&gt;DNS ವಿಳಾಸ&lt;/abbr&gt; ಕಂಡುಬರಲಿಲ್ಲ. ಸಮಸ್ಯೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> ಗಾಗಿ ನಿಮ್ಮ ಕೋಡ್ <ph name="ONE_TIME_CODE" /> ಆಗಿದೆ</translation>
@@ -1864,6 +1874,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ Chrome Enterprise ಕನೆಕ್ಟರ್‌ಗಳನ್ನು ಆನ್ ಮಾಡಿದೆ. ನಿಮ್ಮ ಕೆಲವೊಂದು ಡೇಟಾಕ್ಕೆ ಈ ಕನೆಕ್ಟರ್‌ಗಳು ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತವೆ.</translation>
 <translation id="8805819170075074995">ಪಟ್ಟಿ ನಮೂದು "<ph name="LANGUAGE_ID" />": ಈ ನಮೂದನ್ನು SpellcheckLanguage ಕಾರ್ಯನೀತಿಯಲ್ಲಿ ಸಹ ಸೇರಿಸಿರುವ ಕಾರಣ, ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="8807160976559152894">ಪ್ರತಿ ಪುಟದ ನಂತರ ಟ್ರಿಮ್ ಮಾಡಿ</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, ನಿಮ್ಮ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ Chrome ಅನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿರಿ</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="883848425547221593">ಇತರ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು:</translation>
 <translation id="884264119367021077">ಶಿಪ್ಪಿಂಗ್‌ ವಿಳಾಸ</translation>
@@ -1883,6 +1894,7 @@
 <translation id="890493561996401738">ಸಲಹೆ ಬಟನ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ, ತೆಗೆದುಹಾಕಲು Enter ಅನ್ನು ಒತ್ತಿರಿ, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">ನೀವು ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿರುವಿರಿ</translation>
 <translation id="8912362522468806198">Google ಖಾತೆ</translation>
+<translation id="8913778647360618320">ಪಾವತಿ ವಿಧಾನಗಳ ಬಟನ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾವತಿಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಲು Enter ಒತ್ತಿ</translation>
 <translation id="8918231688545606538">ಈ ಪುಟವು ಅನುಮಾನಾಸ್ಪದವಾಗಿದೆ</translation>
 <translation id="892588693504540538">ಮೇಲಿನ ಬಲಭಾಗದಲ್ಲಿ ತೂತು ಮಾಡಿ</translation>
 <translation id="8931333241327730545">ಈ ಕಾರ್ಡನ್ನು ನಿಮ್ಮ Google ಖಾತೆನಲ್ಲಿ ಉಳಿಸಲು ಬಯಸುವಿರಾ?</translation>

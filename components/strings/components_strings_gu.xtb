@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="1125573121925420732">વેબસાઇટ તેમની સુરક્ષા અપડેટ કરી રહ્યાં હોય ત્યારે ચેતવણીઓ દેખાવી સામાન્ય બાબત છે. ટૂંક સમયમાં જ આમાં સુધારો કરવામાં આવશે.</translation>
 <translation id="112840717907525620">નીતિ કૅશ મેમરી ઓકે</translation>
+<translation id="1130564665089811311">પેજનો અનુવાદ કરો બટન, Google Translate વડે આ પેજનો અનુવાદ કરવા માટે Enter દબાવો</translation>
 <translation id="1131264053432022307">તમે કૉપિ કરેલી છબી</translation>
 <translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે એ <ph name="DOMAIN" /> છે; એનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1151972924205500581">પાસવર્ડ આવશ્યક છે</translation>
@@ -408,6 +409,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" />નું સર્વર IP ઍડ્રેસ ન મળ્યું.</translation>
 <translation id="2639739919103226564">સ્થિતિ:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome સેટિંગમાં તમારો બ્રાઉઝિંગ ઇતિહાસ, કુકી, કૅશ મેમરી અને બીજું ઘણું સાફ કરવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="2650446666397867134">ફાઇલની ઍક્સેસ નકારવામાં આવી હતી</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2660779039299703961">ઇવેન્ટ</translation>
@@ -430,6 +432,7 @@
 <translation id="2705137772291741111">આ સાઇટની સાચવેલ (કૅશ કરેલ) કૉપિ વાંચવા યોગ્ય ન હતી.</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2713444072780614174">શ્વેત</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome સેટિંગમાં તમારી ચુકવણીઓ અને ક્રેડિટ કાર્ડની માહિતી મેનેજ કરવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="272451190272506600">ચુકવણી કરવા માટે સેન્સરને સ્પર્શ કરો</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા સહી ઍલ્ગોરિધમનો ઉપયોગ કરીને સહીિત કરેલું છે.</translation>
@@ -642,6 +645,7 @@
 <translation id="3630155396527302611">જો તે પહેલાંથી જ નેટવર્ક ઍક્સેસ કરવા માટે મંજૂર પ્રોગ્રામ તરીકે સૂચિબદ્ધ હોય, તો
     તેને સૂચિમાંથી દૂર કરી અને તેને ફરીથી ઉમેરવાનો પ્રયાસ કરો.</translation>
 <translation id="3631244953324577188">બાયોમેટ્રિક્સ</translation>
+<translation id="3633738897356909127">Chrome અપડેટ કરો બટન, તમારા Chrome સેટિંગમાંથી Chrome અપડેટ કરવા માટે Enter દબાવો</translation>
 <translation id="3634530185120165534">ટ્રે 5</translation>
 <translation id="3640766068866876100">અનુક્રમણિકા-4x6-Ext</translation>
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
@@ -865,6 +869,7 @@
 <translation id="4506599922270137252">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરીને</translation>
 <translation id="450710068430902550">વ્યવસ્થાપક સાથે શેર કરવું</translation>
 <translation id="4508814173490746936">ટચ IDનો ઉપયોગ કરી શક્યાં નથી</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Translate વડે આ પેજનો અનુવાદ કરવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="4510487217173779431">Chou4 (એન્વલપ)</translation>
 <translation id="4515275063822566619">કાર્ડ અને સરનામા Chrome અને Google એકાઉન્ટ (<ph name="ACCOUNT_EMAIL" />)માંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં જઈને મેનેજ કરી શકો છો.</translation>
 <translation id="4517607026994743406">Comm-10 (એન્વલપ)</translation>
@@ -945,6 +950,7 @@
 <translation id="4879725228911483934">ખોલો અને તમારી સ્ક્રીન પર વિંડોનું સ્થાન નિયોજન કરો</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
 <translation id="4881695831933465202">ખોલો</translation>
+<translation id="4889420713887366944">છુપી વિન્ડો ખોલો બટન, ખાનગી રીતે બ્રાઉઝ કરવા, નવી છુપી વિંડો ખોલવા માટે Enter દબાવો</translation>
 <translation id="4892518386797173871">પાછળ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">સાચવો...</translation>
@@ -1106,6 +1112,7 @@
 <translation id="5523118979700054094">નીતિનું નામ</translation>
 <translation id="55293785478302737">કિનારી જોડવી</translation>
 <translation id="553484882784876924">Prc6 (એન્વલપ)</translation>
+<translation id="5535133333442455806">બ્રાઉઝિંગ ડેટા સાફ કરો બટન, Chrome સેટિંગમાં તમારો બ્રાઉઝિંગ ઇતિહાસ, કુકી, કૅશ મેમરી અને બીજું ઘણું સાફ કરવા માટે Enter દબાવો</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" વિભાગ બતાવો</translation>
 <translation id="5539243836947087108">રાફ્ટ</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
@@ -1605,6 +1612,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
 <translation id="7613889955535752492">સમાપ્તિ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome સેટિંગમાં તમારા પાસવર્ડ જોવા અને તેમને મેનેજ કરવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="7615602087246926389">તમારી પાસે પેહલાથી જ ડેટા છે જે તમારા Google એકાઉન્ટ પાસવર્ડના વિવિધ વર્ઝનનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરેલો છે.</translation>
 <translation id="7616645509853975347">તમારા વ્યવસ્થાપકે તમારા બ્રાઉઝર પર Chrome Enterprise Connectors ચાલુ કર્યુ છે. આ કનેક્ટરને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="7619838219691048931">છેલ્લી શીટ</translation>
@@ -1861,6 +1869,8 @@
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
+<translation id="8731544501227493793">પાસવર્ડ મેનેજ કરો બટન, Chrome સેટિંગમાં તમારા પાસવર્ડ જોવા અને તેમને મેનેજ કરવા માટે Enter દબાવો</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ખાનગી રીતે બ્રાઉઝ કરવા નવી છુપી વિન્ડો ખોલવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> એ <ph name="ORIGIN" /> માટેનો તમારો કોડ છે</translation>
@@ -1877,6 +1887,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારા બ્રાઉઝર પર Chrome Enterprise Connectors ચાલુ કરવામાં આવ્યું છે. આ કનેક્ટરને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="8805819170075074995">સૂચિ એન્ટ્રી "<ph name="LANGUAGE_ID" />": એન્ટ્રીને અવગણવામાં આવી, કારણ કે તેનો SpellcheckLanguage નીતિમાં પણ સમાવેશ કરવામાં આવ્યો છે.</translation>
 <translation id="8807160976559152894">પ્રત્યેક પેજ પછી ટ્રિમ કરો</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, તમારા Chrome સેટિંગમાંથી Chrome અપડેટ કરવા માટે Tab પછી Enter દબાવો</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
 <translation id="884264119367021077">શિપિંગ સરનામું</translation>
@@ -1896,6 +1907,7 @@
 <translation id="890493561996401738">સૂચન કાઢી નાખો બટન, આ કાઢી નાખવા માટે Enter દબાવો, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">તમે છૂપા મોડમાં ગયા છો</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
+<translation id="8913778647360618320">ચુકવણી પદ્ધતિ મેનેજ કરો બટન, Chrome સેટિંગમાં તમારી ચુકવણીઓ અને ક્રેડિટ કાર્ડની માહિતી મેનેજ કરવા માટે Enter દબાવો</translation>
 <translation id="8918231688545606538">આ પેજ શંકાસ્પદ છે</translation>
 <translation id="892588693504540538">ઉપર જમણી બાજુએ કાણું પાડો</translation>
 <translation id="8931333241327730545">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવા માગો છો?</translation>

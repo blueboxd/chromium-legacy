@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_BUTTON_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/widget/widget_observer.h"
@@ -21,6 +23,8 @@ class ExtensionsToolbarButton : public ToolbarButton,
  public:
   ExtensionsToolbarButton(Browser* browser,
                           ExtensionsToolbarContainer* extensions_container);
+  ExtensionsToolbarButton(const ExtensionsToolbarButton&) = delete;
+  ExtensionsToolbarButton& operator=(const ExtensionsToolbarButton&) = delete;
   ~ExtensionsToolbarButton() override;
 
   // ToolbarButton:
@@ -45,8 +49,6 @@ class ExtensionsToolbarButton : public ToolbarButton,
   Browser* const browser_;
   views::MenuButtonController* menu_button_controller_;
   ExtensionsToolbarContainer* const extensions_container_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_BUTTON_H_

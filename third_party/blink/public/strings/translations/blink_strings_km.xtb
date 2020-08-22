@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">ការថ្លែងអំណរគុណ</translation>
 <translation id="1342835525016946179">អត្ថបទ</translation>
 <translation id="1359897965706325498">បដា</translation>
+<translation id="1480676835519562650">អាចជ្រើសរើសបានច្រើន បានជ្រើសរើស <ph name="SELECTED" /> ក្នុងចំណោម <ph name="COUNT" />។</translation>
 <translation id="1589122976691792535">តំបន់</translation>
 <translation id="1591562245178063882">ខែនេះ</translation>
 <translation id="1637811476055996098">ជ្រើសរើសឯកសារ</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">ថ្ងៃ</translation>
 <translation id="2507943997699731163">សូមបំពេញប្រអប់នេះ។</translation>
 <translation id="2508569020611168319">បញ្ជីផ្ទាំង</translation>
+<translation id="2530182415807757784">អាចជ្រើសរើសបានច្រើន មិនបានជ្រើសរើស។</translation>
 <translation id="2561842179657104141">បង្ហាញការគ្រប់គ្រងមេឌៀជាច្រើនទៀត</translation>
 <translation id="2572483411312390101">លេង</translation>
 <translation id="2613802280814924224">សូមបញ្ចូលតម្លៃដែលមានសុពលភាព។ តម្លៃដែលមានសុពលភាពក្បែរបំផុតគឺ <ph name="VALID_VALUE" />។</translation>

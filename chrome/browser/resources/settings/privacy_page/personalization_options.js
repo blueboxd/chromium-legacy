@@ -87,6 +87,30 @@ Polymer({
     // </if>
   },
 
+  /**
+   * Returns the autocomplete search suggestions CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getSearchSuggestToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#searchSuggestToggle'));
+  },
+
+  /**
+   * Returns the anonymized URL collection CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getUrlCollectionToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#urlCollectionToggle'));
+  },
+
+  /**
+   * Returns the Drive suggestions CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getDriveSuggestToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#driveSuggestControl'));
+  },
+
   // <if expr="_google_chrome and not chromeos">
   /** @private */
   onMetricsReportingChange_() {

@@ -7,7 +7,6 @@
         <style>
             .overline {
               text-decoration: overline;
-              text-decoration-skip-ink: auto;
               text-decoration-style: dotted;
               text-decoration-skip-ink: none;
               text-decoration-color: red;
@@ -15,7 +14,6 @@
 
             .line-through {
               text-decoration: line-through;
-              text-decoration-skip-ink: auto;
               text-decoration-style: dotted;
               text-decoration-skip-ink: none;
               text-decoration-color: red;
@@ -23,9 +21,15 @@
 
             .underline {
               text-decoration: underline;
-              text-decoration-skip-ink: auto;
               text-decoration-style: dotted;
               text-decoration-skip-ink: none;
+              text-decoration-color: red;
+            }
+
+            .underline-skip-ink {
+              text-decoration: underline;
+              text-decoration-style: dotted;
+              text-decoration-skip-ink: auto;
               text-decoration-color: red;
             }
         </style>
@@ -48,5 +52,7 @@
         <div class="underline">Quisque velit nisi, pretium ut lacinia in, elementum id enim.</div>
         <div class="underline">Nulla porttitor accumsan tincidunt.</div>
         <div class="underline">Curabitur non nulla sit amet nisl tempus convallis quis ac lectus.</div>
+
+        <div class="underline-skip-ink">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</div>
     </body>
 </html>

@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2856a9b1a98f9e28178226fa558060bbec92b5ce',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@56694eedcf31571025594d892ffd86e6d197ba7e',
     'condition': 'checkout_src_internal',
   },
 
@@ -1550,7 +1550,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'vM9bho-P099cq08wxl7KsIWL5LU4hoPBEucxexnc_0IC',
+        'version': 'PPRWlbFgcLiLZEouIVVYQInyQNO7es0BR2SEuWBYrIQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1561,7 +1561,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'nPjEGC7iC_JZPS-2t6OXpyqtoD_uxii0UigGyO6p6ToC',
+        'version': 'YGPMOe2eHARlZiJiLGYNp2n_35FHrR4LpmgA4FEHiC8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

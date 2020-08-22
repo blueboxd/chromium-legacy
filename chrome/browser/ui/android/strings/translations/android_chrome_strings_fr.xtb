@@ -633,6 +633,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5864419784173784555">En attente d'un autre téléchargement…</translation>
 <translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
+<translation id="5872013926720995826">Échec de la validation Digital Asset Links sur <ph name="VIOLATED_URL" /></translation>
 <translation id="5876056640971328065">Mettre la vidéo en pause</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites sur lesquels vous utilisez l'Assistant, ainsi que les informations que vous envoyez via celui-ci</translation>
 <translation id="5919204609460789179">Mettre à jour <ph name="PRODUCT_NAME" /> pour lancer la synchronisation</translation>

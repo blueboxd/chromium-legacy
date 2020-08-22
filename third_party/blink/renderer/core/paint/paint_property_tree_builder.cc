@@ -495,7 +495,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
         matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
-    if (!matrix.IsIdentityOrTranslation()) {
+    if ((full_context_.direct_compositing_reasons &
+         CompositingReason::kPreventingSubpixelAccumulationReasons) ||
+        !matrix.IsIdentityOrTranslation()) {
       context_.current.paint_offset = PhysicalOffset();
       context_.current
           .directly_composited_container_paint_offset_subpixel_delta =

@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">启用此功能后，Chromium 将使用 Google 翻译对其他语言的网页进行翻译。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">开启 Chromium 扫描器</translation>
 <translation id="4787850887676698916">您在其他设备上的 Chromium 中打开的标签页将列在此处。</translation>
+<translation id="4828317641996116749">Chromium 无法检查所有密码。请稍后再试。</translation>
 <translation id="4999538639245140991">由于您要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5521125884468363740">要查看您在其他设备上用 Chromium 打开的标签页，请登录帐号并开启同步功能</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">当您点按消息、文档和其他应用中的链接时，可以使用 Chromium 打开链接啦。</translation>
 <translation id="7173114856073700355">打开“设置”</translation>
 <translation id="7208566199746267865">为节省您的时间，Chromium 已将您的 Google 帐号同步到网络上。您可在“设置”中添加或移除帐号。</translation>
+<translation id="725427773388857052">Chromium 有助于保护您免受数据泄露、不安全网站等问题的影响。</translation>
 <translation id="7269362888766543920">部分插件会导致 Chromium 崩溃，请尝试卸载这些插件。</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">若要将 Chromium 设为默认浏览器，请执行以下操作：

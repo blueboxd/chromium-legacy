@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Врати преуредување</translation>
 <translation id="1125573121925420732">Предупредувањата се вообичаени додека веб-сајтовите ја ажурираат својата безбедност. Очекувајте тоа да се подобри наскоро.</translation>
 <translation id="112840717907525620">Кешот на политиката е во ред</translation>
+<translation id="1130564665089811311">Копче „Преведи ја страницата“, притиснете Enter за да ја преведете страницава со „Преведи на Google“</translation>
 <translation id="1131264053432022307">Сликата што ја копиравте</translation>
 <translation id="1150979032973867961">Серверот не можеше да докаже дека е <ph name="DOMAIN" />; oперативниот систем на компјутерот не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
 <translation id="1151972924205500581">Потребна е лозинка</translation>
@@ -408,6 +409,7 @@
 <translation id="2634124572758952069">IP-адресата за серверот на <ph name="HOST_NAME" /> не може да се најде.</translation>
 <translation id="2639739919103226564">Статус:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да ги избришете историјата на прелистувањето, колачињата, кешот и други работи во поставките за Chrome</translation>
 <translation id="2650446666397867134">Пристапот до датотеката беше одбиен</translation>
 <translation id="2653659639078652383">Поднеси</translation>
 <translation id="2660779039299703961">Настан</translation>
@@ -430,6 +432,7 @@
 <translation id="2705137772291741111">Зачуваната (кеширана) копија на сајтот беше нечитлива.</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
 <translation id="2713444072780614174">Бела</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да управувате со податоците за плаќањата и кредитната картичка во поставките за Chrome</translation>
 <translation id="2721148159707890343">Барањето е успешно</translation>
 <translation id="272451190272506600">Допрете го сензорот за да платите</translation>
 <translation id="2728127805433021124">Сертификатот на серверот е потпишан со слаб алгоритам за потпишување.</translation>
@@ -642,6 +645,7 @@
 <translation id="3630155396527302611">Доколку веќе е на списокот со програми на кои им е дозволен пристап до мрежата, обидете се
         да го отстраните од списокот и да го додадете повторно.</translation>
 <translation id="3631244953324577188">Биометрика</translation>
+<translation id="3633738897356909127">Копче „Ажурирај го Chrome“, притиснете Enter за да го ажурирате Chrome од поставките за Chrome</translation>
 <translation id="3634530185120165534">Фиока 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Потврдувањето е успешно</translation>
@@ -865,6 +869,7 @@
 <translation id="4506599922270137252">Да контактирате со системскиот администратор</translation>
 <translation id="450710068430902550">Споделување со администратор</translation>
 <translation id="4508814173490746936">Не може да се користи Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да ја преведете страницава со „Преведи на Google“</translation>
 <translation id="4510487217173779431">Chou4 (плик)</translation>
 <translation id="4515275063822566619">Картичките и адресите се од Chrome и од вашата сметка на Google (<ph name="ACCOUNT_EMAIL" />). Со нив може да управувате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (плик)</translation>
@@ -945,6 +950,7 @@
 <translation id="4879725228911483934">Отвора и поставува прозорци на вашиот екран</translation>
 <translation id="4880827082731008257">Историја на пребарување</translation>
 <translation id="4881695831933465202">Отвори</translation>
+<translation id="4889420713887366944">Копче „Отвори прозорец Инкогнито“, притиснете Enter за да отворите нов прозорец „Инкогнито“ и да прелистувате приватно</translation>
 <translation id="4892518386797173871">Заден дел</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Зачувај…</translation>
@@ -1106,6 +1112,7 @@
 <translation id="5523118979700054094">Име на правило</translation>
 <translation id="55293785478302737">Шиење на работ</translation>
 <translation id="553484882784876924">Prc6 (плик)</translation>
+<translation id="5535133333442455806">Копче „Избриши ги податоците од прелистување“, притиснете Enter за да ги избришете историјата на прелистувањето, колачињата, кешот и други работи во поставките за Chrome</translation>
 <translation id="5536214594743852365">Прикажи го делот „<ph name="SECTION" />“</translation>
 <translation id="5539243836947087108">Сплав</translation>
 <translation id="5540224163453853">Не може да го најде бараниот напис.</translation>
@@ -1605,6 +1612,7 @@
 <translation id="7600965453749440009">Никогаш не преведувај <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Вредноста е надвор од опсегот <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Истекува: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да ги прегледувате и да управувате со вашите лозинки во поставките за Chrome</translation>
 <translation id="7615602087246926389">Веќе имате податоци кои се шифрирани со различна верзија на лозинката на вашата сметка на Google. Внесете ја подолу.</translation>
 <translation id="7616645509853975347">Администраторот вклучил Chrome Enterprise Connectors на вашиот прелистувач. Овие конектори имаат пристап до дел од вашите податоци.</translation>
 <translation id="7619838219691048931">Краен лист</translation>
@@ -1861,6 +1869,8 @@
 <translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8728672262656704056">Се наоѓате во режим инкогнито</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8731544501227493793">Копче „Управувајте со лозинките“, притиснете Enter за да ги прегледувате и да управувате со вашите лозинки во поставките за Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да отворите нов прозорец „Инкогнито“ и да прелистувате приватно</translation>
 <translation id="8738058698779197622">За воспоставување безбедна врска, вашиот часовник треба да биде правилно поставен. Ова е така затоа што сертификатите кои веб-локациите ги користат за да се идентификуваат важат само определени периоди на време. Бидејќи часовникот на вашиот уред не е точен, Chromium не може да ги потврди овие сертификати.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-адресата&lt;/abbr&gt; на <ph name="HOST_NAME" /> не може да се пронајде. Го дијагностицираме проблемот.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> е вашиот код за <ph name="ORIGIN" /></translation>
@@ -1877,6 +1887,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> вклучил Chrome Enterprise Connectors на вашиот прелистувач. Овие конектори имаат пристап до дел од вашите податоци.</translation>
 <translation id="8805819170075074995">Запис во список „<ph name="LANGUAGE_ID" />“: записот е игнориран бидејќи е вклучен и во правилото SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Кратење по секоја страница</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете Tab, а потоа Enter за да го ажурирате Chrome од поставките за Chrome</translation>
 <translation id="8820817407110198400">Обележувачи</translation>
 <translation id="883848425547221593">Други обележувачи</translation>
 <translation id="884264119367021077">Адреса на испорака</translation>
@@ -1896,6 +1907,7 @@
 <translation id="890493561996401738">Копче за отстранување предлог, притиснете Enter за да отстраните, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Се наоѓате во режим инкогнито</translation>
 <translation id="8912362522468806198">Сметка на Google</translation>
+<translation id="8913778647360618320">Копче „Управувајте со начините на плаќање“, притиснете Enter за да управувате со податоците за плаќањата и кредитната картичка во поставките за Chrome</translation>
 <translation id="8918231688545606538">Страницава е сомнителна</translation>
 <translation id="892588693504540538">Дупка горе десно</translation>
 <translation id="8931333241327730545">Дали сакате да ја зачувате картичкава на сметката на Google?</translation>

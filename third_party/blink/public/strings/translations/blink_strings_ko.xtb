@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
+<translation id="1480676835519562650">여러 항목 선택 가능, <ph name="COUNT" />개 중 <ph name="SELECTED" />개 선택됨.</translation>
 <translation id="1589122976691792535">지역</translation>
 <translation id="1591562245178063882">이번 달</translation>
 <translation id="1637811476055996098">파일 선택</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">일</translation>
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
 <translation id="2508569020611168319">탭 목록</translation>
+<translation id="2530182415807757784">여러 항목 선택 가능, 선택된 항목 없음.</translation>
 <translation id="2561842179657104141">미디어 컨트롤 더보기</translation>
 <translation id="2572483411312390101">재생</translation>
 <translation id="2613802280814924224">유효한 값을 입력해 주세요. 가장 근접한 유효 값은 <ph name="VALID_VALUE" />입니다.</translation>

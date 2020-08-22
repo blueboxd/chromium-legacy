@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
 <translation id="1125573121925420732">Det kan hende du ser mange advarsler mens nettstedene oppdaterer sikkerheten sin. Dette forbedres snart.</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
+<translation id="1130564665089811311">Knappen «Oversett siden» – trykk på Enter for å oversette denne siden med Google Oversetter</translation>
 <translation id="1131264053432022307">Bildet du kopierte</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1151972924205500581">Passord er påkrevd</translation>
@@ -408,6 +409,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2634124572758952069">Fant ikke IP-adressen til tjeneren for <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å tømme nettleserloggen, slette informasjonskapsler, tømme bufferen med mer i Chrome-innstillingene</translation>
 <translation id="2650446666397867134">Tilgang til filen ble nektet</translation>
 <translation id="2653659639078652383">Send inn</translation>
 <translation id="2660779039299703961">Aktivitet</translation>
@@ -430,6 +432,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2705137772291741111">Den lagrede (bufrede) kopien av dette nettstedet kunne ikke leses.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2713444072780614174">Hvit</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å administrere betalingene og kredittkortopplysningene dine i Chrome-innstillingene</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="272451190272506600">Trykk på sensoren for å betale</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
@@ -642,6 +645,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3630155396527302611">Hvis programmet allerede har fått tillatelse til å bruke nettverket, kan du prøve
       å fjerne det fra listen og så legge det til på nytt.</translation>
 <translation id="3631244953324577188">Biometri</translation>
+<translation id="3633738897356909127">Knappen «Oppdater Chrome» – trykk på Enter for å oppdatere Chrome fra Chrome-innstillingene</translation>
 <translation id="3634530185120165534">Skuff 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Valideringen var vellykket</translation>
@@ -865,6 +869,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4506599922270137252">Kontakt systemadministratoren</translation>
 <translation id="450710068430902550">Deling med administratoren</translation>
 <translation id="4508814173490746936">Kunne ikke bruke Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å oversette denne siden med Google Oversetter</translation>
 <translation id="4510487217173779431">Chou4 (konvolutt)</translation>
 <translation id="4515275063822566619">Kortene og adressene er fra Chrome og Google-kontoen din (<ph name="ACCOUNT_EMAIL" />). Du kan administrere dem i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (konvolutt)</translation>
@@ -945,6 +950,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4879725228911483934">åpne og plassere vinduer på skjermene dine</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="4889420713887366944">Knappen «Åpne inkognitovindu» – trykk på Enter for å åpne et nytt inkognitovindu for privat surfing</translation>
 <translation id="4892518386797173871">Bak</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Lagre</translation>
@@ -1106,6 +1112,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5523118979700054094">Navn på retningslinje</translation>
 <translation id="55293785478302737">Kantstifting</translation>
 <translation id="553484882784876924">Prc6 (konvolutt)</translation>
+<translation id="5535133333442455806">Knappen «Slett nettleserdata» – trykk på Enter for å tømme nettleserloggen, slette informasjonskapsler, tømme bufferen med mer i Chrome-innstillingene</translation>
 <translation id="5536214594743852365">Vis «<ph name="SECTION" />»-delen</translation>
 <translation id="5539243836947087108">Flåte</translation>
 <translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
@@ -1604,6 +1611,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å se og administrere passord i Chrome-innstillingene</translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
 <translation id="7616645509853975347">Administratoren har slått på Chrome Enterprise Connectors i nettleseren din. Disse koblingene har tilgang til noen av dataene dine.</translation>
 <translation id="7619838219691048931">Sluttark</translation>
@@ -1860,6 +1868,8 @@ Mer informasjon:
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8728672262656704056">Du er nå i inkognitomodus</translation>
 <translation id="8730621377337864115">Ferdig</translation>
+<translation id="8731544501227493793">Knappen «Administrer passord» – trykk på Enter for å se og administrere passord i Chrome-innstillingene</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å åpne et nytt inkognitovindu for privat surfing</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; til <ph name="HOST_NAME" /> ble ikke funnet. Problemet diagnostiseres.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> er koden din for <ph name="ORIGIN" /></translation>
@@ -1876,6 +1886,7 @@ Mer informasjon:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> har slått på Chrome Enterprise Connectors i nettleseren din. Disse koblingene har tilgang til noen av dataene dine.</translation>
 <translation id="8805819170075074995">Listeoppføringen «<ph name="LANGUAGE_ID" />»: Oppføringen er ignorert fordi den også er inkludert i regelen SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Beskjær etter hver side</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å oppdatere Chrome fra Chrome-innstillingene</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883848425547221593">Andre bokmerker</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
@@ -1895,6 +1906,7 @@ Mer informasjon:
 <translation id="890493561996401738">Knapp for å fjerne forslag – trykk på Enter for å fjerne. <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Nå er du inkognito</translation>
 <translation id="8912362522468806198">Google-konto</translation>
+<translation id="8913778647360618320">Knappen «Administrer betalingsmåter» – trykk på Enter for å administrere betalingene og kredittkortopplysningene dine i Chrome-innstillingene</translation>
 <translation id="8918231688545606538">Denne siden er mistenkelig</translation>
 <translation id="892588693504540538">Hull oppe til høyre</translation>
 <translation id="8931333241327730545">Vil du lagre dette kortet i Google-kontoen din?</translation>

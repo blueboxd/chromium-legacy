@@ -14,6 +14,7 @@
 <translation id="109942774857561566">Мені нудно</translation>
 <translation id="1104084341931202936">Показати налаштування спеціальних можливостей</translation>
 <translation id="1104621072296271835">Ваші пристрої працюватимуть разом ще краще</translation>
+<translation id="1119348796022671382">У цьому режимі кольори інтерфейсу відповідають гамі фонового малюнка.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1175572348579024023">Прокрутити</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">Увімкнено</translation>
 <translation id="1419738280318246476">Щоб виконати дію зі сповіщенням, розблокуйте пристрій</translation>
 <translation id="1420408895951708260">Увімкнути або вимкнути нічний екран. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Знімок екрана зроблено й збережено в буфер обміну</translation>
 <translation id="1426410128494586442">Так</translation>
 <translation id="1455242230282523554">Показати налаштування мови</translation>
 <translation id="1460620680449458626">Гучність вимкнено.</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">Щоб вимкнути кнопковий доступ, відкрийте "Налаштування" &gt; "Спеціальні можливості".</translation>
 <translation id="1654477262762802994">Ввести голосовий запит</translation>
 <translation id="1665244008632896072">Перемкнути темний режим. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">У цьому режимі не використовуються кольори фонового малюнка, а підбираються нейтральні світлі або темні відтінки.</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Таймер на <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Адреса IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">Монофонічне аудіо</translation>
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3033545621352269033">Увімкнено</translation>
+<translation id="3038571455154067151">Щоб увійти, введіть свій батьківський код доступу з Family Link</translation>
 <translation id="3051128274746680507">Профіль контрольованого користувача незабаром буде видалено. Увійдіть, щоб дізнатися більше.</translation>
 <translation id="3055162170959710888">Сьогодні цей пристрій працював <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Панель статусу, час: <ph name="TIME" />,
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="3977512764614765090">Акумулятор заряджений на <ph name="PERCENTAGE" />% і продовжує заряджатися.</translation>
 <translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
+<translation id="40062176907008878">Рукописне введення</translation>
 <translation id="4017989525502048489">Лазерний вказівник</translation>
 <translation id="4021716437419160885">Прокрутити вниз</translation>
 <translation id="4028481283645788203">Для додаткового захисту потрібно ввести пароль</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">Щоб переглядати сповіщення на заблокованому екрані, розблокуйте його й змініть налаштування</translation>
 <translation id="4146833061457621061">Увімкни музику</translation>
 <translation id="4149156641122542261">Пристроєм <ph name="DEVICE_TYPE" /> керує домен <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Налаштування темної теми</translation>
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4195877955194704651">Кнопка автоматичного натискання</translation>
 <translation id="4197790712631116042">Вимкнено</translation>
 <translation id="4212472694152630271">Ввести PIN-код</translation>
 <translation id="4215497585250573029">Налаштування VPN</translation>
 <translation id="4217571870635786043">Диктування</translation>
+<translation id="4229328187280698237">Перейдіть у режим планшета</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Показати налаштування сповіщень. Сповіщення вимкнено</translation>
 <translation id="4269883910223712419">Адміністратор цього пристрою може:</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">Підтвердьте налаштування дисплея</translation>
 <translation id="5083553833479578423">Розблокуйте інші функції Асистента.</translation>
 <translation id="5114495209940374989">Знімки екрана</translation>
+<translation id="5123162024343028706">Перемістити вгору</translation>
 <translation id="5136175204352732067">Під’єднано іншу клавіатуру</translation>
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
 <translation id="5170568018924773124">Показати в папці</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">Вимкнено</translation>
 <translation id="5302048478445481009">Мова</translation>
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
+<translation id="5314219114274263156">Запис екрана зроблено</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
 <translation id="5379115545237091094">Забагато спроб</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) може переглядати дії й історію цього користувача на chrome.com.</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">ОС Chromium</translation>
 <translation id="5837036133683224804">Зупинити трансляцію <ph name="ROUTE_TITLE" /> на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="5860033963881614850">Вимк.</translation>
+<translation id="5876666360658629066">Введіть батьківський код</translation>
 <translation id="5887866489674258948">Темний режим</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">Під час цього оновлення зображення на екрані зникне на довше, ніж зазвичай (до хвилини). Не натискайте кнопку живлення, поки триває оновлення.</translation>
 <translation id="6527303717912515753">Надіслати</translation>
 <translation id="6528179044667508675">Не турбувати</translation>
+<translation id="65320610082834431">Смайли</translation>
 <translation id="6537270692134705506">Зробити знімок екрана</translation>
 <translation id="6537924328260219877">Рівень сигналу – <ph name="SIGNAL_STRENGTH" />, рівень заряду акумулятора – <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Трансляція на пристрій "<ph name="RECEIVER_NAME" />"</translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">Натисніть вибраний контент правою кнопкою миші або втримуйте його, і Асистент покаже визначення терміна, конвертує одиницю тощо.</translation>
 <translation id="7569509451529460200">Шрифт Брайля та ChromeVox увімкнено</translation>
 <translation id="7579778809502851308">Знімок екрана</translation>
+<translation id="7590883480672980941">Налаштування введення</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7600875258240007829">Переглянути всі сповіщення</translation>
+<translation id="7618774594543487847">Нейтральні кольори</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Відкрити налаштування мережі "<ph name="NETWORK_NAME" />", <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />. Мережею керує адміністратор</translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">Таймер на <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Щоб додати людину, введіть батьківський код доступу з Family Link</translation>
 <translation id="8649101189709089199">Читання з екрана</translation>
 <translation id="8652175077544655965">Закрити налаштування</translation>
 <translation id="8653151467777939995">Показати налаштування сповіщень. Сповіщення ввімкнено</translation>
 <translation id="8660331759611631213">Квадратний корінь із 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Показати список мереж. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Режим кольору</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8683506306463609433">Відстеження ефективності активне</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">Розширення екрана</translation>
 <translation id="890616557918890486">Змінити джерело</translation>
 <translation id="8909138438987180327">Акумулятор заряджено на <ph name="PERCENTAGE" />.</translation>
+<translation id="8913384980486163186">Тематичні кольори (за умовчанням)</translation>
+<translation id="8918251165865262378">Перейдіть у режим ноутбука</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не підтримує цю мову.</translation>
 <translation id="8936501819958976551">деактивовано</translation>

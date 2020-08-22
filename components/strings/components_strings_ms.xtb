@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
 <translation id="1125573121925420732">Amaran mungkin biasa dipaparkan semasa tapak web mengemas kini keselamatannya. Ini akan diperbaik tidak lama lagi.</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
+<translation id="1130564665089811311">Butang terjemah halaman, tekan Enter untuk menterjemah halaman ini dengan Google Terjemah</translation>
 <translation id="1131264053432022307">Imej yang Anda Salin</translation>
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1151972924205500581">Kata laluan diperlukan</translation>
@@ -408,6 +409,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2634124572758952069">Alamat IP pelayan <ph name="HOST_NAME" /> tidak ditemui.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk Mengosongkan sejarah penyemakan imbas, kuki, cache dan pelbagai lagi dalam tetapan Chrome</translation>
 <translation id="2650446666397867134">Akses ke fail dinafikan</translation>
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2660779039299703961">Acara</translation>
@@ -430,6 +432,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2705137772291741111">Salinan tapak ini yang disimpan (cache) tidak boleh dibaca.</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="2713444072780614174">Putih</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk menguruskan maklumat kad kredit dan pembayaran anda dalam tetapan Chrome</translation>
 <translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="272451190272506600">Sentuh penderia untuk bayar</translation>
 <translation id="2728127805433021124">Sijil pelayan ditandatangani menggunakan algoritma tandatangan yang lemah.</translation>
@@ -643,6 +646,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
       rangkaian, cuba alihkannya keluar daripada senarai dan tambahkannya  
       semula.</translation>
 <translation id="3631244953324577188">Biometrik</translation>
+<translation id="3633738897356909127">Butang Kemas Kini Chrome, tekan Enter untuk mengemas kini Chrome daripada tetapan Chrome anda</translation>
 <translation id="3634530185120165534">Dulang 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Pengesahan berjaya</translation>
@@ -866,6 +870,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4506599922270137252">Menghubungi pentadbir sistem</translation>
 <translation id="450710068430902550">Berkongsi dengan Pentadbir</translation>
 <translation id="4508814173490746936">Tidak dapat menggunakan Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk menterjemahkan halaman ini dengan Google Terjemah</translation>
 <translation id="4510487217173779431">Chou4 (Sampul Surat)</translation>
 <translation id="4515275063822566619">Kad dan alamat adalah daripada Chrome dan Akaun Google anda (<ph name="ACCOUNT_EMAIL" />). Anda boleh mengurus kad dan alamat ini dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Sampul Surat)</translation>
@@ -946,6 +951,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4879725228911483934">Buka dan letakkan tetingkap pada skrin anda</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4889420713887366944">Butang buka Tetingkap Inkognito, tekan Enter untuk membuka tetingkap Inkognito baharu untuk menyemak imbas secara peribadi</translation>
 <translation id="4892518386797173871">Belakang</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Simpan...</translation>
@@ -1107,6 +1113,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5523118979700054094">Nama dasar</translation>
 <translation id="55293785478302737">Jahitan tepi</translation>
 <translation id="553484882784876924">Prc6 (Sampul Surat)</translation>
+<translation id="5535133333442455806">Butang kosongkan data semakan imbas, tekan Enter untuk mengosongkan sejarah penyemakan imbas, kuki, cache dan pelbagai lagi dalam tetapan Chrome</translation>
 <translation id="5536214594743852365">Tunjukkan bahagian "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Rakit</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
@@ -1606,6 +1613,7 @@ Butiran tambahan:
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">Tamat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk melihat dan mengurus kata laluan anda dalam tetapan Chrome</translation>
 <translation id="7615602087246926389">Anda sudah mempunyai data yang disulitkan menggunakan versi kata laluan Akaun Google anda yang berbeza. Sila masukkannya di bawah.</translation>
 <translation id="7616645509853975347">Pentadbir anda telah menghidupkan Chrome Enterprise Connectors pada penyemak imbas anda. Penyambung ini boleh mengakses sesetengah data anda.</translation>
 <translation id="7619838219691048931">Helaian akhir</translation>
@@ -1863,6 +1871,8 @@ Butiran tambahan:
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8728672262656704056">Anda menggunakan mod inkognito</translation>
 <translation id="8730621377337864115">Selesai</translation>
+<translation id="8731544501227493793">Urus butang kata laluan, tekan Enter untuk melihat dan mengurus kata laluan anda dalam tetapan Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk membuka tetingkap Inkognito baharu untuk semak imbas secara peribadi</translation>
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak ditemui. Masalah sedang didiagnosis.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> ialah kod anda untuk <ph name="ORIGIN" /></translation>
@@ -1879,6 +1889,7 @@ Butiran tambahan:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> telah menghidupkan Chrome Enterprise Connectors pada penyemak imbas anda. Penyambung ini boleh mengakses sesetengah data anda.</translation>
 <translation id="8805819170075074995">Masukan senarai "<ph name="LANGUAGE_ID" />": Masukan diabaikan kerana masukan ini disertakan dalam dasar SpellcheckLanguage juga.</translation>
 <translation id="8807160976559152894">Pangkas selepas setiap halaman</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab kemudian Enter untuk mengemas kini Chrome daripada tetapan Chrome anda</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
 <translation id="883848425547221593">Penanda Halaman Lain</translation>
 <translation id="884264119367021077">Alamat penghantaran</translation>
@@ -1898,6 +1909,7 @@ Butiran tambahan:
 <translation id="890493561996401738">Alih keluar butang Cadangan, tekan Enter untuk mengalih keluar, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Anda menggunakan mod inkognito</translation>
 <translation id="8912362522468806198">Akaun Google</translation>
+<translation id="8913778647360618320">Butang uruskan kaedah pembayaran, tekan Enter untuk menguruskan maklumat kad kredit dan pembayaran anda dalam tetapan Chrome</translation>
 <translation id="8918231688545606538">Halaman ini mencurigakan</translation>
 <translation id="892588693504540538">Tebukan atas sebelah kanan</translation>
 <translation id="8931333241327730545">Adakah anda mahu menyimpan kad ini ke Akaun Google anda?</translation>

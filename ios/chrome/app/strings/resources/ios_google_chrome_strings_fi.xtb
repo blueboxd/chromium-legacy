@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Chrome-vinkki: Voit avata välilehtien lisäasetukset painamalla pitkään ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta.</translation>
 <translation id="4523886039239821078">Jokin laajennus kaataa Chromen. Kokeile poistaa seuraavat:</translation>
 <translation id="4698415050768537821">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä uudelleen huomenna tai <ph name="BEGIN_LINK" />tarkista salasanat Google-tililtä<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">Chrome voi auttaa suojaamaan sinua esim. tietosuojaloukkauksilta ja riskialttiilta verkkosivustoilta.</translation>
 <translation id="5389212809648216794">Google Chrome ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>
 <translation id="5639704535586432836">Avaa Asetukset &gt; Tietosuoja &gt; Kamera &gt; Google Chrome ja ota kamera käyttöön.</translation>
 <translation id="5642200033778930880">Google Chrome ei voi käyttää kameraa jaetussa näkymässä.</translation>
@@ -50,6 +51,7 @@
         1. Avaa Asetukset. 
         2. Valitse Oletusselain.
         3. Valitse Chrome.</translation>
+<translation id="6822673484890854830">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="7165736900384873061">Aloita Google Chromen QR-lukijan käyttö</translation>
 <translation id="7172660552945675509">Vinkki: <ph name="BEGIN_LINK" />Siirrä Chrome Dockiin.<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Avaa asetukset</translation>

@@ -924,6 +924,14 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
       Se questo criterio viene impostato su "Verifica caricamenti e download", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Verifica download" e "Verifica caricamenti".
       </translation>
+<translation id="2424098959650060417">Consente di stabilire quali stampanti del criterio <ph name="BULK_PRINTERS_POLICY_NAME" /> sono a disposizione degli utenti.
+
+      Determina quale criterio di accesso viene utilizzato per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene utilizzato il criterio <ph name="BULK_PRINTERS_BLACKLIST" /> per limitare l'accesso alle stampanti specificate.  Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> indica soltanto le stampanti selezionabili.
+
+      Se questo criterio non viene impostato, viene utilizzata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />.
+      </translation>
 <translation id="2426782419955104525">Consente di attivare la funzione Instant di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
 
       Se l'impostazione viene attivata, la funzione Instant di <ph name="PRODUCT_NAME" /> viene attivata.
@@ -1754,6 +1762,17 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
           Se questo criterio non viene impostato, inizialmente la funzione Seleziona per ascoltare è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
+<translation id="3603469950773500315">Consente di attivare le mitigazioni dei controlli <ph name="CORS" /> nella nuova implementazione <ph name="CORS" />, consentendo alle estensioni di mantenere un comportamento compatibile e a <ph name="PRODUCT_NAME" /> di inviare le intestazioni specificate senza controlli <ph name="CORS" />.
+
+      Se questo elenco viene lasciato vuoto, <ph name="PRODUCT_NAME" /> prova a eseguire le estensioni in modalità compatibili e non introduce modifiche <ph name="API" /> per la versione 79 di <ph name="PRODUCT_NAME" />, come spiegato all'indirizzo <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Se per questo elenco vengono impostati nomi di intestazioni di richieste <ph name="HTTP" />, il controllo <ph name="CORS" /> ignorerà le intestazioni elencate e attiverà la mitigazione per le estensioni.
+
+      Se questo elenco non viene impostato, entrambe le mitigazioni spiegate sopra non vengono applicate.
+
+      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.
+
+      Tieni presente che, nonostante sia stata comunicata la rimozione di questo criterio nella versione 82 di <ph name="PRODUCT_NAME" />, il criterio è stato rimosso nella versione 84.</translation>
 <translation id="3624515566460517364">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili di caricamenti e download</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3628480121685794414">Attiva stampa su un lato</translation>
@@ -3309,6 +3328,12 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 
           Se questo criterio non viene impostato, il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> predefinito per i cookie dipenderà dalla configurazione personale dell'utente per la funzionalità <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, la funzionalità <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" />, e la funzionalità <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, che potrebbero essere impostate in base a una prova pubblica o tramite l'attivazione o disattivazione rispettivamente dei flag <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> o <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />.</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
+<translation id="585671885349598586">Consente di specificare le stampanti non utilizzabili dagli utenti.
+
+      Questo criterio viene usato soltanto se viene selezionata l'opzione <ph name="PRINTERS_BLOCKLIST" /> per il criterio <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
+
+      Se viene usato questo criterio, l'utente avrà a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questo criterio. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nel criterio <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+      </translation>
 <translation id="5859344336338527083">Impostare il criterio specifica quali URL sono autorizzati a installare estensioni, app e temi. Prima di <ph name="PRODUCT_NAME" /> 21, gli utenti potevano fare clic su un link a un file *.crx e <ph name="PRODUCT_NAME" /> avrebbe proposto di installare il file dopo alcuni avvisi. Successivamente, tali file devono essere scaricati e trascinati nella pagina delle impostazioni di <ph name="PRODUCT_NAME" />. Questa impostazione consente a URL specifici di utilizzare il precedente flusso di installazione semplificato.
 
       Ogni voce di questo elenco è un pattern di corrispondenza in stile di estensione (vedi https://developer.chrome.com/extensions/match_patterns). Gli utenti possono installare facilmente elementi da qualsiasi URL che corrisponda a una voce nell'elenco. Questi pattern devono consentire sia la posizione del file *.crx sia la pagina da cui viene avviato il download (il referrer).
@@ -3610,6 +3635,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Ogni elemento nell'elenco del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attiva la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML manifest di aggiornamento come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
 
       Ad esempio, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> dall'URL "di aggiornamento" standard del Chrome Web Store. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+<translation id="6275833043726517413">Consente di usare l'implementazione <ph name="CORS" /> legacy anziché la nuova implementazione <ph name="CORS" />.
+
+      Se questo criterio viene impostato su vero, viene usata l'implementazione legacy, che dovrebbe essere compatibile con le versioni precedenti.
+
+      Se questo criterio viene impostato su falso o non viene impostato, viene usata la nuova implementazione, che potrebbe causare problemi di compatibilità per le aziende.
+
+      Questo criterio verrà rimosso dopo il lancio di un paio di nuove versioni.
+
+      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.
+
+      Tieni presente che, nonostante sia stata comunicata la rimozione di questo criterio nella versione 82 di <ph name="PRODUCT_NAME" />, il criterio è stato rimosso nella versione 84.</translation>
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -4143,6 +4179,22 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7068108874199666656">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
+<translation id="7069358643254839205">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
+
+      Questo criterio consente di fornire configurazioni delle stampanti ai dispositivi <ph name="PRODUCT_OS_NAME" />.  Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o del blocco della stessa.
+
+      Il file può avere dimensioni massime pari a 5 MB e deve essere codificato in formato JSON.  È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB.  L'hash di crittografia viene utilizzato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base ai criteri <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> e <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Questo criterio non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi.  È supplementare alla configurazione delle stampanti da parte dei singoli utenti.
+
+      Si tratta di un criterio aggiuntivo rispetto al criterio <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+
+      Se il criterio non viene impostato, non ci saranno stampanti per i dispositivi e gli altri criteri <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> verranno ignorati.
+      </translation>
 <translation id="7070525176564511548">Richiedi l'inserimento della password ogni settimana (168 ore)</translation>
 <translation id="7072208053150563108">Frequenza di modifica della password del computer</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
@@ -4350,6 +4402,11 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
       La ricerca e l'installazione automatiche dei plug-in mancanti non sono più supportate.</translation>
 <translation id="7267809745244694722">Per impostazione predefinita, i tasti multimediali si comportano come tasti funzione.</translation>
 <translation id="7271085005502526897">Importazione della home page dal browser predefinito alla prima esecuzione</translation>
+<translation id="7271181393214180342">Se il criterio viene impostato su Attivato, l'autenticazione HTTP rispetta l'approvazione da parte del criterio KDC. In altre parole, <ph name="PRODUCT_NAME" /> delega le credenziali utente al servizio a cui si accede se il KDC imposta <ph name="OK_AS_DELEGATE" /> sul ticket di servizio. Vedi RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). Il servizio dovrebbe essere consentito anche dal criterio <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+      Se il criterio viene impostato su Disattivato o se non viene configurato, il criterio KDC viene ignorato sulle piattaforme supportate e viene rispettato solo il criterio <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+      Su <ph name="MS_WIN_NAME" />, il criterio KDC viene sempre rispettato.</translation>
 <translation id="7273823081800296768">Se questa impostazione viene attivata o non viene configurata, gli utenti possono decidere di accoppiare client e host in fase di connessione, evitando di dover inserire un codice PIN ogni volta.
 
 Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
@@ -4395,6 +4452,29 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7339315111520512972">Forza l'esecuzione del codice di networking nel processo di browser</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
+<translation id="7348384750433771321">Consente di specificare le configurazioni delle stampanti aziendali.
+
+      Questo criterio consente di fornire configurazioni delle stampanti ai dispositivi <ph name="PRODUCT_OS_NAME" />.  Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o del blocco della stessa.
+
+      Il file può avere dimensioni massime pari a 5 MB e deve essere codificato in formato JSON.  È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB.  L'hash di crittografia viene utilizzato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base ai criteri <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />, <ph name="BULK_PRINTERS_WHITELIST" /> e <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+      Questo criterio non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi.  È supplementare alla configurazione delle stampanti da parte dei singoli utenti.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
+<translation id="7355640439776250098">Consente di specificare le stampanti non utilizzabili dagli utenti.
+
+      Questo criterio viene usato soltanto se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" /> per il criterio <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
+
+      Se viene utilizzato questo criterio, l'utente avrà a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questo criterio. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nel criterio <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="PRINTERS_BULK_BLOCKLIST" />.
+      </translation>
 <translation id="7360181094056034924">Consente di controllare il modo in cui <ph name="PRODUCT_NAME" /> si comporta con i dati caricati e scaricati che sono considerati da analizzare.  Un ritardo nella consegna significa che <ph name="PRODUCT_NAME" /> non permetterà all'utente di accedere a un file scaricato, selezionare un file per caricarlo, incollare dagli appunti o trascinare dati finché non verranno analizzati e il risultato dell'analisi non sarà reso noto.  Tale limitazione si applica esclusivamente ai file o ai dati che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali è attiva l'analisi.
 
       Se questo criterio non viene impostato o se viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> non ritarderà il caricamento di alcun file, né le operazioni di copia e incolla dagli appunti, il trascinamento di dati o l'accesso a qualsiasi file scaricato.  L'analisi verrà eseguita in background.
@@ -4592,6 +4672,24 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se il criterio viene impostato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene impostato, il provider di ricerca predefinito è attivo e gli utenti possono configurare l'elenco dei provider di ricerca.
 
       Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto sulle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in Chrome Browser Cloud Management. Su <ph name="MAC_OS_NAME" />, questa funzionalità è disponibile soltanto sulle istanze gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
+<translation id="7673108452297907398">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
+
+      Questo criterio consente di fornire configurazioni delle stampanti ai dispositivi <ph name="PRODUCT_OS_NAME" />.  Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o del blocco della stessa.
+
+      Il file può avere dimensioni massime pari a 5 MB e deve essere codificato in formato JSON.  È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB.  L'hash di crittografia viene utilizzato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base ai criteri <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> e <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Questo criterio non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi.  È supplementare alla configurazione delle stampanti da parte dei singoli utenti.
+
+      Si tratta di un criterio aggiuntivo rispetto al criterio <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Se il criterio non viene impostato, non ci saranno stampanti per i dispositivi e gli altri criteri <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> verranno ignorati.
+
+      Questo criterio è deprecato. Usa il criterio <ph name="DEVICE_PRINTERS" />.
+      </translation>
 <translation id="7673194325208122247">Periodo di tempo (millisecondi)</translation>
 <translation id="7677220829878081413">
       Se è impostato su ArcSession, questo criterio forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
@@ -5307,6 +5405,19 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8757552286070680084">Configurazione di DTC wilco</translation>
 <translation id="8758831693895931466">Attiva la registrazione alla gestione della cloud obbligatoria</translation>
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
+<translation id="8760176996829352091">Consente di specificare le configurazioni delle stampanti aziendali.
+
+      Questo criterio consente di fornire configurazioni delle stampanti ai dispositivi <ph name="PRODUCT_OS_NAME" />. Il formato corrisponde a quello del dizionario <ph name="PRINTERS_POLICY_NAME" />, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o del blocco della stessa.
+
+      Il file può avere dimensioni massime pari a 5 MB e deve essere codificato in formato JSON. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash di crittografia viene utilizzato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base ai criteri <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> e <ph name="PRINTERS_BULK_BLOCKLIST" />.
+
+      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+      Questo criterio non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione delle stampanti da parte dei singoli utenti.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="877185520360032968">L'impostazione del criterio modificherà la directory predefinita in cui Chrome scarica i file, che però gli utenti possono modificare.
 
@@ -5597,6 +5708,12 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9105265795073104888">Solo un sottoinsieme di opzioni di configurazione del proxy viene reso disponibile alle app Android, che decidono volontariamente se rispettarlo o meno. Non puoi forzarle a utilizzare un proxy.</translation>
 <translation id="9106865192244721694">Consenti WebUSB su questi siti</translation>
+<translation id="910760342417457561">Consente di stabilire quali stampanti del criterio <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> sono a disposizione degli utenti.
+
+      Determina quale criterio di accesso viene utilizzato per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLOCKLIST" />, viene utilizzato il criterio <ph name="PRINTERS_BULK_BLOCKLIST" /> per limitare l'accesso alle stampanti selezionate. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOWLIST" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> stabilisce soltanto le stampanti selezionabili.
+
+      Se questo criterio non viene impostato, viene utilizzata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="9109086856618439290">Attiva i TdS alla prima esecuzione di CCT/PWA</translation>
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
 <translation id="9116740039944096995">Elenco di pattern URL. Le richieste di rete privata inoltrate da siti web non sicuri pubblicati dalle origini corrispondenti sono consentite.

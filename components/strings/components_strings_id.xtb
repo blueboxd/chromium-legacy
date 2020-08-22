@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
 <translation id="1125573121925420732">Peringatan mungkin akan sering ditampilkan selama situs mengupdate keamanannya. Situasi ini akan segera diperbaiki.</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
+<translation id="1130564665089811311">Tombol Terjemahkan halaman, tekan Enter untuk menerjemahkan halaman ini dengan Google Terjemahan</translation>
 <translation id="1131264053432022307">Gambar yang Anda Salin</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1151972924205500581">Sandi wajib ada</translation>
@@ -404,6 +405,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2634124572758952069">Alamat IP server <ph name="HOST_NAME" /> tidak dapat ditemukan.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk menghapus histori penjelajahan, cookie, cache, dan lainnya di setelan Chrome</translation>
 <translation id="2650446666397867134">Akses ke file ditolak</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2660779039299703961">Acara</translation>
@@ -426,6 +428,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="2713444072780614174">Putih</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk mengelola info pembayaran dan kartu kredit di setelan Chrome</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="272451190272506600">Sentuh sensor untuk membayar</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
@@ -637,6 +640,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3630155396527302611">Jika sudah tercantum sebagai program yang diizinkan untuk mengakses jaringan,
       coba hapus dari daftar dan tambahkan lagi.</translation>
 <translation id="3631244953324577188">Biometrik</translation>
+<translation id="3633738897356909127">Tombol Update Chrome, tekan Enter untuk mengupdate Chrome dari setelan Chrome</translation>
 <translation id="3634530185120165534">Baki 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validasi berhasil</translation>
@@ -855,6 +859,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4506599922270137252">Hubungi admin sistem</translation>
 <translation id="450710068430902550">Berbagi dengan Administrator</translation>
 <translation id="4508814173490746936">Tidak dapat menggunakan Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk menerjemahkan halaman ini dengan Google Terjemahan</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Kartu dan alamat berasal dari Chrome dan Akun Google (<ph name="ACCOUNT_EMAIL" />). Anda dapat mengelolanya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -935,6 +940,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4879725228911483934">Membuka dan menempatkan jendela di layar Anda</translation>
 <translation id="4880827082731008257">Telusuri histori</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4889420713887366944">Tombol Buka Jendela Samaran, tekan Enter untuk membuka jendela Samaran Chrome baru untuk menjelajah secara pribadi</translation>
 <translation id="4892518386797173871">Belakang</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Simpan...</translation>
@@ -1096,6 +1102,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5523118979700054094">Nama kebijakan</translation>
 <translation id="55293785478302737">Jahitan tepi</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">Tombol Hapus data penjelajahan, tekan Enter untuk menghapus histori penjelajahan, cookie, cache, dan lainnya di setelan Google</translation>
 <translation id="5536214594743852365">Tampilkan bagian "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
@@ -1593,6 +1600,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk melihat dan mengelola sandi di setelan Chrome</translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
 <translation id="7616645509853975347">Administrator Anda telah mengaktifkan Chrome Enterprise Connectors di browser Anda. Konektor ini memiliki akses ke beberapa data Anda.</translation>
 <translation id="7619838219691048931">Lembar akhir</translation>
@@ -1847,6 +1855,8 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8728672262656704056">Anda masuk mode samaran</translation>
 <translation id="8730621377337864115">Selesai</translation>
+<translation id="8731544501227493793">Tombol Kelola sandi, tekan Enter untuk melihat dan mengelola sandi di setelan Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk membuka jendela Samaran baru untuk menjelajah secara pribadi</translation>
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> adalah kode Anda untuk <ph name="ORIGIN" /></translation>
@@ -1863,6 +1873,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> telah mengaktifkan Chrome Enterprise Connectors di browser Anda. Konektor ini memiliki akses ke beberapa data Anda.</translation>
 <translation id="8805819170075074995">Entri daftar "<ph name="LANGUAGE_ID" />": Entri diabaikan karena entri tersebut juga disertakan dalam kebijakan SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Trim setelah setiap halaman tercetak</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk mengupdate Chrome dari setelan Chrome</translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="883848425547221593">Bookmark Lain</translation>
 <translation id="884264119367021077">Alamat pengiriman</translation>
@@ -1882,6 +1893,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="890493561996401738">Hapus tombol Saran, tekan Enter untuk menghapus, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Anda dalam mode samaran</translation>
 <translation id="8912362522468806198">Akun Google</translation>
+<translation id="8913778647360618320">Tombol Kelola metode pembayaran, tekan Enter untuk mengelola info pembayaran dan kartu kredit di setelan Chrome</translation>
 <translation id="8918231688545606538">Halaman ini mencurigakan</translation>
 <translation id="892588693504540538">Lubang di kanan atas</translation>
 <translation id="8931333241327730545">Ingin menyimpan kartu ini ke Akun Google Anda?</translation>

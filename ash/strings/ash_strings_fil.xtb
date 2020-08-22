@@ -14,6 +14,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="109942774857561566">Naiinip ako</translation>
 <translation id="1104084341931202936">Ipakita ang mga setting ng pagiging naa-access</translation>
 <translation id="1104621072296271835">Gagana nang mas maayos ang iyong mga device kung magkakasama</translation>
+<translation id="1119348796022671382">Gumagamit ang themed color mode ng mga kulay na na-extract mula sa iyong wallpaper para kulayan nang kaunti ang interface.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
 <translation id="1175572348579024023">Mag-scroll</translation>
@@ -48,6 +49,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1391102559483454063">Naka-on</translation>
 <translation id="1419738280318246476">I-unlock ang device para maisagawa ang pagkilos sa notification</translation>
 <translation id="1420408895951708260">I-toggle ang Night Light. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Nakuha ang screenshot at na-save ito sa clipboard</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1455242230282523554">Ipakita ang mga setting ng wika</translation>
 <translation id="1460620680449458626">Naka-mute ang volume.</translation>
@@ -65,6 +67,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1632985212731562677">Puwedeng i-disable ang Switch Access sa Mga Setting &gt; Accessibility.</translation>
 <translation id="1654477262762802994">Magsimula ng query gamit ang boses</translation>
 <translation id="1665244008632896072">I-toggle ang Dark Mode. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Ang neutral color mode ay hindi gumagamit ng mga kulay na na-extract sa wallpaper, at pinapalitan nito ang mga ito ng isang hanay ng mga neutral na maliwanag o madilim na kulay.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> timer · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3033545621352269033">Naka-on</translation>
+<translation id="3038571455154067151">Para mag-sign in, ilagay ang iyong access code ng magulang sa Family Link</translation>
 <translation id="3051128274746680507">Malapit nang alisin ang iyong profile ng pinangangasiwaang user. Mag-sign in para matuto pa.</translation>
 <translation id="3055162170959710888">Ginamit mo ang device na ito nang <ph name="USED_TIME" /> ngayong araw</translation>
 <translation id="3076778413190775903">Status tray, oras <ph name="TIME" />,
@@ -277,6 +281,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3977512764614765090">Nasa <ph name="PERCENTAGE" />% ang baterya at nagcha-charge.</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
+<translation id="40062176907008878">Sulat-kamay</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4021716437419160885">Mag-scroll pababa</translation>
 <translation id="4028481283645788203">Kinakailangan ang password para sa higit pang seguridad</translation>
@@ -288,12 +293,14 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="4129129681837227511">Para makakita ng mga notification sa iyong screen ng lock, i-unlock para baguhin ang setting</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
 <translation id="4149156641122542261">Pinapamahalaan ng <ph name="DOMAIN" /> ang <ph name="DEVICE_TYPE" /></translation>
+<translation id="4157822100366708405">Mga Setting ng Madilim na Tema</translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4195877955194704651">Button ng mga awtomatikong pag-click</translation>
 <translation id="4197790712631116042">Naka-off</translation>
 <translation id="4212472694152630271">Lumipat sa PIN</translation>
 <translation id="4215497585250573029">Mga setting ng VPN</translation>
 <translation id="4217571870635786043">Pagdidikta</translation>
+<translation id="4229328187280698237">Lumipat sa tablet mode</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Ipakita ang mga setting ng notification. Naka-off ang mga notification</translation>
 <translation id="4269883910223712419">May kakayahan ang admin ng device na ito na:</translation>
@@ -368,6 +375,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="5035389544768382859">Kumpirmahin ang Configuration ng Display</translation>
 <translation id="5083553833479578423">Mag-unlock ng higit pang feature ng Assistant.</translation>
 <translation id="5114495209940374989">Mga Screenshot</translation>
+<translation id="5123162024343028706">Umibabaw</translation>
 <translation id="5136175204352732067">Ibang keyboard ang nakakonekta</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="5170568018924773124">Ipinakita sa folder</translation>
@@ -381,6 +389,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="5297704307811127955">Naka-off</translation>
 <translation id="5302048478445481009">Wika</translation>
 <translation id="5313326810920013265">Mga setting ng Bluetooth</translation>
+<translation id="5314219114274263156">May kinuhang recording ng screen</translation>
 <translation id="5331975486040154427">USB-C device (port sa kaliwang bahagi sa likod)</translation>
 <translation id="5379115545237091094">Masyadong maraming pagtatangka</translation>
 <translation id="5397578532367286026">Ang paggamit at kasaysayan ng user na ito ay maaaring suriin ng manager (<ph name="MANAGER_EMAIL" />) sa chrome.com.</translation>
@@ -421,6 +430,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Ihinto ang <ph name="ROUTE_TITLE" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Naka-off</translation>
+<translation id="5876666360658629066">Ilagay ang code ng magulang</translation>
 <translation id="5887866489674258948">Dark Mode</translation>
 <translation id="5895138241574237353">I-restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="652139407789908527">Magiging blangko ang iyong screen nang mas matagal kaysa karaniwan (hanggang isang minuto) sa panahon ng pag-update na ito Huwag pindutin ang power button habang isinasagawa ang pag-update.</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
 <translation id="6528179044667508675">Wag istorbohin</translation>
+<translation id="65320610082834431">Mga Emoji</translation>
 <translation id="6537270692134705506">I-capture ang screen</translation>
 <translation id="6537924328260219877">Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Baterya ng Telepono <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Nagka-cast sa <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="7568637526529101738">Sa pamamagitan ng pag-right click o matagal na pagpindot, magpapakita ang Assistant ng impormasyon tulad ng kahulugan o conversion ng unit para sa iyong napili.</translation>
 <translation id="7569509451529460200">Na-enable ang Braille at ChromeVox</translation>
 <translation id="7579778809502851308">Screen capture</translation>
+<translation id="7590883480672980941">Mga setting ng input</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7600875258240007829">Tingnan ang lahat ng notification</translation>
+<translation id="7618774594543487847">Neutral</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Buksan ang mga setting para sa <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (may-ari)</translation>
@@ -665,12 +678,14 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Pinapamahalaan ng iyong Administrator</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> na lang ang natitira</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> timer</translation>
+<translation id="8647931990447795414">Para magdagdag ng tao, ilagay ang iyong access code ng magulang sa Family Link</translation>
 <translation id="8649101189709089199">Select-to-Speak</translation>
 <translation id="8652175077544655965">Isara ang mga setting</translation>
 <translation id="8653151467777939995">Ipakita ang mga setting ng notification. Naka-on ang mga notification</translation>
 <translation id="8660331759611631213">Square root ng 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Ipakita ang listahan ng network. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Mode ng kulay</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Nakakabit ang low-power charger</translation>
 <translation id="8683506306463609433">Aktibo ang pag-trace ng performance</translation>
@@ -694,6 +709,8 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
 <translation id="890616557918890486">Baguhin ang source</translation>
 <translation id="8909138438987180327">Nasa <ph name="PERCENTAGE" /> porsyento ang baterya.</translation>
+<translation id="8913384980486163186">Themed (default)</translation>
+<translation id="8918251165865262378">Lumipat sa laptop mode</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Hindi nagsasalita ng ganitong wika ang Google Assistant.</translation>
 <translation id="8936501819958976551">na-deactivate</translation>

@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">выходные сведения</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">баннер</translation>
+<translation id="1480676835519562650">можно выбрать несколько. Выбрано: <ph name="SELECTED" /> из <ph name="COUNT" /></translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">В этом месяце</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
 <translation id="2508569020611168319">список вкладок</translation>
+<translation id="2530182415807757784">можно выбрать несколько. Ничего не выбрано</translation>
 <translation id="2561842179657104141">ещё элементы управления</translation>
 <translation id="2572483411312390101">воспроизведение</translation>
 <translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE" />.</translation>

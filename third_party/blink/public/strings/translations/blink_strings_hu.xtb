@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">készítők</translation>
 <translation id="1342835525016946179">cikk</translation>
 <translation id="1359897965706325498">szalaghirdetés</translation>
+<translation id="1480676835519562650">több is választható, <ph name="COUNT" />/<ph name="SELECTED" /> van kiválasztva.</translation>
 <translation id="1589122976691792535">régió</translation>
 <translation id="1591562245178063882">Ebben a hónapban</translation>
 <translation id="1637811476055996098">Fájlok kiválasztása</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">nap</translation>
 <translation id="2507943997699731163">Kérjük, töltse ki ezt a mezőt.</translation>
 <translation id="2508569020611168319">laplista</translation>
+<translation id="2530182415807757784">több is választható, egy sincs kiválasztva.</translation>
 <translation id="2561842179657104141">további médiavezérlők megjelenítése</translation>
 <translation id="2572483411312390101">lejátszás</translation>
 <translation id="2613802280814924224">Kérjük, érvényes értéket adjon meg. A legközelebbi érvényes érték <ph name="VALID_VALUE" />.</translation>

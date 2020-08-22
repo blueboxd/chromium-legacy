@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
 <translation id="1125573121925420732">Medtem ko spletne strani posodabljajo varnost, se lahko opozorila pogosto prikažejo. To se bo kmalu izboljšalo.</translation>
 <translation id="112840717907525620">Predpomnilnik pravilnika ustrezen</translation>
+<translation id="1130564665089811311">Gumb za prevajanje strani, pritisnite Enter, če želite prevesti to stran z Google Prevajalnikom</translation>
 <translation id="1131264053432022307">Slika, ki ste jo kopirali</translation>
 <translation id="1150979032973867961">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="1151972924205500581">Potrebno je geslo</translation>
@@ -408,6 +409,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2634124572758952069">Naslova IP strežnika <ph name="HOST_NAME" /> ni bilo mogoče najti.</translation>
 <translation id="2639739919103226564">Stanje:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če želite izbrisati zgodovino brskanja, piškotke, predpomnilnik in drugo v Chromovih nastavitvah</translation>
 <translation id="2650446666397867134">Dostop do datoteke je bil zavrnjen</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2660779039299703961">Dogodek</translation>
@@ -430,6 +432,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="2713444072780614174">Bela</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če želite upravljati plačila in podatke o kreditnih karticah v Chromovih nastavitvah</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="272451190272506600">Dotaknite se tipala, če želite plačati</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
@@ -642,6 +645,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3630155396527302611">Če je že na seznamu programov, ki jim je dovoljen dostop do omrežja, ga poskusite
     odstraniti s seznama in znova dodati.</translation>
 <translation id="3631244953324577188">Biometrika</translation>
+<translation id="3633738897356909127">Gumb za posodobitev Chroma, pritisnite Enter, če želite posodobiti Chrome v Chromovih nastavitvah</translation>
 <translation id="3634530185120165534">Pladenj 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Preverjanje veljavnosti uspešno</translation>
@@ -865,6 +869,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="4506599922270137252">se obrniti na skrbnika sistema</translation>
 <translation id="450710068430902550">Deljenje s skrbnikom</translation>
 <translation id="4508814173490746936">Ni bilo mogoče uporabiti funkcije Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če želite prevesti to stran s Prevajalnikom Google</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Kartice in naslovi so iz Chroma in Google Računa (<ph name="ACCOUNT_EMAIL" />). Upravljate jih lahko v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -945,6 +950,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="4879725228911483934">Odpiranje in postavitev oken na zaslonih</translation>
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
 <translation id="4881695831933465202">Odpri</translation>
+<translation id="4889420713887366944">Gumb za odpiranje okna brez beleženja dejavnosti, pritisnite Enter, če želite odpreti novo okno brez beleženja dejavnosti za zasebno brskanje</translation>
 <translation id="4892518386797173871">Zadaj</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Shrani ...</translation>
@@ -1106,6 +1112,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5523118979700054094">Ime pravilnika</translation>
 <translation id="55293785478302737">Robni šiv</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">Gumb za izbris podatkov, pritisnite Enter, če želite izbrisati zgodovino brskanja, piškotke, predpomnilnik in drugo v Chromovih nastavitvah</translation>
 <translation id="5536214594743852365">Pokaži razdelek »<ph name="SECTION" />«</translation>
 <translation id="5539243836947087108">Mrežasta podlaga</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
@@ -1605,6 +1612,7 @@ Dodatne podrobnosti:
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Veljavnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če si želite ogledati in upravljati gesla v Chromovih nastavitvah</translation>
 <translation id="7615602087246926389">Podatke, ki so šifrirani z drugo različico gesla za Google Račun, že imate. Geslo vnesite spodaj.</translation>
 <translation id="7616645509853975347">Skrbnik je v brskalniku vklopil priključke Chrome Enterprise Connectors. Ti priključki imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="7619838219691048931">Končni list</translation>
@@ -1861,6 +1869,8 @@ Dodatne podrobnosti:
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>
 <translation id="8730621377337864115">Končano</translation>
+<translation id="8731544501227493793">Gumb za upravljanje gesel, pritisnite Enter, če si želite ogledati in upravljati gesla v Chromovih nastavitvah</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če želite odpreti novo okno brez beleženja dejavnosti za zasebno brskanje</translation>
 <translation id="8738058698779197622">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura sistema nepravilna, Chromium teh potrdil ne more preveriti.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Naslova DNS&lt;/abbr&gt; spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti. Poteka diagnosticiranje težave.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> je vaša koda za <ph name="ORIGIN" /></translation>
@@ -1877,6 +1887,7 @@ Dodatne podrobnosti:
 <translation id="8793655568873652685">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila priključke Chrome Enterprise Connectors. Ti priključki imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="8805819170075074995">Vnos na seznamu »<ph name="LANGUAGE_ID" />«: vnos je prezrt, ker je vključen tudi v pravilnik SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Obrezovanje po vsaki strani</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, pritisnite tabulatorko, nato Enter, če želite posodobiti Chrome v Chromovih nastavitvah</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="883848425547221593">Drugi zaznamki</translation>
 <translation id="884264119367021077">Naslov za pošiljanje</translation>
@@ -1896,6 +1907,7 @@ Dodatne podrobnosti:
 <translation id="890493561996401738">Gumb za odstranitev predloga, pritisnite Enter za odstranitev <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Uporabljate način brez beleženja dejavnosti</translation>
 <translation id="8912362522468806198">Račun Google</translation>
+<translation id="8913778647360618320">Gumb za upravljanje plačilnih sredstev, pritisnite Enter, če želite upravljati plačila in podatke o kreditnih karticah v Chromovih nastavitvah</translation>
 <translation id="8918231688545606538">Ta stran je sumljiva</translation>
 <translation id="892588693504540538">Luknjanje zgoraj desno</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>

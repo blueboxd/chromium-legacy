@@ -919,6 +919,14 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan ini ditetapkan ke 'Periksa upload dan download', <ph name="PRODUCT_NAME" /> akan berperilaku sesuai dengan aturan yang dijelaskan di 'Periksa download' dan 'Periksa upload'.
       </translation>
+<translation id="2424098959650060417">Mengontrol printer mana dari <ph name="BULK_PRINTERS_POLICY_NAME" /> yang tersedia untuk pengguna.
+
+      Menetapkan kebijakan akses mana yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> akan digunakan untuk membatasi akses ke printer tertentu.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> hanya akan menetapkan printer yang dapat dipilih.
+
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diberlakukan.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />.
+      </translation>
 <translation id="2426782419955104525">Mengaktifkan fitur Instan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> Instan akan diaktifkan.
@@ -1730,6 +1738,17 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
           Jika kebijakan ini tidak ditetapkan, fitur klik untuk diucapkan mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3591527072193107424">Mengaktifkan fitur Dukungan Browser Lama.</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
+<translation id="3603469950773500315">Mengaktifkan mitigasi pemeriksaan <ph name="CORS" /> dalam implementasi <ph name="CORS" /> baru, sehingga memungkinkan Ekstensi tetap kompatibel dan mengizinkan <ph name="PRODUCT_NAME" /> mengirim header tertentu tanpa pemeriksaan <ph name="CORS" />.
+
+      Jika daftar ini dibiarkan kosong, <ph name="PRODUCT_NAME" /> akan mencoba menjalankan Ekstensi secara kompatibel, dan tidak menerapkan perubahan <ph name="API" /> untuk <ph name="PRODUCT_NAME" /> 79 seperti yang dijelaskan dalam <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Jika daftar ini ditetapkan untuk memiliki nama header permintaan <ph name="HTTP" />, pemeriksaan <ph name="CORS" /> akan mengabaikan header yang tercantum dan mengaktifkan mitigasi untuk Ekstensi.
+
+      Jika daftar ini tidak ditetapkan, kedua mitigasi yang dijelaskan di atas tidak akan diterapkan.
+
+      Untuk mengetahui detail <ph name="CORS" />, buka: <ph name="CORS_HELP_URL" />.
+
+      Perlu diketahui bahwa kebijakan ini sebelumnya diumumkan akan dihapus di <ph name="PRODUCT_NAME" /> versi 82, tetapi saat ini telah dihapus di versi 84.</translation>
 <translation id="3624515566460517364">Memeriksa pelanggaran aturan perlindungan data sensitif pada file yang diupload dan didownload.</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3628480121685794414">Aktifkan pencetakan simpleks</translation>
@@ -3241,6 +3260,12 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika kebijakan ini tidak disetel, perilaku <ph name="ATTRIBUTE_SAMESITE_NAME" /> default bagi cookie akan bergantung pada konfigurasi pribadi pengguna untuk fitur <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, fitur <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" />, dan fitur <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> yang dapat disetel berdasarkan uji coba lapangan atau dengan mengaktifkan atau menonaktifkan tanda <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, tanda <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" />, atau tanda <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />, secara berurutan.</translation>
 <translation id="585270638818921943">Cegah pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya</translation>
+<translation id="585671885349598586">Menentukan printer yang tidak dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLOCKLIST" /> dipilih untuk <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
+
+      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini. ID harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+      </translation>
 <translation id="5859344336338527083">Menyetel kebijakan akan menentukan URL mana yang dapat menginstal ekstensi, aplikasi, dan tema. Sebelum <ph name="PRODUCT_NAME" /> 21, pengguna dapat mengklik link ke file *.crx, dan <ph name="PRODUCT_NAME" /> akan menawarkan untuk menginstal file setelah menampilkan beberapa peringatan. Setelah itu, file tersebut harus didownload dan ditarik ke halaman setelan <ph name="PRODUCT_NAME" />. Setelan ini memungkinkan URL tertentu menggunakan alur penginstalan lama yang lebih mudah.
 
       Setiap item dalam daftar ini merupakan pola kecocokan gaya ekstensi (buka https://developer.chrome.com/extensions/match_patterns). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item dalam daftar ini. Baik lokasi file *.crx maupun halaman tempat dimulainya download (halaman perujuk) harus diizinkan oleh pola ini.
@@ -3523,6 +3548,17 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Setiap item daftar kebijakan merupakan string yang memuat ID ekstensi dan, terkadang, URL "update" yang dipisahkan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. Jika URL "update" ditentukan, URL ini akan mengarah ke dokumen XML manifes update seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara default, URL update Chrome Web Store akan digunakan (yang saat ini adalah "https://clients2.google.com/service/update2/crx"). Perlu diketahui, URL "update" yang ditetapkan dalam kebijakan ini hanya digunakan untuk penginstalan awal; sedangkan update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi.
 
       Misalnya, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> akan menginstal aplikasi <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> dari URL "update" Chrome Web Store standar. Untuk informasi selengkapnya terkait ekstensi hosting, lihat: <ph name="LINK_TO_EXTENSION_DOC2" /></translation>
+<translation id="6275833043726517413">Menggunakan implementasi <ph name="CORS" /> lama, bukan <ph name="CORS" /> baru.
+
+      Jika setelan ini ditetapkan ke True, implementasi lama yang digunakan seharusnya kompatibel dengan versi sebelumnya.
+
+      Jika setelan ini ditetapkan ke False atau tidak ditetapkan, implementasi baru yang digunakan dapat menyebabkan potensi masalah kompatibilitas khusus perusahaan.
+
+      Kebijakan ini akan dihapus setelah beberapa versi.
+
+      Untuk mengetahui detail <ph name="CORS" />, buka: <ph name="CORS_HELP_URL" />.
+
+      Perlu diketahui bahwa kebijakan ini sebelumnya diumumkan akan dihapus di <ph name="PRODUCT_NAME" /> versi 82, tetapi saat ini telah dihapus di versi 84.</translation>
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
 <translation id="6282799760374509080">Izinkan atau tolak penangkapan audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -4037,6 +4073,22 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 <translation id="7063895219334505671">Izinkan pop-up di situs ini</translation>
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7068108874199666656">Memungkinkan pendorongan konfigurasi jaringan untuk diterapkan pada semua pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka.</translation>
+<translation id="7069358643254839205">Memberikan konfigurasi untuk printer perusahaan yang terikat ke perangkat.
+
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />.  Formatnya sama dengan kamus NativePrinters, dengan tambahan kolom "id" atau "guid" per printer yang diperlukan untuk pemberian atau pemblokiran izin.
+
+      Ukuran file tidak boleh lebih dari 5 MB dan harus dienkode dalam format JSON.  File yang berisi sekitar 21.000 printer diperkirakan akan dienkode menjadi file berukuran 5 MB.  Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File didownload dan disimpan di cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />, dan <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang ditentukan oleh tiap pengguna.
+
+      Kebijakan ini bersifat tambahan untuk <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+
+      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat, dan kebijakan <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> yang lain akan diabaikan.
+      </translation>
 <translation id="7070525176564511548">Sandi harus dimasukkan setiap minggu (168 jam)</translation>
 <translation id="7072208053150563108">Tingkat perubahan sandi mesin</translation>
 <translation id="7079519252486108041">Cekal pop-up di situs ini</translation>
@@ -4243,6 +4295,11 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Penelusuran dan penginstalan otomatis untuk plugin yang tidak ada, tidak didukung lagi.</translation>
 <translation id="7267809745244694722">Default tombol media ke tombol fungsi</translation>
 <translation id="7271085005502526897">Impor beranda dari browser default saat pertama kali dijalankan</translation>
+<translation id="7271181393214180342">Jika kebijakan disetel ke Aktif, autentikasi HTTP akan mematuhi persetujuan dari kebijakan KDC. Dengan kata lain, <ph name="PRODUCT_NAME" /> akan mendelegasikan kredensial pengguna ke layanan yang sedang diakses jika KDC menyetel <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Lihat RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). Layanan juga harus diizinkan oleh <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+      Jika kebijakan disetel ke Nonaktif atau tidak disetel, kebijakan KDC akan diabaikan di platform yang didukung dan hanya <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> yang akan dipatuhi.
+
+      Di <ph name="MS_WIN_NAME" />, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="7273823081800296768">Jika setelan diaktifkan atau dikonfigurasikan, pengguna dapat memilih untuk menyandingkan klien dan host pada waktu tersambung, menghilangkan keharusan untuk memasukkan PIN setiap waktu.
 
           Jika setelan ini dinonaktifkan, fitur ini tidak akan tersedia.</translation>
@@ -4277,6 +4334,29 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7339315111520512972">Paksa kode jaringan untuk dijalankan dalam proses browser</translation>
 <translation id="7340034977315324840">Laporkan waktu aktivitas perangkat</translation>
 <translation id="7343497214039883642">File konfigurasi printer perusahaan untuk perangkat</translation>
+<translation id="7348384750433771321">Memberikan konfigurasi untuk printer perusahaan.
+
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />.  Formatnya sama dengan kamus NativePrinters, dengan tambahan kolom "id" atau "guid" per printer yang diperlukan untuk pemberian atau pemblokiran izin.
+
+      Ukuran file tidak boleh lebih dari 5 MB dan harus dienkode dalam format JSON.  File yang berisi sekitar 21.000 printer diperkirakan akan dienkode menjadi file berukuran 5 MB.  Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File didownload dan disimpan di cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />, <ph name="BULK_PRINTERS_WHITELIST" />, dan <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang ditentukan oleh tiap pengguna.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
+<translation id="7355640439776250098">Menentukan printer yang tidak dapat digunakan pengguna.
+
+      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
+
+      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang tercantum dalam kebijakan ini. ID harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="PRINTERS_BULK_BLOCKLIST" />.
+      </translation>
 <translation id="7360181094056034924">Mengontrol perilaku <ph name="PRODUCT_NAME" /> terhadap data yang diupload dan didownload yang dianggap memerlukan pemindaian.  Menunda pengiriman berarti <ph name="PRODUCT_NAME" /> tidak akan mengizinkan pengguna untuk mengakses file yang didownload, memilih file untuk diupload, menempelkan dari papan klip, atau menarik lalu melepaskan data hingga dipindai dan keputusan pemindaian tersebut diketahui.  Batasan ini hanya berlaku bagi file atau data yang akan memerlukan pemindaian seperti ditentukan oleh <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />, dan kebijakan yang mengontrol daftar domain yang dapat diperiksa.
 
       Jika kebijakan ini tidak ditetapkan atau ditetapkan ke 'Tidak ada', <ph name="PRODUCT_NAME" /> tidak akan menunda semua file yang akan diupload, menempelkan dari papan klip, menarik lalu melepas data, atau menunda akses ke semua file yang didownload.  Pemindaian akan dilakukan di latar belakang.
@@ -4471,6 +4551,24 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika kebijakan disetel, pengguna tidak dapat mengubahnya di <ph name="PRODUCT_NAME" />. Jika tidak disetel, penyedia penelusuran default akan diaktifkan, dan pengguna dapat menyetel daftar penyedia penelusuran.
 
       Di <ph name="MS_WIN_NAME" />, fungsi ini hanya tersedia di instance yang dihubungkan ke domain <ph name="MS_AD_NAME" />, dijalankan di Windows 10 Pro, atau didaftarkan di Pengelolaan Cloud Browser Chrome. Di <ph name="MAC_OS_NAME" />, fungsi ini hanya tersedia di instance yang dikelola melalui MDM, atau dihubungkan ke domain melalui MCX.</translation>
+<translation id="7673108452297907398">Memberikan konfigurasi untuk printer perusahaan yang terikat ke perangkat.
+
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />.  Formatnya sama dengan kamus NativePrinters, dengan tambahan kolom "id" atau "guid" per printer yang diperlukan untuk pemberian atau pemblokiran izin.
+
+      Ukuran file tidak boleh lebih dari 5 MB dan harus dienkode dalam format JSON.  File yang berisi sekitar 21.000 printer diperkirakan akan dienkode menjadi file berukuran 5 MB.  Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File didownload dan disimpan di cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />, dan <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang ditentukan oleh tiap pengguna.
+
+      Kebijakan ini bersifat tambahan untuk <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat, dan kebijakan <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> yang lain akan diabaikan.
+
+      Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="DEVICE_PRINTERS" />.
+      </translation>
 <translation id="7673194325208122247">Periode waktu (milidetik)</translation>
 <translation id="7677220829878081413">
       Jika ditetapkan ke ArcSession, kebijakan ini akan memaksa perangkat untuk reboot saat pengguna logout jika Android telah dimulai.
@@ -5165,6 +5263,19 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="8757552286070680084">Konfigurasi DTC wilco</translation>
 <translation id="8758831693895931466">Aktifkan pendaftaran pengelolaan cloud wajib</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
+<translation id="8760176996829352091">Memberikan konfigurasi untuk printer perusahaan.
+
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus <ph name="PRINTERS_POLICY_NAME" />, dengan tambahan kolom "id" atau "guid" per printer yang diperlukan untuk pemberian atau pemblokiran izin.
+
+      Ukuran file tidak boleh lebih dari 5 MB dan harus dienkode dalam format JSON. File yang berisi sekitar 21.000 printer diperkirakan akan dienkode menjadi file berukuran 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      File didownload dan disimpan di cache. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />, <ph name="PRINTERS_BULK_ALLOWLIST" />, dan <ph name="PRINTERS_BULK_BLOCKLIST" />.
+
+      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat. Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang ditentukan oleh tiap pengguna.</translation>
 <translation id="8764477907716150749">Kebijakan ini untuk penggunaan internal oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
 <translation id="877185520360032968">Menyetel kebijakan akan mengubah direktori default tempat Chrome mendownload file, tetapi pengguna dapat mengubah direktori tersebut.
 
@@ -5427,6 +5538,12 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="9096086085182305205">Daftar putih server autentikasi</translation>
 <translation id="9105265795073104888">Hanya bagian dari opsi konfigurasi proxy yang disediakan untuk aplikasi Android. Aplikasi Android dapat memilih untuk menggunakan proxy secara sukarela. Anda tidak dapat memaksakan aplikasi Android agar menggunakan proxy.</translation>
 <translation id="9106865192244721694">Izinkan WebUSB di situs ini</translation>
+<translation id="910760342417457561">Mengontrol printer mana dari <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> yang tersedia bagi pengguna.
+
+      Menetapkan kebijakan akses mana yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLOCKLIST" /> dipilih, <ph name="PRINTERS_BULK_BLOCKLIST" /> akan digunakan untuk membatasi akses ke printer tertentu. Jika <ph name="PRINTERS_ALLOWLIST" /> dipilih, <ph name="PRINTERS_BULK_ALLOWLIST" /> hanya akan menetapkan printer yang dapat dipilih.
+
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diberlakukan.
+      </translation>
 <translation id="9109086856618439290">Mengaktifkan ToS saat CCT/PWA pertama kali dijalankan</translation>
 <translation id="9112727953998243860">File konfigurasi untuk printer perusahaan</translation>
 <translation id="9116740039944096995">Daftar Pola URL. Permintaan jaringan pribadi yang dimulai dari situs tidak aman dan disalurkan oleh asal yang cocok akan diizinkan.

@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">参与者名单</translation>
 <translation id="1342835525016946179">文章标记</translation>
 <translation id="1359897965706325498">横幅</translation>
+<translation id="1480676835519562650">可选择多项，已选择 <ph name="SELECTED" /> 项（共 <ph name="COUNT" /> 项）。</translation>
 <translation id="1589122976691792535">区域</translation>
 <translation id="1591562245178063882">本月</translation>
 <translation id="1637811476055996098">选择文件</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
 <translation id="2508569020611168319">标签列表</translation>
+<translation id="2530182415807757784">可选择多项，已选择 0 项。</translation>
 <translation id="2561842179657104141">显示更多媒体控件</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">请输入有效值。最接近的有效值为<ph name="VALID_VALUE" />。</translation>

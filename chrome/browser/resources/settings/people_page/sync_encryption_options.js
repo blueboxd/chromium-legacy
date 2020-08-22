@@ -68,6 +68,15 @@ Polymer({
   },
 
   /**
+   * Returns the encryption options CrRadioGroupElement.
+   * @return {?CrRadioGroupElement}
+   */
+  getEncryptionsRadioButtons() {
+    return /** @type {?CrRadioGroupElement} */ (
+        this.$$('#encryptionRadioGroup'));
+  },
+
+  /**
    * Whether we should disable the radio buttons that allow choosing the
    * encryption options for Sync.
    * We disable the buttons if:

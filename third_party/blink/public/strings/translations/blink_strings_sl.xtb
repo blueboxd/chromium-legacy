@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">seznam sodelujočih</translation>
 <translation id="1342835525016946179">člnk</translation>
 <translation id="1359897965706325498">pasica</translation>
+<translation id="1480676835519562650">Izbrati je mogoče več otrok, izbranih je toliko: <ph name="SELECTED" /> od <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">območje</translation>
 <translation id="1591562245178063882">Ta mesec</translation>
 <translation id="1637811476055996098">Izberi datoteke</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dan</translation>
 <translation id="2507943997699731163">Izpolnite to polje</translation>
 <translation id="2508569020611168319">seznam zavihkov</translation>
+<translation id="2530182415807757784">Mogoče je izbrati več otrok, izbran ni noben.</translation>
 <translation id="2561842179657104141">prikaz več kontrolnikov za predstavnost</translation>
 <translation id="2572483411312390101">predvajanje</translation>
 <translation id="2613802280814924224">Vnesite veljavno vrednost. Najbližja veljavna vrednost je <ph name="VALID_VALUE" />.</translation>

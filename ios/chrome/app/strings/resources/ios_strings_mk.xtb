@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Нов прозорец</translation>
 <translation id="1580783302095112590">Поштата е испратена.</translation>
 <translation id="1582732959743469162">Ова ќе го запре целиот напредок на моменталното преземање.</translation>
+<translation id="1605405588277479165">Исклучено - Не се препорачува</translation>
 <translation id="1605658421715042784">Копирај ја сликата</translation>
 <translation id="1608337082864370066">Пребарувајте ја копираната слика</translation>
 <translation id="1612730193129642006">Прикажи решетка од картички</translation>
@@ -496,6 +497,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6624219055418309072">Блокирај во „Инкогнито“</translation>
 <translation id="6628106477656132239">Погрешен рок на важност</translation>
 <translation id="6638511529934826365">Зумирај текст…</translation>
+<translation id="6639730758971422557">За да го вклучите „Безбедното прелистување“, отворете<ph name="BEGIN_LINK" />Синхронизација и услуги на Google<ph name="END_LINK" /> и допрете „Безбедно прелистување“.</translation>
 <translation id="6642362222295953972">Префрлете се на постојната картичка</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6645899968535965230">QR-код: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7561196759112975576">Секогаш</translation>
 <translation id="7600965453749440009">Никогаш не преведувај <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Појавните прозорци се блокирани (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Избриши ја лозинката</translation>
 <translation id="7638584964844754484">Погрешна лозинка-фраза</translation>
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7658239707568436148">Откажи</translation>
@@ -658,6 +661,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8529767659511976195">Ново</translation>
 <translation id="8532105204136943229">Година на истекување</translation>
 <translation id="8533166274275423134">Отворено на друго место</translation>
+<translation id="8533670235862049797">„Безбедното прелистување“ е вклучено</translation>
 <translation id="8534481786647257214">Објавата на Google+ е завршена.</translation>
 <translation id="8548878600947630424">Најди во страница...</translation>
 <translation id="8574235780160508979">„Условите за користење“ на Chrome се менуваат на 31 март. <ph name="BEGIN_LINK" />Прегледајте ги<ph name="END_LINK" /></translation>

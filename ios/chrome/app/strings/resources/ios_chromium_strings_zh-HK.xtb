@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">開啟這項功能後，Chromium 會使用「Google 翻譯」來翻譯其他語言的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">開啟 Chromium 掃瞄器</translation>
 <translation id="4787850887676698916">您在其他裝置上開啟的 Chromium 分頁會在這裡顯示。</translation>
+<translation id="4828317641996116749">Chromium 無法檢查所有密碼。請稍後再試。</translation>
 <translation id="4999538639245140991">由於您即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帳戶，系統將刪除您在此裝置上的 Chromium 資料，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="5224391634244552924">沒有已儲存的密碼。儲存密碼時，Chromium 可檢查您的密碼。</translation>
 <translation id="5521125884468363740">如要在任何使用 Chromium 的裝置上查看分頁，請登入並開啟同步功能</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">您現在只要在訊息、文件或其他應用程式中輕按連結，即可使用 Chromium。</translation>
 <translation id="7173114856073700355">開啟設定</translation>
 <translation id="7208566199746267865">Chromium 允許您將帳戶同步至網路上，以節省時間。您可在設定中新增或移除帳戶。</translation>
+<translation id="725427773388857052">Chromium 能確保系統安全，避免發生資料外洩或瀏覽不安全網站等問題。</translation>
 <translation id="7269362888766543920">部份外掛程式導致 Chromium 當機，請解除安裝那些外掛程式。</translation>
 <translation id="7337881442233988129">ChromiumHelper</translation>
 <translation id="7349905826685622881">如要將 Chromium 設定為預設瀏覽器：

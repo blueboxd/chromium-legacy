@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Nové okno</translation>
 <translation id="1580783302095112590">E-mail bol odoslaný.</translation>
 <translation id="1582732959743469162">Tým zastavíte ďalší postup aktuálneho sťahovania.</translation>
+<translation id="1605405588277479165">Vypnuté – neodporúča sa</translation>
 <translation id="1605658421715042784">Kopírovať obrázok</translation>
 <translation id="1608337082864370066">Vyhľadať skopírovaný obrázok</translation>
 <translation id="1612730193129642006">Zobraziť karty v mriežke</translation>
@@ -496,6 +497,7 @@ Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliada
 <translation id="6624219055418309072">Blokovať v režime inkognito</translation>
 <translation id="6628106477656132239">Neplatný dátum vypršania platnosti</translation>
 <translation id="6638511529934826365">Textová lupa…</translation>
+<translation id="6639730758971422557">Ak chcete zapnúť bezpečné prehliadanie, otvorte sekciu <ph name="BEGIN_LINK" />Synchronizácia a služby Googlu<ph name="END_LINK" /> a klepnite na Bezpečné prehliadanie.</translation>
 <translation id="6642362222295953972">Prepnúť na existujúcu kartu</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6645899968535965230">QR kód: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliada
 <translation id="7561196759112975576">Vždy</translation>
 <translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Blokované kontextové okná (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Odstrániť heslo</translation>
 <translation id="7638584964844754484">Nesprávna prístupová fráza</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
@@ -658,6 +661,7 @@ Na základe súborov cookie si môžu zobraziť vašu históriu prehliadania v 
 <translation id="8529767659511976195">Nové</translation>
 <translation id="8532105204136943229">Rok vypršania platnosti</translation>
 <translation id="8533166274275423134">Otvorené inde</translation>
+<translation id="8533670235862049797">Bezpečné prehliadanie je zapnuté</translation>
 <translation id="8534481786647257214">Príspevok bol uverejnený v Google+.</translation>
 <translation id="8548878600947630424">Nájsť na stránke...</translation>
 <translation id="8574235780160508979">Zmluvné podmienky prehliadača Chrome sa 31. marca zmenia. <ph name="BEGIN_LINK" />Prehliadnuť si nové zmluvné podmienky<ph name="END_LINK" /></translation>

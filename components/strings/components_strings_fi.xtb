@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="1125573121925420732">Varoituksia voi esiintyä usein, kun verkkosivustot päivittävät suojaustaan. Asian pitäisi korjaantua pian.</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
+<translation id="1130564665089811311">Käännä sivu ‑painike, käännä tämä sivu Google Kääntäjällä painamalla Enter</translation>
 <translation id="1131264053432022307">Kopioimasi kuva</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1151972924205500581">Salasana vaaditaan</translation>
@@ -408,6 +409,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2634124572758952069">Sivuston <ph name="HOST_NAME" /> palvelimen IP-osoitetta ei löytynyt.</translation>
 <translation id="2639739919103226564">Tila:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, tyhjennä selaushistoria, evästeet, välimuisti ja muita tietoja Chromen asetuksista painamalla sarkainta ja sitten Enter</translation>
 <translation id="2650446666397867134">Tiedoston käyttöoikeus evättiin</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2660779039299703961">Tapahtuma</translation>
@@ -430,6 +432,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2705137772291741111">Tämän sivuston välimuistiin tallennettu kopio oli lukukelvoton.</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2713444072780614174">Valkoinen</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, paina ensin sarkainta ja sitten Enter ylläpitääksesi maksu- ja credit-korttitietoja Chromen asetuksissa</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="272451190272506600">Maksa koskettamalla tunnistinta</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
@@ -643,6 +646,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3630155396527302611">Jos sillä on jo verkon käyttöoikeus, kokeile sen poistamista
       sallittujen ohjelmien luettelosta ja lisäämistä sitten uudelleen.</translation>
 <translation id="3631244953324577188">Biometriikka</translation>
+<translation id="3633738897356909127">Päivitä Chrome ‑painike, päivitä Chrome sen asetuksista painamalla Enter</translation>
 <translation id="3634530185120165534">Lokero 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Todennus onnistui</translation>
@@ -866,6 +870,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4506599922270137252">Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="450710068430902550">Jakaminen järjestelmänvalvojan kanssa</translation>
 <translation id="4508814173490746936">Touch ID:n käyttö ei onnistunut</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, käännä tämä sivu Google Kääntäjällä painamalla sarkainta ja sitten Enter</translation>
 <translation id="4510487217173779431">Chou4 (kirjekuori)</translation>
 <translation id="4515275063822566619">Kortit ja osoitteet ovat peräisin Chromesta ja Google-tililtäsi (<ph name="ACCOUNT_EMAIL" />). Voit hallinnoida niitä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (kirjekuori)</translation>
@@ -946,6 +951,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4879725228911483934">Avaa ikkunat ja sijoittele ne näytöille</translation>
 <translation id="4880827082731008257">Haku historiasta</translation>
 <translation id="4881695831933465202">Avaa</translation>
+<translation id="4889420713887366944">Avaa incognito-ikkuna ‑painike, paina Enter avataksesi uuden incognito-ikkunan, niin voit selata yksityisesti</translation>
 <translation id="4892518386797173871">Takaosa</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Tallenna…</translation>
@@ -1107,6 +1113,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5523118979700054094">Käytännön nimi</translation>
 <translation id="55293785478302737">Reunasidonta</translation>
 <translation id="553484882784876924">Prc6 (kirjekuori)</translation>
+<translation id="5535133333442455806">Tyhjennä selausdata ‑painike, tyhjennä selaushistoria, evästeet, välimuisti ja muita tietoja Chromen asetuksista painamalla Enter</translation>
 <translation id="5536214594743852365">Näytä osio <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Lautta</translation>
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
@@ -1606,6 +1613,7 @@ Lisätietoja:
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Vanhenee: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, katso ja ylläpidä salasanojasi Chromen asetuksissa painamalla sarkainta ja sitten Enter</translation>
 <translation id="7615602087246926389">Tietojasi on jo salattu Google-tilisi salasanan muulla versiolla. Syötä salasana alla.</translation>
 <translation id="7616645509853975347">Järjestelmänvalvoja on ottanut Chrome Enterprise Connectorsin käyttöön selaimellesi. Nämä liittimet pääsevät osaan datastasi.</translation>
 <translation id="7619838219691048931">Viimeinen sivu</translation>
@@ -1863,6 +1871,8 @@ Lisätietoja:
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728672262656704056">Olet muuttunut näkymättömäksi</translation>
 <translation id="8730621377337864115">Valmis</translation>
+<translation id="8731544501227493793">Ylläpidä salasanoja ‑painike, katso ja ylläpidä salasanoja Chromen asetuksissa painamalla Enter</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, paina ensin sarkainta ja sitten Enter avataksesi uuden incognito-ikkunan, niin voit selata yksityisesti</translation>
 <translation id="8738058698779197622">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chromium ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="8740359287975076522">Sivuston <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-osoitetta&lt;/abbr&gt; ei löydy. Ongelmaa diagnosoidaan.</translation>
 <translation id="8742371904523228557">Koodisi on <ph name="ONE_TIME_CODE" /> (<ph name="ORIGIN" />)</translation>
@@ -1879,6 +1889,7 @@ Lisätietoja:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> on laittanut Chrome Enterprise Connectorsin päälle selaimessasi. Nämä liittimet pääsevät osaan datastasi.</translation>
 <translation id="8805819170075074995">Luettelokohde <ph name="LANGUAGE_ID" />: Kohde on ohitettu, koska se sisältyy myös SpellcheckLanguage-käytäntöön.</translation>
 <translation id="8807160976559152894">Leikkaa jokaisen sivun jälkeen</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, päivitä Chrome sen asetuksista painamalla sarkainta ja sitten Enter</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="883848425547221593">Muut kirjanmerkit</translation>
 <translation id="884264119367021077">Toimitusosoite</translation>
@@ -1898,6 +1909,7 @@ Lisätietoja:
 <translation id="890493561996401738">Ehdotuksen poistopainike, poista painamalla Enter, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Olet siirtynyt incognito-tilaan</translation>
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
+<translation id="8913778647360618320">Ylläpidä maksutapoja ‑painike, paina Enter ylläpitääksesi maksu- ja credit-korttitietoja Chromen asetuksissa</translation>
 <translation id="8918231688545606538">Tämä sivu on epäilyttävä</translation>
 <translation id="892588693504540538">Reikä oikeassa yläkulmassa</translation>
 <translation id="8931333241327730545">Haluatko tallentaa tämän kortin Google-tilillesi?</translation>

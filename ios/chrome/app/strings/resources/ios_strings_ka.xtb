@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">ახალი ფანჯარა</translation>
 <translation id="1580783302095112590">წერილი გაიგზავნა.</translation>
 <translation id="1582732959743469162">ეს ქმედება შეაჩერებს ამჟამინდელი ჩამოტვირთვის პროგრესს.</translation>
+<translation id="1605405588277479165">გამორთული — არ არის რეკომენდებული</translation>
 <translation id="1605658421715042784">სურათის კოპირება</translation>
 <translation id="1608337082864370066">კოპირებული სურათის ძიება</translation>
 <translation id="1612730193129642006">ჩანართის ბადის ჩვენება</translation>
@@ -496,6 +497,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="6624219055418309072">ინკოგნიტო რეჟიმში დაბლოკვა</translation>
 <translation id="6628106477656132239">მოქმედების ვადის გასვლის თარიღი არასწორია</translation>
 <translation id="6638511529934826365">ტექსტის მასშტაბირება…</translation>
+<translation id="6639730758971422557">Safe Browsing-ის ჩასართავად გახსენით <ph name="BEGIN_LINK" />სინქრონიზაციის/Google სერვისები<ph name="END_LINK" /> და შეეხეთ Safe Browsing-ს.</translation>
 <translation id="6642362222295953972">არსებულ ჩანართზე გადართვა</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="6645899968535965230">QR კოდი: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="7561196759112975576">ყოველთვის</translation>
 <translation id="7600965453749440009">არასოდეს თარგმნო <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">კონტექსტური ფანჯრები დაბლოკილია (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">პაროლის წაშლა</translation>
 <translation id="7638584964844754484">საიდუმლო ფრაზა არასწორია</translation>
 <translation id="7649070708921625228">დახმარება</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
@@ -658,6 +661,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8529767659511976195">ახალი</translation>
 <translation id="8532105204136943229">ვადის გასვლის წელი</translation>
 <translation id="8533166274275423134">გახსნილია სხვაგან</translation>
+<translation id="8533670235862049797">Safe Browsing ჩართულია</translation>
 <translation id="8534481786647257214">Google+ პოსტი დასრულებულია.</translation>
 <translation id="8548878600947630424">ამ გვერდზე ძიება...</translation>
 <translation id="8574235780160508979">Chrome-ის მომსახურების პირობები შეიცვლება 31 მარტს. <ph name="BEGIN_LINK" />გთხოვთ, გადახედოთ მათ<ph name="END_LINK" /></translation>

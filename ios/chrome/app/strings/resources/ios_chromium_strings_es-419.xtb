@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">Si activas esta función, Chromium te preguntará si deseas usar Google Traductor para traducir páginas en otros idiomas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activar el escáner de Chromium</translation>
 <translation id="4787850887676698916">Aquí se mostrarán las pestañas que hayas abierto en Chromium en tus otros dispositivos.</translation>
+<translation id="4828317641996116749">Chromium no pudo verificar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="4999538639245140991">Como estás saliendo de una cuenta que administra <ph name="SIGNOUT_MANAGED_DOMAIN" />, tus datos de Chromium se borrarán de este dispositivo, pero permanecerán en tu Cuenta de Google.</translation>
 <translation id="5224391634244552924">No hay contraseñas guardadas. Chromium puede revisar las contraseñas cuando las guardas.</translation>
 <translation id="5521125884468363740">Para ver tus pestañas donde sea que uses Chromium, accede a tu cuenta y activa la sincronización</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">Ahora puedes usar Chromium cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
 <translation id="7173114856073700355">Abrir la configuración</translation>
 <translation id="7208566199746267865">Chromium lleva tus cuentas a la Web para ahorrarte tiempo. Puedes agregar o quitar cuentas en la configuración.</translation>
+<translation id="725427773388857052">Chromium puede protegerte ante violaciones de la seguridad de los datos, sitios web inseguros y mucho más.</translation>
 <translation id="7269362888766543920">Algunos complementos causan fallos en Chromium. Intenta desinstalarlos.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">Para establecer Chromium como navegador predeterminado, haz lo siguiente:

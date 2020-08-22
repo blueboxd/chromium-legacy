@@ -153,10 +153,12 @@ class PLATFORM_EXPORT CompositingReason {
     kComboSquashableReasons =
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
 
+    kPreventingSubpixelAccumulationReasons =
+        kWillChangeTransform | kActiveTransformAnimation,
+
     kDirectReasonsForPaintOffsetTranslationProperty =
         kScrollDependentPosition | kVideo | kCanvas | kPlugin | kIFrame |
         kSVGRoot,
-
     kDirectReasonsForTransformProperty =
         k3DTransform | kTrivial3DTransform | kWillChangeTransform |
         kWillChangeOther | kPerspectiveWith3DDescendants |

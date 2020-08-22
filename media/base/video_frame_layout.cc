@@ -172,7 +172,7 @@ std::ostream& operator<<(std::ostream& ostream,
           << VectorToString(layout.planes())
           << ", is_multi_planar: " << layout.is_multi_planar()
           << ", buffer_addr_align: " << layout.buffer_addr_align()
-          << ", modifier: " << layout.modifier() << ")";
+          << ", modifier: 0x" << std::hex << layout.modifier() << ")";
   return ostream;
 }
 

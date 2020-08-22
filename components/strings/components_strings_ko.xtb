@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">재정렬 실행 취소(&amp;U)</translation>
 <translation id="1125573121925420732">웹사이트에서 보안을 업데이트하는 동안에는 경고가 자주 발생할 수 있습니다. 곧 개선될 것입니다.</translation>
 <translation id="112840717907525620">정책 캐시 확인</translation>
+<translation id="1130564665089811311">페이지 번역 버튼, Google 번역으로 이 페이지를 번역하려면 Enter 누르기</translation>
 <translation id="1131264053432022307">복사한 이미지</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1151972924205500581">비밀번호를 입력해야 합니다.</translation>
@@ -404,6 +405,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" />의 서버 IP 주소를 찾을 수 없습니다.</translation>
 <translation id="2639739919103226564">상태:</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" />, <ph name="CITY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome 설정에서 방문 기록, 쿠키, 캐시 등을 삭제하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="2650446666397867134">파일 액세스 거부됨</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2660779039299703961">이벤트</translation>
@@ -426,6 +428,7 @@
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="2713444072780614174">흰색</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome 설정에서 결제 및 신용카드 정보를 관리하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="272451190272506600">센서를 터치하여 결제</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
@@ -636,6 +639,7 @@
 <translation id="3630155396527302611">이미 네트워크 액세스가 허용된 프로그램으로 되어 있는 경우
     목록에서 삭제한 뒤 다시 추가합니다.</translation>
 <translation id="3631244953324577188">생체 인식</translation>
+<translation id="3633738897356909127">Chrome 업데이트 버튼, Chrome 설정에서 Chrome을 업데이트하려면 Enter 누르기</translation>
 <translation id="3634530185120165534">트레이 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">유효성 검사 성공</translation>
@@ -854,6 +858,7 @@
 <translation id="4506599922270137252">시스템 관리자에게 문의</translation>
 <translation id="450710068430902550">관리자와 공유</translation>
 <translation id="4508814173490746936">Touch ID를 사용할 수 없음</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google 번역으로 이 페이지를 번역하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="4510487217173779431">Chou4(봉투)</translation>
 <translation id="4515275063822566619">카드와 주소는 Chrome 및 Google 계정(<ph name="ACCOUNT_EMAIL" />)에서 가져왔습니다. 이 정보는 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>
 <translation id="4517607026994743406">Comm-10(봉투)</translation>
@@ -934,6 +939,7 @@
 <translation id="4879725228911483934">화면에서 창을 열고 배치합니다.</translation>
 <translation id="4880827082731008257">기록 검색</translation>
 <translation id="4881695831933465202">열기</translation>
+<translation id="4889420713887366944">시크릿 창 열기 버튼, 새 시크릿 창을 열어 비공개적으로 탐색하려면 Enter 누르기</translation>
 <translation id="4892518386797173871">후면</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">저장...</translation>
@@ -1095,6 +1101,7 @@
 <translation id="5523118979700054094">정책 이름</translation>
 <translation id="55293785478302737">에지 스티치</translation>
 <translation id="553484882784876924">Prc6(봉투)</translation>
+<translation id="5535133333442455806">인터넷 사용 기록 삭제 버튼, Chrome 설정의 방문 기록, 쿠키, 캐시 등을 삭제하려면 Enter 누르기</translation>
 <translation id="5536214594743852365">‘<ph name="SECTION" />’ 섹션 표시</translation>
 <translation id="5539243836947087108">래프트</translation>
 <translation id="5540224163453853">요청한 글을 찾지 못했습니다.</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
 <translation id="7613889955535752492">만료일: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome 설정에서 비밀번호를 확인하고 관리하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="7615602087246926389">다른 Google 계정 비밀번호 버전을 사용하여 암호화된 데이터가 이미 있습니다. 아래에 암호를 입력하시기 바랍니다.</translation>
 <translation id="7616645509853975347">관리자가 브라우저에 Chrome Enterprise 커넥터를 사용 설정했습니다. 커넥터가 내 데이터 중 일부에 액세스할 수 있습니다.</translation>
 <translation id="7619838219691048931">엔드 시트</translation>
@@ -1849,6 +1857,8 @@
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728672262656704056">시크릿 모드로 전환됨</translation>
 <translation id="8730621377337864115">완료</translation>
+<translation id="8731544501227493793">비밀번호 관리 버튼, Chrome 설정에서 비밀번호를 확인하고 관리하려면 Enter 누르기</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, 새 시크릿 창을 열어 비공개적으로 탐색하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="8738058698779197622">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서가 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chromium에서 이 인증서를 확인할 수 없습니다.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />의 &lt;abbr id="dnsDefinition"&gt;DNS 주소&lt;/abbr&gt;를 찾을 수 없습니다. 문제를 진단하는 중입니다.</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> 코드는 <ph name="ONE_TIME_CODE" />입니다.</translation>
@@ -1865,6 +1875,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />에서 브라우저에 Chrome Enterprise 커넥터를 사용 설정했습니다. 커넥터가 내 데이터 중 일부에 액세스할 수 있습니다.</translation>
 <translation id="8805819170075074995">목록 항목 '<ph name="LANGUAGE_ID" />': SpellcheckLanguage 정책에도 포함되었기 때문에 항목이 무시되었습니다.</translation>
 <translation id="8807160976559152894">각 페이지 뒤에 트림</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome 설정에서 Chrome을 업데이트하려면 Tab을 누른 다음 Enter 누르기</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883848425547221593">기타 북마크</translation>
 <translation id="884264119367021077">배송지 주소</translation>
@@ -1884,6 +1895,7 @@
 <translation id="890493561996401738">추천 삭제 버튼, Enter 키를 눌러 삭제, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">시크릿 모드로 전환됨</translation>
 <translation id="8912362522468806198">Google 계정</translation>
+<translation id="8913778647360618320">결제 수단 관리 버튼, Chrome 설정에서 결제 및 신용카드 정보를 관리하려면 Enter 누르기</translation>
 <translation id="8918231688545606538">의심스러운 페이지</translation>
 <translation id="892588693504540538">오른쪽 상단 펀칭</translation>
 <translation id="8931333241327730545">이 카드를 Google 계정에 저장하시겠습니까?</translation>

@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Chrome 提示。如果要多啲標籤選項，請㩒住螢幕底部或者頂部工具列入面中嘅 [顯示分頁] 掣。</translation>
 <translation id="4523886039239821078">部分外掛程式造成 Chrome 當機，請解除安裝這些外掛程式：</translation>
 <translation id="4698415050768537821">Chrome 無法檢查所有密碼。請明天再試，或<ph name="BEGIN_LINK" />檢查 Google 帳戶中的密碼<ph name="END_LINK" />。</translation>
+<translation id="5030102366287574140">Chrome 能確保系統安全，避免發生資料外洩或瀏覽不安全網站等問題。</translation>
 <translation id="5389212809648216794">由於另一個應用程式正在使用相機，因此 Google Chrome 暫時無法使用</translation>
 <translation id="5639704535586432836">開啟 [設定] &gt; [私隱權] &gt; [相機] &gt; [Google Chrome]，然後開啟相機。</translation>
 <translation id="5642200033778930880">Google Chrome 無法在「分割檢視」模式中使用相機</translation>
@@ -50,6 +51,7 @@
         1. 開啟 [設定]。
         2. 輕按 [預設瀏覽器應用程式]。
         3. 選取 [Chrome]。</translation>
+<translation id="6822673484890854830">Chrome 無法檢查所有密碼。請稍後再試。</translation>
 <translation id="7165736900384873061">開始使用 Google Chrome 二維條碼掃描器</translation>
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />將 Chrome 移至工具列<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">開啟設定</translation>

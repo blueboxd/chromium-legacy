@@ -156,6 +156,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2712127207578915686">Unable to Open File</translation>
 <translation id="2718352093833049315">Only on Wi-Fi</translation>
 <translation id="2747003861858887689">Previous field</translation>
+<translation id="2764831210418622012">just now</translation>
 <translation id="2773292004659987824">Incognito Search</translation>
 <translation id="277771892408211951">Select language</translation>
 <translation id="2780046210906776326">No Email Accounts</translation>
@@ -301,6 +302,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="4476574785019001431">Settings</translation>
 <translation id="4496373720959965247">Add tabs and switch between pages</translation>
 <translation id="4502566650163919158">Check now</translation>
+<translation id="4505980578794259603">Last checked <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Close sign-in promo</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -482,6 +484,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6445051938772793705">Country</translation>
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="6453018583485750254">Check never run.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6464397691496239022">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
 

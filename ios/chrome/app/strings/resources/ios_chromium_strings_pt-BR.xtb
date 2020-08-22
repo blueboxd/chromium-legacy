@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">Quando este recurso está ativado, o Chromium oferece a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Ativar o leitor do Chromium</translation>
 <translation id="4787850887676698916">As guias abertas no Chromium nos outros dispositivos aparecerão aqui.</translation>
+<translation id="4828317641996116749">Não foi possível verificar todas as senhas com o Chromium. Tente novamente mais tarde.</translation>
 <translation id="4999538639245140991">Como você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os dados do Chromium serão excluídos deste dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="5224391634244552924">Nenhuma senha salva. O Chromium poderá verificar suas senhas quando elas forem salvas.</translation>
 <translation id="5521125884468363740">Para ver suas guias em qualquer lugar onde você usar o Chromium, faça login e ative a sincronização</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">Agora você pode usar o Chromium sempre que toca em links em mensagens, documentos e outros apps.</translation>
 <translation id="7173114856073700355">Abrir "Configurações"</translation>
 <translation id="7208566199746267865">O Chromium permite que você otimize seu tempo trazendo suas contas para a Web. É possível adicionar ou remover contas nas configurações.</translation>
+<translation id="725427773388857052">O Chromium pode ajudar a proteger você de violações de dados, sites perigosos e muito mais.</translation>
 <translation id="7269362888766543920">Alguns complementos causam falhas do Chromium. Tente desinstalá-los.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">Para tornar o Chromium seu navegador padrão:

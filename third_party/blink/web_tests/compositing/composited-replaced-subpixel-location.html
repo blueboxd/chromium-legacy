@@ -3,7 +3,8 @@
 img {
   width: 40.4px;
   height: 30.3px;
-  will-change: transform;
+  /* Not using will-change:transform because it ignores subpixel accumulation. */ 
+  will-change: opacity;
 }
 </style>
 <div>

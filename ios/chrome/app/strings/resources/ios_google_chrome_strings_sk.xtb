@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Tip pre Chrome: ďalšie možnosti karty získate pridržaním tlačidla „Zobraziť karty“ na paneli s nástrojmi, ktorý sa nachádza v dolnej alebo hornej časti obrazovky.</translation>
 <translation id="4523886039239821078">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Odinštalujte ich.</translation>
 <translation id="4698415050768537821">Chromu sa nepodarilo skontrolovať všetky heslá. Skúste to znova zajtra alebo <ph name="BEGIN_LINK" />skontrolujte heslá vo svojom účte Google<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">Chrome vás môže chrániť pred porušeniami ochrany údajov, nebezpečnými webmi a ďalšími hrozbami.</translation>
 <translation id="5389212809648216794">Google Chrome nemôže použiť váš fotoaparát, pretože ho práve používa iná aplikácia</translation>
 <translation id="5639704535586432836">Otvorte Nastavenia &gt; Súkromie &gt; Fotoaparát &gt; Google Chrome a zapnite fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemôže použiť váš fotoaparát v režime Rozdelené zobrazenie</translation>
@@ -50,6 +51,7 @@
         1. Otvorte Nastavenia. 
         2. Klepnite na predvolenú aplikáciu prehliadača.
         3. Vyberte Chrome.</translation>
+<translation id="6822673484890854830">Chromu sa nepodarilo skontrolovať všetky heslá. Skúste to znova neskôr.</translation>
 <translation id="7165736900384873061">Začnite používať čítačku QR prehliadača Google Chrome</translation>
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Presuňte Chrome do doku<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Otvoriť Nastavenia</translation>

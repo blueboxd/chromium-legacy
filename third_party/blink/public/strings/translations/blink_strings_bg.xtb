@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">признания за източника</translation>
 <translation id="1342835525016946179">статия</translation>
 <translation id="1359897965706325498">банер</translation>
+<translation id="1480676835519562650">възможност за избиране на няколко опции, избрани са <ph name="SELECTED" /> от <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">Този месец</translation>
 <translation id="1637811476055996098">Избор на файлове</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Ден</translation>
 <translation id="2507943997699731163">Моля, попълнете това поле.</translation>
 <translation id="2508569020611168319">списък с раздели</translation>
+<translation id="2530182415807757784">възможност за избиране на няколко опции, не е избрано нищо.</translation>
 <translation id="2561842179657104141">показване на още контроли за мултимедия</translation>
 <translation id="2572483411312390101">пускане</translation>
 <translation id="2613802280814924224">Моля, въведете валидна стойност. Най-близката такава е <ph name="VALID_VALUE" />.</translation>

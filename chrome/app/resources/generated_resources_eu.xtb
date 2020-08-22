@@ -94,7 +94,7 @@
 <translation id="1108600514891325577">&amp;Gelditu</translation>
 <translation id="1110155001042129815">Itxaron</translation>
 <translation id="1112420131909513020">Atzeko planoko fitxa bat Bluetooth-a erabiltzen ari da</translation>
-<translation id="1113892970288677790">Hautatu guk aukeratutako artelan eta irudietako bat</translation>
+<translation id="1113892970288677790">Hautatu aukeratutako artelan eta irudietako bat</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamantea</translation>
 <translation id="1114335938027186412">Ordenagailuak Trusted Platform Module (TPM) segurtasun-gailua du; Chrome OS sisteman ezinbesteko segurtasun-eginbideak inplementatzeko erabiltzen da hori. Informazio gehiago lortzeko, joan Chromebook laguntza-zentrora: https://support.google.com/chromebook/?p=tpm</translation>
@@ -1341,7 +1341,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2604255671529671813">Sareko konexioaren errorea</translation>
 <translation id="2606246518223360146">Lotu datuak</translation>
 <translation id="2607101320794533334">Hartzailearen gako publikoaren informazioa</translation>
-<translation id="2607968157341167679">Ez dago albumik. Sortu bat <ph name="LINK_BEGIN" />Google Argazkiak<ph name="LINK_END" /> zerbitzuan.</translation>
+<translation id="2607968157341167679">Ez dago albumik. Sortu bat<ph name="LINK_BEGIN" />Google Argazkiak<ph name="LINK_END" /> zerbitzuan.</translation>
 <translation id="2609896558069604090">Sortu lasterbideak…</translation>
 <translation id="2610157865375787051">Inaktibo</translation>
 <translation id="2610260699262139870">&amp;Benetako tamaina</translation>

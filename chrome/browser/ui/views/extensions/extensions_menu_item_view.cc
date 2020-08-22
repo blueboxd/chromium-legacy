@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
+#include <utility>
+
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -152,11 +154,11 @@ void ExtensionsMenuItemView::UpdatePinButton() {
       kSecondaryIconSizeDp, icon_color);
 }
 
-bool ExtensionsMenuItemView::IsContextMenuRunning() {
+bool ExtensionsMenuItemView::IsContextMenuRunning() const {
   return context_menu_controller_->IsMenuRunning();
 }
 
-bool ExtensionsMenuItemView::IsPinned() {
+bool ExtensionsMenuItemView::IsPinned() const {
   // |model_| can be null in unit tests.
   if (!model_)
     return false;

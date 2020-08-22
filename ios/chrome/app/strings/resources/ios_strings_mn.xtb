@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Шинэ цонх</translation>
 <translation id="1580783302095112590">Шуудан илгээгдсэн байна.</translation>
 <translation id="1582732959743469162">Энэ нь таны одоогийн татан авалтын бүх үйл явцыг зогсооно.</translation>
+<translation id="1605405588277479165">Унтраалттай - Санал болгохгүй</translation>
 <translation id="1605658421715042784">Зураг хуулах</translation>
 <translation id="1608337082864370066">Хуулсан зургийг хайх</translation>
 <translation id="1612730193129642006">Чихтэй хуудсын эгнээг харуулах</translation>
@@ -495,6 +496,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6624219055418309072">Нууцлалын горимд блоклосон</translation>
 <translation id="6628106477656132239">Дуусах огноо буруу байна</translation>
 <translation id="6638511529934826365">Текстийг томруулах…</translation>
+<translation id="6639730758971422557">Аюулгүй үзэх үйлчилгээг идэвхжүүлэхийн тулд, <ph name="BEGIN_LINK" />Синк хийх болон Google-н үйлчилгээнүүд<ph name="END_LINK" />-ийг нээгээд Аюулгүй үзэх дээр товшино уу.</translation>
 <translation id="6642362222295953972">Аль хэдийн нээсэн таб руу сэлгэх</translation>
 <translation id="6643016212128521049">Цэвэрлэх</translation>
 <translation id="6645899968535965230">QR код: <ph name="PAGE_TITLE" /></translation>
@@ -579,6 +581,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7561196759112975576">Үргэлж</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />-ийг хэзээ ч бүү хөрвүүл</translation>
 <translation id="7603852183842204213">Мэдээллийн цонхнуудыг хориглосон байна (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Нууц үг устгах</translation>
 <translation id="7638584964844754484">Нэвтрэх хэллэг буруу байна</translation>
 <translation id="7649070708921625228">Тусламж</translation>
 <translation id="7658239707568436148">Болих</translation>
@@ -657,6 +660,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8529767659511976195">Шинэ</translation>
 <translation id="8532105204136943229">Дуусах он</translation>
 <translation id="8533166274275423134">Өөр газар нээсэн</translation>
+<translation id="8533670235862049797">Аюулгүй үзэх үйлчилгээ асаалттай байна</translation>
 <translation id="8534481786647257214">Google+ пост дууссан.</translation>
 <translation id="8548878600947630424">Хуудаснаас олох...</translation>
 <translation id="8574235780160508979">Chrome-н Үйлчилгээний нөхцөлийг гуравдугаар сарын 31-ний өдөр өөрчлөх болно. <ph name="BEGIN_LINK" />Шалгаж үзнэ үү<ph name="END_LINK" /></translation>

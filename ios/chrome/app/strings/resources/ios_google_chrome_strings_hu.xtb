@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Tipp a Chrome használatához. A további lapbeállításokhoz érintse meg és tartsa lenyomva az eszköztárban lévő Lapok megjelenítése gombot, amely a képernyő alsó vagy felső részén található.</translation>
 <translation id="4523886039239821078">Bizonyos bővítmények a Chrome összeomlását eredményezik. Távolítsa el a következő(ke)t:</translation>
 <translation id="4698415050768537821">A Chrome nem tudta ellenőrizni az összes jelszót. Próbálja újra holnap, vagy <ph name="BEGIN_LINK" />ellenőrizze jelszavait a Google-fiókjában<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">A Chrome segíthet az adatvédelmi incidensek, a nem biztonságos webhelyek és egyebek elleni védekezésben.</translation>
 <translation id="5389212809648216794">A Google Chrome nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>
 <translation id="5642200033778930880">A Google Chrome Osztott nézet módban nem tudja használni a kamerát</translation>
@@ -50,6 +51,7 @@
         1. Nyissa meg a Beállításokat. 
         2. Koppintson az Alapértelmezett böngésző lehetőségre.
         3. Válassza a Chrome böngészőt.</translation>
+<translation id="6822673484890854830">A Chrome nem tudta ellenőrizni az összes jelszót. Próbálja újra később.</translation>
 <translation id="7165736900384873061">A Google Chrome QR-olvasójának használata</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Helyezze át a Chrome-ot a Dockra<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Beállítások megnyitása</translation>

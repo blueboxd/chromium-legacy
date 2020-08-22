@@ -278,21 +278,14 @@ FloatRect TextDecorationInfo::BoundsForDottedOrDashed(
     // These coordinate transforms need to match what's happening in
     // GraphicsContext's drawLineForText and drawLine.
     FloatPoint start_point = StartPoint(line);
-    int y = floorf(start_point.Y() +
-                   std::max<float>(ResolvedThickness() / 2.0f, 0.5f));
-    FloatPoint rounded_start_point(start_point.X(), y);
-    FloatPoint rounded_end_point(rounded_start_point + FloatPoint(width_, 0));
-    GraphicsContext::AdjustLineToPixelBoundaries(
-        rounded_start_point, rounded_end_point, roundf(ResolvedThickness()));
-
-    Path& stroke_path =
-        line_data_[TextDecorationToLineDataIndex(line)].stroke_path.emplace();
-    stroke_path.MoveTo(rounded_start_point);
-    stroke_path.AddLineTo(rounded_end_point);
+    line_data_[TextDecorationToLineDataIndex(line)].stroke_path =
+        GraphicsContext::GetPathForTextLine(
+            start_point, width_, ResolvedThickness(),
+            TextDecorationStyleToStrokeStyle(DecorationStyle()));
   }
 
   StrokeData stroke_data;
-  stroke_data.SetThickness(ResolvedThickness());
+  stroke_data.SetThickness(roundf(ResolvedThickness()));
   stroke_data.SetStyle(TextDecorationStyleToStrokeStyle(DecorationStyle()));
   return line_data_[line_data_index].stroke_path.value().StrokeBoundingRect(
       stroke_data);

@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Chrome इस्तेमाल करने के लिए सलाह. ज़्यादा टैब विकल्पों के लिए, टूलबार में 'टैब दिखाएं' बटन को दबाकर रखें. यह बटन आपकी स्क्रीन के सबसे नीचे या सबसे ऊपर मिलेगा.</translation>
 <translation id="4523886039239821078">कुछ ऐड-ऑन के कारण Chrome बंद हो जा रहा है. कृपया उन्हें अनइंस्टॉल करें:</translation>
 <translation id="4698415050768537821">Chrome सभी पासवर्ड की जांच नहीं कर सका. कल कोशिश करें या <ph name="BEGIN_LINK" />अपने Google खाते में सेव किए गए पासवर्ड की जांच करें.<ph name="END_LINK" /></translation>
+<translation id="5030102366287574140">Chrome आपको डेटा के गलत इस्तेमाल, नुकसान पहुंचाने वाली वेबसाइटों वगैरह से सुरक्षित रहने में मदद कर सकता है.</translation>
 <translation id="5389212809648216794">Google Chrome आपके कैमरे का उपयोग नहीं कर सकता क्योंकि दूसरा ऐप्लिकेशन उसका उपयोग कर रहा है</translation>
 <translation id="5639704535586432836">सेटिंग &gt; निजता &gt; कैमरा &gt; Google Chrome खोलें और कैमरा चालू करें.</translation>
 <translation id="5642200033778930880">Google Chrome स्प्लिट व्यू मोड में आपके कैमरे का इस्तेमाल नहीं कर सकता</translation>
@@ -49,6 +50,7 @@
         1. Settings खोलें. 
         2. डिफ़ॉल्ट ब्राउज़र ऐप्लिकेशन पर टैप करें.
         3. Chrome चुनें.</translation>
+<translation id="6822673484890854830">Chrome सभी पासवर्ड की जांच नहीं कर सका. कुछ देर बाद कोशिश करें.</translation>
 <translation id="7165736900384873061">Google Chrome QR स्कैनर उपयोग शुरू करें</translation>
 <translation id="7172660552945675509">सलाह: <ph name="BEGIN_LINK" />Chrome को अपने डॉक में ले जाएं<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">सेटिंग खोलें</translation>

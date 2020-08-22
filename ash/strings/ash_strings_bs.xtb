@@ -14,7 +14,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="109942774857561566">Dosadno mi je</translation>
 <translation id="1104084341931202936">Prikaži postavke pristupačnosti</translation>
 <translation id="1104621072296271835">Uređaji još bolje rade zajedno</translation>
-<translation id="1119348796022671382">Način boje teme upotrebljava boje izdvojene iz vaše pozadine kako bi blago obojio sučelje.</translation>
+<translation id="1119348796022671382">Način rada tematske boje koristi boje izdvojene iz pozadinske slike da blago oboji interfejs.</translation>
 <translation id="112308213915226829">Automatski sakrij policu</translation>
 <translation id="1153356358378277386">Upareni uređaji</translation>
 <translation id="1175572348579024023">Klizanje</translation>
@@ -49,7 +49,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="1391102559483454063">Uključeno</translation>
 <translation id="1419738280318246476">Otključajte uređaj da izvršite radnju obavještenja</translation>
 <translation id="1420408895951708260">Uključite ili isključite Noćno svjetlo. <ph name="STATE_TEXT" /></translation>
-<translation id="1420527829902822813">Napravljena je snimka zaslona i spremljena je u međuspremnik</translation>
+<translation id="1420527829902822813">Ekran je snimljen i snimak je sačuvan u međumemoriju</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1455242230282523554">Prikaži postavke za jezik</translation>
 <translation id="1460620680449458626">Zvuk je isključen.</translation>
@@ -67,7 +67,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="1632985212731562677">Prekidač za pristup se može onemogućiti u meniju Postavke &gt; Pristupačnost.</translation>
 <translation id="1654477262762802994">Započni glasovni upit</translation>
 <translation id="1665244008632896072">Uključivanje/isključivanje tamnog načina rada. <ph name="STATE_TEXT" /></translation>
-<translation id="1667964833127753507">Način neutralne boje ne upotrebljava boje izdvojene iz pozadine, već ih zamjenjuje skupom neutralnih svijetlih ili tamnih nijansi.</translation>
+<translation id="1667964833127753507">Način rada neutralne boje ne koristi boje izdvojene iz pozadinske slike nego ih zamjenjuje skupom neutralnih boja svijetlih ili tamnih nijansi.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Tajmer od <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
@@ -184,7 +184,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3000461861112256445">Mono zvuk</translation>
 <translation id="3009178788565917040">Izlaz</translation>
 <translation id="3033545621352269033">Uključeno</translation>
-<translation id="3038571455154067151">Da biste se prijavili, unesite kôd za roditeljski pristup za Family Link</translation>
+<translation id="3038571455154067151">Da se prijavite, unesite kôd za pristup roditelja za Family Link</translation>
 <translation id="3051128274746680507">Vaš profil korisnika pod nadzorom će uskoro biti uklonjen. Prijavite se da saznate više.</translation>
 <translation id="3055162170959710888">Danas je uređaj korišten <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Statusna traka, vrijeme <ph name="TIME" />,
@@ -300,7 +300,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="4212472694152630271">Prebaci na PIN</translation>
 <translation id="4215497585250573029">Postavke za VPN</translation>
 <translation id="4217571870635786043">Diktiranje</translation>
-<translation id="4229328187280698237">Prelazak na način tableta</translation>
+<translation id="4229328187280698237">Prebacivanje na način rada tableta</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Prikaz postavki obavještenja. Obavještenja su isključena</translation>
 <translation id="4269883910223712419">Administrator ovog uređaja može:</translation>
@@ -375,7 +375,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="5035389544768382859">Potvrdite konfiguraciju ekrana</translation>
 <translation id="5083553833479578423">Otključajte više funkcija Asistenta.</translation>
 <translation id="5114495209940374989">Snimci ekrana</translation>
-<translation id="5123162024343028706">Pluta na vrhu</translation>
+<translation id="5123162024343028706">Plutanje na vrhu</translation>
 <translation id="5136175204352732067">Povezana je drugačija tastatura</translation>
 <translation id="5168181903108465623">Dostupni su "cast" uređaji</translation>
 <translation id="5170568018924773124">Pokaži u mapi</translation>
@@ -389,7 +389,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="5297704307811127955">Isključeno</translation>
 <translation id="5302048478445481009">Jezik</translation>
 <translation id="5313326810920013265">Bluetooth postavke</translation>
-<translation id="5314219114274263156">Napravljena je snimka zaslona</translation>
+<translation id="5314219114274263156">Snimak ekrana je napravljen</translation>
 <translation id="5331975486040154427">USB-C uređaj (lijevi priključak na zadnjem dijelu)</translation>
 <translation id="5379115545237091094">Previše pokušaja</translation>
 <translation id="5397578532367286026">Upravitelj (<ph name="MANAGER_EMAIL" />) može pregledavati upotrebu i povijest tog korisnika na web-lokaciji chrome.com.</translation>
@@ -430,7 +430,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Zaustavi <ph name="ROUTE_TITLE" /> na primaocu <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Isklj.</translation>
-<translation id="5876666360658629066">Unos koda za roditeljski pristup</translation>
+<translation id="5876666360658629066">Unesite kôd za roditelja</translation>
 <translation id="5887866489674258948">Tamni način</translation>
 <translation id="5895138241574237353">Ponovo pokreni</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -491,7 +491,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="652139407789908527">Vaš ekran će se tokom ovog ažuriranja isključiti na duži period (do jedne minute). Nemojte pritisnuti dugme za uključivanje tokom ažuriranja.</translation>
 <translation id="6527303717912515753">Dijeli</translation>
 <translation id="6528179044667508675">Ne ometaj</translation>
-<translation id="65320610082834431">Emojiji</translation>
+<translation id="65320610082834431">Emoji sličice</translation>
 <translation id="6537270692134705506">Snimi ekran</translation>
 <translation id="6537924328260219877">Jačina signala <ph name="SIGNAL_STRENGTH" />, baterija telefona <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Emitiranje na uređaj <ph name="RECEIVER_NAME" /></translation>
@@ -678,14 +678,14 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja vaš administrator</translation>
 <translation id="8639760480004882931">Preostalo <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">Tajmer od <ph name="TOTAL_TIME" /></translation>
-<translation id="8647931990447795414">Da biste dodali osobu, unesite kôd za roditeljski pristup za Family Link</translation>
+<translation id="8647931990447795414">Da dodate osobu, unesite kôd za pristup roditelja za Family Link</translation>
 <translation id="8649101189709089199">Odaberite za govor</translation>
 <translation id="8652175077544655965">Zatvori postavke</translation>
 <translation id="8653151467777939995">Prikaz postavki obavještenja. Obavještenja su uključena</translation>
 <translation id="8660331759611631213">Kvadratni korijen od 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Prikaz popisa mreža. <ph name="STATE_TEXT" /></translation>
-<translation id="8668052347555487755">Način boje</translation>
+<translation id="8668052347555487755">Način rada boja</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="8683506306463609433">Praćenje performansi je aktivno</translation>
@@ -709,8 +709,8 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="8878886163241303700">Prošireni ekran</translation>
 <translation id="890616557918890486">Promijeni izvor</translation>
 <translation id="8909138438987180327">Baterija je na <ph name="PERCENTAGE" /> posto.</translation>
-<translation id="8913384980486163186">Tema (zadano)</translation>
-<translation id="8918251165865262378">Prelazak na način prijenosnog računala</translation>
+<translation id="8913384980486163186">Tematski (zadano)</translation>
+<translation id="8918251165865262378">Prebacivanje na način rada laptopa</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistent ne govori taj jezik.</translation>
 <translation id="8936501819958976551">deaktivirano</translation>

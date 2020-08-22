@@ -14,6 +14,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="109942774857561566">Jag har tråkigt</translation>
 <translation id="1104084341931202936">Visa tillgänglighetsinställningar</translation>
 <translation id="1104621072296271835">Dina enheter fungerar ännu bättre tillsammans</translation>
+<translation id="1119348796022671382">I färgläget med tema används färger från bakgrunden till att lätt färgsätta gränssnittet.</translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="1153356358378277386">Kopplade enheter</translation>
 <translation id="1175572348579024023">Rulla</translation>
@@ -48,6 +49,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1391102559483454063">På</translation>
 <translation id="1419738280318246476">Lås upp enheten så att aviseringen kan göras</translation>
 <translation id="1420408895951708260">Aktivera och inaktivera nattljus. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">En skärmdump har tagits och sparats i Urklipp</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Visa språkinställningar</translation>
 <translation id="1460620680449458626">Ljudet är av.</translation>
@@ -65,6 +67,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1632985212731562677">Brytarstyrning kan inaktiveras under Inställningar &gt; Tillgänglighet</translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1665244008632896072">Aktivera mörkt läge. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">I det neutrala färgläget ersätts färger från bakgrunden med en uppsättning ljusa eller mörka nyanser i neutrala toner.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1698080062160024910">Timer på <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adress: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3000461861112256445">Monoljud</translation>
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="3033545621352269033">På</translation>
+<translation id="3038571455154067151">Ange föräldraåtkomstkoden för Family Link om du vill logga in</translation>
 <translation id="3051128274746680507">Din profil som kontrollerad användare tas snart bort. Logga in och läs mer.</translation>
 <translation id="3055162170959710888">Du har använt den här enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3076778413190775903">Statusfältet, tid <ph name="TIME" />,
@@ -277,6 +281,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3977512764614765090">Batterinivån är på <ph name="PERCENTAGE" /> % och batteriet laddas.</translation>
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
+<translation id="40062176907008878">Handskrift</translation>
 <translation id="4017989525502048489">Laserpekare</translation>
 <translation id="4021716437419160885">Rulla ned</translation>
 <translation id="4028481283645788203">Du måste ange lösenord för större säkerhet</translation>
@@ -288,12 +293,14 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="4129129681837227511">Lås upp enheten för att ändra inställningen för aviseringar på låsskärmen</translation>
 <translation id="4146833061457621061">Spela upp musik</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> hanteras av <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Inställningar för mörkt tema</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195877955194704651">Knapp för Automatiska klick</translation>
 <translation id="4197790712631116042">Av</translation>
 <translation id="4212472694152630271">Byt till pinkod</translation>
 <translation id="4215497585250573029">VPN-inställningar</translation>
 <translation id="4217571870635786043">Diktering</translation>
+<translation id="4229328187280698237">Byt till surfplatteläge</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Visa aviseringsinställningar. Aviseringar har inaktiverats</translation>
 <translation id="4269883910223712419">Enhetens administratör kan</translation>
@@ -368,6 +375,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5035389544768382859">Bekräfta skärminställningarna</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
 <translation id="5114495209940374989">Skärmdumpar</translation>
+<translation id="5123162024343028706">Visa ovanpå</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
@@ -381,6 +389,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5297704307811127955">Av</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-inställningar</translation>
+<translation id="5314219114274263156">En skärminspelning har tagits</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
 <translation id="5379115545237091094">För många försök</translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
@@ -421,6 +430,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Sluta casta <ph name="ROUTE_TITLE" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="5876666360658629066">Ange föräldrakod</translation>
 <translation id="5887866489674258948">Mörkt läge</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5901316534475909376">Skift+Escape</translation>
@@ -481,6 +491,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="652139407789908527">Det är tomt på skärmen längre än vanligt (i upp till en minut) under den här uppdateringen. Tryck inte på strömbrytaren medan uppdateringen pågår.</translation>
 <translation id="6527303717912515753">Dela</translation>
 <translation id="6528179044667508675">Stör ej</translation>
+<translation id="65320610082834431">Emojis</translation>
 <translation id="6537270692134705506">Ta en bild av skärmen</translation>
 <translation id="6537924328260219877">Signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batteri<ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Castar till <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="7568637526529101738">Assistenten visar information om det som är markerat när du högerklickar eller trycker länge på det, t.ex. en definition eller en omräkning till en annan enhet.</translation>
 <translation id="7569509451529460200">Punktskrift och ChromeVox har aktiverats</translation>
 <translation id="7579778809502851308">Skärmbild</translation>
+<translation id="7590883480672980941">Inmatningsinställningar</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7600875258240007829">Visa alla aviseringar</translation>
+<translation id="7618774594543487847">Neutralt</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Öppnar inställningarna för <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
@@ -665,12 +678,14 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
 <translation id="8646417893960517480">Timer på <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Ange föräldraåtkomstkoden för Family Link om du vill lägga till en person</translation>
 <translation id="8649101189709089199">Textuppläsning</translation>
 <translation id="8652175077544655965">Stäng inställningarna</translation>
 <translation id="8653151467777939995">Visa aviseringsinställningar. Aviseringar har aktiverats</translation>
 <translation id="8660331759611631213">Kvadratroten ur 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Visa nätverkslista. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Färgläge</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>
 <translation id="8683506306463609433">Prestandaspårning är aktiv</translation>
@@ -694,6 +709,8 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
 <translation id="890616557918890486">Ändra källa</translation>
 <translation id="8909138438987180327">Batterinivån är på <ph name="PERCENTAGE" /> procent.</translation>
+<translation id="8913384980486163186">Tema (standard)</translation>
+<translation id="8918251165865262378">Byt till laptopläge</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8936501819958976551">inaktiverad</translation>

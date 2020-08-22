@@ -80,7 +80,7 @@
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏Chrome هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chrome ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="3395323229510056640">‏دریافت کمک از Chrome OS</translation>
-<translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم عامل رخ داد. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
+<translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم‌عامل رخ داد. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="3434246496373299699">‏Chrome زمانی می‌تواند گذرواژه‌هایتان را بررسی کند که با «حساب Google» خود به سیستم وارد شوید</translation>
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
@@ -117,7 +117,7 @@
 <translation id="4335235004908507846">‏Chrome می‌تواند به ایمن ماندن شما در برابر نقض داده، افزونه‌های مخرب، و خطرهای دیگر کمک کند</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4384570495110188418">‏چون به سیستم وارد نشده‌اید، Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
-<translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
+<translation id="4407807842708586359">‏سیستم‌عامل Google Chrome</translation>
 <translation id="4450664632294415862">‏Chrome - ورود به سیستم شبکه - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
@@ -170,7 +170,7 @@
 <translation id="6113794647360055231">‏Chrome اکنون بهتر شده است</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
-<translation id="61852838583753520">‏به‌روزرسانی سیستم عامل Ch&amp;rome</translation>
+<translation id="61852838583753520">‏به‌روزرسانی سیستم‌عامل Ch&amp;rome</translation>
 <translation id="6235018212288296708">‏قانون ورودی برای Google Chrome به منظور اجازه به ترافیک mDNS.</translation>
 <translation id="6291089322031436445">‏برنامه‌های Chrome نسخه Dev</translation>
 <translation id="6291549208091401781">‏Google Chrome از قبل برای همه کاربران این رایانه نصب شده است.</translation>
@@ -187,7 +187,7 @@
 <translation id="6885412569789873916">‏برنامه‌های Chrome نسخه بتا</translation>
 <translation id="6943584222992551122">‏داده‌های محصول مرور این فرد از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chrome وارد شوید.</translation>
 <translation id="6967962315388095737">‏قانون ترافیک ورودی Google Chrome نسخه بتا برای امکان دادن به ترافیک mDNS.</translation>
-<translation id="6982337800632491844">‏<ph name="DOMAIN" /> لازم می‌داند که شما شرایط خدمات زیر را قبل از استفاده از دستگاه خوانده و بپذیرید. این شرایط، شرایط سیستم عامل Google Chrome را بیشتر، اصلاح و محدود نمی‌کنند.</translation>
+<translation id="6982337800632491844">‏<ph name="DOMAIN" /> لازم می‌داند که شما شرایط خدمات زیر را قبل از استفاده از دستگاه خوانده و بپذیرید. این شرایط، شرایط سیستم‌عامل Google Chrome را بیشتر، اصلاح و محدود نمی‌کنند.</translation>
 <translation id="6989339256997917931">‏Google Chrome به روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="7062128746136194023">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chrome خاموش کرده است. افزودن این <ph name="EXTENSION_TYPE_PARAMETER" /> مجاز نیست.</translation>
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>

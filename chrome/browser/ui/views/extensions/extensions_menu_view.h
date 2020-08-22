@@ -37,6 +37,8 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                      Browser* browser,
                      ExtensionsContainer* extensions_container,
                      bool allow_pinning);
+  ExtensionsMenuView(const ExtensionsMenuView&) = delete;
+  ExtensionsMenuView& operator=(const ExtensionsMenuView&) = delete;
   ~ExtensionsMenuView() override;
 
   // Displays the ExtensionsMenu under |anchor_view|, attached to |browser|, and
@@ -185,8 +187,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   Section cant_access_;
   Section wants_access_;
   Section has_access_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_

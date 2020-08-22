@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Nasvet za Chrome. Če želite več možnosti za zavihke, pridržite gumb za prikaz zavihkov v orodni vrstici na dnu ali vrhu zaslona.</translation>
 <translation id="4523886039239821078">Nekateri dodatki povzročajo zrušitve Chroma. Odstranite jih:</translation>
 <translation id="4698415050768537821">Chromu ni uspelo preveriti vseh gesel. Poskusite znova jutri ali <ph name="BEGIN_LINK" />preverite gesla v računu Google.<ph name="END_LINK" /></translation>
+<translation id="5030102366287574140">Chrome vas lahko varuje pred podatkovnimi kršitvami, spletnimi mesti, ki niso varna, in drugim.</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
 <translation id="5639704535586432836">Odprite Settings &gt; Privacy &gt; Camera &gt; Google Chrome in vklopite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
@@ -50,6 +51,7 @@
         1. Odprite nastavitve. 
         2. Dotaknite se možnosti za privzeto aplikacijo za brskanje.
         3. Izberite Chrome.</translation>
+<translation id="6822673484890854830">Chromu ni uspelo preveriti vseh gesel. Poskusite pozneje.</translation>
 <translation id="7165736900384873061">Začetek uporabe bralnika kod QR Google Chroma</translation>
 <translation id="7172660552945675509">Nasvet: <ph name="BEGIN_LINK" />premaknite Chrome v vrstico z aplikacijami<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Odpri nastavitve</translation>

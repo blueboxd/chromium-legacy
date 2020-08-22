@@ -31,6 +31,8 @@ class ExtensionsMenuButton : public views::LabelButton,
                        ExtensionsMenuItemView* parent,
                        ToolbarActionViewController* controller,
                        bool allow_pinning);
+  ExtensionsMenuButton(const ExtensionsMenuButton&) = delete;
+  ExtensionsMenuButton& operator=(const ExtensionsMenuButton&) = delete;
   ~ExtensionsMenuButton() override;
 
   static const char kClassName[];
@@ -64,8 +66,6 @@ class ExtensionsMenuButton : public views::LabelButton,
   ToolbarActionViewController* const controller_;
 
   bool allow_pinning_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_BUTTON_H_

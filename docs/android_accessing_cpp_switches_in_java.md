@@ -5,9 +5,8 @@
 ## Introduction
 
 Accessing C++ switches in Java is implemented via a Python script which analyzes
-the C++ switches file and spits out the corresponding Java class. The generated
-class name will be based upon the switch file name, and the path must be
-specified in a comment within the switch file itself.
+the C++ switches file and generates the corresponding Java class, based on a
+template file. The template file must be specified in the GN target.
 
 ## Usage
 
@@ -33,30 +32,34 @@ specified in a comment within the switch file itself.
     }}
    ```
 
-2. Add a new build target
+2. Add a new build target and add it to the `srcjar_deps` of an
+   `android_library` target:
 
     ```gn
-    import("//build/config/android/rules.gni")
+    if (is_android) {
+      import("//build/config/android/rules.gni")
+    }
 
-    java_cpp_strings("java_switches") {
-      sources = [
-        "//base/android/foo_switches.cc",
-      ]
-      template = "//base/android/java_templates/FooSwitches.java.tmpl"
+    if (is_android) {
+      java_cpp_strings("java_switches_srcjar") {
+        # External code should depend on ":foo_java" instead.
+        visibility = [ ":*" ]
+        sources = [
+          "//base/android/foo_switches.cc",
+        ]
+        template = "//base/android/java_templates/FooSwitches.java.tmpl"
+      }
+
+      # If there's already an android_library target, you can add
+      # java_switches_srcjar to that target's srcjar_deps. Otherwise, the best
+      # practice is to create a new android_library just for this target.
+      android_library("foo_java") {
+        srcjar_deps = [ ":java_switches_srcjar" ]
+      }
     }
     ```
 
-3. Add the new target to the desired `android_library` targets `srcjar_deps`:
-
-    ```gn
-    android_library("base_java") {
-      srcjar_deps = [
-        ":java_switches",
-      ]
-    }
-    ```
-
-4. The generated file `out/Default/gen/.../org/chromium/foo/FooSwitches.java`
+3. The generated file `out/Default/gen/.../org/chromium/foo/FooSwitches.java`
    would contain:
 
     ```java

@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">नवीन विंडो</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
 <translation id="1582732959743469162">यामुळे तुमच्या सुरू असलेल्या डाउनलोडची पुढची सर्व प्रगती थांबेल.</translation>
+<translation id="1605405588277479165">बंद - शिफारस केलेले नाही</translation>
 <translation id="1605658421715042784">इमेज कॉपी करा</translation>
 <translation id="1608337082864370066">कॉपी केलेली इमेज शोधा</translation>
 <translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
@@ -497,6 +498,7 @@
 <translation id="6624219055418309072">गुप्त मोडमध्ये ब्लॉक करा</translation>
 <translation id="6628106477656132239">एक्स्पायरीची तारीख चुकीची आहे</translation>
 <translation id="6638511529934826365">मजकूर झूम करा…</translation>
+<translation id="6639730758971422557">सुरक्षित ब्राउझिंग सुरू करण्यासाठी, <ph name="BEGIN_LINK" />सिंक आणि Google सेवा<ph name="END_LINK" /> उघडा व सुरक्षित ब्राउझिंग वर टॅप करा.</translation>
 <translation id="6642362222295953972">विद्यमान टॅबवर स्विच करा</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6645899968535965230">QR कोड: <ph name="PAGE_TITLE" /></translation>
@@ -581,6 +583,7 @@
 <translation id="7561196759112975576">नेहमी</translation>
 <translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा भाषांतर करु नका</translation>
 <translation id="7603852183842204213">पॉप-अप अवरोधित (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">पासवर्ड हटवा</translation>
 <translation id="7638584964844754484">अयोग्य सांकेतिक पासफ्रेझ</translation>
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
@@ -659,6 +662,7 @@
 <translation id="8529767659511976195">नवीन</translation>
 <translation id="8532105204136943229">कालबाह्य होण्याचे वर्ष</translation>
 <translation id="8533166274275423134">दुसऱ्या ठिकाणी उघडले आहे</translation>
+<translation id="8533670235862049797">सुरक्षित ब्राउझिंग सुरू आहे</translation>
 <translation id="8534481786647257214">Google+ पोस्ट पूर्ण केले.</translation>
 <translation id="8548878600947630424">पृष्ठामध्ये शोधा...</translation>
 <translation id="8574235780160508979">Chrome च्या सेवा अटी ३१ मार्च रोजी बदलणार आहेत. <ph name="BEGIN_LINK" />कृपया पुनरावलोकन करा<ph name="END_LINK" /></translation>

@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4681781466797808448">Kapcsolja be a Chromium szkennerét</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
+<translation id="4828317641996116749">A Chromium nem tudta ellenőrizni az összes jelszót. Próbálja újra később.</translation>
 <translation id="4999538639245140991">Mivel kijelentkezik a(z) <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból, törli az eszközön található Chromium-adatokat. Ezek az adatok Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="5224391634244552924">Nincsenek mentett jelszavak. A Chromium képes a jelszavak ellenőrzésére, ha Ön elmenti őket.</translation>
 <translation id="5521125884468363740">Jelentkezzen be, és kapcsolja be a szinkronizálást, hogy bárhol hozzáférhessen a lapjaihoz, ahol a Chromiumot használja.</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">Mostantól bármikor használhatja a Chromiumot, amikor üzenetekben, dokumentumokban és más alkalmazásokban linkekre kattint.</translation>
 <translation id="7173114856073700355">Beállítások megnyitása</translation>
 <translation id="7208566199746267865">A Chromium időt takarít meg Önnek azzal, hogy fiókjait az internetre viszi. A beállításokban tud fiókokat hozzáadni vagy eltávolítani.</translation>
+<translation id="725427773388857052">A Chromium segíthet az adatvédelmi incidensek, a nem biztonságos webhelyek és egyebek elleni védekezésben.</translation>
 <translation id="7269362888766543920">Bizonyos bővítmények a Chromium összeomlását eredményezik. Próbálja meg eltávolítani őket.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">A Chromium beállítása alapértelmezett böngészőként:

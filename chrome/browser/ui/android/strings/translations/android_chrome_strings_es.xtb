@@ -407,7 +407,7 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="4242533952199664413">Abrir Configuración</translation>
 <translation id="4248098802131000011">Mantén tus contraseñas protegidas frente a quiebras de seguridad de datos y otros problemas de seguridad.</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
-<translation id="4256782883801055595">Licencias de código abierto</translation>
+<translation id="4256782883801055595">Licencias de software libre</translation>
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4298388696830689168">Sitios web enlazados</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -633,6 +633,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5864419784173784555">Esperando otra descarga…</translation>
 <translation id="5865733239029070421">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
+<translation id="5872013926720995826">No se han podido verificar los enlaces de recursos digitales en <ph name="VIOLATED_URL" /></translation>
 <translation id="5876056640971328065">Pausar vídeo</translation>
 <translation id="5884076754568147479">Para ayudarte a completar tareas, Google recibirá las URL y los contenidos de los sitios web en los que uses el Asistente, así como la información que envíes a través del Asistente.</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>

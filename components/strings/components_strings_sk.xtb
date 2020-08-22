@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="1125573121925420732">Kým weby aktualizujú svoje zabezpečenie, môžu sa často zobrazovať upozornenia. Čoskoro by sa to malo zlepšiť.</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
+<translation id="1130564665089811311">Tlačidlo Preložiť stránku. Po stlačení klávesa Enter Prekladač Google túto stránku preloží.</translation>
 <translation id="1131264053432022307">Skopírovaný obrázok</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1151972924205500581">Vyžaduje sa heslo</translation>
@@ -404,6 +405,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2634124572758952069">Adresu IP servera <ph name="HOST_NAME" /> sa nepodarilo nájsť.</translation>
 <translation id="2639739919103226564">Stav:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, postupným stlačením klávesov Tab a Enter vymažete v nastaveniach Chromu históriu prehliadania, súbory cookie, vyrovnávaciu pamäť a ďalšie položky</translation>
 <translation id="2650446666397867134">Prístup k súboru bol odmietnutý</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2660779039299703961">Udalosť</translation>
@@ -426,6 +428,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2713444072780614174">Biela</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, postupným stlačením klávesov Tab a Enter môžete v nastaveniach Chromu spravovať platby a informácie o kreditnej karte</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>
 <translation id="272451190272506600">Dotknite sa senzora a zaplaťte</translation>
 <translation id="2728127805433021124">Certifikát servera je podpísaný pomocou slabého podpisového algoritmu.</translation>
@@ -632,6 +635,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="362276910939193118">Zobraziť celú históriu</translation>
 <translation id="3630155396527302611">Ak je už uvedený ako program s prístupom k sieti, skúste ho odstrániť zo zoznamu a znova ho pridať.</translation>
 <translation id="3631244953324577188">Biometria</translation>
+<translation id="3633738897356909127">Tlačidlo Aktualizovať Chrome. Stlačením tlačidla Enter aktualizujete Chrome v jeho nastaveniach.</translation>
 <translation id="3634530185120165534">Priehradka č. 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Overenie bolo úspešné</translation>
@@ -850,6 +854,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4506599922270137252">Kontaktovať správcu systému</translation>
 <translation id="450710068430902550">Zdieľanie so správcom</translation>
 <translation id="4508814173490746936">Touch ID sa nepodarilo použiť</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, postupným stlačením klávesov Tab a Enter preložte túto stránku pomocou Prekladača Google</translation>
 <translation id="4510487217173779431">Chou4 (obálka)</translation>
 <translation id="4515275063822566619">Karty a adresy pochádzajú z Chromu a účtu Google (<ph name="ACCOUNT_EMAIL" />). Môžete ich spravovať v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (obálka)</translation>
@@ -930,6 +935,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4879725228911483934">otvárať a umiestňovať okná na vaše obrazovky</translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
+<translation id="4889420713887366944">Tlačidlo Otvoriť okno inkognito. Stlačením klávesa Enter otvoríte nové okno inkognito a môžete prehliadať v súkromí.</translation>
 <translation id="4892518386797173871">Vzadu</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Uložiť...</translation>
@@ -1091,6 +1097,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5523118979700054094">Názov pravidla</translation>
 <translation id="55293785478302737">Zošiť hrebeňovou väzbou</translation>
 <translation id="553484882784876924">Prc6 (obálka)</translation>
+<translation id="5535133333442455806">Tlačidlo Vymazať dáta prehliadania. Stlačením klávesa Enter vymažete v nastaveniach Chromu históriu prehliadania, súbory cookie, vyrovnávaciu pamäť a ďalšie položky.</translation>
 <translation id="5536214594743852365">Zobraziť sekciu <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
@@ -1589,6 +1596,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE" />) presahuje povolený rozsah.</translation>
 <translation id="7613889955535752492">Dátum vypršania platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, postupným stlačením klávesov Tab a Enter môžete zobraziť a spravovať heslá v nastaveniach Chromu</translation>
 <translation id="7615602087246926389">Už máte údaje, ktoré sú šifrované pomocou inej verzie vášho hesla účtu Google. Zadajte ho nižšie.</translation>
 <translation id="7616645509853975347">Správca vypol vo vašom prehliadači Chrome Enterprise Connectors. Tieto konektory majú prístup k niektorým vašim údajom.</translation>
 <translation id="7619838219691048931">Koncový hárok</translation>
@@ -1846,6 +1854,8 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8728672262656704056">Ste v režime inkognito</translation>
 <translation id="8730621377337864115">Hotovo</translation>
+<translation id="8731544501227493793">Tlačidlo Spravovať heslá. Stlačením klávesa Enter môžete heslá zobraziť a spravovať v nastaveniach Chromu.</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, stlačením klávesov Tab a potom Enter otvorte nové okno inkognito a prehliadajte v súkromí</translation>
 <translation id="8738058698779197622">Ak chcete nadviazať zabezpečené pripojenie, vaše hodiny musia byť nastavené správne. Je to preto, že certifikáty, ktoré webové stránky používajú na vlastnú identifikáciu, sú platné iba určitý čas. Keďže nie sú hodiny vášho zariadenia nastavené správne, Chromium nemôže tieto certifikáty overiť.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> sa nenašla. Problém sa diagnostikuje.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> je kód pre <ph name="ORIGIN" /></translation>
@@ -1862,6 +1872,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8793655568873652685">Doména <ph name="ENROLLMENT_DOMAIN" /> zapla vo vašom prehliadači Chrome Enterprise Connectors. Tieto konektory majú prístup k niektorým vašim údajom.</translation>
 <translation id="8805819170075074995">Položka zoznamu <ph name="LANGUAGE_ID" />: položka bola ignorovaná, pretože je tiež zahrnutá v pravidle SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Orezať po každej strane</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, postupným stlačením klávesov Tab a Enter aktualizujte Chrome v jeho nastaveniach</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="883848425547221593">Iné záložky</translation>
 <translation id="884264119367021077">Dodacia adresa</translation>
@@ -1881,6 +1892,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="890493561996401738">Tlačidlo odstránenia návrhu, odstránenie vykonáte stlačením klávesa Enter, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Ste v režime inkognito</translation>
 <translation id="8912362522468806198">účtu Google</translation>
+<translation id="8913778647360618320">Tlačidlo Spravovať spôsob platby. Stlačením klávesa Enter môžete v nastaveniach Chromu spravovať spôsoby platby a informácie o kreditnej karte.</translation>
 <translation id="8918231688545606538">Táto stránka je podozrivá</translation>
 <translation id="892588693504540538">Prederaviť vpravo hore</translation>
 <translation id="8931333241327730545">Chcete túto kartu uložiť do svojho účtu Google?</translation>

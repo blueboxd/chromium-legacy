@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">Mitwirkende</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">Banner</translation>
+<translation id="1480676835519562650">Mehrfachauswahl, <ph name="SELECTED" /> von <ph name="COUNT" /> ausgewählt.</translation>
 <translation id="1589122976691792535">Region</translation>
 <translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1637811476055996098">Dateien auswählen</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Tag</translation>
 <translation id="2507943997699731163">Füllen Sie dieses Feld aus.</translation>
 <translation id="2508569020611168319">Tabliste</translation>
+<translation id="2530182415807757784">Mehrfachauswahl, nichts ausgewählt.</translation>
 <translation id="2561842179657104141">weitere Mediensteuerelemente anzeigen</translation>
 <translation id="2572483411312390101">Wiedergeben</translation>
 <translation id="2613802280814924224">Geben Sie einen gültigen Wert ein. Der nächstliegende gültige Wert ist <ph name="VALID_VALUE" />.</translation>

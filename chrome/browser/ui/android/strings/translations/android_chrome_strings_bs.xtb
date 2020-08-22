@@ -633,7 +633,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5864419784173784555">Čekanje drugog preuzimanja…</translation>
 <translation id="5865733239029070421">Automatski šalje Googleu statistiku korištenja i izvještaje o padovima aplikacije</translation>
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
-<translation id="5872013926720995826">Potvrda veza na digitalna prava nije uspjela za <ph name="VIOLATED_URL" /></translation>
+<translation id="5872013926720995826">Potvrda linkova za digitalna prava nije uspjela za <ph name="VIOLATED_URL" /></translation>
 <translation id="5876056640971328065">Pauziranje videozapisa</translation>
 <translation id="5884076754568147479">Radi lakšeg završavanja zadataka, Google će primati URL-ove i sadržaj web lokacija na kojima koristite Asistenta, kao i informacije koje pošaljete putem Asistenta</translation>
 <translation id="5919204609460789179">Ažurirajte proizvod <ph name="PRODUCT_NAME" /> da započnete sinhronizaciju</translation>

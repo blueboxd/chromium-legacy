@@ -14,6 +14,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="109942774857561566">Saya bosan</translation>
 <translation id="1104084341931202936">Tunjukkan tetapan kebolehaksesan</translation>
 <translation id="1104621072296271835">Peranti anda akan berfungsi lebih baik bersama-sama</translation>
+<translation id="1119348796022671382">Mod warna bertema menggunakan warna yang diekstrak daripada kertas dinding anda untuk mewarnakan antara muka sedikit.</translation>
 <translation id="112308213915226829">Autosembunyi rak</translation>
 <translation id="1153356358378277386">Peranti digandingkan</translation>
 <translation id="1175572348579024023">Tatal</translation>
@@ -48,6 +49,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1391102559483454063">Dihidupkan</translation>
 <translation id="1419738280318246476">Buka kunci peranti untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="1420408895951708260">Togol Cahaya Malam. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Tangkapan skrin diambil dan disimpan di papan keratan</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1455242230282523554">Tunjukkan tetapan bahasa</translation>
 <translation id="1460620680449458626">Kelantangan diredamkan.</translation>
@@ -65,6 +67,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1632985212731562677">Akses Suis boleh dilumpuhkan dalam Tetapan &gt; Kebolehaksesan.</translation>
 <translation id="1654477262762802994">Mulakan pertanyaan suara</translation>
 <translation id="1665244008632896072">Togol Mod Gelap. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Mod warna neutral tidak menggunakan warna yang diekstrak daripada kertas dinding, menggantikan warna tersebut dengan sekumpulan warna cerah bertona neutral atau warna gelap.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Pemasa <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3033545621352269033">Dihidupkan</translation>
+<translation id="3038571455154067151">Untuk log masuk, masukkan kod akses ibu bapa Family Link anda</translation>
 <translation id="3051128274746680507">Profil pengguna di bawah seliaan anda akan dialih keluar tidak lama lagi. Log masuk untuk mengetahui lebih lanjut.</translation>
 <translation id="3055162170959710888">Anda menggunakan peranti ini selama <ph name="USED_TIME" /> hari ini</translation>
 <translation id="3076778413190775903">Dulang status, masa <ph name="TIME" />,
@@ -278,6 +282,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3977512764614765090">Kuasa bateri pada tahap <ph name="PERCENTAGE" />% dan sedang dicas.</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
+<translation id="40062176907008878">Tulisan Tangan</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4021716437419160885">Tatal ke bawah</translation>
 <translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
@@ -289,12 +294,14 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> diurus oleh <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Tetapan Tema Gelap</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
 <translation id="4197790712631116042">Dimatikan</translation>
 <translation id="4212472694152630271">Tukar kepada PIN</translation>
 <translation id="4215497585250573029">Tetapan VPN</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
+<translation id="4229328187280698237">Beralih kepada mod tablet</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan</translation>
 <translation id="4269883910223712419">Pentadbir peranti ini berkeupayaan untuk:</translation>
@@ -369,6 +376,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5035389544768382859">Sahkan Konfigurasi Paparan</translation>
 <translation id="5083553833479578423">Buka kunci pelbagai lagi ciri Assistant.</translation>
 <translation id="5114495209940374989">Tangkapan skrin</translation>
+<translation id="5123162024343028706">Terapung di sebelah atas</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5170568018924773124">Paparkan dalam folder</translation>
@@ -382,6 +390,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5297704307811127955">Dimatikan</translation>
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5313326810920013265">Tetapan Bluetooth</translation>
+<translation id="5314219114274263156">Perakam skrin diambil</translation>
 <translation id="5331975486040154427">Peranti USB-C (port belakang sebelah kiri)</translation>
 <translation id="5379115545237091094">Terlalu banyak percubaan</translation>
 <translation id="5397578532367286026">Penggunaan dan sejarah pengguna ini boleh disemak oleh pengurus (<ph name="MANAGER_EMAIL" />) di chrome.com.</translation>
@@ -422,6 +431,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Hentikan <ph name="ROUTE_TITLE" /> pada <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Dimatikan</translation>
+<translation id="5876666360658629066">Masukkan kod ibu bapa</translation>
 <translation id="5887866489674258948">Mod Gelap</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -482,6 +492,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="652139407789908527">Skrin anda akan menjadi kosong lebih lama daripada biasa (sehingga seminit) semasa kemas kini ini. Jangan tekan butang kuasa semasa kemas kini sedang berlangsung.</translation>
 <translation id="6527303717912515753">Kongsi</translation>
 <translation id="6528179044667508675">Jangan ganggu</translation>
+<translation id="65320610082834431">Emoji</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
 <translation id="6537924328260219877">Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Menghantar ke <ph name="RECEIVER_NAME" /></translation>
@@ -568,8 +579,10 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7568637526529101738">Dengan klik kanan atau tekan lama, Assistant menunjukkan maklumat seperti takrif atau penukaran unit untuk pilihan anda.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox didayakan</translation>
 <translation id="7579778809502851308">Tangkapan skrin</translation>
+<translation id="7590883480672980941">Tetapan input</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
 <translation id="7600875258240007829">Lihat semua pemberitahuan</translation>
+<translation id="7618774594543487847">Neutral</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Buka tetapan untuk <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
@@ -666,12 +679,14 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diurus oleh Pentadbir anda</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">Pemasa <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Untuk menambahkan orang, masukkan kod akses ibu bapa Family Link anda</translation>
 <translation id="8649101189709089199">Pilih untuk Bercakap</translation>
 <translation id="8652175077544655965">Tutup tetapan</translation>
 <translation id="8653151467777939995">Tunjukkan tetapan pemberitahuan. Pemberitahuan dihidupkan</translation>
 <translation id="8660331759611631213">Punca kuasa dua bagi 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Tunjukkan senarai rangkaian. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Mod warna</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
 <translation id="8683506306463609433">Pengesanan prestasi aktif</translation>
@@ -695,6 +710,8 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>
 <translation id="890616557918890486">Tukar sumber</translation>
 <translation id="8909138438987180327">Kuasa bateri pada tahap <ph name="PERCENTAGE" /> peratus.</translation>
+<translation id="8913384980486163186">Bertema (lalai)</translation>
+<translation id="8918251165865262378">Beralih kepada mod komputer riba</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant tidak bertutur dalam bahasa ini.</translation>
 <translation id="8936501819958976551">dinyahaktifkan</translation>

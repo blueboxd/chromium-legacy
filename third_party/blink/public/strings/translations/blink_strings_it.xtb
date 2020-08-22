@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">ringraziamenti</translation>
 <translation id="1342835525016946179">articolo</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">selezione multipla, selezionati: <ph name="SELECTED" /> su <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">regione</translation>
 <translation id="1591562245178063882">Questo mese</translation>
 <translation id="1637811476055996098">Scegli file</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Giorno</translation>
 <translation id="2507943997699731163">Compila questo campo.</translation>
 <translation id="2508569020611168319">elenco schede</translation>
+<translation id="2530182415807757784">selezione multipla, nessuno selezionato.</translation>
 <translation id="2561842179657104141">mostra altri controlli multimediali</translation>
 <translation id="2572483411312390101">riproduci</translation>
 <translation id="2613802280814924224">Inserisci un valore valido. Il valore valido più vicino è <ph name="VALID_VALUE" />.</translation>

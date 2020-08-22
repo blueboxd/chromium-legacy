@@ -895,6 +895,14 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
 
       Ist sie auf "Inhaltscompliance von Uploads und Downloads prüfen" gesetzt, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Inhaltscompliance von Downloads prüfen" und "Inhaltscompliance von Uploads prüfen" beschrieben sind.
       </translation>
+<translation id="2424098959650060417">Legt fest, welche Drucker aus "<ph name="BULK_PRINTERS_POLICY_NAME" />" Nutzern zur Verfügung stehen.
+
+      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird. Wenn "<ph name="PRINTERS_ALLOW_ALL" />" ausgewählt ist, werden alle Drucker angezeigt. Wenn "<ph name="PRINTERS_BLACKLIST" />" ausgewählt ist, wird der Zugriff auf die angegebenen Drucker anhand von "<ph name="BULK_PRINTERS_BLACKLIST" />" eingeschränkt.  Wenn "<ph name="PRINTERS_WHITELIST" />" ausgewählt ist, gibt "<ph name="BULK_PRINTERS_WHITELIST" />" nur die Drucker an, die ausgewählt werden können.
+
+      Wenn die Richtlinie nicht festgelegt wird, wird angenommen, dass "<ph name="PRINTERS_ALLOW_ALL" />" ausgewählt ist.
+
+      Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />".
+      </translation>
 <translation id="2426782419955104525">Hiermit wird die Instant-Funktion von <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern können.
 
       Wenn Sie diese Einstellung aktivieren, ist <ph name="PRODUCT_NAME" /> Instant aktiviert.
@@ -1707,6 +1715,17 @@ Wird die Richtlinie auf "False" gesetzt , verwendet <ph name="PRODUCT_NAME" /> k
           Wird sie nicht konfiguriert, so ist die Funktion "Vorlesen" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
+<translation id="3603469950773500315">Einschränkungen von <ph name="CORS" />-Prüfungen in der neuen <ph name="CORS" />-Implementierung erlauben, wodurch Erweiterungen kompatibles Verhalten beibehalten können und <ph name="PRODUCT_NAME" /> angegebene Header ohne <ph name="CORS" />-Prüfungen senden kann.
+
+      Wird diese Liste leergelassen, versucht <ph name="PRODUCT_NAME" />, Erweiterungen auf kompatible Weise auszuführen und setzt keine <ph name="API" />-Änderungen für Version 79 von <ph name="PRODUCT_NAME" /> um, wie unter <ph name="WEB_REQUEST_API_MANUAL" /> erläutert.
+
+      Wenn diese Liste die <ph name="HTTP" />-Headernamen von Anfragen enthält, werden diese bei der <ph name="CORS" />-Prüfung ignoriert und die Einschränkung von Prüfungen für Erweiterungen aktiviert.
+
+      Ist die Liste nicht konfiguriert, wird keine der beiden zuvor beschriebenen Einschränkungen angewendet.
+
+      Details zu <ph name="CORS" /> erhalten Sie unter <ph name="CORS_HELP_URL" />.
+
+      Hinweis: Diese Richtlinie sollte ursprünglich planmäßig in <ph name="PRODUCT_NAME" />-Version 82 entfernt werden, wurde aber erst in Version 84 entfernt.</translation>
 <translation id="3624515566460517364">Uploads und Downloads auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten prüfen</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3628480121685794414">Simplexdruck aktivieren</translation>
@@ -3212,6 +3231,12 @@ Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutz
 
           Wenn diese Richtlinie nicht konfiguriert ist, hängt das Standardverhalten von "<ph name="ATTRIBUTE_SAMESITE_NAME" />" für Cookies von der jeweiligen Konfiguration der "<ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />"-, "<ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" />"- und "<ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />"-Funktion ab. Dies kann im Rahmen einer Testphase oder durch Aktivieren oder Deaktivieren des "<ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />"-, "<ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" />"- oder "<ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />"-Status festgelegt werden.</translation>
 <translation id="585270638818921943">Nutzer daran hindern, Android-Apps aus nicht vertrauenswürdigen Quellen zu verwenden</translation>
+<translation id="585671885349598586">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
+
+Diese Richtlinie wird nur verwendet, wenn "<ph name="PRINTERS_BLOCKLIST" />" für "<ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />" ausgewählt wurde.
+
+Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt. Die IDs müssen den Feldern "id" oder "guid" in der Datei entsprechen, die in "<ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />" angegeben ist.
+      </translation>
 <translation id="5859344336338527083">Wenn diese Richtlinie konfiguriert ist, wird festgelegt, über welche URLs Erweiterungen, Apps und Designs installiert werden dürfen. Vor <ph name="PRODUCT_NAME" />-Version 21 konnten Nutzer auf den Link zu einer CRX-Datei klicken und die Datei nach einigen Hinweisen in <ph name="PRODUCT_NAME" /> installieren. In allen nachfolgenden Versionen müssen solche Dateien zuerst heruntergeladen und dann auf die Seite "Einstellungen" in <ph name="PRODUCT_NAME" /> gezogen werden. Anhand dieser Einstellung kann bei bestimmten URLs der alte, einfachere Installationsvorgang angewendet werden.
 
       Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer eine Datei ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird, also die Verweis-URL, müssen durch diese Muster zugelassen sein.
@@ -3494,6 +3519,17 @@ Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen K
       Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus unter <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde.
 
       So wird im Beispiel von <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> die <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> App über die standardmäßige "Update"-URL des Chrome Web Stores installiert. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+<translation id="6275833043726517413">Alte <ph name="CORS" />-Implementierung statt des neuen <ph name="CORS" /> verwenden.
+
+      Wenn diese Einstellung auf "true" festgelegt ist, wird die alte Implementierung verwendet, die kompatibel mit vorherigen Versionen sein sollte.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kommt die neue Implementierung zum Einsatz, die bei Chrome Enterprise-Nutzern zu Kompatibilitätsproblemen führen kann.
+
+      Die Richtlinie wird nach einigen Meilensteinen entfernt.
+
+      Details zu <ph name="CORS" /> erhalten Sie unter <ph name="CORS_HELP_URL" />.
+
+      Hinweis: Diese Richtlinie sollte ursprünglich planmäßig in <ph name="PRODUCT_NAME" />-Version 82 entfernt werden, wurde aber erst in Version 84 entfernt.</translation>
 <translation id="6281043242780654992">Konfiguriert Richtlinien für das native Messaging. Hosts für natives Messaging auf der schwarzen Liste können nur geladen werden, wenn sie auch auf der weißen Liste stehen.</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -4009,6 +4045,22 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7068108874199666656">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
+<translation id="7069358643254839205">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden.  Das Format entspricht dem des "NativePrinters"-Wörterbuchs, erfordert jedoch zusätzlich ein "id"- oder "guid"-Feld pro Drucker für die Zulassungs- oder Sperrliste.
+
+      Die Datei darf nicht größer als 5 MB und muss in JSON codiert sein.  Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB.  Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert ist, lädt <ph name="PRODUCT_OS_NAME" /> die Datei für Druckerkonfigurationen herunter und die Drucker werden gemäß "<ph name="DEVICE_PRINTERS_ACCESS_MODE" />", "<ph name="DEVICE_PRINTERS_ALLOWLIST" />" und "<ph name="DEVICE_PRINTERS_BLOCKLIST" />" bereitgestellt.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Diese Richtlinie ist ein Zusatz zu "<ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />".
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gibt es keine gerätegebundenen Drucker und "<ph name="DEVICE_PRINTERS_POLICY_PATTERN" />"-Richtlinien werden ignoriert.
+      </translation>
 <translation id="7070525176564511548">Passworteingabe wöchentlich erforderlich (alle 168 Stunden)</translation>
 <translation id="7072208053150563108">Änderungsrate des Computerpassworts</translation>
 <translation id="7079519252486108041">Pop-ups auf diesen Websites blockieren</translation>
@@ -4214,6 +4266,11 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Die automatische Suche und Installation von fehlenden Plug-ins wird nicht mehr unterstützt.</translation>
 <translation id="7267809745244694722">Medientasten standardmäßig als Funktionstasten verwenden</translation>
 <translation id="7271085005502526897">Startseite bei erster Ausführung aus Standardbrowser importieren</translation>
+<translation id="7271181393214180342">Wenn die Richtlinie aktiviert ist, wird bei der HTTP-Authentifizierung die Genehmigung durch die KDC-Richtlinie berücksichtigt. Das heißt, <ph name="PRODUCT_NAME" /> leitet nur dann Anmeldedaten an die verwendeten Dienste weiter, wenn KDC "<ph name="OK_AS_DELEGATE" />" für ein Dienstticket festlegt. Weitere Informationen finden Sie unter RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). Die Dienste sollten auch durch "<ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />" zugelassen sein.
+
+      Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, wird die KDC-Richtlinie auf unterstützten Plattformen ignoriert und nur die Richtlinie "<ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />" berücksichtigt.
+
+      Unter <ph name="MS_WIN_NAME" /> wird die KDC-Richtlinie immer umgesetzt.</translation>
 <translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung Clients und Hosts koppeln. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
@@ -4248,6 +4305,29 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
+<translation id="7348384750433771321">Hiermit werden Konfigurationen für Unternehmensdrucker bereitgestellt.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden.  Das Format entspricht dem des "NativePrinters"-Wörterbuchs, erfordert jedoch zusätzlich ein "id"- oder "guid"-Feld pro Drucker für die Zulassungs- oder Sperrliste.
+
+      Die Datei darf nicht größer als 5 MB und muss in JSON codiert sein.  Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB.  Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert ist, lädt <ph name="PRODUCT_OS_NAME" /> die Datei für Druckerkonfigurationen herunter und die Drucker werden gemäß "<ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />", "<ph name="BULK_PRINTERS_WHITELIST" />" und "<ph name="BULK_PRINTERS_BLACKLIST" />" bereitgestellt.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />".</translation>
+<translation id="7355640439776250098">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
+
+      Diese Richtlinie wird nur verwendet, wenn "<ph name="PRINTERS_BLACKLIST" />" für "<ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />" ausgewählt wurde.
+
+      Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt. Die IDs müssen dem Feld "id" oder dem Feld "guid" in der Datei entsprechen, die in "<ph name="BULK_PRINTERS_POLICY_NAME" />" angegeben ist.
+
+      Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="PRINTERS_BULK_BLOCKLIST" />".
+      </translation>
 <translation id="7360181094056034924">Mit dieser Richtlinie wird festgelegt, was in <ph name="PRODUCT_NAME" /> mit hochgeladenen und heruntergeladenen Daten passiert, die gescannt werden müssen.  Wird die Bereitstellung hinausgezögert, kann der Nutzer in <ph name="PRODUCT_NAME" /> nicht auf eine heruntergeladene Datei zugreifen, Dateien zum Upload nicht auswählen und Daten aus der Zwischenablage oder per Drag-and-drop nicht einfügen, bis sie gescannt wurden und die Ergebnisse des Scans vorliegen.  Die Beschränkung gilt nur für Dateien oder Daten, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
 
       Wenn diese Richtlinie nicht konfiguriert oder auf "Bereitstellungen nicht hinauszögern" gesetzt ist, gibt es in <ph name="PRODUCT_NAME" /> keine Verzögerungen für Dateien zum Upload, den Zugriff auf heruntergeladene Dateien oder Daten, die aus der Zwischenablage oder per Drag-and-drop eingefügt werden sollen.  Der Scan wird im Hintergrund ausgeführt.
@@ -4441,6 +4521,24 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
       Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern in <ph name="PRODUCT_NAME" /> nicht geändert werden. Ist die Richtlinie nicht konfiguriert, wird der Standardsuchanbieter aktiviert und Nutzer können die Suchanbieterliste selbst zusammenstellen.
 
       Unter <ph name="MS_WIN_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, auf der Windows 10 Pro läuft, oder die von der Chrome-Verwaltung über die Cloud verwaltet werden. Unter <ph name="MAC_OS_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
+<translation id="7673108452297907398">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden.  Das Format entspricht dem des "NativePrinters"-Wörterbuchs, erfordert jedoch zusätzlich ein "id"- oder "guid"-Feld pro Drucker für die Zulassungs- oder Sperrliste.
+
+      Die Datei darf nicht größer als 5 MB und muss in JSON codiert sein.  Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB.  Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert ist, lädt <ph name="PRODUCT_OS_NAME" /> die Datei für Druckerkonfigurationen herunter und die Drucker werden gemäß "<ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />", "<ph name="DEVICE_PRINTERS_ALLOWLIST" />" und "<ph name="DEVICE_PRINTERS_BLOCKLIST" />" bereitgestellt.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Diese Richtlinie ist ein Zusatz zu "<ph name="BULK_PRINTERS_POLICY_NAME" />".
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gibt es keine gerätegebundenen Drucker und "<ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" />"-Richtlinien werden ignoriert.
+
+      Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="DEVICE_PRINTERS" />".
+      </translation>
 <translation id="7673194325208122247">Zeitraum (Millisekunden)</translation>
 <translation id="7677220829878081413">
       Ist diese Richtlinie auf "ArcSession" gesetzt und wurde Android gestartet, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
@@ -5139,6 +5237,19 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
 <translation id="8757552286070680084">Wilco DTC-Konfiguration</translation>
 <translation id="8758831693895931466">Erforderliche Registrierung für Cloud Management aktivieren</translation>
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
+<translation id="8760176996829352091">Hiermit werden Konfigurationen für Unternehmensdrucker bereitgestellt.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden. Das Format entspricht dem des "<ph name="PRINTERS_POLICY_NAME" />"-Wörterbuchs, erfordert jedoch zusätzlich ein "id"- oder "guid"-Feld pro Drucker für die Zulassungs- oder Sperrliste.
+
+      Die Datei darf nicht größer als 5 MB und muss in JSON codiert sein. Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB. Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert ist, lädt <ph name="PRODUCT_OS_NAME" /> die Datei für Druckerkonfigurationen herunter und die Drucker werden gemäß "<ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />", "<ph name="PRINTERS_BULK_ALLOWLIST" />" und "<ph name="PRINTERS_BULK_BLOCKLIST" />" bereitgestellt.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können. Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.</translation>
 <translation id="8764477907716150749">Diese Richtlinie ist zur internen Nutzung in <ph name="PRODUCT_NAME" /> vorgesehen.</translation>
 <translation id="877185520360032968">Wenn die Richtlinie konfiguriert ist, wird das Standardverzeichnis festgelegt, das Chrome zum Herunterladen von Dateien verwendet. Nutzer können das Verzeichnis jedoch ändern.
 
@@ -5415,6 +5526,12 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
 <translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>
+<translation id="910760342417457561">Legt fest, welche Drucker aus "<ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />" Nutzern zur Verfügung stehen.
+
+      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird. Wenn "<ph name="PRINTERS_ALLOW_ALL" />" ausgewählt ist, werden alle Drucker angezeigt. Wenn "<ph name="PRINTERS_BLOCKLIST" />" ausgewählt ist, wird der Zugriff auf die angegebenen Drucker anhand von "<ph name="PRINTERS_BULK_BLOCKLIST" />" eingeschränkt.  Wenn "<ph name="PRINTERS_ALLOWLIST" />" ausgewählt ist, gibt "<ph name="PRINTERS_BULK_ALLOWLIST" />" nur die Drucker an, die ausgewählt werden können.
+
+      Wenn die Richtlinie nicht festgelegt wird, wird angenommen, dass "<ph name="PRINTERS_ALLOW_ALL" />" ausgewählt ist.
+      </translation>
 <translation id="9109086856618439290">Nutzungsbedingungen während der ersten Ausführung für CCT/PWA aktivieren</translation>
 <translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
 <translation id="9116740039944096995">Liste der URL-Muster. Anfragen an private Netzwerke, die von unsicheren, von übereinstimmenden Quellen bereitgestellten Websites initiiert werden, sind zulässig.

@@ -14,6 +14,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="109942774857561566">Jeg kjeder meg</translation>
 <translation id="1104084341931202936">Vis innstillinger for tilgjengelighet</translation>
 <translation id="1104621072296271835">Enhetene fungerer enda bedre sammen</translation>
+<translation id="1119348796022671382">Temafargemodusen bruker farger som er hentet fra bakgrunnen din, til å fargelegge grensesnittet lett.</translation>
 <translation id="112308213915226829">Skjul hyllen automatisk</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
 <translation id="1175572348579024023">Rull</translation>
@@ -48,6 +49,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1391102559483454063">På</translation>
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
 <translation id="1420408895951708260">Slå av/på nattlys. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Skjermdumpen er tatt og lagret på utklippstavlen</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1460620680449458626">Lyden er dempet.</translation>
@@ -65,6 +67,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1632985212731562677">Brytertilgang kan slås av i Innstillinger &gt; Tilgjengelighet.</translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1665244008632896072">Slå av/på mørk modus. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Den nøytrale fargemodusen bruker ikke farger som er hentet fra bakgrunnen. I stedet brukes et nøytralt utvalg av lyse eller mørke fargetoner.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698080062160024910">Nedtelling på <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Utdata</translation>
 <translation id="3033545621352269033">På</translation>
+<translation id="3038571455154067151">For å logge på, skriv inn koden din for foreldretilgang til Family Link</translation>
 <translation id="3051128274746680507">Den administrerte brukerprofilen din fjernes snart. Logg på for å finne ut mer.</translation>
 <translation id="3055162170959710888">Du har brukt denne enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3076778413190775903">Statusfelt, kl. <ph name="TIME" />,
@@ -277,6 +281,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3977512764614765090">Batteriet er <ph name="PERCENTAGE" /> % fullt og lades.</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
+<translation id="40062176907008878">Håndskrift</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4021716437419160885">Rull ned</translation>
 <translation id="4028481283645788203">Passord kreves for mer sikkerhet</translation>
@@ -288,12 +293,14 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="4129129681837227511">For å se varsler på låseskjermen, lås opp for å endre innstillingen</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> administreres av <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Innstillinger for mørkt tema</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195877955194704651">Automatisk klikk-knapp</translation>
 <translation id="4197790712631116042">Av</translation>
 <translation id="4212472694152630271">Bytt til PIN-kode</translation>
 <translation id="4215497585250573029">VPN-innstillinger</translation>
 <translation id="4217571870635786043">Diktering</translation>
+<translation id="4229328187280698237">Byttet til nettbrettmodus</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
 <translation id="4269883910223712419">Administratoren av denne enheten kan</translation>
@@ -368,6 +375,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5035389544768382859">Bekreft skjermkonfigurasjon</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5114495209940374989">Skjermdumper</translation>
+<translation id="5123162024343028706">Fest øverst</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
 <translation id="5170568018924773124">Vis i mappen</translation>
@@ -381,6 +389,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5297704307811127955">Av</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-innstillinger</translation>
+<translation id="5314219114274263156">Skjermopptaket er utført</translation>
 <translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøk</translation>
 <translation id="5397578532367286026">Bruken og loggen for denne brukeren kan gjennomgås av administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com</translation>
@@ -421,6 +430,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Stopp <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="5876666360658629066">Angi foreldrekoden</translation>
 <translation id="5887866489674258948">Mørk modus</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="652139407789908527">Skjermen blir tom i et lengre tidsrom enn vanlig (inntil et minutt) under denne oppdateringen. Ikke trykk på av/på-knappen mens oppdateringen pågår.</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6528179044667508675">Ikke forstyrr</translation>
+<translation id="65320610082834431">Emojier</translation>
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6537924328260219877">Signalstyrke <ph name="SIGNAL_STRENGTH" /> – telefonbatterinivå <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7568637526529101738">Med et høyreklikk eller langt trykk viser assistenten informasjon, som for eksempel definisjonen eller enhetsomregningen for det du har merket.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7579778809502851308">Skjermdump</translation>
+<translation id="7590883480672980941">Inndatainnstillinger</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7600875258240007829">Se alle varslene</translation>
+<translation id="7618774594543487847">Nøytral</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Åpne innstillinger for <ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />)</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
@@ -665,12 +678,14 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
 <translation id="8646417893960517480">Nedtelling på <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">For å legge til en person, skriv inn koden din for foreldretilgang til Family Link</translation>
 <translation id="8649101189709089199">Tekstopplesing</translation>
 <translation id="8652175077544655965">Lukk innstillingene</translation>
 <translation id="8653151467777939995">Vis innstillinger for varsler. Varsler er på</translation>
 <translation id="8660331759611631213">Kvadratroten av 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Vis nettverksliste. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Fargemodus</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8683506306463609433">Ytelsessporing er aktiv</translation>
@@ -694,6 +709,8 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="890616557918890486">Endre kilde</translation>
 <translation id="8909138438987180327">Batteriet er <ph name="PERCENTAGE" /> % fullt.</translation>
+<translation id="8913384980486163186">Tema (standard)</translation>
+<translation id="8918251165865262378">Byttet til laptopmodus</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8936501819958976551">deaktivert</translation>

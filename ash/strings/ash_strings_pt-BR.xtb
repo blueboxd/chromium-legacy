@@ -14,6 +14,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="109942774857561566">Que tédio</translation>
 <translation id="1104084341931202936">Mostrar configurações de acessibilidade</translation>
 <translation id="1104621072296271835">Seus dispositivos funcionam ainda melhor juntos</translation>
+<translation id="1119348796022671382">O modo de cores temático usa as cores extraídas do plano de fundo para colorir levemente a interface.</translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1175572348579024023">Rolar</translation>
@@ -48,6 +49,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1391102559483454063">Ativado</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para executar a ação de notificação</translation>
 <translation id="1420408895951708260">Alternar Modo noturno. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Captura de tela salva na área de transferência</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1455242230282523554">Mostrar configurações de idioma</translation>
 <translation id="1460620680449458626">O som está desativado.</translation>
@@ -65,6 +67,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1632985212731562677">O "acesso com interruptor" pode ser desativado em Configurações &gt; Acessibilidade.</translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
 <translation id="1665244008632896072">Alternar modo escuro. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">O modo de cores neutras substitui as cores extraídas do plano de fundo por um conjunto de tons neutros claros ou escuros.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698080062160024910">Timer de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3033545621352269033">Ativada</translation>
+<translation id="3038571455154067151">Para fazer login, insira seu código de acesso de pai/mãe do Family Link</translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
 <translation id="3055162170959710888">Você usou este dispositivo por <ph name="USED_TIME" /> hoje</translation>
 <translation id="3076778413190775903">Bandeja de status, horário <ph name="TIME" />,
@@ -277,6 +281,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3977512764614765090">Bateria em <ph name="PERCENTAGE" />% e carregando.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
+<translation id="40062176907008878">Escrita à mão</translation>
 <translation id="4017989525502048489">Apontador laser</translation>
 <translation id="4021716437419160885">Rolar para baixo</translation>
 <translation id="4028481283645788203">A senha é necessária para aumentar a segurança</translation>
@@ -288,12 +293,14 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerenciado por <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Configurações do tema escuro</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
 <translation id="4212472694152630271">Usar PIN</translation>
 <translation id="4215497585250573029">Configurações de VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
+<translation id="4229328187280698237">Alterne para o modo de tablet</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostrar configurações de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
@@ -368,6 +375,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5035389544768382859">Confirmar configuração da tela</translation>
 <translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
 <translation id="5114495209940374989">Capturas de tela</translation>
+<translation id="5123162024343028706">Exibir por cima</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5170568018924773124">Mostrar na pasta</translation>
@@ -381,6 +389,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5297704307811127955">Desativado</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configurações de Bluetooth</translation>
+<translation id="5314219114274263156">Gravação de tela capturada</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5379115545237091094">Muitas tentativas</translation>
 <translation id="5397578532367286026">O uso e o histórico deste usuário podem ser analisados pelo administrador (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
@@ -421,6 +430,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Parar <ph name="ROUTE_TITLE" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Desativado</translation>
+<translation id="5876666360658629066">Digite o código de pai/mãe</translation>
 <translation id="5887866489674258948">Modo escuro</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -482,6 +492,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="652139407789908527">Sua tela ficará desligada por mais tempo que o normal (até um minuto) durante a atualização. Não pressione o botão liga/desliga enquanto a atualização está em andamento.</translation>
 <translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6528179044667508675">Não perturbe</translation>
+<translation id="65320610082834431">Emojis</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
 <translation id="6537924328260219877">intensidade do sinal em <ph name="SIGNAL_STRENGTH" />, bateria do smartphone em <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Transmitindo para <ph name="RECEIVER_NAME" /></translation>
@@ -568,8 +579,10 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7568637526529101738">Quando você clica com o botão direito do mouse ou toca na tela e a mantém pressionada, o Assistente mostra informações como a definição ou a conversão de unidades da sua seleção.</translation>
 <translation id="7569509451529460200">Braille e ChromeVox estão ativados</translation>
 <translation id="7579778809502851308">Captura de tela</translation>
+<translation id="7590883480672980941">Configurações de entrada</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7600875258240007829">Ver todas as notificações</translation>
+<translation id="7618774594543487847">Neutro</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Abrir configurações da rede <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
@@ -666,12 +679,14 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />, gerenciada pelo seu administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante(s)</translation>
 <translation id="8646417893960517480">Timer de <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Para adicionar uma pessoa, insira seu código de acesso de pai/mãe do Family Link</translation>
 <translation id="8649101189709089199">Selecionar para ouvir</translation>
 <translation id="8652175077544655965">Fechar configurações</translation>
 <translation id="8653151467777939995">Mostrar configurações de notificação. As notificações estão ativadas</translation>
 <translation id="8660331759611631213">Raiz quadrada de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Mostrar lista de redes. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Modo de cor</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="8683506306463609433">Acompanhamento de desempenho ativo</translation>
@@ -695,6 +710,8 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8878886163241303700">Tela ampla</translation>
 <translation id="890616557918890486">Alterar origem</translation>
 <translation id="8909138438987180327">Bateria em <ph name="PERCENTAGE" /> por cento.</translation>
+<translation id="8913384980486163186">Temático (padrão)</translation>
+<translation id="8918251165865262378">Alterne para o modo de laptop</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8936501819958976551">desativado</translation>

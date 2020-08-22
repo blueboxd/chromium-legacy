@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
 <translation id="1125573121925420732">Maaaring karaniwang may mga babala habang nag-a-update para sa seguridad ang mga website. Maaayos din ito sa lalong madaling panahon.</translation>
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
+<translation id="1130564665089811311">Button na Isalin ang page, pindutin ang Enter para isalin ang page na ito gamit ang Google Translate</translation>
 <translation id="1131264053432022307">Larawang Kinopya Mo</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1151972924205500581">Kinakailangan ang password</translation>
@@ -408,6 +409,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2634124572758952069">Hindi makita ang IP address ng server ng <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Katayuan:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para I-clear ang iyong history ng pag-browse, cookies, cache, at higit pa sa mga setting ng Chrome</translation>
 <translation id="2650446666397867134">Tinanggihan ang access sa file</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2660779039299703961">Kaganapan</translation>
@@ -430,6 +432,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2713444072780614174">Puti</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para pamahalaan ang iyong mga pagbabayad at ang impormasyon ng credit card sa mga setting ng Chrome</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="272451190272506600">Pindutin ang sensor para magbayad</translation>
 <translation id="2728127805433021124">Nilagdaan ang certificate ng server gamit ang mahinang algorithm ng lagda.</translation>
@@ -642,6 +645,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3630155396527302611">Kung nakalista na ito bilang isang programang pinapahintulutang i-access ang network, subukang
       alisin ito mula sa listahan at muli itong idagdag.</translation>
 <translation id="3631244953324577188">Biometrics</translation>
+<translation id="3633738897356909127">Button na I-update ang Chrome, pindutin ang Enter para i-update ang Chrome mula sa iyong mga setting ng Chrome</translation>
 <translation id="3634530185120165534">Tray 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Matagumpay ang pagpapatunay</translation>
@@ -865,6 +869,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4506599922270137252">Makipag-ugnayan sa admin ng system</translation>
 <translation id="450710068430902550">Pagbabahagi sa Administrator</translation>
 <translation id="4508814173490746936">Hindi magamit ang Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para isalin ang page na ito gamit ang Google Translate</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Ang mga card at address ay mula sa Chrome at sa iyong Google Account (<ph name="ACCOUNT_EMAIL" />). Maaari mong pamahalaan ang mga ito sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -945,6 +950,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4879725228911483934">Magbukas at maglagay ng mga window sa iyong mga screen</translation>
 <translation id="4880827082731008257">History ng paghahanap</translation>
 <translation id="4881695831933465202">Buksan</translation>
+<translation id="4889420713887366944">Button na Magbukas ng Incognito Window, pindutin ang Enter para magbukas ng bagong Incognito window para makapag-browse nang pribado</translation>
 <translation id="4892518386797173871">Likod</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">I-save...</translation>
@@ -1106,6 +1112,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5523118979700054094">Pangalan ng patakaran</translation>
 <translation id="55293785478302737">Edge stitch</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">Button na I-clear ang data mula sa pag-browse, pindutin ang Enter para i-clear ang iyong history ng pag-browse, cookies, cache, at higit pa sa mga setting ng Chrome</translation>
 <translation id="5536214594743852365">Ipakita ang seksyong "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
@@ -1605,6 +1612,7 @@ Mga karagdagang detalye:
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para tingnan at pamahalaan ang mga password mo sa mga setting ng Chrome</translation>
 <translation id="7615602087246926389">Mayroon ka nang data na na-encrypt gamit ang ibang bersyon ng iyong password ng Google Account. Pakilagay ito sa ibaba.</translation>
 <translation id="7616645509853975347">Na-on ng iyong administrator ang Chrome Enterprise Connectors sa browser mo. May access ang mga connector na ito sa ilan sa iyong data.</translation>
 <translation id="7619838219691048931">Dulong sheet</translation>
@@ -1861,6 +1869,8 @@ Mga karagdagang detalye:
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8728672262656704056">Naging incognito ka</translation>
 <translation id="8730621377337864115">Tapos na</translation>
+<translation id="8731544501227493793">Button na Pamahalaan ang mga password, pindutin ang Enter para tingnan at pamahalaan ang mga password mo sa mga setting ng Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay Enter para magbukas ng bagong Incognito window para makapag-browse nang pribado</translation>
 <translation id="8738058698779197622">Upang makapagtatag ng secure na koneksyon, kailangang itakda nang tama ang iyong orasan. Ito ay dahil sa may-bisa lang ang mga certificate na ginagamit ng mga website upang tukuyin ang mga sarili ng mga ito sa loob ng mga partikular na tagal ng panahon. Dahil mali ang orasan ng iyong device, hindi ma-verify ng Chromium ang mga certificate na ito.</translation>
 <translation id="8740359287975076522">Hindi makita ang &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; ng <ph name="HOST_NAME" />. Dina-diagnose ang problema.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> ang iyong code para sa <ph name="ORIGIN" /></translation>
@@ -1877,6 +1887,7 @@ Mga karagdagang detalye:
 <translation id="8793655568873652685">Na-on ng <ph name="ENROLLMENT_DOMAIN" /> ang Chrome Enterprise Connectors sa iyong browser. May access ang mga connector na ito sa ilan sa iyong data.</translation>
 <translation id="8805819170075074995">Listahan ng entry na "<ph name="LANGUAGE_ID" />": Binalewala ang entry dahil kasama rin ito sa patakarang SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Paikliin pagkatapos ng bawat page</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para i-update ang Chrome mula sa iyong mga setting ng Chrome</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="883848425547221593">Iba Pang Mga Bookmark</translation>
 <translation id="884264119367021077">Shipping address</translation>
@@ -1896,6 +1907,7 @@ Mga karagdagang detalye:
 <translation id="890493561996401738">Button na Alisin ang Suhestyon, pindutin ang Enter para alisin, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Napunta ka sa incognito.</translation>
 <translation id="8912362522468806198">Google Account</translation>
+<translation id="8913778647360618320">Button na pamahalaan ang mga paraan ng pagbabayad, pindutin ang Enter para pamahalaan ang iyong mga pagbabayad at ang impormasyon ng credit card sa mga setting ng Chrome</translation>
 <translation id="8918231688545606538">Kahina-hinala ang page na ito</translation>
 <translation id="892588693504540538">Punch top right</translation>
 <translation id="8931333241327730545">Gusto mo bang i-save ang card na ito sa iyong Google Account?</translation>

@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Astuce Chrome : Pour afficher plus d'options d'onglets, appuyez de manière prolongée sur le bouton "Afficher les onglets" situé dans la barre d'outils affichée dans la partie inférieure ou supérieure de l'écran.</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="4698415050768537821">Chrome n'est pas parvenu à vérifier tous les mots de passe. Réessayez demain ou <ph name="BEGIN_LINK" />vérifiez les mots de passe enregistrés dans votre compte Google<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les sites Web dangereux.</translation>
 <translation id="5389212809648216794">Google Chrome ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
 <translation id="5639704535586432836">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Google Chrome, puis activez l'appareil photo.</translation>
 <translation id="5642200033778930880">Google Chrome ne peut pas utiliser votre appareil photo en mode Vue fractionnée</translation>
@@ -50,6 +51,7 @@
         1. Accédez aux réglages. 
         2. Appuyez sur "Navigateur par défaut".
         3. Sélectionnez "Chrome".</translation>
+<translation id="6822673484890854830">Chrome n'a pas pu vérifier tous les mots de passe. Réessayez plus tard.</translation>
 <translation id="7165736900384873061">Commencer à utiliser le lecteur de code QR Google Chrome</translation>
 <translation id="7172660552945675509">Conseil : <ph name="BEGIN_LINK" />Placez Chrome dans le dock.<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Paramètres</translation>

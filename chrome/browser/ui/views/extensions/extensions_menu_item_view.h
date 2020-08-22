@@ -35,6 +35,8 @@ class ExtensionsMenuItemView : public views::View,
       Browser* browser,
       std::unique_ptr<ToolbarActionViewController> controller,
       bool allow_pinning);
+  ExtensionsMenuItemView(const ExtensionsMenuItemView&) = delete;
+  ExtensionsMenuItemView& operator=(const ExtensionsMenuItemView&) = delete;
   ~ExtensionsMenuItemView() override;
 
   // views::ButtonListener:
@@ -46,9 +48,9 @@ class ExtensionsMenuItemView : public views::View,
 
   void UpdatePinButton();
 
-  bool IsContextMenuRunning();
+  bool IsContextMenuRunning() const;
 
-  bool IsPinned();
+  bool IsPinned() const;
 
   ToolbarActionViewController* view_controller() { return controller_.get(); }
   const ToolbarActionViewController* view_controller() const {
@@ -79,8 +81,6 @@ class ExtensionsMenuItemView : public views::View,
   // This controller is responsible for showing the context menu for an
   // extension.
   std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuItemView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_ITEM_VIEW_H_

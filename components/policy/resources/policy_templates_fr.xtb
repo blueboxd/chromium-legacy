@@ -925,6 +925,14 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
       Si cette règle est définie sur "Vérifier les importations et les téléchargements", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Vérifier les téléchargements" et "Vérifier les importations".
       </translation>
+<translation id="2424098959650060417">Permet de déterminer quelles imprimantes soumises à la règle <ph name="BULK_PRINTERS_POLICY_NAME" /> sont accessibles aux utilisateurs.
+
+      Vous pouvez indiquer la règle d'accès utilisée pour la configuration groupée des imprimantes. Si <ph name="PRINTERS_ALLOW_ALL" /> est sélectionné, toutes les imprimantes sont affichées. Si <ph name="PRINTERS_BLACKLIST" /> est sélectionné, la règle <ph name="BULK_PRINTERS_BLACKLIST" /> est utilisée pour limiter l'accès aux imprimantes spécifiées.  Si <ph name="PRINTERS_WHITELIST" /> est sélectionnée, la règle <ph name="BULK_PRINTERS_WHITELIST" /> indique uniquement les imprimantes qui peuvent être choisies.
+
+      Si cette règle n'est pas configurée, la règle <ph name="PRINTERS_ALLOW_ALL" /> s'applique.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" /> à la place.
+      </translation>
 <translation id="2426782419955104525">Activer la fonctionnalité de recherche instantanée de <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de modifier ce paramètre.
 
       Si vous activez ce paramètre, la recherche instantanée de <ph name="PRODUCT_NAME" /> est activée.
@@ -1731,6 +1739,17 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
           Si cette règle n'est pas définie, la fonctionnalité Sélectionner pour prononcer est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
+<translation id="3603469950773500315">Permet d'atténuer les contrôles <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />. Les extensions peuvent ainsi conserver un comportement compatible, et <ph name="PRODUCT_NAME" /> peut envoyer les en-têtes spécifiés sans contrôles <ph name="CORS" />.
+
+      Si aucun paramètre d'atténuation n'est indiqué dans la liste, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de <ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué à la page <ph name="WEB_REQUEST_API_MANUAL" />).
+
+      Si la liste contient des en-têtes de requêtes <ph name="HTTP" />, ces en-têtes sont ignorés lors des contrôles <ph name="CORS" />. Les contrôles sont en outre atténués pour les extensions.
+
+      Si cette liste n'est pas configurée, aucune des mesures d'atténuation expliquées ci-dessus n'est appliquée.
+
+      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
+
+      La suppression de cette règle avait été annoncée pour la version 82 de <ph name="PRODUCT_NAME" />, mais elle a eu lieu à la version 84.</translation>
 <translation id="3624515566460517364">Vérifier si les importations et les téléchargements respectent les règles de protection des données sensibles</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
@@ -3246,6 +3265,12 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Lorsque cette règle n'est pas configurée, le comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> par défaut des cookies dépend de la configuration personnelle de l'utilisateur concernant les fonctionnalités <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> et <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, qui peut être définie lors d'un test, ou par l'activation ou la désactivation des indicateurs <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> ou <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />, respectivement.</translation>
 <translation id="585270638818921943">Empêche l'utilisateur de se servir d'applications Android provenant de sources non approuvées</translation>
+<translation id="585671885349598586">Permet de spécifier les imprimantes auxquelles les utilisateurs n'ont pas accès.
+
+      Cette règle n'est utilisée que si <ph name="PRINTERS_BLOCKLIST" /> est sélectionné dans la règle <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
+
+      Si cette règle est appliquée, toutes les imprimantes sont proposées aux utilisateurs, sauf pour les ID répertoriés dans cette règle. Ces ID doivent correspondre à ceux indiqués dans les champs "id" ou "guid" du fichier spécifié dans la règle <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+      </translation>
 <translation id="5859344336338527083">Permet de déterminer quelles URL peuvent installer des extensions, des applications et des thèmes. Avant la version 21 de <ph name="PRODUCT_NAME" />, les utilisateurs pouvaient cliquer sur un lien qui renvoyait vers un fichier *.crx, et <ph name="PRODUCT_NAME" /> leur proposait d'installer ce fichier, tout en affichant d'abord quelques avertissements. Depuis, les fichiers de ce type doivent être téléchargés et glissés vers la page des paramètres <ph name="PRODUCT_NAME" />. Cette règle permet d'appliquer à des URL spécifiques l'ancienne procédure d'installation, plus facile à suivre.
 
       Chaque élément de cette liste est un format d'identification de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs peuvent facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces formats.
@@ -3526,6 +3551,17 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. Lorsqu'elle est indiquée, l'URL de mise à jour doit renvoyer à un fichier manifeste au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (il s'agit actuellement de "https://clients2.google.com/service/update2/crx"). Sachez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension.
 
       Par exemple, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+<translation id="6275833043726517413">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> au lieu de la nouvelle mise en œuvre de <ph name="CORS" />.
+
+      Si cette règle est définie sur "True", l'ancienne mise en œuvre doit être compatible avec les versions précédentes.
+
+      Si cette règle est définie sur "False" ou qu'elle n'est pas configurée, la nouvelle mise en œuvre est utilisée. Elle peut causer des problèmes de compatibilité spécifiques à l'entreprise.
+
+      Cette règle sera supprimée après quelques étapes intermédiaires.
+
+      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
+
+      La suppression de cette règle avait été annoncée pour la version 82 de <ph name="PRODUCT_NAME" />, mais elle a eu lieu à la version 84.</translation>
 <translation id="6281043242780654992">Cette règle permet de configurer le comportement de la messagerie native. Les hôtes de messagerie native qui figurent sur la liste noire ne sont pas autorisés tant qu'ils n'ont pas été ajoutés à la liste blanche.</translation>
 <translation id="6282799760374509080">Autoriser ou interdire la capture audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -4035,6 +4071,22 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7068108874199666656">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
+<translation id="7069358643254839205">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
+
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
+
+      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> et <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Elle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Elle vient en complément de la règle <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+
+      Si cette règle n'est pas configurée, aucune imprimante associée à un appareil n'est affichée, et les autres règles <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
+      </translation>
 <translation id="7070525176564511548">La saisie du mot de passe est requise toutes les semaines (toutes les 168 heures)</translation>
 <translation id="7072208053150563108">Fréquence de modification du mot de passe machine</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
@@ -4241,6 +4293,11 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
       Les plug-ins manquants ne sont plus recherchés ni installés automatiquement.</translation>
 <translation id="7267809745244694722">Les touches multimédias sont par défaut des touches de fonction</translation>
 <translation id="7271085005502526897">Importer la page d'accueil du navigateur par défaut à la première exécution</translation>
+<translation id="7271181393214180342">Si cette règle est activée, le système d'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, <ph name="PRODUCT_NAME" /> ne délègue les identifiants de l'utilisateur au service sollicité que si la règle KDC indique <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Consultez le document RFC 5896 sur https://tools.ietf.org/html/rfc5896.html. Le service doit également être autorisé par la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+      Si cette règle est désactivée, la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> est respectée.
+
+      Sous <ph name="MS_WIN_NAME" />, la règle KDC est toujours respectée.</translation>
 <translation id="7273823081800296768">Si ce paramètre est activé ou qu'il n'est pas configuré, les utilisateurs peuvent alors choisir d'associer les clients et les hôtes au moment de la connexion, ce qui permet d'éliminer la nécessité de saisir systématiquement un code d'accès.
 
           S'il est désactivé, cette fonctionnalité est alors indisponible.</translation>
@@ -4277,6 +4334,29 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7339315111520512972">Forcer le code réseau à s'exécuter dans le processus du navigateur</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7343497214039883642">Fichier de configuration des imprimantes d'entreprise pour des appareils</translation>
+<translation id="7348384750433771321">Fournit les configurations des imprimantes d'entreprise.
+
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
+
+      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />, <ph name="BULK_PRINTERS_WHITELIST" /> et <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Si vous la configurez, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+      Elle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> à la place.</translation>
+<translation id="7355640439776250098">Permet de spécifier les imprimantes auxquelles les utilisateurs n'ont pas accès.
+
+      Cette règle n'est utilisée que si <ph name="PRINTERS_BLACKLIST" /> est sélectionné dans la règle <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
+
+      Si cette règle est appliquée, toutes les imprimantes sont proposées aux utilisateurs, sauf pour les ID répertoriés dans cette règle. Ces ID doivent correspondre à ceux indiqués dans les champs "id" ou "guid" du fichier spécifié dans la règle <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="PRINTERS_BULK_BLOCKLIST" />.
+      </translation>
 <translation id="7360181094056034924">Permet de contrôler le comportement de <ph name="PRODUCT_NAME" /> avec les données importées et téléchargées pour lesquelles une analyse est jugée nécessaire.  Retarder la disponibilité signifie que <ph name="PRODUCT_NAME" /> n'autorise pas l'utilisateur à accéder à un fichier téléchargé, à sélectionner un fichier pour l'importer, à coller des données à partir du presse-papiers ou à glisser-déposer des données tant que ces fichiers ou données n'ont pas été analysés et que les résultats ne sont pas connus.  Cette restriction ne s'applique qu'aux fichiers ou données nécessitant une analyse comme défini par <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et par les règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
 
       Si cette règle n'est pas configurée ou si elle est définie sur "Aucune", <ph name="PRODUCT_NAME" /> ne retarde l'importation d'aucun fichier, le collage de données à partir du presse-papiers, le glisser-déposer de données, ni l'accès aux fichiers téléchargés.  L'analyse s'exécute en arrière-plan.
@@ -4472,6 +4552,24 @@ On attend de cette règle qu'elle soit utilisée dans le cadre de la modificatio
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas configurée, le moteur de recherche par défaut est activé, et les utilisateurs peuvent configurer la liste des moteurs de recherche.
 
       Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome. Sur <ph name="MAC_OS_NAME" />, cette fonctionnalité n'est disponible que pour les instances gérées via MDM ou associées à un domaine via MCX.</translation>
+<translation id="7673108452297907398">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
+
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
+
+      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> et <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Elle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Elle vient en complément de la règle <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Si cette règle n'est pas configurée, aucune imprimante associée à un appareil n'est affichée, et les autres règles <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="DEVICE_PRINTERS" /> à la place.
+      </translation>
 <translation id="7673194325208122247">Période (millisecondes)</translation>
 <translation id="7677220829878081413">
       Si la règle est définie sur "ArcSession", elle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
@@ -5179,6 +5277,19 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8757552286070680084">Configuration d'un dispositif DTC de Wilco</translation>
 <translation id="8758831693895931466">Activer l'inscription obligatoire à la gestion cloud</translation>
 <translation id="8759829385824155666">Types de chiffrement Kerberos autorisés</translation>
+<translation id="8760176996829352091">Fournit les configurations des imprimantes d'entreprise.
+
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />. Le format est le même que celui du dictionnaire <ph name="PRINTERS_POLICY_NAME" />, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à autoriser ou à bloquer.
+
+      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo. Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes. Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> et <ph name="PRINTERS_BULK_BLOCKLIST" />.
+
+      Si vous la configurez, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+      Elle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.</translation>
 <translation id="8764477907716150749">Il s'agit d'une règle utilisée en interne par <ph name="PRODUCT_NAME" />.</translation>
 <translation id="877185520360032968">Cette règle définit le répertoire par défaut utilisé par Chrome pour le téléchargement de fichiers. Les utilisateurs peuvent modifier la destination.
 
@@ -5453,6 +5564,12 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
 <translation id="9106865192244721694">Autoriser WebUSB sur ces sites</translation>
+<translation id="910760342417457561">Permet de déterminer quelles imprimantes soumises à la règle <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> sont accessibles aux utilisateurs.
+
+      Vous pouvez indiquer la règle d'accès utilisée pour la configuration groupée des imprimantes. Si <ph name="PRINTERS_ALLOW_ALL" /> est sélectionné, toutes les imprimantes sont affichées. Si <ph name="PRINTERS_BLOCKLIST" /> est sélectionné, la règle <ph name="PRINTERS_BULK_BLOCKLIST" /> est utilisée pour limiter l'accès aux imprimantes spécifiées.  Si <ph name="PRINTERS_ALLOWLIST" /> est sélectionnée, la règle <ph name="PRINTERS_BULK_ALLOWLIST" /> indique uniquement les imprimantes qui peuvent être choisies.
+
+      Si cette règle n'est pas configurée, la règle <ph name="PRINTERS_ALLOW_ALL" /> s'applique.
+      </translation>
 <translation id="9109086856618439290">Activer les conditions d'utilisation à la première exécution des onglets personnalisés Chrome et des progressive web apps</translation>
 <translation id="9112727953998243860">Fichier de configuration des imprimantes d'entreprise</translation>
 <translation id="9116740039944096995">Liste de formats d'URL. Les requêtes de réseaux privés initiées à partir de sites Web non sécurisés desservis par des URL qui figurent sur la liste sont autorisées.

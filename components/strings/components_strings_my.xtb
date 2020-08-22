@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;ပြန်စီစဉ်ကို ပြန်လုပ်ရန်</translation>
 <translation id="1125573121925420732">ဝဘ်ဆိုက်များက ၎င်းတို့၏ လုံခြုံရေးကို အပ်ဒိတ်လုပ်သည့်အခါ သတိပေးချက်များ ထုတ်ပြန်ခြင်းသည် လုပ်ရိုးလုပ်စဉ်ပင်ဖြစ်သည်။ ၎င်းသည် မကြာခင် တိုးတက်မှုရှိလာနိုင်ပါသည်။</translation>
 <translation id="112840717907525620">ပေါ်လစီ ကက်ရှ်အိုကေ</translation>
+<translation id="1130564665089811311">စာမျက်နှာဘာသာပြန်ရန်ခလုတ်၊ ဤစာမျက်နှာကို Google Translate ဖြင့်ဘာသာပြန်ရန် Enter နှိပ်ပါ</translation>
 <translation id="1131264053432022307">သင်မိတ္တူကူးထားသော ပုံ</translation>
 <translation id="1150979032973867961">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို သင့်ကွန်ပျူတာ၏ လည်ပတ်မှု  စနစ် ဘက်မှ မယုံကြည်ပါ။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="1151972924205500581">စကားဝှက် လိုအပ်</translation>
@@ -410,6 +411,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> ၏ ဆာဗာ IP လိပ်စာကို မတွေ့ပါ။</translation>
 <translation id="2639739919103226564">အခြေအနေ:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />၊ <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ဆက်တင်များရှိ သင့်ကြည့်ရှုခြင်းမှတ်တမ်း၊ ကွတ်ကီးများ၊ ကက်ရှ်နှင့် အခြားအရာများကို ရှင်းရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="2650446666397867134">ဖိုင်အား ရယူမှု ငြင်းပယ်ခံခဲ့ရ</translation>
 <translation id="2653659639078652383">ပေးပို့ရန်</translation>
 <translation id="2660779039299703961">ဖြစ်ရပ်</translation>
@@ -432,6 +434,7 @@
 <translation id="2705137772291741111">သိမ်းဆည်းခဲ့သည့် (ယာယီသိမ်းဆည်းထားသည့်) မိတ္တူကို ဖတ်မရပါ။</translation>
 <translation id="2709516037105925701">အလိုလျောက် ဖြည့်စွက်</translation>
 <translation id="2713444072780614174">အဖြူ</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ဆက်တင်များတွင် သင့် ငွေပေးချေမှုများနှင့် ခရက်ဒစ်ကတ် အချက်အလက်ကို စီမံရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="2721148159707890343">တောင်းဆိုချက် အောင်မြင်ပါသည်</translation>
 <translation id="272451190272506600">ငွေပေးချေရန် အာရုံခံစနစ်ကို ထိပါ</translation>
 <translation id="2728127805433021124">ဆာဗာ၏ လက်မှတ်ကို အားနည်းသည့် လက်မှတ် အယ်လ်ဂိုရီသမ်ကို သုံးပြီး ထိုးထားသည်။</translation>
@@ -641,6 +644,7 @@
 <translation id="362276910939193118">မှတ်တမ်း အပြည့် ပြရန်</translation>
 <translation id="3630155396527302611">၎င်းကို ကွန်ရက်အသုံးပြုသည့် ပရိုဂရမ်အဖြစ် စာရင်းထည့်သွင်းပြီးဖြစ်လျှင်၊ စာရင်းမှ ဖယ်ရှားပြီး ထပ်မံထည့်သွင်းကြည့်ပါ။</translation>
 <translation id="3631244953324577188">ဇီဝဗေဒဆိုင်ရာ အချက်အလက်များ</translation>
+<translation id="3633738897356909127">Chrome အပ်ဒိတ်လုပ်ရန်ခလုတ်၊ သင့် Chrome ဆက်တင်များမှတစ်ဆင့် Chrome ကို အပ်ဒိတ်လုပ်ရန် Enter နှိပ်ပါ</translation>
 <translation id="3634530185120165534">ဗန်း ၅</translation>
 <translation id="3640766068866876100">အညွှန်း-၄x၆-နောက်ဆက်တွဲ</translation>
 <translation id="3650584904733503804">အောင်မြင်စွာ အတည်ပြုပြီး</translation>
@@ -865,6 +869,7 @@
 <translation id="4506599922270137252">စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်နေသည်</translation>
 <translation id="450710068430902550">စီမံခန့်ခွဲသူနှင့် မျှဝေခြင်း</translation>
 <translation id="4508814173490746936">'တို့ထိ ID' အသုံးပြု၍ မရပါ</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ ဤစာမျက်နှာကို Google Translate ဖြင့်ဘာသာပြန်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="4510487217173779431">Chou4 (စာအိတ်)</translation>
 <translation id="4515275063822566619">ကဒ်နှင့် လိပ်စာများသည် Chrome နှင့် သင်၏ Google အကောင့် (<ph name="ACCOUNT_EMAIL" />) မှဖြစ်သည်။ ၎င်းတို့ကို <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" /> တွင် စီမံခန့်ခွဲနိုင်သည်။</translation>
 <translation id="4517607026994743406">Comm-10 (စာအိတ်)</translation>
@@ -945,6 +950,7 @@
 <translation id="4879725228911483934">သင့်ဖန်သားပြင်များတွင် ဝင်းဒိုးများ ဖွင့်ပြီး နေရာချထားခြင်း</translation>
 <translation id="4880827082731008257">ရှာဖွေမှု မှတ်တမ်း</translation>
 <translation id="4881695831933465202">ဖွင့်</translation>
+<translation id="4889420713887366944">'ရုပ်ဖျက်ဝင်းဒိုးဖွင့်ရန်' ခလုတ်၊ သီးသန့်ဖွင့်ကြည့်ရန်အတွက် Chrome ရုပ်ဖျက်ဝင်းဒိုးအသစ် ဖွင့်ရန် Enter နှိပ်ပါ</translation>
 <translation id="4892518386797173871">နောက်ဘက်</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />၊ <ph name="TYPE_2" />၊ <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">သိမ်းရန်...</translation>
@@ -1106,6 +1112,7 @@
 <translation id="5523118979700054094">မူဝါဒ အမည်</translation>
 <translation id="55293785478302737">အစွန်းတွင် အပ်ချည်ဖြင့်ချုပ်ရန်</translation>
 <translation id="553484882784876924">Prc6 (စာအိတ်)</translation>
+<translation id="5535133333442455806">ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာ ရှင်းရန်ခလုတ်၊ သင်၏ ကြည့်ရှုခြင်းမှတ်တမ်း၊ ကွတ်ကီးများ၊ ကက်ရှ်များနှင့် အခြားအရာများကို Chrome ဆက်တင်များတွင် ရှင်းရန် Enter နှိပ်ပါ</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" ကဏ္ဍကို ပြရန်</translation>
 <translation id="5539243836947087108">အောက်ခြေ</translation>
 <translation id="5540224163453853">တောင်းဆိုထားသည့် အကြောင်းအရာ မတွေ့ပါ။</translation>
@@ -1605,6 +1612,7 @@
 <translation id="7600965453749440009">ဘာသာပြန်အသစ် <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">တန်ဖိုးမှာ ဘောင် အပြင်မှာ ရှိနေ<ph name="VALUE" />။</translation>
 <translation id="7613889955535752492">ကုန်ဆုံးရက် − <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ဆက်တင်များရှိ သင့်စကားဝှက်များကို ကြည့်ရှုရန်နှင့် စီမံရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="7615602087246926389">Google အကောင့်လျှို့ဝှက်စကားလုံး အခြားဗားရှင်းဖြင့် လုံခြုံအောင်ပြုလုပ်ထားသည့် ဒေတာများသင့်တွင် ရှိပြီးဖြစ်သည်။ ကျေးဇူးပြု၍ ၎င်းအားအောက်တွင်ဖြည့်ပါ။</translation>
 <translation id="7616645509853975347">သင်၏စီမံခန့်ခွဲသူက သင့်ဘရောင်ဇာတွင် Chrome Enterprise Connectors ကို ဖွင့်ထားသည်။ ဤချိတ်ဆက်စနစ်များက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိသည်။</translation>
 <translation id="7619838219691048931">အဆုံးသတ် စာမျက်နှာ</translation>
@@ -1861,6 +1869,8 @@
 <translation id="8725066075913043281">ထပ် စမ်းကြည့်ရန်</translation>
 <translation id="8728672262656704056">ရုပ်ဖျက်မုဒ်ကို သုံးနေပါသည်</translation>
 <translation id="8730621377337864115">ပြီးပါပြီ</translation>
+<translation id="8731544501227493793">စကားဝှက်စီမံရန်ခလုတ်၊ သင့်စကားဝှက်များကို Chrome ဆက်တင်များတွင် ကြည့်ရှုရန်နှင့် စီမံရန် Enter နှိပ်ပါ</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ သီးသန့်ဖွင့်ကြည့်ရန်အတွက် ရုပ်ဖျက်ဝင်းဒိုး အသစ်ဖွင့်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="8738058698779197622">စိတ်ချရသည့်  ချိတ်ဆက်မှုကို ထူထောင်ရန်၊ သင့်နာရီကို မှန်ကန်စွာ သတ်မှတ်ပေးရန် လိုအပ်သည်။ ဝက်ဘ်ဆိုက်များက မိမိကိုမိမိ သက်သေထူရန် အသုံးပြုကြသည့် လက်မှတ်များမှာ သတ်မှတ်ထားသည့် အချိန်ကာလ အတွင်းမှာသာ သက်တမ်းရှိကြ၍ ဖြစ်ပါသည်။ သင့်ကိရိယာ၏ နာရီချိန် မမှန်သောကြောင့်၊ Chromium က ထိုလက်မှတ်များကို စိစစ်မရနိုင်ပါ။</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />၏ &lt;abbr id="dnsDefinition"&gt;DNS လိပ်စာ&lt;/abbr&gt; ကိုရှာမတွေ့ပါ။ ပြဿနာကို အဖြေရှာနေပါသည်။</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> သည် <ph name="ORIGIN" /> အတွက် သင်၏ကုဒ်ဖြစ်သည်</translation>
@@ -1877,6 +1887,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> က သင့်ဘရောင်ဇာတွင် Chrome Enterprise Connectors ကို ဖွင့်ထားသည်။ ဤချိတ်ဆက်စနစ်များက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိသည်။</translation>
 <translation id="8805819170075074995">စာရင်းထည့်သွင်းမှု "<ph name="LANGUAGE_ID" />"- SpellcheckLanguage မူဝါဒတွင်လည်း ပါဝင်နေသောကြောင့် ထည့်သွင်းမှုကို လျစ်လျူရှုထားသည်။</translation>
 <translation id="8807160976559152894">တစ်မျက်နှာအပြီး ဖြတ်ထုတ်ရန်</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ သင့် Chrome ဆက်တင်များမှတစ်ဆင့် Chrome ကို အပ်ဒိတ်လုပ်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="8820817407110198400">စာညှပ်များ</translation>
 <translation id="883848425547221593">အခြား စာညှပ်များ</translation>
 <translation id="884264119367021077">ပို့ဆောင်ရမည့် လိပ်စာ</translation>
@@ -1896,6 +1907,7 @@
 <translation id="890493561996401738">'အကြံပြုချက်' ခလုတ်ကို ဖယ်ရှားခြင်း၊ ဖယ်ရှားရန် Enter ကို နှိပ်ပါ၊ <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">ရုပ်ဖျက်မုဒ်ကို သုံးနေပါသည်</translation>
 <translation id="8912362522468806198">Google အကောင့်</translation>
+<translation id="8913778647360618320">ငွေပေးချေနည်းလမ်း စီမံရန်ခလုတ်၊ Chrome ဆက်တင်များတွင် သင့် ငွေပေးချေမှုများနှင့် ခရက်ဒစ်ကတ် အချက်အလက်ကို စီမံရန် Enter နှိပ်ပါ</translation>
 <translation id="8918231688545606538">ဤစာမျက်နှာသည် သံသယဖြစ်ဖွယ် ရှိသည်</translation>
 <translation id="892588693504540538">ညာဘက်ထိပ်တွင် ဖောက်ရန်</translation>
 <translation id="8931333241327730545">သင့် Google အကောင့်သို့ ဤကဒ်ကိုသိမ်းလိုပါသလား။</translation>

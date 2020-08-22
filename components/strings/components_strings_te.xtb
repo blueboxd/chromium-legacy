@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="1125573121925420732">వెబ్‌సైట్‌ల యొక్క భద్రతను అప్‌డేట్ చేస్తున్నప్పుడు హెచ్చరికలు కనిపించడం సాధారణమే. ఇది త్వరలోనే మెరుగుపరచబడుతుంది.</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
+<translation id="1130564665089811311">'పేజీని అనువదించు' బటన్, ఈ పేజీని Google Translateతో అనువదించేందుకు 'Enter' నొక్కండి</translation>
 <translation id="1131264053432022307">మీరు కాపీ చేసిన చిత్రం</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1151972924205500581">పాస్‌వర్డ్ అవసరం</translation>
@@ -410,6 +411,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> యొక్క సర్వర్ IP చిరునామా కనుగొనబడలేదు.</translation>
 <translation id="2639739919103226564">స్థితి: </translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome సెట్టింగ్‌లలో మీ బ్రౌజింగ్ హిస్టరీ, కుక్కీలు, కాష్ ఇంకా మరిన్నింటిని క్లియర్ చేయడానికి 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="2650446666397867134">ఫైల్‌కు యాక్సెస్ తిరస్కరించబడింది</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2660779039299703961">ఈవెంట్</translation>
@@ -432,6 +434,7 @@
 <translation id="2705137772291741111">ఈ సైట్ యొక్క సేవ్ చేయబడిన (కాష్ చేసిన) కాపీ చదవదగినట్లుగా లేదు.</translation>
 <translation id="2709516037105925701">ఆటో-ఫిల్</translation>
 <translation id="2713444072780614174">తెలుపు</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome సెట్టింగ్‌లలో మీ పేమెంట్‌లు, క్రెడిట్ కార్డ్ సమాచారం మేనేజ్ చేయడానికి 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="272451190272506600">చెల్లించడానికి సెన్సార్‌ను తాకండి</translation>
 <translation id="2728127805433021124">సర్వర్ ప్రమాణపత్రం బలహీన సంతకం అల్గారిథమ్‌ను ఉపయోగించి సంతకం చేయబడింది.</translation>
@@ -642,6 +645,7 @@
 <translation id="3630155396527302611">ఇప్పటికే ఇది నెట్‌వర్క్‌ను యాక్సెస్ చేయడానికి అనుమతించబడిన ప్రోగ్రామ్ లాగా జాబితా చేయబడి ఉంటే,
       దీన్ని జాబితా నుండి తీసివేసి, ఆపై మళ్లీ జోడించి ప్రయత్నించండి.</translation>
 <translation id="3631244953324577188">బయోమెట్రిక్స్</translation>
+<translation id="3633738897356909127">'Chromeను అప్‌డేట్ చేయి' బటన్, మీ Chrome సెట్టింగ్‌ల నుండి Chromeను అప్‌డేట్ చేయడానికి 'Enter'ను నొక్కండి</translation>
 <translation id="3634530185120165534">ట్రే 5</translation>
 <translation id="3640766068866876100">సూచిక-4x6-Ext</translation>
 <translation id="3650584904733503804">ప్రామాణీకరణ విజయవంతం అయింది</translation>
@@ -865,6 +869,7 @@
 <translation id="4506599922270137252">సిస్టమ్ నిర్వాహకుడిని సంప్రదించడం</translation>
 <translation id="450710068430902550">నిర్వాహకుడితో షేర్‌</translation>
 <translation id="4508814173490746936">Touch IDని ఉపయోగించడం సాధ్యం కాలేదు</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Translateతో ఈ పేజీని అనువదించడానికి 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="4510487217173779431">Chou4 (ఎన్వలప్)</translation>
 <translation id="4515275063822566619">కార్డ్‌లు, చిరునామాలు- Chrome నుండి, మీ Google ఖాతా (<ph name="ACCOUNT_EMAIL" />) నుండి పొందినవి. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో వాటిని నిర్వహించవచ్చు.</translation>
 <translation id="4517607026994743406">Comm-10 (ఎన్వలప్)</translation>
@@ -945,6 +950,7 @@
 <translation id="4879725228911483934">విండోలను తెరిచి, మీ స్క్రీన్‌లపై ఉంచండి</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
 <translation id="4881695831933465202">తెరువు</translation>
+<translation id="4889420713887366944">'అజ్ఞాత విండో తెరువు' బటన్, ప్రైవేట్‌గా బ్రౌజ్ చేయడానికి కొత్త అజ్ఞాత విండోను తెరవడానికి 'Enter'ను నొక్కండి</translation>
 <translation id="4892518386797173871">వెనుక భాగం</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">సేవ్ చేయి...</translation>
@@ -1106,6 +1112,7 @@
 <translation id="5523118979700054094">విధానం పేరు</translation>
 <translation id="55293785478302737">కుట్టిన అంచులు</translation>
 <translation id="553484882784876924">Prc6 (ఎన్వలప్)</translation>
+<translation id="5535133333442455806">'బ్రౌజింగ్ డేటాను క్లియర్ చేయి' బటన్, Chrome సెట్టింగ్‌లలో మీ బ్రౌజింగ్ హిస్టరీ, కుక్కీలు, కాష్ ఇంకా మరిన్నింటిని క్లియర్ చేయడానికి 'Enter' నొక్కండి</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" విభాగాన్ని చూపించు</translation>
 <translation id="5539243836947087108">రాఫ్ట్</translation>
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
@@ -1605,6 +1612,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE" /> పరిధి వెలుపల ఉంది.</translation>
 <translation id="7613889955535752492">గడువు ముగింపు: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome సెట్టింగ్‌లలో మీ పాస్‌వర్డ్‌లను చూసి, మేనేజ్ చేయడానికి 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="7615602087246926389">మీకు ఇప్పటికే మీ Google ఖాతా పాస్‌వర్డ్ యొక్క మరొక వెర్ష‌న్‌ను ఉపయోగించి ఎన్‌క్రిప్ట్ అయిన డేటా ఉంది. దయచేసి దాన్ని దిగువ నమోదు చేయండి.</translation>
 <translation id="7616645509853975347">మీ అడ్మినిస్ట్రేటర్, మీ బ్రౌజర్‌లో Chrome Enterprise కనెక్టర్‌లను ఆన్ చేశారు. ఈ కనెక్టర్‌లకు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
 <translation id="7619838219691048931">చివరి షీట్</translation>
@@ -1861,6 +1869,8 @@
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8728672262656704056">మీరు ఇప్పుడు అజ్ఞాత మోడ్‌లో ఉన్నారు</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
+<translation id="8731544501227493793">'పాస్‌వర్డ్‌లు మేనేజ్ చేయి' బటన్, Chrome సెట్టింగ్‌లలో మీ పాస్‌వర్డ్‌లు చూసి, మేనేజ్ చేయడానికి 'Enter' నొక్కండి</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ప్రైవేట్‌గా బ్రౌజ్ చేసుకునేందుకు కొత్త అజ్ఞాత విండోను తెరవడానికి ముందు 'Tab'ను నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="8738058698779197622">సురక్షిత కనెక్షన్‌ను ఏర్పాటు చేయడానికి, మీ గడియారాన్ని సరైన సమయానికి సెట్ చేయాలి. ఎందుకంటే వెబ్‌సైట్‌లు వాటిని గుర్తించడానికి ఉపయోగించే సర్టిఫికెట్‌లు నిర్దిష్ట కాలవ్యవధులలో మాత్రమే చెల్లుబాటు అవుతాయి. మీ పరికరం యొక్క గడియారం సమయం తప్పుగా ఉన్నందున, Chromium ఈ సర్టిఫికెట్‌లను ధృవీకరించలేకపోయింది.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS చిరునామా&lt;/abbr&gt; కనుగొనబడలేదు. సమస్యను నిర్ధారిస్తోంది.</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> కోసం మీ కోడ్ <ph name="ONE_TIME_CODE" /></translation>
@@ -1877,6 +1887,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, మీ బ్రౌజర్‌లో Chrome Enterprise కనెక్టర్‌లను ఆన్ చేసింది. ఈ కనెక్టర్‌లకు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
 <translation id="8805819170075074995">జాబితా నమోదు "<ph name="LANGUAGE_ID" />": నమోదు విస్మరించబడింది, ఎందుకంటే ఇది SpellcheckLanguage విధానంలో కూడా ఉంది.</translation>
 <translation id="8807160976559152894">ప్రతి పేజీ తర్వాత కత్తిరించండి</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, మీ Chrome సెట్టింగ్‌ల నుండి Chromeని అప్‌డేట్ చేయడానికి 'Tab' నొక్కి, ఆపై 'Enter'ను నొక్కండి</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="883848425547221593">ఇతర బుక్‌మార్క్‌లు:</translation>
 <translation id="884264119367021077">షిప్పింగ్ చిరునామా</translation>
@@ -1896,6 +1907,7 @@
 <translation id="890493561996401738">సూచన బటన్‌ను తీసివేయండి, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />ను తీసివేయడానికి ఎంటర్ నొక్కండి</translation>
 <translation id="8910670906166981838">మీరు అజ్ఞాత మోడ్‌లో ఉన్నారు</translation>
 <translation id="8912362522468806198">Google ఖాతా</translation>
+<translation id="8913778647360618320">'పేమెంట్ ఆప్షన్‌లను మేనేజ్ చేయి' బటన్, Chrome సెట్టింగ్‌లలో మీ పేమెంట్‌లు, క్రెడిట్ కార్డ్ సమాచారం మేనేజ్ చేయడానికి 'Enter'ను నొక్కండి</translation>
 <translation id="8918231688545606538">ఈ పేజీ అనుమానాస్పదంగా ఉంది</translation>
 <translation id="892588693504540538">కుడివైపు ఎగువ భాగంలో రంధ్రం</translation>
 <translation id="8931333241327730545">మీరు ఈ కార్డ్‌ను మీ Google ఖాతాకు సేవ్ చేయాలనుకుంటున్నారా?</translation>

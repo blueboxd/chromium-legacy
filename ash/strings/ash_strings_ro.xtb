@@ -14,6 +14,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="109942774857561566">M-am plictisit</translation>
 <translation id="1104084341931202936">Afișează setările de accesibilitate</translation>
 <translation id="1104621072296271835">Dispozitivele funcționează și mai bine împreună</translation>
+<translation id="1119348796022671382">Modul de culoare cu temă folosește culori extrase din imaginea de fundal pentru a colora ușor interfața.</translation>
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
 <translation id="1175572348579024023">Derulează</translation>
@@ -48,6 +49,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1391102559483454063">Activată</translation>
 <translation id="1419738280318246476">Deblochează dispozitivul pentru efectuarea acțiunii de notificare</translation>
 <translation id="1420408895951708260">Comută Lumina de noapte. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">S-a realizat captura de ecran și s-a salvat în clipboard</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1455242230282523554">Arată setările pentru limbă</translation>
 <translation id="1460620680449458626">Sunetul este dezactivat.</translation>
@@ -65,6 +67,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1632985212731562677">Accesul prin comutare poate fi dezactivat din Setări &gt; Accesibilitate.</translation>
 <translation id="1654477262762802994">Începe o interogare vocală</translation>
 <translation id="1665244008632896072">Activează/dezactivează modul întunecat. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Modul de culoare neutru nu folosește culori extrase din imaginea de fundal, ci le înlocuiește cu un set de culori deschise sau închise în tonuri neutre.</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Temporizator de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresă IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Ieșiri</translation>
 <translation id="3033545621352269033">Activat</translation>
+<translation id="3038571455154067151">Pentru a te conecta, introdu codul de acces pentru părinte Family Link</translation>
 <translation id="3051128274746680507">Profilul tău de utilizator monitorizat va fi eliminat în curând. Conectează-te pentru a afla mai multe.</translation>
 <translation id="3055162170959710888">Ai folosit acest dispozitiv <ph name="USED_TIME" /> astăzi</translation>
 <translation id="3076778413190775903">Bară de stare, durată <ph name="TIME" />,
@@ -277,6 +281,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3977512764614765090">Nivelul bateriei este <ph name="PERCENTAGE" /> % și se încarcă.</translation>
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
+<translation id="40062176907008878">Scriere de mână</translation>
 <translation id="4017989525502048489">Indicator laser</translation>
 <translation id="4021716437419160885">Derulează în jos</translation>
 <translation id="4028481283645788203">Este necesară parola pentru mai multă siguranță</translation>
@@ -288,12 +293,14 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="4129129681837227511">Pentru a vedea notificările pe ecranul de blocare, deblochează pentru a modifica setarea</translation>
 <translation id="4146833061457621061">Redă muzică</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gestionat de <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Setări pentru tema întunecată</translation>
 <translation id="4181841719683918333">Limbi</translation>
 <translation id="4195877955194704651">Butonul Clicuri automate</translation>
 <translation id="4197790712631116042">Dezactivat</translation>
 <translation id="4212472694152630271">Comută la PIN</translation>
 <translation id="4215497585250573029">Setări VPN</translation>
 <translation id="4217571870635786043">Dictare</translation>
+<translation id="4229328187280698237">Comută la modul tabletă</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Afișează setările pentru notificări. Notificările sunt dezactivate</translation>
 <translation id="4269883910223712419">Administratorul acestui dispozitiv poate:</translation>
@@ -368,6 +375,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="5035389544768382859">Confirmă configurația afișajului</translation>
 <translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="5114495209940374989">Capturi de ecran</translation>
+<translation id="5123162024343028706">Fixează deasupra</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
@@ -381,6 +389,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="5297704307811127955">Dezactivată</translation>
 <translation id="5302048478445481009">Limbă</translation>
 <translation id="5313326810920013265">Setări Bluetooth</translation>
+<translation id="5314219114274263156">S-a înregistrat ecranul</translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5379115545237091094">Prea multe încercări</translation>
 <translation id="5397578532367286026">Datele privind utilizarea și istoricul ale acestui utilizator pot fi examinate de administrator (<ph name="MANAGER_EMAIL" />) pe chrome.com.</translation>
@@ -421,6 +430,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
 <translation id="5837036133683224804">Întrerupe <ph name="ROUTE_TITLE" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Dezactivat</translation>
+<translation id="5876666360658629066">Introdu codul pentru părinte</translation>
 <translation id="5887866489674258948">Mod întunecat</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -481,6 +491,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="652139407789908527">Pe durata actualizării, ecranul se va goli pentru o perioadă mai lungă decât de obicei (maximum un minut). Nu apăsa butonul de alimentare în timpul actualizării.</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6528179044667508675">Nu deranja</translation>
+<translation id="65320610082834431">Emoji</translation>
 <translation id="6537270692134705506">Capturează ecranul</translation>
 <translation id="6537924328260219877">Puterea semnalului: <ph name="SIGNAL_STRENGTH" />, bateria telefonului: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Se proiectează conținut la <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="7568637526529101738">Dacă dai clic dreapta sau apeși lung, Asistentul îți arată informații cum ar fi definiția sau conversia unităților pentru selecția ta.</translation>
 <translation id="7569509451529460200">Braille și ChromeVox sunt activate</translation>
 <translation id="7579778809502851308">Captură de ecran</translation>
+<translation id="7590883480672980941">Setări de introducere a textului</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7600875258240007829">Vezi toate notificările</translation>
+<translation id="7618774594543487847">Neutru</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Deschide setările pentru <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietar)</translation>
@@ -665,12 +678,14 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">Temporizator de <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Pentru a adăuga o persoană, introdu codul de acces pentru părinte Family Link</translation>
 <translation id="8649101189709089199">Selectează și ascultă</translation>
 <translation id="8652175077544655965">Închide setările</translation>
 <translation id="8653151467777939995">Afișează setările pentru notificări. Notificările sunt activate</translation>
 <translation id="8660331759611631213">Rădăcina pătrată a numărului 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Afișează lista de rețele. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Modul de culoare</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="8683506306463609433">Urmărirea performanțelor este activă</translation>
@@ -694,6 +709,8 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="890616557918890486">Schimbă sursa</translation>
 <translation id="8909138438987180327">Nivelul bateriei este <ph name="PERCENTAGE" /> %.</translation>
+<translation id="8913384980486163186">Cu temă (prestabilit)</translation>
+<translation id="8918251165865262378">Comută la modul laptop</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
 <translation id="8936501819958976551">dezactivată</translation>

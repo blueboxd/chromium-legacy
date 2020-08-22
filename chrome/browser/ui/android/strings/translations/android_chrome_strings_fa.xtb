@@ -633,6 +633,7 @@
 <translation id="5864419784173784555">در انتظار بارگیری موردی دیگر…</translation>
 <translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
+<translation id="5872013926720995826">پیوندهای اثبات دیجیتالی در <ph name="VIOLATED_URL" /> راستی‌آزمایی نشد</translation>
 <translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
@@ -860,7 +861,7 @@
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> فایل بارگیری شد}one{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}other{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}}</translation>
 <translation id="7588219262685291874">روشن شدن طرح زمینه تیره وقتی «بهینه‌سازی باتری» دستگاه روشن است</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
-<translation id="7596558890252710462">سیستم عامل</translation>
+<translation id="7596558890252710462">سیستم‌عامل</translation>
 <translation id="7605594153474022051">همگام‌سازی کار نمی‌کند</translation>
 <translation id="7606077192958116810">حالت ساده روشن است. آن را در «تنظیمات» مدیریت کنید.</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>

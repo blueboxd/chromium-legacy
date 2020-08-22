@@ -6,7 +6,8 @@
   margin-top: 2px;
 }
 #container {
-  will-change: transform;
+  /* Not using will-change:transform because it ignores subpixel accumulation. */ 
+  will-change: opacity;
   margin-top: 100.3px;
 }
 </style>

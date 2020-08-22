@@ -91,7 +91,14 @@ Polymer({
     encryptionExpanded_: {
       type: Boolean,
       value: false,
-      computed: 'computeEncryptionExpanded_(syncPrefs.encryptAllData)',
+      computed:
+          'computeEncryptionExpanded_(syncPrefs.encryptAllData, forceEncryptionExpanded)',
+    },
+
+    /** If true, override |encryptionExpanded_| to be true. */
+    forceEncryptionExpanded: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -223,6 +230,24 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
+  },
+
+  /**
+   * Returns the encryption options SettingsSyncEncryptionOptionsElement.
+   * @return {?SettingsSyncEncryptionOptionsElement}
+   */
+  getEncryptionOptions() {
+    return /** @type {?SettingsSyncEncryptionOptionsElement} */ (
+        this.$$('settings-sync-encryption-options'));
+  },
+
+  /**
+   * Returns the encryption options SettingsPersonalizationOptionsElement.
+   * @return {?SettingsPersonalizationOptionsElement}
+   */
+  getPersonalizationOptions() {
+    return /** @type {?SettingsPersonalizationOptionsElement} */ (
+        this.$$('settings-personalization-options'));
   },
 
   /**
@@ -430,6 +455,11 @@ Polymer({
    * @private
    */
   computeEncryptionExpanded_() {
+    // Force the dropdown to expand.
+    if (this.forceEncryptionExpanded) {
+      this.forceEncryptionExpanded = false;
+      return true;
+    }
     return !!this.syncPrefs && this.syncPrefs.encryptAllData;
   },
 

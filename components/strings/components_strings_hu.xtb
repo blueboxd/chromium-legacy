@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
 <translation id="1125573121925420732">Gyakran előfordulhatnak figyelmeztetések, amikor a webhelyek frissítik biztonsági megoldásaikat. Ez a helyzet hamarosan javulhat.</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
+<translation id="1130564665089811311">Oldal lefordítása gomb, az Enter billentyű megnyomásával lefordíttathatja ezt az oldalt a Google Fordító segítségével</translation>
 <translation id="1131264053432022307">Vágólapra másolt kép</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1151972924205500581">Jelszó szükséges</translation>
@@ -408,6 +409,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2634124572758952069">A(z) <ph name="HOST_NAME" /> szerver IP-címe nem található.</translation>
 <translation id="2639739919103226564">Állapot:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja meg az Enter billentyűt a böngészési előzményeknek, a cookie-knak, a gyorsítótárnak és egyebeknek a Chrome beállításaiban való törléséhez</translation>
 <translation id="2650446666397867134">A hozzáférés a fájlhoz megtagadva.</translation>
 <translation id="2653659639078652383">Küldés</translation>
 <translation id="2660779039299703961">Esemény</translation>
@@ -430,6 +432,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2705137772291741111">A webhely mentett (gyorsítótárazott) példánya nem olvasható.</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2713444072780614174">Fehér</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja meg az Enter billentyűt a fizetési és hitelkártyaadatoknak a Chrome beállításaiban való kezeléséhez</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="272451190272506600">A fizetéshez érintse meg az ujjlenyomat-érzékelőt</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
@@ -638,6 +641,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="3630155396527302611">Ha már megjelenik a hálózat elérésére engedélyezett programként, próbálkozzon
       az eltávolításával, majd a listára való ismételt felvételével.</translation>
 <translation id="3631244953324577188">Biometria</translation>
+<translation id="3633738897356909127">Chrome frissítése gomb, nyomja le az Enter billentyűt a Chrome-nak a Chrome beállításaiban való frissítéséhez</translation>
 <translation id="3634530185120165534">5. tálca</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
@@ -861,6 +865,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4506599922270137252">Kapcsolatfelvétel a rendszergazdával</translation>
 <translation id="450710068430902550">Megosztás a rendszergazdával</translation>
 <translation id="4508814173490746936">Hiba történt a Touch ID használata során</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja le a Tab, majd az Enter billentyűt az oldalnak a Google Fordítóval történő lefordításához</translation>
 <translation id="4510487217173779431">Chou4 (boríték)</translation>
 <translation id="4515275063822566619">A kártyák és a címek a Chrome-ból és az Ön Google-fiókjából (<ph name="ACCOUNT_EMAIL" />) származnak. A <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> kezelheti őket.</translation>
 <translation id="4517607026994743406">Comm-10 (boríték)</translation>
@@ -941,6 +946,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4879725228911483934">Megnyitni az ablakokat és elhelyezni őket a képernyőkön</translation>
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
+<translation id="4889420713887366944">Inkognitó ablak megnyitása, nyomja le a Tab, majd az Enter billentyűt új inkognitó ablak megnyitásához, amelyben privát módon böngészhet</translation>
 <translation id="4892518386797173871">Hátsó</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Mentés…</translation>
@@ -1102,6 +1108,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5523118979700054094">Az irányelv neve</translation>
 <translation id="55293785478302737">Éltűzés</translation>
 <translation id="553484882784876924">Prc6 (boríték)</translation>
+<translation id="5535133333442455806">Böngészési adatok törlése gomb, nyomja meg az Enter billentyűt a böngészési előzményeknek, a cookie-knak, a gyorsítótárnak és egyebeknek a Chrome beállításaiban való törléséhez</translation>
 <translation id="5536214594743852365">A(z) „<ph name="SECTION" />” szakasz megjelenítése</translation>
 <translation id="5539243836947087108">Tutaj</translation>
 <translation id="5540224163453853">A kért cikk nem található.</translation>
@@ -1601,6 +1608,7 @@ További részletek:
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja le a Tab, majd az Enter billentyűt a jelszavaknak a Chrome beállításaiban való megtekintéséhez és kezeléséhez</translation>
 <translation id="7615602087246926389">Már rendelkezik olyan adattal, amely Google-fiókja jelszavának egy másik verziójával van titkosítva. Kérjük, lentebb adja azt meg.</translation>
 <translation id="7616645509853975347">Rendszergazdája bekapcsolta a Chrome Enterprise Connectors integrációs eszközöket az Ön böngészőjében. Az eszközök hozzáférnek bizonyos adatokhoz.</translation>
 <translation id="7619838219691048931">Befejező lap</translation>
@@ -1858,6 +1866,8 @@ További részletek:
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728672262656704056">Ön Inkognitó módra váltott</translation>
 <translation id="8730621377337864115">Kész</translation>
+<translation id="8731544501227493793">Jelszavak kezelése gomb, nyomja meg az Enter billentyűt a jelszavaknak a Chrome beállításaiban való megtekintéséhez és kezeléséhez</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja le a Tab, majd az Enter billentyűt új inkognitó ablak megnyitásához, amelyben privát módon böngészhet</translation>
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8740359287975076522">A(z) <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-címe&lt;/abbr&gt; nem található. A probléma diagnosztizálása folyamatban van.</translation>
 <translation id="8742371904523228557">A(z) <ph name="ORIGIN" /> webhelyhez tartozó kód a következő: <ph name="ONE_TIME_CODE" /></translation>
@@ -1874,6 +1884,7 @@ További részletek:
 <translation id="8793655568873652685">A(z) <ph name="ENROLLMENT_DOMAIN" /> bekapcsolta a Chrome Enterprise Connectors integrációs eszközöket az Ön böngészőjében. Az eszközök hozzáférnek bizonyos adatokhoz.</translation>
 <translation id="8805819170075074995">„<ph name="LANGUAGE_ID" />” listabejegyzés: A bejegyzést figyelmen kívül hagyja a rendszer, mert szerepel a SpellcheckLanguage házirendben is.</translation>
 <translation id="8807160976559152894">Vágás minden oldal után</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, nyomja le a Tab, majd az Enter billentyűt a Chrome-nak a Chrome beállításaiban való frissítéséhez</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>
 <translation id="884264119367021077">Szállítási cím</translation>
@@ -1893,6 +1904,7 @@ További részletek:
 <translation id="890493561996401738">Javaslat eltávolítása gomb. Nyomja meg az Entert a következő eltávolításához: <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Ön Inkognitó módra váltott</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
+<translation id="8913778647360618320">Fizetési módok kezelése gomb, nyomja meg az Enter billentyűt a fizetési és hitelkártyaadatoknak a Chrome beállításaiban való kezeléséhez</translation>
 <translation id="8918231688545606538">Ez az oldal gyanús</translation>
 <translation id="892588693504540538">Lyuk jobbra fent</translation>
 <translation id="8931333241327730545">Menti ezt a kártyát a Google-fiókjába?</translation>

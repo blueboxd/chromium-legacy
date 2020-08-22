@@ -14,6 +14,7 @@
 <translation id="109942774857561566">Ձանձրանում եմ</translation>
 <translation id="1104084341931202936">Ցուցադրել հատուկ գործառույթների կարգավորումները</translation>
 <translation id="1104621072296271835">Միասին ձեր սարքերն ավելի լավ կաշխատեն</translation>
+<translation id="1119348796022671382">Թեմատիկ գույների ռեժիմում միջերեսը թեթև գունավորվում է ձեր պաստառի գույներով։</translation>
 <translation id="112308213915226829">Ինքնաթաքցնել դարակը</translation>
 <translation id="1153356358378277386">Զուգակցված սարքեր</translation>
 <translation id="1175572348579024023">Ոլորել</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">Միացված է</translation>
 <translation id="1419738280318246476">Ծանուցման հետ գործողություն կատարելու համար ապակողպեք սարքը</translation>
 <translation id="1420408895951708260">Միացնել/անջատել գիշերային ռեժիմը: <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Սքրինշոթը պահված է սեղմատախտակում</translation>
 <translation id="1426410128494586442">Այո</translation>
 <translation id="1455242230282523554">Ցուցադրել լեզվի կարգավորումները</translation>
 <translation id="1460620680449458626">Ձայնն անջատված է:</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">Switch Access-ն անջատելու համար անցեք Կարգավորումներ &gt; Հատուկ գործառույթներ։</translation>
 <translation id="1654477262762802994">Հնչեցնել հարցում</translation>
 <translation id="1665244008632896072">Միացնել/անջատել մուգ ռեժիմը։ <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Չեզոք գույների ռեժիմում ձեր պաստառների գույները չեն օգտագործվում։ Դրանց փոխարեն միջերեսը գունավորվում է չեզոք բաց կամ մուգ գույնի երանգներով։</translation>
 <translation id="1677472565718498478">Մնացել է <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Ժամաչափ՝ <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 հասցե՝ <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">Մոնո</translation>
 <translation id="3009178788565917040">Ելք</translation>
 <translation id="3033545621352269033">Միացված է</translation>
+<translation id="3038571455154067151">Մուտք գործելու համար մուտքագրեք Family Link-ի ծնողի մուտքի կոդը։</translation>
 <translation id="3051128274746680507">Ձեր վերահսկվող պրոֆիլը շուտով կհեռացվի։ Մանրամասներին ծանոթանալու համար մտեք հաշիվ:</translation>
 <translation id="3055162170959710888">Այս սարքն այսօր օգտագործվել է <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Կարգավիճակի տող, ժամը՝ <ph name="TIME" />,
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">Հաշվարկում…</translation>
 <translation id="3977512764614765090">Մարտկոցը լիցքավորվում է (լիցքը՝ <ph name="PERCENTAGE" />%)։</translation>
 <translation id="3995138139523574647">USB-C սարք (հետևի ձախակողմյան միացք)</translation>
+<translation id="40062176907008878">Ձեռագիր</translation>
 <translation id="4017989525502048489">Լազերային ցուցիչ</translation>
 <translation id="4021716437419160885">Ոլորել վար</translation>
 <translation id="4028481283645788203">Անվտանգության նկատառումներից ելնելով անհրաժեշտ է մուտքագրել գաղտնաբառը</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">Ծանուցումները կողպէկրանին տեսնելու համար ապակողպեք սարքը և փոխեք կարգավորումները:</translation>
 <translation id="4146833061457621061">Միացնել երաժշտություն</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> սարքը կառավարվում է <ph name="DOMAIN" /> կայքի կողմից</translation>
+<translation id="4157822100366708405">Մուգ թեմայի կարգավորումներ</translation>
 <translation id="4181841719683918333">Լեզուներ</translation>
 <translation id="4195877955194704651">Ավտոմատ սեղմում</translation>
 <translation id="4197790712631116042">Անջատված է</translation>
 <translation id="4212472694152630271">Անցնել PIN կոդով նույնականացմանը</translation>
 <translation id="4215497585250573029">VPN կարգավորումներ</translation>
 <translation id="4217571870635786043">Ձայնային ներածում</translation>
+<translation id="4229328187280698237">Անցնել պլանշետի ռեժիմ</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Ցուցադրել ծանուցումների կարգավորումները: Ծանուցումներն անջատած են:</translation>
 <translation id="4269883910223712419">Այս սարքի ադմինիստրատորը կարող է՝</translation>
@@ -353,7 +360,7 @@
 <translation id="4872237917498892622">Alt+Search կամ Shift</translation>
 <translation id="4890187583552566966">Google Օգնականն անջատված է ձեր ադմինիստրատորի կողմից։</translation>
 <translation id="4895488851634969361">Մարտկոցը լիցքավորված է:</translation>
-<translation id="490375751687810070">Ուղղահայաց</translation>
+<translation id="490375751687810070">Ուղղաձիգ</translation>
 <translation id="4905614135390995787">Բարձր կոնտրաստի ռեժիմի միացման/անջատման դյուրանցումը փոխվել է։ <ph name="OLD_SHORTCUT" /> դյուրանցման փոխարեն օգտագործեք <ph name="NEW_SHORTCUT" />։</translation>
 <translation id="490788395437447240">Մարտկոցի լիցքը՝ <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="4917385247580444890">Ուժեղ</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">Հաստատեք էկրանի կազմաձևումը</translation>
 <translation id="5083553833479578423">Օգտվեք Օգնականի այլ գործառույթներից</translation>
 <translation id="5114495209940374989">Սքրինշոթներ</translation>
+<translation id="5123162024343028706">Ամրացնել վերևում</translation>
 <translation id="5136175204352732067">Այլ ստեղնաշար է միացվել</translation>
 <translation id="5168181903108465623">Առկա են հեռարձակման սարքեր</translation>
 <translation id="5170568018924773124">Ցույց տալ պանակում</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">Անջատված է</translation>
 <translation id="5302048478445481009">Լեզու</translation>
 <translation id="5313326810920013265">Bluetooth-ի կարգավորումներ</translation>
+<translation id="5314219114274263156">Էկրանը տեսագրվել է</translation>
 <translation id="5331975486040154427">USB-C սարք (հետևի ձախակողմյան միացք)</translation>
 <translation id="5379115545237091094">Չափազանց շատ փորձեր</translation>
 <translation id="5397578532367286026">Այս օգտատիրոջ օգտագործման տվյալները և պատմությունը կարող են վերահսկվել chrome.com-ի կառավարիչի (<ph name="MANAGER_EMAIL" />) կողմից:</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Դադարեցնել <ph name="ROUTE_TITLE" /> ներդիրի հեռարձակումը «<ph name="RECEIVER_NAME" />» սարքին</translation>
 <translation id="5860033963881614850">Անջատ.</translation>
+<translation id="5876666360658629066">Մուտքագրեք ծնողի մուտքի կոդը</translation>
 <translation id="5887866489674258948">Մուգ ռեժիմ</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">Թարմացման ընթացքում էկրանը սովորականից ավելի երկար կմնա անջատված (մինչև մեկ րոպե)։ Մի՛ սեղմեք սնուցման կոճակը, մինչև որ թարմացումը չավարտվի։</translation>
 <translation id="6527303717912515753">Կիսվել</translation>
 <translation id="6528179044667508675">Չանհանգստացնել</translation>
+<translation id="65320610082834431">Զմայլիկներ</translation>
 <translation id="6537270692134705506">Էկրանի լուսանկարում</translation>
 <translation id="6537924328260219877">Ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Հեռարձակում «<ph name="RECEIVER_NAME" />» սարքին</translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">Օգնականը կցուցադրի տարրի մասին տեղեկություններ, օրինակ՝ սահմանումը կամ փոխարկման միավորը, երբ երկար սեղմեք դրա վրա կամ ուղղակի սեղմեք մկնիկի աջ կոճակով։</translation>
 <translation id="7569509451529460200">Բրայլյան գրատիպն ու ChromeVox-ը միացված են</translation>
 <translation id="7579778809502851308">Էկրանի լուսանկարում</translation>
+<translation id="7590883480672980941">Ներածման կարգավորումներ</translation>
 <translation id="7593891976182323525">Search կամ Shift</translation>
 <translation id="7600875258240007829">Տեսնել բոլոր ծանուցումները</translation>
+<translation id="7618774594543487847">Չեզոք</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Բացել «<ph name="NETWORK_NAME" />» ցանցի կարգավորումները, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (սեփականատեր)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />, կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="8639760480004882931">Մնացել է <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">Ժամաչափ՝ <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Օգտատեր ավելացնելու համար մուտքագրեք Family Link-ի ծնողի մուտքի կոդը</translation>
 <translation id="8649101189709089199">Ընտրեք և լսեք</translation>
 <translation id="8652175077544655965">Փակել կարգավորումները</translation>
 <translation id="8653151467777939995">Ցուցադրել ծանուցումների կարգավորումները: Ծանուցումները միացված են:</translation>
 <translation id="8660331759611631213">71 թվից քառակուսի արմատ</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Ցուցադրել ցանցերի ցանկը: <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Գույների ռեժիմ</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Կապակցվել է թույլ լիցքով լիցքավորիչ</translation>
 <translation id="8683506306463609433">Արդյունավետության հետագծումն ակտիվ է</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">Էկրանի ընդարձակում</translation>
 <translation id="890616557918890486">Փոխել աղբյուրը</translation>
 <translation id="8909138438987180327">Մարտկոցի լիցքը՝ <ph name="PERCENTAGE" />%</translation>
+<translation id="8913384980486163186">Թեմատիկ (կանխադրված)</translation>
+<translation id="8918251165865262378">Անցնել նոթբուքի ռեժիմ</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google օգնականն այս լեզվով չի խոսում:</translation>
 <translation id="8936501819958976551">անջատվեց</translation>

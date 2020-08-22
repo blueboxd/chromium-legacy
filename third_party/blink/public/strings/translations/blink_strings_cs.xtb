@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">poděkování</translation>
 <translation id="1342835525016946179">čl</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">možnost výběru více možností, vybráno <ph name="SELECTED" /> z <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">oblast</translation>
 <translation id="1591562245178063882">Tento měsíc</translation>
 <translation id="1637811476055996098">Zvolit soubory</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Den</translation>
 <translation id="2507943997699731163">Vyplňte prosím toto pole.</translation>
 <translation id="2508569020611168319">seznam karet</translation>
+<translation id="2530182415807757784">možnost výběru více možností, nic nevybráno.</translation>
 <translation id="2561842179657104141">zobrazit více ovládacích prvků médií</translation>
 <translation id="2572483411312390101">přehrát</translation>
 <translation id="2613802280814924224">Zadejte platnou hodnotu. Nejbližší platná hodnota je <ph name="VALID_VALUE" />.</translation>

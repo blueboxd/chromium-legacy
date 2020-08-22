@@ -14,6 +14,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="109942774857561566">Je m'ennuie</translation>
 <translation id="1104084341931202936">Afficher les paramètres d'accessibilité</translation>
 <translation id="1104621072296271835">Vos appareils fonctionnent encore mieux ensemble</translation>
+<translation id="1119348796022671382">Le mode couleur de thème utilise des couleurs extraites de votre fond d'écran pour colorer légèrement l'interface.</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
 <translation id="1175572348579024023">Faire défiler</translation>
@@ -48,6 +49,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1391102559483454063">Activé</translation>
 <translation id="1419738280318246476">Déverrouillez l'appareil pour effectuer l'action de la notification</translation>
 <translation id="1420408895951708260">Activer ou désactiver le mode Éclairage nocturne. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Capture d'écran effectuée et enregistrée dans le presse-papiers</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1455242230282523554">Afficher les paramètres de langue</translation>
 <translation id="1460620680449458626">Le volume est désactivé.</translation>
@@ -65,6 +67,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1632985212731562677">Switch Access peut être désactivé sous Paramètres &gt; Accessibilité.</translation>
 <translation id="1654477262762802994">Démarrer une requête vocale</translation>
 <translation id="1665244008632896072">Basculer le mode sombre. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Le mode couleur neutre n'utilise pas de couleurs extraites d'un fond d'écran, il les remplace par un ensemble de couleurs claires ou sombres aux teintes neutres.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> d'autonomie restante</translation>
 <translation id="1698080062160024910">Minuterie de <ph name="TOTAL_TIME" /> : <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3033545621352269033">Activé</translation>
+<translation id="3038571455154067151">Pour vous connecter, entrez votre code d'accès parental Family Link</translation>
 <translation id="3051128274746680507">Votre profil d'utilisateur supervisé sera bientôt supprimé. Connectez-vous pour en savoir davantage.</translation>
 <translation id="3055162170959710888">Tu as utilisé cet appareil pendant <ph name="USED_TIME" /> aujourd'hui</translation>
 <translation id="3076778413190775903">Barre d'état, heure <ph name="TIME" />,
@@ -277,6 +281,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="397105322502079400">Calcul en cours...</translation>
 <translation id="3977512764614765090">Pile chargée à <ph name="PERCENTAGE" /> % et en cours de recharge.</translation>
 <translation id="3995138139523574647">Appareil USB-C (port arrière-droit)</translation>
+<translation id="40062176907008878">Écriture manuscrite</translation>
 <translation id="4017989525502048489">Pointeur laser</translation>
 <translation id="4021716437419160885">Faire défiler vers le bas</translation>
 <translation id="4028481283645788203">Le mot de passe est exigé pour plus de sécurité</translation>
@@ -288,12 +293,14 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="4129129681837227511">Pour afficher les notifications sur l'écran de verrouillage, déverrouillez votre appareil afin de modifier ce paramètre</translation>
 <translation id="4146833061457621061">Faire jouer de la musique</translation>
 <translation id="4149156641122542261">L'appareil <ph name="DEVICE_TYPE" /> est géré par <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Paramètres du thème sombre</translation>
 <translation id="4181841719683918333">Langues</translation>
 <translation id="4195877955194704651">Bouton de clics automatiques</translation>
 <translation id="4197790712631116042">Désactivé</translation>
 <translation id="4212472694152630271">Passer au NIP</translation>
 <translation id="4215497585250573029">Paramètres de RPV</translation>
 <translation id="4217571870635786043">Dictée</translation>
+<translation id="4229328187280698237">Passer en mode tablette</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Afficher les paramètres de notification. Les notifications sont désactivées</translation>
 <translation id="4269883910223712419">L'administrateur de cet appareil peut :</translation>
@@ -368,6 +375,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5035389544768382859">Confirmer la configuration de l'écran</translation>
 <translation id="5083553833479578423">Déverrouillez davantage de fonctionnalités de l'Assistant Google.</translation>
 <translation id="5114495209940374989">Captures d'écran</translation>
+<translation id="5123162024343028706">Flotter par-dessus</translation>
 <translation id="5136175204352732067">Autre clavier branché</translation>
 <translation id="5168181903108465623">Appareils de diffusion disponibles</translation>
 <translation id="5170568018924773124">Afficher dans le dossier</translation>
@@ -381,6 +389,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5297704307811127955">Désactivé</translation>
 <translation id="5302048478445481009">Langue</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
+<translation id="5314219114274263156">Enregistrement de l'écran effectué</translation>
 <translation id="5331975486040154427">Appareil USB-C (port arrière-gauche)</translation>
 <translation id="5379115545237091094">Trop de tentatives</translation>
 <translation id="5397578532367286026">Le gestionnaire (<ph name="MANAGER_EMAIL" />) peut examiner les actions effectuées par cet utilisateur, ainsi que son historique, sur chrome.com.</translation>
@@ -421,6 +430,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Arrêter <ph name="ROUTE_TITLE" /> sur <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Désactivé</translation>
+<translation id="5876666360658629066">Entrez le code d'accès parental</translation>
 <translation id="5887866489674258948">Mode sombre</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
@@ -481,6 +491,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="652139407789908527">Votre écran restera éteint plus longtemps que d'habitude (jusqu'à une minute) le temps de la mise à jour. Veuillez ne pas appuyer sur l'interrupteur tant que la mise à jour n'est pas terminée.</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6528179044667508675">Ne pas déranger</translation>
+<translation id="65320610082834431">Émojis</translation>
 <translation id="6537270692134705506">Effectuer une saisie d'écran</translation>
 <translation id="6537924328260219877">Force du signal : <ph name="SIGNAL_STRENGTH" />, pile du téléphone : <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Diffusion sur <ph name="RECEIVER_NAME" /> en cours…</translation>
@@ -567,8 +578,10 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7568637526529101738">Si vous effectuez un clic droit ou un appui prolongé, l'Assistant vous présente de l'information, comme la définition ou la conversion d'unités, relative à votre sélection.</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7579778809502851308">Capture d'écran</translation>
+<translation id="7590883480672980941">Paramètres d'entrée</translation>
 <translation id="7593891976182323525">Recherche ou Majuscule</translation>
 <translation id="7600875258240007829">Afficher toutes les notifications</translation>
+<translation id="7618774594543487847">Neutre</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Ouvrir les paramètres pour <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
@@ -665,12 +678,14 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> géré par votre administrateur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant</translation>
 <translation id="8646417893960517480">Minuterie de <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Pour ajouter une personne, entrez votre code d'accès parental Family Link</translation>
 <translation id="8649101189709089199">Sélectionner pour énoncer</translation>
 <translation id="8652175077544655965">Fermer les paramètres</translation>
 <translation id="8653151467777939995">Afficher les paramètres de notification. Les notifications sont activées</translation>
 <translation id="8660331759611631213">Racine carrée de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Afficher la liste de réseaux. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Mode couleur</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="8683506306463609433">Suivi des performances activé</translation>
@@ -694,6 +709,8 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8878886163241303700">Extension de l'écran</translation>
 <translation id="890616557918890486">Changer de source</translation>
 <translation id="8909138438987180327">Pile chargée à <ph name="PERCENTAGE" /> %.</translation>
+<translation id="8913384980486163186">Thème (par défaut)</translation>
+<translation id="8918251165865262378">Passer en mode ordinateur portable</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8936501819958976551">désactivée</translation>

@@ -62,6 +62,29 @@
 
 namespace blink {
 
+namespace {
+
+SkRect GetRectForTextLine(FloatPoint pt, float width, float stroke_thickness) {
+  int thickness = std::max(static_cast<int>(stroke_thickness), 1);
+  SkRect r;
+  r.fLeft = WebCoreFloatToSkScalar(pt.X());
+  // Avoid anti-aliasing lines. Currently, these are always horizontal.
+  // Round to nearest pixel to match text and other content.
+  r.fTop = WebCoreFloatToSkScalar(floorf(pt.Y() + 0.5f));
+  r.fRight = r.fLeft + WebCoreFloatToSkScalar(width);
+  r.fBottom = r.fTop + SkIntToScalar(thickness);
+  return r;
+}
+
+std::pair<IntPoint, IntPoint> GetPointsForTextLine(FloatPoint pt,
+                                                   float width,
+                                                   float stroke_thickness) {
+  int y = floorf(pt.Y() + std::max<float>(stroke_thickness / 2.0f, 0.5f));
+  return {IntPoint(pt.X(), y), IntPoint(pt.X() + width, y)};
+}
+
+}  // namespace
+
 // Helper class that copies |flags| only when dark mode is enabled.
 //
 // TODO(gilmanmh): Investigate removing const from |flags| in the calling
@@ -687,38 +710,21 @@ void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
   if (width <= 0)
     return;
 
-  PaintFlags flags;
-  switch (GetStrokeStyle()) {
-    case kNoStroke:
-    case kSolidStroke:
-    case kDoubleStroke: {
-      int thickness = std::max(static_cast<int>(StrokeThickness()), 1);
-      SkRect r;
-      r.fLeft = WebCoreFloatToSkScalar(pt.X());
-      // Avoid anti-aliasing lines. Currently, these are always horizontal.
-      // Round to nearest pixel to match text and other content.
-      r.fTop = WebCoreFloatToSkScalar(floorf(pt.Y() + 0.5f));
-      r.fRight = r.fLeft + WebCoreFloatToSkScalar(width);
-      r.fBottom = r.fTop + SkIntToScalar(thickness);
-      flags = ImmutableState()->FillFlags();
-      // Text lines are drawn using the stroke color.
-      flags.setColor(StrokeColor().Rgb());
-      DrawRect(r, flags, DarkModeFilter::ElementRole::kText);
-      return;
-    }
-    case kDottedStroke:
-    case kDashedStroke: {
-      int y = floorf(pt.Y() + std::max<float>(StrokeThickness() / 2.0f, 0.5f));
-      DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y),
-               DarkModeFilter::ElementRole::kText, true);
-      return;
-    }
-    case kWavyStroke:
-    default:
-      break;
+  auto stroke_style = GetStrokeStyle();
+  DCHECK_NE(stroke_style, kWavyStroke);
+  if (ShouldUseStrokeForTextLine(stroke_style)) {
+    IntPoint start;
+    IntPoint end;
+    std::tie(start, end) = GetPointsForTextLine(pt, width, StrokeThickness());
+    DrawLine(start, end, DarkModeFilter::ElementRole::kText, true);
+  } else {
+    SkRect r = GetRectForTextLine(pt, width, StrokeThickness());
+    PaintFlags flags;
+    flags = ImmutableState()->FillFlags();
+    // Text lines are drawn using the stroke color.
+    flags.setColor(StrokeColor().Rgb());
+    DrawRect(r, flags, DarkModeFilter::ElementRole::kText);
   }
-
-  NOTREACHED();
 }
 
 // Draws a filled rectangle with a stroked border.
@@ -1315,6 +1321,39 @@ void GraphicsContext::AdjustLineToPixelBoundaries(FloatPoint& p1,
       p1.SetY(p1.Y() + 0.5f);
       p2.SetY(p2.Y() + 0.5f);
     }
+  }
+}
+
+Path GraphicsContext::GetPathForTextLine(const FloatPoint& pt,
+                                         float width,
+                                         float stroke_thickness,
+                                         StrokeStyle stroke_style) {
+  Path path;
+  DCHECK_NE(stroke_style, kWavyStroke);
+  if (ShouldUseStrokeForTextLine(stroke_style)) {
+    IntPoint start;
+    IntPoint end;
+    std::tie(start, end) = GetPointsForTextLine(pt, width, stroke_thickness);
+    path.MoveTo(FloatPoint(start));
+    path.AddLineTo(FloatPoint(end));
+  } else {
+    SkRect r = GetRectForTextLine(pt, width, stroke_thickness);
+    path.AddRect(r);
+  }
+  return path;
+}
+
+bool GraphicsContext::ShouldUseStrokeForTextLine(StrokeStyle stroke_style) {
+  switch (stroke_style) {
+    case kNoStroke:
+    case kSolidStroke:
+    case kDoubleStroke:
+      return false;
+    case kDottedStroke:
+    case kDashedStroke:
+    case kWavyStroke:
+    default:
+      return true;
   }
 }
 

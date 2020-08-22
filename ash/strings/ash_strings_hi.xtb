@@ -14,6 +14,7 @@
 <translation id="109942774857561566">मुझे बोरियत हो रही है</translation>
 <translation id="1104084341931202936">सुलभता सेटिंग दिखाएं</translation>
 <translation id="1104621072296271835">साथ मिलकर आपके डिवाइस और बेहतर काम करते हैं</translation>
+<translation id="1119348796022671382">थीम कलर मोड, इंटरफ़ेस को हल्के रंग से रंगने के लिए, आपके वॉलपेपर से निकाले गए रंगों का इस्तेमाल करता है.</translation>
 <translation id="112308213915226829">अलमारी कोअपने-आपछिपाएं</translation>
 <translation id="1153356358378277386">युग्‍मित डिवाइस</translation>
 <translation id="1175572348579024023">स्क्रोल करें</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">चालू है</translation>
 <translation id="1419738280318246476">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को अनलॉक करें</translation>
 <translation id="1420408895951708260">नाइट लाइट को टॉगल करें. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">स्क्रीनशॉट लिया गया और क्लिपबोर्ड पर सेव किया गया</translation>
 <translation id="1426410128494586442">हां</translation>
 <translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1460620680449458626">आवाज़ को म्यूट किया गया है.</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">ऐक्सेस करने का तरीका बदलने की सुविधा को सेटिंग &gt; सुलभता में जाकर, बंद किया जा सकता है.</translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1665244008632896072">गहरे रंग वाले मोड को टॉगल करें. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">न्यूट्रल कलर मोड, वॉलपेपर के एक्सट्रैक्टेड रंगों का इस्तेमाल नहीं करता है. इनकी जगह न्यूट्रल टोन के लाइट या डार्क ह्यूज़ के सेट का इस्तेमाल किया जा रहा है.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> बाकी</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> टाइमर · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3033545621352269033">चालू है</translation>
+<translation id="3038571455154067151">साइन इन करने के लिए, अपने Family Link का अभिभावक ऐक्सेस कोड डालें</translation>
 <translation id="3051128274746680507">निगरानी में रखी गई आपकी उपयोगकर्ता प्रोफ़ाइल जल्द ही हटा दी जाएगी. ज़्यादा जानने के लिए साइन इन करें.</translation>
 <translation id="3055162170959710888">आपने आज इस डिवाइस का <ph name="USED_TIME" /> तक इस्तेमाल कर लिया है</translation>
 <translation id="3076778413190775903">स्थिति ट्रे, समय <ph name="TIME" />,
@@ -278,6 +282,7 @@
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3977512764614765090">बैटरी <ph name="PERCENTAGE" />% बाकी है और चार्ज हो रही है.</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
+<translation id="40062176907008878">हैंडराइटिंग</translation>
 <translation id="4017989525502048489">लेज़र पॉइंटर</translation>
 <translation id="4021716437419160885">नीचे स्क्रोल करें</translation>
 <translation id="4028481283645788203">ज़्यादा सुरक्षा के लिए पासवर्ड की ज़रूरत है</translation>
@@ -289,12 +294,14 @@
 <translation id="4129129681837227511">अपनी लॉक स्क्रीन पर सूचनाएं देखने की सेटिंग बदलने के लिए स्क्रीन अनलॉक करें</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> को <ph name="DOMAIN" /> प्रबंधित करता है</translation>
+<translation id="4157822100366708405">गहरे रंग वाली थीम की सेटिंग</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4195877955194704651">अपने-आप क्लिक बटन</translation>
 <translation id="4197790712631116042">बंद है</translation>
 <translation id="4212472694152630271">पिन पर स्विच करें</translation>
 <translation id="4215497585250573029">वीपीएन की सेटिंग</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
+<translation id="4229328187280698237">टैबलेट मोड पर स्विच करें</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
@@ -369,6 +376,7 @@
 <translation id="5035389544768382859">डिसप्ले के कॉन्फ़िगरेशन की पुष्टि करें</translation>
 <translation id="5083553833479578423">Assistant की और भी सुविधाओं के बारे में जानें.</translation>
 <translation id="5114495209940374989">स्क्रीनशॉट</translation>
+<translation id="5123162024343028706">ऊपर की तरफ़ दिखता रहे</translation>
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
 <translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
@@ -382,6 +390,7 @@
 <translation id="5297704307811127955">बंद है</translation>
 <translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
+<translation id="5314219114274263156">स्क्रीन की रिकॉर्डिंग की गई</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
 <translation id="5379115545237091094">कई बार कोशिश की जा चुकी है</translation>
 <translation id="5397578532367286026">chrome.com पर इस उपयोगकर्ता के उपयोग और इतिहास से जुड़ी जानकारी की प्रबंधक (<ph name="MANAGER_EMAIL" />) समीक्षा कर सकता है.</translation>
@@ -422,6 +431,7 @@
 <translation id="5820394555380036790">क्रोमियम OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> पर <ph name="ROUTE_TITLE" /> बंद करें</translation>
 <translation id="5860033963881614850">बंद</translation>
+<translation id="5876666360658629066">अभिभावक वाला कोड डालें</translation>
 <translation id="5887866489674258948">गहरे रंग वाला मोड</translation>
 <translation id="5895138241574237353">फिर से प्रारंभ करें</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -482,6 +492,7 @@
 <translation id="652139407789908527">इस अपडेट के दौरान आपकी स्क्रीन सामान्य से ज़्यादा समय (एक मिनट तक) के लिए काली दिखेगी. कृपया अपडेट होते समय पावर बटन न दबाएं.</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
 <translation id="6528179044667508675">परेशान न करें</translation>
+<translation id="65320610082834431">इमोजी</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6537924328260219877">सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, फ़ोन की बैटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> पर कास्ट किया जा रहा है</translation>
@@ -568,8 +579,10 @@
 <translation id="7568637526529101738">दायां क्लिक करने या दबाकर रखने पर, Assistant आपको स्क्रीन पर चुने गए कॉन्टेंट से जुड़ी जानकारी दिखाती है. जैसे कि परिभाषा या एक यूनिट से दूसरी यूनिट में बदलकर दिखाना.</translation>
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
 <translation id="7579778809502851308">स्क्रीन कैप्चर</translation>
+<translation id="7590883480672980941">इनपुट सेटिंग</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7600875258240007829">सभी सूचनाएं देखें</translation>
+<translation id="7618774594543487847">न्यूट्रल</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° फ़ैरनहाइट</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> के लिए सेटिंग खोलें</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालिक)</translation>
@@ -666,12 +679,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, आपका एडमिन प्रबंधित करता है</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> बाकी</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> टाइमर</translation>
+<translation id="8647931990447795414">किसी व्यक्ति को जोड़ने के लिए, अपना Family Link का अभिभावक ऐक्सेस कोड डालें</translation>
 <translation id="8649101189709089199">चुनें और सुनें</translation>
 <translation id="8652175077544655965">सेटिंग बंद करें</translation>
 <translation id="8653151467777939995">सूचना सेटिंग दिखाएं. सूचनाएं चालू हैं</translation>
 <translation id="8660331759611631213">71 का वर्गमूल बताओ</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">नेटवर्क सूची दिखाएं. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">कलर मोड</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="8683506306463609433">'परफ़ॉर्मेंस ट्रेसिंग' चालू है</translation>
@@ -695,6 +710,8 @@
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
 <translation id="890616557918890486">स्रोत बदलें</translation>
 <translation id="8909138438987180327"><ph name="PERCENTAGE" /> बैटरी बची है.</translation>
+<translation id="8913384980486163186">थीम (डिफ़ॉल्ट)</translation>
+<translation id="8918251165865262378">लैपटॉप मोड पर स्विच करें</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>
 <translation id="8936501819958976551">बंद की गई</translation>

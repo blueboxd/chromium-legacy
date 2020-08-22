@@ -2653,6 +2653,101 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
+       WillChangeTransformShouldResetSubpixelPaintOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.9px;
+        top: 0.9px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        will-change: transform;
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+        left: 0.6px;
+        top: 0.6px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* b = GetLayoutObjectByElementId("b");
+  const auto* b_properties = b->FirstFragment().PaintProperties();
+  EXPECT_TRUE(
+      b_properties->Transform()->RequiresCompositingForWillChangeTransform());
+  // The paint offset transform should not be snapped.
+  EXPECT_EQ(FloatSize(1, 1),
+            ToUnaliased(*b_properties->Transform()->Parent()).Translation2D());
+  EXPECT_EQ(PhysicalOffset(), b->FirstFragment().PaintOffset());
+  // c's painting should start at c_offset.
+  auto* c = GetLayoutObjectByElementId("c");
+  LayoutUnit c_offset = LayoutUnit(0.6);
+  EXPECT_EQ(PhysicalOffset(c_offset, c_offset),
+            c->FirstFragment().PaintOffset());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       TransformAnimationShouldResetSubpixelPaintOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      div { position: relative; }
+      #a {
+        width: 70px;
+        height: 70px;
+        left: 0.9px;
+        top: 0.9px;
+      }
+      #b {
+        width: 40px;
+        height: 40px;
+        animation: spin 2s infinite;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg) }
+        to { transform: rotate(360deg) }
+      }
+      #c {
+        width: 40px;
+        height: 40px;
+        left: 0.6px;
+        top: 0.6px;
+      }
+    </style>
+    <div id='a'>
+      <div id='b'>
+        <div id='c'></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* b = GetLayoutObjectByElementId("b");
+  const auto* b_properties = b->FirstFragment().PaintProperties();
+  EXPECT_TRUE(b_properties->Transform()->HasActiveTransformAnimation());
+  // The paint offset transform should not be snapped.
+  EXPECT_EQ(FloatSize(1, 1),
+            ToUnaliased(*b_properties->Transform()->Parent()).Translation2D());
+  EXPECT_EQ(PhysicalOffset(), b->FirstFragment().PaintOffset());
+  // c's painting should start at c_offset.
+  auto* c = GetLayoutObjectByElementId("c");
+  LayoutUnit c_offset = LayoutUnit(0.6);
+  EXPECT_EQ(PhysicalOffset(c_offset, c_offset),
+            c->FirstFragment().PaintOffset());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetWithPixelSnappingThroughMultipleTransforms) {
   SetBodyInnerHTML(R"HTML(
     <style>

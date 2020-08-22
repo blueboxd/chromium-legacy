@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Қайта ретке келтіру әрекетін болдырмау</translation>
 <translation id="1125573121925420732">Веб-сайттар қауіпсіздік шарттарын өзгертіп жатқанда, ескертулер жиі шығуы мүмкін. Бұл көпке созылмайды.</translation>
 <translation id="112840717907525620">Саясат кэші жарамды</translation>
+<translation id="1130564665089811311">"Бетті аудару" түймесі. Осы бетті Google Translate арқылы аудару үшін Enter пернесін басыңыз.</translation>
 <translation id="1131264053432022307">Көшірілген сурет</translation>
 <translation id="1150979032973867961">Бұл сервер оның <ph name="DOMAIN" /> екендігін дәлелдей алмайды; оның қауіпсіздік сертификатын компьютеріңіздің операциялық жүйесі растамаған. Бұған конфигурация ақаулығы немесе қаскүнемнің қосылымыңызды тоқтатуы себеп болуы мүмкін.</translation>
 <translation id="1151972924205500581">Құпия сөз қажет</translation>
@@ -408,6 +409,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> серверінің IP мекенжайын табу мүмкін емес.</translation>
 <translation id="2639739919103226564">Күйі:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome параметрлерінде браузерді қолдану тарихын, cookie файлдарын, кэшті және т.б. өшіру үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="2650446666397867134">Файлға кіруге тыйым салынған</translation>
 <translation id="2653659639078652383">Жіберу</translation>
 <translation id="2660779039299703961">Оқиға</translation>
@@ -430,6 +432,7 @@
 <translation id="2705137772291741111">Бұл тораптың сақталған (кэштелген) көшірмесі оқылмайтын күйде болды.</translation>
 <translation id="2709516037105925701">Автотолтыру</translation>
 <translation id="2713444072780614174">Ақ</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome параметрлерінде төлемдеріңіз және несиелік картаңыз туралы ақпаратты басқару үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="2721148159707890343">Сұрау сәтті жіберілді</translation>
 <translation id="272451190272506600">Төлеу үшін датчикті түртіңіз.</translation>
 <translation id="2728127805433021124">Сервер сертификаты әлсіз қолтаңба алгоритмін пайдалану арқылы қол қойылған.</translation>
@@ -641,6 +644,7 @@
 <translation id="3630155396527302611">Ол желіге кіруге рұқсат алған бағдарламалар тізімінде тұрса, оны
       тізімнен өшіріп, қайта қосып көріңіз.</translation>
 <translation id="3631244953324577188">Биометрика</translation>
+<translation id="3633738897356909127">"Chrome-ды жаңарту" түймесі, Chrome параметрлерінен Chrome-ды жаңарту үшін Enter пернесін басыңыз.</translation>
 <translation id="3634530185120165534">5-науа</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Тексеру сәтті аяқталды</translation>
@@ -864,6 +868,7 @@
 <translation id="4506599922270137252">Жүйе әкімшісіне хабарласу</translation>
 <translation id="450710068430902550">Әкімшімен бөлісу</translation>
 <translation id="4508814173490746936">Сенсорлық идентификаторды пайдалану мүмкін болмады</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Бұл бетті Google Translate арқылы аудару үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Chrome браузеріндегі және Google есептік жазбасындағы (<ph name="ACCOUNT_EMAIL" />) карталар мен мекенжайлар. Оларды <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> ішінде басқаруыңызға болады.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -944,6 +949,7 @@
 <translation id="4879725228911483934">Терезелерді ашу және экрандарда орналастыру</translation>
 <translation id="4880827082731008257">Тарихтан іздеу</translation>
 <translation id="4881695831933465202">Ашу</translation>
+<translation id="4889420713887366944">"Икогнито терезесін ашу" түймесі. Жаңа инкогнито терезесін ашу үшін Enter пернесін басыңыз.</translation>
 <translation id="4892518386797173871">Артқы</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Сақтау...</translation>
@@ -1105,6 +1111,7 @@
 <translation id="5523118979700054094">Саясат атауы</translation>
 <translation id="55293785478302737">Жиекті тігу</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">"Браузерді пайдалану деректерін өшіру" түймесі. Chrome параметрлерінде браузерді қолдану тарихын, cookie файлдарын, кэшті және т.б. өшіру үшін Enter пернесін басыңыз.</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" бөлімін көрсету</translation>
 <translation id="5539243836947087108">Тақта</translation>
 <translation id="5540224163453853">Сұралған мақаланы табу мүмкін болмады.</translation>
@@ -1604,6 +1611,7 @@
 <translation id="7600965453749440009">Ешқашан <ph name="LANGUAGE" /> тіліне аудармау</translation>
 <translation id="7610193165460212391">Мән <ph name="VALUE" /> ауқымынан тыс.</translation>
 <translation id="7613889955535752492">Мерзімі бітеді: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome параметрлерінде құпия сөздеріңізді көру және басқару үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="7615602087246926389">Google есептік жазба құпия сөзінің басқа нұсқасын пайдалану арқылы шифрланған дерек сізде бұрыннан бар. Оны осы жерге енгізіңіз.</translation>
 <translation id="7616645509853975347">Әкімші браузердегі Chrome Enterprise Connectors қызметін қосты. Бұл коннекторлар кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="7619838219691048931">Соңғы парақ</translation>
@@ -1860,6 +1868,8 @@
 <translation id="8725066075913043281">Әрекетті қайталау</translation>
 <translation id="8728672262656704056">Инкогнито режиміне өттіңіз</translation>
 <translation id="8730621377337864115">Дайын</translation>
+<translation id="8731544501227493793">"Құпия сөздерді басқару" түймесі. Chrome параметрлерінде құпия сөздеріңізді көру және басқару үшін Enter пернесін басыңыз.</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Жаңа инкогнито терезесін ашу үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="8738058698779197622">Қауіпсіз байланыс орнату үшін сағатыңыз дұрыс орнатылуы қажет. Себебі веб-сайттар өзін анықтау үшін пайдаланатын сертификаттар көрсетілген уақыт мерзімінде ғана жарамды. Құрылғыңыздың сағаты дұрыс емес болғандықтан, Chromium бұл сертификаттарды растай алмайды.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS мекенжайы&lt;/abbr&gt; табылмады. Мәселе анықталуда.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> – <ph name="ORIGIN" /> сайтына арналған код</translation>
@@ -1876,6 +1886,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> сіздің браузеріңізде Chrome Enterprise Connectors функциясын қосып қойды. Бұл коннекторлар кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="8805819170075074995">"<ph name="LANGUAGE_ID" />" тізім жазбасы: жазба еленбейді, себебі ол SpellcheckLanguage саясатына енгізілген.</translation>
 <translation id="8807160976559152894">Әр беттен кейін кесу</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome параметрлерінде Chrome-ді жаңарту үшін Tab, одан кейін Enter пернесін басыңыз.</translation>
 <translation id="8820817407110198400">Бетбелгілер</translation>
 <translation id="883848425547221593">Басқа бетбелгілер</translation>
 <translation id="884264119367021077">Жөнелту мекенжайы</translation>
@@ -1895,6 +1906,7 @@
 <translation id="890493561996401738">"Ұсынысты өшіру" түймесі: өшіру үшін Enter пернесін басыңыз, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Инкогнито режиміне өттіңіз</translation>
 <translation id="8912362522468806198">Google есептік жазбасы</translation>
+<translation id="8913778647360618320">"Төлеу әдістерін басқару" түймесі. Chrome параметрлерінде төлемдеріңіз және несиелік картаңыз туралы ақпаратты басқару үшін Enter пернесін басыңыз.</translation>
 <translation id="8918231688545606538">Бұл бет күдікті.</translation>
 <translation id="892588693504540538">Жоғарғы оң жағын тесу</translation>
 <translation id="8931333241327730545">Бұл картаны Google есептік жазбасына сақтағыңыз келе ме?</translation>

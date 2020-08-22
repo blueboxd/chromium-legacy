@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
 <translation id="1125573121925420732">Пока на сайтах обновляются сертификаты безопасности, предупреждения временно могут появляться чаще обычного.</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
+<translation id="1130564665089811311">Кнопка перевода страницы. Чтобы с помощью Google Переводчика ознакомиться с ее содержанием, нажмите Ввод.</translation>
 <translation id="1131264053432022307">Скопированное изображение</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1151972924205500581">Необходимо ввести пароль</translation>
@@ -404,6 +405,7 @@
 <translation id="2634124572758952069">Не удалось найти IP-адрес сервера <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Состояние:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы открыть настройки Chrome и удалить историю браузера, файлы cookie, кеш и прочее.</translation>
 <translation id="2650446666397867134">Доступ к файлу запрещен</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2660779039299703961">Событие</translation>
@@ -426,6 +428,7 @@
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2713444072780614174">Белый</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы изменить данные о способах оплаты и банковских картах в настройках Chrome.</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="272451190272506600">Для оплаты коснитесь сканера отпечатков пальцев</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
@@ -635,6 +638,7 @@
 <translation id="3630155396527302611">Если программа входит в список тех, которым разрешен доступ к сети,
       удалите ее из списка и добавьте туда снова.</translation>
 <translation id="3631244953324577188">Биометрия</translation>
+<translation id="3633738897356909127">Кнопка "Обновить Chrome". Нажмите Ввод, чтобы обновить Chrome.</translation>
 <translation id="3634530185120165534">Лоток 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Проверка выполнена успешно</translation>
@@ -853,6 +857,7 @@
 <translation id="4506599922270137252">Обратитесь за помощью к системному администратору.</translation>
 <translation id="450710068430902550">Доступ администратора</translation>
 <translation id="4508814173490746936">Не удалось использовать Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы с помощью Google Переводчика ознакомиться с содержанием страницы.</translation>
 <translation id="4510487217173779431">Chou4 (конверт)</translation>
 <translation id="4515275063822566619">Это карты и адреса, указанные в Chrome и вашем аккаунте Google (<ph name="ACCOUNT_EMAIL" />). Вы можете изменить их на странице <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (конверт)</translation>
@@ -933,6 +938,7 @@
 <translation id="4879725228911483934">Открытие и размещение окон на экранах.</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4881695831933465202">Открыть</translation>
+<translation id="4889420713887366944">Кнопка "Открыть окно в режиме инкогнито". Нажмите Ввод, чтобы открыть такое окно.</translation>
 <translation id="4892518386797173871">Задняя сторона</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Сохранить</translation>
@@ -1094,6 +1100,7 @@
 <translation id="5523118979700054094">Название правила</translation>
 <translation id="55293785478302737">Скобы по краю</translation>
 <translation id="553484882784876924">Prc6 (конверт)</translation>
+<translation id="5535133333442455806">Кнопка "Очистить историю". Нажмите Ввод, чтобы открыть настройки Chrome и удалить историю браузера, файлы cookie, кеш и прочее.</translation>
 <translation id="5536214594743852365">Показать раздел "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Плот</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Значение <ph name="VALUE" /> лежит за пределами разрешенного диапазона.</translation>
 <translation id="7613889955535752492">Срок действия: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы перейти к управлению паролями в настройках Chrome.</translation>
 <translation id="7615602087246926389">У вас уже есть данные, зашифрованные с другой версией пароля к аккаунту Google. Введите этот пароль ниже.</translation>
 <translation id="7616645509853975347">Администратор включил в браузере коннекторы Chrome Enterprise Connectors. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="7619838219691048931">Последний лист</translation>
@@ -1849,6 +1857,8 @@
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8728672262656704056">Вы перешли в режим инкогнито</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8731544501227493793">Кнопка "Управление паролями". Нажмите Ввод, чтобы перейти к управлению паролями в настройках Chrome.</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы открыть новое окно в режиме инкогнито.</translation>
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8740359287975076522">Не удается найти &lt;abbr id="dnsDefinition"&gt;DNS-адрес&lt;/abbr&gt; сайта <ph name="HOST_NAME" />. Выполняется диагностика.</translation>
 <translation id="8742371904523228557">Ваш код для сервиса <ph name="ORIGIN" />: <ph name="ONE_TIME_CODE" />.</translation>
@@ -1865,6 +1875,7 @@
 <translation id="8793655568873652685">Домен <ph name="ENROLLMENT_DOMAIN" /> включил в браузере коннекторы Chrome Enterprise Connectors. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="8805819170075074995">Элемент списка "<ph name="LANGUAGE_ID" />": элемент проигнорирован, поскольку он уже включен в правило SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Подрезать после каждой страницы</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab и затем Ввод, чтобы обновить Chrome.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883848425547221593">Другие закладки</translation>
 <translation id="884264119367021077">Адрес доставки</translation>
@@ -1884,6 +1895,7 @@
 <translation id="890493561996401738">Кнопка удаления подсказки. Нажмите Ввод, чтобы удалить. <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />.</translation>
 <translation id="8910670906166981838">Режим инкогнито</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
+<translation id="8913778647360618320">Кнопка управления способами оплаты. Нажмите Ввод, чтобы изменить данные о способах оплаты и банковских картах в настройках Chrome.</translation>
 <translation id="8918231688545606538">Подозрительная страница</translation>
 <translation id="892588693504540538">Отверстие в правом верхнем углу</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>

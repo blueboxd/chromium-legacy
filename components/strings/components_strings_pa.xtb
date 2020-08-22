@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;ਦੁਬਾਰਾ ਕ੍ਰਮ ਦੇਣ ਨੂੰ ਅਨਡੂ ਕਰੋ</translation>
 <translation id="1125573121925420732">ਵੈੱਬਸਾਈਟਾਂ ਵੱਲੋਂ ਉਹਨਾਂ ਦੀ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਕਰਨ ਵੇਲੇ ਚਿਤਾਵਨੀਆਂ ਦਾ ਦਿੱਸਣਾ ਆਮ ਹੈ। ਇਹ ਜਲਦ ਹੀ ਦਿੱਸਣੀਆਂ ਬੰਦ ਹੋ ਜਾਣਗੀਆਂ।</translation>
 <translation id="112840717907525620">ਨੀਤੀ ਕੈਸ਼ੇ OK</translation>
+<translation id="1130564665089811311">'ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਕਰੋ' ਬਟਨ, Google Translate ਨਾਲ ਇਸ ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="1131264053432022307">ਤੁਹਾਡੇ ਵੱਲੋਂ ਕਾਪੀ ਕੀਤਾ ਚਿੱਤਰ</translation>
 <translation id="1150979032973867961">ਇਹ ਸਰਵਰ ਇਹ ਸਾਬਤ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿ ਇਹ <ph name="DOMAIN" /> ਹੈ; ਇਸਦਾ ਸੁਰੱਖਿਆ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਦੇ ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਵੱਲੋਂ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹੈ। ਇਹ ਇੱਕ ਗਲਤ ਸੰਰੂਪਣ ਕਾਰਨ ਹੋ ਸਕਦਾ ਹੈ ਜਾਂ ਕੋਈ ਹਮਲਾਵਰ ਤੁਹਾਡੇ ਕਨੈਕਸ਼ਨ ਨੂੰ ਰਾਹ ਵਿੱਚ ਰੋਕ ਰਿਹਾ ਹੈ।</translation>
 <translation id="1151972924205500581">ਪਾਸਵਰਡ ਲੋੜੀਂਦਾ</translation>
@@ -404,6 +405,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> ਦਾ ਸਰਵਰ IP ਪਤਾ ਨਹੀਂ ਲੱਭਿਆ।</translation>
 <translation id="2639739919103226564">ਸਥਿਤੀ:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ, ਕੁਕੀਜ਼, ਕੈਸ਼ੇ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਨੂੰ ਕਲੀਅਰ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="2650446666397867134">ਫਾਈਲ ਤੱਕ ਪਹੁੰਚ ਅਸਵੀਕਾਰ ਕਰ ਦਿੱਤੀ ਗਈ ਸੀ</translation>
 <translation id="2653659639078652383">ਪ੍ਰਸਤੁਤ ਕਰੋ</translation>
 <translation id="2660779039299703961">ਇਵੈਂਟ</translation>
@@ -426,6 +428,7 @@
 <translation id="2705137772291741111">ਇਸ ਸਾਈਟ ਦੀ ਰੱਖਿਅਤ (ਕੈਸ਼ੇ ਕੀਤੀ) ਕਾਪੀ ਪੜ੍ਹਨਯੋਗ ਨਹੀਂ ਸੀ।</translation>
 <translation id="2709516037105925701">ਆਟੋਫਿਲ</translation>
 <translation id="2713444072780614174">ਸਫ਼ੈਦ</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਭੁਗਤਾਨਾਂ ਅਤੇ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਜਾਣਕਾਰੀ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="2721148159707890343">ਬੇਨਤੀ ਸਫਲ ਹੋਈ</translation>
 <translation id="272451190272506600">ਭੁਗਤਾਨ ਕਰਨ ਲਈ ਸੈਂਸਰ ਨੂੰ ਸਪਰਸ਼ ਕਰੋ</translation>
 <translation id="2728127805433021124">ਸਰਵਰ ਦਾ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਇੱਕ ਕਮਜ਼ੋਰ ਹਸਤਾਖਰ ਅਲਗੋਰਿਦਮ ਵਰਤਦੇ ਹੋਏ ਸਾਈਨ ਹੋਇਆ ਹੈ।</translation>
@@ -634,6 +637,7 @@
 <translation id="362276910939193118">ਪੂਰਾ ਇਤਿਹਾਸ ਦਿਖਾਓ</translation>
 <translation id="3630155396527302611">ਜੇਕਰ ਇਸ ਨੂੰ ਪਹਿਲਾਂ ਹੀ ਨੈੱਟਵਰਕ 'ਤੇ ਪਹੁੰਚ ਦੀ ਮਨਜ਼ੂਰੀ ਵਾਲੇ ਇੱਕ ਪ੍ਰੋਗਰਾਮ ਦੇ ਤੌਰ 'ਤੇ ਸੂਚੀਬੱਧ ਕੀਤਾ ਗਿਆ ਹੈ, ਇਸ ਨੂੰ ਸੂਚੀ ਵਿੱਚ ਹਟਾਉਣ ਅਤੇ ਦੁਬਾਰਾ ਸ਼ਾਮਲ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="3631244953324577188">ਬਾਇਓਮੈਟ੍ਰਿਕ</translation>
+<translation id="3633738897356909127">'Chrome ਅੱਪਡੇਟ ਕਰੋ' ਬਟਨ, ਆਪਣੀਆਂ Chrome ਸੈਟਿੰਗਾਂ ਤੋਂ Chrome ਅੱਪਡੇਟ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="3634530185120165534">ਟ੍ਰੇਅ 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">ਪ੍ਰਮਾਣੀਕਰਨ ਸਫਲ</translation>
@@ -852,6 +856,7 @@
 <translation id="4506599922270137252">ਸਿਸਟਮ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ</translation>
 <translation id="450710068430902550">ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸ਼ੇਅਰਿੰਗ</translation>
 <translation id="4508814173490746936">ਸਪਰਸ਼ ਆਈਡੀ ਨਹੀਂ ਵਰਤ ਸਕਦੇ</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ Google Translate ਨਾਲ ਇਸ ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="4510487217173779431">Chou4 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="4515275063822566619">ਕਾਰਡ ਅਤੇ ਪਤੇ Chrome ਅਤੇ ਤੁਹਾਡੇ Google ਖਾਤੇ (<ph name="ACCOUNT_EMAIL" />) ਤੋਂ ਹਨ। ਤੁਸੀਂ ਉਹਨਾਂ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="BEGIN_LINK" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="4517607026994743406">Comm-10 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
@@ -932,6 +937,7 @@
 <translation id="4879725228911483934">ਆਪਣੀਆਂ ਸਕ੍ਰੀਨਾਂ 'ਤੇ ਵਿੰਡੋ ਖੋਲ੍ਹੋ ਅਤੇ ਉਸਨੂੰ ਰੱਖੋ</translation>
 <translation id="4880827082731008257">ਖੋਜ ਇਤਿਹਾਸ</translation>
 <translation id="4881695831933465202">ਖੋਲ੍ਹੋ</translation>
+<translation id="4889420713887366944">'ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਖੋਲ੍ਹੋ' ਬਟਨ, ਨਿੱਜੀ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰਨ ਲਈ ਨਵੀਂ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਖੋਲ੍ਹਣ ਵਾਸਤੇ Enter ਦਬਾਓ</translation>
 <translation id="4892518386797173871">ਪਿਛਲਾ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ਰੱਖਿਅਤ ਕਰੋ...</translation>
@@ -1093,6 +1099,7 @@
 <translation id="5523118979700054094">ਨੀਤੀ ਦਾ ਨਾਮ</translation>
 <translation id="55293785478302737">ਕਿਨਾਰੇ ਤੋਂ ਸਿਲਾਈ</translation>
 <translation id="553484882784876924">Prc6 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
+<translation id="5535133333442455806">'ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਕਲੀਅਰ ਕਰੋ' ਬਟਨ, Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ, ਕੁਕੀਜ਼, ਕੈਸ਼ੇ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" ਸੈਕਸ਼ਨ ਦਿਖਾਓ</translation>
 <translation id="5539243836947087108">ਰਾਫ਼ਟ</translation>
 <translation id="5540224163453853">ਬੇਨਤੀ ਕੀਤਾ ਲੇਖ ਨਹੀਂ ਲੱਭ ਸਕਿਆ।</translation>
@@ -1591,6 +1598,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ਦਾ ਕਦੇ ਵੀ ਅਨੁਵਾਦ ਨਾ ਕਰੋ</translation>
 <translation id="7610193165460212391">ਵੈਲਯੂ <ph name="VALUE" /> ਰੇਂਜ ਤੋਂ ਬਾਹਰ ਹੈ।</translation>
 <translation id="7613889955535752492">ਮਿਆਦ ਸਮਾਪਤ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਦੇਖਣ ਅਤੇ ਉਹਨਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="7615602087246926389">ਤੁਹਾਡੇ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਉਹ ਡਾਟਾ ਹੈ ਜੋ ਤੁਹਾਡੇ Google ਖਾਤਾ ਪਾਸਵਰਡ ਦਾ ਇੱਕ ਵੱਖ ਵਰਜਨ ਵਰਤਦੇ ਹੋਏ ਇਨਕ੍ਰਿਪਟ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇਸਨੂੰ ਹੇਠਾਂ ਦਰਜ ਕਰੋ।</translation>
 <translation id="7616645509853975347">ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ Chrome Enterprise Connectors ਨੂੰ ਚਾਲੂ ਕੀਤਾ। ਇਹਨਾਂ ਕਨੈਕਟਰਾਂ ਦੀ ਤੁਹਾਡੇ ਕੁਝ ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਹੈ।</translation>
 <translation id="7619838219691048931">ਆਖਰੀ ਸ਼ੀਟ</translation>
@@ -1847,6 +1855,8 @@
 <translation id="8725066075913043281">ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="8728672262656704056">ਤੁਸੀਂ ਗੁੰਮਨਾਮ ਮੋਡ ਵਿੱਚ ਚਲੇ ਗਏ ਹੋ</translation>
 <translation id="8730621377337864115">ਹੋ ਗਿਆ</translation>
+<translation id="8731544501227493793">'ਪਾਸਵਰਡ ਬਟਨ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ' ਬਟਨ, Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਪਾਸਵਰਡ ਦੇਖਣ ਅਤੇ ਉਹਨਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ ਨਿੱਜੀ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰਨ ਲਈ ਨਵੀਂ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਖੋਲ੍ਹਣ ਵਾਸਤੇ Enter ਦਬਾਓ</translation>
 <translation id="8738058698779197622">ਇੱਕ ਸੁਰੱਖਿਅਤ ਕਨੈਕਸ਼ਨ ਸਥਾਪਿਤ ਕਰਨ ਲਈ, ਤੁਹਾਡੀ ਘੜੀ ਨੂੰ ਸਹੀ ਢੰਗ ਨਾਲ ਸੈੱਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। ਅਜਿਹਾ ਇਸ ਲਈ ਕਿਉਂਕਿ ਪ੍ਰਮਾਣ-ਪੱਤਰ, ਜਿਸਨੂੰ ਵੈੱਬਸਾਈਟਾਂ ਖੁਦ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ ਵਰਤਦੀਆਂ ਹਨ, ਕੇਵਲ ਖ਼ਾਸ ਮਿਆਦ ਲਈ ਵੈਧ ਹੁੰਦੇ ਹਨ। ਕਿਉਂਕਿ ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਦੀ ਘੜੀ ਦਾ ਸਮਾਂ ਗਲਤ ਹੈ, Chromium ਇਹਨਾਂ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ।</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ਦਾ &lt;abbr id="dnsDefinition"&gt;DNS ਪਤਾ&lt;/abbr&gt; ਨਹੀਂ ਮਿਲ ਸਕਿਆ। ਸਮੱਸਿਆ ਦਾ ਨਿਦਾਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> ਲਈ <ph name="ONE_TIME_CODE" /> ਤੁਹਾਡਾ ਕੋਡ ਹੈ</translation>
@@ -1863,6 +1873,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ਨੇ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ Chrome Enterprise Connectors ਨੂੰ ਚਾਲੂ ਕਰ ਦਿੱਤਾ ਹੈ। ਇਹਨਾਂ ਕਨੈਕਟਰਾਂ ਦੀ ਤੁਹਾਡੇ ਕੁਝ ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਹੈ।</translation>
 <translation id="8805819170075074995">ਸੂਚੀ ਇੰਦਰਾਜ "<ph name="LANGUAGE_ID" />": ਇੰਦਰਾਜ ਅਣਡਿੱਠ ਕਰ ਦਿੱਤਾ ਗਿਆ ਕਿਉਂਕਿ ਇਹ SpellcheckLanguage ਨੀਤੀ ਵਿੱਚ ਵੀ ਸ਼ਾਮਲ ਹੈ।</translation>
 <translation id="8807160976559152894">ਹਰ ਪੰਨੇ ਤੋਂ ਬਾਅਦ ਕਟਾਈ</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ ਆਪਣੀਆਂ Chrome ਸੈਟਿੰਗਾਂ ਤੋਂ Chrome ਅੱਪਡੇਟ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="8820817407110198400">ਬੁੱਕਮਾਰਕਸ</translation>
 <translation id="883848425547221593">ਹੋਰ ਬੁੱਕਮਾਰਕ</translation>
 <translation id="884264119367021077">ਸ਼ਿਪਿੰਗ ਪਤਾ</translation>
@@ -1882,6 +1893,7 @@
 <translation id="890493561996401738">ਸੁਝਾਅ ਬਟਨ ਹਟਾਓ, ਹਟਾਉਣ ਲਈ ਐਂਟਰ ਦਬਾਓ, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">ਤੁਸੀਂ ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਚਲੇ ਗਏ ਹੋ</translation>
 <translation id="8912362522468806198">Google ਖਾਤਾ</translation>
+<translation id="8913778647360618320">'ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ' ਬਟਨ, Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਭੁਗਤਾਨਾਂ ਅਤੇ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਜਾਣਕਾਰੀ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="8918231688545606538">ਇਹ ਪੰਨਾ ਸ਼ੱਕੀ ਹੈ</translation>
 <translation id="892588693504540538">ਉੱਪਰ ਸੱਜੇ ਪਾਸੇ ਮੋਰੀ</translation>
 <translation id="8931333241327730545">ਕੀ ਤੁਸੀਂ ਇਸ ਕਾਰਡ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>

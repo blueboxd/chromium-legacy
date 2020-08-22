@@ -14,6 +14,7 @@
 <translation id="109942774857561566">എനിക്ക് ബോറടിക്കുന്നു</translation>
 <translation id="1104084341931202936">പ്രവേശനക്ഷമത ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1104621072296271835">നിങ്ങളുടെ ഉപകരണങ്ങൾ 'ഒരുമിച്ചും' നന്നായി പ്രവർത്തിക്കും</translation>
+<translation id="1119348796022671382">ഇന്റർഫേസിന് നേരിയ തോതിൽ നിറം നൽകാൻ, തീമുള്ള വർണ്ണ മോഡ് നിങ്ങളുടെ വാൾപേപ്പറിൽ നിന്ന് എക്‌സ്ട്രാക്‌റ്റ് ചെയ്‌ത നിറങ്ങൾ ഉപയോഗിക്കുന്നു.</translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
 <translation id="1175572348579024023">സ്‌ക്രോൾ ചെയ്യുക</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">ഓണാണ്</translation>
 <translation id="1419738280318246476">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കുന്നതിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="1420408895951708260">നൈറ്റ് ലൈറ്റ് മാറ്റുക. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">സ്ക്രീന്‍ഷോട്ട് എടുത്ത് അത് ക്ലിപ്പ്ബോർഡിൽ സംരക്ഷിച്ചു</translation>
 <translation id="1426410128494586442">അതെ</translation>
 <translation id="1455242230282523554">ഭാഷാ ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1460620680449458626">വോളിയം മ്യൂട്ട് ചെയ്‌തിരിക്കുന്നു.</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">ക്രമീകരണം &gt; ഉപയോഗസഹായി എന്നതിൽ 'ആക്‌സസ് മാറുക' പ്രവർത്തനരഹിതമാക്കാം.</translation>
 <translation id="1654477262762802994">ഒരു ശബ്‌ദ ചോദ്യം ആരംഭിക്കുക</translation>
 <translation id="1665244008632896072">ഡാർക്ക് മോഡ് മാറ്റുക. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">ന്യൂട്രൽ വർണ്ണ മോഡ് വാൾപേപ്പർ എക്‌സ്‌ട്രാക്റ്റ് ചെയ്‌ത വർണ്ണങ്ങൾ ഉപയോഗിക്കുന്നില്ല, അവയ്ക്ക് പകരം ന്യൂട്രലായി ടോൺ ചെയ്‌‌ത ഇളം നിറത്തിന്റെയോ ഇരുണ്ട നിറത്തിന്റെയോ ഒരു സെറ്റ് ഉപയോഗിക്കുന്നു.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ടൈമർ · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 വിലാസം: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3033545621352269033">ഓണാണ്</translation>
+<translation id="3038571455154067151">സൈൻ ഇൻ ചെയ്യാൻ, നിങ്ങളുടെ Family Link രക്ഷാകർതൃ ആക്‌സസ് കോഡ് നൽകുക</translation>
 <translation id="3051128274746680507">നിങ്ങളുടെ മേൽനോട്ടത്തിലുള്ള ഉപയോക്തൃ പ്രൊഫൈൽ വൈകാതെ നീക്കം ചെയ്യപ്പെടും. കൂടുതലറിയാൻ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="3055162170959710888">നിങ്ങൾ ഇന്ന് <ph name="USED_TIME" />, ഈ ഉപകരണം ഉപയോഗിച്ചു</translation>
 <translation id="3076778413190775903">സ്റ്റാറ്റസ് ട്രേ, സമയം <ph name="TIME" />,
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3977512764614765090">ബാറ്ററി <ph name="PERCENTAGE" />% ഉണ്ട്, ചാർജ് ചെയ്യുകയുമാണ്.</translation>
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
+<translation id="40062176907008878">കൈയ്യെഴുത്ത്</translation>
 <translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
 <translation id="4021716437419160885">താഴേയ്‌ക്ക് സ്ക്രോൾ ചെയ്യുക</translation>
 <translation id="4028481283645788203">കൂടുതൽ സുരക്ഷയ്ക്ക് പാസ്‍വേഡ് ആവശ്യമാണ്</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">നിങ്ങളുടെ ലോക്ക് സ്‌ക്രീനിൽ അറിയിപ്പുകൾ കാണാൻ, ക്രമീകരണം മാറ്റാനായി അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="4146833061457621061">സംഗീതം പ്ലേ ചെയ്യുക</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="DOMAIN" /> ആണ്</translation>
+<translation id="4157822100366708405">ഡാർക്ക് തീം ക്രമീകരണം</translation>
 <translation id="4181841719683918333">ഭാഷകൾ‌</translation>
 <translation id="4195877955194704651">സ്വയമേവയുള്ള ക്ലിക്ക് ബട്ടൺ</translation>
 <translation id="4197790712631116042">ഓഫാണ്</translation>
 <translation id="4212472694152630271">പിൻ നമ്പറിലേക്ക് മാറുക</translation>
 <translation id="4215497585250573029">VPN ക്രമീകരണം</translation>
 <translation id="4217571870635786043">പറഞ്ഞ് കൊടുക്കൽ</translation>
+<translation id="4229328187280698237">ടാബ്‌ലെറ്റ് മോഡിലേക്ക് മാറുക</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">അറിയിപ്പ് ക്രമീകരണം കാണിക്കുക. അറിയിപ്പുകൾ ഓഫാണ്</translation>
 <translation id="4269883910223712419">ഈ ഉപകരണത്തിന്റെ അഡ്‌മിന് ഇനിപ്പറയുന്ന കാര്യങ്ങൾ ചെയ്യാൻ കഴിയും:</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">ഡിസ്പ്ലേ കോൺഫിഗറേഷൻ സ്ഥിരീകരിക്കുക</translation>
 <translation id="5083553833479578423">കൂടുതൽ അസിസ്റ്റന്റ് ഫീച്ചറുകൾ അൺലോക്ക് ചെയ്യുക.</translation>
 <translation id="5114495209940374989">സ്ക്രീൻഷോട്ടുകൾ</translation>
+<translation id="5123162024343028706">മുകളിൽ പിൻ ചെയ്യുക</translation>
 <translation id="5136175204352732067">വ്യത്യസ്ത കീബോർഡ് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">ഓഫാണ്</translation>
 <translation id="5302048478445481009">ഭാഷ</translation>
 <translation id="5313326810920013265">Bluetooth ക്രമീകരണങ്ങൾ</translation>
+<translation id="5314219114274263156">സ്ക്രീൻ റെക്കോർഡിംഗ് ചിത്രം എടുത്തു</translation>
 <translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="5379115545237091094">നിരവധി ശ്രമങ്ങൾ</translation>
 <translation id="5397578532367286026">ഈ ഉപയോക്താവിന്റെ ഉപയോഗവും ചരിത്രവും chrome.com-ൽ മാനേജർക്ക് (<ph name="MANAGER_EMAIL" />) അവലോകനം ചെയ്യാനാകും.</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /> നിർത്തുക</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
+<translation id="5876666360658629066">രക്ഷാകർതൃ കോഡ് നൽകുക</translation>
 <translation id="5887866489674258948">ഡാർക്ക് മോഡ്</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">ഈ അപ്‌ഡേറ്റ് നടക്കുമ്പോൾ നിങ്ങളുടെ സ്‌ക്രീൻ പതിവിലും കൂടുതൽ സമയം (ഒരു മിനിറ്റ് വരെ) ശൂന്യമാകും. അപ്‌ഡേറ്റ് ചെയ്യൽ പുരോഗമിക്കുമ്പോൾ പവർ ബട്ടൺ അമർത്തരുത്.</translation>
 <translation id="6527303717912515753">പങ്കിടുക</translation>
 <translation id="6528179044667508675">ശല്യപ്പെടുത്തരുത്</translation>
+<translation id="65320610082834431">ഇമോജികൾ</translation>
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="6537924328260219877">സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ഉപകരണത്തിലേക്ക് കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">വലത്-ക്ലിക്ക് ചെയ്‌തോ ദീർഘനേരം അമർത്തിയോ, നിങ്ങളുടെ തിരഞ്ഞെടുപ്പിനുള്ള നിർവചനമോ യൂണിറ്റ് പരിവര്‍ത്തനമോ പോലുള്ള വിവരങ്ങൾ Assistant കാണിക്കുന്നു.</translation>
 <translation id="7569509451529460200">Braille, ChromeVox എന്നിവ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="7579778809502851308">സ്‌ക്രീൻ ക്യാപ്‌ചർ</translation>
+<translation id="7590883480672980941">ഇൻപുട്ട് ക്രമീകരണം</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="7600875258240007829">എല്ലാ അറിയിപ്പുകളും കാണുക</translation>
+<translation id="7618774594543487847">ന്യൂട്രൽ</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> എന്നതിനുള്ള ക്രമീകരണം തുറക്കുക, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ഉടമ)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> ടൈമർ</translation>
+<translation id="8647931990447795414">ഒരു വ്യക്തിയെ ചേർക്കാൻ, നിങ്ങളുടെ Family Link രക്ഷാകർതൃ ആക്‌സസ് കോഡ് നൽകുക</translation>
 <translation id="8649101189709089199">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8652175077544655965">ക്രമീകരണം അടയ്ക്കുക</translation>
 <translation id="8653151467777939995">അറിയിപ്പ് ക്രമീകരണം കാണിക്കുക. അറിയിപ്പുകൾ ഓണാണ്</translation>
 <translation id="8660331759611631213">71 എന്ന സംഖ്യയുടെ വർഗ്ഗമൂലം</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">നെറ്റ്‌വർക്ക് ലിസ്റ്റ് കാണിക്കുക. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">വർണ്ണ മോഡ്</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
 <translation id="8683506306463609433">പ്രകടനം പിന്തുടരൽ സജീവം</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="890616557918890486">ഉറവിടം മാറ്റുക</translation>
 <translation id="8909138438987180327">ബാറ്ററി <ph name="PERCENTAGE" /> ശതമാനം ഉണ്ട്..</translation>
+<translation id="8913384980486163186">തീമുള്ള (ഡിഫോൾട്ട്)</translation>
+<translation id="8918251165865262378">ലാപ്‌ടോപ്പ് മോഡിലേക്ക് മാറുക</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
 <translation id="8936501819958976551">നിർജീവമാക്കി</translation>

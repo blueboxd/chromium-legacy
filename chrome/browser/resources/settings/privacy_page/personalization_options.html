@@ -46,7 +46,8 @@
         no-set-pref>
     </settings-toggle-button>
 </if><!-- not chromeos -->
-    <settings-toggle-button class="hr"
+    <settings-toggle-button id="searchSuggestToggle"
+        class="hr"
         hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
         label="$i18n{searchSuggestPref}"
@@ -76,7 +77,7 @@
     </settings-toggle-button>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-    <settings-toggle-button
+    <settings-toggle-button id="urlCollectionToggle"
         class="hr"
         pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
         label="$i18n{urlKeyedAnonymizedDataCollection}"

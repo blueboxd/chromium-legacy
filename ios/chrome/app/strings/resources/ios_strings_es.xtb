@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Nueva ventana</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
 <translation id="1582732959743469162">Esta acción detendrá el progreso de la descarga actual.</translation>
+<translation id="1605405588277479165">Desactivada (no se recomienda)</translation>
 <translation id="1605658421715042784">Copiar imagen</translation>
 <translation id="1608337082864370066">Buscar la imagen copiada</translation>
 <translation id="1612730193129642006">Mostrar cuadrícula de pestañas</translation>
@@ -496,6 +497,7 @@ Los sitios web no pueden usar cookies para ver tu actividad de navegación en ot
 <translation id="6624219055418309072">Bloquear en incógnito</translation>
 <translation id="6628106477656132239">La fecha de vencimiento no es válida</translation>
 <translation id="6638511529934826365">Ampliar texto…</translation>
+<translation id="6639730758971422557">Para activar Navegación segura, abre <ph name="BEGIN_LINK" />Servicios de Google y sincronización<ph name="END_LINK" /> y toca Navegación Segura.</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6645899968535965230">Código QR: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@ Los sitios web no pueden usar cookies para ver tu actividad de navegación en ot
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="7600965453749440009">No traducir nunca del <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Pop-ups bloqueados (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Eliminar contraseña</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -653,11 +656,12 @@ Los sitios web pueden usar cookies para ver tu actividad de navegación en otros
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="850600235656508448">Abrir en modo de incógnito</translation>
 <translation id="8510057420705599706">Esta acción hará que se cierre tu sesión y se desactive la sincronización, pero tus marcadores, tu historial, tus contraseñas y otros datos de Chrome permanecerán en este dispositivo.</translation>
-<translation id="8517375800490286174">Licencias de código abierto</translation>
+<translation id="8517375800490286174">Licencias de software libre</translation>
 <translation id="8524799873541103884">Pestañas de <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nuevo</translation>
 <translation id="8532105204136943229">Año de caducidad</translation>
 <translation id="8533166274275423134">Abierto en otra parte</translation>
+<translation id="8533670235862049797">Navegación segura está activada</translation>
 <translation id="8534481786647257214">Publicado en Google+</translation>
 <translation id="8548878600947630424">Buscar en la página...</translation>
 <translation id="8574235780160508979">Los Términos del Servicio de Chrome cambiarán el 31 de marzo. <ph name="BEGIN_LINK" />Revísalos<ph name="END_LINK" /></translation>

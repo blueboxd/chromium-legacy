@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">créditos</translation>
 <translation id="1342835525016946179">artículo</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">varias opciones disponibles; se seleccionaron <ph name="SELECTED" /> de <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">región</translation>
 <translation id="1591562245178063882">Este mes</translation>
 <translation id="1637811476055996098">Elegir archivos</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Día</translation>
 <translation id="2507943997699731163">Completa este campo</translation>
 <translation id="2508569020611168319">lista de pestañas</translation>
+<translation id="2530182415807757784">varias opciones disponibles; no se seleccionó ninguna.</translation>
 <translation id="2561842179657104141">mostrar más controles de medios</translation>
 <translation id="2572483411312390101">reproducir</translation>
 <translation id="2613802280814924224">Ingresa un valor válido. El valor válido más aproximado es <ph name="VALID_VALUE" />.</translation>

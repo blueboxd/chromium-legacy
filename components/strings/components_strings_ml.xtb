@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;പുനഃക്രമീകരിക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="1125573121925420732">വെബ്‌സൈറ്റുകൾ അവയുടെ സുരക്ഷ അപ്‌ഡേറ്റ് ചെയ്യുന്ന സമയത്ത് പൊതുവെ മുന്നറിയിപ്പുകൾ കാണിച്ചേക്കാം. ഇത് താമസിയാതെ മെച്ചപ്പെടും.</translation>
 <translation id="112840717907525620">നയ കാഷെ ശരി</translation>
+<translation id="1130564665089811311">'പേജ് വിവർത്തനം ചെയ്യുക' ബട്ടൺ, Google Translate ഉപയോഗിച്ച് ഈ പേജ് വിവർത്തനം ചെയ്യാൻ 'Enter' അമർത്തുക</translation>
 <translation id="1131264053432022307">നിങ്ങൾ പകർത്തിയ ചിത്രം</translation>
 <translation id="1150979032973867961">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റിനെ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ ഓപ്പറേറ്റിംഗ് സിസ്‌റ്റത്തിന് പരിചയമില്ല. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="1151972924205500581">പാസ്‍വേഡ് ആവശ്യമാണ്</translation>
@@ -407,6 +408,7 @@
 <translation id="2634124572758952069"><ph name="HOST_NAME" />-ന്‍റെ സെർവർ IP വിലാസം കണ്ടെത്താനായില്ല.</translation>
 <translation id="2639739919103226564">നില:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രവും കുക്കികളും കാഷെയും മറ്റും മായ്ക്കാൻ 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="2650446666397867134">ഫയലിലേക്കുള്ള ആക്‌സസ് നിരസിച്ചു</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കുക</translation>
 <translation id="2660779039299703961">ഇവന്റ്</translation>
@@ -429,6 +431,7 @@
 <translation id="2705137772291741111">ഈ സൈറ്റിന്റെ സംരക്ഷിച്ച (കാഷെ ചെയ്‌ത) പതിപ്പ് വായിക്കാനാകാത്തതാണ്.</translation>
 <translation id="2709516037105925701">സ്വയമേവ പൂരിപ്പിക്കൽ</translation>
 <translation id="2713444072780614174">വെള്ള</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ പേയ്‌മെന്റുകളും ക്രെഡിറ്റ് കാർഡ് വിവരങ്ങളും മാനേജ് ചെയ്യാൻ 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="2721148159707890343">അഭ്യർത്ഥന വിജയിച്ചു</translation>
 <translation id="272451190272506600">പണമട‌യ്‌ക്കാൻ സെൻസറിൽ സ്‌പർശിക്കുക</translation>
 <translation id="2728127805433021124">ഒരു ദുർബ്ബല സിഗ്‌നേച്ചർ അൽഗോരിതം ഉപയോഗിച്ച് സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് സൈൻ ചെയ്‌തു.</translation>
@@ -638,6 +641,7 @@
 <translation id="3630155396527302611">ഇതിനെ നെറ്റ്‌വർക്ക് ആക്‌സസ് ചെയ്യാൻ അനുമതിയുള്ള ഒരു പ്രോഗ്രാമായി നിലവിൽ ലിസ്റ്റ് ചെയ്‌തിട്ടുണ്ടെങ്കിൽ,
       അതിനെ ലിസ്റ്റിൽ നിന്ന് നീക്കംചെയ്‌ത്, വീണ്ടും ചേർക്കാൻ ശ്രമിക്കുക.</translation>
 <translation id="3631244953324577188">ബയോമെട്രിക്‌സ്</translation>
+<translation id="3633738897356909127">'Chrome അപ്ഡേറ്റ് ചെയ്യുക' ബട്ടൺ, നിങ്ങളുടെ Chrome ക്രമീകരണത്തിൽ Chrome അപ്ഡേറ്റ് ചെയ്യാൻ 'Enter' അമർത്തുക</translation>
 <translation id="3634530185120165534">ട്രേ 5</translation>
 <translation id="3640766068866876100">സൂചിക-4x6-Ext</translation>
 <translation id="3650584904733503804">മൂല്യനിർണ്ണയം വിജയകരം</translation>
@@ -859,6 +863,7 @@
 <translation id="4506599922270137252">സിസ്റ്റം അഡ്‌മിനെ ബന്ധപ്പെടുന്നു</translation>
 <translation id="450710068430902550">അഡ്‌മിനിസ്‌ട്രേറ്ററുമായി പങ്കിടുന്നു</translation>
 <translation id="4508814173490746936">ടച്ച് ഐഡി ഉപയോഗിക്കാനായില്ല</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Translate ഉപയോഗിച്ച് ഈ പേജ് വിവർത്തനം ചെയ്യാൻ 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="4510487217173779431">Chou4 (എൻവലപ്പ്)</translation>
 <translation id="4515275063822566619">കാർഡുകളും വിലാസങ്ങളും Chrome-ൽ നിന്നും നിങ്ങളുടെ അ‌ക്കൗണ്ടിൽ (<ph name="ACCOUNT_EMAIL" />) നിന്നുമുള്ളതുമാണ്. നിങ്ങൾക്ക് ഇവ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാനേജ് ചെയ്യാം.</translation>
 <translation id="4517607026994743406">Comm-10 (എൻവലപ്പ്)</translation>
@@ -939,6 +944,7 @@
 <translation id="4879725228911483934">നിങ്ങളുടെ വിൻഡോ തുറന്ന് സ്ക്രീനിൽ വെയ്ക്കണമെന്നുണ്ട്</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
+<translation id="4889420713887366944">'അദൃശ്യ വിൻഡോ തുറക്കുക' ബട്ടൺ, സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ വിൻഡോ തുറക്കുന്നതിന്, 'Enter' അമർത്തുക</translation>
 <translation id="4892518386797173871">പിൻഭാഗം</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">സംരക്ഷിക്കുക...</translation>
@@ -1100,6 +1106,7 @@
 <translation id="5523118979700054094">നയത്തിന്റെ പേര്</translation>
 <translation id="55293785478302737">അരിക് കൂട്ടിച്ചേർക്കൽ</translation>
 <translation id="553484882784876924">Prc6 (എൻവലപ്പ്)</translation>
+<translation id="5535133333442455806">'ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുക' ബട്ടൺ, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രവും കുക്കികളും കാഷെയും മറ്റും മായ്ക്കാൻ 'Enter' അമർത്തുക</translation>
 <translation id="5536214594743852365">"<ph name="SECTION" />" വിഭാഗം കാണിക്കുക</translation>
 <translation id="5539243836947087108">റാഫ്റ്റ്</translation>
 <translation id="5540224163453853">അഭ്യർത്ഥിച്ച ലേഖനം കണ്ടെത്താനായില്ല.</translation>
@@ -1597,6 +1604,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">കാലഹരണപ്പെടുന്നത്: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ക്രമീകരണത്തിൽ പാസ്‌വേഡുകൾ കാണാനും മാനേജ് ചെയ്യാനും 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="7615602087246926389">Google അക്കൗണ്ട് പാസ്‌വേഡിന്റെ വ്യത്യസ്ത പതിപ്പ് ഉപയോഗിച്ച് എൻക്രിപ്റ്റ് ചെയ്ത ഡേറ്റ ഇപ്പോൾ തന്നെ നിങ്ങളുടെ കൈവശമുണ്ട്. ആ പാസ്‌വേഡ് താഴെ നൽകുക.</translation>
 <translation id="7616645509853975347">അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസറിൽ Chrome Enterprise Connectors ഓണാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="7619838219691048931">അവസാന ഷീറ്റ്</translation>
@@ -1853,6 +1861,8 @@
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8728672262656704056">നിങ്ങൾ അദൃശ്യ വിൻഡോയിലാണ്</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
+<translation id="8731544501227493793">'പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക' ബട്ടൺ, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ പാസ്‌വേഡുകൾ കാണാനും മാനേജ് ചെയ്യാനും 'Enter' അമർത്തുക</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ ഒരു പുതിയ അദൃശ്യ വിൻഡോ തുറക്കുന്നതിന്, 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="8738058698779197622">സുരക്ഷിത കണക്ഷൻ സ്ഥാപിക്കുന്നതിന്, നിങ്ങളുടെ ക്ലോക്ക് ശരിയായി സജ്ജീകരിക്കേണ്ടതുണ്ട്. വെബ്‌സൈറ്റുകൾ സ്വയം തിരിച്ചറിയുന്നതിന് ഉപയോഗിക്കുന്ന സർട്ടിഫിക്കറ്റുകൾ, നിർദ്ദിഷ്‌ട സമയ പരിധിയ്‌ക്ക് മാത്രമായി സാധുതയുള്ളതിനാലാണിത്. നിങ്ങളുടെ ഉപകരണത്തിന്റെ ക്ലോക്ക് തെറ്റായിരിക്കുന്നതിനാൽ, Chromium-ന് ഈ സർട്ടിഫിക്കറ്റുകൾ പരിശോധിച്ചുറപ്പിക്കാനാവില്ല.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ഹോസ്‌റ്റിന്‍റെ &lt;abbr id="dnsDefinition"&gt;DNS വിലാസം&lt;/abbr&gt; കണ്ടെത്താനായില്ല. പ്രശ്‌നം നിർണ്ണയിക്കുന്നു.</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> എന്നതിന്റെ നിങ്ങളുടെ കോഡ് <ph name="ONE_TIME_CODE" /> ആണ്</translation>
@@ -1869,6 +1879,7 @@
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, നിങ്ങളുടെ ബ്രൗസറിൽ Chrome Enterprise Connectors ഓണാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="8805819170075074995">ലിസ്‌റ്റ് എൻട്രി "<ph name="LANGUAGE_ID" />": SpellcheckLanguage നയത്തിലും ഉൾപ്പെടുത്തിയിരിക്കുന്നതിനാൽ എൻട്രി അവഗണിച്ചു.</translation>
 <translation id="8807160976559152894">ഓരോ പേജിന് ശേഷവും ട്രിം ചെയ്യുക</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, നിങ്ങളുടെ Chrome ക്രമീകരണത്തിൽ Chrome അപ്ഡേറ്റ് ചെയ്യാൻ 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="883848425547221593">മറ്റുള്ള ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌</translation>
 <translation id="884264119367021077">ഷിപ്പിംഗ് വിലാസം</translation>
@@ -1888,6 +1899,7 @@
 <translation id="890493561996401738">നിർദ്ദേശ ബട്ടൺ നീക്കം ചെയ്യുക, നീക്കം ചെയ്യാൻ എന്റർ അമർത്തുക, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">നിങ്ങൾ അദൃശ്യ മോഡിലേക്ക് പോയി</translation>
 <translation id="8912362522468806198">Google അക്കൗണ്ട്</translation>
+<translation id="8913778647360618320">'പേയ്‌മെന്റ് രീതികൾ മാനേജ് ചെയ്യുക' ബട്ടൺ, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ പേയ്‌മെന്റുകളും ക്രെഡിറ്റ് കാർഡ് വിവരങ്ങളും മാനേജ് ചെയ്യാൻ 'Enter' അമർത്തുക</translation>
 <translation id="8918231688545606538">ഈ പേജ് സംശയാസ്പദമാണ്</translation>
 <translation id="892588693504540538">മുകളിൽ വലതുവശത്ത് പഞ്ച് ചെയ്യുക</translation>
 <translation id="8931333241327730545">ഈ കാർഡ് നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംരക്ഷിക്കണോ?</translation>

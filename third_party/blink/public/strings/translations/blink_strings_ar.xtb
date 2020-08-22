@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">إسهامات</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">إعلان بانر</translation>
+<translation id="1480676835519562650">اختيار متعدد، تم اختيار <ph name="SELECTED" /> من أصل <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">منطقة</translation>
 <translation id="1591562245178063882">هذا الشهر</translation>
 <translation id="1637811476055996098">اختيار الملفات</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">يوم</translation>
 <translation id="2507943997699731163">يُرجى ملء هذا الحقل.</translation>
 <translation id="2508569020611168319">قائمة علامات التبويب</translation>
+<translation id="2530182415807757784">اختيار متعدد، لم يتم الاختيار.</translation>
 <translation id="2561842179657104141">عرض المزيد من عناصر التحكم في الوسائط</translation>
 <translation id="2572483411312390101">تشغيل</translation>
 <translation id="2613802280814924224">يُرجى إدخال قيمة صالحة. علمًا بأن أقرب قيمة صالحة هي <ph name="VALID_VALUE" />.</translation>

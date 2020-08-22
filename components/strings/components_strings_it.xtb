@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
 <translation id="1125573121925420732">Gli avvisi potrebbero essere frequenti durante l'aggiornamento della sicurezza dei siti web. La situazione dovrebbe migliorare a breve.</translation>
 <translation id="112840717907525620">Cache dei criteri integra</translation>
+<translation id="1130564665089811311">Pulsante Traduci pagina, premi Invio per tradurre questa pagina con Google Traduttore</translation>
 <translation id="1131264053432022307">Immagine copiata</translation>
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="1151972924205500581">Password obbligatoria</translation>
@@ -408,6 +409,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2634124572758952069">Impossibile trovare l'indirizzo IP del server di <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Stato:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per cancellare la cronologia di navigazione, i cookie, la cache e altri dati nelle impostazioni di Chrome</translation>
 <translation id="2650446666397867134">L'accesso al file è stato negato</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2660779039299703961">Evento</translation>
@@ -430,6 +432,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="2713444072780614174">Bianco</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per gestire i tuoi pagamenti e i dati delle carte di credito nelle impostazioni di Chrome</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="272451190272506600">Tocca il sensore per pagare</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
@@ -639,6 +642,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3630155396527302611">Se è già elencato come programma autorizzato ad accedere alla rete, prova a
       rimuoverlo dall'elenco e ad aggiungerlo di nuovo.</translation>
 <translation id="3631244953324577188">Dati biometrici</translation>
+<translation id="3633738897356909127">Pulsante Aggiorna Chrome, premi Invio per aggiornare Chrome dalle relative impostazioni</translation>
 <translation id="3634530185120165534">Vassoio 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Convalida riuscita</translation>
@@ -862,6 +866,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4506599922270137252">Contattare l'amministratore di sistema</translation>
 <translation id="450710068430902550">Condivisione con l'amministratore</translation>
 <translation id="4508814173490746936">Impossibile usare Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per tradurre questa pagina con Google Traduttore</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Carte di credito e indirizzi provengono da Chrome e dall'Account Google (<ph name="ACCOUNT_EMAIL" />). Puoi gestirli in <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -942,6 +947,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4879725228911483934">Aprire finestre e posizionarle sugli schermi</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
 <translation id="4881695831933465202">Apri</translation>
+<translation id="4889420713887366944">Pulsante Apri finestra di navigazione in incognito, premi Invio per aprire una nuova finestra di navigazione in incognito per navigare in privato</translation>
 <translation id="4892518386797173871">Posteriore</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Salva…</translation>
@@ -1103,6 +1109,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5523118979700054094">Nome criterio</translation>
 <translation id="55293785478302737">Impuntura</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5535133333442455806">Pulsante Cancella dati di navigazione, premi Invio per cancellare la cronologia di navigazione, i cookie, la cache e altri dati nelle impostazioni di Chrome</translation>
 <translation id="5536214594743852365">Mostra la sezione "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
@@ -1601,6 +1608,7 @@ Ulteriori dettagli:
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Il valore non è compreso nell'intervallo (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Scadenza: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per visualizzare e gestire le password nelle impostazioni di Chrome</translation>
 <translation id="7615602087246926389">Hai già dati criptati con una versione diversa della password del tuo Account Google. Inseriscila qui di seguito.</translation>
 <translation id="7616645509853975347">L'amministratore ha attivato Chrome Enterprise Connectors sul tuo browser. Questi connettori hanno accesso ad alcuni dei tuoi dati.</translation>
 <translation id="7619838219691048931">Ultimo foglio</translation>
@@ -1857,6 +1865,8 @@ Ulteriori dettagli:
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8728672262656704056">Sei passato alla navigazione in incognito</translation>
 <translation id="8730621377337864115">Fine</translation>
+<translation id="8731544501227493793">Pulsante Gestisci password, premi Invio per visualizzare e gestire le tue password nelle impostazioni di Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per aprire una nuova finestra di navigazione in incognito per navigare in privato</translation>
 <translation id="8738058698779197622">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo è sbagliato, pertanto Chromium non può verificare i certificati.</translation>
 <translation id="8740359287975076522">Impossibile trovare l'&lt;abbr id="dnsDefinition"&gt;indirizzo DNS&lt;/abbr&gt; di <ph name="HOST_NAME" />. Stiamo analizzando il problema.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> è il tuo codice per <ph name="ORIGIN" /></translation>
@@ -1873,6 +1883,7 @@ Ulteriori dettagli:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ha attivato Chrome Enterprise Connectors sul tuo browser. Questi connettori hanno accesso ad alcuni dei tuoi dati.</translation>
 <translation id="8805819170075074995">Voce "<ph name="LANGUAGE_ID" />": voce ignorata perché è inclusa anche nella norma SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Taglia dopo ciascuna pagina</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per aggiornare Chrome dalle relative impostazioni</translation>
 <translation id="8820817407110198400">Preferiti</translation>
 <translation id="883848425547221593">Altri Preferiti</translation>
 <translation id="884264119367021077">Indirizzo di spedizione</translation>
@@ -1892,6 +1903,7 @@ Ulteriori dettagli:
 <translation id="890493561996401738">Rimuovi il pulsante Suggerimento, premi INVIO per rimuovere, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Hai attivato la navigazione in incognito</translation>
 <translation id="8912362522468806198">Google Account</translation>
+<translation id="8913778647360618320">Pulsante Gestisci metodi di pagamento, premi Invio per gestire i tuoi pagamenti e i dati delle carte di credito nelle impostazioni di Chrome</translation>
 <translation id="8918231688545606538">Questa pagina è sospetta</translation>
 <translation id="892588693504540538">Perforatura in alto a destra</translation>
 <translation id="8931333241327730545">Vuoi salvare la scheda nel tuo Account Google?</translation>

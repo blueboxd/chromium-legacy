@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">Se esta función está activada, Chromium utilizará o Tradutor de Google para ofrecer a tradución de páxinas escritas noutros idiomas. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activar escáner de Chromium</translation>
 <translation id="4787850887676698916">Aquí aparecerán as pestanas que abrises en Chromium noutros dispositivos.</translation>
+<translation id="4828317641996116749">Chromium non puido comprobar todos os contrasinais. Téntao de novo máis tarde.</translation>
 <translation id="4999538639245140991">Dado que estás pechando sesión nunha conta xestionada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, eliminaranse os teus datos de Chromium deste dispositivo, pero conservaranse na túa Conta de Google.</translation>
 <translation id="5224391634244552924">Non hai contrasinais gardados. Chromium pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="5521125884468363740">Para ver as túas pestanas desde calquera dispositivo no que utilices Chromium, inicia sesión e activa a sincronización</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">Xa podes utilizar Chromium sempre que toques ligazóns en mensaxes, en documentos e noutras aplicacións.</translation>
 <translation id="7173114856073700355">Abrir Configuración</translation>
 <translation id="7208566199746267865">Chromium fai que aforres tempo ao pasar as túas contas á web. Podes engadir ou eliminar contas en Configuración.</translation>
+<translation id="725427773388857052">Chromium pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis.</translation>
 <translation id="7269362888766543920">Algúns complementos fan que Chromium falle. Proba a desinstalalos.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">Para facer que Chromium sexa o teu navegador predeterminado, sigue estes pasos:

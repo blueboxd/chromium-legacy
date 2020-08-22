@@ -14,6 +14,7 @@
 <translation id="109942774857561566">ደብሮኛል</translation>
 <translation id="1104084341931202936">የተደራሽነት ቅንብሮችን አሳይ</translation>
 <translation id="1104621072296271835">የእርስዎ መሣሪያዎች እንዲያውም የተሻለ ይሠራሉ</translation>
+<translation id="1119348796022671382">ገጽታ የተላበሰው የቀለም ሁነታ በይነገጹን በስሱ ቀለም ለመቀባት ከእርስዎ የግድግዳ ወረቀት የወጡ ቀለማትን ይጠቀማል።</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
 <translation id="1153356358378277386">የተጣመሩ መሣሪያዎች</translation>
 <translation id="1175572348579024023">ሸብልል</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">አብራ</translation>
 <translation id="1419738280318246476">የማሳወቅ እርምጃውን ለማከናወን መሣሪያን ይክፈቱ</translation>
 <translation id="1420408895951708260">የምሽት ብርሃንን ቀያይር። <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">ቅጽበታዊ ገጽ ዕይታ ተነስቷል እና ወደ ቅንጥብ ሰሌዳ ተቀምጧል</translation>
 <translation id="1426410128494586442">አዎ</translation>
 <translation id="1455242230282523554">የቋንቋ ቅንብሮችን አሳይ</translation>
 <translation id="1460620680449458626">የድምፅ መጠን ድምፀ ከል ተደርጓል።</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">የመዳረሻ መቀየሪያ በቅንብሮች &gt; ተደራሽነት ውስጥ ሊሰናከል ይችላል።</translation>
 <translation id="1654477262762802994">የድምጽ መጠይቅ ይጀምሩ</translation>
 <translation id="1665244008632896072">የጨለማ ሁነታን ይቀያይሩ። <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">ገለልተኛ የቀለም ሁነታ ከልጣፍ የወጡ ቀለማትን አይጠቀምም፣ በገለልተኛ ፈካ ያሉ ወይም ደማቅ ቅልመቶችን ይተካቸዋል።</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ሰዓት ቆጣሪ · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">የIPv6 አድራሻ፦ <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">ሞኖ ኦዲዮ</translation>
 <translation id="3009178788565917040">ውጽዓት</translation>
 <translation id="3033545621352269033">አብራ</translation>
+<translation id="3038571455154067151">በመለያ ለመግባት የእርስዎን Family Link የወላጅ መዳረሻ ኮድ ያስገቡ</translation>
 <translation id="3051128274746680507">የእርስዎ ክትትል የሚደረግበት የተጠቃሚ መገለጫ በቅርቡ ይወገዳል። ተጨማሪ ለማወቅ በመለያ ይግቡ።</translation>
 <translation id="3055162170959710888">ይህን መሣሪያ ዛሬ ለ<ph name="USED_TIME" /> ተጠቅመውበታል</translation>
 <translation id="3076778413190775903">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME" />፣
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3977512764614765090">በ <ph name="PERCENTAGE" />% ላይ ባትሪ እና ኃይል እየሞላ ነው።</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
+<translation id="40062176907008878">የእጅ ጽሑፍ</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
 <translation id="4021716437419160885">ወደ ታች ይሸብልሉ</translation>
 <translation id="4028481283645788203">ለበለጠ ደህንነት የይለፍ ቃል ያስፈልጋል</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">በማያ ገጽ መቆለፊያዎ ላይ ማሳወቂያዎችን ለማየት ቅንብሩችን ለመቀየር ይክፈቱ</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> በ<ph name="DOMAIN" /> የሚተዳደር ነው</translation>
+<translation id="4157822100366708405">የጨለማ ገጽታ ቅንብሮች</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
 <translation id="4195877955194704651">ራስሰር ጠቅታዎች አዝራር</translation>
 <translation id="4197790712631116042">ጠፍቷል</translation>
 <translation id="4212472694152630271">ወደ ፒን ቀይር</translation>
 <translation id="4215497585250573029">የቪፒኤን ቅንብሮች</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
+<translation id="4229328187280698237">ወደ የጡባዊ ሁነታ ቀይር</translation>
 <translation id="4239069858505860023">ጂፒአርኤስ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">የማሳያ ውቅረትን ያረጋግጡ</translation>
 <translation id="5083553833479578423">ተጨማሪ የረዳት ባህሪያትን ያስከፍቱ።</translation>
 <translation id="5114495209940374989">ቅጽበታዊ ገጽ እይታዎች</translation>
+<translation id="5123162024343028706">ከላይ ተንሳፈፍ</translation>
 <translation id="5136175204352732067">የተለየ የቁልፍ ሰሌዳ ተገናኝቷል</translation>
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
 <translation id="5170568018924773124">በአቃፊ አሳይ</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">ጠፍቷል</translation>
 <translation id="5302048478445481009">ቋንቋ</translation>
 <translation id="5313326810920013265">የብሉቱዝ ቅንብሮች</translation>
+<translation id="5314219114274263156">የማያ ገጽ ቀረጻ ተቀድቷል</translation>
 <translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
 <translation id="5379115545237091094">በጣም ብዙ ሙከራዎች</translation>
 <translation id="5397578532367286026">የዚህ ተጠቃሚ አጠቃቀም እና ታሪክ በchrome.com ላይ በአስተዳዳሪ (<ph name="MANAGER_EMAIL" />) ሊገመገም ይችላል።</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ላይ <ph name="ROUTE_TITLE" />ን አስቁም</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
+<translation id="5876666360658629066">የወላጅ ኮድ ያስገቡ</translation>
 <translation id="5887866489674258948">የጨለማ ሁነታ</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">በዚህ ዝማኔ ጊዜ የእርስዎ ማያ ገጽ ከተለመደው ረዘም ላለ ጊዜ (እስከ አንድ ደቂቃ ድረስ) ባዶ ይሆናል። ዝማኔው በሂደት ላይ ሳለ እባክዎ የኃይል አዝራሩን አይጫኑት።</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6528179044667508675">አትረብሽ</translation>
+<translation id="65320610082834431">ስሜት ገላጭ ምስሎች</translation>
 <translation id="6537270692134705506">ማያ ገጽን አንሳ</translation>
 <translation id="6537924328260219877">የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">ወደ <ph name="RECEIVER_NAME" /> cast በማድረግ ላይ</translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">በቀኝ ጠቅታ ወይም ረጅም መጫን አማካኝነት ረዳት እርስዎ ለመረጡት እንደ ፍቺ ወይም የአሃድ ልወጣ ያለ መረጃን ያሳያል።</translation>
 <translation id="7569509451529460200">ብሬይል እና ChromeVox ነቅተዋል</translation>
 <translation id="7579778809502851308">የማያ ገጽ ቀረጻ</translation>
+<translation id="7590883480672980941">የግቤት ቅንብሮች</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7600875258240007829">ሁሉንም ማሳወቂያዎች ይመልከቱ</translation>
+<translation id="7618774594543487847">ገለልተኛ</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° ፋ</translation>
 <translation id="7642647758716480637">ለ <ph name="NETWORK_NAME" />፣ <ph name="CONNECTION_STATUS" /> ቅንብሮችን ክፈት</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ባለቤት)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ይቀራል</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> ሰዓት ቆጣሪ</translation>
+<translation id="8647931990447795414">ሰው ለማከል የእርስዎን Family Link የወላጅ መዳረሻ ኮድ ያስገቡ</translation>
 <translation id="8649101189709089199">ለመናገር-ይምረጡ</translation>
 <translation id="8652175077544655965">ቅንብሮችን ዝጋ</translation>
 <translation id="8653151467777939995">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች በርተዋል</translation>
 <translation id="8660331759611631213">የ71 ካሬ ሥር</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">የአውታረ መረብ ዝርዝርን አሳይ። <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">የቀለም ሁነታ</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">አነስተኛ ኃይል ያለው ባትሪ መሙያ ተገናኝቷል</translation>
 <translation id="8683506306463609433">የአፈጻጸም ክትትል ገቢር ነው</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
 <translation id="890616557918890486">ምንጭ ይለውጡ</translation>
 <translation id="8909138438987180327">ባትሪ <ph name="PERCENTAGE" /> መቶኛ ላይ።</translation>
+<translation id="8913384980486163186">ገጽታ የተላበሰ (ነባሪ)</translation>
+<translation id="8918251165865262378">ወደ የላፕቶፕ ሁነታ ቀይር</translation>
 <translation id="8921554779039049422">ኤች+</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>
 <translation id="8936501819958976551">ቦዝኗል</translation>

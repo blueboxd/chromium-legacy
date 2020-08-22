@@ -35,7 +35,7 @@
 <translation id="2560420686485554789">‏Chromium برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">‏برای اعمال به‌روزرسانی، Chromium OS باید راه‌اندازی مجدد شود.</translation>
-<translation id="2648074677641340862">‏یک خطای سیستم عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
+<translation id="2648074677641340862">‏یک خطای سیستم‌عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
 <translation id="2711502716910134313">‏برگه Chromium</translation>
 <translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
@@ -92,7 +92,7 @@
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="459535195905078186">‏برنامه‌های Chromium</translation>
 <translation id="4677944499843243528">‏ظاهراً نمایه توسط فرآیند Chromium دیگری (<ph name="PROCESS_ID" />) در رایانه‌ای دیگر (<ph name="HOST_NAME" />) در حال استفاده است. Chromium نمایه را قفل کرده است تا خراب نشود. اگر مطمئنید فرآیندهای دیگری از این نمایه استفاده نمی‌کنند، می‌توانید قفل نمایه را باز کنید و Chromium را مجدداً راه‌اندازی نمایید.</translation>
-<translation id="469338717132742108">‏دریافت کمک برای سیستم عامل Chromium</translation>
+<translation id="469338717132742108">‏دریافت کمک برای سیستم‌عامل Chromium</translation>
 <translation id="4708774505295300557">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chromium در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="4746050847053251315">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4748217263233248895">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه‌ای برای Chromium اعمال شد. هم‌اکنون بازراه‌اندازی کنید و ما برگه‌هایتان را بازیابی خواهیم کرد.</translation>
@@ -121,13 +121,13 @@
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="5653831366781983928">‏لطفاً اکنون Chromium را بازراه‌اندازی کنید</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
-<translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
+<translation id="5820394555380036790">‏سیستم‌عامل Chromium </translation>
 <translation id="5862307444128926510">‏به Chromium خوش آمدید</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ورود به سیستم شبکه</translation>
 <translation id="5987687638152509985">‏به‌روزرسانی Chromium برای شروع همگام‌سازی</translation>
 <translation id="6013050204643758987">‏ساخت سیستم‌عامل Chromium به‌کمک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگری، مثل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (بتا)<ph name="END_LINK_LINUX_OSS" />، امکان‌پذیر شده است.</translation>
-<translation id="6039377483953237732">‏نسخه سیستم عامل Chromium</translation>
+<translation id="6039377483953237732">‏نسخه سیستم‌عامل Chromium</translation>
 <translation id="6055895534982063517">‏نسخه جدیدی از Chromium وجود دارد که سریع‌تر از همیشه است.</translation>
 <translation id="6063093106622310249">‏&amp;باز کردن در Chromium</translation>
 <translation id="6072279588547424923">‏<ph name="EXTENSION_NAME" /> به Chromium اضافه شد</translation>
@@ -190,7 +190,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7451052299415159299">‏Chromium برای این سایت به مجوز دسترسی به دوربین نیاز دارد</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="753534427205733210">{0,plural, =1{‏Chromium ‏۱ دقیقه دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}}</translation>
-<translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
+<translation id="7549178288319965365">‏درباره سیستم‌عامل Chromium </translation>
 <translation id="7561906087460245826">‏همچنین داده‌ها از Chromium پاک شود (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">‏اگر تنظیمی در این صفحه نشان داده نمی‌شود، در <ph name="LINK_BEGIN" />
       تنظیمات مرورگر Chromium<ph name="LINK_END" /> آن را کنید</translation>
@@ -206,7 +206,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7827169012280634081">‏هنگام خروج از Chromium، کوکی‌ها و داده‌های سایت را پاک کنید</translation>
 <translation id="7867198900892795913">‏Chromium به جدیدترین نسخه به‌روزرسانی نشد، بنابراین قابلیت‌های جدید و رفع اشکال‌های امنیتی را ندارید.</translation>
-<translation id="7898472181347242998">‏برای اینکه ببینید دستگاهتان به‌روز است یا نه، به <ph name="LINK_BEGIN" />تنظیمات سیستم عامل Chromium<ph name="LINK_END" /> بروید</translation>
+<translation id="7898472181347242998">‏برای اینکه ببینید دستگاهتان به‌روز است یا نه، به <ph name="LINK_BEGIN" />تنظیمات سیستم‌عامل Chromium<ph name="LINK_END" /> بروید</translation>
 <translation id="7937630085815544518">‏شما بعنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم Chromium شده‌اید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
 <translation id="7975919845073681630">‏این نصب ثانویه Chromium است و نمی‌تواند مرورگر پیش‌فرضتان شود.</translation>
 <translation id="7979877361127045932">‏پنهان در منوی Chromium</translation>
@@ -237,7 +237,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8897323336392112261">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا کلیک روی دکمه صفحه اصلی نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8907580949721785412">‏Chromium در حال تلاش برای نشان دادن گذرواژه‌هاست. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="8941642502866065432">‏به‌روزرسانی Chromium امکان‌پذیر نیست</translation>
-<translation id="8974095189086268230">‏سیستم عامل Chromium با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
+<translation id="8974095189086268230">‏سیستم‌عامل Chromium با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
 <translation id="9019929317751753759">‏برای ایمن‌تر کردن Chromium، افزونه زیر را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده است و ممکن است بدون اطلاع شما اضافه شده باشد، غیرفعال کردیم.</translation>
 <translation id="9089354809943900324">‏نسخه Chromium قدیمی است</translation>
 <translation id="9093206154853821181">{0,plural, =1{‏Chromium یک ساعت دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium # ساعت دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium # ساعت دیگر راه‌اندازی مجدد می‌شود}}</translation>
@@ -247,6 +247,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="9164845895615421500">‏Chromium هفته‌ای یک‌بار وجود نرم‌افزارهای ناخواسته را بررسی می‌کند. آخرین بررسی: چند لحظه قبل.</translation>
 <translation id="9190841055450128916">‏Chromium‏ (mDNS ورودی)</translation>
 <translation id="93478295209880648">‏Chromium ممکن است درست کار نکند زیرا دیگر در Windows XP یا Windows Vista پشتیبانی نمی‌شود</translation>
-<translation id="95514773681268843">‏<ph name="DOMAIN" /> از شما می‌خواهد قبل از استفاده از دستگاه، شرایط خدمات زیر را خوانده و بپذیرید. این شرایط بسط داده نمی‌شوند، اصلاح نمی‌شوند و شرایط سیستم عامل Chromium را محدود نمی‌کنند.</translation>
+<translation id="95514773681268843">‏<ph name="DOMAIN" /> از شما می‌خواهد قبل از استفاده از دستگاه، شرایط خدمات زیر را خوانده و بپذیرید. این شرایط بسط داده نمی‌شوند، اصلاح نمی‌شوند و شرایط سیستم‌عامل Chromium را محدود نمی‌کنند.</translation>
 <translation id="985602178874221306">Chromium Authors</translation>
 </translationbundle>

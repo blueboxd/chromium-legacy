@@ -308,7 +308,7 @@
 <translation id="3270069636408109001">Հաջորդ աղյուսակ չկա</translation>
 <translation id="3273791280096244679">Պահել պիտակը</translation>
 <translation id="3283583562490372694">նշված չէ</translation>
-<translation id="3286372614333682499">ուղղահայաց</translation>
+<translation id="3286372614333682499">ուղղաձիգ</translation>
 <translation id="3286390186030710347">Սահիչ</translation>
 <translation id="3300348286427369683">Տեքստի խմբագրման ավելի լայն հնարավորություններ։ ChromeVox-ն այժմ աջակցում է տեքստի խմբագրման ավելի շատ տարբերակներ, օրինակ՝ արագ նավարկման հրահանգներ, բրայլյան էկրանի միջոցով նշորդի տեղաշարժում, ընտրություն և ավելին։</translation>
 <translation id="3307886118343381874">Անցնել աղյուսակի վերջ</translation>
@@ -960,7 +960,7 @@
 <translation id="8656888282555543604">Միացնել բրայլյան գրերի գրանցումը</translation>
 <translation id="867187640362843212">Վերնագիր 5</translation>
 <translation id="8696284982970258155">Նեկտարագույն</translation>
-<translation id="8697111817566059991">{COUNT,plural, =1{ցից}one{# ուղղահայաց ցից}other{# ուղղահայաց ցից}}</translation>
+<translation id="8697111817566059991">{COUNT,plural, =1{ցից}one{# ուղղաձիգ ցից}other{# ուղղաձիգ ցից}}</translation>
 <translation id="8743786158317878347">մուտքագրել կառուցվածքավորված բովանդակություն, օրինակ՝ աղյուսակ</translation>
 <translation id="8747966237988593539">Համարակալված ցուցակ</translation>
 <translation id="8749988712346667988">Արծաթագույն</translation>

@@ -3562,14 +3562,12 @@ void LocalFrameView::SetTracksRasterInvalidations(
       continue;
     if (auto* layout_view = local_frame->ContentLayoutObject()) {
       is_tracking_raster_invalidations_ = track_raster_invalidations;
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-        if (paint_artifact_compositor_) {
-          paint_artifact_compositor_->SetTracksRasterInvalidations(
-              track_raster_invalidations);
-        }
-      } else {
-        layout_view->Compositor()->UpdateTrackingRasterInvalidations();
+      if (paint_artifact_compositor_) {
+        paint_artifact_compositor_->SetTracksRasterInvalidations(
+            track_raster_invalidations);
       }
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+        layout_view->Compositor()->UpdateTrackingRasterInvalidations();
     }
   }
 

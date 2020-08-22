@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">kredite</translation>
 <translation id="1342835525016946179">artikull</translation>
 <translation id="1359897965706325498">banderolë</translation>
+<translation id="1480676835519562650">me zgjedhje të shumëfishtë, <ph name="SELECTED" /> nga <ph name="COUNT" /> të zgjedhura.</translation>
 <translation id="1589122976691792535">rajoni</translation>
 <translation id="1591562245178063882">Këtë muaj</translation>
 <translation id="1637811476055996098">Zgjidh skedarët</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dita</translation>
 <translation id="2507943997699731163">Plotësoje këtë fushë.</translation>
 <translation id="2508569020611168319">lista e skedave</translation>
+<translation id="2530182415807757784">me zgjedhje të shumëfishtë, nuk është zgjedhur asnjë.</translation>
 <translation id="2561842179657104141">shfaq më shumë kontrolle të medias</translation>
 <translation id="2572483411312390101">luaj</translation>
 <translation id="2613802280814924224">Fut një vlerë të vlefshme. Vlera më e afërt e vlefshme është <ph name="VALID_VALUE" />.</translation>

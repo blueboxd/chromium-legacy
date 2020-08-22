@@ -14,6 +14,7 @@
 <translation id="109942774857561566">我好无聊</translation>
 <translation id="1104084341931202936">显示无障碍设置</translation>
 <translation id="1104621072296271835">协同运作可使您的各部设备更好地发挥作用</translation>
+<translation id="1119348796022671382">带主题背景的颜色模式会使用从您壁纸中提取的颜色为界面略施粉黛。</translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1175572348579024023">滚动</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">已开启</translation>
 <translation id="1419738280318246476">解锁设备即可执行通知操作</translation>
 <translation id="1420408895951708260">开启/关闭护眼模式。<ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">已截取屏幕截图并将其保存至剪贴板</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1455242230282523554">显示语言设置</translation>
 <translation id="1460620680449458626">当前处于静音状态。</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">您可在“设置”&gt;“无障碍”中停用“开关控制”功能。</translation>
 <translation id="1654477262762802994">启动语音查询</translation>
 <translation id="1665244008632896072">开启/关闭深色模式。<ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">中性颜色模式不会使用从壁纸中提取的颜色，而是会将其替换为一组中性的浅色调或深色调。</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" />定时器   <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
 <translation id="3033545621352269033">已开启</translation>
+<translation id="3038571455154067151">若要登录，请输入您的 Family Link 家长访问码</translation>
 <translation id="3051128274746680507">您的受监管用户个人资料很快就会被移除。登录即可了解详情。</translation>
 <translation id="3055162170959710888">您今天的设备使用时长：<ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">状态栏，时间为 <ph name="TIME" />，
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3977512764614765090">当前的电池电量为 <ph name="PERCENTAGE" />%，正在充电。</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
+<translation id="40062176907008878">手写</translation>
 <translation id="4017989525502048489">激光笔</translation>
 <translation id="4021716437419160885">向下滚动</translation>
 <translation id="4028481283645788203">需要输入密码以增强安全性</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">要想在锁定屏幕上看到通知，请解锁设备以更改设置</translation>
 <translation id="4146833061457621061">播放音乐</translation>
 <translation id="4149156641122542261">此 <ph name="DEVICE_TYPE" /> 由 <ph name="DOMAIN" /> 管理</translation>
+<translation id="4157822100366708405">深色主题设置</translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4197790712631116042">已关闭</translation>
 <translation id="4212472694152630271">切换到 PIN 码</translation>
 <translation id="4215497585250573029">VPN 设置</translation>
 <translation id="4217571870635786043">语音输入</translation>
+<translation id="4229328187280698237">切换到平板电脑模式</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">确认显示屏配置</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="5114495209940374989">屏幕截图</translation>
+<translation id="5123162024343028706">固定在顶部</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
 <translation id="5170568018924773124">在文件夹中显示</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">已关闭</translation>
 <translation id="5302048478445481009">语言</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
+<translation id="5314219114274263156">已录制屏幕</translation>
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
 <translation id="5379115545237091094">尝试次数过多</translation>
 <translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5837036133683224804">停止将“<ph name="ROUTE_TITLE" />”投射至“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="5876666360658629066">输入家长访问码</translation>
 <translation id="5887866489674258948">深色模式</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">在此次更新期间，您的屏幕变为空白的时间会比平时长（可长达 1 分钟）。在更新过程中，请不要按电源按钮。</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528179044667508675">请勿打扰</translation>
+<translation id="65320610082834431">表情符号</translation>
 <translation id="6537270692134705506">获取屏幕截图</translation>
 <translation id="6537924328260219877">信号强度为 <ph name="SIGNAL_STRENGTH" />，剩余电量为 <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">正在投射到<ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">只要您右键点击或长按所选内容，Google 助理即会显示与其相关的信息（例如定义或单位换算）。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7579778809502851308">截取屏幕</translation>
+<translation id="7590883480672980941">输入设置</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
+<translation id="7618774594543487847">中性</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> 华氏度</translation>
 <translation id="7642647758716480637">打开<ph name="NETWORK_NAME" />（<ph name="CONNECTION_STATUS" />）的设置</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />，由您的管理员管理</translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" />定时器</translation>
+<translation id="8647931990447795414">若要添加人员，请输入您的 Family Link 家长访问码</translation>
 <translation id="8649101189709089199">随选朗读</translation>
 <translation id="8652175077544655965">关闭设置</translation>
 <translation id="8653151467777939995">显示通知设置。通知已开启</translation>
 <translation id="8660331759611631213">71 的平方根</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">显示网络列表。<ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">颜色模式</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="8683506306463609433">正在跟踪性能</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="890616557918890486">更改来源</translation>
 <translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
+<translation id="8913384980486163186">带主题背景（默认值）</translation>
+<translation id="8918251165865262378">切换到笔记本电脑模式</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
 <translation id="8936501819958976551">已停用</translation>

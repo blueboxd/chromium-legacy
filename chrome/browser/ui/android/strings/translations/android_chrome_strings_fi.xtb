@@ -633,6 +633,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5864419784173784555">Odottaa toista latausta…</translation>
 <translation id="5865733239029070421">Lähettää automaattisesti käyttötilastoja ja virheraportteja Googlelle</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
+<translation id="5872013926720995826">Digitaalisen sisällön linkkejä ei voitu vahvistaa: <ph name="VIOLATED_URL" /></translation>
 <translation id="5876056640971328065">Keskeytä video</translation>
 <translation id="5884076754568147479">Jotta tehtävien hoitaminen sujuisi helpommin, Google saa tiedot niiden sivustojen URL-osoitteista ja sisällöstä, joilla käytät Assistantia, sekä Assistantin kautta lähettämäsi tiedot</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>

@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">bronvermelding</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">Meerdere selecties mogelijk. <ph name="SELECTED" /> van <ph name="COUNT" /> geselecteerd.</translation>
 <translation id="1589122976691792535">regio</translation>
 <translation id="1591562245178063882">Deze maand</translation>
 <translation id="1637811476055996098">Bestanden kiezen</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vul dit veld in.</translation>
 <translation id="2508569020611168319">tabbladlijst</translation>
+<translation id="2530182415807757784">Meerdere selecties mogelijk. Niets geselecteerd.</translation>
 <translation id="2561842179657104141">meer mediabedieningselementen weergeven</translation>
 <translation id="2572483411312390101">afspelen</translation>
 <translation id="2613802280814924224">Geef een geldige waarde op. De dichtstbijzijnde geldige waarde is <ph name="VALID_VALUE" />.</translation>

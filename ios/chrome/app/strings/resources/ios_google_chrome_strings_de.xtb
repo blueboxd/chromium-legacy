@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Chrome-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, berühren und halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste. Sie befindet sich unten oder oben auf dem Bildschirm.</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
 <translation id="4698415050768537821">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es morgen noch einmal oder <ph name="BEGIN_LINK" />prüfen Sie die Passwörter in Ihrem Google-Konto<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">Chrome kann dazu beitragen, Sie beispielsweise vor Datenpannen und unsicheren Websites zu schützen.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
 <translation id="5639704535586432836">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Google Chrome" und aktivieren Sie die Kamera.</translation>
 <translation id="5642200033778930880">Google Chrome kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
@@ -50,6 +51,7 @@
         1. Öffnen Sie die Einstellungen. 
         2. Tippen Sie auf "Standard-Webbrowser".
         3. Wählen Sie Chrome aus.</translation>
+<translation id="6822673484890854830">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="7165736900384873061">Google Chrome QR-Scanner nutzen</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Ziehen Sie Chrome in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Einstellungen öffnen</translation>

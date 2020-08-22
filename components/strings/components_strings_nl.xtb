@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="1125573121925420732">Wanneer de beveiliging van websites wordt geüpdatet, worden vaak waarschuwingen weergegeven. Dit wordt binnenkort verbeterd.</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
+<translation id="1130564665089811311">Knop 'Pagina vertalen'. Druk op Enter om deze pagina te vertalen met Google Translate.</translation>
 <translation id="1131264053432022307">Afbeelding die je hebt gekopieerd</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1151972924205500581">Wachtwoord vereist</translation>
@@ -405,6 +406,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2634124572758952069">Het IP-adres van de server van <ph name="HOST_NAME" /> kan niet worden gevonden.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om je browsegeschiedenis, cookies, cache en meer te wissen in de Chrome-instellingen.</translation>
 <translation id="2650446666397867134">Toegang tot het bestand is geweigerd</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2660779039299703961">Gebeurtenis</translation>
@@ -427,6 +429,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2705137772291741111">De in het cachegeheugen opgeslagen versie van deze site is niet bereikbaar.</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2713444072780614174">Wit</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om je betalingen en creditcardgegevens te beheren in de Chrome-instellingen.</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="272451190272506600">Raak de sensor aan om te betalen</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
@@ -632,6 +635,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>
 <translation id="3630155396527302611">Als dit programma al wordt vermeld als een programma dat toegang heeft tot het netwerk, kun je proberen het uit de lijst te verwijderen en het opnieuw toe te voegen.</translation>
 <translation id="3631244953324577188">Biometrische systemen</translation>
+<translation id="3633738897356909127">Knop 'Chrome updaten'. Druk op Enter om Chrome te updaten via de instellingen van Chrome.</translation>
 <translation id="3634530185120165534">Lade 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validatie geslaagd</translation>
@@ -855,6 +859,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4506599922270137252">Neem contact op met de systeembeheerder</translation>
 <translation id="450710068430902550">Delen met beheerder</translation>
 <translation id="4508814173490746936">Kan Touch ID niet gebruiken</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om deze pagina te vertalen met Google Translate.</translation>
 <translation id="4510487217173779431">Chou4 (envelop)</translation>
 <translation id="4515275063822566619">Passen en adressen zijn afkomstig uit Chrome en je Google-account (<ph name="ACCOUNT_EMAIL" />). Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (envelop)</translation>
@@ -935,6 +940,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4879725228911483934">Vensters openen en plaatsen op je schermen</translation>
 <translation id="4880827082731008257">Geschiedenis doorzoeken</translation>
 <translation id="4881695831933465202">Openen</translation>
+<translation id="4889420713887366944">Knop 'Incognitovenster openen'. Druk op 'Enter' om een nieuw incognitovenster in Chrome te openen om privé te browsen.</translation>
 <translation id="4892518386797173871">Achterzijde</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Opslaan…</translation>
@@ -1096,6 +1102,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5523118979700054094">Beleidsnaam</translation>
 <translation id="55293785478302737">Inbinden met nietjes</translation>
 <translation id="553484882784876924">Prc6 (envelop)</translation>
+<translation id="5535133333442455806">Knop 'Browsegegevens wissen'. Druk op Enter om je browsegeschiedenis, cookies, cache en meer te wissen in de Chrome-instellingen.</translation>
 <translation id="5536214594743852365">Het gedeelte '<ph name="SECTION" />' weergeven</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
@@ -1594,6 +1601,7 @@ Aanvullende informatie:
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE" /> is buiten bereik.</translation>
 <translation id="7613889955535752492">Vervaldatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om je wachtwoorden te beheren in de Chrome-instellingen.</translation>
 <translation id="7615602087246926389">Je hebt al gegevens die zijn gecodeerd met een andere versie van het wachtwoord voor je Google-account. Geef dit wachtwoord hieronder op.</translation>
 <translation id="7616645509853975347">Je beheerder heeft Chrome Enterprise Connectors voor je browser ingesteld. Deze connectors hebben toegang tot sommige van je gegevens.</translation>
 <translation id="7619838219691048931">Eindblad</translation>
@@ -1850,6 +1858,8 @@ Aanvullende informatie:
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>
+<translation id="8731544501227493793">Knop 'Wachtwoorden beheren'. Druk op Enter om je wachtwoorden te bekijken en te beheren in de Chrome-instellingen.</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om een nieuw incognitovenster te openen om privé te browsen.</translation>
 <translation id="8738058698779197622">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
 <translation id="8740359287975076522">Het &lt;abbr id="dnsDefinition"&gt;DNS-adres&lt;/abbr&gt; van <ph name="HOST_NAME" /> kan niet worden gevonden. Er wordt een diagnose van het probleem uitgevoerd.</translation>
 <translation id="8742371904523228557">Je code voor <ph name="ORIGIN" /> is<ph name="ONE_TIME_CODE" />.</translation>
@@ -1866,6 +1876,7 @@ Aanvullende informatie:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise Connectors voor je browser ingeschakeld. Deze connectors hebben toegang tot sommige van je gegevens.</translation>
 <translation id="8805819170075074995">Lijstitem '<ph name="LANGUAGE_ID" />': Item is genegeerd omdat dit ook is opgenomen in het beleid SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Bijsnijden na elke pagina</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />. Druk op Tab en vervolgens op Enter om Chrome te updaten via je Chrome-instellingen</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883848425547221593">Andere bookmarks</translation>
 <translation id="884264119367021077">Verzendadres</translation>
@@ -1885,6 +1896,7 @@ Aanvullende informatie:
 <translation id="890493561996401738">Suggestieknop verwijderen, druk op Enter om te verwijderen, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Je bent incognito</translation>
 <translation id="8912362522468806198">Google-account</translation>
+<translation id="8913778647360618320">Knop 'Betaalmethoden beheren'. Druk op Enter om je betalingen en creditcardgegevens te beheren in de Chrome-instellingen.</translation>
 <translation id="8918231688545606538">Deze pagina is verdacht</translation>
 <translation id="892588693504540538">Perforatie rechtsboven</translation>
 <translation id="8931333241327730545">Wil je deze pas opslaan in je Google-account?</translation>

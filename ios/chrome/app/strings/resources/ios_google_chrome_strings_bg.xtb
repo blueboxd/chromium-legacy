@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Съвет за Chrome. За да видите още опции за разделите, докоснете и задръжте бутона „Показване на разделите“ в лентата с инструменти в долната или горната част на екрана.</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="4698415050768537821">Chrome не успя да провери всички пароли. Опитайте отново утре или <ph name="BEGIN_LINK" />ги проверете в профила си в Google<ph name="END_LINK" />.</translation>
+<translation id="5030102366287574140">Chrome може да ви защити от нарушения на сигурността на данните, опасни уебсайтове и др.</translation>
 <translation id="5389212809648216794">Google Chrome не може да използва камерата ви, защото е заета от друго приложение</translation>
 <translation id="5639704535586432836">Отворете „Settings“ &gt; „Privacy“ &gt; „Camera“ &gt; „Google Chrome“ и включете камерата.</translation>
 <translation id="5642200033778930880">Google Chrome не може да използва камерата ви в режим на разделен изглед</translation>
@@ -50,6 +51,7 @@
         1. Отворете настройките. 
         2. Докоснете „Стандартно прилож. за браузър“.
         3. Изберете Chrome.</translation>
+<translation id="6822673484890854830">Chrome не успя да провери всички пароли. Опитайте отново по-късно.</translation>
 <translation id="7165736900384873061">Използване на скенера за QR кодове в Google Chrome</translation>
 <translation id="7172660552945675509">Съвет: <ph name="BEGIN_LINK" />Преместете Chrome в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Към настройките</translation>

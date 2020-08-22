@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="1125573121925420732">Cảnh báo hiển thị khi trang web cập nhật bảo mật là điều bình thường. Việc này sẽ sớm được cải tiến.</translation>
 <translation id="112840717907525620">Bộ nhớ đệm chính sách OK</translation>
+<translation id="1130564665089811311">Nút Dịch trang, nhấn phím Enter để dịch trang này bằng Google Dịch</translation>
 <translation id="1131264053432022307">Hình ảnh bạn đã sao chép</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1151972924205500581">Mật khẩu bắt buộc</translation>
@@ -408,6 +409,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2634124572758952069">Không thể tìm thấy địa chỉ IP của máy chủ <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Trạng thái:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để Xóa lịch sử duyệt web, cookie, bộ nhớ đệm và nhiều nội dung khác trong phần cài đặt của Chrome</translation>
 <translation id="2650446666397867134">Truy cập vào tệp bị từ chối</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2660779039299703961">Sự kiện</translation>
@@ -430,6 +432,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ đệm) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2713444072780614174">Trắng</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để quản lý thông tin thanh toán và thẻ tín dụng trong phần cài đặt của Chrome</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="272451190272506600">Chạm vào cảm biến để thanh toán</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
@@ -642,6 +645,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3630155396527302611">Nếu chương trình đã được liệt kê là chương trình được phép truy cập mạng, hãy thử
       xóa chương trình này khỏi danh sách rồi thêm lại.</translation>
 <translation id="3631244953324577188">Sinh trắc học</translation>
+<translation id="3633738897356909127">Nút Cập nhật Chrome, nhấn phím Enter để cập nhật Chrome trong phần cài đặt của Chrome</translation>
 <translation id="3634530185120165534">Khay 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Xác thực thành công</translation>
@@ -865,6 +869,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4506599922270137252">Liên hệ với quản trị viên hệ thống</translation>
 <translation id="450710068430902550">Chia sẻ với quản trị viên</translation>
 <translation id="4508814173490746936">Không thể dùng Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để dịch trang này bằng Google Dịch</translation>
 <translation id="4510487217173779431">Chou4 (Phong bì)</translation>
 <translation id="4515275063822566619">Thẻ và địa chỉ từ Chrome và Tài khoản Google của bạn (<ph name="ACCOUNT_EMAIL" />). Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Phong bì)</translation>
@@ -945,6 +950,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4879725228911483934">Mở và đặt các cửa sổ trên màn hình của bạn</translation>
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
 <translation id="4881695831933465202">Mở</translation>
+<translation id="4889420713887366944">Nút Mở cửa sổ ẩn danh, nhấn phím Enter để mở cửa sổ Ẩn danh mới nhằm duyệt web ở chế độ riêng tư</translation>
 <translation id="4892518386797173871">Phía sau</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Lưu...</translation>
@@ -1106,6 +1112,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5523118979700054094">Tên chính sách</translation>
 <translation id="55293785478302737">May viền</translation>
 <translation id="553484882784876924">Prc6 (Phong bì)</translation>
+<translation id="5535133333442455806">Nút Xóa dữ liệu duyệt web, nhấn phím Enter để xóa lịch sử duyệt web, cookie, bộ nhớ đệm và nhiều nội dung khác trong phần cài đặt của Chrome</translation>
 <translation id="5536214594743852365">Hiển thị phần "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Bè nổi</translation>
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
@@ -1605,6 +1612,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Hết hạn: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để xem và quản lý các mật khẩu của bạn trong phần cài đặt của Chrome</translation>
 <translation id="7615602087246926389">Bạn đã có dữ liệu được mã hóa bằng mật khẩu khác của Tài khoản Google. Vui lòng nhập mật khẩu đó bên dưới.</translation>
 <translation id="7616645509853975347">Quản trị viên đã bật Chrome Enterprise Connectors trên trình duyệt bạn dùng. Các trình kết nối này có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="7619838219691048931">Tờ cuối</translation>
@@ -1862,6 +1870,8 @@ Thông tin chi tiết bổ sung:
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8730621377337864115">Xong</translation>
+<translation id="8731544501227493793">Nút Quản lý mật khẩu, nhấn phím Enter để xem và quản lý các mật khẩu của bạn trong phần cài đặt của Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để mở cửa sổ Ẩn danh mới nhằm duyệt web ở chế độ riêng tư</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> là mã của bạn cho <ph name="ORIGIN" /></translation>
@@ -1878,6 +1888,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> đã bật Chrome Enterprise Connectors trên trình duyệt bạn dùng. Các trình kết nối này có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="8805819170075074995">Mục nhập danh sách "<ph name="LANGUAGE_ID" />": Mục nhập bị bỏ qua vì cũng được bao gồm trong chính sách SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Cắt bỏ sau mỗi trang</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, nhấn phím Tab rồi nhấn Enter để cập nhật Chrome trong phần cài đặt của Chrome</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
@@ -1897,6 +1908,7 @@ Thông tin chi tiết bổ sung:
 <translation id="890493561996401738">Nút Xóa đề xuất, nhấn Enter để xóa, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
+<translation id="8913778647360618320">Nút Quản lý phương thức thanh toán, nhấn phím Enter để quản lý thông tin thanh toán và thẻ tín dụng trong phần cài đặt của Chrome</translation>
 <translation id="8918231688545606538">Đây là trang đáng ngờ</translation>
 <translation id="892588693504540538">Đục lỗ trên cùng bên phải</translation>
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>

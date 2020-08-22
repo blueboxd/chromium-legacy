@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/optional.h"
@@ -55,6 +57,9 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   explicit ExtensionsToolbarContainer(
       Browser* browser,
       DisplayMode display_mode = DisplayMode::kNormal);
+  ExtensionsToolbarContainer(const ExtensionsToolbarContainer&) = delete;
+  ExtensionsToolbarContainer& operator=(const ExtensionsToolbarContainer&) =
+      delete;
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
@@ -240,8 +245,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   std::unique_ptr<DropInfo> drop_info_;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarContainer);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_CONTAINER_H_

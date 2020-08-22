@@ -27,6 +27,7 @@
 <translation id="4555020257205549924">Als deze functie is ingeschakeld, biedt Chromium aan pagina's die zijn geschreven in andere talen te vertalen met Google Translate. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium-scanner inschakelen</translation>
 <translation id="4787850887676698916">Tabbladen die je op andere apparaten in Chromium hebt geopend, worden hier weergegeven.</translation>
+<translation id="4828317641996116749">Chromium kan niet alle wachtwoorden checken. Probeer het opnieuw.</translation>
 <translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
 <translation id="5224391634244552924">Geen opgeslagen wachtwoorden. Chromium kan je wachtwoorden checken als je deze hebt opgeslagen.</translation>
 <translation id="5521125884468363740">Log in en schakel synchroniseren in om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
@@ -44,6 +45,7 @@
 <translation id="7118091470949186573">Je kunt Chromium nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
 <translation id="7173114856073700355">Instellingen openen</translation>
 <translation id="7208566199746267865">Chromium bespaart je tijd door je accounts beschikbaar te maken op internet. Je kunt accounts toevoegen of verwijderen bij Instellingen.</translation>
+<translation id="725427773388857052">Chromium kan je beschermen tegen gegevenslekken, niet-beveiligde websites en meer.</translation>
 <translation id="7269362888766543920">Sommige add-ons kunnen ervoor zorgen dat Chromium crasht. Verwijder deze add-ons.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7349905826685622881">Chromium instellen als je standaardbrowser:

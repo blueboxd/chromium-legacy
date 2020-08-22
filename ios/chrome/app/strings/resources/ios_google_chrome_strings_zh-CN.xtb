@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Chrome 提示。要查看更多的标签页选项，请轻触并按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="4698415050768537821">Chrome 无法检查所有密码。请明天再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
+<translation id="5030102366287574140">Chrome 有助于保护您免受数据泄露、不安全网站等问题的影响。</translation>
 <translation id="5389212809648216794">由于另一个应用正在使用您的相机，因此 Google Chrome 无法使用</translation>
 <translation id="5639704535586432836">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Google Chrome”，然后开启相机。</translation>
 <translation id="5642200033778930880">Google Chrome 无法在分割视图模式下使用您的相机</translation>
@@ -50,6 +51,7 @@
         1. 打开“设置”。
         2. 点按“默认浏览器应用”。
         3. 选择“Chrome”。</translation>
+<translation id="6822673484890854830">Chrome 无法检查所有密码。请稍后再试。</translation>
 <translation id="7165736900384873061">开始使用 Google Chrome QR 码扫描器</translation>
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />将 Chrome 移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">打开“设置”</translation>

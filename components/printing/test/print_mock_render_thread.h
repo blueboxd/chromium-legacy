@@ -25,7 +25,6 @@ class DictionaryValue;
 
 class MockPrinter;
 struct PrintHostMsg_PreviewIds;
-struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 
 // Extends content::MockRenderThread to know about printing
@@ -74,7 +73,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
   void OnGetDefaultPrintSettings(printing::mojom::PrintParams* setting);
 
   // PrintRenderFrameHelper expects final print settings from the user.
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
+  void OnScriptedPrint(const printing::mojom::ScriptedPrintParams& params,
                        PrintMsg_PrintPages_Params* settings);
 
   void OnDidPrintDocument(const printing::mojom::DidPrintDocumentParams& params,

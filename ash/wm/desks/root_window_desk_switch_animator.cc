@@ -102,21 +102,19 @@ std::unique_ptr<ui::Layer> CreateLayerFromScreenshotResult(
 
 RootWindowDeskSwitchAnimator::RootWindowDeskSwitchAnimator(
     aura::Window* root,
-    const Desk* ending_desk,
+    int starting_desk_index,
+    int ending_desk_index,
     Delegate* delegate,
-    bool move_left,
     bool for_remove)
     : root_window_(root),
-      starting_desk_(DesksController::Get()->active_desk()),
-      ending_desk_(ending_desk),
+      starting_desk_index_(starting_desk_index),
+      ending_desk_index_(ending_desk_index),
       delegate_(delegate),
       animation_layer_owner_(CreateAnimationLayerOwner(root)),
       x_translation_offset_(root->layer()->size().width() + kDesksSpacing),
-      move_left_(move_left),
       for_remove_(for_remove) {
   DCHECK(root_window_);
-  DCHECK(starting_desk_);
-  DCHECK(ending_desk_);
+  DCHECK_NE(starting_desk_index_, ending_desk_index_);
   DCHECK(delegate_);
 }
 
@@ -133,8 +131,9 @@ void RootWindowDeskSwitchAnimator::TakeStartingDeskScreenshot() {
   if (for_remove_) {
     // The active desk is about to be removed. Recreate and detach its old
     // layers to animate them in a jump-like animation.
-    auto* desk_container =
-        starting_desk_->GetDeskContainerForRoot(root_window_);
+    auto* desk_container = DesksController::Get()
+                               ->desks()[starting_desk_index_]
+                               ->GetDeskContainerForRoot(root_window_);
     old_windows_layer_tree_owner_ = wm::RecreateLayers(desk_container);
     root_window_->layer()->Add(old_windows_layer_tree_owner_->root());
     root_window_->layer()->StackAtTop(old_windows_layer_tree_owner_->root());
@@ -170,7 +169,7 @@ void RootWindowDeskSwitchAnimator::StartAnimation() {
 
   gfx::Transform animation_layer_ending_transfrom;
 
-  if (move_left_) {
+  if (starting_desk_index_ < ending_desk_index_) {
     // Starting desk is one the left, so the ending transform of the parent
     // "animation layer" is then a translation to the left such that at the end,
     // the ending screenshot layer becomes the one visible on the screen.
@@ -237,7 +236,7 @@ void RootWindowDeskSwitchAnimator::CompleteAnimationPhase1WithLayer(
   gfx::Rect screenshot_bounds(root_window_->layer()->size());
   gfx::Transform animation_layer_starting_transfrom;
 
-  if (!move_left_) {
+  if (starting_desk_index_ > ending_desk_index_) {
     // Starting desk is one the right, so we need to offset the screenshot layer
     // horizontally to the right by an amount equal to its width plus
     // kDesksSpacing (|x_translation_offset_|).
@@ -298,7 +297,7 @@ void RootWindowDeskSwitchAnimator::CompleteAnimationPhase1WithLayer(
   }
 
   starting_desk_screenshot_taken_ = true;
-  delegate_->OnStartingDeskScreenshotTaken(ending_desk_);
+  delegate_->OnStartingDeskScreenshotTaken(ending_desk_index_);
 }
 
 void RootWindowDeskSwitchAnimator::OnStartingDeskScreenshotTaken(
@@ -313,7 +312,7 @@ void RootWindowDeskSwitchAnimator::OnStartingDeskScreenshotTaken(
       LOG(ERROR) << "Received multiple empty screenshots of the starting desk.";
       NOTREACHED();
       starting_desk_screenshot_taken_ = true;
-      delegate_->OnStartingDeskScreenshotTaken(ending_desk_);
+      delegate_->OnStartingDeskScreenshotTaken(ending_desk_index_);
     }
 
     return;
@@ -346,7 +345,7 @@ void RootWindowDeskSwitchAnimator::OnEndingDeskScreenshotTaken(
 
   gfx::Rect screenshot_bounds(root_window_->layer()->size());
 
-  if (move_left_) {
+  if (starting_desk_index_ < ending_desk_index_) {
     // Starting desk is one the left, so we need to offset the ending desk
     // screenshot layer horizontally to the right by an amount equal to its
     // width plus kDesksSpacing (|x_translation_offset_|).

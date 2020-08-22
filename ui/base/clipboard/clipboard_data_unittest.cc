@@ -9,6 +9,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_data_endpoint.h"
+#include "url/gurl.h"
 
 namespace ui {
 
@@ -31,14 +32,14 @@ TEST(ClipboardDataTest, BitMapTest) {
 // Tests that two ClipboardData objects won't be equal if they don't have the
 // same data source.
 TEST(ClipboardDataTest, DataSrcTest) {
-  GURL url("www.example.com");
+  url::Origin origin(url::Origin::Create(GURL("www.example.com")));
   ClipboardData data1;
-  data1.set_source(std::make_unique<ClipboardDataEndpoint>(url));
+  data1.set_source(std::make_unique<ClipboardDataEndpoint>(origin));
 
   ClipboardData data2;
   EXPECT_NE(data1, data2);
 
-  data2.set_source(std::make_unique<ClipboardDataEndpoint>(url));
+  data2.set_source(std::make_unique<ClipboardDataEndpoint>(origin));
   EXPECT_EQ(data1, data2);
 }
 

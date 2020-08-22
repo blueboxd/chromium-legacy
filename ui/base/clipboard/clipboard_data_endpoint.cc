@@ -10,11 +10,11 @@
 
 namespace ui {
 
-ClipboardDataEndpoint::ClipboardDataEndpoint(const GURL& url)
-    : type_(EndpointType::kUrl), url_(url) {}
+ClipboardDataEndpoint::ClipboardDataEndpoint(const url::Origin& origin)
+    : type_(EndpointType::kUrl), origin_(origin) {}
 
 ClipboardDataEndpoint::ClipboardDataEndpoint(EndpointType type)
-    : type_(type), url_(base::nullopt) {
+    : type_(type), origin_(base::nullopt) {
   DCHECK_NE(type, EndpointType::kUrl);
 }
 
@@ -26,7 +26,7 @@ ClipboardDataEndpoint::ClipboardDataEndpoint(ClipboardDataEndpoint&& other) =
 
 bool ClipboardDataEndpoint::operator==(
     const ClipboardDataEndpoint& other) const {
-  return url_ == other.url_ && type_ == other.type_;
+  return origin_ == other.origin_ && type_ == other.type_;
 }
 
 ClipboardDataEndpoint::~ClipboardDataEndpoint() = default;

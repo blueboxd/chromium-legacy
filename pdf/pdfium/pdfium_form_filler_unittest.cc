@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/test/test_client.h"
 #include "ppapi/c/pp_point.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -89,24 +90,24 @@ TEST_F(FormFillerTest, DoURIActionWithKeyboardModifier) {
   }
 
 #if defined(OS_MAC)
-#define modifier_key PP_INPUTEVENT_MODIFIER_METAKEY;
+#define modifier_key kInputEventModifierMetaKey;
 #else
-#define modifier_key PP_INPUTEVENT_MODIFIER_CONTROLKEY
+#define modifier_key kInputEventModifierControlKey
 #endif
 
   int modifiers = 0;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
-  modifiers = PP_INPUTEVENT_MODIFIER_ALTKEY;
+  modifiers = kInputEventModifierAltKey;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
   modifiers = modifier_key;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
-  modifiers = PP_INPUTEVENT_MODIFIER_SHIFTKEY;
+  modifiers = kInputEventModifierShiftKey;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
   modifiers |= modifier_key;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
-  modifiers = PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN;
+  modifiers = kInputEventModifierMiddleButtonDown;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
-  modifiers |= PP_INPUTEVENT_MODIFIER_SHIFTKEY;
+  modifiers |= kInputEventModifierShiftKey;
   TriggerDoURIActionWithKeyboardModifier(engine.get(), kUri, modifiers);
 }
 

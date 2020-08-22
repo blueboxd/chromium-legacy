@@ -111,7 +111,31 @@ enum class InputEventMouseButtonType {
   kRight,
 };
 
-class KeyboardInputEvent {
+class InputEvent {
+ public:
+  InputEventType GetEventType() const { return event_type_; }
+
+  double GetTimeStamp() const { return time_stamp_; }
+
+  uint32_t GetModifiers() const { return modifiers_; }
+
+ protected:
+  // Base class is not intended to be instantiated directly. Use
+  // `NoneInputEvent` to get an event of type `InputEventType::kNone`.
+  InputEvent(InputEventType event_type, double time_stamp, uint32_t modifiers);
+  InputEvent(const InputEvent& other);
+  InputEvent& operator=(const InputEvent& other);
+  ~InputEvent();
+
+ private:
+  InputEventType event_type_;
+  // The units are in seconds, but are not measured relative to any particular
+  // epoch, so the most you can do is compare two values.
+  double time_stamp_;
+  uint32_t modifiers_;
+};
+
+class KeyboardInputEvent : public InputEvent {
  public:
   KeyboardInputEvent(InputEventType event_type,
                      double time_stamp,
@@ -122,27 +146,16 @@ class KeyboardInputEvent {
   KeyboardInputEvent& operator=(const KeyboardInputEvent& other);
   ~KeyboardInputEvent();
 
-  const InputEventType& GetEventType() const { return event_type_; }
-
-  double GetTimeStamp() const { return time_stamp_; }
-
-  uint32_t GetModifiers() const { return modifiers_; }
-
   uint32_t GetKeyCode() const { return keyboard_code_; }
 
   const std::string& GetKeyChar() const { return key_char_; }
 
  private:
-  InputEventType event_type_ = InputEventType::kNone;
-  // The units are in seconds, but are not measured relative to any particular
-  // epoch, so the most you can do is compare two values.
-  double time_stamp_ = 0;
-  uint32_t modifiers_ = kInputEventModifierNone;
   uint32_t keyboard_code_;
   std::string key_char_;
 };
 
-class MouseInputEvent {
+class MouseInputEvent : public InputEvent {
  public:
   MouseInputEvent(InputEventType event_type,
                   double time_stamp,
@@ -155,12 +168,6 @@ class MouseInputEvent {
   MouseInputEvent& operator=(const MouseInputEvent& other);
   ~MouseInputEvent();
 
-  const InputEventType& GetEventType() const { return event_type_; }
-
-  double GetTimeStamp() const { return time_stamp_; }
-
-  uint32_t GetModifiers() const { return modifiers_; }
-
   const InputEventMouseButtonType& GetButton() const {
     return mouse_button_type_;
   }
@@ -172,18 +179,13 @@ class MouseInputEvent {
   const gfx::Point& GetMovement() const { return movement_; }
 
  private:
-  InputEventType event_type_ = InputEventType::kNone;
-  // The units are in seconds, but are not measured relative to any particular
-  // epoch, so the most you can do is compare two values.
-  double time_stamp_ = 0;
-  uint32_t modifiers_ = kInputEventModifierNone;
   InputEventMouseButtonType mouse_button_type_;
   gfx::Point point_;
   int32_t click_count_ = 0;
   gfx::Point movement_;
 };
 
-class TouchInputEvent {
+class TouchInputEvent : public InputEvent {
  public:
   TouchInputEvent(InputEventType event_type,
                   double time_stamp,
@@ -193,12 +195,6 @@ class TouchInputEvent {
   TouchInputEvent(const TouchInputEvent& other);
   TouchInputEvent& operator=(const TouchInputEvent& other);
   ~TouchInputEvent();
-
-  const InputEventType& GetEventType() const { return event_type_; }
-
-  double GetTimeStamp() const { return time_stamp_; }
-
-  uint32_t GetModifiers() const { return modifiers_; }
 
   // `pp::TouchInputEvent` exposes a collection of target touch points. We can
   // get all the points by passing the index of the point in the collection.
@@ -210,11 +206,16 @@ class TouchInputEvent {
   int32_t GetTouchCount() const { return touch_count_; }
 
  private:
-  InputEventType event_type_ = InputEventType::kNone;
-  double time_stamp_ = 0;
-  uint32_t modifiers_ = kInputEventModifierNone;
   gfx::PointF target_touch_point_;
   int32_t touch_count_ = 0;
+};
+
+class NoneInputEvent : public InputEvent {
+ public:
+  NoneInputEvent();
+  NoneInputEvent(const NoneInputEvent& other);
+  NoneInputEvent& operator=(const NoneInputEvent& other);
+  ~NoneInputEvent();
 };
 
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event);

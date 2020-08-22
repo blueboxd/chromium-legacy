@@ -108,7 +108,9 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   // blink::CanvasImageSource
   bool IsOffscreenCanvas() const override;
 
-  base::Optional<UkmParameters> ukm_parameters() { return ukm_params_; }
+  const base::Optional<UkmParameters>& GetUkmParameters() {
+    return ukm_params_;
+  }
 
  protected:
   ~CanvasRenderingContextHost() override {}

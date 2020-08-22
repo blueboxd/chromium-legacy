@@ -6,9 +6,15 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_MECHANISMS_WORKING_SET_TRIMMER_CHROMEOS_H_
 
 #include "base/no_destructor.h"
+#include "base/process/process_handle.h"
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
 
 namespace performance_manager {
+
+namespace policies {
+class WorkingSetTrimmerPolicyChromeOS;
+}  // namespace policies
+
 namespace mechanism {
 
 // WorkingSetTrimmerChromeOS is the platform specific implementation of a
@@ -24,6 +30,10 @@ class WorkingSetTrimmerChromeOS : public WorkingSetTrimmer {
 
  private:
   friend class base::NoDestructor<WorkingSetTrimmerChromeOS>;
+  friend class policies::WorkingSetTrimmerPolicyChromeOS;
+
+  // TrimWorkingSet based on ProcessId |pid|.
+  bool TrimWorkingSet(base::ProcessId pid);
 
   // The constructor is made private to prevent instantiation of this class
   // directly, it should always be retrieved via

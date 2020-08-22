@@ -37,6 +37,7 @@
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/ppapi_migration/value_conversions.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -665,7 +666,7 @@ bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
     }
   }
 
-  if (engine()->HandleEvent(event_device_res))
+  if (SendInputEventToEngine(event_device_res))
     return true;
 
   // Middle click is used for scrolling and is handled by the container page.
@@ -2243,6 +2244,44 @@ pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
       min_y);
   float y = base::ClampToRange(scroll_offset.y(), min_y, max_y);
   return pp::FloatPoint(x, y);
+}
+
+bool OutOfProcessInstance::SendInputEventToEngine(const pp::InputEvent& event) {
+  switch (event.GetType()) {
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      return engine()->HandleEvent(
+          GetMouseInputEvent(pp::MouseInputEvent(event)));
+    case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYUP:
+    case PP_INPUTEVENT_TYPE_CHAR:
+      return engine()->HandleEvent(
+          GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
+      return engine()->HandleEvent(
+          GetTouchInputEvent(pp::TouchInputEvent(event)));
+    case PP_INPUTEVENT_TYPE_WHEEL:
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
+    case PP_INPUTEVENT_TYPE_IME_TEXT:
+      // These event types are not used in PDFiumEngine, so there are no
+      // functions to convert them from pp::InputEvent to
+      // chrome_pdf::InputEvent. As such just send a dummy NoneInputEvent
+      // instead.
+      return engine()->HandleEvent(NoneInputEvent());
+    case PP_INPUTEVENT_TYPE_UNDEFINED:
+      NOTREACHED();
+      return false;
+  }
 }
 
 template <typename T>

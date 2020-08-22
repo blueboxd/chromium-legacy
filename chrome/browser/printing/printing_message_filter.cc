@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
@@ -180,7 +181,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
 }
 
 void PrintingMessageFilter::OnScriptedPrint(
-    const PrintHostMsg_ScriptedPrint_Params& params,
+    const mojom::ScriptedPrintParams& params,
     IPC::Message* reply_msg) {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();

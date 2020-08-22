@@ -153,6 +153,18 @@ struct DidPrintDocumentParams {
   gfx.mojom.Point physical_offsets;
 };
 
+// TODO(dgn): Rename *ScriptedPrint messages because they are not called only
+//           from scripts.
+// Parameters to get a print setting from a user before printing.
+struct ScriptedPrintParams {
+  int32 cookie;
+  int32 expected_pages_count;
+  bool has_selection;
+  bool is_scripted;
+  bool is_modifiable;
+  MarginType margin_type;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {

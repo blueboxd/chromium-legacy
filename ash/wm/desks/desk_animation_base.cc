@@ -33,13 +33,14 @@ ui::Compositor* GetSelectedCompositorForAnimationSmoothness() {
 // DeskAnimationBase:
 
 DeskAnimationBase::DeskAnimationBase(DesksController* controller,
-                                     const Desk* ending_desk)
+                                     int ending_desk_index)
     : controller_(controller),
-      ending_desk_(ending_desk),
+      ending_desk_index_(ending_desk_index),
       throughput_tracker_(GetSelectedCompositorForAnimationSmoothness()
                               ->RequestNewThroughputTracker()) {
   DCHECK(controller_);
-  DCHECK(ending_desk_);
+  DCHECK_LE(ending_desk_index_, int{controller_->desks().size()});
+  DCHECK_GE(ending_desk_index_, 0);
 }
 
 DeskAnimationBase::~DeskAnimationBase() = default;
@@ -58,14 +59,14 @@ void DeskAnimationBase::Launch() {
   // This window must be able to accept events (See
   // `aura::Window::CanAcceptEvent()`) even though its desk is still being
   // activated. https://crbug.com/1008574.
-  const_cast<Desk*>(ending_desk_)->PrepareForActivationAnimation();
+  controller_->desks()[ending_desk_index_]->PrepareForActivationAnimation();
 
   DCHECK(!desk_switch_animators_.empty());
   for (auto& animator : desk_switch_animators_)
     animator->TakeStartingDeskScreenshot();
 }
 
-void DeskAnimationBase::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
+void DeskAnimationBase::OnStartingDeskScreenshotTaken(int ending_desk_index) {
   DCHECK(!desk_switch_animators_.empty());
 
   // Once all starting desk screenshots on all roots are taken and placed on
@@ -81,7 +82,7 @@ void DeskAnimationBase::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
 
-  OnStartingDeskScreenshotTakenInternal(ending_desk);
+  OnStartingDeskScreenshotTakenInternal(ending_desk_index);
 
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);

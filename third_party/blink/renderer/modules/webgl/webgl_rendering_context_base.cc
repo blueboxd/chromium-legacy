@@ -3285,7 +3285,7 @@ void WebGLRenderingContextBase::RecordIdentifiableGLParameterDigest(
     IdentifiableToken value) {
   if (!IsUserInIdentifiabilityStudy() || !IsIdentifiableGLParam(pname))
     return;
-  if (base::Optional<UkmParameters> ukm_params = ukm_parameters()) {
+  if (const auto& ukm_params = GetUkmParameters()) {
     blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
         .Set(blink::IdentifiableSurface::FromTypeAndInput(
                  blink::IdentifiableSurface::Type::kWebGLParameter, pname),
@@ -4583,8 +4583,7 @@ void WebGLRenderingContextBase::readPixels(
     GLenum type,
     MaybeShared<DOMArrayBufferView> pixels) {
   if (IsUserInIdentifiabilityStudy()) {
-    base::Optional<UkmParameters> ukm_params = ukm_parameters();
-    if (ukm_params) {
+    if (const auto& ukm_params = GetUkmParameters()) {
       blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
           .Set(blink::IdentifiableSurface::FromTypeAndInput(
                    blink::IdentifiableSurface::Type::kCanvasReadback,

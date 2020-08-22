@@ -245,6 +245,7 @@ source_set("clipboard_test") {
     "//testing/gtest",
     "//ui/events/platform",
     "//ui/gfx:test_support",
+    "//url:url",
   ]
 
   if (is_mac) {

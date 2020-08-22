@@ -27,11 +27,35 @@ const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
 const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTrimArcOnMemoryPressure{"TrimArcOnMemoryPressure",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTrimOnFreeze{"TrimOnFreeze",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kGraphWalkBackoffTimeSec = {
     &kTrimOnMemoryPressure, "GraphWalkBackoffTimeSec", 180};
+
+const base::FeatureParam<int> kArcProcessListFetchBackoffTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessListFetchBackoffTimeSec", 180};
+
+const base::FeatureParam<int> kArcProcessTrimBackoffTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessTrimBackoffTimeSec", 1800};
+
+const base::FeatureParam<bool> kTrimArcAppProcesses = {
+    &kTrimArcOnMemoryPressure, "ArcTrimAppProcesses", true};
+
+const base::FeatureParam<bool> kTrimArcSystemProcesses = {
+    &kTrimArcOnMemoryPressure, "ArcTrimSystemProcesses", true};
+
+const base::FeatureParam<bool> kTrimArcAggressive = {
+    &kTrimArcOnMemoryPressure, "ArcTrimAggressive", false};
+
+const base::FeatureParam<int> kArcMaxProcessesPerTrim = {
+    &kTrimArcOnMemoryPressure, "ArcMaxProcessesPerTrim", -1};
+
+const base::FeatureParam<int> kArcProcessInactivityTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessInactivityTimeSec", 300};
 
 // Specifies the minimum amount of time a parent frame node must be invisible
 // before considering the process node for working set trim.
@@ -55,6 +79,24 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
       base::TimeDelta::FromSeconds(kNodeInvisibileTimeSec.Get());
   params.node_trim_backoff_time =
       base::TimeDelta::FromSeconds(kNodeTrimBackoffTimeSec.Get());
+
+  params.arc_process_trim_backoff_time =
+      base::TimeDelta::FromSeconds(kArcProcessTrimBackoffTimeSec.Get());
+  params.arc_process_list_fetch_backoff_time =
+      base::TimeDelta::FromSeconds(kArcProcessListFetchBackoffTimeSec.Get());
+  params.trim_arc_system_processes = kTrimArcSystemProcesses.Get();
+  params.trim_arc_app_processes = kTrimArcAppProcesses.Get();
+  params.trim_arc_aggressive = kTrimArcAggressive.Get();
+  params.arc_max_number_processes_per_trim = kArcMaxProcessesPerTrim.Get();
+
+  const int arc_inactivity_time = kArcProcessInactivityTimeSec.Get();
+  if (arc_inactivity_time > 0) {
+    params.arc_process_inactivity_time =
+        base::TimeDelta::FromSeconds(arc_inactivity_time);
+  } else {
+    // This causes us to ignore the last activity time if it was not configured.
+    params.arc_process_inactivity_time = base::TimeDelta::Min();
+  }
   return params;
 }
 

@@ -93,7 +93,7 @@ ClipboardHostImpl::ClipboardHostImpl(
     clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
         ui::ClipboardBuffer::kCopyPaste,
         std::make_unique<ui::ClipboardDataEndpoint>(
-            render_frame_host->GetLastCommittedURL()));
+            render_frame_host->GetLastCommittedOrigin()));
   } else {
     render_frame_routing_id_ = MSG_ROUTING_NONE;
     render_frame_pid_ = ChildProcessHost::kInvalidUniqueID;
@@ -399,7 +399,7 @@ ClipboardHostImpl::CreateDataEndpoint() {
       RenderFrameHostImpl::FromID(render_frame_pid_, render_frame_routing_id_);
   if (render_frame_host) {
     return std::make_unique<ui::ClipboardDataEndpoint>(
-        render_frame_host->GetLastCommittedURL());
+        render_frame_host->GetLastCommittedOrigin());
   }
   return nullptr;
 }

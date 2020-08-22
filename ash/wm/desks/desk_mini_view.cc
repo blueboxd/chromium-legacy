@@ -197,8 +197,10 @@ void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Note that the desk may have already been destroyed.
   if (desk_) {
     // Announce desk name.
-    node_data->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                  base::UTF16ToUTF8(desk_->name()));
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kName,
+        l10n_util::GetStringFUTF8(IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME,
+                                  desk_->name()));
 
     node_data->AddStringAttribute(
         ax::mojom::StringAttribute::kValue,

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -317,11 +318,11 @@ void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
     FPDF_BYTESTRING uri,
     int modifiers) {
   PDFiumEngine* engine = GetEngine(param);
-  bool middle_button = !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
-  bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
-  bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
-  bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
-  bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+  bool middle_button = !!(modifiers & kInputEventModifierMiddleButtonDown);
+  bool alt_key = !!(modifiers & kInputEventModifierAltKey);
+  bool ctrl_key = !!(modifiers & kInputEventModifierControlKey);
+  bool meta_key = !!(modifiers & kInputEventModifierMetaKey);
+  bool shift_key = !!(modifiers & kInputEventModifierShiftKey);
 
   WindowOpenDisposition disposition = ui::DispositionFromClick(
       middle_button, alt_key, ctrl_key, meta_key, shift_key);

@@ -163,7 +163,7 @@ DesksController* DesksController::Get() {
 
 const Desk* DesksController::GetTargetActiveDesk() const {
   if (!animations_.empty())
-    return animations_.back()->ending_desk();
+    return desks_[animations_.back()->ending_desk_index()].get();
   return active_desk();
 }
 
@@ -255,9 +255,8 @@ void DesksController::RemoveDesk(const Desk* desk,
         current_desk_index + ((current_desk_index > 0) ? -1 : 1);
     DCHECK_GE(target_desk_index, 0);
     DCHECK_LT(target_desk_index, static_cast<int>(desks_.size()));
-    const bool move_left = current_desk_index < target_desk_index;
     animations_.emplace_back(std::make_unique<DeskRemovalAnimation>(
-        this, desk, desks_[target_desk_index].get(), move_left, source));
+        this, current_desk_index, target_desk_index, source));
     animations_.back()->Launch();
     return;
   }
@@ -299,12 +298,9 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
     return;
   }
 
-  // New desks are always added at the end of the list to the right of existing
-  // desks. Therefore, desks at lower indices are located on the left of desks
-  // with higher indices.
-  const bool move_left = GetDeskIndex(active_desk_) < target_desk_index;
-  animations_.emplace_back(
-      std::make_unique<DeskActivationAnimation>(this, desk, move_left));
+  const int starting_desk_index = GetDeskIndex(active_desk());
+  animations_.emplace_back(std::make_unique<DeskActivationAnimation>(
+      this, starting_desk_index, target_desk_index));
   animations_.back()->Launch();
 }
 

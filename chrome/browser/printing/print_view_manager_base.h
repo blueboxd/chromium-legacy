@@ -125,7 +125,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
                                  IPC::Message* reply_msg) override;
   void OnPrintingFailed(int cookie) override;
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                       const PrintHostMsg_ScriptedPrint_Params& params,
+                       const mojom::ScriptedPrintParams& params,
                        IPC::Message* reply_msg) override;
 
   void OnShowInvalidPrinterSettingsError();

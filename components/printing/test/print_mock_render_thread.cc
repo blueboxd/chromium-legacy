@@ -78,7 +78,7 @@ void PrintMockRenderThread::OnGetDefaultPrintSettings(
 }
 
 void PrintMockRenderThread::OnScriptedPrint(
-    const PrintHostMsg_ScriptedPrint_Params& params,
+    const printing::mojom::ScriptedPrintParams& params,
     PrintMsg_PrintPages_Params* settings) {
   if (print_dialog_user_response_) {
     printer_->ScriptedPrint(params.cookie, params.expected_pages_count,

@@ -46,7 +46,6 @@
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/url_loader_wrapper_impl.h"
-#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -833,45 +832,44 @@ void PDFiumEngine::ContinueFind(int32_t result) {
   StartFind(current_find_text_, result != 0);
 }
 
-bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
+bool PDFiumEngine::HandleEvent(const InputEvent& event) {
   DCHECK(!defer_page_unload_);
   defer_page_unload_ = true;
   bool rv = false;
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-      rv = OnMouseDown(GetMouseInputEvent(pp::MouseInputEvent(event)));
+  switch (event.GetEventType()) {
+    case InputEventType::kMouseDown:
+      rv = OnMouseDown(static_cast<const MouseInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_MOUSEUP:
-      rv = OnMouseUp(GetMouseInputEvent(pp::MouseInputEvent(event)));
+    case InputEventType::kMouseUp:
+      rv = OnMouseUp(static_cast<const MouseInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      rv = OnMouseMove(GetMouseInputEvent(pp::MouseInputEvent(event)));
+    case InputEventType::kMouseMove:
+      rv = OnMouseMove(static_cast<const MouseInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      OnMouseEnter(GetMouseInputEvent(pp::MouseInputEvent(event)));
+    case InputEventType::kMouseEnter:
+      OnMouseEnter(static_cast<const MouseInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_KEYDOWN:
-      rv = OnKeyDown(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
+    case InputEventType::kKeyDown:
+      rv = OnKeyDown(static_cast<const KeyboardInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_KEYUP:
-      rv = OnKeyUp(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
+    case InputEventType::kKeyUp:
+      rv = OnKeyUp(static_cast<const KeyboardInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_CHAR:
-      rv = OnChar(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
+    case InputEventType::kChar:
+      rv = OnChar(static_cast<const KeyboardInputEvent&>(event));
       break;
-    case PP_INPUTEVENT_TYPE_TOUCHSTART: {
+    case InputEventType::kTouchStart: {
       KillTouchTimer();
 
-      TouchInputEvent touch_event(
-          GetTouchInputEvent(pp::TouchInputEvent(event)));
+      const auto& touch_event = static_cast<const TouchInputEvent&>(event);
       if (touch_event.GetTouchCount() == 1)
         ScheduleTouchTimer(touch_event);
       break;
     }
-    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case InputEventType::kTouchEnd:
       KillTouchTimer();
       break;
-    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case InputEventType::kTouchMove:
       // TODO(dsinclair): This should allow a little bit of movement (up to the
       // touch radii) to account for finger jiggle.
       KillTouchTimer();
@@ -1387,12 +1385,11 @@ bool PDFiumEngine::OnMouseUp(const MouseInputEvent& event) {
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
     uint32_t modifiers = event.GetModifiers();
-    bool middle_button =
-        !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
-    bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
-    bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
-    bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
-    bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+    bool middle_button = !!(modifiers & kInputEventModifierMiddleButtonDown);
+    bool alt_key = !!(modifiers & kInputEventModifierAltKey);
+    bool ctrl_key = !!(modifiers & kInputEventModifierControlKey);
+    bool meta_key = !!(modifiers & kInputEventModifierMetaKey);
+    bool shift_key = !!(modifiers & kInputEventModifierShiftKey);
 
     WindowOpenDisposition disposition = ui::DispositionFromClick(
         middle_button, alt_key, ctrl_key, meta_key, shift_key);
@@ -1529,7 +1526,7 @@ PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
 }
 
 void PDFiumEngine::OnMouseEnter(const MouseInputEvent& event) {
-  if (event.GetModifiers() & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) {
+  if (event.GetModifiers() & kInputEventModifierMiddleButtonDown) {
     if (!mouse_middle_button_down_) {
       mouse_middle_button_down_ = true;
       mouse_middle_button_last_position_ = event.GetPosition();
@@ -1636,7 +1633,7 @@ bool PDFiumEngine::OnKeyDown(const KeyboardInputEvent& event) {
   // Scroll focused annotation into view when context menu is invoked through
   // keyboard <Shift-F10>.
   if (event.GetKeyCode() == FWL_VKEY_F10 &&
-      (event.GetModifiers() & PP_INPUTEVENT_MODIFIER_SHIFTKEY)) {
+      (event.GetModifiers() & kInputEventModifierShiftKey)) {
     DCHECK(!rv);
     ScrollFocusedAnnotationIntoView();
   }
@@ -4003,14 +4000,13 @@ PdfVersion PDFiumEngine::GetDocumentVersion() const {
 }
 
 bool PDFiumEngine::HandleTabEvent(uint32_t modifiers) {
-  bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
-  bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
+  bool alt_key = !!(modifiers & kInputEventModifierAltKey);
+  bool ctrl_key = !!(modifiers & kInputEventModifierControlKey);
   if (alt_key || ctrl_key)
     return HandleTabEventWithModifiers(modifiers);
 
-  return modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY
-             ? HandleTabBackward(modifiers)
-             : HandleTabForward(modifiers);
+  return modifiers & kInputEventModifierShiftKey ? HandleTabBackward(modifiers)
+                                                 : HandleTabForward(modifiers);
 }
 
 bool PDFiumEngine::HandleTabEventWithModifiers(uint32_t modifiers) {

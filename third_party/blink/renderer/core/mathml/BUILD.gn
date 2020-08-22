@@ -10,6 +10,8 @@ blink_core_sources("mathml") {
     "mathml_element.h",
     "mathml_fraction_element.cc",
     "mathml_fraction_element.h",
+    "mathml_operator_element.cc",
+    "mathml_operator_element.h",
     "mathml_padded_element.cc",
     "mathml_padded_element.h",
     "mathml_radical_element.cc",

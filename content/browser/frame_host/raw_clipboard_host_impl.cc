@@ -30,7 +30,7 @@ std::unique_ptr<ui::ClipboardDataEndpoint> CreateDataEndpoint(
     RenderFrameHost* render_frame_host) {
   if (render_frame_host)
     return std::make_unique<ui::ClipboardDataEndpoint>(
-        render_frame_host->GetLastCommittedURL());
+        render_frame_host->GetLastCommittedOrigin());
 
   return nullptr;
 }

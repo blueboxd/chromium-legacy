@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace ui {
 
@@ -18,7 +18,7 @@ enum class EndpointType {
 #if defined(OS_CHROMEOS) || (OS_LINUX) || (OS_FUCHSIA)
   kGuestOs = 0,  // Guest OS: ARC++, PluginVM, Crostini.
 #endif
-  kUrl = 1,  // Website URL e.g. www.example.com
+  kUrl = 1,  // Website origin e.g. www.example.com
   kMaxValue = kUrl
 };
 
@@ -27,7 +27,7 @@ enum class EndpointType {
 // - The destination trying to access the clipboard data.
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardDataEndpoint {
  public:
-  explicit ClipboardDataEndpoint(const GURL& url);
+  explicit ClipboardDataEndpoint(const url::Origin& origin);
   // This constructor shouldn't be used if |type| == EndpointType::kUrl.
   explicit ClipboardDataEndpoint(EndpointType type);
 
@@ -43,16 +43,16 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardDataEndpoint {
 
   bool IsUrlType() const { return type_ == EndpointType::kUrl; }
 
-  const GURL* url() const { return base::OptionalOrNullptr(url_); }
+  const url::Origin* origin() const { return base::OptionalOrNullptr(origin_); }
 
   EndpointType type() const { return type_; }
 
  private:
   // This variable should always have a value representing the object type.
   const EndpointType type_;
-  // The url of the data endpoint. It always has a value if |type_| ==
-  // EndpointType::URL, otherwise it's empty.
-  const base::Optional<GURL> url_;
+  // The url::Origin of the data endpoint. It always has a value if |type_| ==
+  // EndpointType::kUrl, otherwise it's empty.
+  const base::Optional<url::Origin> origin_;
 };
 
 }  // namespace ui

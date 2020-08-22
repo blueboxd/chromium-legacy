@@ -234,7 +234,7 @@ void HeadlessPrintManager::OnGetDefaultPrintSettings(
 
 void HeadlessPrintManager::OnScriptedPrint(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_ScriptedPrint_Params& params,
+    const printing::mojom::ScriptedPrintParams& params,
     IPC::Message* reply_msg) {
   PageRangeStatus status =
       PageRangeTextToPages(page_ranges_text_, ignore_invalid_page_ranges_,

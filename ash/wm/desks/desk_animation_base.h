@@ -11,7 +11,6 @@
 
 namespace ash {
 
-class Desk;
 class DesksController;
 
 // An abstract class that handles the shared operations need to be performed
@@ -21,12 +20,12 @@ class DesksController;
 // each animation type.
 class DeskAnimationBase : public RootWindowDeskSwitchAnimator::Delegate {
  public:
-  DeskAnimationBase(DesksController* controller, const Desk* ending_desk);
+  DeskAnimationBase(DesksController* controller, int ending_desk_index);
   DeskAnimationBase(const DeskAnimationBase&) = delete;
   DeskAnimationBase& operator=(const DeskAnimationBase&) = delete;
   ~DeskAnimationBase() override;
 
-  const Desk* ending_desk() const { return ending_desk_; }
+  int ending_desk_index() const { return ending_desk_index_; }
 
   // Launches the animation. This should be done once all animators
   // are created and added to `desk_switch_animators_`. This is to avoid any
@@ -35,7 +34,7 @@ class DeskAnimationBase : public RootWindowDeskSwitchAnimator::Delegate {
   void Launch();
 
   // RootWindowDeskSwitchAnimator::Delegate:
-  void OnStartingDeskScreenshotTaken(const Desk* ending_desk) override;
+  void OnStartingDeskScreenshotTaken(int ending_desk_index) override;
   void OnEndingDeskScreenshotTaken() override;
   void OnDeskSwitchAnimationFinished() override;
 
@@ -44,8 +43,7 @@ class DeskAnimationBase : public RootWindowDeskSwitchAnimator::Delegate {
   // things when phase (1), and phase (3) completes. Note that
   // `OnDeskSwitchAnimationFinishedInternal()` will be called before the desks
   // screenshot layers, stored in `desk_switch_animators_`, are destroyed.
-  virtual void OnStartingDeskScreenshotTakenInternal(
-      const Desk* ending_desk) = 0;
+  virtual void OnStartingDeskScreenshotTakenInternal(int ending_desk_index) = 0;
   virtual void OnDeskSwitchAnimationFinishedInternal() = 0;
 
   // Since performance here matters, we have to use the UMA histograms macros to
@@ -62,8 +60,8 @@ class DeskAnimationBase : public RootWindowDeskSwitchAnimator::Delegate {
   std::vector<std::unique_ptr<RootWindowDeskSwitchAnimator>>
       desk_switch_animators_;
 
-  // The desk that will be active after this animation ends.
-  const Desk* const ending_desk_;
+  // The index of the desk that will be active after this animation ends.
+  const int ending_desk_index_;
 
  private:
   // ThroughputTracker used for measuring this animation smoothness.

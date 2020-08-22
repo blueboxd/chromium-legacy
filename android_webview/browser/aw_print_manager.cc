@@ -92,7 +92,7 @@ void AwPrintManager::OnGetDefaultPrintSettings(
 
 void AwPrintManager::OnScriptedPrint(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_ScriptedPrint_Params& scripted_params,
+    const printing::mojom::ScriptedPrintParams& scripted_params,
     IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrintMsg_PrintPages_Params params;

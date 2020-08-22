@@ -2259,7 +2259,7 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
   bool is_scripted = print_request_type == PrintRequestType::kScripted;
   DCHECK(is_scripted || print_request_type == PrintRequestType::kRegular);
 
-  PrintHostMsg_ScriptedPrint_Params params;
+  mojom::ScriptedPrintParams params;
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->HasSelection();
   params.expected_pages_count = expected_pages_count;

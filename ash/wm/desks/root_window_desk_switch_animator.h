@@ -26,8 +26,6 @@ class CopyOutputResult;
 
 namespace ash {
 
-class Desk;
-
 // Performs the desk switch animation on a root window (i.e. display). Since a
 // desk spans all displays, one instance of this object will be created for each
 // display when a new desk is activated.
@@ -71,8 +69,8 @@ class Desk;
 //
 // - Phase (3) begins when StartAnimation() is called.
 //   * The parent layer of both screenshot layers is animated, either:
-//     - To the left (move_left_ == true); when the starting desk is on the
-//       left.
+//     - To the left (starting_desk_index_ < ending_desk_index_); when the
+//       starting desk is on the left.
 //
 //              <<<<<-------------------------- move left.
 //                       +-----------+
@@ -94,8 +92,8 @@ class Desk;
 //       * End transform: Negative translation to the left to slide out starting
 //         desk, and slide in ending desk screenshots into the screen.
 //
-//     - Or to the right (move_left_ == false), when the starting desk is on the
-//       right.
+//     - Or to the right (starting_desk_index_ > ending_desk_index_), when the
+//       starting desk is on the right.
 //
 //          move right. -------------------------->>>>>
 //                       +-----------+
@@ -159,9 +157,10 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   class Delegate {
    public:
     // Called when phase (1) completes. The starting desk screenshot has been
-    // taken and put on the screen. |ending_desk| is the desk that will be
-    // activated after all starting desk screenshots on all roots are taken.
-    virtual void OnStartingDeskScreenshotTaken(const Desk* ending_desk) = 0;
+    // taken and put on the screen. |ending_desk_index| is the index of the desk
+    // that will be activated after all starting desk screenshots on all roots
+    // are taken.
+    virtual void OnStartingDeskScreenshotTaken(int ending_desk_index) = 0;
 
     // Called when phase (2) completes. The ending desk screenshot has been
     // taken and put on the screen.
@@ -176,9 +175,9 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   };
 
   RootWindowDeskSwitchAnimator(aura::Window* root,
-                               const Desk* ending_desk,
+                               int starting_desk_index,
+                               int ending_desk_index,
                                Delegate* delegate,
-                               bool move_left,
                                bool for_remove);
 
   ~RootWindowDeskSwitchAnimator() override;
@@ -215,10 +214,11 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   // Completes the first phase of the animation using the given |layer| as the
   // screenshot layer of the starting desk. This layer will be parented to the
   // animation layer, which will be setup with its initial transform according
-  // to |move_left|. If |for_remove_| is true, the detached old layer tree of
-  // the soon-to-be-removed-desk's windows will be translated up vertically to
-  // simulate a jump from the removed desk to the target desk.
-  // |Delegate::OnStartingDeskScreenshotTaken()| will be called at the end.
+  // to |starting_desk_index_| and |ending_desk_index_|. If |for_remove_| is
+  // true, the detached old layer tree of the soon-to-be-removed-desk's windows
+  // will be translated up vertically to simulate a jump from the removed desk
+  // to the target desk. |Delegate::OnStartingDeskScreenshotTaken()| will be
+  // called at the end.
   void CompleteAnimationPhase1WithLayer(std::unique_ptr<ui::Layer> layer);
 
   void OnStartingDeskScreenshotTaken(
@@ -229,11 +229,11 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   // The root window that this animator is associated with.
   aura::Window* const root_window_;
 
-  // The active desk at the start of the animation.
-  const Desk* const starting_desk_;
+  // The index of the active desk at the start of the animation.
+  const int starting_desk_index_;
 
-  // The desk to activate and animate to with this animator.
-  const Desk* const ending_desk_;
+  // The index of the desk to activate and animate to with this animator.
+  const int ending_desk_index_;
 
   Delegate* const delegate_;
 
@@ -249,17 +249,13 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
 
   // The amount by which the animation layer will be translated horizontally
   // either startingly or at the end of the animation, depending on the value of
-  // |move_left_|.
+  // of the desk indices.
   const int x_translation_offset_;
 
   // Number of retires for taking the starting and ending screenshots, if we
   // get an empty result.
   int starting_desk_screenshot_retries_ = 0;
   int ending_desk_screenshot_retries_ = 0;
-
-  // True when the animation layer should be translated towards the left, which
-  // means the starting desk is on the left of the ending desk.
-  const bool move_left_;
 
   // True if this animator is handling the remove-active-desk animation.
   const bool for_remove_;

@@ -28,6 +28,10 @@ extern const base::Feature kEmptyWorkingSet;
 // according to the parameters below.
 extern const base::Feature kTrimOnMemoryPressure;
 
+// If enabled we will periodically walk procfs looking for ARC++ processes to
+// trim under memory pressure.
+extern const base::Feature kTrimArcOnMemoryPressure;
+
 // The trim on freeze feature will trim the working set of a process when all
 // frames are frozen.
 extern const base::Feature kTrimOnFreeze;
@@ -45,6 +49,34 @@ extern const base::FeatureParam<int> kNodeInvisibileTimeSec;
 // before considering the process node for working set trim.
 extern const base::FeatureParam<int> kNodeTrimBackoffTimeSec;
 
+// Specifies the frequency in which we will fetch the arc process list.
+extern const base::FeatureParam<int> kArcProcessListFetchBackoffTimeSec;
+
+// Specifies the frequency at which an individual arc++ process can be trimmed.
+extern const base::FeatureParam<int> kArcProcessTrimBackoffTimeSec;
+
+// If true then we will trim ARC App processes.
+extern const base::FeatureParam<bool> kTrimArcAppProcesses;
+
+// If true then we will trim ARC System processes.
+extern const base::FeatureParam<bool> kTrimArcSystemProcesses;
+
+// If true then we will trim all processes, regardless of state this is for
+// experimentation to see the tradeoff of trimming all apps vs. just the
+// unimportant ones.
+extern const base::FeatureParam<bool> kTrimArcAggressive;
+
+// If set to a value greater than -1, this is the maximum number of processes we
+// will target on each iteration. Where the frequency is defined by
+// kArcProcessListFetchBackoffTimeSec. NOTE: This value is the max for APP or
+// SYSTEM processes, meaning a value of 5 would allow 5 apps to be trimmed and 5
+// system processes to be trimmed.
+extern const base::FeatureParam<int> kArcMaxProcessesPerTrim;
+
+// If set to a value greater than -1, this is the minimum amount of time an ARC
+// process must have been inactive before it's eligible for reclaim.
+extern const base::FeatureParam<int> kArcProcessInactivityTimeSec;
+
 struct TrimOnMemoryPressureParams {
   TrimOnMemoryPressureParams();
   TrimOnMemoryPressureParams(const TrimOnMemoryPressureParams& other);
@@ -55,6 +87,15 @@ struct TrimOnMemoryPressureParams {
   base::TimeDelta graph_walk_backoff_time;
   base::TimeDelta node_invisible_time;
   base::TimeDelta node_trim_backoff_time;
+
+  // These are used when kTrimArcOnMemoryPressure is enabled.
+  base::TimeDelta arc_process_trim_backoff_time;
+  base::TimeDelta arc_process_list_fetch_backoff_time;
+  bool trim_arc_app_processes = false;
+  bool trim_arc_system_processes = false;
+  bool trim_arc_aggressive = false;
+  int arc_max_number_processes_per_trim = -1;
+  base::TimeDelta arc_process_inactivity_time;
 };
 
 #if BUILDFLAG(USE_TCMALLOC)

@@ -46,6 +46,7 @@
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/half_float.h"
+#include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "ui/base/clipboard/clipboard_util_win.h"
@@ -1071,7 +1072,7 @@ TYPED_TEST(ClipboardTest, DlpAllowDataRead) {
   {
     ScopedClipboardWriter writer(
         ClipboardBuffer::kCopyPaste,
-        std::make_unique<ClipboardDataEndpoint>(GURL()));
+        std::make_unique<ClipboardDataEndpoint>(url::Origin()));
     writer.WriteText(kTestText);
   }
   auto* dlp_controller = this->dlp_controller();
@@ -1092,7 +1093,7 @@ TYPED_TEST(ClipboardTest, DlpDisallowDataRead) {
   {
     ScopedClipboardWriter writer(
         ClipboardBuffer::kCopyPaste,
-        std::make_unique<ClipboardDataEndpoint>(GURL()));
+        std::make_unique<ClipboardDataEndpoint>(url::Origin()));
     writer.WriteText(kTestText);
   }
   auto* dlp_controller = this->dlp_controller();

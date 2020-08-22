@@ -77,7 +77,7 @@
     },
     {
       name: "mo",
-      interfaceName: "MathMLElement",
+      interfaceName: "MathMLOperatorElement",
     },
     {
       name: "mpadded",

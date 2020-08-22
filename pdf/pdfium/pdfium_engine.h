@@ -28,7 +28,6 @@
 #include "pdf/pdfium/pdfium_range.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
-#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var_array.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -95,7 +94,7 @@ class PDFiumEngine : public PDFEngine,
              std::vector<pp::Rect>& pending) override;
   void PostPaint() override;
   bool HandleDocumentLoad(const pp::URLLoader& loader) override;
-  bool HandleEvent(const pp::InputEvent& event) override;
+  bool HandleEvent(const InputEvent& event) override;
   uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;
   pp::Resource PrintPages(

@@ -195,6 +195,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                      bool include_smil_properties);
   void CollectTreeBoundaryCrossingRulesV0CascadeOrder(const Element&,
                                                       ElementRuleCollector&);
+  void ApplyMathMLCustomStyleProperties(Element*, StyleResolverState&);
 
   struct CacheSuccess {
     STACK_ALLOCATED();

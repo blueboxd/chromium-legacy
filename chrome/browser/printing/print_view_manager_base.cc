@@ -376,7 +376,7 @@ void PrintViewManagerBase::OnPrintingFailed(int cookie) {
 
 void PrintViewManagerBase::OnScriptedPrint(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_ScriptedPrint_Params& params,
+    const mojom::ScriptedPrintParams& params,
     IPC::Message* reply_msg) {
   NOTREACHED() << "should be handled by printing:: PrintingMessageFilter";
 }

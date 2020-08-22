@@ -23,7 +23,7 @@ NGMathPaddedLayoutAlgorithm::NGMathPaddedLayoutAlgorithm(
 
 LayoutUnit NGMathPaddedLayoutAlgorithm::RequestedLSpace() const {
   return std::max(LayoutUnit(),
-                  ValueForLength(Style().GetMathPaddedLSpace(), LayoutUnit()));
+                  ValueForLength(Style().GetMathLSpace(), LayoutUnit()));
 }
 
 LayoutUnit NGMathPaddedLayoutAlgorithm::RequestedVOffset() const {

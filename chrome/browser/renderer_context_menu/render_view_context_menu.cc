@@ -2688,7 +2688,7 @@ RenderViewContextMenu::CreateDataEndpoint() const {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (render_frame_host) {
     return std::make_unique<ui::ClipboardDataEndpoint>(
-        render_frame_host->GetLastCommittedURL());
+        render_frame_host->GetLastCommittedOrigin());
   }
   return nullptr;
 }

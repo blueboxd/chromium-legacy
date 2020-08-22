@@ -22,7 +22,7 @@ struct PrintManager::FrameDispatchHelper {
     manager->OnGetDefaultPrintSettings(render_frame_host, reply_msg);
   }
 
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& scripted_params,
+  void OnScriptedPrint(const mojom::ScriptedPrintParams& scripted_params,
                        IPC::Message* reply_msg) {
     manager->OnScriptedPrint(render_frame_host, scripted_params, reply_msg);
   }

@@ -33,7 +33,7 @@ void MathMLPaddedElement::AddMathPaddedLSpaceIfNeeded(
     const CSSToLengthConversionData& conversion_data) {
   if (auto length_or_percentage_value = AddMathLengthToComputedStyle(
           conversion_data, mathml_names::kLspaceAttr))
-    style.SetMathPaddedLSpace(std::move(*length_or_percentage_value));
+    style.SetMathLSpace(std::move(*length_or_percentage_value));
 }
 
 void MathMLPaddedElement::AddMathPaddedVOffsetIfNeeded(

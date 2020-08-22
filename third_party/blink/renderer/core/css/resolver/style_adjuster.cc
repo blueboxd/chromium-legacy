@@ -54,9 +54,6 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
-#include "third_party/blink/renderer/core/mathml/mathml_padded_element.h"
-#include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -732,20 +729,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // https://drafts.csswg.org/css-display/#unbox-mathml
       style.SetDisplay(EDisplay::kNone);
     }
-    if (auto* space = DynamicTo<MathMLSpaceElement>(*element)) {
-      space->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
-    } else if (auto* padded = DynamicTo<MathMLPaddedElement>(*element)) {
-      padded->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
-      padded->AddMathPaddedDepthIfNeeded(style,
-                                         state.CssToLengthConversionData());
-      padded->AddMathPaddedLSpaceIfNeeded(style,
-                                          state.CssToLengthConversionData());
-      padded->AddMathPaddedVOffsetIfNeeded(style,
-                                           state.CssToLengthConversionData());
-    } else if (auto* fraction = DynamicTo<MathMLFractionElement>(*element)) {
-      fraction->AddMathFractionBarThicknessIfNeeded(
-          style, state.CssToLengthConversionData());
-    }
+
     if (style.GetWritingMode() != WritingMode::kHorizontalTb) {
       // TODO(rbuis): this will not work with logical CSS properties.
       // Disable vertical writing-mode for now.

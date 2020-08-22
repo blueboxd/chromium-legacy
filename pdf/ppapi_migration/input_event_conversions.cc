@@ -115,14 +115,23 @@ bool IsTouchEventType(chrome_pdf::InputEventType event_type) {
 
 namespace chrome_pdf {
 
+InputEvent::InputEvent(InputEventType event_type,
+                       double time_stamp,
+                       uint32_t modifiers)
+    : event_type_(event_type), time_stamp_(time_stamp), modifiers_(modifiers) {}
+
+InputEvent::InputEvent(const InputEvent& other) = default;
+
+InputEvent& InputEvent::operator=(const InputEvent& other) = default;
+
+InputEvent::~InputEvent() = default;
+
 KeyboardInputEvent::KeyboardInputEvent(InputEventType event_type,
                                        double time_stamp,
                                        uint32_t modifiers,
                                        uint32_t keyboard_code,
                                        const std::string& key_char)
-    : event_type_(event_type),
-      time_stamp_(time_stamp),
-      modifiers_(modifiers),
+    : InputEvent(event_type, time_stamp, modifiers),
       keyboard_code_(keyboard_code),
       key_char_(key_char) {
   DCHECK(IsKeyboardEventType(GetEventType()));
@@ -143,9 +152,7 @@ MouseInputEvent::MouseInputEvent(InputEventType event_type,
                                  const gfx::Point& point,
                                  int32_t click_count,
                                  const gfx::Point& movement)
-    : event_type_(event_type),
-      time_stamp_(time_stamp),
-      modifiers_(modifiers),
+    : InputEvent(event_type, time_stamp, modifiers),
       mouse_button_type_(mouse_button_type),
       point_(point),
       click_count_(click_count),
@@ -165,9 +172,7 @@ TouchInputEvent::TouchInputEvent(InputEventType event_type,
                                  uint32_t modifiers,
                                  const gfx::PointF& target_touch_point,
                                  int32_t touch_count)
-    : event_type_(event_type),
-      time_stamp_(time_stamp),
-      modifiers_(modifiers),
+    : InputEvent(event_type, time_stamp, modifiers),
       target_touch_point_(target_touch_point),
       touch_count_(touch_count) {
   DCHECK(IsTouchEventType(GetEventType()));
@@ -179,6 +184,16 @@ TouchInputEvent& TouchInputEvent::operator=(const TouchInputEvent& other) =
     default;
 
 TouchInputEvent::~TouchInputEvent() = default;
+
+NoneInputEvent::NoneInputEvent()
+    : InputEvent(InputEventType::kNone, 0, kInputEventModifierNone) {}
+
+NoneInputEvent::NoneInputEvent(const NoneInputEvent& other) = default;
+
+NoneInputEvent& NoneInputEvent::operator=(const NoneInputEvent& other) =
+    default;
+
+NoneInputEvent::~NoneInputEvent() = default;
 
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event) {
   return KeyboardInputEvent(GetEventType(event.GetType()), event.GetTimeStamp(),

@@ -23,6 +23,7 @@
         android:paddingBottom="12dp"
         android:text="@string/managed"
         android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
+        android:singleLine="true"
         android:drawableStart="@drawable/ic_business"
         android:drawableTint="@color/default_icon_color_secondary"
         android:drawablePadding="12dp"

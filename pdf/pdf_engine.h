@@ -20,7 +20,6 @@
 #include "pdf/document_layout.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
-#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/size.h"
@@ -52,13 +51,13 @@ class Vector2d;
 }  // namespace gfx
 
 namespace pp {
-class InputEvent;
 class Rect;
 class VarDictionary;
 }  // namespace pp
 
 namespace chrome_pdf {
 
+class InputEvent;
 struct DocumentAttachmentInfo;
 struct DocumentMetadata;
 
@@ -338,7 +337,7 @@ class PDFEngine {
                      std::vector<pp::Rect>& pending) = 0;
   virtual void PostPaint() = 0;
   virtual bool HandleDocumentLoad(const pp::URLLoader& loader) = 0;
-  virtual bool HandleEvent(const pp::InputEvent& event) = 0;
+  virtual bool HandleEvent(const InputEvent& event) = 0;
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual void PrintBegin() = 0;
   virtual pp::Resource PrintPages(

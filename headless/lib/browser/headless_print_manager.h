@@ -17,7 +17,6 @@
 #include "headless/public/headless_export.h"
 #include "printing/print_settings.h"
 
-struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 
 namespace headless {
@@ -106,7 +105,7 @@ class HeadlessPrintManager
                                  IPC::Message* reply_msg) override;
   void OnPrintingFailed(int cookie) override;
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                       const PrintHostMsg_ScriptedPrint_Params& params,
+                       const printing::mojom::ScriptedPrintParams& params,
                        IPC::Message* reply_msg) override;
 
   void OnShowInvalidPrinterSettingsError();

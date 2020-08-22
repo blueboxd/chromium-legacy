@@ -22,8 +22,6 @@ namespace IPC {
 class Message;
 }
 
-struct PrintHostMsg_ScriptedPrint_Params;
-
 namespace printing {
 
 class PrintManager : public content::WebContentsObserver,
@@ -101,7 +99,7 @@ class PrintManager : public content::WebContentsObserver,
       IPC::Message* reply_msg) = 0;
   virtual void OnPrintingFailed(int cookie);
   virtual void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                               const PrintHostMsg_ScriptedPrint_Params& params,
+                               const mojom::ScriptedPrintParams& params,
                                IPC::Message* reply_msg) = 0;
 
   int number_pages_ = 0;  // Number of pages to print in the print job.

@@ -31,13 +31,8 @@ bool WorkingSetTrimmerChromeOS::PlatformSupportsWorkingSetTrim() {
   return kPlatformSupported;
 }
 
-bool WorkingSetTrimmerChromeOS::TrimWorkingSet(
-    const ProcessNode* process_node) {
-  if (!process_node->GetProcess().IsValid())
-    return false;
-
-  const std::string reclaim_file =
-      base::StringPrintf("/proc/%d/reclaim", process_node->GetProcessId());
+bool WorkingSetTrimmerChromeOS::TrimWorkingSet(base::ProcessId pid) {
+  const std::string reclaim_file = base::StringPrintf("/proc/%d/reclaim", pid);
   const std::string kReclaimMode = "all";
   ssize_t written = base::WriteFile(base::FilePath(reclaim_file),
                                     kReclaimMode.c_str(), kReclaimMode.size());
@@ -46,6 +41,14 @@ bool WorkingSetTrimmerChromeOS::TrimWorkingSet(
   PLOG_IF(ERROR, written < 0 && errno != ENOENT)
       << "Write failed on " << reclaim_file << " mode: " << kReclaimMode;
   return written > 0;
+}
+
+bool WorkingSetTrimmerChromeOS::TrimWorkingSet(
+    const ProcessNode* process_node) {
+  if (!process_node->GetProcess().IsValid())
+    return false;
+
+  return TrimWorkingSet(process_node->GetProcessId());
 }
 
 }  // namespace mechanism

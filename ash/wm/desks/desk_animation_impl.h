@@ -11,20 +11,19 @@
 
 namespace ash {
 
-class Desk;
 class DesksController;
 
 class DeskActivationAnimation : public DeskAnimationBase {
  public:
   DeskActivationAnimation(DesksController* controller,
-                          const Desk* ending_desk,
-                          bool move_left);
+                          int starting_desk_index,
+                          int ending_desk_index);
   DeskActivationAnimation(const DeskActivationAnimation&) = delete;
   DeskActivationAnimation& operator=(const DeskActivationAnimation&) = delete;
   ~DeskActivationAnimation() override;
 
   // DeskAnimationBase:
-  void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override;
+  void OnStartingDeskScreenshotTakenInternal(int ending_desk_index) override;
   void OnDeskSwitchAnimationFinishedInternal() override {}
   metrics_util::ReportCallback GetReportCallback() const override;
 };
@@ -32,21 +31,20 @@ class DeskActivationAnimation : public DeskAnimationBase {
 class DeskRemovalAnimation : public DeskAnimationBase {
  public:
   DeskRemovalAnimation(DesksController* controller,
-                       const Desk* desk_to_remove,
-                       const Desk* desk_to_activate,
-                       bool move_left,
+                       int desk_to_remove_index,
+                       int desk_to_activate_index,
                        DesksCreationRemovalSource source);
   DeskRemovalAnimation(const DeskRemovalAnimation&) = delete;
   DeskRemovalAnimation& operator=(const DeskRemovalAnimation&) = delete;
   ~DeskRemovalAnimation() override;
 
   // DeskAnimationBase:
-  void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override;
+  void OnStartingDeskScreenshotTakenInternal(int ending_desk_index) override;
   void OnDeskSwitchAnimationFinishedInternal() override;
   metrics_util::ReportCallback GetReportCallback() const override;
 
  private:
-  const Desk* const desk_to_remove_;
+  const int desk_to_remove_index_;
   const DesksCreationRemovalSource request_source_;
 };
 

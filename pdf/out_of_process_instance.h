@@ -322,6 +322,10 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Callback to do invalidation after painting finishes.
   void InvalidateAfterPaintDone(int32_t /*unused_but_required*/);
 
+  // Helper for HandleInputEvent(). Returns whether engine() handled the event
+  // or not.
+  bool SendInputEventToEngine(const pp::InputEvent& event);
+
   pp::ImageData image_data_;
   SkBitmap skia_image_data_;  // Must be kept in sync with |image_data_|.
 

@@ -10,8 +10,8 @@
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
+#include "components/media_router/common/media_sink.h"
 #include "components/prefs/pref_service.h"
 
 namespace media_router {

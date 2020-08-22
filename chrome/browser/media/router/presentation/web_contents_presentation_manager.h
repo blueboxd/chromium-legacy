@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 
 namespace content {
 struct PresentationRequest;

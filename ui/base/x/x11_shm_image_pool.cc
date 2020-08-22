@@ -117,18 +117,22 @@ XShmImagePool::XShmImagePool(x11::Connection* connection,
                              x11::Drawable drawable,
                              x11::VisualId visual,
                              int depth,
-                             std::size_t frames_pending)
+                             std::size_t frames_pending,
+                             bool enable_multibuffering)
     : connection_(connection),
       drawable_(drawable),
       visual_(visual),
       depth_(depth),
+      enable_multibuffering_(enable_multibuffering),
       frame_states_(frames_pending) {
-  X11EventSource::GetInstance()->AddXEventDispatcher(this);
+  if (enable_multibuffering_)
+    X11EventSource::GetInstance()->AddXEventDispatcher(this);
 }
 
 XShmImagePool::~XShmImagePool() {
   Cleanup();
-  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
+  if (enable_multibuffering_)
+    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
@@ -254,6 +258,7 @@ x11::Shm::Seg XShmImagePool::CurrentSegment() {
 void XShmImagePool::SwapBuffers(
     base::OnceCallback<void(const gfx::Size&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(enable_multibuffering_);
 
   swap_closures_.emplace_back();
   SwapClosure& swap_closure = swap_closures_.back();
@@ -267,6 +272,7 @@ void XShmImagePool::DispatchShmCompletionEvent(
     x11::Shm::CompletionEvent event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(event.offset, 0UL);
+  DCHECK(enable_multibuffering_);
 
   for (auto it = swap_closures_.begin(); it != swap_closures_.end(); ++it) {
     if (event.shmseg == it->shmseg) {
@@ -279,6 +285,7 @@ void XShmImagePool::DispatchShmCompletionEvent(
 
 bool XShmImagePool::DispatchXEvent(x11::Event* xev) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(enable_multibuffering_);
 
   auto* completion = xev->As<x11::Shm::CompletionEvent>();
   if (!completion || completion->drawable.value != drawable_.value)

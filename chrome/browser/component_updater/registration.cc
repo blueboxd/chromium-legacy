@@ -183,6 +183,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #if !defined(OS_ANDROID)
   component_updater::RegisterSODAComponent(cus, profile_prefs,
                                            base::OnceClosure());
+  component_updater::RegisterSodaLanguageComponent(cus, profile_prefs);
 #endif
 
 #if defined(OS_CHROMEOS)

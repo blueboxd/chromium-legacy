@@ -162,7 +162,8 @@ cr.define('cr.ui', function() {
         case 'mousedown':
           if (!this.menu.contains(e.target)) {
             this.hideMenu();
-            if (e.button === 0 /* Left button */ && (cr.isLinux || cr.isMac)) {
+            if (e.button === 0 /* Left button */ &&
+                (cr.isLinux || cr.isMac || cr.isLacros)) {
               // Emulate Mac and Linux, which swallow native 'mousedown' events
               // that close menus.
               e.preventDefault();

@@ -96,8 +96,15 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   // Flush and block until the server has responded to all requests.
   void Sync();
 
+  // If |synchronous| is true, this makes all requests Sync().
+  void SynchronizeForTest(bool synchronous);
+
+  bool synchronous() const { return synchronous_; }
+
   // Read all responses from the socket without blocking.
   void ReadResponses();
+
+  Event WaitForNextEvent();
 
   // Are there any events, errors, or replies already buffered?
   bool HasPendingResponses() const;
@@ -157,6 +164,9 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   KeySym TranslateKey(uint32_t keycode, unsigned int modifiers) const;
 
   XDisplay* const display_;
+
+  bool synchronous_ = false;
+  bool syncing_ = false;
 
   uint32_t extended_max_request_length_ = 0;
 

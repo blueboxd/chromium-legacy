@@ -93,8 +93,10 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   void OnBrowserRemoved(Browser* browser) override;
 
   void OnLiveCaptionEnabledChanged();
+  void OnLiveCaptionLanguageChanged();
   bool IsLiveCaptionEnabled();
   void UpdateSpeechRecognitionServiceEnabled();
+  void UpdateSpeechRecognitionLanguage();
   void UpdateUIEnabled();
   void UpdateCaptionStyle();
 

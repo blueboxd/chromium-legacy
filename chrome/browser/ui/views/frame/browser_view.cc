@@ -557,7 +557,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
   feature_promo_controller_ =
-      std::make_unique<FeaturePromoControllerViews>(browser_->profile());
+      std::make_unique<FeaturePromoControllerViews>(this);
 
   // Must be destroyed before the tab strip and |feature_promo_controller_|.
   tab_groups_iph_controller_ = std::make_unique<TabGroupsIPHController>(

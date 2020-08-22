@@ -116,7 +116,7 @@ PrintingAPIHandler* PrintingAPIHandler::Get(
 
 // static
 void PrintingAPIHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kPrintingAPIExtensionsWhitelist);
+  registry->RegisterListPref(prefs::kPrintingAPIExtensionsAllowlist);
 }
 
 void PrintingAPIHandler::SubmitJob(

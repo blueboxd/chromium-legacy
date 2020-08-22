@@ -152,6 +152,8 @@ base::Optional<unsigned int> SendRequestImpl(x11::Connection* connection,
   }
   if (xcb_connection_has_error(conn))
     return base::nullopt;
+  if (connection->synchronous())
+    connection->Sync();
   return sequence;
 }
 

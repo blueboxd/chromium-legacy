@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/media_router/issue.h"
+#include "components/media_router/common/issue.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"

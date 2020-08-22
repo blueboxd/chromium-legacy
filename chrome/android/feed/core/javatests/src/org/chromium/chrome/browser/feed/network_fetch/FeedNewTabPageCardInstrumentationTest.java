@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -44,8 +43,9 @@ public final class FeedNewTabPageCardInstrumentationTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+    public ChromeRenderTestRule mRenderTestRule = ChromeRenderTestRule.Builder.withPublicCorpus()
+                                                          .setFailOnUnsupportedConfigs(true)
+                                                          .build();
 
     @Before
     public void setUp() {
@@ -57,7 +57,6 @@ public final class FeedNewTabPageCardInstrumentationTest {
     @Feature({"FeedNewTabPage", "WPRRecordReplayTest", "RenderTest"})
     @WPRArchiveDirectory("chrome/android/feed/core/javatests/src/org/chromium/chrome/"
             + "browser/feed/wpr_tests")
-    @FlakyTest(message = "https://crbug.com/1096656")
     public void
     launchNTP_withMultipleFeedCardsRendered() throws IOException, InterruptedException {
         mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);

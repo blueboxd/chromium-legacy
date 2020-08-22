@@ -16,10 +16,10 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "url/origin.h"
 

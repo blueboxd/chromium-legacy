@@ -17,8 +17,8 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/media_source.h"
 #include "url/origin.h"
 
 namespace media_router {

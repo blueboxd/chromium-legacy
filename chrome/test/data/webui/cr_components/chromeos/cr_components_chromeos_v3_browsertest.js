@@ -13,8 +13,10 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 [['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.m.js'],
  ['NetworkConfigElementBehavior', 'network/network_config_element_behavior_test.m.js'],
+ ['NetworkIpConfig', 'network/network_ip_config_test.m.js'],
  ['NetworkList', 'network/network_list_test.m.js'],
  ['NetworkListItem', 'network/network_list_item_test.m.js'],
+ ['NetworkNameservers', 'network/network_nameservers_test.m.js'],
  ['NetworkPasswordInput', 'network/network_password_input_test.m.js'],
  ['NetworkPropertyListMojo', 'network/network_property_list_mojo_test.m.js'],
 ].forEach(test => registerTest('NetworkComponents', ...test));

@@ -49,7 +49,6 @@ class AppCacheResponseInfo;
 class HostNotifier;
 
 CONTENT_EXPORT extern const base::Feature kAppCacheCorruptionRecoveryFeature;
-CONTENT_EXPORT extern const base::Feature kAppCacheUpdateResourceOn304Feature;
 
 // Application cache Update algorithm and state.
 class CONTENT_EXPORT AppCacheUpdateJob
@@ -75,7 +74,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   friend class content::AppCacheGroupTest;
   friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
 
-  class CacheCopier;
   class URLFetcher;
   class UpdateRequestBase;
   class UpdateURLLoaderRequest;
@@ -149,8 +147,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   void HandleFetchedManifestIsUnchanged();
 
   void HandleResourceFetchCompleted(URLFetcher* url_fetcher, int net_error);
-  void ContinueHandleResourceFetchCompleted(const GURL& url,
-                                            URLFetcher* entry_fetcher);
   void HandleNewMasterEntryFetchCompleted(URLFetcher* url_fetcher,
                                           int net_error);
 
@@ -253,10 +249,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Stores the manifest scope determined during the refetch phase.
   std::string refetched_manifest_scope_;
 
-  // If true, AppCache resource fetches that return a 304 response will have
-  // their cache entry copied and updated based on the 304 response.
-  const bool update_resource_on_304_enabled_;
-
   // Defined prior to refs to AppCaches and Groups because destruction
   // order matters, the disabled_storage_reference_ must outlive those
   // objects.
@@ -333,9 +325,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Used to track behavior and conditions found during update for submission
   // to UMA.
   AppCacheUpdateMetricsRecorder update_metrics_;
-
-  // |cache_copier_by_url_| owns all running cache copies, indexed by |url|.
-  std::map<GURL, std::unique_ptr<CacheCopier>> cache_copier_by_url_;
 
   // Whether to gate the fetch/update of a manifest on the presence of
   // an origin trial token in the manifest.

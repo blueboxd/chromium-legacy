@@ -33,6 +33,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDownloadLater;
 #if defined(OS_ANDROID)
 // Whether download expiration date will be refreshed on resumption.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
+
+// Whether to enable smart suggestion for large downloads
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kSmartSuggestionForLargeDownloads;
 #endif
 
 // Whether in-progress download manager will be used to initialize download

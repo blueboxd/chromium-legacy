@@ -6,8 +6,6 @@
  * @fileoverview Polymer element for displaying the IP Config properties for
  * a network state.
  */
-(function() {
-'use strict';
 
 /**
  * Returns the routing prefix as a string for a given prefix length. If
@@ -359,4 +357,3 @@ Polymer({
     });
   },
 });
-})();

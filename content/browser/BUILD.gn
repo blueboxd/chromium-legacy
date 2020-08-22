@@ -440,8 +440,6 @@ source_set("browser") {
     "appcache/appcache_subresource_url_factory.h",
     "appcache/appcache_update_job.cc",
     "appcache/appcache_update_job.h",
-    "appcache/appcache_update_job_cache_copier.cc",
-    "appcache/appcache_update_job_cache_copier.h",
     "appcache/appcache_update_job_state.h",
     "appcache/appcache_update_metrics_recorder.cc",
     "appcache/appcache_update_metrics_recorder.h",

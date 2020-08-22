@@ -93,7 +93,12 @@ class IdentityGaiaRemoteConsentFlowTest : public testing::Test {
   std::unique_ptr<TestGaiaRemoteConsentFlow> CreateTestFlow(
       const std::string& window_key,
       GaiaRemoteConsentFlow::Delegate* delegate) {
-    ExtensionTokenKey token_key("extension_id", CoreAccountId("account_id"),
+    CoreAccountInfo user_info;
+    user_info.account_id = CoreAccountId("account_id");
+    user_info.gaia = "account_id";
+    user_info.email = "email";
+
+    ExtensionTokenKey token_key("extension_id", user_info,
                                 std::set<std::string>());
     RemoteConsentResolutionData resolution_data;
     resolution_data.url = GURL("https://example.com/auth/");

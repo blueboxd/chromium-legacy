@@ -167,7 +167,8 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
     base::span<const uint8_t> signature,
     AuthenticatorData authenticator_data,
     base::Optional<std::vector<uint8_t>> android_client_data_ext,
-    bool enterprise_attestation_requested) {
+    bool enterprise_attestation_requested,
+    base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key) {
   cbor::Value::MapValue attestation_map;
   attestation_map.emplace("alg", -7);
   attestation_map.emplace("sig", fido_parsing_utils::Materialize(signature));
@@ -190,6 +191,9 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   }
   make_credential_response.enterprise_attestation_returned =
       enterprise_attestation_requested;
+  if (large_blob_key) {
+    make_credential_response.set_large_blob_key(*large_blob_key);
+  }
   return AsCTAPStyleCBORBytes(make_credential_response);
 }
 
@@ -417,6 +421,9 @@ std::vector<uint8_t> EncodeGetAssertionResponse(
     response_map.emplace(0xf0,
                          cbor::Value(*response.android_client_data_ext()));
   }
+  if (response.large_blob_key()) {
+    response_map.emplace(0x0b, cbor::Value(*response.large_blob_key()));
+  }
 
   return WriteCBOR(cbor::Value(std::move(response_map)), allow_invalid_utf8);
 }
@@ -536,6 +543,12 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     options.enterprise_attestation = true;
   }
 
+  if (config.large_blob_support) {
+    DCHECK(config.resident_key_support);
+    options_updated = true;
+    options.supports_large_blobs = true;
+  }
+
   if (options_updated) {
     device_info_->options = std::move(options);
   }
@@ -552,6 +565,10 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
 
   if (config.support_android_client_data_extension) {
     extensions.emplace_back(device::kExtensionAndroidClientData);
+  }
+
+  if (config.large_blob_support) {
+    extensions.emplace_back(device::kExtensionLargeBlobKey);
   }
 
   if (!extensions.empty()) {
@@ -914,7 +931,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
       // extensions but Chromium should not make this mistake.
       DLOG(ERROR)
           << "Rejecting makeCredential due to unexpected hmac_secret extension";
-      return base::nullopt;
+      return CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension;
     }
     extensions_map.emplace(cbor::Value(kExtensionHmacSecret),
                            cbor::Value(true));
@@ -932,6 +949,19 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
       cred_protect != device::CredProtect::kUVOptional) {
     extensions_map.emplace(cbor::Value(kExtensionCredProtect),
                            cbor::Value(static_cast<int64_t>(cred_protect)));
+  }
+
+  if (request.large_blob_key) {
+    if (!config_.large_blob_support) {
+      DLOG(ERROR) << "Rejecting makeCredential due to unexpected largeBlobKey "
+                     "extension";
+      return CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension;
+    }
+    if (!request.resident_key_required) {
+      DLOG(ERROR)
+          << "largeBlobKey is not supported for non resident credentials";
+      return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+    }
   }
 
   if (config_.add_extra_extension) {
@@ -1025,9 +1055,16 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
                                                client_data_json.size()));
   }
 
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key;
+  if (request.large_blob_key) {
+    large_blob_key.emplace();
+    RAND_bytes(large_blob_key->data(), large_blob_key->size());
+  }
+
   *response = ConstructMakeCredentialResponse(
       std::move(attestation_cert), sig, std::move(authenticator_data),
-      std::move(opt_android_client_data_ext), enterprise_attestation_requested);
+      std::move(opt_android_client_data_ext), enterprise_attestation_requested,
+      large_blob_key);
   RegistrationData registration(std::move(private_key), rp_id_hash,
                                 1 /* signature counter */);
 
@@ -1067,6 +1104,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     RAND_bytes(registration.hmac_key->second.data(),
                registration.hmac_key->second.size());
   }
+
+  registration.large_blob_key = std::move(large_blob_key);
 
   StoreNewKey(key_handle, std::move(registration));
   return CtapDeviceResponseCode::kSuccess;
@@ -1348,6 +1387,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
 
     if (registration.second->is_resident) {
       assertion.SetUserEntity(registration.second->user.value());
+    }
+
+    if (request.large_blob_key) {
+      if (!config_.large_blob_support) {
+        return CtapDeviceResponseCode::kCtap2ErrExtensionNotSupported;
+      }
+      if (registration.second->large_blob_key) {
+        assertion.set_large_blob_key(*registration.second->large_blob_key);
+      }
     }
 
     if (opt_android_client_data_json) {

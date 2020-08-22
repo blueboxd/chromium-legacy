@@ -31,6 +31,8 @@ extern const base::Feature kReportKeepaliveUkm;
 
 extern const base::Feature kReturnScopesInGetAuthToken;
 
+extern const base::Feature kSelectedUserIdInGetAuthToken;
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

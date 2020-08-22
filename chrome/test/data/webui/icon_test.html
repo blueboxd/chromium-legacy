@@ -18,7 +18,7 @@ function testGetFaviconForPageURL() {
       '&allow_google_server_fallback=0") ' +
       window.devicePixelRatio + 'x)';
 
-  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
+  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux || cr.isLacros;
   var expected = isDesktop ? expectedDesktop : expectedOther;
   assertEquals(expected, cr.icon.getFaviconForPageURL(url));
 }
@@ -35,7 +35,7 @@ function testGetFavicon() {
       encodeURIComponent('http://foo.com/foo.ico')+'") ' +
       window.devicePixelRatio + 'x)';
 
-  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
+  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux || cr.isLacros;
   var expected = isDesktop ? expectedDesktop : expectedOther;
   assertEquals(expected, cr.icon.getFavicon(url));
 }

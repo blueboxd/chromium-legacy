@@ -16,12 +16,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/route_message_observer.h"
-#include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/media_route_provider_helper.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/media_router/common/media_route.h"
+#include "components/media_router/common/media_route_provider_helper.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "media/base/flinging_controller.h"
@@ -29,7 +29,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/router/logger_impl.h"
-#include "chrome/common/media_router/mojom/media_controller.mojom.h"
+#include "components/media_router/common/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #endif  // !defined(OS_ANDROID)

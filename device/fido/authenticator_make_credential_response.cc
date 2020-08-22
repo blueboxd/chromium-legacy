@@ -102,6 +102,11 @@ AuthenticatorMakeCredentialResponse::GetRpIdHash() const {
   return attestation_object_.rp_id_hash();
 }
 
+void AuthenticatorMakeCredentialResponse::set_large_blob_key(
+    const base::span<const uint8_t, kLargeBlobKeyLength> large_blob_key) {
+  large_blob_key_ = fido_parsing_utils::Materialize(large_blob_key);
+}
+
 std::vector<uint8_t> AsCTAPStyleCBORBytes(
     const AuthenticatorMakeCredentialResponse& response) {
   const AttestationObject& object = response.attestation_object();
@@ -115,6 +120,9 @@ std::vector<uint8_t> AsCTAPStyleCBORBytes(
   }
   if (response.enterprise_attestation_returned) {
     map.emplace(4, true);
+  }
+  if (response.large_blob_key()) {
+    map.emplace(5, cbor::Value(*response.large_blob_key()));
   }
   auto encoded_bytes = cbor::Writer::Write(cbor::Value(std::move(map)));
   DCHECK(encoded_bytes);

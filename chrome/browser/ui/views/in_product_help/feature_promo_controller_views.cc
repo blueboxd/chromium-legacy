@@ -8,16 +8,21 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_bubble_view.h"
+#include "chrome/browser/ui/views/in_product_help/feature_promo_registry.h"
 #include "components/feature_engagement/public/tracker.h"
 
-FeaturePromoControllerViews::FeaturePromoControllerViews(Profile* profile)
-    : tracker_(
-          feature_engagement::TrackerFactory::GetForBrowserContext(profile)) {
+FeaturePromoControllerViews::FeaturePromoControllerViews(
+    BrowserView* browser_view)
+    : browser_view_(browser_view),
+      tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
+          browser_view->browser()->profile())) {
   DCHECK(tracker_);
 }
 
@@ -32,9 +37,9 @@ FeaturePromoControllerViews::~FeaturePromoControllerViews() {
   promo_bubble_->GetWidget()->Close();
 }
 
-bool FeaturePromoControllerViews::MaybeShowPromo(
+bool FeaturePromoControllerViews::MaybeShowPromoWithParams(
     const base::Feature& iph_feature,
-    FeaturePromoBubbleParams params) {
+    const FeaturePromoBubbleParams& params) {
   if (!tracker_->ShouldTriggerHelpUI(iph_feature))
     return false;
 
@@ -50,6 +55,16 @@ bool FeaturePromoControllerViews::MaybeShowPromo(
   widget_observer_.Add(promo_bubble_->GetWidget());
 
   return true;
+}
+
+bool FeaturePromoControllerViews::MaybeShowPromo(
+    const base::Feature& iph_feature) {
+  base::Optional<FeaturePromoBubbleParams> params =
+      FeaturePromoRegistry::GetInstance()->GetParamsForFeature(iph_feature,
+                                                               browser_view_);
+  if (!params)
+    return false;
+  return MaybeShowPromoWithParams(iph_feature, *params);
 }
 
 bool FeaturePromoControllerViews::BubbleIsShowing(

@@ -67,6 +67,13 @@ class NearbyShareCertificateManagerImplTest : public ::testing::Test {
     PopulatePublicCertificates();
   }
 
+  ~NearbyShareCertificateManagerImplTest() override = default;
+
+  void TearDown() override {
+    NearbyShareSchedulerFactory::SetFactoryForTesting(nullptr);
+    NearbyShareCertificateStorageImpl::Factory::SetFactoryForTesting(nullptr);
+  }
+
  protected:
   void GetPublicCertificatesCallback(
       bool success,
@@ -193,19 +200,20 @@ class NearbyShareCertificateManagerImplTest : public ::testing::Test {
     }
   }
 
-  std::unique_ptr<NearbyShareCertificateManager> cert_man_;
-  std::unique_ptr<FakeNearbyShareLocalDeviceDataManager>
-      local_device_data_manager_;
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  FakeNearbyShareCertificateStorage::Factory cert_store_factory_;
   FakeNearbyShareCertificateStorage* cert_store_;
-  FakeNearbyShareClientFactory client_factory_;
-  FakeNearbyShareSchedulerFactory scheduler_factory_;
   FakeNearbyShareScheduler* scheduler_;
-  base::SimpleTestClock clock_;
   std::vector<NearbySharePrivateCertificate> private_certificates_;
   std::vector<nearbyshare::proto::PublicCertificate> public_certificates_;
   std::vector<NearbyShareEncryptedMetadataKey> metadata_encryption_keys_;
+
+  FakeNearbyShareClientFactory client_factory_;
+  FakeNearbyShareSchedulerFactory scheduler_factory_;
+  FakeNearbyShareCertificateStorage::Factory cert_store_factory_;
+  base::SimpleTestClock clock_;
+  std::unique_ptr<FakeNearbyShareLocalDeviceDataManager>
+      local_device_data_manager_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<NearbyShareCertificateManager> cert_man_;
 };
 
 TEST_F(NearbyShareCertificateManagerImplTest, GetValidPrivateCertificate) {

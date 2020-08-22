@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.SelectionResult;
 import org.chromium.chrome.browser.payments.ui.PaymentUIsManager;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,7 +46,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -78,7 +76,6 @@ import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.Section;
 import org.chromium.components.payments.UrlUtil;
-import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
@@ -335,10 +332,11 @@ public class PaymentRequestImpl
         mDelegate = delegate;
         mWebContents = componentPaymentRequestImpl.getWebContents();
         mJourneyLogger = componentPaymentRequestImpl.getJourneyLogger();
-        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
-                /*params=*/this, mWebContents, componentPaymentRequestImpl.isOffTheRecord(),
-                mJourneyLogger);
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
+        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
+                /*params=*/this, mWebContents, mComponentPaymentRequestImpl.isOffTheRecord(),
+                mJourneyLogger, mComponentPaymentRequestImpl.getTopLevelOrigin(),
+                mComponentPaymentRequestImpl);
         mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
     }
 
@@ -355,7 +353,7 @@ public class PaymentRequestImpl
         mRequestPayerName = options != null && options.requestPayerName;
         mRequestPayerPhone = options != null && options.requestPayerPhone;
         mRequestPayerEmail = options != null && options.requestPayerEmail;
-        mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
+        mShippingType = PaymentOptionsUtils.getShippingType(options);
 
         // TODO(crbug.com/978471): Improve architecture for handling prohibited origins and invalid
         // SSL certificates.
@@ -556,47 +554,7 @@ public class PaymentRequestImpl
                             mPaymentUIsManager.getContactEditor(), mJourneyLogger));
         }
 
-        mPaymentUIsManager.setPaymentRequestUI(new PaymentRequestUI(activity, this,
-                mPaymentUIsManager.merchantSupportsAutofillCards(),
-                !PaymentPreferencesUtil.isPaymentCompleteOnce(),
-                mComponentPaymentRequestImpl.getMerchantName(),
-                mComponentPaymentRequestImpl.getTopLevelOrigin(),
-                SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
-                new ShippingStrings(mShippingType),
-                mPaymentUIsManager.getPaymentUisShowStateReconciler(),
-                Profile.fromWebContents(mWebContents)));
-        activity.getLifecycleDispatcher().register(
-                mPaymentUIsManager
-                        .getPaymentRequestUI()); // registered as a PauseResumeWithNativeObserver
-
-        final FaviconHelper faviconHelper = new FaviconHelper();
-        faviconHelper.getLocalFaviconImageForURL(Profile.fromWebContents(mWebContents),
-                mWebContents.getLastCommittedUrl(),
-                activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
-                (bitmap, iconUrl) -> {
-                    if (mComponentPaymentRequestImpl != null && bitmap == null) {
-                        mComponentPaymentRequestImpl.warnNoFavicon();
-                    }
-                    if (mPaymentUIsManager.getPaymentRequestUI() != null && bitmap != null) {
-                        mPaymentUIsManager.getPaymentRequestUI().setTitleBitmap(bitmap);
-                    }
-                    faviconHelper.destroy();
-                });
-
-        // Add the callback to change the label of shipping addresses depending on the focus.
-        if (mRequestShipping) {
-            mPaymentUIsManager.setShippingAddressSectionFocusChangedObserverForPaymentRequestUI();
-        }
-
-        mPaymentUIsManager.getAddressEditor().setEditorDialog(
-                mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
-        mPaymentUIsManager.getCardEditor().setEditorDialog(
-                mPaymentUIsManager.getPaymentRequestUI().getCardEditorDialog());
-        if (mPaymentUIsManager.getContactEditor() != null) {
-            mPaymentUIsManager.getContactEditor().setEditorDialog(
-                    mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
-        }
-
+        mPaymentUIsManager.buildPaymentRequestUI(activity);
         return true;
     }
 
@@ -1102,9 +1060,22 @@ public class PaymentRequestImpl
             return;
         }
 
+        mSpec.recomputeSpecForDetails();
+
         if (mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
             mInvokedPaymentApp.onPaymentDetailsNotUpdated();
             return;
+        }
+
+        if (shouldShowShippingSection()
+                && (mPaymentUIsManager.getUiShippingOptions().isEmpty()
+                        || !TextUtils.isEmpty(mSpec.selectedShippingOptionError()))
+                && mPaymentUIsManager.getShippingAddressesSection().getSelectedItem() != null) {
+            mPaymentUIsManager.getShippingAddressesSection().getSelectedItem().setInvalid();
+            mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
+                    SectionInformation.INVALID_SELECTION);
+            mPaymentUIsManager.getShippingAddressesSection().setErrorMessage(
+                    mSpec.selectedShippingOptionError());
         }
 
         boolean providedInformationToPaymentRequestUI =
@@ -1206,6 +1177,7 @@ public class PaymentRequestImpl
         });
     }
 
+    // Implement PaymentUIsManager.Delegate:
     @Override
     public void recordShowEventAndTransactionAmount() {
         if (mDidRecordShowEvent) return;
@@ -2129,12 +2101,19 @@ public class PaymentRequestImpl
         onAddressNormalized(profile);
     }
 
+    // Implement PaymentUIsManager.Delegate:
     @Override
     public void startShippingAddressChangeNormalization(AutofillAddress address) {
         // Will call back into either onAddressNormalized or onCouldNotNormalize which will send the
         // result to the merchant.
         PersonalDataManager.getInstance().normalizeAddress(
                 address.getProfile(), /* delegate= */ this);
+    }
+
+    // Implement PaymentUIsManager.Delegate:
+    @Override
+    public PaymentRequestUI.Client getPaymentRequestUIClient() {
+        return this;
     }
 
     /**

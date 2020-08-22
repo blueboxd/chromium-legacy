@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       content::JsReplace("let el = document.createElement('a');"
                          "el.href = $1;"
-                         "el.innerHTML = 'Link to SWA Page 2';"
+                         "el.textContent = 'Link to SWA Page 2';"
                          "document.body.appendChild(el);"
                          "el.click();",
                          kPageURL)));

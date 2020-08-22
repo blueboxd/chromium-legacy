@@ -2,18 +2,89 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <utility>
 
 #include "base/strings/strcat.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
+#include "url/gurl.h"
 
 namespace {
 
-constexpr size_t kMaxPreviewTextLength = 32;
+// Tries to get a valid host name from the |text|. Returns nullopt otherwise.
+base::Optional<std::string> GetHostFromText(const std::string& text) {
+  GURL url(text);
+  if (!url.is_valid() || !url.has_host())
+    return base::nullopt;
+
+  return url.host();
+}
+
+// Masks the given |number| depending on the string length:
+//  - length <= 4: Masks all characters
+//  - 4 < length <= 6 Masks the last 4 characters
+//  - 6 < length <= 10: Skips the first 2 and masks the following 4 characters
+//  - length > 10: Skips the first 2 and last 4 characters. Masks the rest of
+//    the string
+// Note: We're assuming a formatted phone number and won't try to reformat to
+// E164 like on Android as there's no easy way of determining the intended
+// region for the phone number.
+std::string MaskPhoneNumber(const std::string& number) {
+  constexpr int kMinMaskedDigits = 4;
+  constexpr int kMaxLeadingDigits = 2;
+  constexpr int kMaxTailingDigits = 4;
+  constexpr int kLengthWithNoLeadingDigits = kMinMaskedDigits;
+  constexpr int kLengthWithNoTailingDigits =
+      kMinMaskedDigits + kMaxLeadingDigits;
+
+  if (number.empty())
+    return number;
+
+  std::string result = number;
+  bool has_plus = false;
+  if (number[0] == '+') {
+    result = number.substr(1);
+    has_plus = true;
+  }
+
+  // First calculate how many digits we would mask having exactly
+  // kMinMaskedDigits digits masked.
+  int leading_digits = 0;
+  if (result.length() > kLengthWithNoLeadingDigits)
+    leading_digits = result.length() - kLengthWithNoLeadingDigits;
+
+  int tailing_digits = 0;
+  if (result.length() > kLengthWithNoTailingDigits)
+    tailing_digits = result.length() - kLengthWithNoTailingDigits;
+
+  // Now limit resulting numbers of digits to maximally allowed values.
+  leading_digits = std::min(kMaxLeadingDigits, leading_digits);
+  tailing_digits = std::min(kMaxTailingDigits, tailing_digits);
+  int masked_digits = result.length() - leading_digits - tailing_digits;
+
+  return base::StrCat({(has_plus ? "+" : ""), result.substr(0, leading_digits),
+                       std::string(masked_digits, 'x'),
+                       result.substr(result.length() - tailing_digits)});
+}
 
 std::string GetTextTitle(const std::string& text_body,
                          TextAttachment::Type type) {
-  // TODO(crbug.com/1085067): Improve title based on |type|.
+  constexpr size_t kMaxPreviewTextLength = 32;
+
+  switch (type) {
+    case TextAttachment::Type::kUrl: {
+      base::Optional<std::string> host = GetHostFromText(text_body);
+      if (host)
+        return *host;
+
+      break;
+    }
+    case TextAttachment::Type::kPhoneNumber:
+      return MaskPhoneNumber(text_body);
+    default:
+      break;
+  }
+
   if (text_body.size() > kMaxPreviewTextLength)
     return base::StrCat({text_body.substr(0, kMaxPreviewTextLength), "…"});
 

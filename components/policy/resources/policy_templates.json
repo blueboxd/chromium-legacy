@@ -1032,6 +1032,7 @@
         'PrintingMaxSheetsAllowed',
         'PrintJobHistoryExpirationPeriod',
         'PrintingAPIExtensionsWhitelist',
+        'PrintingAPIExtensionsAllowlist',
         'CloudPrintSubmitEnabled',
         'DisablePrintPreview',
         'PrintHeaderFooter',
@@ -2802,8 +2803,32 @@
         'dynamic_refresh': True,
         'per_profile': True
       },
+      'deprecated': True,
       'example_value': ['abcdefghabcdefghabcdefghabcdefgh'],
       'id': 664,
+      'caption': '''Extensions allowed to skip confirmation dialog when sending print jobs via chrome.printing API''',
+      'tags': [],
+      'desc': '''This policy specifies the allowed extensions to skip print job confirmation dialog when they use the <ph name="PRINTING_API">Printing API</ph> function <ph name="SUBMIT_JOB_FUNCTION">chrome.printing.submitJob()</ph> for sending a print job.
+
+      If an extension is not in the list, or the list is not set, the print job confirmation dialog will be shown to the user for every <ph name="SUBMIT_JOB_FUNCTION">chrome.printing.submitJob()</ph> function call.
+
+      This policy is deprecated, please use <ph name="PRINTING_API_EXTENSIONS_ALLOWLIST_POLICY_NAME">PrintingAPIExtensionsAllowlist</ph> instead.'''
+    },
+    {
+      'name': 'PrintingAPIExtensionsAllowlist',
+      'owners': ['nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': ['abcdefghabcdefghabcdefghabcdefgh'],
+      'id': 783,
       'caption': '''Extensions allowed to skip confirmation dialog when sending print jobs via chrome.printing API''',
       'tags': [],
       'desc': '''This policy specifies the allowed extensions to skip print job confirmation dialog when they use the <ph name="PRINTING_API">Printing API</ph> function <ph name="SUBMIT_JOB_FUNCTION">chrome.printing.submitJob()</ph> for sending a print job.
@@ -24173,6 +24198,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 782,
+  'highest_id_currently_used': 783,
   'highest_atomic_group_id_currently_used': 40
 }

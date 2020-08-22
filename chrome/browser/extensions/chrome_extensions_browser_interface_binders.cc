@@ -9,7 +9,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

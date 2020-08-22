@@ -120,6 +120,16 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
     }
   }
 
+  it = decoded_map.find(CBOR(5));
+  if (it != decoded_map.end()) {
+    if (!it->second.is_bytestring() ||
+        it->second.GetBytestring().size() != kLargeBlobKeyLength) {
+      return base::nullopt;
+    }
+    response.set_large_blob_key(
+        base::make_span<kLargeBlobKeyLength>(it->second.GetBytestring()));
+  }
+
   return response;
 }
 
@@ -177,6 +187,16 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     if (it != response_map.end() && it->second.is_bytestring()) {
       response.set_android_client_data_ext(it->second.GetBytestring());
     }
+  }
+
+  it = response_map.find(CBOR(0x0B));
+  if (it != response_map.end()) {
+    if (!it->second.is_bytestring() ||
+        it->second.GetBytestring().size() != kLargeBlobKeyLength) {
+      return base::nullopt;
+    }
+    response.set_large_blob_key(
+        base::make_span<kLargeBlobKeyLength>(it->second.GetBytestring()));
   }
 
   return response;
@@ -402,6 +422,14 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         return base::nullopt;
       }
       options.enterprise_attestation = option_map_it->second.GetBool();
+    }
+
+    option_map_it = option_map.find(CBOR(kLargeBlobsKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool() || !options.supports_resident_key) {
+        return base::nullopt;
+      }
+      options.supports_large_blobs = option_map_it->second.GetBool();
     }
 
     response.options = std::move(options);

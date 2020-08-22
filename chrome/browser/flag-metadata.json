@@ -4139,6 +4139,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "smart-suggestion-for-large-downloads",
+    "owners": [ "vuhung", "shaktisahu"],
+    "expiry_milestone": 89
+  },
+  {
     "name": "smart-text-selection",
     "owners": [ "djacobo", "linben" ],
     "expiry_milestone": 76

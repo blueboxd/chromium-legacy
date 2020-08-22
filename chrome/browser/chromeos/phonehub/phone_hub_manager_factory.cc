@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 
+#include "ash/public/cpp/system_tray.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -74,10 +75,16 @@ KeyedService* PhoneHubManagerFactory::BuildServiceInstanceFor(
   if (IsProhibitedByPolicy(profile))
     return nullptr;
 
-  return new PhoneHubManager(
+  PhoneHubManager* phone_hub_manager = new PhoneHubManager(
       profile->GetPrefs(),
       device_sync::DeviceSyncClientFactory::GetForProfile(profile),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile));
+
+  // Provide |phone_hub_manager| to the system tray so that it can be used by
+  // the UI.
+  ash::SystemTray::Get()->SetPhoneHubManager(phone_hub_manager);
+
+  return phone_hub_manager;
 }
 
 bool PhoneHubManagerFactory::ServiceIsCreatedWithBrowserContext() const {

@@ -15,9 +15,9 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/discovery/media_sink_service_util.h"
-#include "chrome/common/media_router/mojom/logger.mojom.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/discovery/media_sink_service_util.h"
+#include "components/media_router/common/mojom/logger.mojom.h"
 #include "url/origin.h"
 
 namespace media_router {

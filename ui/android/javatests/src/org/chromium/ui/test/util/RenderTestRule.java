@@ -310,8 +310,7 @@ public class RenderTestRule extends TestWatcher {
      * |mOutputFolder|.
      */
     private File createOutputPath(String subfolder, String filename) throws IOException {
-        String folder = mOutputFolder;
-        return createPath(folder + subfolder, filename);
+        return createPath(mOutputFolder + subfolder, filename);
     }
 
     private static File createPath(String folder, String filename) throws IOException {

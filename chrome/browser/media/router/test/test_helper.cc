@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(OS_ANDROID)

@@ -19,11 +19,12 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto_types.h"
 
 namespace viz {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
-    : x11_software_bitmap_presenter_(widget) {
+    : x11_software_bitmap_presenter_(x11::Connection::Get(), widget, true) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

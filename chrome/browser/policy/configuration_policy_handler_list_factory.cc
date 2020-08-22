@@ -1847,9 +1847,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kExternalPrintServersAllowlist,
           prefs::kExternalPrintServersAllowlist, base::Value::Type::LIST)));
 #if defined(USE_CUPS)
-  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
-      key::kPrintingAPIExtensionsWhitelist,
-      prefs::kPrintingAPIExtensionsWhitelist, /*allow_wildcards=*/false));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<extensions::ExtensionListPolicyHandler>(
+          key::kPrintingAPIExtensionsWhitelist,
+          prefs::kPrintingAPIExtensionsAllowlist, /*allow_wildcards=*/false),
+      std::make_unique<extensions::ExtensionListPolicyHandler>(
+          key::kPrintingAPIExtensionsAllowlist,
+          prefs::kPrintingAPIExtensionsAllowlist, /*allow_wildcards=*/false)));
 #endif  // defined(USE_CUPS)
 #else   // defined(OS_CHROMEOS)
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>

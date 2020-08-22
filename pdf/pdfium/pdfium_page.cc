@@ -634,9 +634,9 @@ std::vector<PDFEngine::AccessibilityLinkInfo> PDFiumPage::GetLinkInfo() {
     cur_info.start_char_index = link.start_char_index;
     cur_info.char_count = link.char_count;
 
-    pp::Rect link_rect;
+    gfx::Rect link_rect;
     for (const auto& rect : link.bounding_rects)
-      link_rect = link_rect.Union(rect);
+      link_rect.Union(rect);
     cur_info.bounds = pp::FloatRect(link_rect.x(), link_rect.y(),
                                     link_rect.width(), link_rect.height());
 
@@ -758,7 +758,7 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const gfx::Point& point,
                                           LinkTarget* target) {
   if (!available_)
     return NONSELECTABLE_AREA;
-  gfx::Point device_point = point - RectFromPPRect(rect_).OffsetFromOrigin();
+  gfx::Point device_point = point - rect_.OffsetFromOrigin();
   double new_x;
   double new_y;
   FPDF_BOOL ret =
@@ -933,9 +933,9 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
     return -1;
   }
 
-  pp::Point origin(PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
-                                PageOrientation::kOriginal)
-                       .point());
+  gfx::Point origin = PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
+                                   PageOrientation::kOriginal)
+                          .origin();
   for (size_t i = 0; i < links_.size(); ++i) {
     for (const auto& rect : links_[i].bounding_rects) {
       if (rect.Contains(origin)) {
@@ -1005,8 +1005,8 @@ void PDFiumPage::PopulateWebLinks() {
       double right;
       double bottom;
       FPDFLink_GetRect(links.get(), i, j, &left, &top, &right, &bottom);
-      pp::Rect rect = PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
-                                   PageOrientation::kOriginal);
+      gfx::Rect rect = PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
+                                    PageOrientation::kOriginal);
       if (rect.IsEmpty())
         continue;
       link.bounding_rects.push_back(rect);
@@ -1400,15 +1400,15 @@ bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
   return true;
 }
 
-pp::Rect PDFiumPage::PageToScreen(const gfx::Point& page_point,
-                                  double zoom,
-                                  double left,
-                                  double top,
-                                  double right,
-                                  double bottom,
-                                  PageOrientation orientation) const {
+gfx::Rect PDFiumPage::PageToScreen(const gfx::Point& page_point,
+                                   double zoom,
+                                   double left,
+                                   double top,
+                                   double right,
+                                   double bottom,
+                                   PageOrientation orientation) const {
   if (!available_)
-    return pp::Rect();
+    return gfx::Rect();
 
   double start_x = (rect_.x() - page_point.x()) * zoom;
   double start_y = (rect_.y() - page_point.y()) * zoom;
@@ -1418,7 +1418,7 @@ pp::Rect PDFiumPage::PageToScreen(const gfx::Point& page_point,
       !base::IsValueInRangeForNumericType<int>(start_y) ||
       !base::IsValueInRangeForNumericType<int>(size_x) ||
       !base::IsValueInRangeForNumericType<int>(size_y)) {
-    return pp::Rect();
+    return gfx::Rect();
   }
 
   int new_left;
@@ -1451,10 +1451,10 @@ pp::Rect PDFiumPage::PageToScreen(const gfx::Point& page_point,
   new_size_y -= new_top;
   new_size_y += 1;
   if (!new_size_x.IsValid() || !new_size_y.IsValid())
-    return pp::Rect();
+    return gfx::Rect();
 
-  return pp::Rect(new_left, new_top, new_size_x.ValueOrDie(),
-                  new_size_y.ValueOrDie());
+  return gfx::Rect(new_left, new_top, new_size_x.ValueOrDie(),
+                   new_size_y.ValueOrDie());
 }
 
 PDFiumPage::ScopedUnloadPreventer::ScopedUnloadPreventer(PDFiumPage* page)

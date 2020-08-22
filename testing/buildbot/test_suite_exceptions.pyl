@@ -44,6 +44,9 @@
       'Marshmallow 64 bit Tester': {
         'experiment_percentage': 100, # https://crbug.com/1060399
       },
+      'android-marshmallow-x86-rel': {
+        'experiment_percentage': 100, # https://crbug.com/1060399
+      },
     },
   },
   'angle_end2end_tests': {

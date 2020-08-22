@@ -96,6 +96,11 @@ bool IsReturnScopesInGetAuthTokenEnabled() {
       extensions_features::kReturnScopesInGetAuthToken);
 }
 
+bool IsSelectedUserIdInGetAuthTokenEnabled() {
+  return base::FeatureList::IsEnabled(
+      extensions_features::kSelectedUserIdInGetAuthToken);
+}
+
 }  // namespace
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
@@ -179,6 +184,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
                   .value_or("");
   }
 
+  selected_gaia_id_ = gaia_id;
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
 
@@ -245,8 +251,7 @@ void IdentityGetAuthTokenFunction::FetchExtensionAccountInfo(
 
 void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
     const CoreAccountInfo* account_info) {
-  token_key_.account_id =
-      account_info ? account_info->account_id : CoreAccountId();
+  token_key_.account_info = account_info ? *account_info : CoreAccountInfo();
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -362,9 +367,10 @@ bool IdentityGetAuthTokenFunction::ShouldStartSigninFlow() {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
   bool account_needs_reauth =
-      !identity_manager->HasAccountWithRefreshToken(token_key_.account_id) ||
+      !identity_manager->HasAccountWithRefreshToken(
+          token_key_.account_info.account_id) ||
       identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-          token_key_.account_id);
+          token_key_.account_info.account_id);
   return account_needs_reauth;
 }
 
@@ -401,11 +407,12 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
     } else {
       // Fixing an authentication error. Either there is no token, or it is in
       // error.
-      DCHECK_EQ(token_key_.account_id, identity_manager->GetPrimaryAccountId());
+      DCHECK_EQ(token_key_.account_info.account_id,
+                identity_manager->GetPrimaryAccountId());
       DCHECK(!identity_manager->HasAccountWithRefreshToken(
-                 token_key_.account_id) ||
+                 token_key_.account_info.account_id) ||
              identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-                 token_key_.account_id));
+                 token_key_.account_info.account_id));
     }
   }
   scoped_identity_manager_observer_.Add(identity_manager);
@@ -418,9 +425,9 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
     IdentityMintRequestQueue::MintType type) {
 #if !defined(OS_CHROMEOS)
   // ChromeOS in kiosk mode may start the mint token flow without account.
-  DCHECK(!token_key_.account_id.empty());
+  DCHECK(!token_key_.account_info.IsEmpty());
   DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
-             ->HasAccountWithRefreshToken(token_key_.account_id));
+             ->HasAccountWithRefreshToken(token_key_.account_info.account_id));
 #endif
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("identity", "MintTokenFlow", this, "type",
                                     type);
@@ -656,10 +663,10 @@ void IdentityGetAuthTokenFunction::OnRefreshTokenUpdatedForAccount(
     return;
 
   // No specific account id was requested, use the first one we find.
-  if (token_key_.account_id.empty())
-    token_key_.account_id = account_info.account_id;
+  if (token_key_.account_info.IsEmpty())
+    token_key_.account_info = account_info;
 
-  if (token_key_.account_id == account_info.account_id) {
+  if (token_key_.account_info == account_info) {
     // Stop listening tokens.
     account_listening_mode_ = AccountListeningMode::kNotListening;
     scoped_identity_manager_observer_.RemoveAll();
@@ -689,8 +696,8 @@ void IdentityGetAuthTokenFunction::OnPrimaryAccountSet(
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnPrimaryAccountSet", this);
 
-  DCHECK(token_key_.account_id.empty());
-  token_key_.account_id = primary_account_info.account_id;
+  DCHECK(token_key_.account_info.IsEmpty());
+  token_key_.account_info = primary_account_info;
 
   // Stop listening primary account.
   DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
@@ -846,7 +853,7 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
   // It's important to update the cache before calling CompleteMintTokenFlow()
   // as this call may start a new request synchronously and query the cache.
   ExtensionTokenKey new_token_key(token_key_);
-  new_token_key.account_id = account->account_id;
+  new_token_key.account_info = account.value();
   id_api->token_cache()->SetToken(
       new_token_key,
       IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result));
@@ -866,9 +873,9 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
   DCHECK(!device_access_token_request_);
   DCHECK(!token_key_account_access_token_fetcher_);
   if (access_token) {
-    TRACE_EVENT_NESTABLE_ASYNC_END1("identity", "GetAccessToken", this,
-                                    "account",
-                                    token_key_.account_id.ToString());
+    TRACE_EVENT_NESTABLE_ASYNC_END1(
+        "identity", "GetAccessToken", this, "account",
+        token_key_.account_info.account_id.ToString());
 
     StartGaiaRequest(access_token.value());
   } else {
@@ -971,8 +978,9 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
                                               &app_client_secret)) {
       token_key_account_access_token_fetcher_ =
           identity_manager->CreateAccessTokenFetcherForClient(
-              token_key_.account_id, app_client_id, app_client_secret,
-              kExtensionsIdentityAPIOAuthConsumerName, signin::ScopeSet(),
+              token_key_.account_info.account_id, app_client_id,
+              app_client_secret, kExtensionsIdentityAPIOAuthConsumerName,
+              signin::ScopeSet(),
               base::BindOnce(
                   &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
                   base::Unretained(this)),
@@ -984,8 +992,8 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
 
   token_key_account_access_token_fetcher_ =
       identity_manager->CreateAccessTokenFetcherForAccount(
-          token_key_.account_id, kExtensionsIdentityAPIOAuthConsumerName,
-          signin::ScopeSet(),
+          token_key_.account_info.account_id,
+          kExtensionsIdentityAPIOAuthConsumerName, signin::ScopeSet(),
           base::BindOnce(
               &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
               base::Unretained(this)),
@@ -1004,7 +1012,7 @@ void IdentityGetAuthTokenFunction::ShowExtensionLoginPrompt() {
   base::Optional<AccountInfo> account =
       IdentityManagerFactory::GetForProfile(GetProfile())
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              token_key_.account_id);
+              token_key_.account_info.account_id);
   std::string email_hint =
       account ? account->email : email_for_default_web_account_;
 
@@ -1035,19 +1043,21 @@ IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   std::string signin_scoped_device_id =
       GetSigninScopedDeviceIdForProfile(GetProfile());
   auto mint_token_flow = std::make_unique<OAuth2MintTokenFlow>(
-      this, OAuth2MintTokenFlow::Parameters(
-                extension()->id(), oauth2_client_id_,
-                std::vector<std::string>(token_key_.scopes.begin(),
-                                         token_key_.scopes.end()),
-                enable_granular_permissions_, signin_scoped_device_id,
-                consent_result_, GetOAuth2MintTokenFlowVersion(),
-                GetOAuth2MintTokenFlowChannel(), gaia_mint_token_mode_));
+      this,
+      OAuth2MintTokenFlow::Parameters(
+          extension()->id(), oauth2_client_id_,
+          std::vector<std::string>(token_key_.scopes.begin(),
+                                   token_key_.scopes.end()),
+          enable_granular_permissions_, signin_scoped_device_id,
+          GetSelectedUserId(), consent_result_, GetOAuth2MintTokenFlowVersion(),
+          GetOAuth2MintTokenFlowChannel(), gaia_mint_token_mode_));
   return mint_token_flow;
 }
 
 bool IdentityGetAuthTokenFunction::HasRefreshTokenForTokenKeyAccount() const {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
-  return identity_manager->HasAccountWithRefreshToken(token_key_.account_id);
+  return identity_manager->HasAccountWithRefreshToken(
+      token_key_.account_info.account_id);
 }
 
 std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
@@ -1075,6 +1085,14 @@ Profile* IdentityGetAuthTokenFunction::GetProfile() const {
 
 bool IdentityGetAuthTokenFunction::enable_granular_permissions() const {
   return enable_granular_permissions_;
+}
+
+std::string IdentityGetAuthTokenFunction::GetSelectedUserId() const {
+  if (IsSelectedUserIdInGetAuthTokenEnabled() &&
+      selected_gaia_id_ == token_key_.account_info.gaia)
+    return selected_gaia_id_;
+
+  return "";
 }
 
 }  // namespace extensions

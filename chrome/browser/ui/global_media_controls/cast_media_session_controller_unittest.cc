@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 
 #include "base/time/time.h"
-#include "chrome/common/media_router/mojom/media_status.mojom.h"
+#include "components/media_router/common/mojom/media_status.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"

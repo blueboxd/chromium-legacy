@@ -7,15 +7,60 @@ import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  deps = [ ":multidevice_internals" ]
+  deps = [
+    ":log_object",
+    ":logging_tab",
+    ":multidevice_internals",
+    ":types",
+  ]
 }
 
 js_library("multidevice_internals") {
   deps = [
+    ":log_object",
+    ":logging_tab",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("logging_tab") {
+  deps = [
+    ":log_object",
+    ":multidevice_logs_browser_proxy",
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+}
+
+js_library("log_object") {
+  deps = [
+    ":multidevice_logs_browser_proxy",
+    ":types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
+js_library("multidevice_logs_browser_proxy") {
+  deps = [
+    ":types",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("types") {
+}
+
+js_library("shared_style") {
+}
+
 html_to_js("web_components") {
-  js_files = [ "multidevice_internals.js" ]
+  js_files = [
+    "log_object.js",
+    "logging_tab.js",
+    "multidevice_internals.js",
+    "shared_style.js",
+  ]
 }

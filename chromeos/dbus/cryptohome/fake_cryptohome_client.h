@@ -251,6 +251,13 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
                              DBusMethodCallback<int64_t> callback) override;
   void CheckHealth(const cryptohome::CheckHealthRequest& request,
                    DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void StartFingerprintAuthSession(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::StartFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void EndFingerprintAuthSession(
+      const cryptohome::EndFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
 
   /////////// Test helpers ////////////
 

@@ -40,6 +40,10 @@ constexpr size_t kClientDataHashLength = 32;
 // https://www.w3.org/TR/webauthn/#sec-authenticator-data
 constexpr size_t kRpIdHashLength = 32;
 
+// Length of the key used to encrypt large blobs.
+// TODO(nsatragno): add a link to the spec once it's published.
+constexpr size_t kLargeBlobKeyLength = 32;
+
 // Max length for the user handle:
 // https://www.w3.org/TR/webauthn/#user-handle
 constexpr size_t kUserHandleMaxLength = 64;
@@ -325,6 +329,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kPinUvTokenMapKey[];
 extern const char kDefaultCredProtectKey[];
 extern const char kEnterpriseAttestationKey[];
+extern const char kLargeBlobsKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;
@@ -419,6 +424,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kExtensionAndroidClientData[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobKey[];
 
 // Maximum number of seconds the browser waits for Bluetooth authenticator to
 // send packets that advertises that the device is in pairing mode before

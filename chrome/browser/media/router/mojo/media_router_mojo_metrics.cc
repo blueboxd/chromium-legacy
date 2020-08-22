@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/version.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"

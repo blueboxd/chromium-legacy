@@ -91,6 +91,11 @@ class NearbyShareLocalDeviceDataManagerImplTest
         &updater_factory_);
   }
 
+  void TearDown() override {
+    NearbyShareSchedulerFactory::SetFactoryForTesting(nullptr);
+    NearbyShareDeviceDataUpdaterImpl::Factory::SetFactoryForTesting(nullptr);
+  }
+
   // NearbyShareLocalDeviceDataManager::Observer:
   void OnLocalDeviceDataChanged(bool did_device_name_change,
                                 bool did_full_name_change,

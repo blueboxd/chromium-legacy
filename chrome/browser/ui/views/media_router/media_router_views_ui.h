@@ -28,8 +28,8 @@
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/media_router/query_result_manager.h"
 #include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
-#include "chrome/common/media_router/issue.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/issue.h"
+#include "components/media_router/common/media_source.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace media_router {

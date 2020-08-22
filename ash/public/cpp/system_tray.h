@@ -10,6 +10,12 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/strings/string16.h"
 
+namespace chromeos {
+namespace phonehub {
+class PhoneHubManager;
+}  // namespace phonehub
+}  // namespace chromeos
+
 namespace ash {
 
 struct LocaleInfo;
@@ -100,6 +106,10 @@ class ASH_PUBLIC_EXPORT SystemTray {
   // display. Set |show_by_click| to true if bubble is shown by mouse or gesture
   // click (it is used e.g. for timing histograms).
   virtual void ShowNetworkDetailedViewBubble(bool show_by_click) = 0;
+
+  // Provides Phone Hub functionality to the system tray.
+  virtual void SetPhoneHubManager(
+      chromeos::phonehub::PhoneHubManager* phone_hub_manager) = 0;
 
  protected:
   SystemTray();

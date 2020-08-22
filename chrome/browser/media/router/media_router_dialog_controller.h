@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"

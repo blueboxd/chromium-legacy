@@ -114,11 +114,12 @@ class AutoCloseableRouter implements Router {
                 @Override
                 public void run() {
                     close();
+                    throw new IllegalStateException(
+                            "Warning: Router objects should be explicitly closed "
+                                    + "when no longer required otherwise you may leak handles.",
+                            mAllocationException);
                 }
             });
-            throw new IllegalStateException("Warning: Router objects should be explicitly closed "
-                            + "when no longer required otherwise you may leak handles.",
-                    mAllocationException);
         }
         super.finalize();
     }

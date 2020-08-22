@@ -27,11 +27,6 @@ const char kPreventElisionExtensionId[] = "jknemblkbdhdcpllfgbfekkdciegfboi";
 }  // namespace
 
 namespace safe_browsing {
-// If true, a delayed warning will be shown when the user clicks on the page.
-// If false, the warning won't be shown, but a metric will be recorded on the
-// first click.
-const base::FeatureParam<bool> kEnableMouseClicks{&kDelayedWarnings, "mouse",
-                                                  /*default_value=*/false};
 
 const char kDelayedWarningsHistogram[] = "SafeBrowsing.DelayedWarnings.Event";
 
@@ -297,7 +292,7 @@ bool SafeBrowsingUserInteractionObserver::HandleMouseEvent(
   }
   // If warning isn't enabled for mouse clicks, still record the first time when
   // the user clicks.
-  if (!kEnableMouseClicks.Get()) {
+  if (!kDelayedWarningsEnableMouseClicks.Get()) {
     if (!mouse_click_with_no_warning_recorded_) {
       RecordUMA(DelayedWarningEvent::kWarningNotTriggeredOnMouseClick);
       mouse_click_with_no_warning_recorded_ = true;

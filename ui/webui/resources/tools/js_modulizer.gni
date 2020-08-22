@@ -12,6 +12,7 @@ common_namespace_rewrites = [
   "cr.isAndroid|isAndroid",
   "cr.isChromeOS|isChromeOS",
   "cr.isIOS|isIOS",
+  "cr.isLacros|isLacros",
   "cr.isLinux|isLinux",
   "cr.isMac|isMac",
   "cr.isWindows|isWindows",

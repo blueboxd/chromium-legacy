@@ -494,8 +494,8 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver {
     bubble_params.body_string_specifier = IDS_WEBUI_TAB_STRIP_PROMO;
     bubble_params.anchor_view = anchor_view;
     bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
-    promo_controller_->MaybeShowPromo(
-        feature_engagement::kIPHWebUITabStripFeature, std::move(bubble_params));
+    promo_controller_->MaybeShowPromoWithParams(
+        feature_engagement::kIPHWebUITabStripFeature, bubble_params);
   }
 
  private:

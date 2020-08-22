@@ -272,6 +272,8 @@ AuthorizationRequest CreateAuthorizationRequestFromKeyDef(
       auth_request.mutable_key_delegate()->set_dbus_object_path(
           cryptohome::kCryptohomeKeyDelegateServicePath);
       break;
+    case KeyDefinition::TYPE_FINGERPRINT:
+      break;
   }
 
   return auth_request;
@@ -296,6 +298,10 @@ void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
         ChallengeResponseKeyToPublicKeyInfo(challenge_response_key,
                                             data->add_challenge_response_key());
       }
+      break;
+
+    case KeyDefinition::TYPE_FINGERPRINT:
+      data->set_type(KeyData::KEY_TYPE_FINGERPRINT);
       break;
   }
 

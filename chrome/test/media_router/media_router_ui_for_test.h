@@ -11,8 +11,8 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {

@@ -351,6 +351,23 @@ message LoginReputationClientRequest {
   // Whether the ping sent to Safe Browsing is a normal (full request) ping or a
   // sample ping for URLs on the allow-list.
   optional ReportType report_type = 13;
+
+  // Information about Simplified URL display experiments in Chrome.
+  // See go/phishguard-ping-spoof-detection
+  message UrlDisplayExperiment {
+    // True if SafeBrowsingDelayedWarnings is enabled.
+    optional bool delayed_warnings_enabled = 1;
+    // True if the "mouse" parameter of SafeBrowsingDelayedWarnings is enabled.
+    optional bool delayed_warnings_mouse_clicks_enabled = 2;
+
+    // True if RevealSteadyStateUrlPathQueryAndRefOnHover is enabled.
+    optional bool reveal_on_hover = 3;
+    // True if HideSteadyStateUrlPathQueryAndRefOnInteraction is enabled.
+    optional bool hide_on_interaction = 4;
+    // True if OmniboxUIExperimentElideToRegistrableDomain is enabled.
+    optional bool elide_to_registrable_domain = 5;
+  };
+  optional UrlDisplayExperiment url_display_experiment = 14;
 }
 
 // The message is used for client response for login reputation requests.

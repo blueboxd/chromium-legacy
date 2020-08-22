@@ -20,9 +20,9 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "components/cast_channel/enum_table.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::PresentationConnectionCloseReason;

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
 
 namespace media_router {
 

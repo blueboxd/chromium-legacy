@@ -80,6 +80,10 @@ struct COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) KeyDefinition {
     // challenged is stored in |challenge_response_keys|, while |secret| should
     // be empty.
     TYPE_CHALLENGE_RESPONSE = 1,
+    // Fingerprint-based key. It doesn't carry secrets but indicates that
+    // cryptohome needs to query fingerprint scan results from biod and
+    // compare with the identity passed along with the key.
+    TYPE_FINGERPRINT = 2,
   };
 
   struct AuthorizationData {

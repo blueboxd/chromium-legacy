@@ -60,6 +60,9 @@ void RegisterSODAComponent(ComponentUpdateService* cus,
                            PrefService* prefs,
                            base::OnceClosure callback);
 
+void RegisterSodaLanguageComponent(ComponentUpdateService* cus,
+                                   PrefService* prefs);
+
 bool UninstallSODAComponent(ComponentUpdateService* cus, PrefService* prefs);
 
 }  // namespace component_updater

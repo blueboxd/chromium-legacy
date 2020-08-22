@@ -9,9 +9,9 @@ if ((typeof mojo === 'undefined') || !mojo.bindingsLibraryInitialized) {
 }
 mojo.config.autoLoadMojomDeps = false;
 
-loadScript('chrome/common/media_router/mojom/media_controller.mojom');
-loadScript('chrome/common/media_router/mojom/media_router.mojom');
-loadScript('chrome/common/media_router/mojom/media_status.mojom');
+loadScript('components/media_router/common/mojom/media_controller.mojom');
+loadScript('components/media_router/common/mojom/media_router.mojom');
+loadScript('components/media_router/common/mojom/media_status.mojom');
 loadScript('components/mirroring/mojom/cast_message_channel.mojom');
 loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
 loadScript('components/mirroring/mojom/session_observer.mojom');

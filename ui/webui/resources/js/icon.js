@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {isChromeOS, isIOS, isLinux, isMac, isWindows} from './cr.m.js';
+// #import {isAndroid, isIOS} from './cr.m.js';
 
 cr.define('cr.icon', function() {
   /**
@@ -16,7 +16,7 @@ cr.define('cr.icon', function() {
       // supports SCALE_FACTOR_100P on all non-iOS platforms.
       supportedScaleFactors.push(1);
     }
-    if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
+    if (!cr.isIOS && !cr.isAndroid) {
       // All desktop platforms support zooming which also updates the renderer's
       // device scale factors (a.k.a devicePixelRatio), and these platforms have
       // high DPI assets for 2x.  Let the renderer pick the closest image for

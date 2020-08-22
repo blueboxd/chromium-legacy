@@ -78,6 +78,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
     android_client_data_ext_ = data;
   }
 
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key()
+      const {
+    return large_blob_key_;
+  }
+  void set_large_blob_key(
+      const base::span<const uint8_t, kLargeBlobKeyLength> large_blob_key);
+
   // enterprise_attestation_returned is true if the authenticator indicated that
   // it returned an enterprise attestation. Note: U2F authenticators can
   // support enterprise/individual attestation but cannot indicate when they
@@ -94,6 +101,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
   // If not base::nullopt, the content of the googleAndroidClientData extension
   // authenticator output.
   base::Optional<std::vector<uint8_t>> android_client_data_ext_;
+
+  // The large blob key associated to the credential. This value is only
+  // returned if the credential is created with the largeBlobKey extension on a
+  // capable authenticator.
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorMakeCredentialResponse);
 };

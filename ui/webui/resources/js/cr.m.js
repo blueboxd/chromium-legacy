@@ -184,8 +184,23 @@ export const isMac = /Mac/.test(navigator.platform);
 /** Whether this is on the Windows platform or not. */
 export const isWindows = /Win/.test(navigator.platform);
 
-/** Whether this is on chromeOS or not. */
-export const isChromeOS = /CrOS/.test(navigator.userAgent);
+/** Whether this is the ChromeOS/ash web browser. */
+export const isChromeOS = (() => {
+  let returnValue = false;
+  // <if expr="chromeos">
+  returnValue = true;
+  // </if>
+  return returnValue;
+})();
+
+/** Whether this is the ChromeOS/Lacros web browser. */
+export const isLacros = (() => {
+  let returnValue = false;
+  // <if expr="lacros">
+  returnValue = true;
+  // </if>
+  return returnValue;
+})();
 
 /** Whether this is on vanilla Linux (not chromeOS). */
 export const isLinux = /Linux/.test(navigator.userAgent);

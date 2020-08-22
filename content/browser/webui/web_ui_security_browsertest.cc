@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -23,7 +22,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -535,21 +533,9 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest,
                    .ExtractBool());
 }
 
-class WebUISecurityTestWithWebUIReportOnlyTrustedTypesEnabled
-    : public WebUISecurityTest {
- public:
-  WebUISecurityTestWithWebUIReportOnlyTrustedTypesEnabled() {
-    feature_list_.InitAndEnableFeature(features::kWebUIReportOnlyTrustedTypes);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Verify Report-Only Trusted Types won't block assignment to a dangerous sink,
-// but logs warning
-IN_PROC_BROWSER_TEST_F(WebUISecurityTestWithWebUIReportOnlyTrustedTypesEnabled,
-                       DoNotBlockSinkAssignmentOnReportOnlyTrustedTypes) {
+// Verify that Trusted Types will block assignment to a dangerous sink
+// on WebUI by default.
+IN_PROC_BROWSER_TEST_F(WebUISecurityTest, BlockSinkAssignmentWithTrustedTypes) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(GetWebUIURL("web-ui/title1.html"));
 
@@ -559,17 +545,17 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTestWithWebUIReportOnlyTrustedTypesEnabled,
       "(() => {"
       "  try {"
       "    document.body.innerHTML = 1;"
-      "    return 'Assignment succeeded';"
+      "    throw 'Assignment should have blocked';"
       "  } catch(e) {"
-      "    throw 'Assignment should have succeeded';"
+      "    return 'Assignment blocked';"
       "  }"
       "})();";
   {
     WebContentsConsoleObserver console_observer(shell()->web_contents());
     console_observer.SetPattern(
-        "[Report Only] This document requires 'TrustedHTML' assignment.");
+        "This document requires 'TrustedHTML' assignment.");
 
-    EXPECT_EQ("Assignment succeeded",
+    EXPECT_EQ("Assignment blocked",
               EvalJs(shell(), kDangerousSinkUse, EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                      1 /* world_id */));
     console_observer.Wait();

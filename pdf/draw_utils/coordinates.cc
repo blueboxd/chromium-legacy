@@ -15,6 +15,15 @@
 namespace chrome_pdf {
 namespace draw_utils {
 
+IndexedPage::IndexedPage(int index, const gfx::Rect& rect)
+    : index(index), rect(rect) {}
+
+IndexedPage::IndexedPage(const IndexedPage& other) = default;
+
+IndexedPage& IndexedPage::operator=(const IndexedPage& other) = default;
+
+IndexedPage::~IndexedPage() = default;
+
 void AdjustBottomGapForRightSidePage(int page_x, gfx::Rect* bottom_gap) {
   bottom_gap->set_x(page_x);
   bottom_gap->set_width(bottom_gap->width() / 2);

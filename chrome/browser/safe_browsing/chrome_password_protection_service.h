@@ -250,6 +250,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // |NOT_SIGNED_IN|.
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const override;
+  safe_browsing::LoginReputationClientRequest::UrlDisplayExperiment
+  GetUrlDisplayExperiment() const override;
 
   // Stores |verdict| in the cache based on its |trigger_type|, |url|,
   // reused |password_type|, |verdict| and |receive_time|.

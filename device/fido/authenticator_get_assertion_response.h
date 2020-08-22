@@ -67,6 +67,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
     android_client_data_ext_ = data;
   }
 
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key()
+      const {
+    return large_blob_key_;
+  }
+  void set_large_blob_key(
+      const base::span<const uint8_t, kLargeBlobKeyLength> large_blob_key);
+
   // hmac_secret contains the output of the hmac_secret extension.
   base::Optional<base::span<const uint8_t>> hmac_secret() const;
   void set_hmac_secret(std::vector<uint8_t>);
@@ -91,6 +98,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
   // If not base::nullopt, the content of the googleAndroidClientData extension
   // authenticator output.
   base::Optional<std::vector<uint8_t>> android_client_data_ext_;
+
+  // The large blob key associated to the credential. This value is only
+  // returned if the assertion request contains the largeBlobKey extension on a
+  // capable authenticator and the credential has an associated large blob key.
+  base::Optional<std::array<uint8_t, kLargeBlobKeyLength>> large_blob_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorGetAssertionResponse);
 };

@@ -137,14 +137,16 @@ bool RealTimeUrlLookupServiceBase::CanCheckUrl(const GURL& url) {
     return false;
   }
 
-  if (net::IsLocalhost(url)) {
+  if (net::IsLocalhost(url) &&
+      !VerdictCacheManager::has_artificial_unsafe_url()) {
     // Includes: "//localhost/", "//localhost.localdomain/", "//127.0.0.1/"
     return false;
   }
 
   net::IPAddress ip_address;
   if (url.HostIsIPAddress() && ip_address.AssignFromIPLiteral(url.host()) &&
-      !ip_address.IsPubliclyRoutable()) {
+      !ip_address.IsPubliclyRoutable() &&
+      !VerdictCacheManager::has_artificial_unsafe_url()) {
     // Includes: "//192.168.1.1/", "//172.16.2.2/", "//10.1.1.1/"
     return false;
   }

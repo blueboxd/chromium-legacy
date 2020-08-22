@@ -259,7 +259,12 @@
     },
 
     'android_wpr_record_replay_tests': {
-      'chrome_java_test_wpr_tests': {},
+      'chrome_java_test_wpr_tests': {
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
     },
 
     'aura_gtests': {

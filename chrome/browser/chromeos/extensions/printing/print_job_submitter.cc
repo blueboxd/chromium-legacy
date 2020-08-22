@@ -57,13 +57,13 @@ constexpr int kIconSize = 64;
 // handle requests.
 bool g_disable_pdf_flattening_for_testing = false;
 
-// Returns true if |extension_id| is in the whitelist.
+// Returns true if |extension_id| is in the allowlist.
 bool IsUserConfirmationRequired(content::BrowserContext* browser_context,
                                 const std::string& extension_id) {
   const base::ListValue* list =
       Profile::FromBrowserContext(browser_context)
           ->GetPrefs()
-          ->GetList(prefs::kPrintingAPIExtensionsWhitelist);
+          ->GetList(prefs::kPrintingAPIExtensionsAllowlist);
   base::Value value(extension_id);
   return list->Find(value) == list->end();
 }
@@ -204,7 +204,7 @@ void PrintJobSubmitter::OnPdfFlattened(
 
   flattened_pdf_mapping_ = std::move(mapping);
 
-  // Directly submit the job if the extension is whitelisted.
+  // Directly submit the job if the extension is allowed.
   if (!IsUserConfirmationRequired(browser_context_, extension_->id())) {
     StartPrintJob();
     return;

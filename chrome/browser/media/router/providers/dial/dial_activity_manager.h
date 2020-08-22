@@ -11,11 +11,11 @@
 #include "base/containers/flat_map.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "chrome/common/media_router/route_request_result.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/media_route.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/route_request_result.h"
 #include "url/gurl.h"
 
 namespace media_router {

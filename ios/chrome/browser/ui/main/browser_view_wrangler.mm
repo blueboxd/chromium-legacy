@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -165,12 +164,11 @@
 
   [self dispatchToEndpointsForBrowser:_mainBrowser.get()];
 
-  SnapshotCache* snapshotCache =
-      SnapshotBrowserAgent::FromBrowser(_mainBrowser.get())->GetSnapshotCache();
-  [snapshotCache setUniqueIdentifier:self.sessionID];
-
+  std::string sessionID = base::SysNSStringToUTF8(self.sessionID);
+  SnapshotBrowserAgent::FromBrowser(_mainBrowser.get())
+      ->SetSessionID(sessionID);
   SessionRestorationBrowserAgent::FromBrowser(_mainBrowser.get())
-      ->SetSessionID(base::SysNSStringToUTF8(self.sessionID));
+      ->SetSessionID(sessionID);
   SessionRestorationBrowserAgent::FromBrowser(_mainBrowser.get())
       ->RestoreSession();
   breakpad::MonitorTabStateForWebStateList(_mainBrowser->GetWebStateList());
@@ -392,16 +390,14 @@
       BrowserListFactory::GetForBrowserState(browser->GetBrowserState());
   browserList->AddIncognitoBrowser(browser.get());
   [self dispatchToEndpointsForBrowser:browser.get()];
+  std::string sessionID = base::SysNSStringToUTF8(self.sessionID);
+  SnapshotBrowserAgent::FromBrowser(browser.get())->SetSessionID(sessionID);
   SessionRestorationBrowserAgent::FromBrowser(browser.get())
-      ->SetSessionID(base::SysNSStringToUTF8(self.sessionID));
+      ->SetSessionID(sessionID);
   if (restorePersistedState) {
     SessionRestorationBrowserAgent::FromBrowser(browser.get())
         ->RestoreSession();
   }
-
-  SnapshotCache* snapshotCache =
-      SnapshotBrowserAgent::FromBrowser(browser.get())->GetSnapshotCache();
-  [snapshotCache setUniqueIdentifier:self.sessionID];
 
   // Associate the same SceneState with the new OTR browser as is associated
   // with the main browser.

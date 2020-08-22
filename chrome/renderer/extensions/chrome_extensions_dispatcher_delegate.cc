@@ -201,13 +201,13 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
 
   // Media router.
   source_map->RegisterSource(
-      "chrome/common/media_router/mojom/media_controller.mojom",
+      "components/media_router/common/mojom/media_controller.mojom",
       IDR_MEDIA_CONTROLLER_MOJOM_JS);
   source_map->RegisterSource(
-      "chrome/common/media_router/mojom/media_router.mojom",
+      "components/media_router/common/mojom/media_router.mojom",
       IDR_MEDIA_ROUTER_MOJOM_JS);
   source_map->RegisterSource(
-      "chrome/common/media_router/mojom/media_status.mojom",
+      "components/media_router/common/mojom/media_status.mojom",
       IDR_MEDIA_STATUS_MOJOM_JS);
   source_map->RegisterSource("media_router_bindings",
                              IDR_MEDIA_ROUTER_BINDINGS_JS);

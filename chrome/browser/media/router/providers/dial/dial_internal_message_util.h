@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_app_info.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 
 namespace media_router {
 

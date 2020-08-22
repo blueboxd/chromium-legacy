@@ -1175,6 +1175,20 @@ base::Value SerializeDomFeatures(const DomFeatures& dom_features) {
   return std::move(dom_features_dict);
 }
 
+base::Value SerializeUrlDisplayExperiment(
+    const LoginReputationClientRequest::UrlDisplayExperiment& experiment) {
+  base::DictionaryValue d;
+  d.SetBoolean("delayed_warnings_enabled",
+               experiment.delayed_warnings_enabled());
+  d.SetBoolean("delayed_warnings_mouse_clicks_enabled",
+               experiment.delayed_warnings_mouse_clicks_enabled());
+  d.SetBoolean("reveal_on_hover", experiment.reveal_on_hover());
+  d.SetBoolean("hide_on_interaction", experiment.hide_on_interaction());
+  d.SetBoolean("elide_to_registrable_domain",
+               experiment.elide_to_registrable_domain());
+  return std::move(d);
+}
+
 std::string SerializePGPing(const LoginReputationClientRequest& request) {
   base::DictionaryValue request_dict;
 
@@ -1223,6 +1237,12 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
   if (request.has_dom_features()) {
     request_dict.SetKey("dom_features",
                         SerializeDomFeatures(request.dom_features()));
+  }
+
+  if (request.has_url_display_experiment()) {
+    request_dict.SetKey(
+        "url_display_experiment",
+        SerializeUrlDisplayExperiment(request.url_display_experiment()));
   }
 
   std::string request_serialized;

@@ -565,6 +565,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // clearing Browsing data.
 - (void)resetBrowsingDataPrefs;
 
+#pragma mark - Unified Consent utilities
+
+// Enables or disables URL-keyed anonymized data collection.
+- (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

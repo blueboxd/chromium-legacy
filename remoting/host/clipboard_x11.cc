@@ -13,12 +13,14 @@
 #include "remoting/host/linux/x_server_clipboard.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto_types.h"
 
 namespace remoting {
 
 // This code is expected to be called on the desktop thread only.
-class ClipboardX11 : public Clipboard {
+class ClipboardX11 : public Clipboard, public x11::Connection::Delegate {
  public:
   ClipboardX11();
   ~ClipboardX11() override;
@@ -33,6 +35,10 @@ class ClipboardX11 : public Clipboard {
                           const std::string& data);
   void PumpXEvents();
 
+  // x11::Connection::Delegate:
+  bool ShouldContinueStream() const override;
+  void DispatchXEvent(x11::Event* event) override;
+
   std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
 
   // Underlying X11 clipboard implementation.
@@ -40,7 +46,7 @@ class ClipboardX11 : public Clipboard {
 
   // Connection to the X server, used by |x_server_clipboard_|. This is created
   // and owned by this class.
-  Display* display_;
+  std::unique_ptr<x11::Connection> connection_;
 
   // Watcher used to handle X11 events from |display_|.
   std::unique_ptr<base::FileDescriptorWatcher::Controller>
@@ -49,39 +55,34 @@ class ClipboardX11 : public Clipboard {
   DISALLOW_COPY_AND_ASSIGN(ClipboardX11);
 };
 
-ClipboardX11::ClipboardX11()
-    : display_(nullptr) {
-}
+ClipboardX11::ClipboardX11() = default;
 
 ClipboardX11::~ClipboardX11() {
   x_connection_watch_controller_ = nullptr;
-  if (display_)
-    XCloseDisplay(display_);
 }
 
 void ClipboardX11::Start(
     std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   // TODO(lambroslambrou): Share the X connection with InputInjector.
-  DCHECK(!display_);
-  display_ = XOpenDisplay(nullptr);
-  if (!display_) {
+  DCHECK(!connection_);
+  connection_ = std::make_unique<x11::Connection>();
+  if (!connection_->Ready()) {
     LOG(ERROR) << "Couldn't open X display";
     return;
   }
   client_clipboard_.swap(client_clipboard);
 
   x_server_clipboard_.Init(
-      display_, base::BindRepeating(&ClipboardX11::OnClipboardChanged,
-                                    base::Unretained(this)));
+      connection_.get(), base::BindRepeating(&ClipboardX11::OnClipboardChanged,
+                                             base::Unretained(this)));
 
   x_connection_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-      ConnectionNumber(display_),
+      ConnectionNumber(connection_->display()),
       base::BindRepeating(&ClipboardX11::PumpXEvents, base::Unretained(this)));
   PumpXEvents();
 }
 
-void ClipboardX11::InjectClipboardEvent(
-    const protocol::ClipboardEvent& event) {
+void ClipboardX11::InjectClipboardEvent(const protocol::ClipboardEvent& event) {
   x_server_clipboard_.SetClipboard(event.mime_type(), event.data());
 }
 
@@ -97,13 +98,17 @@ void ClipboardX11::OnClipboardChanged(const std::string& mime_type,
 }
 
 void ClipboardX11::PumpXEvents() {
-  DCHECK(display_);
+  DCHECK(connection_->Ready());
 
-  while (XPending(display_)) {
-    XEvent event;
-    XNextEvent(display_, &event);
-    x_server_clipboard_.ProcessXEvent(&event);
-  }
+  connection_->Dispatch(this);
+}
+
+bool ClipboardX11::ShouldContinueStream() const {
+  return true;
+}
+
+void ClipboardX11::DispatchXEvent(x11::Event* event) {
+  x_server_clipboard_.ProcessXEvent(*event);
 }
 
 std::unique_ptr<Clipboard> Clipboard::Create() {

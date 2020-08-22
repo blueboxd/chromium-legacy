@@ -302,13 +302,18 @@ def blink_builder(*, name, goma_backend = None, **kwargs):
         **kwargs
     )
 
-def blink_mac_builder(*, name, **kwargs):
+def blink_mac_builder(
+        *,
+        name,
+        os = builders.os.MAC_ANY,
+        builderless = True,
+        **kwargs):
     return blink_builder(
         name = name,
         cores = None,
         goma_backend = builders.goma.backend.RBE_PROD,
-        os = builders.os.MAC_ANY,
-        builderless = True,
+        os = os,
+        builderless = builderless,
         ssd = True,
         **kwargs
     )

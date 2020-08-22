@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_EXTENSION_EXTENSION_MEDIA_ROUTE_PROVIDER_PROXY_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"

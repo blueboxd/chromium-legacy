@@ -152,8 +152,8 @@ NSString* const kSendQueuedFeedback = @"SendQueuedFeedback";
 // Constants for deferring the deletion of pre-upgrade crash reports.
 NSString* const kCleanupCrashReports = @"CleanupCrashReports";
 
-// Constants for deferring the deletion of old snapshots.
-NSString* const kPurgeSnapshots = @"PurgeSnapshots";
+// Constants for deferring the cleanup of snapshots on disk.
+NSString* const kCleanupSnapshots = @"CleanupSnapshots";
 
 // Constants for deferring startup Spotlight bookmark indexing.
 NSString* const kStartSpotlightBookmarksIndexing =
@@ -275,10 +275,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
-// Returns the set of the sessions ids of the tabs in the given |webStateList|.
-- (NSMutableSet*)liveSessionsForWebStateList:(WebStateList*)webStateList;
-// Purge the unused snapshots.
-- (void)purgeSnapshots;
+// Cleanup snapshots on disk.
+- (void)cleanupSnapshots;
 // Sets a LocalState pref marking the TOS EULA as accepted.
 - (void)markEulaAsAccepted;
 // Sends any feedback that happens to still be on local storage.
@@ -302,8 +300,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleStartupAttemptReset;
 // Asynchronously schedules the cleanup of crash reports.
 - (void)scheduleCrashReportCleanup;
-// Asynchronously schedules the deletion of old snapshots.
-- (void)scheduleSnapshotPurge;
+// Asynchronously schedules the cleanup of snapshots on disk.
+- (void)scheduleSnapshotsCleanup;
 // Schedules various cleanup tasks that are performed after launch.
 - (void)scheduleStartupCleanupTasks;
 // Schedules various tasks to be performed after the application becomes active.
@@ -837,11 +835,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-- (void)scheduleSnapshotPurge {
+- (void)scheduleSnapshotsCleanup {
   [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kPurgeSnapshots
+      enqueueBlockNamed:kCleanupSnapshots
                   block:^{
-                    [self purgeSnapshots];
+                    [self cleanupSnapshots];
                   }];
 }
 
@@ -862,9 +860,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   // If the user chooses to restore their session, some cached snapshots may
-  // be needed. Otherwise, purge the cached snapshots.
+  // be needed. Otherwise, cleanup the snapshots.
   if (![self mustShowRestoreInfobar]) {
-    [self scheduleSnapshotPurge];
+    [self scheduleSnapshotsCleanup];
   }
 }
 
@@ -1139,37 +1137,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return !GetApplicationContext()->WasLastShutdownClean();
 }
 
-- (NSMutableSet*)liveSessionsForWebStateList:(WebStateList*)webStateList {
-  NSMutableSet* result = [NSMutableSet setWithCapacity:webStateList->count()];
-  for (int index = 0; index < webStateList->count(); ++index) {
-    web::WebState* webState = webStateList->GetWebStateAt(index);
-    [result addObject:TabIdTabHelper::FromWebState(webState)->tab_id()];
-  }
-  return result;
-}
-
-- (void)purgeUnusedSnapshotsInBrowser:(Browser*)browser {
-  NSSet* liveSessions =
-      [self liveSessionsForWebStateList:browser->GetWebStateList()];
-  // Keep snapshots that are less than one minute old, to prevent a concurrency
-  // issue if they are created while the purge is running.
-  const base::Time oneMinuteAgo =
-      base::Time::Now() - base::TimeDelta::FromMinutes(1);
-  [SnapshotBrowserAgent::FromBrowser(browser)->GetSnapshotCache()
-      purgeCacheOlderThan:oneMinuteAgo
-                  keeping:liveSessions];
-}
-
-- (void)purgeSnapshots {
+- (void)cleanupSnapshots {
   // TODO(crbug.com/1116496): Browsers for disconnected scenes are not in the
   // BrowserList, so this may not reach all folders.
   BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(self.mainBrowserState);
   for (Browser* browser : browser_list->AllRegularBrowsers()) {
-    [self purgeUnusedSnapshotsInBrowser:browser];
+    SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
   }
   for (Browser* browser : browser_list->AllIncognitoBrowsers()) {
-    [self purgeUnusedSnapshotsInBrowser:browser];
+    SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
   }
 }
 

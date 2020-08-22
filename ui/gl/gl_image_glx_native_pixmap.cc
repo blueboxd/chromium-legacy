@@ -4,13 +4,12 @@
 
 #include "ui/gl/gl_image_glx_native_pixmap.h"
 
-#include <xcb/dri3.h>
-#include <xcb/xcb.h>
-
 #include "base/posix/eintr_wrapper.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/x/dri3.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto_types.h"
 #include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -52,20 +51,20 @@ int Bpp(gfx::BufferFormat format) {
 XID XPixmapFromNativePixmap(const gfx::NativePixmapDmaBuf& native_pixmap,
                             int depth,
                             int bpp) {
-  XDisplay* display = gfx::GetXDisplay();
-  xcb_connection_t* connection = XGetXCBConnection(display);
-
-  int fd = HANDLE_EINTR(dup(native_pixmap.GetDmaBufFd(0)));
+  auto fd = HANDLE_EINTR(dup(native_pixmap.GetDmaBufFd(0)));
   if (fd < 0)
     return 0;
+  base::ScopedFD scoped_fd(fd);
 
-  uint32_t pixmap_id = xcb_generate_id(connection);
-  xcb_dri3_pixmap_from_buffer(connection, pixmap_id, DefaultRootWindow(display),
-                              native_pixmap.GetDmaBufPlaneSize(0),
-                              native_pixmap.GetBufferSize().width(),
-                              native_pixmap.GetBufferSize().height(),
-                              native_pixmap.GetDmaBufPitch(0), depth, bpp, fd);
-  return pixmap_id;
+  auto* connection = x11::Connection::Get();
+  x11::Pixmap pixmap_id = connection->GenerateId<x11::Pixmap>();
+  connection->dri3().PixmapFromBuffer({pixmap_id, connection->default_root(),
+                                       native_pixmap.GetDmaBufPlaneSize(0),
+                                       native_pixmap.GetBufferSize().width(),
+                                       native_pixmap.GetBufferSize().height(),
+                                       native_pixmap.GetDmaBufPitch(0), depth,
+                                       bpp, std::move(scoped_fd)});
+  return static_cast<uint32_t>(pixmap_id);
 }
 
 }  // namespace

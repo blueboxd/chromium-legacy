@@ -55,8 +55,13 @@ void IdentityInternalsUIBrowserTest::AddTokenToCache(
   extensions::IdentityTokenCacheValue token_cache_value =
       extensions::IdentityTokenCacheValue::CreateToken(
           token_id, scopes_set, base::TimeDelta::FromSeconds(time_to_live));
-  extensions::ExtensionTokenKey key(extension_id, CoreAccountId(account_id),
-                                    scopes_set);
+
+  CoreAccountInfo user_info;
+  user_info.account_id = CoreAccountId(account_id);
+  user_info.gaia = account_id;
+  user_info.email = "user_email_" + account_id;
+
+  extensions::ExtensionTokenKey key(extension_id, user_info, scopes_set);
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(browser()->profile())
       ->token_cache()

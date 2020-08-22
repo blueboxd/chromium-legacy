@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
@@ -46,6 +47,9 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   TabGridCoordinatorTest() {
     browser_ = std::make_unique<TestBrowser>();
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
+    SnapshotBrowserAgent::FromBrowser(browser_.get())
+        ->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
+
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
     coordinator_ = [[TabGridCoordinator alloc]
                      initWithWindow:window

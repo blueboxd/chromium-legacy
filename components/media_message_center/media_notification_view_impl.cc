@@ -474,6 +474,12 @@ void MediaNotificationViewImpl::OnThemeChanged() {
   UpdateForegroundColor();
 }
 
+void MediaNotificationViewImpl::UpdateAudioDeviceSelectorAvailability(
+    bool availability) {
+  GetMediaNotificationBackground()->UpdateAudioDeviceSelectorAvailability(
+      availability);
+}
+
 views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }

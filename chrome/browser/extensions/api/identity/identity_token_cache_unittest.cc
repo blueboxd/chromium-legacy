@@ -22,7 +22,7 @@ class IdentityTokenCacheTest : public testing::Test {
   void SetAccessToken(const std::string& ext_id,
                       const std::string& token_string,
                       const std::set<std::string>& scopes) {
-    ExtensionTokenKey key(ext_id, CoreAccountId(), scopes);
+    ExtensionTokenKey key(ext_id, CoreAccountInfo(), scopes);
     IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
         token_string, scopes, base::TimeDelta::FromSeconds(3600));
     cache_.SetToken(key, token);
@@ -31,7 +31,7 @@ class IdentityTokenCacheTest : public testing::Test {
   void SetRemoteConsentApprovedToken(const std::string& ext_id,
                                      const std::string& consent_result,
                                      const std::set<std::string>& scopes) {
-    ExtensionTokenKey key(ext_id, CoreAccountId(), scopes);
+    ExtensionTokenKey key(ext_id, CoreAccountInfo(), scopes);
     IdentityTokenCacheValue token =
         IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result);
     cache_.SetToken(key, token);
@@ -39,7 +39,7 @@ class IdentityTokenCacheTest : public testing::Test {
 
   const IdentityTokenCacheValue& GetToken(const std::string& ext_id,
                                           const std::set<std::string>& scopes) {
-    ExtensionTokenKey key(ext_id, CoreAccountId(), scopes);
+    ExtensionTokenKey key(ext_id, CoreAccountInfo(), scopes);
     return cache_.GetToken(key);
   }
 

@@ -18,7 +18,6 @@
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_response_info.h"
-#include "content/browser/appcache/appcache_update_job_cache_copier.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -213,9 +212,6 @@ int64_t ComputeAppCacheResponsePadding(const GURL& response_url,
 const base::Feature kAppCacheCorruptionRecoveryFeature{
     "AppCacheCorruptionRecovery", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAppCacheUpdateResourceOn304Feature{
-    "AppCacheUpdateResourceOn304", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Helper class for collecting hosts per frontend when sending notifications
 // so that only one notification is sent for all hosts using the same frontend.
 class HostNotifier {
@@ -279,8 +275,6 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       cached_manifest_scope_(""),
       fetched_manifest_scope_(""),
       refetched_manifest_scope_(""),
-      update_resource_on_304_enabled_(
-          base::FeatureList::IsEnabled(kAppCacheUpdateResourceOn304Feature)),
       group_(group),
       update_type_(UNKNOWN_TYPE),
       internal_state_(AppCacheUpdateJobState::FETCH_MANIFEST),
@@ -713,27 +707,6 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
 
   AppCacheEntry& entry = url_file_list_.find(url)->second;
 
-  if (update_resource_on_304_enabled_ && response_code == 304 &&
-      (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept() ||
-       entry.IsMaster())) {
-    // If response code is 304, then we must have issued a conditional request,
-    // which means that we must have an existing entry and on that we must
-    // have a response id.
-    DCHECK(entry_fetcher->existing_entry().has_response_id());
-
-    VLOG(1) << "Request error: " << net_error
-            << " response code: " << response_code;
-
-    auto cache_copier = std::make_unique<CacheCopier>(this, url, manifest_url_,
-                                                      std::move(entry_fetcher),
-                                                      CreateResponseWriter());
-    CacheCopier* cache_copier_ptr = cache_copier.get();
-    cache_copier_by_url_.emplace(url, std::move(cache_copier));
-    cache_copier_ptr->Run();
-    // Async continues in |ContinueHandleResourceFetchCompleted|.
-    return;
-  }
-
   NotifyAllProgress(url);
   ++url_fetches_completed_;
 
@@ -757,8 +730,7 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     // file whose root element is an html element with a manifest attribute
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
-  } else if (!update_resource_on_304_enabled_ &&
-             (entry.IsExplicit() || entry.IsFallback() ||
+  } else if ((entry.IsExplicit() || entry.IsFallback() ||
               entry.IsIntercept()) &&
              response_code == 304 &&
              entry_fetcher->existing_entry().has_response_id()) {
@@ -811,14 +783,6 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     // Entry is skipped.  They are dropped from the cache.
   } else if (update_type_ == UPGRADE_ATTEMPT &&
              entry_fetcher->existing_entry().has_response_id()) {
-    if (update_resource_on_304_enabled_) {
-      // We check above for response code 304 for the following entry types, so
-      // if we end up here with a 304 response code, ensure that it's for an
-      // entry of a different type.
-      DCHECK_NE(response_code == 304,
-                entry.IsExplicit() || entry.IsFallback() ||
-                    entry.IsIntercept() || entry.IsMaster());
-    }
     VLOG(1) << "Request error: " << net_error
             << " response code: " << response_code;
     // Keep the existing response.
@@ -834,35 +798,6 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
 
   // Fetch another URL now that one request has completed.
   DCHECK(internal_state_ != AppCacheUpdateJobState::CACHE_FAILURE);
-  FetchUrls();
-  MaybeCompleteUpdate();
-}
-
-void AppCacheUpdateJob::ContinueHandleResourceFetchCompleted(
-    const GURL& url,
-    URLFetcher* entry_fetcher) {
-  DCHECK_EQ(internal_state_, AppCacheUpdateJobState::DOWNLOADING);
-
-  auto it = cache_copier_by_url_.find(url);
-  DCHECK(it != cache_copier_by_url_.end());
-  std::unique_ptr<CacheCopier> cache_copier = std::move(it->second);
-  DCHECK_EQ(entry_fetcher->fetch_type(), URLFetcher::FetchType::kResource);
-  DCHECK_EQ(entry_fetcher->request()->GetResponseCode(), 304);
-  DCHECK_EQ(entry_fetcher->request()->GetURL(), url);
-  AppCacheEntry& entry = url_file_list_.find(url)->second;
-  DCHECK(!entry.has_response_id());
-  entry.set_response_id(cache_copier->response_writer()->response_id());
-  entry.SetResponseAndPaddingSizes(
-      cache_copier->response_writer()->amount_written(),
-      ComputeAppCacheResponsePadding(url, manifest_url_));
-  inprogress_cache_->AddOrModifyEntry(url, entry);
-  cache_copier.reset();
-  cache_copier_by_url_.erase(url);
-
-  NotifyAllProgress(url);
-  ++url_fetches_completed_;
-
-  // Fetch another URL now that one request has completed.
   FetchUrls();
   MaybeCompleteUpdate();
 }

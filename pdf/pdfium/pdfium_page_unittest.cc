@@ -18,6 +18,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
@@ -116,9 +117,9 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   EXPECT_EQ(16, link.char_count);
   ASSERT_EQ(1u, link.bounding_rects.size());
   if (is_chromeos) {
-    CompareRect({75, 192, 110, 15}, link.bounding_rects[0]);
+    EXPECT_EQ(gfx::Rect(75, 192, 110, 15), link.bounding_rects[0]);
   } else {
-    CompareRect({75, 191, 110, 16}, link.bounding_rects[0]);
+    EXPECT_EQ(gfx::Rect(75, 191, 110, 16), link.bounding_rects[0]);
   }
 
   const PDFiumPage::Link& second_link = links[1];
@@ -127,9 +128,9 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   EXPECT_EQ(15, second_link.char_count);
   ASSERT_EQ(1u, second_link.bounding_rects.size());
   if (is_chromeos) {
-    CompareRect({131, 120, 138, 22}, second_link.bounding_rects[0]);
+    EXPECT_EQ(gfx::Rect(131, 120, 138, 22), second_link.bounding_rects[0]);
   } else {
-    CompareRect({131, 121, 138, 20}, second_link.bounding_rects[0]);
+    EXPECT_EQ(gfx::Rect(131, 121, 138, 20), second_link.bounding_rects[0]);
   }
 
   const PDFiumPage::Link& third_link = links[2];
@@ -137,14 +138,14 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   EXPECT_EQ(92, third_link.start_char_index);
   EXPECT_EQ(17, third_link.char_count);
   ASSERT_EQ(1u, third_link.bounding_rects.size());
-  CompareRect({82, 67, 161, 21}, third_link.bounding_rects[0]);
+  EXPECT_EQ(gfx::Rect(82, 67, 161, 21), third_link.bounding_rects[0]);
 }
 
 TEST_F(PDFiumPageLinkTest, TestAnnotLinkGeneration) {
   struct ExpectedLink {
     int32_t start_char_index;
     int32_t char_count;
-    std::vector<pp::Rect> bounding_rects;
+    std::vector<gfx::Rect> bounding_rects;
     std::string url;
     int page;
     float y_in_pixels;
@@ -181,8 +182,8 @@ TEST_F(PDFiumPageLinkTest, TestAnnotLinkGeneration) {
     size_t bounds_size = actual_current_link.bounding_rects.size();
     ASSERT_EQ(expected_current_link.bounding_rects.size(), bounds_size);
     for (size_t bounds_index = 0; bounds_index < bounds_size; ++bounds_index) {
-      CompareRect(expected_current_link.bounding_rects[bounds_index],
-                  actual_current_link.bounding_rects[bounds_index]);
+      EXPECT_EQ(expected_current_link.bounding_rects[bounds_index],
+                actual_current_link.bounding_rects[bounds_index]);
     }
     EXPECT_EQ(expected_current_link.url, actual_current_link.target.url);
     if (actual_current_link.target.url.empty()) {
@@ -206,11 +207,11 @@ TEST_F(PDFiumPageImageTest, TestCalculateImages) {
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.CalculateImages();
   ASSERT_EQ(3u, page.images_.size());
-  CompareRect({380, 78, 67, 68}, page.images_[0].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 78, 67, 68), page.images_[0].bounding_rect);
   EXPECT_EQ("Image 1", page.images_[0].alt_text);
-  CompareRect({380, 385, 27, 28}, page.images_[1].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 385, 27, 28), page.images_[1].bounding_rect);
   EXPECT_EQ("Image 2", page.images_[1].alt_text);
-  CompareRect({380, 678, 1, 1}, page.images_[2].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 678, 1, 1), page.images_[2].bounding_rect);
   EXPECT_EQ("Image 3", page.images_[2].alt_text);
 }
 
@@ -224,11 +225,11 @@ TEST_F(PDFiumPageImageTest, TestImageAltText) {
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.CalculateImages();
   ASSERT_EQ(3u, page.images_.size());
-  CompareRect({380, 78, 67, 68}, page.images_[0].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 78, 67, 68), page.images_[0].bounding_rect);
   EXPECT_EQ("Image 1", page.images_[0].alt_text);
-  CompareRect({380, 385, 27, 28}, page.images_[1].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 385, 27, 28), page.images_[1].bounding_rect);
   EXPECT_EQ("", page.images_[1].alt_text);
-  CompareRect({380, 678, 1, 1}, page.images_[2].bounding_rect);
+  EXPECT_EQ(gfx::Rect(380, 678, 1, 1), page.images_[2].bounding_rect);
   EXPECT_EQ("", page.images_[2].alt_text);
 }
 
@@ -437,7 +438,7 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
   struct ExpectedHighlight {
     int32_t start_char_index;
     int32_t char_count;
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
     uint32_t color;
   };
 
@@ -464,8 +465,8 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
               page.highlights_[i].start_char_index);
     ASSERT_EQ(kExpectedHighlights[i].char_count,
               page.highlights_[i].char_count);
-    CompareRect(kExpectedHighlights[i].bounding_rect,
-                page.highlights_[i].bounding_rect);
+    EXPECT_EQ(kExpectedHighlights[i].bounding_rect,
+              page.highlights_[i].bounding_rect);
     ASSERT_EQ(kExpectedHighlights[i].color, page.highlights_[i].color);
   }
 }
@@ -476,7 +477,7 @@ TEST_F(PDFiumPageTextFieldTest, TestPopulateTextFields) {
   struct ExpectedTextField {
     const char* name;
     const char* value;
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
     int flags;
   };
 
@@ -500,8 +501,8 @@ TEST_F(PDFiumPageTextFieldTest, TestPopulateTextFields) {
   for (size_t i = 0; i < text_fields_count; ++i) {
     EXPECT_EQ(kExpectedTextFields[i].name, page.text_fields_[i].name);
     EXPECT_EQ(kExpectedTextFields[i].value, page.text_fields_[i].value);
-    CompareRect(kExpectedTextFields[i].bounding_rect,
-                page.text_fields_[i].bounding_rect);
+    EXPECT_EQ(kExpectedTextFields[i].bounding_rect,
+              page.text_fields_[i].bounding_rect);
     EXPECT_EQ(kExpectedTextFields[i].flags, page.text_fields_[i].flags);
   }
 }
@@ -517,7 +518,7 @@ TEST_F(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields) {
   struct ExpectedChoiceField {
     const char* name;
     std::vector<struct ExpectedChoiceFieldOption> options;
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
     int flags;
   };
 
@@ -587,8 +588,8 @@ TEST_F(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields) {
       EXPECT_EQ(kExpectedChoiceFields[i].options[j].is_selected,
                 page.choice_fields_[i].options[j].is_selected);
     }
-    CompareRect(kExpectedChoiceFields[i].bounding_rect,
-                page.choice_fields_[i].bounding_rect);
+    EXPECT_EQ(kExpectedChoiceFields[i].bounding_rect,
+              page.choice_fields_[i].bounding_rect);
     EXPECT_EQ(kExpectedChoiceFields[i].flags, page.choice_fields_[i].flags);
   }
 }
@@ -604,7 +605,7 @@ TEST_F(PDFiumPageButtonTest, TestPopulateButtons) {
     bool is_checked;
     uint32_t control_count;
     int control_index;
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
   };
 
   static const ExpectedButton kExpectedButtons[] = {{"readOnlyCheckbox",
@@ -669,8 +670,8 @@ TEST_F(PDFiumPageButtonTest, TestPopulateButtons) {
               page.buttons_[i].control_count);
     EXPECT_EQ(kExpectedButtons[i].control_index,
               page.buttons_[i].control_index);
-    CompareRect(kExpectedButtons[i].bounding_rect,
-                page.buttons_[i].bounding_rect);
+    EXPECT_EQ(kExpectedButtons[i].bounding_rect,
+              page.buttons_[i].bounding_rect);
   }
 }
 

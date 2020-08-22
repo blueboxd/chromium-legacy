@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/media_router/cast_modes_with_media_sources.h"
 
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

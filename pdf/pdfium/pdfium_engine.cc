@@ -1105,8 +1105,7 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const gfx::Point& point,
       static_cast<int>((point.x() + position_.x()) / current_zoom_),
       static_cast<int>((point.y() + position_.y()) / current_zoom_));
   for (int visible_page : visible_pages_) {
-    if (pages_[visible_page]->rect().Contains(
-            PPPointFromPoint(point_in_page))) {
+    if (pages_[visible_page]->rect().Contains(point_in_page)) {
       page = visible_page;
       break;
     }
@@ -2443,12 +2442,12 @@ int PDFiumEngine::GetMostVisiblePage() {
   return most_visible_page_;
 }
 
-pp::Rect PDFiumEngine::GetPageBoundsRect(int index) {
+gfx::Rect PDFiumEngine::GetPageBoundsRect(int index) {
   return pages_[index]->rect();
 }
 
 gfx::Rect PDFiumEngine::GetPageContentsRect(int index) {
-  return GetScreenRect(RectFromPPRect(pages_[index]->rect()));
+  return GetScreenRect(pages_[index]->rect());
 }
 
 int PDFiumEngine::GetVerticalScrollbarYPosition() {
@@ -2700,7 +2699,7 @@ void PDFiumEngine::RefreshCurrentDocumentLayout() {
   DCHECK_EQ(pages_.size(), layout_.page_count());
   for (size_t i = 0; i < layout_.page_count(); ++i) {
     // TODO(kmoon): This should be the only place that sets |PDFiumPage::rect_|.
-    pages_[i]->set_rect(layout_.page_bounds_rect(i));
+    pages_[i]->set_rect(RectFromPPRect(layout_.page_bounds_rect(i)));
   }
 
   layout_.clear_dirty();
@@ -2895,9 +2894,8 @@ void PDFiumEngine::CalculateVisiblePages() {
   std::vector<draw_utils::IndexedPage> visible_pages_rects;
   visible_pages_rects.reserve(visible_pages_.size());
   for (int visible_page_index : visible_pages_) {
-    visible_pages_rects.push_back(
-        {visible_page_index,
-         RectFromPPRect(pages_[visible_page_index]->rect())});
+    visible_pages_rects.emplace_back(visible_page_index,
+                                     pages_[visible_page_index]->rect());
   }
 
   int most_visible_page = draw_utils::GetMostVisiblePage(
@@ -3126,7 +3124,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_.options(), page_index, pages_.size());
 
-  gfx::Rect page_rect = RectFromPPRect(pages_[page_index]->rect());
+  gfx::Rect page_rect = pages_[page_index]->rect();
   const bool is_two_up_view = layout_.options().two_up_view_enabled();
   if (page_rect.x() > 0 && (!is_two_up_view || page_index % 2 == 0)) {
     // If in two-up view, only need to draw the left empty space for left pages
@@ -3186,7 +3184,7 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
   int page_index = progressive_paints_[progressive_index].page_index();
   const pp::Rect& dirty_in_screen =
       progressive_paints_[progressive_index].rect();
-  pp::Rect page_rect = pages_[page_index]->rect();
+  pp::Rect page_rect = PPRectFromRect(pages_[page_index]->rect());
   pp::Rect shadow_rect(page_rect);
   InsetPage(layout_.options(), page_index, pages_.size(), /*multiplier=*/-1,
             &shadow_rect);
@@ -3293,8 +3291,7 @@ void PDFiumEngine::GetPDFiumRect(int page_index,
                                  int* start_y,
                                  int* size_x,
                                  int* size_y) const {
-  gfx::Rect page_rect =
-      GetScreenRect(RectFromPPRect(pages_[page_index]->rect()));
+  gfx::Rect page_rect = GetScreenRect(pages_[page_index]->rect());
   page_rect.Offset(-rect.x(), -rect.y());
 
   *start_x = page_rect.x();
@@ -3324,7 +3321,7 @@ pp::Rect PDFiumEngine::GetVisibleRect() const {
 }
 
 pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
-  const pp::Rect& page_rect = pages_[page_index]->rect();
+  pp::Rect page_rect = PPRectFromRect(pages_[page_index]->rect());
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_.options(), page_index, pages_.size());
 
@@ -3814,13 +3811,13 @@ void PDFiumEngine::ScrollAnnotationIntoView(FPDF_ANNOTATION annot,
   if (!FPDFAnnot_GetRect(annot, &annot_rect))
     return;
 
-  pp::Rect rect = pages_[page_index]->PageToScreen(
+  gfx::Rect rect = pages_[page_index]->PageToScreen(
       gfx::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
       annot_rect.right, annot_rect.bottom,
       layout_.options().default_page_orientation());
 
   pp::Rect visible_rect = GetVisibleRect();
-  if (visible_rect.Contains(rect))
+  if (visible_rect.Contains(PPRectFromRect(rect)))
     return;
   // Since the focus rect is not already in the visible area, scrolling
   // horizontally and/or vertically is required.

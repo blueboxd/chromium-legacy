@@ -423,6 +423,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
 
+  // Get information about Delayed Warnings and Omnibox URL display experiments.
+  // This information is sent in PhishGuard pings.
+  virtual LoginReputationClientRequest::UrlDisplayExperiment
+  GetUrlDisplayExperiment() const = 0;
+
   // Returns the reason why a ping is not sent based on the |trigger_type|,
   // |url| and |password_type|. Crash if |CanSendPing| is true.
   virtual RequestOutcome GetPingNotSentReason(

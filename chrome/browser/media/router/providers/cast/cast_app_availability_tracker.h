@@ -12,10 +12,10 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_util.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 
 namespace media_router {
 

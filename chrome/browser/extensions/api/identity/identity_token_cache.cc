@@ -118,7 +118,7 @@ const std::set<std::string>& IdentityTokenCacheValue::granted_scopes() const {
 
 IdentityTokenCache::AccessTokensKey::AccessTokensKey(
     const ExtensionTokenKey& key)
-    : extension_id(key.extension_id), account_id(key.account_id) {}
+    : extension_id(key.extension_id), account_id(key.account_info.account_id) {}
 
 IdentityTokenCache::AccessTokensKey::AccessTokensKey(
     const std::string& extension_id,

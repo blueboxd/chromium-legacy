@@ -40,25 +40,7 @@ config("x11") {
     "X11",
     "X11-xcb",
     "xcb",
-    "xcb-dri3",
-    "Xcomposite",
-    "Xdamage",
-    "Xext",
-    "Xfixes",
-    "Xrender",
   ]
-}
-
-config("xcomposite") {
-  libs = [ "Xcomposite" ]
-}
-
-config("xext") {
-  libs = [ "Xext" ]
-}
-
-config("xfixes") {
-  libs = [ "Xfixes" ]
 }
 
 config("libcap") {

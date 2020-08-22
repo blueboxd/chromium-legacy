@@ -18,8 +18,8 @@ namespace speech {
 namespace {
 
 // Gets the file permissions required by the Speech On-Device API (SODA).
-std::vector<BrokerFilePermission> GetSodaFilePermissions(
-    base::FilePath soda_dir) {
+std::vector<BrokerFilePermission> GetSodaFilePermissions() {
+  auto soda_dir = GetSodaDirectory();
   std::vector<BrokerFilePermission> permissions{
       BrokerFilePermission::ReadOnly("/dev/urandom")};
 
@@ -27,6 +27,13 @@ std::vector<BrokerFilePermission> GetSodaFilePermissions(
   if (!soda_dir.empty()) {
     permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
         soda_dir.AsEndingWithSeparator().value()));
+  }
+
+  // This may happen if a user doesn't have any language packs installed.
+  auto language_packs_dir = GetSodaLanguagePacksDirectory();
+  if (!language_packs_dir.empty()) {
+    permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
+        language_packs_dir.AsEndingWithSeparator().value()));
   }
 
   return permissions;
@@ -47,7 +54,7 @@ bool SpeechRecognitionPreSandboxHook(
                                    sandbox::syscall_broker::COMMAND_READLINK,
                                    sandbox::syscall_broker::COMMAND_STAT,
                                }),
-                               GetSodaFilePermissions(GetSodaDirectory()),
+                               GetSodaFilePermissions(),
                                sandbox::policy::SandboxLinux::PreSandboxHook(),
                                options);
   instance->EngageNamespaceSandboxIfPossible();

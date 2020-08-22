@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "media/base/container_names.h"
 
 class GURL;

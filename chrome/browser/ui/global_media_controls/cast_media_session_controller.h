@@ -8,7 +8,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/media_router/mojom/media_controller.mojom.h"
+#include "components/media_router/common/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 

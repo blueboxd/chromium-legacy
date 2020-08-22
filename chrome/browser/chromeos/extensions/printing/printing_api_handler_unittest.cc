@@ -249,7 +249,7 @@ class PrintingAPIHandlerUnittest : public testing::Test {
     base::Value extensions_list(base::Value::Type::LIST);
     extensions_list.Append(base::Value(kExtensionId));
     testing_profile_->GetTestingPrefService()->Set(
-        prefs::kPrintingAPIExtensionsWhitelist, std::move(extensions_list));
+        prefs::kPrintingAPIExtensionsAllowlist, std::move(extensions_list));
 
     const char kExtensionName[] = "Printing extension";
     const char kPermissionName[] = "printing";

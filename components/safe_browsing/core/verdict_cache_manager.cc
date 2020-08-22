@@ -5,6 +5,7 @@
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,9 @@ const char kVerdictProto[] = "verdict_proto";
 const char kRealTimeThreatInfoProto[] = "rt_threat_info_proto";
 const char kPasswordOnFocusCacheKey[] = "password_on_focus_cache_key";
 const char kRealTimeUrlCacheKey[] = "real_time_url_cache_key";
+
+// Command-line flag for caching an artificial unsafe verdict.
+const char kUnsafeUrlFlag[] = "mark_as_real_time_phishing";
 
 // A helper class to include all match params. It is used as a centralized
 // place to determine if the current cache entry should be considered as a
@@ -365,6 +369,7 @@ VerdictCacheManager::VerdictCacheManager(
       content_settings_(content_settings) {
   if (history_service)
     history_service_observer_.Add(history_service);
+  CacheArtificialVerdict();
 }
 
 void VerdictCacheManager::Shutdown() {
@@ -807,6 +812,43 @@ size_t VerdictCacheManager::GetRealTimeUrlCheckVerdictCountForURL(
   base::Value* verdict_dictionary =
       cache_dictionary->FindKey(kRealTimeUrlCacheKey);
   return verdict_dictionary ? verdict_dictionary->DictSize() : 0;
+}
+
+void VerdictCacheManager::CacheArtificialVerdict() {
+  std::string phishing_url_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kUnsafeUrlFlag);
+  if (phishing_url_string.empty())
+    return;
+
+  GURL artificial_unsafe_url(phishing_url_string);
+  if (!artificial_unsafe_url.is_valid())
+    return;
+
+  has_artificial_unsafe_url_ = true;
+
+  RTLookupResponse response;
+  RTLookupResponse::ThreatInfo* threat_info = response.add_threat_info();
+  threat_info->set_verdict_type(RTLookupResponse::ThreatInfo::DANGEROUS);
+  threat_info->set_threat_type(
+      RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING);
+  threat_info->set_cache_duration_sec(3000);
+  threat_info->set_cache_expression_using_match_type(
+      artificial_unsafe_url.GetContent());
+  threat_info->set_cache_expression_match_type(
+      RTLookupResponse::ThreatInfo::EXACT_MATCH);
+  RemoveContentSettingsOnURLsDeleted(/*all_history=*/false,
+                                     {history::URLRow(artificial_unsafe_url)});
+  CacheRealTimeUrlVerdict(artificial_unsafe_url, response, base::Time::Now(),
+                          /*store_old_cache=*/false);
+}
+
+// static
+bool VerdictCacheManager::has_artificial_unsafe_url_ = false;
+
+// static
+bool VerdictCacheManager::has_artificial_unsafe_url() {
+  return has_artificial_unsafe_url_;
 }
 
 }  // namespace safe_browsing

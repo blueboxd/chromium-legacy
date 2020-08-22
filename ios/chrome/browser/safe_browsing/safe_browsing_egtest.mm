@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
@@ -17,6 +18,8 @@
 #import "ios/web/common/features.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,6 +39,21 @@ const char kPhishingWarningDetails[] =
 const char kMalwareWarningDetails[] =
     "Google Safe Browsing recently detected malware";
 
+// Request handler for net::EmbeddedTestServer that returns the request URL's
+// path as the body of the response if the request URL's path starts with
+// "/echo". Otherwise, returns nulltpr to allow other handlers to handle the
+// request.
+std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!base::StartsWith(request.relative_url, "/echo",
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_content(request.relative_url);
+  http_response->set_content_type("text/html");
+  return http_response;
+}
 }
 
 // Tests Safe Browsing URL blocking.
@@ -44,6 +62,10 @@ const char kMalwareWarningDetails[] =
   GURL _phishingURL;
   // Text that is found on the phishing page.
   std::string _phishingContent;
+  // A URL that is treated as an unsafe phishing page by real-time lookups.
+  GURL _realTimePhishingURL;
+  // Text that is found on the real-time phishing page.
+  std::string _realTimePhishingContent;
   // A URL that is treated as an unsafe malware page.
   GURL _malwareURL;
   // Text that is found on the malware page.
@@ -72,6 +94,8 @@ const char kMalwareWarningDetails[] =
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(safe_browsing::kSafeBrowsingAvailableOnIOS);
+  config.features_enabled.push_back(safe_browsing::kRealTimeUrlLookupEnabled);
+  config.features_enabled.push_back(web::features::kSSLCommittedInterstitials);
 
   // Use commandline args to insert fake unsafe URLs into the Safe Browsing
   // database.
@@ -79,27 +103,36 @@ const char kMalwareWarningDetails[] =
                                    _phishingURL.spec());
   config.additional_args.push_back(std::string("--mark_as_malware=") +
                                    _malwareURL.spec());
+  config.additional_args.push_back(
+      std::string("--mark_as_real_time_phishing=") +
+      _realTimePhishingURL.spec());
+  config.additional_args.push_back(
+      std::string("--mark_as_allowlisted_for_real_time=") + _safeURL1.spec());
   config.relaunch_policy = NoForceRelaunchAndResetState;
   return config;
 }
 
 - (void)setUp {
+  self.testServer->RegisterRequestHandler(base::BindRepeating(&HandleRequest));
   bool started = self.testServer->Start();
-  _phishingURL = self.testServer->GetURL("/set-invalid-cookie");
-  _phishingContent = "TEST";
+  _phishingURL = self.testServer->GetURL("/echo_phishing_page");
+  _phishingContent = "phishing_page";
 
-  _malwareURL = self.testServer->GetURL("/defaultresponse");
-  _malwareContent = "Default";
+  _realTimePhishingURL = self.testServer->GetURL("/echo_realtime_page");
+  _realTimePhishingContent = "realtime_page";
+
+  _malwareURL = self.testServer->GetURL("/echo_malware_page");
+  _malwareContent = "malware_page";
 
   _iframeWithMalwareURL =
       self.testServer->GetURL("/iframe?" + _malwareURL.spec());
   _iframeWithMalwareContent = _malwareContent;
 
-  _safeURL1 = self.testServer->GetURL("/echo");
-  _safeContent1 = "Echo";
+  _safeURL1 = self.testServer->GetURL("/echo_safe_page");
+  _safeContent1 = "safe_page";
 
-  _safeURL2 = self.testServer->GetURL("/echoall");
-  _safeContent2 = "Request Body";
+  _safeURL2 = self.testServer->GetURL("/echo_also_safe");
+  _safeContent2 = "also_safe";
 
   // |appConfigurationForTestCase| is called during [super setUp], and
   // depends on the URLs initialized above.
@@ -120,6 +153,10 @@ const char kMalwareWarningDetails[] =
   // Ensure that Proceed link is shown by default in the safe browsing warning.
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
+
+  // Ensure that the real-time Safe Browsing opt-in starts in the default
+  // (opted-out) state.
+  [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:false];
 }
 
 - (void)tearDown {
@@ -130,6 +167,11 @@ const char kMalwareWarningDetails[] =
   // Ensure that Proceed link is reset to its original value.
   [ChromeEarlGrey setBoolValue:_proceedAnywayDisabledPrefDefault
                    forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
+
+  // Ensure that the real-time Safe Browsing opt-in is reset to its original
+  // value.
+  [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:false];
+
   [super tearDown];
 }
 
@@ -599,6 +641,37 @@ const char kMalwareWarningDetails[] =
   [ChromeEarlGrey loadURL:_iframeWithMalwareURL];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_MALWARE_V3_HEADING)];
+}
+
+// Tests that real-time lookups are not performed when opted-out of real-time
+// lookups.
+- (void)testRealTimeLookupsWhileOptedOut {
+  // Load the real-time phishing page and verify that no warning is shown.
+  [ChromeEarlGrey loadURL:_realTimePhishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:_realTimePhishingContent];
+}
+
+// Tests that a page identified as unsafe by real-time Safe Browsing is blocked
+// when opted-in to real-time lookups.
+- (void)testRealTimeLookupsWhileOptedIn {
+  // Opt-in to real-time checks.
+  [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:true];
+
+  // Load the real-time phishing page and verify that a warning page is shown.
+  [ChromeEarlGrey loadURL:_realTimePhishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_PHISHING_V4_HEADING)];
+}
+
+// Tests that real-time lookups are not performed in incognito mode.
+- (void)testRealTimeLookupsInIncognito {
+  // Opt-in to real-time checks.
+  [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:true];
+
+  // Load the real-time phishing page and verify that no warning is shown.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:_realTimePhishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:_realTimePhishingContent];
 }
 
 @end

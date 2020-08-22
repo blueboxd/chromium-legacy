@@ -360,12 +360,12 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
     }
     index = index + dx;
   }
-  [SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache()
+  [SnapshotBrowserAgent::FromBrowser(self.browser)->snapshot_cache()
       createGreyCache:sessionIDs];
 }
 
 - (void)deleteGreyCache {
-  [SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache()
+  [SnapshotBrowserAgent::FromBrowser(self.browser)->snapshot_cache()
       removeGreyCache];
 }
 

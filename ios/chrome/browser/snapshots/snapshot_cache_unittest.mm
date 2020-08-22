@@ -4,10 +4,11 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -50,7 +51,9 @@ class SnapshotCacheTest : public PlatformTest {
   // random colors.
   void SetUp() override {
     PlatformTest::SetUp();
-    snapshotCache_ = [[SnapshotCache alloc] init];
+    ASSERT_TRUE(scoped_temp_directory_.CreateUniqueTempDir());
+    snapshotCache_ = [[SnapshotCache alloc]
+        initWithStoragePath:scoped_temp_directory_.GetPath()];
     testImages_ = [[NSMutableArray alloc] initWithCapacity:kSnapshotCount];
     snapshotIDs_ = [[NSMutableArray alloc] initWithCapacity:kSnapshotCount];
 
@@ -80,6 +83,22 @@ class SnapshotCacheTest : public PlatformTest {
   }
 
   SnapshotCache* GetSnapshotCache() { return snapshotCache_; }
+
+  // Adds a fake snapshot file into |directory| using |snapshot_id| in the
+  // filename.
+  base::FilePath AddSnapshotFileToDirectory(const base::FilePath directory,
+                                            NSString* snapshot_id) {
+    // Use the same filename as designated by SnapshotCache.
+    base::FilePath cache_image_path =
+        [GetSnapshotCache() imagePathForSnapshotID:snapshot_id];
+    base::FilePath image_filename = cache_image_path.BaseName();
+    base::FilePath image_path = directory.Append(image_filename);
+
+    EXPECT_TRUE(WriteFile(image_path, ""));
+    EXPECT_TRUE(base::PathExists(image_path));
+    EXPECT_FALSE(base::PathExists(cache_image_path));
+    return image_path;
+  }
 
   // Generates an image filled with a random color.
   UIImage* GenerateRandomImage(CGContextRef context) {
@@ -226,9 +245,10 @@ class SnapshotCacheTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  base::ScopedTempDir scoped_temp_directory_;
   SnapshotCache* snapshotCache_;
-  NSMutableArray* snapshotIDs_;
-  NSMutableArray* testImages_;
+  NSMutableArray<NSString*>* snapshotIDs_;
+  NSMutableArray<UIImage*>* testImages_;
 };
 
 // This test simply put all the snapshots in the cache and then gets them back
@@ -321,6 +341,45 @@ TEST_F(SnapshotCacheTest, SaveToDisk) {
       EXPECT_NEAR(referencePixels[referenceBlue], pixels[blue], 1);
     }
   }
+}
+
+// Tests that migration moves only specified files to the current SnapshotCache
+// folder. Tests that the legacy folder and any remaining contents are deleted.
+TEST_F(SnapshotCacheTest, MigrationMovesFileAndDeletesSource) {
+  base::ScopedTempDir scoped_source_directory;
+  ASSERT_TRUE(scoped_source_directory.CreateUniqueTempDir());
+
+  SnapshotCache* cache = GetSnapshotCache();
+  base::FilePath source_folder = scoped_source_directory.GetPath();
+
+  // This snapshot will be included in migration.
+  NSString* image1_id = [[NSUUID UUID] UUIDString];
+  base::FilePath source_image1_path =
+      AddSnapshotFileToDirectory(source_folder, image1_id);
+  base::FilePath destination_image1_path =
+      [cache imagePathForSnapshotID:image1_id];
+
+  // This snapshot will be excluded from migration.
+  NSString* image2_id = [[NSUUID UUID] UUIDString];
+  base::FilePath source_image2_path =
+      AddSnapshotFileToDirectory(source_folder, image2_id);
+  base::FilePath destination_image2_path =
+      [cache imagePathForSnapshotID:image2_id];
+
+  NSSet<NSString*>* snapshot_ids = [[NSSet alloc] initWithArray:@[ image1_id ]];
+  [cache migrateSnapshotsWithIDs:snapshot_ids fromSourcePath:source_folder];
+  FlushRunLoops();
+
+  // image1 should have been moved to the destination path.
+  EXPECT_TRUE(base::PathExists(destination_image1_path));
+
+  // image2 should not have been moved.
+  EXPECT_FALSE(base::PathExists(destination_image2_path));
+
+  // The legacy folder should have been deleted.
+  EXPECT_FALSE(base::PathExists(source_image1_path));
+  EXPECT_FALSE(base::PathExists(source_image1_path));
+  EXPECT_FALSE(base::PathExists(source_folder));
 }
 
 TEST_F(SnapshotCacheTest, Purge) {

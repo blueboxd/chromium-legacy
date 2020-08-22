@@ -1038,6 +1038,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface resetBrowsingDataPrefs];
 }
 
+#pragma mark - Unified consent utilities
+
+- (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled {
+  return [ChromeEarlGreyAppInterface
+      setURLKeyedAnonymizedDataCollectionEnabled:enabled];
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

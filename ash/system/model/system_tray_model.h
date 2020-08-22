@@ -50,6 +50,8 @@ class SystemTrayModel : public SystemTray {
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
   void ShowVolumeSliderBubble() override;
   void ShowNetworkDetailedViewBubble(bool show_by_click) override;
+  void SetPhoneHubManager(
+      chromeos::phonehub::PhoneHubManager* phone_hub_manager) override;
 
   ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {

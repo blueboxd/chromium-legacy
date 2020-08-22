@@ -4,113 +4,252 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
 
-#include "base/bind.h"
-#include "base/strings/string16.h"
-#include "chrome/app/vector_icons/vector_icons.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/util/ranges/algorithm.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view_delegate.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/audio/audio_device_description.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/text_constants.h"
-#include "ui/views/controls/button/image_button_factory.h"
-#include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/vector_icons.h"
+#include "ui/views/style/typography.h"
 
 namespace {
 
-// Constants for this view
-constexpr int kPaddingBetweenContainers = 10;
+// Constants for the AudioDeviceEntryView
+constexpr gfx::Insets kIconContainerInsets{10, 15};
+constexpr int kDeviceIconSize = 18;
+constexpr gfx::Insets kLabelsContainerInsets{18, 0};
+constexpr gfx::Size kAudioDeviceEntryViewSize{400, 30};
+constexpr int kEntryHighlightOpacity = 45;
+// Constants for the MediaNotificationAudioDeviceSelectorView
+constexpr gfx::Insets kExpandButtonStripInsets{6, 15};
+constexpr gfx::Size kExpandButtonStripSize{400, 30};
+constexpr gfx::Insets kExpandButtonBorderInsets{4, 8};
+constexpr int kExpandButtonBorderCornerRadius = 16;
 
-// Constants for the expand button and its container
-// The container for the expand button will take up a fixed amount of
-// space in this view. The leftover space will be given to the container
-// for device selection buttons.
-constexpr int kExpandButtonContainerWidth = 45;
-constexpr int kExpandButtonSize = 20;
-constexpr int kExpandButtonBorderThickness = 1;
-constexpr int kExpandButtonBorderCornerRadius = 2;
+class AudioDeviceEntryView : public views::Button {
+ public:
+  AudioDeviceEntryView(const SkColor& foreground_color,
+                       const SkColor& background_color,
+                       const std::string& raw_device_id,
+                       const std::string& name,
+                       const std::string& subtext = "");
 
-// Constants for the device buttons and their container
-constexpr int kPaddingBetweenDeviceButtons = 5;
-constexpr int kDeviceButtonIconSize = 16;
-constexpr gfx::Insets kDeviceButtonContainerInsets = gfx::Insets(0, 10, 0, 0);
-constexpr gfx::Insets kDeviceButtonInsets = gfx::Insets(5);
+  const std::string& GetDeviceId() { return raw_device_id_; }
+
+  void SetHighlighted(bool highlighted);
+
+  void OnColorsChanged(const SkColor& foreground_color,
+                       const SkColor& background_color);
+
+  std::string get_label_for_testing();
+  bool is_highlighted_for_testing() { return is_highlighted_; }
+
+ protected:
+  SkColor foreground_color_, background_color_;
+  const std::string raw_device_id_;
+  bool is_highlighted_ = false;
+  views::View* icon_container_;
+  views::ImageView* device_icon_;
+  views::View* labels_container_;
+  views::Label* device_name_label_;
+  views::Label* device_subtext_label_ = nullptr;
+};
 
 }  // anonymous namespace
+
+AudioDeviceEntryView::AudioDeviceEntryView(const SkColor& foreground_color,
+                                           const SkColor& background_color,
+                                           const std::string& raw_device_id,
+                                           const std::string& name,
+                                           const std::string& subtext)
+    : foreground_color_(foreground_color),
+      background_color_(background_color),
+      raw_device_id_(raw_device_id) {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+
+  icon_container_ = AddChildView(std::make_unique<views::View>());
+  auto* icon_container_layout =
+      icon_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, kIconContainerInsets));
+  icon_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  icon_container_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  device_icon_ =
+      icon_container_->AddChildView(std::make_unique<views::ImageView>());
+  device_icon_->SetImage(gfx::CreateVectorIcon(
+      vector_icons::kHeadsetIcon, kDeviceIconSize, foreground_color));
+
+  labels_container_ = AddChildView(std::make_unique<views::View>());
+  auto* labels_container_layout_ =
+      labels_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical, kLabelsContainerInsets));
+  labels_container_layout_->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  labels_container_layout_->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
+
+  views::Label::CustomFont device_name_label_font{
+      views::Label::GetDefaultFontList().DeriveWithSizeDelta(1)};
+  device_name_label_ =
+      labels_container_->AddChildView(std::make_unique<views::Label>(
+          base::UTF8ToUTF16(name), device_name_label_font));
+  device_name_label_->SetEnabledColor(foreground_color);
+  device_name_label_->SetBackgroundColor(background_color);
+
+  if (!subtext.empty()) {
+    device_subtext_label_ = labels_container_->AddChildView(
+        std::make_unique<views::Label>(base::UTF8ToUTF16(subtext)));
+    device_subtext_label_->SetTextStyle(
+        views::style::TextStyle::STYLE_SECONDARY);
+    device_subtext_label_->SetEnabledColor(foreground_color);
+    device_subtext_label_->SetBackgroundColor(background_color);
+  }
+
+  // Ensures that hovering over these items also hovers this view.
+  icon_container_->set_can_process_events_within_subtree(false);
+  labels_container_->set_can_process_events_within_subtree(false);
+
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetInkDropMode(Button::InkDropMode::ON);
+  set_ink_drop_base_color(foreground_color);
+  set_has_ink_drop_action_on_click(true);
+  SetPreferredSize(kAudioDeviceEntryViewSize);
+}
+
+void AudioDeviceEntryView::SetHighlighted(bool highlighted) {
+  is_highlighted_ = highlighted;
+  if (highlighted) {
+    SetInkDropMode(Button::InkDropMode::OFF);
+    set_has_ink_drop_action_on_click(false);
+    SetBackground(views::CreateSolidBackground(
+        SkColorSetA(GetInkDropBaseColor(), kEntryHighlightOpacity)));
+  } else {
+    SetInkDropMode(Button::InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
+    SetBackground(nullptr);
+  }
+}
+
+void AudioDeviceEntryView::OnColorsChanged(const SkColor& foreground_color,
+                                           const SkColor& background_color) {
+  foreground_color_ = foreground_color;
+  background_color_ = background_color;
+  set_ink_drop_base_color(foreground_color_);
+
+  device_icon_->SetImage(gfx::CreateVectorIcon(
+      vector_icons::kHeadsetIcon, kDeviceIconSize, foreground_color_));
+
+  device_name_label_->SetEnabledColor(foreground_color_);
+  device_name_label_->SetBackgroundColor(background_color_);
+
+  if (device_subtext_label_) {
+    device_subtext_label_->SetEnabledColor(foreground_color_);
+    device_subtext_label_->SetBackgroundColor(background_color_);
+  }
+
+  // Reapply highlight formatting as some effects rely on these colors.
+  SetHighlighted(is_highlighted_);
+}
+
+std::string AudioDeviceEntryView::get_label_for_testing() {
+  return base::UTF16ToUTF8(device_name_label_->GetText());
+}
 
 MediaNotificationAudioDeviceSelectorView::
     MediaNotificationAudioDeviceSelectorView(
         MediaNotificationAudioDeviceSelectorViewDelegate* delegate,
         MediaNotificationService* service,
-        gfx::Size size,
-        const std::string& current_device_id)
+        const std::string& current_device_id,
+        const SkColor& foreground_color,
+        const SkColor& background_color)
     : delegate_(delegate),
-      service_(service),
-      current_device_id_(current_device_id) {
-  DCHECK(service);
-  SetPreferredSize(size);
-
+      current_device_id_(current_device_id),
+      foreground_color_(foreground_color),
+      background_color_(background_color) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-      kPaddingBetweenContainers));
+      views::BoxLayout::Orientation::kVertical));
 
-  auto device_button_container_width =
-      size.width() - kExpandButtonContainerWidth;
-  auto device_button_container = std::make_unique<views::View>();
-  device_button_container->SetPreferredSize(
-      gfx::Size(device_button_container_width, size.height()));
-  auto* device_button_container_layout =
-      device_button_container->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kHorizontal,
-              kDeviceButtonContainerInsets, kPaddingBetweenDeviceButtons));
-  device_button_container_layout->set_main_axis_alignment(
+  expand_button_strip_ = AddChildView(std::make_unique<views::View>());
+  auto* expand_button_strip_layout =
+      expand_button_strip_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal,
+          kExpandButtonStripInsets));
+  expand_button_strip_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
-  device_button_container_layout->set_cross_axis_alignment(
+  expand_button_strip_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  device_button_container_ = AddChildView(std::move(device_button_container));
+  expand_button_strip_->SetPreferredSize(kExpandButtonStripSize);
 
-  auto expand_button_container = std::make_unique<views::View>();
-  auto* expand_button_container_layout =
-      expand_button_container->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kHorizontal));
-  expand_button_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kCenter);
-  expand_button_container_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
-  expand_button_container->SetPreferredSize(
-      gfx::Size(kExpandButtonContainerWidth, size.height()));
-  expand_button_container_ = AddChildView(std::move(expand_button_container));
+  auto expand_button = std::make_unique<views::LabelButton>(
+      this, l10n_util::GetStringUTF16(
+                IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_BUTTON_LABEL));
+  expand_button->SetTextColor(views::MdTextButton::ButtonState::STATE_NORMAL,
+                              foreground_color_);
+  expand_button->SetBackground(views::CreateSolidBackground(background_color_));
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::Arrow::NONE, views::BubbleBorder::Shadow::NO_SHADOW,
+      background_color_);
+  border->set_insets(kExpandButtonBorderInsets);
+  border->SetCornerRadius(kExpandButtonBorderCornerRadius);
+  expand_button->SetBorder(std::move(border));
+  expand_button_ = expand_button_strip_->AddChildView(std::move(expand_button));
 
-  auto expand_button = views::CreateVectorToggleImageButton(this);
-  expand_button->SetPreferredSize(
-      gfx::Size(kExpandButtonSize, kExpandButtonSize));
-  expand_button_ =
-      expand_button_container_->AddChildView(std::move(expand_button));
-  expand_button_->SetBorder(views::CreateRoundedRectBorder(
-      kExpandButtonBorderThickness, kExpandButtonBorderCornerRadius,
-      SK_ColorLTGRAY));
-  views::SetImageFromVectorIcon(expand_button_, kKeyboardArrowDownIcon,
-                                kExpandButtonSize, SK_ColorBLACK);
-  views::SetToggledImageFromVectorIconWithColor(
-      expand_button_, kKeyboardArrowUpIcon, kExpandButtonSize, SK_ColorBLACK,
-      SK_ColorBLACK);
+  audio_device_entries_container_ =
+      AddChildView(std::make_unique<views::View>());
+  audio_device_entries_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  audio_device_entries_container_->SetVisible(false);
+
+  SetBackground(views::CreateSolidBackground(background_color_));
+  // Set the size of this view
+  SetPreferredSize(kExpandButtonStripSize);
+  Layout();
 
   // This view will become visible when devices are discovered.
   SetVisible(false);
 
   // Get a list of the connected audio output devices
   audio_device_subscription_ =
-      service_->RegisterAudioOutputDeviceDescriptionsCallback(
+      service->RegisterAudioOutputDeviceDescriptionsCallback(
           base::BindRepeating(&MediaNotificationAudioDeviceSelectorView::
                                   UpdateAvailableAudioDevices,
                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaNotificationAudioDeviceSelectorView::UpdateCurrentAudioDevice(
+    const std::string& current_device_id) {
+  if (current_device_entry_view_) {
+    current_device_entry_view_->SetHighlighted(false);
+    current_device_entry_view_ = nullptr;
+  }
+
+  auto it = util::ranges::find_if(
+      audio_device_entries_container_->children(),
+      [&current_device_id](auto& item) {
+        return static_cast<AudioDeviceEntryView*>(item)->GetDeviceId() ==
+               current_device_id;
+      });
+
+  if (it == audio_device_entries_container_->children().end())
+    return;
+
+  current_device_entry_view_ = static_cast<AudioDeviceEntryView*>(*it);
+  current_device_entry_view_->SetHighlighted(true);
+  audio_device_entries_container_->ReorderChildView(current_device_entry_view_,
+                                                    0);
+
+  current_device_entry_view_->Layout();
 }
 
 MediaNotificationAudioDeviceSelectorView::
@@ -124,70 +263,95 @@ void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
   SetVisible(is_visible);
   delegate_->OnAudioDeviceSelectorViewSizeChanged();
 
-  sink_id_map_.clear();
-  device_button_container_->RemoveAllChildViews(true);
-  current_device_button_ = nullptr;
+  audio_device_entries_container_->RemoveAllChildViews(true);
+  current_device_entry_view_ = nullptr;
+
+  bool current_device_still_exists = false;
   for (auto description : device_descriptions) {
-    CreateDeviceButton(description);
+    auto device_entry_view = std::make_unique<AudioDeviceEntryView>(
+        foreground_color_, background_color_, description.unique_id,
+        description.device_name, "");
+    device_entry_view->set_listener(this);
+    audio_device_entries_container_->AddChildView(std::move(device_entry_view));
+    if (!current_device_still_exists &&
+        description.unique_id == current_device_id_)
+      current_device_still_exists = true;
   }
 
-  UpdateCurrentAudioDevice(current_device_id_);
+  // If the current device no longer exists, fallback to the default device
+  UpdateCurrentAudioDevice(
+      current_device_still_exists
+          ? current_device_id_
+          : media::AudioDeviceDescription::kDefaultDeviceId);
 }
 
-void MediaNotificationAudioDeviceSelectorView::UpdateCurrentAudioDevice(
-    std::string current_device_id) {
-  auto it = std::find_if(sink_id_map_.begin(), sink_id_map_.end(),
-                         [&current_device_id](auto& item) {
-                           return item.second == current_device_id;
-                         });
+void MediaNotificationAudioDeviceSelectorView::OnColorsChanged(
+    const SkColor& foreground_color,
+    const SkColor& background_color) {
+  foreground_color_ = foreground_color;
+  background_color_ = background_color;
 
-  // If the highlighted device is no longer available, highlight the default
-  // device.
-  if (it == sink_id_map_.end()) {
-    return UpdateCurrentAudioDevice(
-        media::AudioDeviceDescription::kDefaultDeviceId);
+  expand_button_->SetTextColor(views::MdTextButton::ButtonState::STATE_NORMAL,
+                               foreground_color_);
+  expand_button_->SetBackground(
+      views::CreateSolidBackground(background_color_));
+  SetBackground(views::CreateSolidBackground(background_color_));
+  for (auto* view : audio_device_entries_container_->children()) {
+    static_cast<AudioDeviceEntryView*>(view)->OnColorsChanged(
+        foreground_color_, background_color_);
   }
-
-  if (current_device_button_)
-    current_device_button_->SetProminent(false);
-
-  current_device_button_ = static_cast<views::MdTextButton*>(it->first);
-  current_device_button_->SetProminent(true);
-  device_button_container_->ReorderChildView(current_device_button_, 0);
-
-  device_button_container_->Layout();
-
-  current_device_id_ = current_device_id;
+  SchedulePaint();
 }
 
 void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  auto it = sink_id_map_.find(sender);
-  if (it != sink_id_map_.end()) {
-    delegate_->OnAudioSinkChosen(it->second);
+  if (sender == expand_button_) {
+    if (is_expanded_)
+      HideDevices();
+    else
+      ShowDevices();
+
+    delegate_->OnAudioDeviceSelectorViewSizeChanged();
+  } else {
+    DCHECK(std::find(audio_device_entries_container_->children().cbegin(),
+                     audio_device_entries_container_->children().cend(),
+                     sender) !=
+           audio_device_entries_container_->children().end());
+    delegate_->OnAudioSinkChosen(
+        static_cast<AudioDeviceEntryView*>(sender)->GetDeviceId());
   }
 }
 
-void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
-    const media::AudioDeviceDescription& device_description) {
-  auto button = std::make_unique<views::MdTextButton>(
-      this, base::UTF8ToUTF16(device_description.device_name.c_str()));
-  button->SetImage(views::Button::ButtonState::STATE_NORMAL,
-                   gfx::CreateVectorIcon(vector_icons::kHeadsetIcon,
-                                         kDeviceButtonIconSize, SK_ColorBLACK));
+// static
+std::string
+MediaNotificationAudioDeviceSelectorView::get_entry_label_for_testing(
+    views::View* entry_view) {
+  return static_cast<AudioDeviceEntryView*>(entry_view)
+      ->get_label_for_testing();
+}
 
-  // I'm not sure if this border should be used with a MD button, but it
-  // looks really nice.
-  // TODO(noahrose): Investigate other border options.
-  auto border = std::make_unique<views::LabelButtonBorder>();
-  border->set_insets(kDeviceButtonInsets);
-  border->set_color(SK_ColorLTGRAY);
-  button->SetBorder(std::move(border));
+// static
+bool MediaNotificationAudioDeviceSelectorView::
+    get_entry_is_highlighted_for_testing(views::View* entry_view) {
+  return static_cast<AudioDeviceEntryView*>(entry_view)
+      ->is_highlighted_for_testing();
+}
 
-  sink_id_map_[button.get()] = device_description.unique_id;
-  device_button_container_->AddChildView(std::move(button));
-  device_button_container_->Layout();
+void MediaNotificationAudioDeviceSelectorView::ShowDevices() {
+  DCHECK(!is_expanded_);
+  is_expanded_ = true;
+
+  audio_device_entries_container_->SetVisible(true);
+  PreferredSizeChanged();
+}
+
+void MediaNotificationAudioDeviceSelectorView::HideDevices() {
+  DCHECK(is_expanded_);
+  is_expanded_ = false;
+
+  audio_device_entries_container_->SetVisible(false);
+  PreferredSizeChanged();
 }
 
 bool MediaNotificationAudioDeviceSelectorView::ShouldBeVisible(

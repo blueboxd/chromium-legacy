@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace chrome_pdf {
@@ -83,11 +84,11 @@ const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
     double right;
     double bottom;
     FPDFText_GetRect(page_->GetTextPage(), i, &left, &top, &right, &bottom);
-    pp::Rect rect =
+    gfx::Rect rect =
         page_->PageToScreen(point, zoom, left, top, right, bottom, orientation);
     if (rect.IsEmpty())
       continue;
-    cached_screen_rects_.push_back(rect);
+    cached_screen_rects_.push_back(PPRectFromRect(rect));
   }
 
   return cached_screen_rects_;

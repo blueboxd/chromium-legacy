@@ -9,18 +9,42 @@
 
 namespace speech {
 
-// Location of the SODA component relative to components directory.
+enum class LanguageCode {
+  kNone = 0,
+  kEnUs = 1,
+  kJaJp = 2,
+};
+
+// Location of the SODA component relative to the components directory.
 extern const base::FilePath::CharType kSodaInstallationRelativePath[];
+
+// Location of the SODA language packs relative to the components
+// directory.
+extern const base::FilePath::CharType kSodaLanguagePacksRelativePath[];
+
+// Location of the SODA en-US language pack component relative to the components
+// directory.
+extern const base::FilePath::CharType kSodaEnUsInstallationRelativePath[];
+
+// Location of the SODA ja-JP language pack component relative to the components
+// directory.
+extern const base::FilePath::CharType kSodaJaJpInstallationRelativePath[];
 
 // Location of the libsoda binary within the SODA installation directory.
 extern const base::FilePath::CharType kSodaBinaryRelativePath[];
 
-// Location of the en_us SODA config file within the SODA installation
+// Location of the en-US SODA config file within the SODA installation
 // directory. Note: SODA is currently only available in English.
 extern const base::FilePath::CharType kSodaEnUsConfigFileRelativePath[];
 
+// Location of the ja-JP SODA config file within the SODA installation
+extern const base::FilePath::CharType kSodaJaJpConfigFileRelativePath[];
+
 // Get the absolute path of the SODA component directory.
 const base::FilePath GetSodaDirectory();
+
+// Get the absolute path of the SODA directory containing the language packs.
+const base::FilePath GetSodaLanguagePacksDirectory();
 
 // Get the directory containing the latest version of SODA. In most cases
 // there will only be one version of SODA, but it is possible for there to be
@@ -32,6 +56,11 @@ const base::FilePath GetLatestSodaDirectory();
 // Get the path to the SODA binary. Returns an empty path if SODA is not
 // installed.
 const base::FilePath GetSodaBinaryPath();
+
+LanguageCode GetLanguageCode(std::string language);
+
+// Gets a collection of paths to SODA language pack directories.
+std::vector<base::FilePath> GetSodaLanguagePackDirectories();
 
 }  // namespace speech
 

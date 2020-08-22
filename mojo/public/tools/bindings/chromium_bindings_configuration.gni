@@ -5,7 +5,6 @@
 _typemap_imports = [
   "//chrome/chrome_cleaner/mojom/typemaps/typemaps.gni",
   "//chrome/common/importer/typemaps.gni",
-  "//chrome/common/media_router/mojom/typemaps.gni",
   "//chrome/typemaps.gni",
   "//chromecast/typemaps.gni",
   "//chromeos/typemaps.gni",
@@ -16,6 +15,7 @@ _typemap_imports = [
   "//chromeos/services/secure_channel/public/mojom/typemaps.gni",
   "//components/arc/mojom/typemaps.gni",
   "//components/chromeos_camera/common/typemaps.gni",
+  "//components/media_router/common/mojom/typemaps.gni",
   "//components/services/storage/public/cpp/filesystem/typemaps.gni",
   "//components/sync/mojom/typemaps.gni",
   "//components/typemaps.gni",

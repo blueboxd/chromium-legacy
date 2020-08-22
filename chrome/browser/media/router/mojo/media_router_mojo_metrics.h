@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/common/media_router/media_route_provider_helper.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
+#include "components/media_router/common/media_route_provider_helper.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/route_request_result.h"
 #include "content/public/browser/web_contents.h"
 
 namespace base {

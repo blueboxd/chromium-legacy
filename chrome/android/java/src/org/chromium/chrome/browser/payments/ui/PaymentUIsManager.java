@@ -26,12 +26,16 @@ import org.chromium.chrome.browser.payments.AutofillPaymentAppFactory;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
+import org.chromium.chrome.browser.payments.PaymentPreferencesUtil;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.FocusChangedObserver;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
@@ -43,7 +47,9 @@ import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
+import org.chromium.components.payments.PaymentUIsObserver;
 import org.chromium.components.payments.Section;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.PayerDetail;
@@ -94,6 +100,8 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
     private SectionInformation mUiShippingOptions;
     private final Delegate mDelegate;
     private final WebContents mWebContents;
+    private final String mTopLevelOriginFormattedForDisplay;
+    private final String mMerchantName;
     private final Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
@@ -112,6 +120,7 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
     private List<AutofillProfile> mAutofillProfiles;
     private Boolean mCanUserAddCreditCard;
     private final JourneyLogger mJourneyLogger;
+    private PaymentUIsObserver mObserver;
 
     /** The delegate of this class. */
     public interface Delegate {
@@ -121,6 +130,10 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         void recordShowEventAndTransactionAmount();
         /** Start the normalization of the new shipping address. */
         void startShippingAddressChangeNormalization(AutofillAddress editedAddress);
+        /** Gets the PaymentRequestUI Client from PaymentRequestImpl. */
+        // TODO(crbug.com/1114791): This class will implement the PaymentRequestUI Client interface
+        // once its current implementation has no dependency on PRImpl.
+        PaymentRequestUI.Client getPaymentRequestUIClient();
     }
 
     /**
@@ -184,9 +197,12 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
      * @param webContents The WebContents of the merchant page.
      * @param isOffTheRecord Whether merchant page is in an isOffTheRecord tab.
      * @param journeyLogger The logger of the user journey.
+     * @param topLevelOrigin The last committed url of webContents.
+     * @param observer The payment UIs observer.
      */
     public PaymentUIsManager(Delegate delegate, PaymentRequestParams params,
-            WebContents webContents, boolean isOffTheRecord, JourneyLogger journeyLogger) {
+            WebContents webContents, boolean isOffTheRecord, JourneyLogger journeyLogger,
+            String topLevelOrigin, PaymentUIsObserver observer) {
         mDelegate = delegate;
         mParams = params;
 
@@ -198,11 +214,14 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
         mCardEditor = new CardEditor(webContents, mAddressEditor, /*includeOrgLabel=*/false);
         mJourneyLogger = journeyLogger;
         mWebContents = webContents;
+        mTopLevelOriginFormattedForDisplay = topLevelOrigin;
+        mMerchantName = webContents.getTitle();
 
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
         mCurrencyFormatterMap = new HashMap<>();
         mIsOffTheRecord = isOffTheRecord;
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/mParams);
+        mObserver = observer;
     }
 
     /** @return The PaymentRequestUI. */
@@ -933,6 +952,47 @@ public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Ob
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
         });
+    }
+
+    /**
+     * Build the PaymentRequest UI.
+     * @param activity The ChromeActivity for the payment request.
+     */
+    public void buildPaymentRequestUI(ChromeActivity activity) {
+        mPaymentRequestUI = new PaymentRequestUI(activity, mDelegate.getPaymentRequestUIClient(),
+                merchantSupportsAutofillCards(), !PaymentPreferencesUtil.isPaymentCompleteOnce(),
+                mMerchantName, mTopLevelOriginFormattedForDisplay,
+                SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
+                new ShippingStrings(
+                        PaymentOptionsUtils.getShippingType(mParams.getPaymentOptions())),
+                mPaymentUisShowStateReconciler, Profile.fromWebContents(mWebContents));
+        activity.getLifecycleDispatcher().register(
+                mPaymentRequestUI); // registered as a PauseResumeWithNativeObserver
+
+        final FaviconHelper faviconHelper = new FaviconHelper();
+        faviconHelper.getLocalFaviconImageForURL(Profile.fromWebContents(mWebContents),
+                mWebContents.getLastCommittedUrl(),
+                activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
+                (bitmap, iconUrl) -> {
+                    if (bitmap == null) {
+                        mObserver.onPaymentRequestUIFaviconNotAvailable();
+                    }
+                    if (mPaymentRequestUI != null && bitmap != null) {
+                        mPaymentRequestUI.setTitleBitmap(bitmap);
+                    }
+                    faviconHelper.destroy();
+                });
+
+        // Add the callback to change the label of shipping addresses depending on the focus.
+        if (PaymentOptionsUtils.requestShipping(mParams.getPaymentOptions())) {
+            setShippingAddressSectionFocusChangedObserverForPaymentRequestUI();
+        }
+
+        mAddressEditor.setEditorDialog(mPaymentRequestUI.getEditorDialog());
+        mCardEditor.setEditorDialog(mPaymentRequestUI.getCardEditorDialog());
+        if (mContactEditor != null) {
+            mContactEditor.setEditorDialog(mPaymentRequestUI.getEditorDialog());
+        }
     }
 
     /** Create a shipping section for PaymentRequest UI. */

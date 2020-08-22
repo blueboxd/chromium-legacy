@@ -421,7 +421,10 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
         "test/linux_output_window.h",
       ]
       public_deps += [ "//ui/gfx/x" ]
-      deps += [ "//third_party/libyuv" ]
+      deps += [
+        "//cc/paint",
+        "//ui/base/x",
+      ]
     }
   }
 

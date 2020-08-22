@@ -1005,7 +1005,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendAndContentFragmentation) {
   fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
       node, space, fragment->BreakToken());
   ASSERT_TRUE(fragment->BreakToken());
+
   dump = DumpFragmentTree(fragment.get());
+  // TODO(crbug.com/1097012): The height of the outermost fragment here should
+  // be 23, not 0, but the fragmentation machinery gets confused by the
+  // fieldset padding.
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:176x0
     offset:3,0 size:170x20
@@ -1684,12 +1688,8 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, MarginBottomPastEndOfFragmentainer) {
 }
 
 // Tests that a fieldset with a large border and a small legend fragment
-// correctly. In this case, the legend block offset is not adjusted because the
-// legend is broken across multiple fragments. Since we don't allow breaking
-// inside borders, they will overflow fragmentainers.
-// TODO(layout-dev): Allowing breaks inside a legend when not allowing breaks
-// inside borders seems inconsistent. Consider making legends monolithic, unless
-// they establish a parallel flow.
+// correctly. Since we don't allow breaking inside borders, they will overflow
+// fragmentainers.
 TEST_F(NGFieldsetLayoutAlgorithmTest, SmallLegendLargeBorderFragmentation) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1854,8 +1854,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation2) {
 }
 
 // Tests that a fieldset with a large border and a small legend fragment
-// correctly. In this case, the legend block offset is not adjusted because the
-// legend breaks after attempting to adjust the offset.
+// correctly.
 TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {
   SetBodyInnerHTML(R"HTML(
     <style>

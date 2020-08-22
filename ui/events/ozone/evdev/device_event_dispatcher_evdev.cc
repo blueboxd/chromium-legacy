@@ -69,6 +69,17 @@ MouseButtonEventParams::~MouseButtonEventParams() {
 MouseWheelEventParams::MouseWheelEventParams(int device_id,
                                              const gfx::PointF& location,
                                              const gfx::Vector2d& delta,
+                                             const gfx::Vector2d& tick_120ths,
+                                             base::TimeTicks timestamp)
+    : device_id(device_id),
+      location(location),
+      delta(delta),
+      tick_120ths(tick_120ths),
+      timestamp(timestamp) {}
+
+MouseWheelEventParams::MouseWheelEventParams(int device_id,
+                                             const gfx::PointF& location,
+                                             const gfx::Vector2d& delta,
                                              base::TimeTicks timestamp)
     : device_id(device_id),
       location(location),

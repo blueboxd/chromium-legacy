@@ -7,9 +7,9 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_route.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
 #include "media/base/flinging_controller.h"
 #include "url/origin.h"
 

@@ -406,6 +406,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestMultiplePaymentInstrumentsTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNameAndFreeShippingTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNameTest.java",
+  "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNoShippingOptionsTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNoShippingTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNoUpdateWithTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestPayerDetailChangeTest.java",

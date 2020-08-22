@@ -97,6 +97,11 @@ AuthenticatorGetAssertionResponse::SetNumCredentials(uint8_t num_credentials) {
   return *this;
 }
 
+void AuthenticatorGetAssertionResponse::set_large_blob_key(
+    const base::span<const uint8_t, kLargeBlobKeyLength> large_blob_key) {
+  large_blob_key_ = fido_parsing_utils::Materialize(large_blob_key);
+}
+
 base::Optional<base::span<const uint8_t>>
 AuthenticatorGetAssertionResponse::hmac_secret() const {
   if (hmac_secret_) {

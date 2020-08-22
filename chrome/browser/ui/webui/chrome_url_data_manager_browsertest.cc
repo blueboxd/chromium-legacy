@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,7 +16,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 
@@ -140,13 +138,11 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   EXPECT_NE(net::OK, observer.net_error());
 }
 
-class ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled
+class ChromeURLDataManagerWebUITrustedTypesTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<const char*> {
  public:
-  ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled() {
-    feature_list_.InitAndEnableFeature(features::kWebUIReportOnlyTrustedTypes);
-  }
+  ChromeURLDataManagerWebUITrustedTypesTest() = default;
 
   void CheckTrustedTypesViolation(base::StringPiece url) {
     std::string message_filter1 = "*This document requires*assignment*";
@@ -164,15 +160,11 @@ class ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled
     content::WaitForLoadStop(content);
     EXPECT_TRUE(console_observer.messages().empty());
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Verify that there's no Trusted Types violation in chrome://chrome-urls
-IN_PROC_BROWSER_TEST_P(
-    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
-    NoTrustedTypesViolation) {
+IN_PROC_BROWSER_TEST_P(ChromeURLDataManagerWebUITrustedTypesTest,
+                       NoTrustedTypesViolation) {
   CheckTrustedTypesViolation(GetParam());
 }
 
@@ -325,7 +317,6 @@ static constexpr const char* const kChromeUrls[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
-    ::testing::ValuesIn(kChromeUrls));
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeURLDataManagerWebUITrustedTypesTest,
+                         ::testing::ValuesIn(kChromeUrls));

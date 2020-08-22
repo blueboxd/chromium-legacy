@@ -6338,6 +6338,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kCrOSAutoSelect)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+    {"smart-suggestion-for-large-downloads",
+     flag_descriptions::kSmartSuggestionForLargeDownloadsName,
+     flag_descriptions::kSmartSuggestionForLargeDownloadsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(download::features::kSmartSuggestionForLargeDownloads)},
+#endif  // defined(OS_ANDROID)
+
 #if BUILDFLAG(ENABLE_AV1_DECODER)
     {"enable-avif", flag_descriptions::kEnableAVIFName,
      flag_descriptions::kEnableAVIFDescription, kOsDesktop,

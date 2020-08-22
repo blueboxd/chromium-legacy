@@ -23,6 +23,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/time/time.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_lru_cache.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -73,18 +74,6 @@ const CGFloat kJPEGImageQuality = 1.0;  // Highest quality. No compression.
 // Maximum size in number of elements that the LRU cache can hold before
 // starting to evict elements.
 const NSUInteger kLRUCacheMaxCapacity = 6;
-
-// Returns the path of the directory containing the snapshots.
-bool GetSnapshotsCacheDirectory(base::FilePath* snapshots_cache_directory) {
-  base::FilePath cache_directory;
-  if (!base::PathService::Get(base::DIR_CACHE, &cache_directory))
-    return false;
-
-  *snapshots_cache_directory =
-      cache_directory.Append(FILE_PATH_LITERAL("Chromium"))
-          .Append(FILE_PATH_LITERAL("Snapshots"));
-  return true;
-}
 
 // Returns the path of the image for |snapshot_id|, in |cache_directory|,
 // of type |image_type| and scale |image_scale|.
@@ -248,30 +237,19 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
   SEQUENCE_CHECKER(_sequenceChecker);
 }
 
-@synthesize pinnedIDs = _pinnedIDs;
-@synthesize observers = _observers;
-@synthesize markedIDs = _markedIDs;
-
-- (instancetype)init {
-  base::FilePath cacheDirectory;
-  if (!GetSnapshotsCacheDirectory(&cacheDirectory))
-    return nil;
-
-  return [self initWithCacheDirectory:cacheDirectory
-                       snapshotsScale:ImageScaleForDevice()];
-}
-
-- (instancetype)initWithCacheDirectory:(const base::FilePath&)cacheDirectory
-                        snapshotsScale:(ImageScale)snapshotsScale {
+- (instancetype)initWithStoragePath:(const base::FilePath&)storagePath {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if ((self = [super init])) {
     _lruCache =
         [[SnapshotLRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity];
-    _cacheDirectory = cacheDirectory;
-    _snapshotsScale = snapshotsScale;
+    _cacheDirectory = storagePath;
+    _snapshotsScale = ImageScaleForDevice();
 
     _taskRunner = base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+
+    // Must be called after task runner is created.
+    [self createStorageIfNecessary];
 
     _observers = [SnapshotCacheObservers observers];
     _markedIDs = [[NSMutableSet alloc] init];
@@ -310,17 +288,6 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
       removeObserver:self
                 name:UIApplicationDidBecomeActiveNotification
               object:nil];
-}
-
-- (void)setUniqueIdentifier:(NSString*)uniqueIdentifier {
-  DCHECK(!_uniqueIdentifier) << "It is an error to set the SnapshotCache "
-                                "uniqueIdentifier more than once.";
-  if (uniqueIdentifier.length == 0) {
-    return;
-  }
-  _uniqueIdentifier = uniqueIdentifier;
-  _cacheDirectory =
-      _cacheDirectory.Append(base::SysNSStringToUTF8(uniqueIdentifier));
 }
 
 - (CGFloat)snapshotScaleForDevice {
@@ -432,6 +399,46 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
 - (base::FilePath)greyImagePathForSnapshotID:(NSString*)snapshotID {
   return ImagePath(snapshotID, IMAGE_TYPE_GREYSCALE, _snapshotsScale,
                    _cacheDirectory);
+}
+
+- (void)migrateSnapshotsWithIDs:(NSSet<NSString*>*)snapshotIDs
+                 fromSourcePath:(const base::FilePath&)sourcePath {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (!_taskRunner)
+    return;
+  // Copy ivars used by the block so that it does not reference |self|.
+  const base::FilePath destinationPath = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
+  _taskRunner->PostTask(
+      FROM_HERE, base::BindOnce(^{
+        if (sourcePath.empty() || !base::DirectoryExists(sourcePath) ||
+            sourcePath == destinationPath) {
+          return;
+        }
+        DCHECK(base::DirectoryExists(destinationPath));
+        for (NSString* snapshotID : snapshotIDs) {
+          for (size_t index = 0; index < base::size(kImageTypes); ++index) {
+            base::FilePath sourceFilePath = ImagePath(
+                snapshotID, kImageTypes[index], snapshotsScale, sourcePath);
+            base::FilePath destinationFilePath =
+                ImagePath(snapshotID, kImageTypes[index], snapshotsScale,
+                          destinationPath);
+            // Only migrate snapshots which are still needed.
+            if (base::PathExists(sourceFilePath) &&
+                !base::PathExists(destinationFilePath)) {
+              if (!base::Move(sourceFilePath, destinationFilePath)) {
+                DLOG(ERROR)
+                    << "Error migrating file " << sourceFilePath.AsUTF8Unsafe();
+              }
+            }
+          }
+        }
+        // Remove the old source folder.
+        if (!base::DeletePathRecursively(sourcePath)) {
+          DLOG(ERROR) << "Error deleting snapshots folder during migration. "
+                      << sourcePath.AsUTF8Unsafe();
+        }
+      }));
 }
 
 - (void)purgeCacheOlderThan:(const base::Time&)date
@@ -678,6 +685,23 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
 
 - (void)shutdown {
   _taskRunner = nullptr;
+}
+
+#pragma mark - Private methods
+
+- (void)createStorageIfNecessary {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (!_taskRunner)
+    return;
+  // Copy ivars used by the block so that it does not reference |self|.
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  _taskRunner->PostTask(FROM_HERE, base::BindOnce(^{
+                          // This is a NO-OP if the directory already exists.
+                          if (!base::CreateDirectory(cacheDirectory)) {
+                            DLOG(ERROR) << "Error creating snapshot storage "
+                                        << cacheDirectory.AsUTF8Unsafe();
+                          }
+                        }));
 }
 
 @end

@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
     bool hmac_secret_support = false;
+    bool large_blob_support = false;
     IncludeCredential include_credential_in_assertion_response =
         IncludeCredential::ONLY_IF_NEEDED;
 

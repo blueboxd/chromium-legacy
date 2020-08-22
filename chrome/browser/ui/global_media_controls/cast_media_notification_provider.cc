@@ -7,7 +7,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 
 namespace {
 

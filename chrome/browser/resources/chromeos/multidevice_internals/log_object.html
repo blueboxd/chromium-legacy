@@ -1,0 +1,44 @@
+<style>
+  .warning-log {
+    background-color: rgb(255, 252, 239);
+  }
+
+  .error-log {
+    background-color: rgb(255, 241, 241);
+  }
+
+  .verbose-log {
+    background-color: rgb(235, 235, 235);
+  }
+
+  .default-log {
+    background-color: rgb(255, 255, 255);
+  }
+
+  #item-metadata {
+    color: #888;
+    display: flex;
+    font-size: 10px;
+    padding: 6px;
+  }
+
+  #flex {
+    flex: 1;
+  }
+
+  #text {
+    display: inline-block;
+    margin: 3px;
+    padding: 5px;
+    text-align: start;
+    width: 100%;
+  }
+</style>
+<div id="item" severity="[[item.severity]]">
+  <p id="text">[[item.text]]</p>
+  <div id="item-metadata">
+    <span>[[item.time]]</span>
+    <div id="flex"></div>
+    <span>[[item.file]]:[[item.line]]</span>
+  </div>
+</div>

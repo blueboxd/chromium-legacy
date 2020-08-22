@@ -25,7 +25,11 @@ namespace {
 bool IsContentInDocument(content::RenderFrameHost* rfh, std::string content) {
   std::string script =
       "document.documentElement.innerHTML.includes('" + content + "');";
-  return EvalJs(rfh, script).ExtractBool();
+  // Execute script in an isolated world to avoid causing a Trusted Types
+  // violation due to eval.
+  return EvalJs(rfh, script, content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                /*world_id=*/1)
+      .ExtractBool();
 }
 
 }  // namespace

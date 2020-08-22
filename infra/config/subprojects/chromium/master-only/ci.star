@@ -1624,6 +1624,8 @@ ci.fyi_builder(
     os = os.MAC_ANY,
     cpu = cpu.X86_64,
     builderless = True,
+    ssd = None,
+    cores = None,
 )
 
 ci.fyi_builder(
@@ -1991,6 +1993,16 @@ ci.fyi_mac_builder(
     ),
     cores = None,
     os = None,
+)
+
+ci.thin_tester(
+    name = "Mac11.0 Tests",
+    mastername = "chromium.fyi",
+    console_view_entry = ci.console_view_entry(
+        category = "mac",
+        short_name = "11.0",
+    ),
+    triggered_by = ["Mac Builder Next"],
 )
 
 ci.fyi_mac_builder(

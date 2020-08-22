@@ -136,7 +136,7 @@ class PDFiumEngine : public PDFEngine,
   base::Optional<PDFEngine::NamedDestination> GetNamedDestination(
       const std::string& destination) override;
   int GetMostVisiblePage() override;
-  pp::Rect GetPageBoundsRect(int index) override;
+  gfx::Rect GetPageBoundsRect(int index) override;
   gfx::Rect GetPageContentsRect(int index) override;
   pp::Rect GetPageScreenRect(int page_index) const override;
   int GetVerticalScrollbarYPosition() override;

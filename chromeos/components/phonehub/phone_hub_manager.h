@@ -27,6 +27,7 @@ namespace phonehub {
 class FeatureStatusProvider;
 class NotificationAccessManager;
 class PhoneModel;
+class TetherController;
 
 // Implements the core logic of the Phone Hub feature and exposes interfaces via
 // its public API. Implemented as a KeyedService which is keyed by the primary
@@ -34,12 +35,6 @@ class PhoneModel;
 // a singleton.
 class PhoneHubManager : public KeyedService {
  public:
-  // Returns a pointer to the singleton once it has been instantiated. Returns
-  // null if the primary profile has not yet been initialized or has already
-  // shut down, if the kPhoneHub flag is disabled, or if the feature is
-  // prohibited by policy.
-  static PhoneHubManager* Get();
-
   PhoneHubManager(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
@@ -58,6 +53,8 @@ class PhoneHubManager : public KeyedService {
 
   PhoneModel* phone_model() { return phone_model_.get(); }
 
+  TetherController* tether_controller() { return tether_controller_.get(); }
+
  private:
   // KeyedService:
   void Shutdown() override;
@@ -65,6 +62,7 @@ class PhoneHubManager : public KeyedService {
   std::unique_ptr<FeatureStatusProvider> feature_status_provider_;
   std::unique_ptr<NotificationAccessManager> notification_access_manager_;
   std::unique_ptr<PhoneModel> phone_model_;
+  std::unique_ptr<TetherController> tether_controller_;
 };
 
 }  // namespace phonehub

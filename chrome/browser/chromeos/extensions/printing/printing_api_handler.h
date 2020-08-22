@@ -86,7 +86,7 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Submits the job to printing pipeline.
-  // If |extension| is not present among PrintingAPIExtensionsWhitelist
+  // If |extension| is not present among PrintingAPIExtensionsAllowlist
   // extensions, special print job request dialog is shown to the user to ask
   // for their confirmation.
   // |native_window| is needed to show this dialog.

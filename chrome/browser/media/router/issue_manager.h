@@ -19,7 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/common/media_router/issue.h"
+#include "components/media_router/common/issue.h"
 
 namespace media_router {
 

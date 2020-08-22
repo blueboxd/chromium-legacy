@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/scoped_refptr.h"
@@ -326,7 +327,20 @@ void Connection::Flush() {
 
 void Connection::Sync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetInputFocus({}).Sync();
+  if (syncing_)
+    return;
+  {
+    base::AutoReset<bool>(&syncing_, true);
+    GetInputFocus({}).Sync();
+  }
+}
+
+void Connection::SynchronizeForTest(bool synchronous) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  XSynchronize(display(), synchronous);
+  synchronous_ = synchronous;
+  if (synchronous_)
+    Sync();
 }
 
 void Connection::ReadResponses() {
@@ -335,6 +349,21 @@ void Connection::ReadResponses() {
     events_.emplace_back(base::MakeRefCounted<MallocedRefCountedMemory>(event),
                          this);
   }
+}
+
+Event Connection::WaitForNextEvent() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!events_.empty()) {
+    Event event = std::move(events_.front());
+    events_.pop_front();
+    return event;
+  }
+  auto* xcb_event = xcb_wait_for_event(XcbConnection());
+  if (xcb_event) {
+    return Event(base::MakeRefCounted<MallocedRefCountedMemory>(xcb_event),
+                 this);
+  }
+  return Event();
 }
 
 bool Connection::HasPendingResponses() const {

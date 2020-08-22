@@ -106,6 +106,7 @@
         android:theme="@android:style/Theme.Material.Light.Dialog.Alert">
     </activity>  # DIFF-ANCHOR: 28dc9019
     <activity  # DIFF-ANCHOR: a4438884
+        android:exported="true"
         android:icon="@drawable/icon_webview"
         android:label="WebView DevTools"
         android:launchMode="singleTask"
@@ -121,6 +122,7 @@
       </intent-filter>  # DIFF-ANCHOR: a167e73d
     </activity>  # DIFF-ANCHOR: a4438884
     <activity  # DIFF-ANCHOR: aeabab17
+        android:exported="true"
         android:label="@string/license_activity_title"
         android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
         android:process=":webview_apk">

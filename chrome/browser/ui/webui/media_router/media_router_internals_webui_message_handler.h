@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace media_router {

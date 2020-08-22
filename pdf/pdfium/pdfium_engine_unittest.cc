@@ -18,11 +18,11 @@
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
-#include "pdf/test/test_utils.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/size.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
@@ -66,9 +66,9 @@ class PDFiumEngineTest : public PDFiumTestBase {
  protected:
   void ExpectPageRect(const PDFiumEngine& engine,
                       size_t page_index,
-                      const pp::Rect& expected_rect) {
+                      const gfx::Rect& expected_rect) {
     const PDFiumPage& page = GetPDFiumPageForTest(engine, page_index);
-    CompareRect(expected_rect, page.rect());
+    EXPECT_EQ(expected_rect, page.rect());
   }
 
   // Tries to load a PDF incrementally, returning `true` if the PDF actually was

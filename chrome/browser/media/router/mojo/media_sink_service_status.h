@@ -11,8 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/mru_cache.h"
 #include "base/values.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/media_route_provider_helper.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/media_route_provider_helper.h"
 
 namespace media_router {
 

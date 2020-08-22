@@ -12,7 +12,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11.h"
+
+namespace ui {
+class X11SoftwareBitmapPresenter;
+}
 
 namespace media {
 class VideoFrame;
@@ -39,11 +44,10 @@ class LinuxOutputWindow {
                     int width,
                     int height,
                     const std::string& name);
-  Display* display_;
-  Window window_;
-  XShmSegmentInfo shminfo_;
-  GC gc_;
-  XImage* image_;
+  x11::Connection connection_;
+  x11::Window window_{};
+  gfx::Size size_;
+  std::unique_ptr<ui::X11SoftwareBitmapPresenter> presenter_;
 };
 
 }  // namespace test

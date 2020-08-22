@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
@@ -235,6 +236,8 @@ class TabGridMediatorTest : public PlatformTest {
                                              web_state_list_.get());
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
+    SnapshotBrowserAgent::FromBrowser(browser_.get())
+        ->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {

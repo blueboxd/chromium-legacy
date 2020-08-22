@@ -7,11 +7,16 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "media/base/video_frame.h"
-#include "third_party/libyuv/include/libyuv/convert.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
+#include "ui/base/x/x11_software_bitmap_presenter.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace media {
 namespace cast {
@@ -26,14 +31,9 @@ LinuxOutputWindow::LinuxOutputWindow(int x_pos,
 }
 
 LinuxOutputWindow::~LinuxOutputWindow() {
-  if (display_ && window_) {
-    XUnmapWindow(display_, window_);
-    XDestroyWindow(display_, window_);
-    XSync(display_, false);
-    if (gc_)
-      XFreeGC(display_, gc_);
-    XCloseDisplay(display_);
-  }
+  if (window_ != x11::Window::None)
+    connection_.DestroyWindow({window_});
+  connection_.Flush();
 }
 
 void LinuxOutputWindow::CreateWindow(int x_pos,
@@ -41,108 +41,74 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
                                      int width,
                                      int height,
                                      const std::string& name) {
-  display_ = XOpenDisplay(nullptr);
-  if (display_ == nullptr) {
+  if (!connection_.Ready()) {
     // There's no point to continue if this happens: nothing will work anyway.
     VLOG(1) << "Failed to connect to X server: X environment likely broken";
     NOTREACHED();
   }
 
-  int screen = DefaultScreen(display_);
-
-  // Try to establish a 24-bit TrueColor display.
-  // (our environment must allow this).
-  XVisualInfo visual_info;
-  if (XMatchVisualInfo(display_, screen, 24,
-                       static_cast<int>(x11::VisualClass::TrueColor),
-                       &visual_info) == 0) {
-    VLOG(1) << "Failed to establish 24-bit TrueColor in X environment.";
-    NOTREACHED();
-  }
-
-  // Create suitable window attributes.
-  XSetWindowAttributes window_attributes;
-  window_attributes.colormap = XCreateColormap(
-      display_, DefaultRootWindow(display_), visual_info.visual, AllocNone);
-  window_attributes.event_mask = StructureNotifyMask | ExposureMask;
-  window_attributes.background_pixel = 0;
-  window_attributes.border_pixel = 0;
-
-  unsigned long attribute_mask =
-      CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-  window_ = XCreateWindow(
-      display_, DefaultRootWindow(display_), x_pos, y_pos, width, height, 0,
-      visual_info.depth, static_cast<int>(x11::WindowClass::InputOutput),
-      visual_info.visual, attribute_mask, &window_attributes);
+  x11::VisualId visual;
+  uint8_t depth;
+  x11::ColorMap colormap;
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      false, &visual, &depth, &colormap, nullptr);
+  window_ = connection_.GenerateId<x11::Window>();
+  connection_.CreateWindow({
+      .depth = depth,
+      .wid = window_,
+      .parent = connection_.default_root(),
+      .x = x_pos,
+      .y = y_pos,
+      .width = width,
+      .height = height,
+      .border_width = 0,
+      .c_class = x11::WindowClass::InputOutput,
+      .visual = visual,
+      .background_pixel = 0,
+      .border_pixel = 0,
+      .event_mask = x11::EventMask::StructureNotify,
+      .colormap = colormap,
+  });
 
   // Set window name.
-  XStoreName(display_, window_, name.c_str());
-  XSetIconName(display_, window_, name.c_str());
-
-  // Make x report events for mask.
-  XSelectInput(display_, window_, StructureNotifyMask);
+  ui::SetStringProperty(window_, x11::Atom::WM_NAME, x11::Atom::STRING, name);
+  ui::SetStringProperty(window_, x11::Atom::WM_ICON_NAME, x11::Atom::STRING,
+                        name);
 
   // Map the window to the display.
-  XMapWindow(display_, window_);
+  connection_.MapWindow({window_});
+  connection_.Flush();
 
   // Wait for map event.
-  XEvent event;
-  do {
-    XNextEvent(display_, &event);
-  } while (event.type != MapNotify || event.xmap.event != window_);
-
-  gc_ = XCreateGC(display_, window_, 0, nullptr);
-
-  // create shared memory image
-  image_ = XShmCreateImage(display_, nullptr, 24,
-                           static_cast<int>(x11::ImageFormat::ZPixmap), nullptr,
-                           &shminfo_, width, height);
-  shminfo_.shmid = shmget(
-      IPC_PRIVATE, (image_->bytes_per_line * image_->height), IPC_CREAT | 0777);
-  shminfo_.shmaddr = image_->data =
-      static_cast<char*>(shmat(shminfo_.shmid, nullptr, 0));
-  if (image_->data == reinterpret_cast<char*>(-1)) {
-    VLOG(1) << "XShmCreateImage failed";
-    NOTREACHED();
+  while (connection_.Ready()) {
+    auto event = connection_.WaitForNextEvent();
+    auto* map = event.As<x11::MapNotifyEvent>();
+    if (map && map->event == window_)
+      break;
   }
-  shminfo_.readOnly = false;
 
-  // Attach image to display.
-  if (!XShmAttach(display_, &shminfo_)) {
-    VLOG(1) << "XShmAttach failed";
-    NOTREACHED();
-  }
-  XSync(display_, false);
+  size_ = {width, height};
+  presenter_ = std::make_unique<ui::X11SoftwareBitmapPresenter>(
+      &connection_, static_cast<gfx::AcceleratedWidget>(window_), false);
+  presenter_->Resize(size_);
+  connection_.Flush();
 }
 
 void LinuxOutputWindow::RenderFrame(const media::VideoFrame& video_frame) {
   const gfx::Size damage_size(
-      std::min(video_frame.visible_rect().width(), image_->width),
-      std::min(video_frame.visible_rect().height(), image_->height));
+      std::min(video_frame.visible_rect().width(), size_.width()),
+      std::min(video_frame.visible_rect().height(), size_.height()));
 
-  if (damage_size.width() < image_->width ||
-      damage_size.height() < image_->height)
-    memset(image_->data, 0x00, image_->bytes_per_line * image_->height);
+  if (damage_size.IsEmpty())
+    return;
 
-  if (!damage_size.IsEmpty()) {
-    libyuv::I420ToARGB(video_frame.visible_data(VideoFrame::kYPlane),
-                       video_frame.stride(VideoFrame::kYPlane),
-                       video_frame.visible_data(VideoFrame::kUPlane),
-                       video_frame.stride(VideoFrame::kUPlane),
-                       video_frame.visible_data(VideoFrame::kVPlane),
-                       video_frame.stride(VideoFrame::kVPlane),
-                       reinterpret_cast<uint8_t*>(image_->data),
-                       image_->bytes_per_line, damage_size.width(),
-                       damage_size.height());
-  }
-
-  // Place image in window.
-  XShmPutImage(display_, window_, gc_, image_, 0, 0, 0, 0, image_->width,
-               image_->height, true);
+  PaintCanvasVideoRenderer renderer;
+  cc::SkiaPaintCanvas canvas(presenter_->GetSkCanvas());
+  renderer.Copy(const_cast<media::VideoFrame*>(&video_frame), &canvas, nullptr);
+  presenter_->EndPaint(gfx::Rect(damage_size));
 
   // Very important for the image to update properly!
-  XSync(display_, false);
+  connection_.Flush();
 }
 
 }  // namespace test

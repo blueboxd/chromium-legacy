@@ -462,6 +462,11 @@
 // clearing Browsing data.
 + (void)resetBrowsingDataPrefs;
 
+#pragma mark - Unified Consent utilities
+
+// Enables or disables URL-keyed anonymized data collection.
++ (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled;
+
 #pragma mark - Keyboard Command utilities
 
 // The count of key commands registered with the currently active BVC.

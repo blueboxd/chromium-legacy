@@ -552,7 +552,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (SnapshotCache*)snapshotCache {
   if (!self.browser)
     return nil;
-  return SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache();
+  return SnapshotBrowserAgent::FromBrowser(self.browser)->snapshot_cache();
 }
 
 @end

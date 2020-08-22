@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
 
 namespace media_router {
 

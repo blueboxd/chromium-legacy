@@ -37,6 +37,14 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
                            ResultCallback success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
                            base::OnceClosure success_callback) override;
+  void StartFingerprintAuthSession(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
+  void EndFingerprintAuthSession() override;
+  void AuthenticateWithFingerprint(
+      const UserContext& context,
+      base::OnceCallback<void(cryptohome::CryptohomeErrorCode)> callback)
+      override;
   void AddKey(const UserContext& context,
               const cryptohome::KeyDefinition& key,
               bool clobber_if_exists,
@@ -86,6 +94,12 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
                            base::OnceClosure success_callback,
                            bool success,
                            cryptohome::MountError return_code);
+  void OnStartFingerprintAuthSessionComplete(
+      base::OnceCallback<void(bool)> callback,
+      base::Optional<cryptohome::BaseReply> reply);
+  void OnFingerprintScanComplete(
+      base::OnceCallback<void(cryptohome::CryptohomeErrorCode)> callback,
+      base::Optional<cryptohome::BaseReply> reply);
 
   bool salt_obtained_;
   std::string system_salt_;

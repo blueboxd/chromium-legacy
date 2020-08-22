@@ -17,8 +17,8 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
-#include "chrome/common/media_router/discovery/media_sink_service_util.h"
+#include "components/media_router/common/discovery/media_sink_service_base.h"
+#include "components/media_router/common/discovery/media_sink_service_util.h"
 
 namespace media_router {
 

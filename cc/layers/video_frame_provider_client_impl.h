@@ -18,7 +18,7 @@ namespace media { class VideoFrame; }
 namespace cc {
 class VideoLayerImpl;
 
-// VideoFrameProviderClientImpl liasons with the VideoFrameProvider and the
+// VideoFrameProviderClientImpl liaisons with the VideoFrameProvider and the
 // VideoLayer. It receives updates from the provider and updates the layer as a
 // result. It also allows the layer to access the video frame that the provider
 // has.

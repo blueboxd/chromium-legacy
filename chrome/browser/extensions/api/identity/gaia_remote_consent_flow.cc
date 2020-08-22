@@ -43,7 +43,7 @@ GaiaRemoteConsentFlow::GaiaRemoteConsentFlow(
     const RemoteConsentResolutionData& resolution_data)
     : delegate_(delegate),
       profile_(profile),
-      account_id_(token_key.account_id),
+      account_id_(token_key.account_info.account_id),
       resolution_data_(resolution_data),
       web_flow_started_(false),
       scoped_observer_(this) {}

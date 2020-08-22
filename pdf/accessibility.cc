@@ -9,6 +9,8 @@
 
 #include "base/numerics/safe_math.h"
 #include "pdf/pdf_engine.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
+#include "ppapi/cpp/rect.h"
 
 namespace chrome_pdf {
 
@@ -196,7 +198,7 @@ bool GetAccessibilityInfo(
     char_count = 0;
 
   page_info->page_index = page_index;
-  page_info->bounds = engine->GetPageBoundsRect(page_index);
+  page_info->bounds = PPRectFromRect(engine->GetPageBoundsRect(page_index));
   page_info->char_count = char_count;
 
   chars->resize(page_info->char_count);

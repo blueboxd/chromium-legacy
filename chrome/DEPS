@@ -23,6 +23,7 @@ include_rules = [
   "+components/content_settings/core/common",
   "+components/embedder_support/switches.h",
   "+components/error_page/common",
+  "+components/media_router/common",
   "+components/omnibox/common",
   "+components/services/heap_profiling/public",
   "+components/url_formatter",

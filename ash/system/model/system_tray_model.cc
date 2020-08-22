@@ -115,4 +115,9 @@ void SystemTrayModel::ShowNetworkDetailedViewBubble(bool show_by_click) {
     system_tray->ShowNetworkDetailedViewBubble(show_by_click);
 }
 
+void SystemTrayModel::SetPhoneHubManager(
+    chromeos::phonehub::PhoneHubManager* phone_hub_manager) {
+  // TODO(tengs): Use |phone_hub_manager|.
+}
+
 }  // namespace ash

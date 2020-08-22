@@ -57,4 +57,10 @@ const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
 const base::Feature kReturnScopesInGetAuthToken{
     "ReturnScopesInGetAuthToken", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, allows the GetAuthToken API to provide the "selected_user_id"
+// parameter to the server, indicating which account to request permissions
+// from.
+const base::Feature kSelectedUserIdInGetAuthToken{
+    "SelectedUserIdInGetAuthToken", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace extensions_features

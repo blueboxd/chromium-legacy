@@ -317,6 +317,11 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
+  if (request.large_blob_key && !response.large_blob_key()) {
+    FIDO_LOG(ERROR) << "Large blob key requested but not returned";
+    return false;
+  }
+
   return true;
 }
 }  // namespace
@@ -972,6 +977,11 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
 
   if (request->hmac_secret && !authenticator->SupportsHMACSecretExtension()) {
     request->hmac_secret = false;
+  }
+
+  if (request->large_blob_key &&
+      !authenticator->Options()->supports_large_blobs) {
+    request->large_blob_key = false;
   }
 
   if (!authenticator->SupportsEnterpriseAttestation()) {

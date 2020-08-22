@@ -96,6 +96,10 @@ cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options) {
     option_map.emplace(kEnterpriseAttestationKey, true);
   }
 
+  if (options.supports_large_blobs) {
+    option_map.emplace(kLargeBlobsKey, true);
+  }
+
   return cbor::Value(std::move(option_map));
 }
 

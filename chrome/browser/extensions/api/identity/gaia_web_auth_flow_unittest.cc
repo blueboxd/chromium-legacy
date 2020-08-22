@@ -99,7 +99,12 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
   }
 
   std::unique_ptr<TestGaiaWebAuthFlow> CreateTestFlow() {
-    ExtensionTokenKey token_key("extension_id", CoreAccountId("account_id"),
+    CoreAccountInfo user_info;
+    user_info.account_id = CoreAccountId("account_id");
+    user_info.gaia = "account_id";
+    user_info.email = "email";
+
+    ExtensionTokenKey token_key("extension_id", user_info,
                                 std::set<std::string>());
     return std::unique_ptr<TestGaiaWebAuthFlow>(new TestGaiaWebAuthFlow(
         &delegate_, &token_key, "fake.client.id", ubertoken_error_state_));

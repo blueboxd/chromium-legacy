@@ -321,6 +321,12 @@ class NearbySharingServiceImplTest : public testing::Test {
     }
 
     profile_manager_.DeleteAllTestingProfiles();
+
+    NearbyShareLocalDeviceDataManagerImpl::Factory::SetFactoryForTesting(
+        nullptr);
+    NearbyShareContactManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    NearbyShareCertificateManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    FastInitiationManager::Factory::SetFactoryForTesting(nullptr);
   }
 
   std::unique_ptr<NearbySharingServiceImpl> CreateService(

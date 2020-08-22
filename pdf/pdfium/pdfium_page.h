@@ -16,12 +16,12 @@
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
 #include "ppapi/cpp/private/pdf.h"
-#include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class Point;
@@ -149,18 +149,18 @@ class PDFiumPage {
                                      int* char_len);
 
   // Converts from page coordinates to screen coordinates.
-  pp::Rect PageToScreen(const gfx::Point& page_point,
-                        double zoom,
-                        double left,
-                        double top,
-                        double right,
-                        double bottom,
-                        PageOrientation orientation) const;
+  gfx::Rect PageToScreen(const gfx::Point& page_point,
+                         double zoom,
+                         double left,
+                         double top,
+                         double right,
+                         double bottom,
+                         PageOrientation orientation) const;
 
   int index() const { return index_; }
 
-  const pp::Rect& rect() const { return rect_; }
-  void set_rect(const pp::Rect& r) { rect_ = r; }
+  const gfx::Rect& rect() const { return rect_; }
+  void set_rect(const gfx::Rect& r) { rect_ = r; }
 
   // Availability is a one-way transition: A page can become available, but it
   // cannot become unavailable (unless deleted entirely).
@@ -208,7 +208,7 @@ class PDFiumPage {
     int32_t start_char_index = -1;
     // Represents the number of characters that the link overlaps with.
     int32_t char_count = 0;
-    std::vector<pp::Rect> bounding_rects;
+    std::vector<gfx::Rect> bounding_rects;
     LinkTarget target;
   };
 
@@ -218,7 +218,7 @@ class PDFiumPage {
     Image(const Image& other);
     ~Image();
 
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
     // Alt text is available only for tagged PDFs.
     std::string alt_text;
   };
@@ -233,7 +233,7 @@ class PDFiumPage {
     int32_t start_char_index = -1;
     // Number of characters encompassed by this highlight.
     int32_t char_count = 0;
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
 
     // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
     // follows after it with each using 8 bytes.
@@ -249,7 +249,7 @@ class PDFiumPage {
     FormField(const FormField& other);
     ~FormField();
 
-    pp::Rect bounding_rect;
+    gfx::Rect bounding_rect;
     // Represents the name of form field as defined in the field dictionary.
     std::string name;
     // Represents the flags of form field as defined in the field dictionary.
@@ -377,7 +377,7 @@ class PDFiumPage {
   ScopedFPDFTextPage text_page_;
   int index_;
   int preventing_unload_count_ = 0;
-  pp::Rect rect_;
+  gfx::Rect rect_;
   bool calculated_links_ = false;
   std::vector<Link> links_;
   bool calculated_images_ = false;

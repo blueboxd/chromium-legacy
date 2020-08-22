@@ -40,7 +40,7 @@ import java.util.List;
  * PaymentRequestImpl. Note that the callers of the instances of this class need to close them with
  * {@link ComponentPaymentRequestImpl#close()}, after which no usage is allowed.
  */
-public class ComponentPaymentRequestImpl {
+public class ComponentPaymentRequestImpl implements PaymentUIsObserver {
     private static final String TAG = "CompPaymentRequest";
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
@@ -567,8 +567,10 @@ public class ComponentPaymentRequestImpl {
         mClient.onHasEnrolledInstrument(result);
     }
 
+    // PaymentUIsObserver implementation.
+    @Override
     /** Invokes {@link PaymentRequest.warnNoFavicon}. */
-    public void warnNoFavicon() {
+    public void onPaymentRequestUIFaviconNotAvailable() {
         // Every caller should stop referencing this class once close() is called.
         assert mClient != null;
 

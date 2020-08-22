@@ -8,6 +8,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/constants.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_process_host.h"
@@ -82,5 +83,20 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
   speech_recognition_service_->BindSpeechRecognitionServiceClient(
       speech_recognition_service_client_.BindNewPipeAndPassRemote());
   OnNetworkServiceDisconnect();
+}
+
+base::FilePath SpeechRecognitionService::GetSodaConfigPath(PrefService* prefs) {
+  speech::LanguageCode language = speech::GetLanguageCode(
+      prefs->GetString(prefs::kLiveCaptionLanguageCode));
+  switch (language) {
+    case speech::LanguageCode::kEnUs:
+      return prefs->GetFilePath(prefs::kSodaEnUsConfigPath);
+    case speech::LanguageCode::kJaJp:
+      return prefs->GetFilePath(prefs::kSodaJaJpConfigPath);
+    default:
+      NOTREACHED();
+  }
+
+  return base::FilePath();
 }
 }  // namespace speech

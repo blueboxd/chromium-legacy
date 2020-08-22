@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/media/router/route_message_observer.h"
-#include "chrome/common/media_router/media_route.h"
+#include "components/media_router/common/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

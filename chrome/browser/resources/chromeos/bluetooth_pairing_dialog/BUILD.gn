@@ -24,6 +24,8 @@ if (optimize_webui) {
       ":unpak",
       "../../../../../ui/webui/resources:modulize",
     ]
+
+    excludes = [ "chrome://resources/js/cr.m.js" ]
   }
 
   unpak("unpak") {

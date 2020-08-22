@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
 #include "url/origin.h"
 
 namespace media_router {

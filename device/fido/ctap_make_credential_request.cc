@@ -156,6 +156,11 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
           return base::nullopt;
         }
         request.android_client_data_ext = std::move(*android_client_data_ext);
+      } else if (extension_name == kExtensionLargeBlobKey) {
+        if (!extension.second.is_bool() || !extension.second.GetBool()) {
+          return base::nullopt;
+        }
+        request.large_blob_key = true;
       }
     }
   }
@@ -270,6 +275,10 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
 
   if (request.hmac_secret) {
     extensions[cbor::Value(kExtensionHmacSecret)] = cbor::Value(true);
+  }
+
+  if (request.large_blob_key) {
+    extensions[cbor::Value(kExtensionLargeBlobKey)] = cbor::Value(true);
   }
 
   if (request.cred_protect) {

@@ -12,10 +12,10 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/enum_table.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "net/base/escape.h"
 
 namespace cast_util {

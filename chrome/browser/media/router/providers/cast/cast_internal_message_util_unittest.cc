@@ -7,8 +7,8 @@
 #include "base/json/json_reader.h"
 #include "base/test/gtest_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::IsJson;

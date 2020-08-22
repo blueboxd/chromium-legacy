@@ -151,7 +151,7 @@ namespace printing {
 
   interface Functions {
     // Submits the job for print.
-    // If the extension is not listed in PrintingAPIExtensionsWhitelist policy,
+    // If the extension is not listed in PrintingAPIExtensionsAllowlist policy,
     // the user will be prompted to accept the print job.
     static void submitJob(SubmitJobRequest request, SubmitJobCallback callback);
 

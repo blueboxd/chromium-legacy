@@ -174,6 +174,11 @@ class MockChromePasswordProtectionService
     return account_info_;
   }
 
+  safe_browsing::LoginReputationClientRequest::UrlDisplayExperiment
+  GetUrlDisplayExperiment() const override {
+    return safe_browsing::LoginReputationClientRequest::UrlDisplayExperiment();
+  }
+
   // Configures the results returned by IsExtendedReporting(), IsIncognito(),
   // and IsHistorySyncEnabled().
   void ConfigService(bool is_incognito, bool is_extended_reporting) {

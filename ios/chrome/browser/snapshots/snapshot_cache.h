@@ -7,7 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/time/time.h"
+namespace base {
+class FilePath;
+class Time;
+}
 
 @protocol SnapshotCacheObserver;
 
@@ -18,14 +21,17 @@
 // Persists to disk on a background thread each time a snapshot changes.
 @interface SnapshotCache : NSObject
 
-// Unique identifier for SnapshotCache, which is useful when there are multiple
-// instances of this class. This property does not need to be set if there is
-// only a singleton instance.
-@property(nonatomic, copy) NSString* uniqueIdentifier;
-
 // Track snapshot IDs to not release on low memory and to reload on
 // |UIApplicationDidBecomeActiveNotification|.
 @property(nonatomic, strong) NSSet* pinnedIDs;
+
+// Designated initializer. |storagePath| is the file path where all images
+// managed by this SnapshotCache is stored. |storagePath| is not guaranteed to
+// exist. The contents of |storagePath| are entirely managed by this
+// SnapshotCache.
+- (instancetype)initWithStoragePath:(const base::FilePath&)storagePath
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 // The scale that should be used for snapshots.
 - (CGFloat)snapshotScaleForDevice;
@@ -60,6 +66,12 @@
 // Unmarks all images, so they remain in the cache. They are no longer marked
 // for deferred deletion.
 - (void)unmarkAllImages;
+
+// Moves all images for |snapshotIDs| from |sourcePath| to the current storage
+// path of this snapshot cache. Deletes the folder |sourcePath| after migration,
+// regardless of remaining files (which may be obsolete snapshots).
+- (void)migrateSnapshotsWithIDs:(NSSet<NSString*>*)snapshotIDs
+                 fromSourcePath:(const base::FilePath&)sourcePath;
 
 // Purge the cache of snapshots that are older than |date|. The snapshots for
 // |liveSnapshotIDs| will be kept. This will be done asynchronously on a

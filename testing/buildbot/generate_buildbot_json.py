@@ -1413,6 +1413,7 @@ class BBJSONGenerator(object):
         'mac10.13-blink-rel-dummy',
         'mac10.14-blink-rel-dummy',
         'mac10.15-blink-rel-dummy',
+        'mac11.0-blink-rel-dummy',
         'win7-blink-rel-dummy',
         'win10-blink-rel-dummy',
         'WebKit Linux composite_after_paint Dummy Builder',

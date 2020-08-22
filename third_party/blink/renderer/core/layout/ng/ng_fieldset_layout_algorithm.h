@@ -68,10 +68,6 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   // the legend.
   LayoutUnit minimum_border_box_block_size_;
 
-  // The amount of the border block-start that was consumed in previous
-  // fragments.
-  LayoutUnit consumed_border_block_start_;
-
   // If true, the legend is taller than the block-start border, so that it
   // sticks below it, allowing for a class C breakpoint [1] before any fieldset
   // content.

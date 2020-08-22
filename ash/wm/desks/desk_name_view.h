@@ -38,6 +38,7 @@ class ASH_EXPORT DeskNameView
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
@@ -52,6 +53,9 @@ class ASH_EXPORT DeskNameView
   // Owned by this View via `View::border_`. This is just a convenient pointer
   // to it.
   WmHighlightItemBorder* border_ptr_;
+
+  // Full text without being elided.
+  base::string16 full_text_;
 };
 
 }  // namespace ash

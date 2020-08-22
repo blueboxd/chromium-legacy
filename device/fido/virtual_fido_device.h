@@ -114,6 +114,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     base::Optional<std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>>>
         hmac_key;
 
+    base::Optional<std::array<uint8_t, 32>> large_blob_key;
+
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
 

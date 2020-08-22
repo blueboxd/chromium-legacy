@@ -51,6 +51,13 @@ class PaymentRequestSpec {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jvalidation_errors_buffer);
 
+  // Recomputes spec based on details.
+  void RecomputeSpecForDetails(JNIEnv* env);
+
+  // Returns the selected shipping option error.
+  base::android::ScopedJavaLocalRef<jstring> SelectedShippingOptionError(
+      JNIEnv* env);
+
   // Destroys this bridge.
   void Destroy(JNIEnv* env);
 

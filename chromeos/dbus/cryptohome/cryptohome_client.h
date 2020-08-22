@@ -25,6 +25,7 @@ class AuthorizationRequest;
 class BaseReply;
 class CheckHealthRequest;
 class CheckKeyRequest;
+class EndFingerprintAuthSessionRequest;
 class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
 class GetKeyDataRequest;
@@ -40,6 +41,7 @@ class RemoveFirmwareManagementParametersRequest;
 class RemoveKeyRequest;
 class SetBootAttributeRequest;
 class SetFirmwareManagementParametersRequest;
+class StartFingerprintAuthSessionRequest;
 class UnmountRequest;
 class UpdateKeyRequest;
 
@@ -593,6 +595,23 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::MassRemoveKeysRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
+  // Asynchronously calls StartFingerprintAuthSession method. |callback| is
+  // called after method call, and with reply protobuf.
+  // StartFingerprintAuthSession prepares biometrics daemon for upcoming
+  // fingerprint authentication.
+  virtual void StartFingerprintAuthSession(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::StartFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
+  // Asynchronously calls EndFingerprintAuthSession method. |callback| is
+  // called after method call, and with reply protobuf.
+  // EndFingerprintAuthSession sets biometrics daemon back to normal mode.
+  // If there is a reply, it is always an empty reply with no errors.
+  virtual void EndFingerprintAuthSession(
+      const cryptohome::EndFingerprintAuthSessionRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls GetBootAttribute method. |callback| is called after

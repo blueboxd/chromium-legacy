@@ -5,8 +5,8 @@
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
 
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_util.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

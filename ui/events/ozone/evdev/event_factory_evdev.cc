@@ -303,9 +303,9 @@ void EventFactoryEvdev::DispatchMouseWheelEvent(
     const MouseWheelEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchMouseWheelEvent", "device",
                params.device_id);
-  MouseWheelEvent event(params.delta, gfx::Point(), gfx::Point(),
+  MouseWheelEvent event(params.delta, gfx::PointF(), gfx::PointF(),
                         params.timestamp, modifiers_.GetModifierFlags(),
-                        0 /* changed_button_flags */);
+                        0 /* changed_button_flags */, params.tick_120ths);
   event.set_location_f(params.location);
   event.set_root_location_f(params.location);
   event.set_source_device_id(params.device_id);

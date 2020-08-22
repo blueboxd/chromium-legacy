@@ -32,6 +32,11 @@ struct PageInsetSizes {
 // Struct for sending a page's gfx::Rect object along with its corresponding
 // index in the PDF document.
 struct IndexedPage {
+  IndexedPage(int index, const gfx::Rect& rect);
+  IndexedPage(const IndexedPage& other);
+  IndexedPage& operator=(const IndexedPage& other);
+  ~IndexedPage();
+
   int index;
   gfx::Rect rect;
 };

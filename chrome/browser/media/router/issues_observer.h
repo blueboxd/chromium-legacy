@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_ISSUES_OBSERVER_H_
 
 #include "base/macros.h"
-#include "chrome/common/media_router/issue.h"
+#include "components/media_router/common/issue.h"
 
 namespace media_router {
 

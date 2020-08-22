@@ -790,6 +790,19 @@ void FakeCryptohomeClient::CheckHealth(
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
+void FakeCryptohomeClient::StartFingerprintAuthSession(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::StartFingerprintAuthSessionRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
+}
+
+void FakeCryptohomeClient::EndFingerprintAuthSession(
+    const cryptohome::EndFingerprintAuthSessionRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
+}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (!is_available)

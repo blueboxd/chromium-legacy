@@ -10,7 +10,7 @@
 #include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"

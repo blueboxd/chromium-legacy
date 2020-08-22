@@ -94,6 +94,58 @@ void ExtendedAuthenticatorImpl::AuthenticateToCheck(
                               this, std::move(success_callback)));
 }
 
+void ExtendedAuthenticatorImpl::StartFingerprintAuthSession(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  CryptohomeClient::Get()->StartFingerprintAuthSession(
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+      cryptohome::StartFingerprintAuthSessionRequest(),
+      base::BindOnce(
+          &ExtendedAuthenticatorImpl::OnStartFingerprintAuthSessionComplete,
+          this, std::move(callback)));
+}
+
+void ExtendedAuthenticatorImpl::OnStartFingerprintAuthSessionComplete(
+    base::OnceCallback<void(bool)> callback,
+    base::Optional<cryptohome::BaseReply> reply) {
+  std::move(callback).Run(reply && !reply->has_error());
+}
+
+void ExtendedAuthenticatorImpl::EndFingerprintAuthSession() {
+  CryptohomeClient::Get()->EndFingerprintAuthSession(
+      cryptohome::EndFingerprintAuthSessionRequest(),
+      base::BindOnce([](base::Optional<cryptohome::BaseReply> reply) {
+        // Only check for existence of the reply, because if there is a reply,
+        // it's always a BaseReply without errors.
+        if (!reply)
+          LOG(ERROR) << "EndFingerprintAuthSession call had no reply.";
+      }));
+}
+
+void ExtendedAuthenticatorImpl::AuthenticateWithFingerprint(
+    const UserContext& context,
+    base::OnceCallback<void(cryptohome::CryptohomeErrorCode)> callback) {
+  cryptohome::KeyDefinition key_def;
+  key_def.type = cryptohome::KeyDefinition::TYPE_FINGERPRINT;
+  CryptohomeClient::Get()->CheckKeyEx(
+      cryptohome::CreateAccountIdentifierFromAccountId(context.GetAccountId()),
+      cryptohome::CreateAuthorizationRequestFromKeyDef(key_def),
+      cryptohome::CheckKeyRequest(),
+      base::BindOnce(&ExtendedAuthenticatorImpl::OnFingerprintScanComplete,
+                     this, std::move(callback)));
+}
+
+void ExtendedAuthenticatorImpl::OnFingerprintScanComplete(
+    base::OnceCallback<void(cryptohome::CryptohomeErrorCode)> callback,
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (!reply) {
+    std::move(callback).Run(cryptohome::CryptohomeErrorCode::
+                                CRYPTOHOME_ERROR_FINGERPRINT_ERROR_INTERNAL);
+  }
+
+  std::move(callback).Run(reply->error());
+}
+
 void ExtendedAuthenticatorImpl::AddKey(const UserContext& context,
                                        const cryptohome::KeyDefinition& key,
                                        bool clobber_if_exists,

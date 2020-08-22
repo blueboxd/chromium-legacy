@@ -1785,6 +1785,9 @@ extern const char kShoppingAssistDescription[];
 extern const char kSiteIsolationForPasswordSitesName[];
 extern const char kSiteIsolationForPasswordSitesDescription[];
 
+extern const char kSmartSuggestionForLargeDownloadsName[];
+extern const char kSmartSuggestionForLargeDownloadsDescription[];
+
 extern const char kStartSurfaceAndroidName[];
 extern const char kStartSurfaceAndroidDescription[];
 

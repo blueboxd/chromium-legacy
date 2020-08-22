@@ -97,9 +97,6 @@ void JobHandle::Join() {
   bool must_run = task_source_->WillJoin();
   while (must_run)
     must_run = task_source_->RunJoinTask();
-  // Remove |task_source_| from the ThreadPool to prevent access to
-  // |max_concurrency_callback| after Join().
-  task_source_->delegate()->RemoveJobTaskSource(task_source_);
   task_source_ = nullptr;
 }
 

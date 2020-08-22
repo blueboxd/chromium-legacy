@@ -121,6 +121,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter;
   base::Optional<HMACSecret> hmac_secret;
+  bool large_blob_key = false;
 
   bool is_incognito_mode = false;
   bool is_u2f_only = false;

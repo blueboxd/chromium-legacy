@@ -6,6 +6,7 @@
 
 #include "base/containers/span.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_internals/multidevice_internals_logs_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/multidevice_internals_resources.h"
@@ -24,7 +25,7 @@ constexpr char kMultideviceInternalsGeneratedPath[] =
 }  // namespace
 
 MultideviceInternalsUI::MultideviceInternalsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIMultiDeviceInternalsHost);
@@ -36,6 +37,8 @@ MultideviceInternalsUI::MultideviceInternalsUI(content::WebUI* web_ui)
       kMultideviceInternalsGeneratedPath, IDR_MULTIDEVICE_INTERNALS_INDEX_HTML);
 
   content::WebUIDataSource::Add(profile, html_source);
+  web_ui->AddMessageHandler(
+      std::make_unique<multidevice::MultideviceLogsHandler>());
 }
 
 MultideviceInternalsUI::~MultideviceInternalsUI() = default;

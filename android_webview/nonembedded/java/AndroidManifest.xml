@@ -46,7 +46,8 @@
                       android:theme="@style/Theme.DevUi.DayNight"
                       android:launchMode="singleTask"
                       android:taskAffinity="{{ manifest_package }}.org.chromium.android_webview.devui" {# Explicit taskAffinity to distinguish from monochrome browser task. #}
-                      android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
+                      android:process=":webview_apk"  {# Explicit process required for monochrome compatibility. #}
+                      android:exported="true">
                 <intent-filter>
                     <action android:name="com.android.webview.SHOW_DEV_UI" />
                     <category android:name="android.intent.category.DEFAULT" />
@@ -62,7 +63,8 @@
 
             <activity android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
                       android:label="@string/license_activity_title"
-                      android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
+                      android:process=":webview_apk"  {# Explicit process required for monochrome compatibility. #}
+                      android:exported="true">
                 <intent-filter>
                     <action android:name="android.settings.WEBVIEW_LICENSE" />
                     <category android:name="android.intent.category.DEFAULT" />

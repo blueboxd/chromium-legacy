@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xfixes.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace remoting {
 
@@ -35,26 +37,27 @@ class XServerClipboard {
   XServerClipboard();
   ~XServerClipboard();
 
-  // Start monitoring |display|'s selections, and invoke |callback| whenever
-  // their content changes. The caller must ensure |display| is still valid
+  // Start monitoring |connection|'s selections, and invoke |callback| whenever
+  // their content changes. The caller must ensure |connection| is still valid
   // whenever any other methods are called on this object.
-  void Init(Display* display, const ClipboardChangedCallback& callback);
+  void Init(x11::Connection* connection,
+            const ClipboardChangedCallback& callback);
 
   // Copy data to the X Clipboard.  This acquires ownership of the
   // PRIMARY and CLIPBOARD selections.
   void SetClipboard(const std::string& mime_type, const std::string& data);
 
   // Process |event| if it is an X selection notification. The caller should
-  // invoke this for every event it receives from |display|.
-  void ProcessXEvent(XEvent* event);
+  // invoke this for every event it receives from |connection|.
+  void ProcessXEvent(const x11::Event& event);
 
  private:
   // Handlers called by ProcessXEvent() for each event type.
   void OnSetSelectionOwnerNotify(Atom selection, Time timestamp);
-  void OnPropertyNotify(XEvent* event);
-  void OnSelectionNotify(XEvent* event);
-  void OnSelectionRequest(XEvent* event);
-  void OnSelectionClear(XEvent* event);
+  void OnPropertyNotify(const x11::PropertyNotifyEvent& event);
+  void OnSelectionNotify(const x11::SelectionNotifyEvent& event);
+  void OnSelectionRequest(const x11::SelectionRequestEvent& event);
+  void OnSelectionClear(const x11::SelectionClearEvent& event);
 
   // Used by OnSelectionRequest() to respond to requests for details of our
   // clipboard content. This is done by changing the property |property| of the
@@ -69,7 +72,7 @@ class XServerClipboard {
   // |event| is the raw X event from the notification.
   // |type|, |format| etc are the results from XGetWindowProperty(), or 0 if
   // there is no associated data.
-  void HandleSelectionNotify(XSelectionEvent* event,
+  void HandleSelectionNotify(const x11::SelectionNotifyEvent& event,
                              Atom type,
                              int format,
                              int item_count,
@@ -78,11 +81,11 @@ class XServerClipboard {
   // These methods return true if selection processing is complete, false
   // otherwise. They are called from HandleSelectionNotify(), and take the same
   // arguments.
-  bool HandleSelectionTargetsEvent(XSelectionEvent* event,
+  bool HandleSelectionTargetsEvent(const x11::SelectionNotifyEvent& event,
                                    int format,
                                    int item_count,
                                    void* data);
-  bool HandleSelectionStringEvent(XSelectionEvent* event,
+  bool HandleSelectionStringEvent(const x11::SelectionNotifyEvent& event,
                                   int format,
                                   int item_count,
                                   void* data);
@@ -99,17 +102,12 @@ class XServerClipboard {
   void AssertSelectionOwnership(Atom selection);
   bool IsSelectionOwner(Atom selection);
 
-  // Stores the Display* supplied to Init().
-  Display* display_;
+  // Stores the connection supplied to Init().
+  x11::Connection* connection_ = nullptr;
 
   // Window through which clipboard events are received, or BadValue if the
   // window could not be created.
   Window clipboard_window_;
-
-  // The event base returned by XFixesQueryExtension(). If XFixes is
-  // unavailable, the clipboard window will not be created, and no
-  // event-processing will take place.
-  int xfixes_event_base_;
 
   // Cached atoms for various strings, initialized during Init().
   Atom clipboard_atom_;

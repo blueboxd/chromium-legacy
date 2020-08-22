@@ -80,6 +80,16 @@ void PaymentRequestSpec::Retry(
   spec_->Retry(std::move(validation_errors));
 }
 
+void PaymentRequestSpec::RecomputeSpecForDetails(JNIEnv* env) {
+  spec_->RecomputeSpecForDetails();
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+PaymentRequestSpec::SelectedShippingOptionError(JNIEnv* env) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, spec_->selected_shipping_option_error());
+}
+
 void PaymentRequestSpec::Destroy(JNIEnv* env) {
   delete this;
 }

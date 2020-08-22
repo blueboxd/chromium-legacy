@@ -7,8 +7,8 @@
 
 #include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/common/media_router/media_route_provider_helper.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/media_router/common/media_route_provider_helper.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"

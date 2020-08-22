@@ -97,6 +97,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // uninteresting to Chromium because we do not support the administrative
   // operation to configure it. Thus this member reduces to a boolean.)
   bool enterprise_attestation = false;
+  // Indicates whether the authenticator supports the authenticatorLargeBlobs
+  // command.
+  bool supports_large_blobs = false;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

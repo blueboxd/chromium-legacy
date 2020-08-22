@@ -187,8 +187,10 @@ extern const char kAccessibilityCaptionsTextShadow[];
 extern const char kAccessibilityCaptionsBackgroundOpacity[];
 #if !defined(OS_ANDROID)
 extern const char kLiveCaptionEnabled[];
+extern const char kLiveCaptionLanguageCode[];
 extern const char kSodaBinaryPath[];
 extern const char kSodaEnUsConfigPath[];
+extern const char kSodaJaJpConfigPath[];
 #endif
 #if defined(OS_MAC)
 extern const char kConfirmToQuitEnabled[];
@@ -460,7 +462,7 @@ extern const char kPrintingPinDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
 extern const char kPrintingMaxSheetsAllowed[];
 extern const char kPrintJobHistoryExpirationPeriod[];
-extern const char kPrintingAPIExtensionsWhitelist[];
+extern const char kPrintingAPIExtensionsAllowlist[];
 extern const char kDeletePrintJobHistoryAllowed[];
 #endif  // OS_CHROMEOS
 

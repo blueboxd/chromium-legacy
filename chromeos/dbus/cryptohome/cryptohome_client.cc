@@ -945,6 +945,38 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void StartFingerprintAuthSession(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::StartFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeStartFingerprintAuthSession);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void EndFingerprintAuthSession(
+      const cryptohome::EndFingerprintAuthSessionRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeEndFingerprintAuthSession);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void GetBootAttribute(
       const cryptohome::GetBootAttributeRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {

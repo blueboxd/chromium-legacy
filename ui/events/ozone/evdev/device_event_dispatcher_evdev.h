@@ -88,6 +88,13 @@ struct COMPONENT_EXPORT(EVDEV) MouseWheelEventParams {
   MouseWheelEventParams(int device_id,
                         const gfx::PointF& location,
                         const gfx::Vector2d& delta,
+                        const gfx::Vector2d& tick_120ths,
+                        base::TimeTicks timestamp);
+  // TODO(1077644): get rid of the MouseWheelEventParams constructor without
+  // tick_120ths, once the remoting use case is updated.
+  MouseWheelEventParams(int device_id,
+                        const gfx::PointF& location,
+                        const gfx::Vector2d& delta,
                         base::TimeTicks timestamp);
   MouseWheelEventParams(const MouseWheelEventParams& other);
   MouseWheelEventParams() {}
@@ -96,6 +103,7 @@ struct COMPONENT_EXPORT(EVDEV) MouseWheelEventParams {
   int device_id;
   gfx::PointF location;
   gfx::Vector2d delta;
+  gfx::Vector2d tick_120ths;
   base::TimeTicks timestamp;
 };
 

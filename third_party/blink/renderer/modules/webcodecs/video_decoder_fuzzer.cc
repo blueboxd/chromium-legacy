@@ -73,8 +73,9 @@ DEFINE_TEXT_PROTO_FUZZER(
     for (auto& invocation : proto.invocations()) {
       switch (invocation.Api_case()) {
         case wc_fuzzer::VideoDecoderApiInvocation::kConfigure:
-          video_decoder->configure(MakeDecoderConfig(invocation.configure()),
-                                   IGNORE_EXCEPTION_FOR_TESTING);
+          video_decoder->configure(
+              MakeVideoDecoderConfig(invocation.configure()),
+              IGNORE_EXCEPTION_FOR_TESTING);
           break;
         case wc_fuzzer::VideoDecoderApiInvocation::kDecode:
           video_decoder->decode(

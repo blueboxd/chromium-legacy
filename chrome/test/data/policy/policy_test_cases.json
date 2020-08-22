@@ -501,11 +501,23 @@
   },
 
   "PrintingAPIExtensionsWhitelist": {
+    "note": "This policy is deprecated, see http://crbug.com/1119444.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "required_preprocessor_macros": [ "USE_CUPS" ],
         "policies": { "PrintingAPIExtensionsWhitelist": [ "value1" ]},
+        "prefs": { "printing.printing_api_extensions_whitelist": {} }
+      }
+    ]
+  },
+
+  "PrintingAPIExtensionsAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "required_preprocessor_macros": [ "USE_CUPS" ],
+        "policies": { "PrintingAPIExtensionsAllowlist": [ "value1" ]},
         "prefs": { "printing.printing_api_extensions_whitelist": {} }
       }
     ]

@@ -5369,26 +5369,9 @@ class AppCacheUpdateJobOriginTrialTest : public AppCacheUpdateJobTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-class AppCacheUpdateJobUpdateOn304Test : public AppCacheUpdateJobTest {
- public:
-  AppCacheUpdateJobUpdateOn304Test() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kAppCacheUpdateResourceOn304Feature);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 class AppCacheUpdateJobNoUpdateOn304Test : public AppCacheUpdateJobTest {
  public:
-  AppCacheUpdateJobNoUpdateOn304Test() {
-    scoped_feature_list_.InitAndDisableFeature(
-        kAppCacheUpdateResourceOn304Feature);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  AppCacheUpdateJobNoUpdateOn304Test() = default;
 };
 
 class AppCacheUpdateJobWithCorruptionRecoveryTest
@@ -5808,11 +5791,6 @@ TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgradeParserVersion1) {
 
 TEST_F(AppCacheUpdateJobTest, RequestResponseTimesAreSet) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::RequestResponseTimesAreSetTest);
-}
-
-TEST_F(AppCacheUpdateJobUpdateOn304Test, RequestResponseTimesAreModified) {
-  RunTestOnUIThread(
-      &AppCacheUpdateJobTest::RequestResponseTimesAreModifiedTest);
 }
 
 TEST_F(AppCacheUpdateJobNoUpdateOn304Test, RequestResponseTimesAreNotModified) {

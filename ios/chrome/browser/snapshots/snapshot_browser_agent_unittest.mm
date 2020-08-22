@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/task_environment.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/test_browser.h"
@@ -25,12 +26,14 @@ class SnapshotBrowserAgentTest : public PlatformTest {
   std::unique_ptr<Browser> browser_;
 };
 
-TEST_F(SnapshotBrowserAgentTest, TestGetSnapshotCache) {
+TEST_F(SnapshotBrowserAgentTest, SnapshotCacheCreatedAfterSettingSessionID) {
   SnapshotBrowserAgent::CreateForBrowser(browser_.get());
   SnapshotBrowserAgent* agent =
       SnapshotBrowserAgent::FromBrowser(browser_.get());
   EXPECT_NE(nullptr, agent);
-  EXPECT_NE(nil, agent->GetSnapshotCache());
+  EXPECT_EQ(nil, agent->snapshot_cache());
+  agent->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
+  EXPECT_NE(nil, agent->snapshot_cache());
 }
 
 }  // anonymous namespace

@@ -247,6 +247,9 @@ void GestureInterpreterLibevdevCros::OnGestureReady(const Gesture* gesture) {
     case kGestureTypeScroll:
       OnGestureScroll(gesture, &gesture->details.scroll);
       break;
+    case kGestureTypeMouseWheel:
+      OnGestureMouseWheel(gesture, &gesture->details.wheel);
+      break;
     case kGestureTypeButtonsChange:
       OnGestureButtonsChange(gesture, &gesture->details.buttons);
       break;
@@ -312,8 +315,11 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
     return;  // No cursor!
 
   if (is_mouse_) {
+    // Traditional mice don't emit scroll events, but multitouch mice still do.
     dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
         id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy),
+        gfx::Vector2d(scroll->dx / kMultitouchMousePixelsPerTick * 120,
+                      scroll->dy / kMultitouchMousePixelsPerTick * 120),
         StimeToTimeTicks(gesture->end_time)));
   } else {
     dispatcher_->DispatchScrollEvent(ScrollEventParams(
@@ -322,6 +328,21 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
         gfx::Vector2dF(scroll->ordinal_dx, scroll->ordinal_dy),
         kGestureScrollFingerCount, StimeToTimeTicks(gesture->end_time)));
   }
+}
+
+void GestureInterpreterLibevdevCros::OnGestureMouseWheel(
+    const Gesture* gesture,
+    const GestureMouseWheel* wheel) {
+  DVLOG(3) << base::StringPrintf("Gesture Mouse Wheel: (%f, %f) [%d, %d]",
+                                 wheel->dx, wheel->dy, wheel->tick_120ths_dx,
+                                 wheel->tick_120ths_dy);
+  if (!cursor_)
+    return;  // No cursor!
+
+  dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
+      id_, cursor_->GetLocation(), gfx::Vector2d(wheel->dx, wheel->dy),
+      gfx::Vector2d(wheel->tick_120ths_dx, wheel->tick_120ths_dy),
+      StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureButtonsChange(

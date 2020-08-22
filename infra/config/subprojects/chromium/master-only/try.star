@@ -56,6 +56,11 @@ try_.blink_mac_builder(
     name = "mac10.15-blink-rel",
 )
 
+try_.blink_mac_builder(
+    name = "mac11.0-blink-rel",
+    builderless = False,
+)
+
 try_.chromium_android_builder(
     name = "android-asan",
 )
@@ -533,6 +538,11 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac_chromium_10.15_rel_ng",
+)
+
+try_.chromium_mac_builder(
+    name = "mac_chromium_11.0_rel_ng",
+    builderless = False,
 )
 
 try_.chromium_mac_builder(

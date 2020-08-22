@@ -6,9 +6,9 @@
 
 #include "base/test/values_test_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"

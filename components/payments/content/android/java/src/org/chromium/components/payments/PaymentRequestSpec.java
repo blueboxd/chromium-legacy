@@ -4,6 +4,8 @@
 
 package org.chromium.components.payments;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -56,6 +58,21 @@ public class PaymentRequestSpec {
         PaymentRequestSpecJni.get().retry(mNativePointer, validationErrors.serialize());
     }
 
+    /**
+     * Recomputes spec based on details.
+     */
+    public void recomputeSpecForDetails() {
+        PaymentRequestSpecJni.get().recomputeSpecForDetails(mNativePointer);
+    }
+
+    /**
+     * Returns the selected shipping option error.
+     */
+    @Nullable
+    public String selectedShippingOptionError() {
+        return PaymentRequestSpecJni.get().selectedShippingOptionError(mNativePointer);
+    }
+
     /** Destroys the native pointer. */
     public void destroy() {
         if (mNativePointer == 0) return;
@@ -74,6 +91,8 @@ public class PaymentRequestSpec {
                 ByteBuffer[] methodDataByteBuffers, String appLocale);
         void updateWith(long nativePaymentRequestSpec, ByteBuffer detailsByteBuffer);
         void retry(long nativePaymentRequestSpec, ByteBuffer validationErrorsByteBuffer);
+        void recomputeSpecForDetails(long nativePaymentRequestSpec);
+        String selectedShippingOptionError(long nativePaymentRequestSpec);
         void destroy(long nativePaymentRequestSpec);
     }
 }

@@ -265,7 +265,7 @@ void RecordInterfaceOrientationMetric() {
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();
 
-    [_snapshotBrowserAgent->GetSnapshotCache()
+    [_snapshotBrowserAgent->snapshot_cache()
         willBeSavedGreyWhenBackgrounding:tabId];
   }
 }
@@ -294,7 +294,7 @@ void RecordInterfaceOrientationMetric() {
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();
 
-    [_snapshotBrowserAgent->GetSnapshotCache()
+    [_snapshotBrowserAgent->snapshot_cache()
         saveGreyInBackgroundForSnapshotID:tabId];
   }
 }

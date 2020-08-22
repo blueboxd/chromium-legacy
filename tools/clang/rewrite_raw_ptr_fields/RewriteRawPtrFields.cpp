@@ -673,6 +673,20 @@ AST_MATCHER(clang::FieldDecl, overlapsOtherDeclsWithinRecordDecl) {
   return has_sibling_with_overlapping_location;
 }
 
+// Matches RecordDecl if
+// 1) it has a FieldDecl that matches the InnerMatcher
+// or
+// 2) it has a FieldDecl that hasType of a RecordDecl that matches the
+//    InnerMatcher (this recurses to any depth).
+AST_MATCHER_P(clang::RecordDecl,
+              hasNestedFieldDecl,
+              clang::ast_matchers::internal::Matcher<clang::FieldDecl>,
+              InnerMatcher) {
+  auto matcher = recordDecl(has(fieldDecl(anyOf(
+      InnerMatcher, hasType(recordDecl(hasNestedFieldDecl(InnerMatcher)))))));
+  return matcher.matches(Node, Finder, Builder);
+}
+
 // Rewrites |SomeClass* field| (matched as "affectedFieldDecl") into
 // |CheckedPtr<SomeClass> field| and for each file rewritten in such way adds an
 // |#include "base/memory/checked_ptr.h"|.
@@ -1040,6 +1054,14 @@ int main(int argc, const char* argv[]) {
   FilteredExprWriter char_ptr_field_decl_writer(&output_helper, "const-char");
   match_finder.addMatcher(char_ptr_field_decl_matcher,
                           &char_ptr_field_decl_writer);
+
+  // See the testcases in tests/gen-global-destructor-test.cc.
+  auto global_destructor_matcher = varDecl(
+      allOf(hasGlobalStorage(),
+            hasType(recordDecl(hasNestedFieldDecl(field_decl_matcher)))));
+  FilteredExprWriter global_destructor_writer(&output_helper,
+                                              "global-destructor");
+  match_finder.addMatcher(global_destructor_matcher, &global_destructor_writer);
 
   // Prepare and run the tool.
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =

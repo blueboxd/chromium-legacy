@@ -27,8 +27,8 @@ static_library("router") {
     "//url",
   ]
   public_deps = [
-    "//chrome/common/media_router:router",
-    "//chrome/common/media_router/mojom:media_router",
+    "//components/media_router/common",
+    "//components/media_router/common/mojom:media_router",
   ]
   sources = [
     "issue_manager.cc",
@@ -91,7 +91,7 @@ static_library("router") {
       "//ui/base:buildflags",
     ]
 
-    public_deps += [ "//chrome/common/media_router/mojom:logger" ]
+    public_deps += [ "//components/media_router/common/mojom:logger" ]
 
     sources += [
       "data_decoder_util.cc",
@@ -199,8 +199,8 @@ static_library("test_support") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//chrome/common/media_router/mojom:media_router",
-      "//chrome/common/media_router/mojom:media_router_test_interfaces",
+      "//components/media_router/common/mojom:media_router",
+      "//components/media_router/common/mojom:media_router_test_interfaces",
       "//extensions/browser",
       "//extensions/common",
     ]
@@ -305,6 +305,7 @@ source_set("unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/media_router/common:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

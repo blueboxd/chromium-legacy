@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/media_router/common/media_route.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/route_request_result.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"

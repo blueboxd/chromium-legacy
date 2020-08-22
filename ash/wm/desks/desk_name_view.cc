@@ -10,6 +10,8 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -71,6 +73,7 @@ void DeskNameView::CommitChanges(views::Widget* widget) {
 void DeskNameView::SetTextAndElideIfNeeded(const base::string16& text) {
   SetText(gfx::ElideText(text, GetFontList(), GetContentsBounds().width(),
                          gfx::ELIDE_TAIL));
+  full_text_ = text;
 }
 
 const char* DeskNameView::GetClassName() const {
@@ -98,6 +101,11 @@ bool DeskNameView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
     return true;
 
   return false;
+}
+
+void DeskNameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kTextField;
+  node_data->SetName(full_text_);
 }
 
 views::View* DeskNameView::GetView() {

@@ -7,6 +7,7 @@ package org.chromium.components.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentShippingType;
 
 /**
  * A collection of utility methods for PaymentOptions.
@@ -56,8 +57,7 @@ public class PaymentOptionsUtils {
      * @param paymentOptions The PaymentOptions of the payment request.
      * @return Whether requestShipping is specified in the payment request.
      */
-    public static boolean requestShipping(
-            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+    public static boolean requestShipping(PaymentOptions paymentOptions) {
         return paymentOptions != null && paymentOptions.requestShipping;
     }
 
@@ -65,8 +65,7 @@ public class PaymentOptionsUtils {
      * @param paymentOptions The PaymentOptions of the payment request.
      * @return Whether requestPayerName is specified in the payment request.
      */
-    public static boolean requestPayerName(
-            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+    public static boolean requestPayerName(PaymentOptions paymentOptions) {
         return paymentOptions != null && paymentOptions.requestPayerName;
     }
 
@@ -74,8 +73,7 @@ public class PaymentOptionsUtils {
      * @param paymentOptions The PaymentOptions of the payment request.
      * @return Whether requestPayerPhone is specified in the payment request.
      */
-    public static boolean requestPayerPhone(
-            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+    public static boolean requestPayerPhone(PaymentOptions paymentOptions) {
         return paymentOptions != null && paymentOptions.requestPayerPhone;
     }
 
@@ -83,8 +81,17 @@ public class PaymentOptionsUtils {
      * @param paymentOptions The PaymentOptions of the payment request.
      * @return Whether requestPayerEmail is specified in the payment request.
      */
-    public static boolean requestPayerEmail(
-            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+    public static boolean requestPayerEmail(PaymentOptions paymentOptions) {
         return paymentOptions != null && paymentOptions.requestPayerEmail;
+    }
+
+    /**
+     * @param options The PaymentOptions of the payment request.
+     * @return The shippingType of the payment request.
+     */
+    public static int getShippingType(PaymentOptions options) {
+        // SHIPPING chosen as default according to w3c spec
+        // (https://w3c.github.io/payment-request/#paymentoptions-dictionary).
+        return options == null ? PaymentShippingType.SHIPPING : options.shippingType;
     }
 }

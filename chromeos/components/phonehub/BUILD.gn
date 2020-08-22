@@ -32,6 +32,10 @@ static_library("phonehub") {
     "phone_status_model.h",
     "pref_names.cc",
     "pref_names.h",
+    "tether_controller.cc",
+    "tether_controller.h",
+    "tether_controller_impl.cc",
+    "tether_controller_impl.h",
   ]
 
   deps = [
@@ -56,6 +60,8 @@ static_library("test_support") {
     "fake_feature_status_provider.h",
     "fake_notification_access_manager.cc",
     "fake_notification_access_manager.h",
+    "fake_tether_controller.cc",
+    "fake_tether_controller.h",
     "phone_model_test_util.cc",
     "phone_model_test_util.h",
   ]
@@ -74,6 +80,7 @@ source_set("unit_tests") {
     "mutable_phone_model_unittest.cc",
     "notification_access_manager_impl_unittest.cc",
     "phone_status_model_unittest.cc",
+    "tether_controller_impl_unittest.cc",
   ]
 
   deps = [

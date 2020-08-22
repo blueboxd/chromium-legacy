@@ -12,9 +12,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+class BrowserView;
 class FeaturePromoBubbleView;
 struct FeaturePromoBubbleParams;
-class Profile;
 
 namespace base {
 struct Feature;
@@ -24,11 +24,13 @@ namespace feature_engagement {
 class Tracker;
 }
 
-// Views implementation of FeaturePromoController.
+// Views implementation of FeaturePromoController. There is one instance
+// per window.
 class FeaturePromoControllerViews : public FeaturePromoController,
                                     public views::WidgetObserver {
  public:
-  explicit FeaturePromoControllerViews(Profile* profile);
+  // Create the instance for the given |browser_view|.
+  explicit FeaturePromoControllerViews(BrowserView* browser_view);
   ~FeaturePromoControllerViews() override;
 
   // Repositions the bubble (if showing) relative to the anchor view.
@@ -36,9 +38,13 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   // moved. It is safe to call this if a bubble is not showing.
   void UpdateBubbleForAnchorBoundsChange();
 
+  // For IPH not registered with |FeaturePromoRegistry|. Only use this
+  // if it is infeasible to pre-register your IPH.
+  bool MaybeShowPromoWithParams(const base::Feature& iph_feature,
+                                const FeaturePromoBubbleParams& params);
+
   // FeaturePromoController:
-  bool MaybeShowPromo(const base::Feature& iph_feature,
-                      FeaturePromoBubbleParams params) override;
+  bool MaybeShowPromo(const base::Feature& iph_feature) override;
   bool BubbleIsShowing(const base::Feature& iph_feature) const override;
   void CloseBubble(const base::Feature& iph_feature) override;
   PromoHandle CloseBubbleAndContinuePromo(
@@ -58,6 +64,9 @@ class FeaturePromoControllerViews : public FeaturePromoController,
   void FinishContinuedPromo() override;
 
   void HandleBubbleClosed();
+
+  // The browser window this instance is responsible for.
+  BrowserView* const browser_view_;
 
   // IPH backend that is notified of user events and decides whether to
   // trigger IPH.

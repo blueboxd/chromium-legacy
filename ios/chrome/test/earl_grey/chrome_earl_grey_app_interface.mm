@@ -16,6 +16,7 @@
 #include "components/metrics/demographic_metrics_provider.h"
 #include "components/prefs/pref_service.h"
 #import "components/ukm/ios/features.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_ids_provider.h"
 #import "ios/chrome/app/main_controller.h"
@@ -30,6 +31,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/browsing_data_test_util.h"
@@ -811,6 +813,14 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   prefs->ClearPref(browsing_data::prefs::kDeleteCache);
   prefs->ClearPref(browsing_data::prefs::kDeletePasswords);
   prefs->ClearPref(browsing_data::prefs::kDeleteFormData);
+}
+
+#pragma mark - Unified Consent utilities
+
++ (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled {
+  UnifiedConsentServiceFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState())
+      ->SetUrlKeyedAnonymizedDataCollectionEnabled(enabled);
 }
 
 #pragma mark - Keyboard Command Utilities

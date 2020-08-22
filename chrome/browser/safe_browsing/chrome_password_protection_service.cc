@@ -38,6 +38,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
@@ -351,6 +352,24 @@ bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
                     Origin::Create(web_contents->GetLastCommittedURL())
                         .Serialize()) != nullptr)
              : false;
+}
+
+safe_browsing::LoginReputationClientRequest::UrlDisplayExperiment
+ChromePasswordProtectionService::GetUrlDisplayExperiment() const {
+  safe_browsing::LoginReputationClientRequest::UrlDisplayExperiment experiment;
+  // Delayed warnings parameters:
+  experiment.set_delayed_warnings_enabled(
+      base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings));
+  experiment.set_delayed_warnings_mouse_clicks_enabled(
+      safe_browsing::kDelayedWarningsEnableMouseClicks.Get());
+  // Actual URL display experiments:
+  experiment.set_reveal_on_hover(base::FeatureList::IsEnabled(
+      omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover));
+  experiment.set_hide_on_interaction(base::FeatureList::IsEnabled(
+      omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction));
+  experiment.set_elide_to_registrable_domain(
+      base::FeatureList::IsEnabled(omnibox::kMaybeElideToRegistrableDomain));
+  return experiment;
 }
 
 void ChromePasswordProtectionService::ShowModalWarning(

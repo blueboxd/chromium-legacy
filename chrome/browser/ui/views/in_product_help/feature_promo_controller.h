@@ -7,8 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 
-struct FeaturePromoBubbleParams;
-
 namespace base {
 struct Feature;
 }
@@ -22,10 +20,10 @@ class FeaturePromoController {
 
   // Starts the promo if possible. Returns whether it started.
   // |iph_feature| must be an IPH feature defined in
-  // components/feature_engagement/public/feature_list.cc. Note that
-  // this is different than the feature that the IPH is for.
-  virtual bool MaybeShowPromo(const base::Feature& iph_feature,
-                              FeaturePromoBubbleParams params) = 0;
+  // components/feature_engagement/public/feature_list.cc and registered
+  // with |FeaturePromoRegistry|. Note that this is different than the
+  // feature that the IPH is showing for.
+  virtual bool MaybeShowPromo(const base::Feature& iph_feature) = 0;
 
   // Returns whether a bubble is showing for the given IPH. Note that if
   // this is false, a promo might still be in progress; for example, a

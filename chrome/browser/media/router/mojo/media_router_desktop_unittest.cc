@@ -21,7 +21,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

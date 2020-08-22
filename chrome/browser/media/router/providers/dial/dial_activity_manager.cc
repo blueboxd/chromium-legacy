@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "net/base/url_util.h"
 
 namespace media_router {

@@ -43,6 +43,13 @@ const base::Feature kContentComplianceEnabled{
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If true, a delayed warning will be shown when the user clicks on the page.
+// If false, the warning won't be shown, but a metric will be recorded on the
+// first click.
+const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
+    &kDelayedWarnings, "mouse",
+    /*default_value=*/false};
+
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 

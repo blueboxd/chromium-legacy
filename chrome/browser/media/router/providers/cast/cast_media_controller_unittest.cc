@@ -8,7 +8,7 @@
 #include "chrome/browser/media/router/providers/cast/app_activity.h"
 #include "chrome/browser/media/router/providers/cast/mock_app_activity.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
-#include "chrome/common/media_router/media_route.h"
+#include "components/media_router/common/media_route.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"

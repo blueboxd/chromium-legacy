@@ -887,6 +887,13 @@ void AuthenticatorCommon::MakeCredential(
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
   ctap_make_credential_request_->is_u2f_only = origin_is_crypto_token_extension;
 
+  if (resident_key && caller_origin.scheme() == "chrome-extension") {
+    // The large blob key extension is set for every request since we cannot
+    // know in advance if the RP will attempt storing a blob on a future
+    // GetAssertion request.
+    ctap_make_credential_request_->large_blob_key = true;
+  }
+
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
       !origin_is_crypto_token_extension && !is_cross_origin) {
     // Send the unhashed origin and challenge to caBLEv2 authenticators, because

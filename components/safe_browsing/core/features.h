@@ -138,6 +138,9 @@ extern const base::Feature kUseNewDownloadWarnings;
 
 // Controls whether the delayed warning experiment is enabled.
 extern const base::Feature kDelayedWarnings;
+// True if mouse clicks should undelay the warnings immediately when delayed
+// warnings feature is enabled.
+extern const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks;
 
 base::ListValue GetFeatureStatusList();
 

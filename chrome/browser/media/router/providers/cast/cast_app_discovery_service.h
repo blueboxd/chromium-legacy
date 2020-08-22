@@ -17,12 +17,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/logger.mojom.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_util.h"
+#include "components/media_router/common/discovery/media_sink_service_base.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/logger.mojom.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {

@@ -9,8 +9,8 @@
 #include <unordered_set>
 
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
-#include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/media_source.h"
 
 namespace media_router {
 

@@ -89,9 +89,9 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
         # shouldn't.
         # TODO(crbug.com/990948): Remove when the bug is fixed.
         '../../chrome/browser/media/router/providers/cast/cast_internal_message_util.cc',  #pylint: disable=line-too-long
-        '../../chrome/common/media_router/providers/cast/cast_media_source.cc',
         '../../components/cast_channel/cast_channel_enum.cc',
         '../../components/cast_channel/cast_message_util.cc',
+        '../../components/media_router/common/providers/cast/cast_media_source.cc',
         '../../ui/events/keycodes/dom/keycode_converter.cc',
         # TODO(crbug.com/1051561): angle_unittests affected by coverage.
         '../../base/message_loop/message_pump_default.cc',

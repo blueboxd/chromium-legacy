@@ -10,8 +10,9 @@
 #include "base/bind.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/in_product_help/feature_promo_controller_views.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_widget.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -25,65 +26,57 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::NiceMock;
 using ::testing::Ref;
 using ::testing::Return;
 
-class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
+class TabGroupsIPHControllerTest : public TestWithBrowserView {
  public:
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-
-    views::Widget::InitParams widget_params;
-    widget_params.context = GetContext();
-
-    anchor_widget_ =
-        views::UniqueWidgetPtr(std::make_unique<ChromeTestWidget>());
-    anchor_widget_->Init(std::move(widget_params));
+    TestWithBrowserView::SetUp();
 
     mock_tracker_ =
-        feature_engagement::TrackerFactory::GetInstance()
-            ->SetTestingSubclassFactoryAndUse(
-                GetProfile(), base::BindRepeating([](content::BrowserContext*) {
-                  return std::make_unique<
-                      feature_engagement::test::MockTracker>();
-                }));
+        static_cast<NiceMock<feature_engagement::test::MockTracker>*>(
+            feature_engagement::TrackerFactory::GetForBrowserContext(
+                profile()));
 
-    // Other features call into the IPH backend. We don't want to fail
-    // on their calls, so allow them. Our test cases will set
-    // expectations for the calls they are interested in.
-    EXPECT_CALL(*mock_tracker_, NotifyEvent(_)).Times(AnyNumber());
-    EXPECT_CALL(*mock_tracker_, ShouldTriggerHelpUI(_))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-
-    promo_controller_ =
-        std::make_unique<FeaturePromoControllerViews>(browser()->profile());
-
-    iph_controller_ = std::make_unique<TabGroupsIPHController>(
-        browser(), promo_controller_.get(),
-        base::BindRepeating(&TabGroupsIPHControllerTest::GetAnchorView,
-                            base::Unretained(this)));
+    promo_controller_ = browser_view()->feature_promo_controller();
+    iph_controller_ = browser_view()->tab_groups_iph_controller();
   }
 
   void TearDown() override {
-    iph_controller_.reset();
-    anchor_widget_.reset();
-    BrowserWithTestWindowTest::TearDown();
+    iph_controller_ = nullptr;
+    promo_controller_ = nullptr;
+    TestWithBrowserView::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    TestingProfile::TestingFactories factories =
+        TestWithBrowserView::GetTestingFactories();
+    factories.emplace_back(feature_engagement::TrackerFactory::GetInstance(),
+                           base::BindRepeating(MakeTestTracker));
+    return factories;
   }
 
  private:
-  views::View* GetAnchorView(int tab_index) {
-    return anchor_widget_->GetContentsView();
+  static std::unique_ptr<KeyedService> MakeTestTracker(
+      content::BrowserContext* context) {
+    auto tracker =
+        std::make_unique<NiceMock<feature_engagement::test::MockTracker>>();
+
+    // Allow other code to call into the tracker.
+    EXPECT_CALL(*tracker, NotifyEvent(_)).Times(AnyNumber());
+    EXPECT_CALL(*tracker, ShouldTriggerHelpUI(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+
+    return tracker;
   }
 
-  // The Widget our IPH bubble is anchored to. It is specifically
-  // anchored to its contents view.
-  views::UniqueWidgetPtr anchor_widget_;
-
  protected:
-  feature_engagement::test::MockTracker* mock_tracker_;
-  std::unique_ptr<FeaturePromoController> promo_controller_;
-  std::unique_ptr<TabGroupsIPHController> iph_controller_;
+  NiceMock<feature_engagement::test::MockTracker>* mock_tracker_;
+  FeaturePromoController* promo_controller_;
+  TabGroupsIPHController* iph_controller_;
 };
 
 TEST_F(TabGroupsIPHControllerTest, NotifyEventAndTriggerOnSixthTabOpened) {

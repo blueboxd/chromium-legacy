@@ -1561,6 +1561,8 @@ class OverrideRPIDAuthenticatorRequestDelegate
     return caller_origin.Serialize();
   }
 
+  bool SupportsResidentKeys() override { return true; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OverrideRPIDAuthenticatorRequestDelegate);
 };
@@ -1575,11 +1577,18 @@ class OverrideRPIDAuthenticatorContentBrowserClient
   }
 };
 
-class OverrideRPIDAuthenticatorTest : public AuthenticatorImplTest {
+static constexpr char kExtensionId[] = "abcdefg";
+
+class ExtensionAuthenticatorTest : public AuthenticatorImplTest {
  public:
   void SetUp() override {
     AuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
+
+    const std::string extension_origin =
+        std::string("chrome-extension://") + kExtensionId;
+    const std::string extension_page = extension_origin + "/test.html";
+    NavigateAndCommit(GURL(extension_page));
   }
 
   void TearDown() override {
@@ -1592,15 +1601,9 @@ class OverrideRPIDAuthenticatorTest : public AuthenticatorImplTest {
   ContentBrowserClient* old_client_ = nullptr;
 };
 
-TEST_F(OverrideRPIDAuthenticatorTest, ChromeExtensions) {
-  // Test that credentials can be created and used from an extension origin when
-  // permitted by the delegate.
-  constexpr char kExtensionId[] = "abcdefg";
-  const std::string extension_origin =
-      std::string("chrome-extension://") + kExtensionId;
-  const std::string extension_page = extension_origin + "/test.html";
-  NavigateAndCommit(GURL(extension_page));
-
+// Test that credentials can be created and used from an extension origin when
+// permitted by the delegate.
+TEST_F(ExtensionAuthenticatorTest, ChromeExtensions) {
   std::vector<uint8_t> credential_id;
   {
     PublicKeyCredentialCreationOptionsPtr options =
@@ -1622,6 +1625,43 @@ TEST_F(OverrideRPIDAuthenticatorTest, ChromeExtensions) {
 
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
               AuthenticatorStatus::SUCCESS);
+  }
+}
+
+// Tests that registering a resident credential on a capable authenticator also
+// registers a large blob key when called from an extension.
+TEST_F(ExtensionAuthenticatorTest, MakeCredentialLargeBlobKeyExtension) {
+  base::Optional<device::PublicKeyCredentialDescriptor> credential;
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  config.resident_key_support = true;
+
+  for (bool rk_enabled : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "rk=" << rk_enabled);
+    for (bool large_blob_supported : {false, true}) {
+      SCOPED_TRACE(::testing::Message()
+                   << "largeBlob=" << large_blob_supported);
+      config.large_blob_support = large_blob_supported;
+      virtual_device_factory_->SetCtap2Config(config);
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      options->authenticator_selection->SetRequireResidentKeyForTesting(
+          rk_enabled);
+      options->user.id = {1, 2, 3, 4};
+      options->user.name = "name";
+      options->user.display_name = "displayName";
+
+      MakeCredentialResult make_credential_result =
+          AuthenticatorMakeCredential(std::move(options));
+      EXPECT_EQ(make_credential_result.status, AuthenticatorStatus::SUCCESS);
+
+      auto& registration =
+          *virtual_device_factory_->mutable_state()->registrations.begin();
+      EXPECT_EQ(rk_enabled && large_blob_supported,
+                registration.second.large_blob_key.has_value());
+      virtual_device_factory_->mutable_state()->registrations.clear();
+    }
   }
 }
 

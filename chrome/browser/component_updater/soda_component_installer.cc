@@ -8,6 +8,8 @@
 #include "base/files/file_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/soda_en_us_component_installer.h"
+#include "chrome/browser/component_updater/soda_ja_jp_component_installer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/services/speech/buildflags.h"
 #include "components/component_updater/component_updater_service.h"
@@ -35,9 +37,6 @@ static_assert(base::size(kSODAPublicKeySHA256) == crypto::kSHA256Length,
               "Wrong hash length");
 
 const char kSODAManifestName[] = "SODA Library";
-
-constexpr base::FilePath::CharType kSodaEnUsConfigFileRelativePath[] =
-    FILE_PATH_LITERAL("SODAFiles/en_us/dictation.ascii_proto");
 
 }  // namespace
 
@@ -78,7 +77,7 @@ bool SODAComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
 }
 
 bool SODAComponentInstallerPolicy::RequiresNetworkEncryption() const {
-  return false;
+  return true;
 }
 
 update_client::CrxInstaller::Result
@@ -127,8 +126,6 @@ void UpdateSODAInstallDirPref(PrefService* prefs,
 #if !defined(OS_ANDROID)
   prefs->SetFilePath(prefs::kSodaBinaryPath,
                      install_dir.Append(speech::kSodaBinaryRelativePath));
-  prefs->SetFilePath(prefs::kSodaEnUsConfigPath,
-                     install_dir.Append(kSodaEnUsConfigFileRelativePath));
 #endif
 }
 
@@ -168,6 +165,32 @@ void RegisterSODAComponent(ComponentUpdateService* cus,
               },
               cus, prefs));
     }
+  }
+#endif
+}
+
+void RegisterSodaLanguageComponent(ComponentUpdateService* cus,
+                                   PrefService* prefs) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if BUILDFLAG(ENABLE_SODA)
+  speech::LanguageCode language = speech::GetLanguageCode(
+      prefs->GetString(prefs::kLiveCaptionLanguageCode));
+  switch (language) {
+    case speech::LanguageCode::kNone:
+      // Do nothing.
+      break;
+    case speech::LanguageCode::kEnUs:
+      RegisterSodaEnUsComponent(
+          cus, prefs,
+          base::BindOnce(&SodaEnUsComponentInstallerPolicy::
+                             UpdateSodaEnUsComponentOnDemand));
+      break;
+    case speech::LanguageCode::kJaJp:
+      RegisterSodaJaJpComponent(
+          cus, prefs,
+          base::BindOnce(&SodaJaJpComponentInstallerPolicy::
+                             UpdateSodaJaJpComponentOnDemand));
+      break;
   }
 #endif
 }

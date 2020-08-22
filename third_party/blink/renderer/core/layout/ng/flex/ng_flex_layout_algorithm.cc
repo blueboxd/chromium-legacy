@@ -246,8 +246,8 @@ bool NGFlexLayoutAlgorithm::IsItemMainSizeDefinite(
 bool NGFlexLayoutAlgorithm::IsItemCrossAxisLengthDefinite(
     const NGBlockNode& child,
     const Length& length) const {
-  // Inline min/max value of 'auto' for the cross-axis isn't definite here.
-  // Block value of 'auto' is always indefinite.
+  // We don't consider inline value of 'auto' for the cross-axis min/main/max
+  // size to be definite. Block value of 'auto' is always indefinite.
   if (length.IsAuto())
     return false;
   // But anything else in the inline direction is definite.
@@ -525,17 +525,19 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       // This check should use HasAspectRatio() instead of Style().
       // AspectRatio(), but to avoid introducing a behavior change we only
       // do this for the aspect-ratio property for now until FlexNG ships.
-      bool use_cross_axis_for_aspect_ratio =
-          child.Style().AspectRatio() &&
+      bool use_container_cross_size_for_aspect_ratio =
+          (child.Style().AspectRatio() ||
+           (child.HasAspectRatio() &&
+            RuntimeEnabledFeatures::FlexAspectRatioEnabled())) &&
           WillChildCrossSizeBeContainerCrossSize(child);
-      if (use_cross_axis_for_aspect_ratio ||
+      if (use_container_cross_size_for_aspect_ratio ||
           (child.HasAspectRatio() &&
            (IsItemCrossAxisLengthDefinite(child, cross_axis_length)))) {
         // This is Part B of 9.2.3
         // https://drafts.csswg.org/css-flexbox/#algo-main-item It requires that
         // the item has a definite cross size.
         LayoutUnit cross_size;
-        if (use_cross_axis_for_aspect_ratio) {
+        if (use_container_cross_size_for_aspect_ratio) {
           NGBoxStrut margins = physical_child_margins.ConvertToLogical(
               ConstraintSpace().GetWritingMode(), Style().Direction());
           cross_size = CalculateFixedCrossSize(

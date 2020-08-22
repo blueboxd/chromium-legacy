@@ -436,9 +436,26 @@ var cr = cr || function(global) {
       return /Win/.test(navigator.platform);
     },
 
-    /** Whether this is on chromeOS or not. */
+    /** Whether this is the ChromeOS/ash web browser. */
     get isChromeOS() {
-      return /CrOS/.test(navigator.userAgent);
+      let returnValue = false;
+      // TODO(https://crbug.com/1118190): grit conditionals do not work in many
+      // WebUI tests.
+      // <if expr="chromeos">
+      returnValue = true;
+      // </if>
+      return returnValue;
+    },
+
+    /** Whether this is the ChromeOS/Lacros web browser. */
+    get isLacros() {
+      let returnValue = false;
+      // TODO(https://crbug.com/1118190): grit conditionals do not work in many
+      // WebUI tests.
+      // <if expr="lacros">
+      returnValue = true;
+      // </if>
+      return returnValue;
     },
 
     /** Whether this is on vanilla Linux (not chromeOS). */

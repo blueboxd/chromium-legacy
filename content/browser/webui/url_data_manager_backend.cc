@@ -51,6 +51,8 @@ const char kChromeURLContentSecurityPolicyHeaderName[] =
     "Content-Security-Policy";
 const char kChromeURLContentSecurityPolicyReportOnlyHeaderName[] =
     "Content-Security-Policy-Report-Only";
+const char kChromeURLContentSecurityPolicyReportOnlyHeaderValue[] =
+    "require-trusted-types-for 'script'";
 
 const char kChromeURLXFrameOptionsHeaderName[] = "X-Frame-Options";
 const char kChromeURLXFrameOptionsHeaderValue[] = "DENY";
@@ -167,8 +169,10 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
         network::mojom::CSPDirectiveName::ImgSrc,
         network::mojom::CSPDirectiveName::MediaSrc,
         network::mojom::CSPDirectiveName::ObjectSrc,
+        network::mojom::CSPDirectiveName::RequireTrustedTypesFor,
         network::mojom::CSPDirectiveName::ScriptSrc,
         network::mojom::CSPDirectiveName::StyleSrc,
+        network::mojom::CSPDirectiveName::TrustedTypes,
         network::mojom::CSPDirectiveName::WorkerSrc};
 
     for (auto& directive : kAllDirectives) {
@@ -192,15 +196,9 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
                        kChromeURLXFrameOptionsHeaderValue);
   }
 
-  if (base::FeatureList::IsEnabled(features::kWebUIReportOnlyTrustedTypes) &&
-      source->ShouldAddContentSecurityPolicy()) {
-    std::string csp_report_only_header;
-    csp_report_only_header.append(source->GetContentSecurityPolicy(
-        network::mojom::CSPDirectiveName::RequireTrustedTypesFor));
-    csp_report_only_header.append(source->GetContentSecurityPolicy(
-        network::mojom::CSPDirectiveName::TrustedTypes));
+  if (base::FeatureList::IsEnabled(features::kWebUIReportOnlyTrustedTypes)) {
     headers->SetHeader(kChromeURLContentSecurityPolicyReportOnlyHeaderName,
-                       csp_report_only_header);
+                       kChromeURLContentSecurityPolicyReportOnlyHeaderValue);
   }
 
   if (!source->AllowCaching())

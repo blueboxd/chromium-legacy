@@ -33,7 +33,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
                 x11::Drawable drawable,
                 x11::VisualId visual,
                 int depth,
-                std::size_t max_frames_pending);
+                std::size_t max_frames_pending,
+                bool enable_multibuffering);
 
   ~XShmImagePool() override;
 
@@ -86,6 +87,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
   const x11::Drawable drawable_;
   const x11::VisualId visual_;
   const int depth_;
+  const bool enable_multibuffering_;
 
   bool ready_ = false;
   gfx::Size pixel_size_;

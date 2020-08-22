@@ -117,9 +117,12 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(x11::Connection* connection,
 }
 
 X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
-    gfx::AcceleratedWidget widget)
+    x11::Connection* connection,
+    gfx::AcceleratedWidget widget,
+    bool enable_multibuffering)
     : widget_(static_cast<x11::Window>(widget)),
-      connection_(x11::Connection::Get()) {
+      connection_(connection),
+      enable_multibuffering_(enable_multibuffering) {
   DCHECK_NE(widget_, x11::Window::None);
 
   gc_ = connection_->GenerateId<x11::GraphicsContext>();
@@ -135,7 +138,8 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
   }
 
   shm_pool_ = std::make_unique<ui::XShmImagePool>(connection_, widget_, visual_,
-                                                  depth_, kMaxFramesPending);
+                                                  depth_, MaxFramesPending(),
+                                                  enable_multibuffering_);
 
   // TODO(thomasanderson): Avoid going through the X11 server to plumb this
   // property in.
@@ -209,7 +213,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
         .dst_y = rect.y(),
         .depth = depth_,
         .format = x11::ImageFormat::ZPixmap,
-        .send_event = true,
+        .send_event = enable_multibuffering_,
         .shmseg = shm_pool_->CurrentSegment(),
         .offset = 0,
     });
@@ -239,7 +243,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
 void X11SoftwareBitmapPresenter::OnSwapBuffers(
     SwapBuffersCallback swap_ack_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (ShmPoolReady() && needs_swap_)
+  if (enable_multibuffering_ && ShmPoolReady() && needs_swap_)
     shm_pool_->SwapBuffers(std::move(swap_ack_callback));
   else
     std::move(swap_ack_callback).Run(viewport_pixel_size_);
@@ -247,7 +251,8 @@ void X11SoftwareBitmapPresenter::OnSwapBuffers(
 }
 
 int X11SoftwareBitmapPresenter::MaxFramesPending() const {
-  return kMaxFramesPending;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return enable_multibuffering_ ? kMaxFramesPending : 1;
 }
 
 }  // namespace ui

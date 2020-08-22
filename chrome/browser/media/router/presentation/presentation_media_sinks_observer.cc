@@ -5,7 +5,7 @@
 #include "chrome/browser/media/router/presentation/presentation_media_sinks_observer.h"
 
 #include "chrome/browser/media/router/media_router.h"
-#include "chrome/common/media_router/media_source.h"
+#include "components/media_router/common/media_source.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 
 namespace media_router {

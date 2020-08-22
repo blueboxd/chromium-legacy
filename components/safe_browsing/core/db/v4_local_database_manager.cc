@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -104,6 +105,7 @@ ListInfos GetListInfos() {
 std::vector<CommandLineSwitchAndThreatType> GetSwitchAndThreatTypes() {
   static const std::vector<CommandLineSwitchAndThreatType>
       command_line_switch_and_threat_type = {
+          {"mark_as_allowlisted_for_real_time", HIGH_CONFIDENCE_ALLOWLIST},
           {"mark_as_phishing", SOCIAL_ENGINEERING},
           {"mark_as_malware", MALWARE_THREAT},
           {"mark_as_uws", UNWANTED_SOFTWARE}};
@@ -416,11 +418,14 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   bool all_stores_available = AreAllStoresAvailableNow(stores_to_check);
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.AllStoresAvailable",
                         all_stores_available);
-  if (!enabled_ || !CanCheckUrl(url) || !all_stores_available) {
+  if (!enabled_ || !CanCheckUrl(url) ||
+      (!all_stores_available &&
+       artificially_marked_store_and_hash_prefixes_.empty())) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
     // navigation URL, or if the allowlist isn't ready yet, return MATCH.
     // The full URL check won't be performed, but hash-based check will still
-    // be done.
+    // be done. If any artificial matches are present, consider the allowlist
+    // as ready.
     return AsyncMatch::MATCH;
   }
 
@@ -639,7 +644,9 @@ void V4LocalDatabaseManager::GetArtificialPrefixMatches(
       FullHash artificial_full_hash =
           artificial_store_and_hash_prefix.hash_prefix;
       DCHECK_EQ(crypto::kSHA256Length, artificial_full_hash.size());
-      if (artificial_full_hash == full_hash) {
+      if (artificial_full_hash == full_hash &&
+          base::Contains(check->stores_to_check,
+                         artificial_store_and_hash_prefix.list_id)) {
         (check->artificial_full_hash_to_store_and_hash_prefixes)[full_hash] = {
             artificial_store_and_hash_prefix};
       }
@@ -726,7 +733,10 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // The caller should have already checked that the DB is ready.
   DCHECK(v4_database_);
 
-  if (!GetPrefixMatches(check)) {
+  GetPrefixMatches(check);
+  GetArtificialPrefixMatches(check);
+  if (check->full_hash_to_store_and_hash_prefixes.empty() &&
+      check->artificial_full_hash_to_store_and_hash_prefixes.empty()) {
     return AsyncMatch::NO_MATCH;
   }
 

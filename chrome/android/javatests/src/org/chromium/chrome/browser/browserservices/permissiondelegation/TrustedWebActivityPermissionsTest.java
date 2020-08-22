@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -33,6 +34,7 @@ import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.concurrent.TimeoutException;
 
@@ -42,6 +44,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+// See: https://crbug.com/1120707
+@DisableIf.Device(type = {UiDisableIf.TABLET})
 public class TrustedWebActivityPermissionsTest {
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();

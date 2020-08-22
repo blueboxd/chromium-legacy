@@ -405,7 +405,7 @@ class PDFEngine {
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
   // Gets the rectangle of the page not including the shadow.
-  virtual pp::Rect GetPageBoundsRect(int index) = 0;
+  virtual gfx::Rect GetPageBoundsRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.
   virtual gfx::Rect GetPageContentsRect(int index) = 0;
   // Returns a page's rect in screen coordinates, as well as its surrounding

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "chrome/common/media_router/media_route.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "components/media_router/common/media_route.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/url_request/referrer_policy.h"

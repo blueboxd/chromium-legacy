@@ -3096,6 +3096,11 @@ const char kSiteIsolationForPasswordSitesDescription[] =
     "Security mode that enables site isolation for sites based on "
     "password-oriented heuristics, such as a user typing in a password.";
 
+const char kSmartSuggestionForLargeDownloadsName[] =
+    "Smart suggestion for large downloads";
+const char kSmartSuggestionForLargeDownloadsDescription[] =
+    "Smart suggestion that offers download locations for large files.";
+
 const char kStartSurfaceAndroidName[] = "Start Surface";
 const char kStartSurfaceAndroidDescription[] =
     "Enable showing the start surface when launching Chrome via the "

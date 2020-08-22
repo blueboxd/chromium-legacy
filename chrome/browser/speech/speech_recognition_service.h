@@ -10,6 +10,8 @@
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -37,6 +39,9 @@ class SpeechRecognitionService
  private:
   // Launches the speech recognition service in a sandboxed utility process.
   void LaunchIfNotRunning();
+
+  // Gets the path of the SODA configuration file for the selected language.
+  base::FilePath GetSodaConfigPath(PrefService* prefs);
 
   // The browser context associated with the keyed service.
   content::BrowserContext* const context_;

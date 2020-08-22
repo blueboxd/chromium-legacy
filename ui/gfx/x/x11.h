@@ -23,10 +23,6 @@ extern "C" {
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-#include <X11/extensions/XShm.h>
-#include <X11/extensions/Xfixes.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/extensions/sync.h>
 
 // Define XK_xxx before the #include of <X11/keysym.h> so that <X11/keysym.h>
 // defines all KeySyms we need.

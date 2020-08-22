@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_TEST_MOCK_LOGGER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_TEST_MOCK_LOGGER_H_
 
-#include "chrome/common/media_router/mojom/logger.mojom.h"
+#include "components/media_router/common/mojom/logger.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {

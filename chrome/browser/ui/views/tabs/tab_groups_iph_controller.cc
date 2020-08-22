@@ -22,13 +22,6 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// The index of the tab we'd like to anchor our bubble to.
-constexpr int kPreferredAnchorTab = 2;
-
-}  // namespace
-
 TabGroupsIPHController::TabGroupsIPHController(
     Browser* browser,
     FeaturePromoController* promo_controller,
@@ -81,13 +74,8 @@ void TabGroupsIPHController::OnTabStripModelChanged(
 
   tracker_->NotifyEvent(feature_engagement::events::kSixthTabOpened);
 
-  FeaturePromoBubbleParams bubble_params;
-  bubble_params.body_string_specifier = IDS_TAB_GROUPS_NEW_GROUP_PROMO;
-  bubble_params.anchor_view = get_tab_view_.Run(kPreferredAnchorTab);
-  bubble_params.arrow = views::BubbleBorder::TOP_LEFT;
   promo_controller_->MaybeShowPromo(
-      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
-      std::move(bubble_params));
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
 }
 
 void TabGroupsIPHController::OnTabGroupChanged(const TabGroupChange& change) {

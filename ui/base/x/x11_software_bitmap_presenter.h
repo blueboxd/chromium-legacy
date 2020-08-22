@@ -30,7 +30,9 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
   // Corresponds to SwapBuffersCallback alias in SoftwareOutputDevice.
   using SwapBuffersCallback = base::OnceCallback<void(const gfx::Size&)>;
 
-  explicit X11SoftwareBitmapPresenter(gfx::AcceleratedWidget widget);
+  X11SoftwareBitmapPresenter(x11::Connection* connection,
+                             gfx::AcceleratedWidget widget,
+                             bool enable_multibuffering);
 
   ~X11SoftwareBitmapPresenter();
 
@@ -60,6 +62,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
   x11::GraphicsContext gc_{};
   x11::VisualId visual_{};
   int depth_ = 0;
+
+  const bool enable_multibuffering_;
 
   // If nonzero, indicates that the widget should be drawn over its
   // parent-relative background.

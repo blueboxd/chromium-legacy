@@ -45,6 +45,8 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "&origin=%s"
     "&lib_ver=%s"
     "&release_channel=%s";
+const char kOAuth2IssueTokenBodyFormatSelectedUserIdAddendum[] =
+    "&selected_user_id=%s";
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
     "&device_id=%s&device_type=chrome";
 const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
@@ -150,6 +152,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::vector<std::string>& scopes_arg,
     bool enable_granular_permissions,
     const std::string& device_id,
+    const std::string& selected_user_id,
     const std::string& consent_result,
     const std::string& version,
     const std::string& channel,
@@ -159,6 +162,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
       scopes(scopes_arg),
       enable_granular_permissions(enable_granular_permissions),
       device_id(device_id),
+      selected_user_id(selected_user_id),
       consent_result(consent_result),
       version(version),
       channel(channel),
@@ -239,6 +243,11 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,
         net::EscapeUrlEncodedData(parameters_.device_id, true).c_str()));
+  }
+  if (!parameters_.selected_user_id.empty()) {
+    body.append(base::StringPrintf(
+        kOAuth2IssueTokenBodyFormatSelectedUserIdAddendum,
+        net::EscapeUrlEncodedData(parameters_.selected_user_id, true).c_str()));
   }
   if (!parameters_.consent_result.empty()) {
     body.append(base::StringPrintf(

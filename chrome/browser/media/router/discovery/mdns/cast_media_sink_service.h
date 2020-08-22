@@ -17,9 +17,9 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/discovery/media_sink_service_util.h"
-#include "chrome/common/media_router/mojom/logger.mojom.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/discovery/media_sink_service_util.h"
+#include "components/media_router/common/mojom/logger.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace media_router {

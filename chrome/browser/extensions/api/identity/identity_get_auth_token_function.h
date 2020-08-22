@@ -118,6 +118,12 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
 
   Profile* GetProfile() const;
 
+  // Returns the gaia id of the account requested by or previously selected for
+  // this extension if the account is available on the device. Otherwise,
+  // returns an empty string.
+  // Exposed for testing.
+  std::string GetSelectedUserId() const;
+
   // Pending request for an access token from the device account (via
   // DeviceOAuth2TokenService).
   std::unique_ptr<OAuth2AccessTokenManager::Request>
@@ -228,11 +234,15 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
   bool should_prompt_for_signin_ = false;
   bool enable_granular_permissions_ = false;
 
+  // The gaia id of the account requested by or previously selected for this
+  // extension.
+  std::string selected_gaia_id_;
+
   // Shown in the extension login prompt.
   std::string email_for_default_web_account_;
 
   ExtensionTokenKey token_key_{/*extension_id=*/"",
-                               /*account_id=*/CoreAccountId(),
+                               /*account_info=*/CoreAccountInfo(),
                                /*scopes=*/{}};
   std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,

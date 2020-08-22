@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #import "ios/chrome/browser/snapshots/fake_snapshot_generator_delegate.h"
@@ -92,7 +93,10 @@ class SnapshotTabHelperTest : public PlatformTest {
     SnapshotTabHelper::FromWebState(&web_state_)->SetDelegate(delegate_);
 
     // Set custom snapshot cache.
-    snapshot_cache_ = [[SnapshotCache alloc] init];
+    EXPECT_TRUE(scoped_temp_directory_.CreateUniqueTempDir());
+    base::FilePath directory_name = scoped_temp_directory_.GetPath();
+    snapshot_cache_ =
+        [[SnapshotCache alloc] initWithStoragePath:directory_name];
     SnapshotTabHelper::FromWebState(&web_state_)
         ->SetSnapshotCache(snapshot_cache_);
 
@@ -126,6 +130,7 @@ class SnapshotTabHelperTest : public PlatformTest {
 
  protected:
   web::WebTaskEnvironment task_environment_;
+  base::ScopedTempDir scoped_temp_directory_;
   TabHelperSnapshotGeneratorDelegate* delegate_ = nil;
   SnapshotCache* snapshot_cache_ = nil;
   NSString* snapshot_id_ = nil;

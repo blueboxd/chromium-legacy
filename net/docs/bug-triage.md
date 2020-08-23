@@ -10,22 +10,26 @@ of their two days working on bug triage/investigation.
 Look through [this list of untriaged
 bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=status%3Aunconfirmed%2Cuntriaged%20-Needs%3DFeedback%20-Label%3ANetwork-Triaged%20component%3DInternals%3ENetwork%2CInternals%3ENetwork%3ECache%2CInternals%3ENetwork%3ESSL%2CInternals%3ENetwork%3EQUIC%2CInternals%3ENetwork%3EAuth%2CInternals%3ENetwork%3EHTTP2%2CInternals%3ENetwork%3EProxy%2CInternals%3ENetwork%3ELibrary%2CInternals%3ENetwork%3ELogging%2CInternals%3ENetwork%3EConnectivity%2CInternals%3ENetwork%3EDomainSecurityPolicy%2CInternals%3ENetwork%3ETrustTokens%2CInternals%3ENetwork%3EFilters%2CInternals%3ENetwork%3EFTP%2CInternals%3ENetwork%3ESDCH).
 
-* Go through them in the given order (top to bottom).
-  The link sorts them by priority and then recency.
-* The goal is to move them out of the untriaged bug queue and give them a priority.
+The goal is for this query to be empty. Bugs can be removed from the triage queue
+by doing any of the following:
+
+* Changing the bug status - marking the bug Available, or closing it.
+* Removing the `Internals>Network` component or subcomponent.
+* Adding the label `Network-Triaged` (when there are multiple components).
 
 For each bug try to:
 
-* Remove the `Internals>Network` component if it belongs elsewhere
+* Remove the `Internals>Network` component or subcomponent if it belongs
+  elsewhere
 * Dupe it against an existing bug
-* Close it `WontFix` if appropriate
+* Close it as `WontFix`.
 * Give the bug a priority. Refer to [this (internal) document for guidelines](https://goto.google.com/xnzwn)
 * If the bug is a potential security issue (Allows for code execution from remote
   site, allows crossing security boundaries, unchecked array bounds, etc) mark
   it `Type-Bug-Security`.
 * If the bug has privacy implications mark it with component `Privacy`.
-* Mark it as a feature request or task if appropriate
-* Ask the reporter to narrow down regressions, possibly by using
+* Set the type to `Task` or `Feature` when it is not a bug.
+* Pay extra attention to possible regressions. Ask the reporter to narrow down using
   [bisect-builds-py](https://www.chromium.org/developers/bisect-builds-py). To
   view suspicious changelists in a regression window, you can use the Change Log
   form on [OmahaProxy](https://omahaproxy.appspot.com/)
@@ -37,6 +41,18 @@ For each bug try to:
   `Network-Triaged` label to the bug, and add a comment explaining which team
   should triage further. Adding the `Network-Triaged` serves to filter the
   bug from our untriaged bug list.
+* Avoid spending time deep-diving into ambiguous issues when you suspect it is
+  an out of scope server or network problem, and is not clearly high priority
+  (for instance, it affects only 1 user and is not a regression).
+  Instead:
+  * Mark the bug as `Available` with Priority 3.
+  * Add the `Needs-Feedback` label
+  * Add a comment thanking the reporter, but explaining the issue is ambiguous
+    and they need to do the debugging to demonstrate it is an actual Chrome bug.
+    * Point them to `chrome://net-export` and the
+      [NetLog Viewer](https://netlog-viewer.appspot.com/).
+    * Ask them to confirm whether it is a Chromium regression. (Regressions are
+      treated as high priority)
 * Request a NetLog that captures the problem. You can paste this on the bug:
   ```
   Please collect and attach a chrome://net-export log.
@@ -58,8 +74,6 @@ crashers](https://goto.google.com/network_triage_internal#investigating-crashers
 Look through [this list of Needs=Feedback
 bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-modified&q=Needs%3DFeedback%20component%3DInternals%3ENetwork%2CInternals%3ENetwork%3ECache%2CInternals%3ENetwork%3ESSL%2CInternals%3ENetwork%3EQUIC%2CInternals%3ENetwork%3EAuth%2CInternals%3ENetwork%3EHTTP2%2CInternals%3ENetwork%3EProxy%2CInternals%3ENetwork%3ELibrary%2CInternals%3ENetwork%3ELogging%2CInternals%3ENetwork%3EConnectivity%2CInternals%3ENetwork%3EDomainSecurityPolicy%2CInternals%3ENetwork%3ETrustTokens%2CInternals%3ENetwork%3EFilters%2CInternals%3ENetwork%3EFTP%2CInternals%3ENetwork%3ESDCH).
 
-* Go through them in the given order (top to bottom).
-  The link sorts them by priority and then recency.
 * If the requested feedback was provided, review the new information and repeat
   the same steps as (1) to re-triage based on the new information.
 * If the bug had the `Needs-Feedback` label for over a week and the

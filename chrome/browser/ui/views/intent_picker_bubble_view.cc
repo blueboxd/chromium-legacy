@@ -97,8 +97,10 @@ class IntentPickerLabelButton : public views::LabelButton {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     SetMinSize(gfx::Size(kMaxIntentPickerLabelButtonWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
-    if (!icon->IsEmpty())
-      SetImage(views::ImageButton::STATE_NORMAL, *icon->ToImageSkia());
+    if (!icon->IsEmpty()) {
+      SetImageModel(views::ImageButton::STATE_NORMAL,
+                    ui::ImageModel::FromImage(*icon));
+    }
     SetBorder(views::CreateEmptyBorder(8, 16, 8, 0));
     SetFocusForPlatform();
     set_ink_drop_base_color(SK_ColorGRAY);

@@ -955,7 +955,7 @@
   {
     "name": "double-buffer-compositing",
     "owners": [ "chromeos-gfx@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "double-tap-to-zoom-in-tablet-mode",

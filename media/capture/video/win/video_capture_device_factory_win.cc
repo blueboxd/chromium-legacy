@@ -592,7 +592,6 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
       std::string device_id = ScopedHString(id).GetAsUTF8();
       transform(device_id.begin(), device_id.end(), device_id.begin(),
                 ::tolower);
-      const std::string model_id = GetDeviceModelId(device_id);
 
       ComPtr<ABI::Windows::Devices::Enumeration::IEnclosureLocation>
           enclosure_location;
@@ -621,7 +620,7 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
       }
 
       for (auto& device : devices_info) {
-        if (!device.descriptor.model_id.compare(model_id)) {
+        if (!device.descriptor.device_id.compare(device_id)) {
           device.descriptor.facing = facing;
           break;
         }

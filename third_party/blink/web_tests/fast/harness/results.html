@@ -1772,8 +1772,8 @@ class TXToolbar {
       text-decoration-color: aquamarine;
     }
     .tx-toolbar a {
-      padding-left: 4px;
-      padding-right: 4px;
+      margin: 0 2px;
+      padding: 0 2px;
     }
     `;
     document.head.appendChild(style);
@@ -1827,10 +1827,13 @@ class ImageResultsToolbar extends TXToolbar {
     this.toolbar.classList.add("tx-toolbar");
 
     let html = "image: ";
-    html += `<a class="toggle" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a> `;
+    html += `<a class="toggle" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>`;
     html += `<a class="toggle" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>`;
-    if (test.reference)
-      html += `(<a style="padding: 0" target="reference" href="../${test.reference}">ref</a>) `;
+    if (test.reference) {
+      html += `<span style="margin-left: -2px; margin-right: 2px">(` +
+              `<a style="margin: 0; padding: 0" target="reference" href="../${test.reference}">ref</a>` +
+              `)</span>`;
+    }
     html += `<a class="toggle" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>`;
 
     html += `
@@ -1911,7 +1914,7 @@ class ImageResultsToolbar extends TXToolbar {
     }
     let viewer = this.getViewer();
     if (!viewer) {
-      let imgInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+      let imgInfo = Array.from(this.toolbar.querySelectorAll("a.toggle")).map(
         anchor => { return {src: anchor.href, title: anchor.title}; });
       viewer = (new ImageResultsViewer()).createDom(imgInfo, this);
       this.setAnimation(this.toolbar.querySelector(".view-options").value == "animated");

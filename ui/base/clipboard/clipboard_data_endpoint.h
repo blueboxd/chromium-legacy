@@ -18,8 +18,10 @@ enum class EndpointType {
 #if defined(OS_CHROMEOS) || (OS_LINUX) || (OS_FUCHSIA)
   kGuestOs = 0,  // Guest OS: ARC++, PluginVM, Crostini.
 #endif
-  kUrl = 1,  // Website origin e.g. www.example.com
-  kMaxValue = kUrl
+  kUrl = 1,  // Website URL e.g. www.example.com.
+  kClipboardHistory =
+      2,  // Clipboard History UI has privileged access to any clipboard data.
+  kMaxValue = kClipboardHistory
 };
 
 // ClipboardDataEndpoint can represent:

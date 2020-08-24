@@ -658,11 +658,16 @@ void PasswordSaveUpdateWithAccountStoreView::
 
 void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
   SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
-  SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()
-                                    ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
-                                    : IDS_PASSWORD_MANAGER_SAVE_BUTTON));
+  base::string16 ok_button_text;
+  if (controller_.IsAccountStorageOptInRequired()) {
+    ok_button_text = l10n_util::GetStringUTF16(
+        IDS_PASSWORD_MANAGER_SAVE_BUBBLE_OPT_IN_BUTTON);
+  } else {
+    ok_button_text = l10n_util::GetStringUTF16(
+        controller_.IsCurrentStateUpdate() ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
+                                           : IDS_PASSWORD_MANAGER_SAVE_BUTTON);
+  }
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button_text);
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(

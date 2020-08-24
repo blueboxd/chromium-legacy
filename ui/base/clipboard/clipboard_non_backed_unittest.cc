@@ -31,7 +31,7 @@ TEST_F(ClipboardNonBackedTest, WriteAndGetClipboardData) {
 
   auto* expected_clipboard_data_ptr = clipboard_data.get();
   clipboard()->WriteClipboardData(std::move(clipboard_data));
-  auto* actual_clipboard_data_ptr = clipboard()->GetClipboardData();
+  auto* actual_clipboard_data_ptr = clipboard()->GetClipboardData(nullptr);
 
   EXPECT_EQ(expected_clipboard_data_ptr, actual_clipboard_data_ptr);
 }
@@ -51,7 +51,7 @@ TEST_F(ClipboardNonBackedTest, WriteClipboardData) {
   previous_data = clipboard()->WriteClipboardData(std::move(second_data));
 
   EXPECT_EQ(first_data_ptr, previous_data.get());
-  EXPECT_EQ(second_data_ptr, clipboard()->GetClipboardData());
+  EXPECT_EQ(second_data_ptr, clipboard()->GetClipboardData(nullptr));
 }
 
 }  // namespace ui

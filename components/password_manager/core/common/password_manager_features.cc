@@ -17,6 +17,11 @@ namespace features {
 const base::Feature kBiometricTouchToFill = {"BiometricTouchToFill",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables creating Affiliation Service and prefetching change password info for
+// requested sites.
+const base::Feature kChangePasswordAffiliationInfo = {
+    "ChangePasswordAffiliationInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // After saving/updating a password show a bubble reminder about the status of
 // other compromised credentials.
 const base::Feature kCompromisedPasswordsReengagement = {

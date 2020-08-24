@@ -153,18 +153,12 @@ void SaveUpdateWithAccountStoreBubbleController::OnSaveClicked() {
   dismissal_reason_ = metrics_util::CLICKED_ACCEPT;
   if (delegate_) {
     CleanStatisticsForSite(GetProfile(), origin_);
-    if (IsCurrentStateUpdate() || !IsUsingAccountStore() ||
-        delegate_->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
-      // The following cases don't require gaia reauth:
-      // 1. Password Update.
-      // 2. User is saving locally .
-      // 3. User has already opted in to the account store.
-      delegate_->SavePassword(pending_password_.username_value,
-                              pending_password_.password_value);
-    } else {
-      // Otherwise, we should invoke the reauth flow before saving.
+    if (IsAccountStorageOptInRequired()) {
       delegate_->AuthenticateUserForAccountStoreOptInAndSavePassword(
           pending_password_.username_value, pending_password_.password_value);
+    } else {
+      delegate_->SavePassword(pending_password_.username_value,
+                              pending_password_.password_value);
     }
   }
 }
@@ -227,6 +221,22 @@ void SaveUpdateWithAccountStoreBubbleController::OnToggleAccountStore(
 bool SaveUpdateWithAccountStoreBubbleController::IsUsingAccountStore() {
   return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
          Store::kAccountStore;
+}
+
+bool SaveUpdateWithAccountStoreBubbleController::
+    IsAccountStorageOptInRequired() {
+  // If this is an update, either a) the password only exists in the profile
+  // store, so the opt-in shouldn't be offered because the account storage won't
+  // be used, or b) there is a copy in the account store, which means the user
+  // already opted in. Either way,the opt-in shouldn't be offered.
+  if (IsCurrentStateUpdate())
+    return false;
+  if (!IsUsingAccountStore())
+    return false;
+  if (delegate_->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
+    return false;
+  }
+  return true;
 }
 
 std::string

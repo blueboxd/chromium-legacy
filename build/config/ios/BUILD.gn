@@ -36,22 +36,43 @@ config("compiler") {
       "-arch",
       "x86_64",
     ]
+    swiftflags = [
+      "-target",
+      "x86_64-apple-ios$ios_deployment_target-simulator",
+    ]
   } else if (current_cpu == "x86") {
     common_ios_flags += [
       "-arch",
       "i386",
+    ]
+    swiftflags = [
+      "-target",
+      "i386-apple-ios$ios_deployment_target-simulator",
     ]
   } else if (current_cpu == "armv7" || current_cpu == "arm") {
     common_ios_flags += [
       "-arch",
       "armv7",
     ]
+    swiftflags = [
+      "-target",
+      "armv7-apple-ios$ios_deployment_target",
+    ]
   } else if (current_cpu == "arm64") {
     common_ios_flags += [
       "-arch",
       "arm64",
     ]
+    swiftflags = [
+      "-target",
+      "arm64-apple-ios$ios_deployment_target",
+    ]
   }
+
+  swiftflags += [
+    "-swift-version",
+    "5",
+  ]
 
   # This is here so that all files get recompiled after an Xcode update.
   # (defines are passed via the command line, and build system rebuild things
@@ -78,9 +99,17 @@ config("runtime_library") {
       "-isysroot",
       rebase_path(sysroot, root_build_dir),
     ]
+    swiftflags = [
+      "-sdk",
+      rebase_path(sysroot, root_build_dir),
+    ]
   } else {
     common_flags = [
       "-isysroot",
+      sysroot,
+    ]
+    swiftflags = [
+      "-sdk",
       sysroot,
     ]
   }
@@ -113,6 +142,7 @@ config("ios_executable_flags") {
 
 config("ios_dynamic_flags") {
   ldflags = [ "-Wl,-ObjC" ]  # Always load Objective-C categories and class.
+  lib_dirs = [ "$sysroot/usr/lib/swift" ]
 }
 
 config("xctest_config") {

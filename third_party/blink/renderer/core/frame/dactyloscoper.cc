@@ -94,7 +94,7 @@ void Dactyloscoper::RecordDirectSurface(
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         SVGStringListTearOff* strings) {
-  RecordDirectSurface(context, feature, strings->Target()->Values());
+  RecordDirectSurface(context, feature, strings->Values());
 }
 
 }  // namespace blink

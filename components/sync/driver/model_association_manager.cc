@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/model_type.h"
@@ -372,9 +372,8 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
     if (associating_types_.Has(dtc->type()) &&
         dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
-      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-      UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                                ModelTypeHistogramValue(dtc->type()));
+      base::UmaHistogramEnumeration("Sync.ConfigureFailed",
+                                    ModelTypeHistogramValue(dtc->type()));
       StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Association timed out.", dtc->type()),
                        STOP_SYNC, dtc, base::DoNothing());

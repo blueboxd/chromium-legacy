@@ -33,11 +33,9 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
-#include "third_party/blink/renderer/core/svg/svg_string.h"
 
 namespace blink {
 
-class ExceptionState;
 class SVGStringListTearOff;
 
 // Implementation of SVGStringList spec:
@@ -62,20 +60,16 @@ class SVGStringListBase : public SVGPropertyBase {
 
   const Vector<String>& Values() const { return values_; }
 
-  // SVGStringList DOM Spec implementation. These are only to be called from
-  // SVGStringListTearOff:
   uint32_t length() { return values_.size(); }
-  void clear() { values_.clear(); }
-  void Initialize(const String&);
-  String GetItem(uint32_t, ExceptionState&);
-  void InsertItemBefore(const String&, uint32_t);
-  String RemoveItem(uint32_t, ExceptionState&);
-  void AppendItem(const String&);
-  void ReplaceItem(const String&, uint32_t, ExceptionState&);
+  void Clear();
+  void Insert(uint32_t, const String&);
+  void Remove(uint32_t);
+  void Append(const String&);
+  void Replace(uint32_t, const String&);
 
-  // SVGPropertyBase:
   virtual SVGParsingError SetValueAsString(const String&) = 0;
 
+  // SVGPropertyBase:
   void Add(SVGPropertyBase*, SVGElement*) override;
   void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
@@ -104,7 +98,6 @@ class SVGStringListBase : public SVGPropertyBase {
   void ParseInternal(const CharType*& ptr,
                      const CharType* end,
                      char list_delimiter);
-  bool CheckIndexBound(uint32_t, ExceptionState&);
 
   Vector<String> values_;
 };

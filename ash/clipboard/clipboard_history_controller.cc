@@ -4,6 +4,8 @@
 
 #include "ash/clipboard/clipboard_history_controller.h"
 
+#include <memory>
+
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_menu_model_adapter.h"
@@ -18,6 +20,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_data.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -174,10 +177,10 @@ void ClipboardHistoryController::ShowMenu() {
 
 void ClipboardHistoryController::MenuOptionSelected(int index,
                                                     int event_flags) {
-  auto it = clipboard_items_.begin();
-  std::advance(it, index);
+  auto selected_item = clipboard_items_.begin();
+  std::advance(selected_item, index);
 
-  if (it == clipboard_items_.end()) {
+  if (selected_item == clipboard_items_.end()) {
     // The last option in the menu is used to delete history.
     clipboard_history_->Clear();
     return;
@@ -189,15 +192,23 @@ void ClipboardHistoryController::MenuOptionSelected(int index,
   // If necessary, replace the clipboard's |original_data| temporarily so that
   // we can paste the selected history item.
   const bool shift_key_pressed = event_flags & ui::EF_SHIFT_DOWN;
-  if (shift_key_pressed || it->data() != *clipboard->GetClipboardData()) {
+  ui::ClipboardDataEndpoint data_dst(ui::EndpointType::kClipboardHistory);
+  if (shift_key_pressed ||
+      selected_item->data() != *clipboard->GetClipboardData(&data_dst)) {
     std::unique_ptr<ui::ClipboardData> temp_data;
     if (shift_key_pressed) {
       // When the shift key is pressed, we only paste plain text.
       temp_data = std::make_unique<ui::ClipboardData>();
-      temp_data->set_text(it->data().text());
+      temp_data->set_text(selected_item->data().text());
+      ui::ClipboardDataEndpoint* data_src = selected_item->data().source();
+      if (data_src) {
+        temp_data->set_source(
+            std::make_unique<ui::ClipboardDataEndpoint>(*data_src));
+      }
     } else {
-      temp_data = std::make_unique<ui::ClipboardData>(it->data());
+      temp_data = std::make_unique<ui::ClipboardData>(selected_item->data());
     }
+
     // Pause clipboard history when manipulating the clipboard for a paste.
     ClipboardHistory::ScopedPause scoped_pause(clipboard_history_.get());
     original_data = clipboard->WriteClipboardData(std::move(temp_data));

@@ -2314,6 +2314,10 @@ config("symbols") {
       ]
     }
 
+    if (is_apple) {
+      swiftflags = [ "-g" ]
+    }
+
     if (use_debug_fission && !is_nacl && !is_android) {
       # NOTE: Some Chrome OS builds globally set |use_debug_fission| to true,
       # but they also build some targets against Android toolchains which aren't

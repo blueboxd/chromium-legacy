@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4f7edbe1f6f0639e45d41854e631db2fd77a9ae6',
+  'angle_revision': '8c86f0d9176704623b9d66165d14fd24f824abf4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd0114ee9c6d170e7a526ad63010432c3136ccf24',
+  'devtools_frontend_revision': '5a8fc1fe06a281f2ece82031d9e91281a71c9805',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'b79773a35d52736c60f425eb6e7792120f103cac',
+  'spv_tools_revision': '4dd122392f3ad757e70951a1198479bf233d4cd8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.

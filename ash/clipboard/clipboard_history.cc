@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
 
@@ -65,7 +66,8 @@ void ClipboardHistory::OnClipboardDataChanged() {
   auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
   CHECK(clipboard);
 
-  const auto* clipboard_data = clipboard->GetClipboardData();
+  ui::ClipboardDataEndpoint data_dst(ui::EndpointType::kClipboardHistory);
+  const auto* clipboard_data = clipboard->GetClipboardData(&data_dst);
   CHECK(clipboard_data);
 
   // We post commit |clipboard_data| at the end of the current task sequence to

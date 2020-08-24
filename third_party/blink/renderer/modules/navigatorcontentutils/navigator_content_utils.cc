@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
 #include "base/stl_util.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -44,21 +46,6 @@ const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 namespace {
 
 const char kToken[] = "%s";
-
-// Changes to this list must be kept in sync with the browser-side checks in
-// /chrome/common/custom_handlers/protocol_handler.cc.
-static const HashSet<String>& SupportedSchemes() {
-  DEFINE_STATIC_LOCAL(
-      HashSet<String>, supported_schemes,
-      ({
-          "bitcoin",     "cabal",  "dat",    "did",   "dweb", "ethereum",
-          "geo",         "hyper",  "im",     "ipfs",  "ipns", "irc",
-          "ircs",        "magnet", "mailto", "mms",   "news", "nntp",
-          "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",  "ssh",
-          "tel",         "urn",    "webcal", "wtai",  "xmpp",
-      }));
-  return supported_schemes;
-}
 
 static bool VerifyCustomHandlerURLSecurity(const LocalDOMWindow& window,
                                            const KURL& full_url,
@@ -108,22 +95,6 @@ static bool VerifyCustomHandlerURL(const LocalDOMWindow& window,
   return true;
 }
 
-// HTML5 requires that schemes with the |web+| prefix contain one or more
-// ASCII alphas after that prefix.
-static bool IsValidWebSchemeName(const String& protocol) {
-  if (protocol.length() < 5)
-    return false;
-
-  unsigned protocol_length = protocol.length();
-  for (unsigned i = 4; i < protocol_length; i++) {
-    char c = protocol[i];
-    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace
 
 bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
@@ -133,24 +104,25 @@ bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
     return false;
   }
 
-  if (scheme.StartsWithIgnoringASCIICase("web+")) {
-    if (IsValidWebSchemeName(scheme))
-      return true;
-    error_string =
-        "The scheme name '" + scheme +
-        "' is not allowed. Schemes starting with 'web+' must be followed by "
-        "one or more ASCII letters.";
+  bool has_custom_scheme_prefix;
+  StringUTF8Adaptor scheme_adaptor(scheme);
+  if (!IsValidCustomHandlerScheme(scheme_adaptor.AsStringPiece(),
+                                  has_custom_scheme_prefix)) {
+    if (has_custom_scheme_prefix) {
+      error_string =
+          "The scheme name '" + scheme +
+          "' is not allowed. Schemes starting with 'web+' must be followed by "
+          "one or more ASCII letters.";
+    } else {
+      error_string = "The scheme '" + scheme +
+                     "' doesn't belong to the scheme allowlist. "
+                     "Please prefix non-allowlisted schemes "
+                     "with the string 'web+'.";
+    }
     return false;
   }
 
-  if (SupportedSchemes().Contains(scheme.LowerASCII()))
-    return true;
-
-  error_string = "The scheme '" + scheme +
-                 "' doesn't belong to the scheme allowlist. "
-                 "Please prefix non-allowlisted schemes "
-                 "with the string 'web+'.";
-  return false;
+  return true;
 }
 
 bool VerifyCustomHandlerURLSyntax(const KURL& full_url,

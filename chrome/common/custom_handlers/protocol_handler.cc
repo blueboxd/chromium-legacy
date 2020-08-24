@@ -12,6 +12,7 @@
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
@@ -39,33 +40,15 @@ bool ProtocolHandler::IsValidDict(const base::DictionaryValue* value) {
 bool ProtocolHandler::IsValid() const {
   // TODO(https://crbug.com/977083): Consider limiting to secure contexts.
 
-  // This matches SupportedSchemes() in blink's NavigatorContentUtils.
-
-  // Although not enforced in the spec the spec gives freedom to do additional
-  // security checks. Bugs have arisen from allowing non-http/https URLs, e.g.
-  // https://crbug.com/971917 so we check this here.
+  // This matches VerifyCustomHandlerURLSecurity() in blink's
+  // NavigatorContentUtils.
   if (!url_.SchemeIsHTTPOrHTTPS() &&
       !url_.SchemeIs(extensions::kExtensionScheme)) {
     return false;
   }
 
-  // From:
-  // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
-  static constexpr const char* const kProtocolSafelist[] = {
-      "bitcoin",  "cabal",       "dat",    "did",    "doi",   "dweb",
-      "ethereum", "geo",         "hyper",  "im",     "ipfs",  "ipns",
-      "irc",      "ircs",        "magnet", "mailto", "mms",   "news",
-      "nntp",     "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",
-      "ssh",      "tel",         "urn",    "webcal", "wtai",  "xmpp"};
-  static constexpr const char kWebPrefix[] = "web+";
-
-  bool has_web_prefix =
-      base::StartsWith(protocol_, kWebPrefix,
-                       base::CompareCase::INSENSITIVE_ASCII) &&
-      protocol_ != kWebPrefix;
-
-  return has_web_prefix ||
-         base::Contains(kProtocolSafelist, base::ToLowerASCII(protocol_));
+  bool has_custom_scheme_prefix;
+  return blink::IsValidCustomHandlerScheme(protocol_, has_custom_scheme_prefix);
 }
 
 bool ProtocolHandler::IsSameOrigin(

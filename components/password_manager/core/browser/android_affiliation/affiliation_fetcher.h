@@ -39,7 +39,7 @@ class AffiliationFetcher : public AffiliationFetcherInterface {
   // Constructs a fetcher using the specified |url_loader_factory|, and will
   // provide the results to the |delegate| on the same thread that creates the
   // instance.
-  static AffiliationFetcherInterface* Create(
+  static std::unique_ptr<AffiliationFetcherInterface> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AffiliationFetcherDelegate* delegate);
 

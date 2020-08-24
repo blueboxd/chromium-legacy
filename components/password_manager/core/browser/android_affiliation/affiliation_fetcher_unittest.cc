@@ -32,6 +32,10 @@ const char kExampleAndroidPlayName[] = "Example Android App";
 const char kExampleAndroidIconURL[] = "https://example.com/icon.png";
 const char kExampleWebFacet1URI[] = "https://www.example.com";
 const char kExampleWebFacet2URI[] = "https://www.example.org";
+const char kExampleWebFacet1ChangePasswordURI[] =
+    "https://www.example.com/.well-known/change-password";
+const char kExampleWebFacet2ChangePasswordURI[] =
+    "https://www.example.org/settings/passwords";
 
 class MockAffiliationFetcherDelegate
     : public testing::StrictMock<AffiliationFetcherDelegate> {
@@ -158,8 +162,8 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, request_info);
   WaitForResponse();
 
@@ -198,8 +202,8 @@ TEST_F(AffiliationFetcherTest, AndroidBrandingInfoIsReturnedIfPresent) {
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, request_info);
   WaitForResponse();
 
@@ -216,6 +220,50 @@ TEST_F(AffiliationFetcherTest, AndroidBrandingInfoIsReturnedIfPresent) {
                                           GURL(kExampleAndroidIconURL)}}));
 }
 
+TEST_F(AffiliationFetcherTest, ChangePasswordInfoIsReturnedIfPresent) {
+  affiliation_pb::LookupAffiliationResponse test_response;
+  affiliation_pb::FacetGroup* eq_class = test_response.add_group();
+
+  // kExampleWebFacet1URI, kExampleWebFacet1ChangePasswordURI
+  affiliation_pb::Facet* web_facet_1 = eq_class->add_facet();
+  web_facet_1->set_id(kExampleWebFacet1URI);
+  web_facet_1->mutable_change_password_info()->set_change_password_url(
+      kExampleWebFacet1ChangePasswordURI);
+
+  // kExampleWebFacet2URI, kExampleWebFacet2ChangePasswordURI
+  affiliation_pb::Facet* web_facet_2 = eq_class->add_facet();
+  web_facet_2->set_id(kExampleWebFacet2URI);
+  web_facet_2->mutable_change_password_info()->set_change_password_url(
+      kExampleWebFacet2ChangePasswordURI);
+
+  AffiliationFetcher::RequestInfo request_info{.change_password_info = true};
+
+  std::vector<FacetURI> requested_uris = {
+      FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)};
+
+  SetupSuccessfulResponse(test_response.SerializeAsString());
+  MockAffiliationFetcherDelegate mock_delegate;
+  EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
+  fetcher->StartRequest(requested_uris, request_info);
+  WaitForResponse();
+
+  ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris, request_info));
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
+
+  ASSERT_EQ(1u, mock_delegate.groupings().size());
+  EXPECT_THAT(
+      mock_delegate.groupings()[0],
+      testing::UnorderedElementsAre(
+          Facet{
+              .uri = FacetURI::FromCanonicalSpec(kExampleWebFacet1URI),
+              .change_password_url = GURL(kExampleWebFacet1ChangePasswordURI)},
+          Facet{.uri = FacetURI::FromCanonicalSpec(kExampleWebFacet2URI),
+                .change_password_url =
+                    GURL(kExampleWebFacet2ChangePasswordURI)}));
+}
+
 // The API contract of this class is to return an equivalence class for all
 // requested facets; however, the server will not return anything for facets
 // that are not affiliated with any other facet. Make sure an equivalence class
@@ -230,8 +278,8 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
   SetupSuccessfulResponse(empty_test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, request_info);
   WaitForResponse();
 
@@ -261,8 +309,8 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, {});
   WaitForResponse();
 
@@ -289,8 +337,8 @@ TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, {});
   WaitForResponse();
 
@@ -321,8 +369,8 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(requested_uris, {});
   WaitForResponse();
 
@@ -345,8 +393,8 @@ TEST_F(AffiliationFetcherTest, FailureBecauseResponseIsNotAProtobuf) {
   SetupSuccessfulResponse(kMalformedResponse);
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnMalformedResponse());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(uris, {});
   WaitForResponse();
 }
@@ -369,8 +417,8 @@ TEST_F(AffiliationFetcherTest,
   SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnMalformedResponse());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(uris, {});
   WaitForResponse();
 }
@@ -382,8 +430,8 @@ TEST_F(AffiliationFetcherTest, FailOnServerError) {
   SetupServerErrorResponse();
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchFailed());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(uris, {});
   WaitForResponse();
 }
@@ -395,8 +443,8 @@ TEST_F(AffiliationFetcherTest, FailOnNetworkError) {
   SetupNetworkErrorResponse();
   MockAffiliationFetcherDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnFetchFailed());
-  std::unique_ptr<AffiliationFetcherInterface> fetcher(
-      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate));
+  auto fetcher =
+      AffiliationFetcher::Create(test_shared_loader_factory(), &mock_delegate);
   fetcher->StartRequest(uris, {});
   WaitForResponse();
 }

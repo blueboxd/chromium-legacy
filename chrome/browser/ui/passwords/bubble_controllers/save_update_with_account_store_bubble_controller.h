@@ -68,6 +68,10 @@ class SaveUpdateWithAccountStoreBubbleController
   // Returns true iff the password account store is used.
   bool IsUsingAccountStore();
 
+  // Returns true if the user must opt-in to the account-scoped password storage
+  // before the bubble action can be concluded.
+  bool IsAccountStorageOptInRequired();
+
   // Returns the email of current primary account. Returns empty string if no
   // account is signed in.
   std::string GetPrimaryAccountEmail();

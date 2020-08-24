@@ -1072,6 +1072,36 @@ TEST_F(ProtocolHandlerRegistryTest, ExtensionHandler) {
 }
 
 // See
+// https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
+TEST_F(ProtocolHandlerRegistryTest, WebPlusPrefix) {
+  // Not ASCII alphas.
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+***", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+***"));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+123", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+123"));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+   ", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+   "));
+  registry()->OnAcceptRegisterProtocolHandler(CreateProtocolHandler(
+      "web+name123", GURL("https://www.google.com/handler%s")));
+  ASSERT_FALSE(registry()->IsHandledProtocol("web+name123"));
+
+  // ASCII lower alphas.
+  registry()->OnAcceptRegisterProtocolHandler(
+      CreateProtocolHandler("web+abcdefghijklmnopqrstuvwxyz",
+                            GURL("https://www.google.com/handler%s")));
+  ASSERT_TRUE(registry()->IsHandledProtocol("web+abcdefghijklmnopqrstuvwxyz"));
+
+  // ASCII upper alphas are lowercased.
+  registry()->OnAcceptRegisterProtocolHandler(
+      CreateProtocolHandler("web+ZYXWVUTSRQPONMLKJIHGFEDCBA",
+                            GURL("https://www.google.com/handler%s")));
+  ASSERT_TRUE(registry()->IsHandledProtocol("web+zyxwvutsrqponmlkjihgfedcba"));
+}
+
+// See
 // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
 TEST_F(ProtocolHandlerRegistryTest, SafelistedSchemes) {
   std::string schemes[] = {

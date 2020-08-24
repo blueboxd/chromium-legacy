@@ -642,8 +642,13 @@ public class FeedSurfaceMediator
             // blocking the UI thread for several seconds if the accounts cache is not populated
             // yet.
             if (!isVisible()) return;
-            SigninPromoUtil.setupSigninPromoViewFromCache(mSigninPromoController, mProfileDataCache,
-                    mCoordinator.getSigninPromoView(), null);
+            if (isUserSignedInButNotSyncing()) {
+                SigninPromoUtil.setupSyncPromoViewFromCache(mSigninPromoController,
+                        mProfileDataCache, mCoordinator.getSigninPromoView(), null);
+            } else {
+                SigninPromoUtil.setupSigninPromoViewFromCache(mSigninPromoController,
+                        mProfileDataCache, mCoordinator.getSigninPromoView(), null);
+            }
         }
     }
 

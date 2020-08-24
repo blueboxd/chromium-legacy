@@ -55,14 +55,17 @@ AffiliationFetcher::AffiliationFetcher(
 AffiliationFetcher::~AffiliationFetcher() = default;
 
 // static
-AffiliationFetcherInterface* AffiliationFetcher::Create(
+std::unique_ptr<AffiliationFetcherInterface> AffiliationFetcher::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AffiliationFetcherDelegate* delegate) {
   if (g_testing_factory) {
-    return g_testing_factory->CreateInstance(std::move(url_loader_factory),
-                                             delegate);
+    return base::WrapUnique(g_testing_factory->CreateInstance(
+        std::move(url_loader_factory), delegate));
   }
-  return new AffiliationFetcher(std::move(url_loader_factory), delegate);
+  // Using `new` to access a non-public constructor.
+  // (https://abseil.io/tips/134#recommendations)
+  return base::WrapUnique(
+      new AffiliationFetcher(std::move(url_loader_factory), delegate));
 }
 
 // static

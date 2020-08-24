@@ -363,8 +363,13 @@ ClipboardNonBacked::~ClipboardNonBacked() {
   UnregisterInstance(this);
 }
 
-const ClipboardData* ClipboardNonBacked::GetClipboardData() const {
+const ClipboardData* ClipboardNonBacked::GetClipboardData(
+    ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return nullptr;
+
   return clipboard_internal_->GetData();
 }
 

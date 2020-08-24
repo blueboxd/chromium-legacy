@@ -256,7 +256,7 @@ bool AffiliationBackend::OnCanSendNetworkRequest() {
   if (requested_facet_uris.empty())
     return false;
 
-  fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_, this));
+  fetcher_ = AffiliationFetcher::Create(url_loader_factory_, this);
   fetcher_->StartRequest(requested_facet_uris, {.branding_info = true});
   ReportStatistics(requested_facet_uris.size());
   return true;

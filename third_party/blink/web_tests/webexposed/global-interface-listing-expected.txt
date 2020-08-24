@@ -7922,7 +7922,7 @@ interface SVGViewElement : SVGElement
 interface Sanitizer
     attribute @@toStringTag
     method constructor
-    method saneStringFrom
+    method sanitizeToString
 interface Scheduler
     attribute @@toStringTag
     getter currentTaskSignal

@@ -16,7 +16,7 @@ Sanitizer::Sanitizer() = default;
 
 Sanitizer::~Sanitizer() = default;
 
-String Sanitizer::saneStringFrom(const String& input) {
+String Sanitizer::sanitizeToString(const String& input) {
   String sanitizedString = input;
   return sanitizedString;
 }

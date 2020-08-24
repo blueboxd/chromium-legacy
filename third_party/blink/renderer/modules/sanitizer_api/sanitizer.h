@@ -21,7 +21,7 @@ class MODULES_EXPORT Sanitizer final : public ScriptWrappable {
   Sanitizer();
   ~Sanitizer() override;
 
-  String saneStringFrom(const String&);
+  String sanitizeToString(const String&);
 };
 
 }  // namespace blink

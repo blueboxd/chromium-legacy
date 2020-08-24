@@ -1167,6 +1167,8 @@ static_library("browser") {
     "policy/homepage_location_policy_handler.h",
     "policy/javascript_policy_handler.cc",
     "policy/javascript_policy_handler.h",
+    "policy/messaging_layer/encryption/decryption.cc",
+    "policy/messaging_layer/encryption/decryption.h",
     "policy/messaging_layer/encryption/encryption.cc",
     "policy/messaging_layer/encryption/encryption.h",
     "policy/messaging_layer/encryption/encryption_module.cc",

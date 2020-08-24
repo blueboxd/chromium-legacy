@@ -32,9 +32,10 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   static ClipboardNonBacked* GetForCurrentThread();
 
   // Returns the current ClipboardData.
-  const ClipboardData* GetClipboardData() const;
+  const ClipboardData* GetClipboardData(ClipboardDataEndpoint* data_dst) const;
 
   // Writes the current ClipboardData and returns the previous data.
+  // The data source is expected to be set in `data`.
   std::unique_ptr<ClipboardData> WriteClipboardData(
       std::unique_ptr<ClipboardData> data);
 

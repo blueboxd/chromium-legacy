@@ -313,6 +313,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
 
   EXPECT_TRUE(controller()->enable_editing());
   EXPECT_FALSE(controller()->IsCurrentStateUpdate());
+  EXPECT_FALSE(controller()->IsAccountStorageOptInRequired());
 
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*delegate(), OnPasswordsRevealed()).Times(0);
@@ -336,6 +337,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
 
   EXPECT_TRUE(controller()->enable_editing());
   EXPECT_FALSE(controller()->IsCurrentStateUpdate());
+  EXPECT_TRUE(controller()->IsAccountStorageOptInRequired());
 
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*delegate(), SavePassword).Times(0);
@@ -360,6 +362,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
 
   EXPECT_TRUE(controller()->enable_editing());
   EXPECT_TRUE(controller()->IsCurrentStateUpdate());
+  EXPECT_FALSE(controller()->IsAccountStorageOptInRequired());
 
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*delegate(), SavePassword(pending_password().username_value,

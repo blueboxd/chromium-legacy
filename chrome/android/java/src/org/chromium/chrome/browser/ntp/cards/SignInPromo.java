@@ -13,8 +13,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
@@ -24,6 +27,8 @@ import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
@@ -75,8 +80,8 @@ public abstract class SignInPromo extends OptionalLeaf {
         mAccountsReady = AccountManagerFacadeProvider.getInstance().isCachePopulated();
         updateVisibility();
 
-        int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-        mProfileDataCache = new ProfileDataCache(context, imageSize);
+        mProfileDataCache = ProfileDataCache.createProfileDataCache(
+                context, isUserSignedInButNotSyncing() ? R.drawable.ic_sync_badge_off_20dp : 0);
         mSigninPromoController =
                 new SigninPromoController(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
 
@@ -128,6 +133,16 @@ public abstract class SignInPromo extends OptionalLeaf {
         return false;
     }
 
+    public boolean isUserSignedInButNotSyncing() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            return false;
+        }
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        return identityManager.getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED) != null
+                && identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC) == null;
+    }
+
     @Override
     @ItemViewType
     protected int getItemViewType() {
@@ -148,8 +163,11 @@ public abstract class SignInPromo extends OptionalLeaf {
     protected abstract void notifyDataChanged();
 
     private void updateVisibility() {
-        setVisibilityInternal(
-                !mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions && mAccountsReady);
+        boolean canShowPersonalizedSigninPromo =
+                !mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions && mAccountsReady;
+        boolean canShowPersonalizedSyncPromo = !mDismissed && isUserSignedInButNotSyncing()
+                && mCanShowPersonalizedSuggestions && mAccountsReady;
+        setVisibilityInternal(canShowPersonalizedSigninPromo || canShowPersonalizedSyncPromo);
     }
 
     @Override
@@ -229,12 +247,16 @@ public abstract class SignInPromo extends OptionalLeaf {
         @Override
         public void onSignedIn() {
             mCanSignIn = false;
+            if (isUserSignedInButNotSyncing()) {
+                mProfileDataCache.updateBadgeConfig(R.drawable.ic_sync_badge_off_20dp);
+            }
             updateVisibility();
         }
 
         @Override
         public void onSignedOut() {
             mCanSignIn = mSigninManager.isSignInAllowed();
+            mProfileDataCache.updateBadgeConfig(0);
             updateVisibility();
         }
 

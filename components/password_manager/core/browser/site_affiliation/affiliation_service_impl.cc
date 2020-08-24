@@ -66,7 +66,7 @@ AffiliationServiceImpl::ConvertMissingSchemeHostPortsToFacets(
 void AffiliationServiceImpl::RequestFacetsAffiliations(
     const std::vector<FacetURI>& facets,
     const AffiliationFetcherInterface::RequestInfo request_info) {
-  fetcher_.reset(AffiliationFetcher::Create(url_loader_factory_, this));
+  fetcher_ = AffiliationFetcher::Create(url_loader_factory_, this);
   fetcher_->StartRequest(facets, request_info);
 }
 

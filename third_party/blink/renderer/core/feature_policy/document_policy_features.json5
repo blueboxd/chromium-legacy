@@ -68,8 +68,8 @@
       depends_on: ["UnoptimizedImagePolicies"],
     },
     {
-      name: "UnoptimizedLossyImages",
-      document_policy_name: "unoptimized-lossy-images",
+      name: "LossyImagesMaxBpp",
+      document_policy_name: "lossy-images-max-bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],

@@ -129,7 +129,7 @@ if (is_win || is_mac) {
         "mac/update_service_out_of_process.h",
         "mac/update_service_out_of_process.mm",
         "prefs_mac.mm",
-        "update_apps_mac.mm",
+        "service_factory_mac.mm",
       ]
     }
 
@@ -276,6 +276,7 @@ if (is_win || is_mac) {
     ]
   }
 
+  # These tests are run serially since they mutate system state.
   test("updater_tests") {
     testonly = true
 
@@ -288,11 +289,13 @@ if (is_win || is_mac) {
       "policy_manager_unittest.cc",
       "prefs_unittest.cc",
       "run_all_unittests.cc",
+      "service_scope_unittest.cc",
       "tag_unittest.cc",
       "test/integration_tests.cc",
       "test/integration_tests.h",
       "unittest_util_unittest.cc",
       "updater_unittest.cc",
+      "util_unittest.cc",
     ]
 
     deps = [

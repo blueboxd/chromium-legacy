@@ -47,11 +47,10 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   if (bool(default_button))
     SetDefaultButton(*default_button);
 
-  views::MessageBoxView::InitParams init_params(delegate_->GetDialogMessage());
-  init_params.inter_row_vertical_spacing =
+  message_box_view_ = new views::MessageBoxView(delegate_->GetDialogMessage());
+  message_box_view_->SetInterRowVerticalSpacing(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
-  message_box_view_ = new views::MessageBoxView(init_params);
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   base::string16 link_text(delegate_->GetLinkText());
   if (!link_text.empty()) {

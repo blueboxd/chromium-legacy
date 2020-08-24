@@ -787,20 +787,28 @@ TEST(AXEventGeneratorTest, TextAttributeChanged) {
           HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 17)));
 }
 
-TEST(AXEventGeneratorTest, TextObjectAttributeChanged) {
+TEST(AXEventGeneratorTest, ObjectAttributeChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
-  initial_state.nodes.resize(1);
+  initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
   AXTree tree(initial_state);
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTextAlign, 2);
+  update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kTextAlign, 2);
+  update.nodes[2].AddFloatAttribute(ax::mojom::FloatAttribute::kTextIndent,
+                                    10.0f);
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(HasEventAtNode(
-                  AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED, 1)));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED, 2),
+          HasEventAtNode(AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED,
+                         3)));
 }
 
 TEST(AXEventGeneratorTest, OtherAttributeChanged) {

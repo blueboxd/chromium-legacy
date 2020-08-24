@@ -469,17 +469,17 @@
   {
     "name": "chrome-share-qr-code",
     "owners": [ "kmilka", "tgupta" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "chrome-share-screenshot",
     "owners": [ "jeffreycohen", "kristipark" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "chrome-sharing-hub",
     "owners": [ "kmilka" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "chrome-sharing-hub-v1-5",
@@ -1431,16 +1431,6 @@
     "name": "enable-duet-tabstrip-integration",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "enable-edu-coexistence",
-    "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "enable-edu-coexistence-consent-log",
-    "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-encryption-migration",
@@ -3891,6 +3881,14 @@
     "expiry_milestone": 87
   },
   {
+    "name": "safe-browsing-client-side-detection-android",
+    "owners": [
+      "bdea",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "safe-browsing-enhanced-protection-android",
     "owners": [
       "vakh",
@@ -4036,7 +4034,7 @@
   {
     "name": "sharing-qr-code-generator",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "sharing-send-via-sync",

@@ -12,7 +12,8 @@ namespace features {
 const base::Feature kImpulseScrollAnimations = {
     "ImpulseScrollAnimations", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Whether the compositor should attempt to sync with the scroll handlers before submitting a frame.
+// Whether the compositor should attempt to sync with the scroll handlers before
+// submitting a frame.
 const base::Feature kSynchronizedScrolling = {"SynchronizedScrolling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -24,11 +25,11 @@ const base::Feature kTextureLayerSkipWaitForActivation{
 #if !defined(OS_ANDROID)
 // Enables latency recovery on the impl thread.
 const base::Feature kImplLatencyRecovery = {"ImplLatencyRecovery",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables latency recovery on the main thread.
 const base::Feature kMainLatencyRecovery = {"MainLatencyRecovery",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 bool IsImplLatencyRecoveryEnabled() {

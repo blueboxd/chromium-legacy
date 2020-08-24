@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">ჩამაგრებული</translation>
 <translation id="4351433414020964307">ასისტენტი იტვირთება...</translation>
 <translation id="4356930093361201197">მაღალკონტრასტული რეჟიმი</translation>
-<translation id="4368583494516669646">ღამე მშვიდობის, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">ტრანსლირების პარამეტრები</translation>
 <translation id="4378551569595875038">დაკავშირება…</translation>
 <translation id="4379531060876907730">ეს არის თქვენი სტილუსის ხელსაწყოები</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">ზემოთ გადაადგილება</translation>
 <translation id="4961318399572185831">ეკრანის ტრანსლირება</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> სთ, <ph name="MINUTES" /> წთ, <ph name="SECONDS" /> წმ</translation>
-<translation id="4970352680959471247">საღამო მშვიდობის, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">დრო ამოიწურა</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> დაკავშირებულია ახალ ტელეფონთან</translation>
 <translation id="5035389544768382859">დაადასტურეთ ეკრანის კონფიგურაცია</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">ყველა ხელმისაწვდომი მომხმარებელი უკვე დამატებულია ამ სესიაში.</translation>
 <translation id="54609108002486618">მართული</translation>
 <translation id="5465662442746197494">დახმარება გჭირდებათ?</translation>
-<translation id="5485091064403948243">დილა მშვიდობის, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">ადმინისტრატორი თქვენს მოწყობილობას ძველ ვერსიაზე აბრუნებს. მოწყობილობის გადატვირთვის შემდეგ ყველა მონაცემი წაიშლება.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">მიმდინარეობს სესიიდან გამოსვლა</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">გარდაქმნა</translation>
 <translation id="742594950370306541">კამერა გამოიყენება.</translation>
 <translation id="743058460480092004">კამერა და მიკროფონი გამოიყენება.</translation>
-<translation id="7436182601308224670">შუადღე მშვიდობის, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">შეეხეთ სენსორს</translation>
 <translation id="7497767806359279797">აირჩიეთ ენა და კლავიატურა</translation>
 <translation id="7526573455193969409">ქსელზე შესაძლოა ხორციელდებოდეს მონიტორინგი</translation>

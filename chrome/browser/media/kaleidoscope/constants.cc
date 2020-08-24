@@ -11,4 +11,4 @@ const char kKaleidoscopeUIURL[] = "chrome://kaleidoscope";
 const char kKaleidoscopeUntrustedContentUIURL[] =
     "chrome-untrusted://kaleidoscope/";
 
-const int kKaleidoscopeFirstRunLatestVersion = 1;
+const int kKaleidoscopeFirstRunLatestVersion = 2;

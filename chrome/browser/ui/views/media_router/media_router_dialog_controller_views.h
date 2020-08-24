@@ -28,6 +28,8 @@ class MediaRouterDialogControllerViews
   ~MediaRouterDialogControllerViews() override;
 
   // MediaRouterDialogController:
+  bool ShowMediaRouterDialogForPresentation(
+      std::unique_ptr<StartPresentationContext> context) override;
   void CreateMediaRouterDialog(
       MediaRouterDialogOpenOrigin activation_location) override;
   void CloseMediaRouterDialog() override;
@@ -62,7 +64,8 @@ class MediaRouterDialogControllerViews
 
   // Responsible for notifying the dialog view of dialog model updates and
   // sending route requests to MediaRouter. Set to nullptr when the dialog is
-  // closed.
+  // closed.  Not used for presentation requests when
+  // GlobalMediaControlsCastStartStopEnabled() returns true.
   std::unique_ptr<MediaRouterViewsUI> ui_;
 
   base::RepeatingClosure dialog_creation_callback_;

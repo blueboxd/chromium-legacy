@@ -21,16 +21,12 @@ namespace javascript_dialogs {
 AppModalDialogViewViews::AppModalDialogViewViews(
     AppModalDialogController* controller)
     : controller_(controller) {
-  int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
+  message_box_view_ = new views::MessageBoxView(
+      controller->message_text(), /* detect_directionality = */ true);
   if (controller->javascript_dialog_type() ==
-      content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
-    options |= views::MessageBoxView::HAS_PROMPT_FIELD;
-
-  views::MessageBoxView::InitParams params(controller->message_text());
-  params.options = options;
-  params.default_prompt = controller->default_prompt_text();
-  message_box_view_ = new views::MessageBoxView(params);
-  DCHECK(message_box_view_);
+      content::JAVASCRIPT_DIALOG_TYPE_PROMPT) {
+    message_box_view_->SetPromptField(controller->default_prompt_text());
+  }
 
   message_box_view_->AddAccelerator(
       ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));

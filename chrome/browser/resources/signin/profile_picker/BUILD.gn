@@ -82,6 +82,13 @@ js_library("manage_profiles_browser_proxy") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
+js_library("policy_helper") {
+  deps = [
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+}
+
 group("web_components") {
   public_deps = [
     ":web_components_local",

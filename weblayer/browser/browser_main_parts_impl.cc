@@ -148,7 +148,7 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
   if (!features::IsUsingOzonePlatform())
     ui::SetDefaultX11ErrorHandlers();
 #endif
-#if defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   ui::InitializeInputMethodForTesting();
 #endif
 #if defined(OS_ANDROID)

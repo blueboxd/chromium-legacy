@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">kredituak</translation>
 <translation id="1342835525016946179">artikulua</translation>
 <translation id="1359897965706325498">iragarki-banda</translation>
+<translation id="1480676835519562650">aukera anitzekoa, <ph name="COUNT" />/<ph name="SELECTED" /> haur hautatu dira.</translation>
 <translation id="1589122976691792535">lurraldea</translation>
 <translation id="1591562245178063882">Uneko hilabetea</translation>
 <translation id="1637811476055996098">Aukeratu fitxategiak</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Eguna</translation>
 <translation id="2507943997699731163">Bete eremu hau.</translation>
 <translation id="2508569020611168319">fitxen zerrenda</translation>
+<translation id="2530182415807757784">aukera anitzekoa, ez da bat ere hautatu.</translation>
 <translation id="2561842179657104141">erakutsi multimedia-edukia kontrolatzeko aukerak</translation>
 <translation id="2572483411312390101">erreproduzitu</translation>
 <translation id="2613802280814924224">Idatzi baliozko balioa. Idatzi duzunetik gertuen duzuna <ph name="VALID_VALUE" /> da.</translation>

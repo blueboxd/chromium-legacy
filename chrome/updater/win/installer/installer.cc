@@ -208,7 +208,7 @@ ProcessExitResult RunSetup(const Configuration& configuration,
       !cmd_line.append(L"\"")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
-  if (!cmd_line.append(L" --install --single-process --enable-logging"
+  if (!cmd_line.append(L" --install --enable-logging"
                        L" --vmodule=*/chrome/updater/*=2")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }

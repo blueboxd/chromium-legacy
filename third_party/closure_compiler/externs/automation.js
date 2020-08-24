@@ -490,6 +490,73 @@ chrome.automation.EventMoveDirectionType = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-SortDirectionType
+ */
+chrome.automation.SortDirectionType = {
+  UNSORTED: 'unsorted',
+  ASCENDING: 'ascending',
+  DESCENDING: 'descending',
+  OTHER: 'other',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-GeneratedEventType
+ */
+chrome.automation.GeneratedEventType = {
+  ACCESS_KEY_CHANGED: 'accessKeyChanged',
+  ATOMIC_CHANGED: 'atomicChanged',
+  AUTO_COMPLETE_CHANGED: 'autoCompleteChanged',
+  BUSY_CHANGED: 'busyChanged',
+  CLASS_NAME_CHANGED: 'classNameChanged',
+  COLLAPSED: 'collapsed',
+  DESCRIBED_BY_CHANGED: 'describedByChanged',
+  DESCRIPTION_CHANGED: 'descriptionChanged',
+  DROPEFFECT_CHANGED: 'dropeffectChanged',
+  ENABLED_CHANGED: 'enabledChanged',
+  EXPANDED: 'expanded',
+  FOCUS_CHANGED: 'focusChanged',
+  FLOW_FROM_CHANGED: 'flowFromChanged',
+  FLOW_TO_CHANGED: 'flowToChanged',
+  GRABBED_CHANGED: 'grabbedChanged',
+  HASPOPUP_CHANGED: 'haspopupChanged',
+  HIERARCHICAL_LEVEL_CHANGED: 'hierarchicalLevelChanged',
+  IGNORED_CHANGED: 'ignoredChanged',
+  IMAGE_ANNOTATION_CHANGED: 'imageAnnotationChanged',
+  KEY_SHORTCUTS_CHANGED: 'keyShortcutsChanged',
+  LABELED_BY_CHANGED: 'labeledByChanged',
+  LANGUAGE_CHANGED: 'languageChanged',
+  LAYOUT_INVALIDATED: 'layoutInvalidated',
+  LIVE_REGION_NODE_CHANGED: 'liveRegionNodeChanged',
+  LIVE_RELEVANT_CHANGED: 'liveRelevantChanged',
+  LIVE_STATUS_CHANGED: 'liveStatusChanged',
+  MENU_ITEM_SELECTED: 'menuItemSelected',
+  MULTILINE_STATE_CHANGED: 'multilineStateChanged',
+  MULTISELECTABLE_STATE_CHANGED: 'multiselectableStateChanged',
+  NAME_CHANGED: 'nameChanged',
+  OBJECT_ATTRIBUTE_CHANGED: 'objectAttributeChanged',
+  OTHER_ATTRIBUTE_CHANGED: 'otherAttributeChanged',
+  PLACEHOLDER_CHANGED: 'placeholderChanged',
+  PORTAL_ACTIVATED: 'portalActivated',
+  POSITION_IN_SET_CHANGED: 'positionInSetChanged',
+  RELATED_NODE_CHANGED: 'relatedNodeChanged',
+  READONLY_CHANGED: 'readonlyChanged',
+  REQUIRED_STATE_CHANGED: 'requiredStateChanged',
+  ROLE_CHANGED: 'roleChanged',
+  SCROLL_HORIZONTAL_POSITION_CHANGED: 'scrollHorizontalPositionChanged',
+  SCROLL_VERTICAL_POSITION_CHANGED: 'scrollVerticalPositionChanged',
+  SELECTED_CHANGED: 'selectedChanged',
+  SET_SIZE_CHANGED: 'setSizeChanged',
+  SORT_CHANGED: 'sortChanged',
+  SUBTREE_CREATED: 'subtreeCreated',
+  TEXT_ATTRIBUTE_CHANGED: 'textAttributeChanged',
+  VALUE_MAX_CHANGED: 'valueMaxChanged',
+  VALUE_MIN_CHANGED: 'valueMinChanged',
+  VALUE_STEP_CHANGED: 'valueStepChanged',
+};
+
+/**
  * @typedef {{
  *   left: number,
  *   top: number,
@@ -551,6 +618,13 @@ chrome.automation.AutomationEvent.prototype.target;
  * @see https://developer.chrome.com/extensions/automation#type-type
  */
 chrome.automation.AutomationEvent.prototype.type;
+
+/**
+ * The type of the generated event, if any.
+ * @type {(!chrome.automation.GeneratedEventType|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-generatedType
+ */
+chrome.automation.AutomationEvent.prototype.generatedType;
 
 /**
  * The source of this event.
@@ -1046,8 +1120,7 @@ chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex,
  * @param {function(!chrome.automation.Rect): void} callback
  * @see https://developer.chrome.com/extensions/automation#method-unclippedBoundsForRange
  */
-chrome.automation.AutomationNode.prototype.unclippedBoundsForRange = function(
-    startIndex, endIndex, callback) {};
+chrome.automation.AutomationNode.prototype.unclippedBoundsForRange = function(startIndex, endIndex, callback) {};
 
 /**
  * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.
@@ -1943,6 +2016,13 @@ chrome.automation.AutomationNode.prototype.nextFocus;
  * @see https://developer.chrome.com/extensions/automation#type-indexInParent
  */
 chrome.automation.AutomationNode.prototype.indexInParent;
+
+/**
+ * The sort direction of this node.
+ * @type {!chrome.automation.SortDirectionType}
+ * @see https://developer.chrome.com/extensions/automation#type-sortDirection
+ */
+chrome.automation.AutomationNode.prototype.sortDirection;
 
 /**
  * Does the default action based on this node's role. This is generally the same

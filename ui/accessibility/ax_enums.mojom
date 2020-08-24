@@ -686,6 +686,9 @@ enum FloatAttribute {
   // range [0, 900] represent keywords such as light, normal, bold, etc. 0 is
   // the default.
   kFontWeight,
+
+  // The text indent of the text, in mm.
+  kTextIndent,
 };
 
 // These attributes can take three states:

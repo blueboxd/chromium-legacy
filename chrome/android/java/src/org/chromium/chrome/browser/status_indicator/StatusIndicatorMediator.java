@@ -37,6 +37,8 @@ class StatusIndicatorMediator
             new HashSet<>();
     private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
     private Runnable mOnShowAnimationEnd;
+    private Runnable mInflateView;
+    private Runnable mDestroyView;
     private Supplier<Boolean> mCanAnimateNativeBrowserControls;
     private Callback<Runnable> mInvalidateCompositorView;
     private Runnable mRequestLayout;
@@ -52,12 +54,13 @@ class StatusIndicatorMediator
 
     /**
      * Constructs the status indicator mediator.
-     * @param model The {@link PropertyModel} for the status indicator.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} to listen to
      *                                     for the changes in controls offsets.
      * @param statusBarWithoutIndicatorColorSupplier A supplier that will get the status bar color
      *                                               without taking the status indicator into
      *                                               account.
+     * @param inflateView A {@link Runnable} to inflate the status indicator view before showing.
+     * @param destroyView A {@link Runnable} to destroy the status indicator view once hidden.
      * @param canAnimateNativeBrowserControls Will supply a boolean denoting whether the native
      *                                        browser controls can be animated. This will be false
      *                                        where we can't have a reliable cc::BCOM instance, e.g.
@@ -65,14 +68,14 @@ class StatusIndicatorMediator
      * @param invalidateCompositorView Callback to invalidate the compositor texture.
      * @param requestLayout Runnable to request layout for the view.
      */
-    StatusIndicatorMediator(PropertyModel model,
-            BrowserControlsStateProvider browserControlsStateProvider,
-            Supplier<Integer> statusBarWithoutIndicatorColorSupplier,
-            Supplier<Boolean> canAnimateNativeBrowserControls,
+    StatusIndicatorMediator(BrowserControlsStateProvider browserControlsStateProvider,
+            Supplier<Integer> statusBarWithoutIndicatorColorSupplier, Runnable inflateView,
+            Runnable destroyView, Supplier<Boolean> canAnimateNativeBrowserControls,
             Callback<Runnable> invalidateCompositorView, Runnable requestLayout) {
-        mModel = model;
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mStatusBarWithoutIndicatorColorSupplier = statusBarWithoutIndicatorColorSupplier;
+        mInflateView = inflateView;
+        mDestroyView = destroyView;
         mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControls;
         mInvalidateCompositorView = invalidateCompositorView;
         mRequestLayout = requestLayout;
@@ -110,6 +113,10 @@ class StatusIndicatorMediator
         mObservers.remove(observer);
     }
 
+    void setModel(PropertyModel model) {
+        mModel = model;
+    }
+
     // Animations
 
     // TODO(sinansahin): We might want to end the running animations if we need to hide before we're
@@ -137,6 +144,8 @@ class StatusIndicatorMediator
      */
     void animateShow(@NonNull String statusText, Drawable statusIcon, @ColorInt int backgroundColor,
             @ColorInt int textColor, @ColorInt int iconTint) {
+        mInflateView.run();
+
         Runnable initializeProperties = () -> {
             mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
             mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
@@ -169,27 +178,31 @@ class StatusIndicatorMediator
             @Override
             public void onEnd(Animator animation) {
                 initializeProperties.run();
+                mStatusBarAnimation = null;
             }
         });
         mStatusBarAnimation.start();
     }
 
     private void animateTextFadeIn() {
-        if (mTextFadeInAnimation == null) {
-            mTextFadeInAnimation = ValueAnimator.ofFloat(0.f, 1.f);
-            mTextFadeInAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            mTextFadeInAnimation.setDuration(FADE_TEXT_DURATION_MS);
-            mTextFadeInAnimation.addUpdateListener((anim -> {
-                final float currentAlpha = (float) anim.getAnimatedValue();
-                mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-            }));
-            mTextFadeInAnimation.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onStart(Animator animation) {
-                    mRequestLayout.run();
-                }
-            });
-        }
+        mTextFadeInAnimation = ValueAnimator.ofFloat(0.f, 1.f);
+        mTextFadeInAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        mTextFadeInAnimation.setDuration(FADE_TEXT_DURATION_MS);
+        mTextFadeInAnimation.addUpdateListener((anim -> {
+            final float currentAlpha = (float) anim.getAnimatedValue();
+            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
+        }));
+        mTextFadeInAnimation.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onStart(Animator animation) {
+                mRequestLayout.run();
+            }
+
+            @Override
+            public void onEnd(Animator animator) {
+                mTextFadeInAnimation = null;
+            }
+        });
         mTextFadeInAnimation.start();
     }
 
@@ -274,6 +287,7 @@ class StatusIndicatorMediator
             @Override
             public void onEnd(Animator animation) {
                 animationCompleteCallback.run();
+                mUpdateAnimatorSet = null;
             }
         });
         mUpdateAnimatorSet.start();
@@ -328,6 +342,7 @@ class StatusIndicatorMediator
                 } else {
                     updateVisibility(true);
                 }
+                mHideAnimatorSet = null;
             }
         });
         mHideAnimatorSet.start();
@@ -394,6 +409,7 @@ class StatusIndicatorMediator
             mBrowserControlsStateProvider.removeObserver(this);
             mIsHiding = false;
             mJavaLayoutHeight = 0;
+            mDestroyView.run();
         }
     }
 

@@ -253,6 +253,7 @@
 <translation id="1285484354230578868">Almacenar datos na túa conta de Google Drive</translation>
 <translation id="1288037062697528143">A opción Luz nocturna activarase automaticamente ao anoitecer</translation>
 <translation id="1288300545283011870">Propiedades da fala</translation>
+<translation id="1290331692326790741">Sinal feble</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porto esquerdo)</translation>
 <translation id="1293556467332435079">Ficheiros</translation>
 <translation id="1296911687402551044">Fixar pestana seleccionada</translation>
@@ -637,7 +638,6 @@
 <translation id="1743970419083351269">Pechar barra de descargas</translation>
 <translation id="1744060673522309905">O dispositivo non se puido vincular ao dominio. Asegúrate de que non superaches o número de dispositivos que se poden engadir.</translation>
 <translation id="1744108098763830590">páxina en segundo plano</translation>
-<translation id="1746901632585754462">Eliminaranse os datos do dispositivo</translation>
 <translation id="1748563609363301860">Podes gardar este contrasinal na túa Conta de Google ou só neste dispositivo</translation>
 <translation id="1750172676754093297">A túa chave de seguranza non pode almacenar impresións dixitais</translation>
 <translation id="1751249301761991853">Personalizar</translation>
@@ -1893,7 +1893,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3289668031376215426">Usar maiúsculas automaticamente</translation>
 <translation id="3289856944988573801">Para consultar se hai actualizacións, utiliza unha Ethernet ou unha wifi.</translation>
 <translation id="3290356915286466215">Sen protección</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> vai desactivar a depuración de ADB, o cal provocará que se restableza o dispositivo. Antes de reinicialo, fai unha copia de seguranza dos ficheiros.</translation>
 <translation id="3293644607209440645">Enviar esta páxina</translation>
 <translation id="32939749466444286">O contedor de Linux non se iniciou. Téntao de novo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
@@ -5044,6 +5043,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7225179976675429563">Non se atopa o tipo de rede</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (provedor: <ph name="VENDOR_ID" />, produto: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Manipula a configuración que determina se os sitios web poden utilizar funcións como a xeolocalización, o micrófono, a cámara etc.</translation>
+<translation id="7228523857728654909">Bloqueo de pantalla e inicio de sesión</translation>
 <translation id="7229570126336867161">EVDO obrigatorio</translation>
 <translation id="7230787553283372882">Personaliza o tamaño do texto</translation>
 <translation id="7232750842195536390">Produciuse un erro ao cambiar o nome</translation>
@@ -5869,7 +5869,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8226628635270268143">Escolle as fotos e os álbums que máis che gustan</translation>
 <translation id="8226742006292257240">A continuación atópase o contrasinal TPM xerado aleatoriamente que se asignou ao teu ordenador:</translation>
 <translation id="8227119283605456246">Anexar ficheiro</translation>
-<translation id="8229943166551236192">Eliminaranse os datos do dispositivo dentro de 24 horas</translation>
 <translation id="8230134520748321204">Queres gardar o contrasinal de <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Axuda aos nosos enxeñeiros a solucionar este problema. Explícanos o que sucedeu antes de que recibises a mensaxe de erro do perfil.</translation>
 <translation id="8236917170563564587">Mellor compartir esta pestana</translation>

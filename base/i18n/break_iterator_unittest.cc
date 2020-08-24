@@ -547,12 +547,12 @@ TEST(BreakIteratorTest, GetStringPiece) {
   ASSERT_TRUE(iter.Init());
 
   EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(iter.GetString(), iter.GetStringPiece().as_string());
+  EXPECT_EQ(iter.GetString(), iter.GetStringPiece());
   EXPECT_EQ(StringPiece16(ASCIIToUTF16("some")), iter.GetStringPiece());
 
   EXPECT_TRUE(iter.Advance());
   EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(iter.GetString(), iter.GetStringPiece().as_string());
+  EXPECT_EQ(iter.GetString(), iter.GetStringPiece());
   EXPECT_EQ(StringPiece16(ASCIIToUTF16("string")), iter.GetStringPiece());
 }
 

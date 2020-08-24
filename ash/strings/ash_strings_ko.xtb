@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">고정됨</translation>
 <translation id="4351433414020964307">어시스턴트 로드 중...</translation>
 <translation id="4356930093361201197">고대비 모드</translation>
-<translation id="4368583494516669646"><ph name="GIVEN_NAME" />님, 안녕히 주무세요.</translation>
 <translation id="4371348193907997655">전송 설정</translation>
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">위로 스크롤</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />시간 <ph name="MINUTES" />분 <ph name="SECONDS" />초</translation>
-<translation id="4970352680959471247"><ph name="GIVEN_NAME" />님, 편안한 저녁 되세요.</translation>
 <translation id="5030687792513154421">시간이 다 됨</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />이(가) 새 휴대전화에 연결되었습니다.</translation>
 <translation id="5035389544768382859">화면 구성 확인</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="54609108002486618">관리</translation>
 <translation id="5465662442746197494">도움이 필요하신가요?</translation>
-<translation id="5485091064403948243"><ph name="GIVEN_NAME" />님, 좋은 아침입니다.</translation>
 <translation id="5496819745535887422">관리자가 내 기기를 롤백하고 있습니다. 기기가 다시 시작되면 모든 데이터가 삭제됩니다.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">세션 종료</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">변환</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
-<translation id="7436182601308224670"><ph name="GIVEN_NAME" />님, 즐거운 오후 되세요.</translation>
 <translation id="7466449121337984263">센서를 터치하세요.</translation>
 <translation id="7497767806359279797">언어 및 키보드 선택</translation>
 <translation id="7526573455193969409">네트워크가 모니터링될 수 있음</translation>

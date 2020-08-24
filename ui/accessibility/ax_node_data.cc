@@ -1533,6 +1533,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::FloatAttribute::kFontWeight:
         result += " font_weight=" + value;
         break;
+      case ax::mojom::FloatAttribute::kTextIndent:
+        result += " text_indent=" + value;
+        break;
       case ax::mojom::FloatAttribute::kNone:
         break;
     }

@@ -403,11 +403,9 @@ void LocalWindowProxy::SetSecurityToken(const SecurityOrigin* origin) {
   //    value. Checking this can currently only be done in Blink, so require a
   //    full CanAccess() check.
   bool use_default_security_token =
-      world_->IsMainWorld() && (GetFrame()
-                                    ->Loader()
-                                    .StateMachine()
-                                    ->IsDisplayingInitialEmptyDocument() ||
-                                origin->DomainWasSetInDOM());
+      world_->IsMainWorld() &&
+      (GetFrame()->GetDocument()->IsInitialEmptyDocument() ||
+       origin->DomainWasSetInDOM());
   if (origin && !use_default_security_token)
     token = origin->ToTokenForFastCheck();
 

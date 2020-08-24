@@ -24,6 +24,7 @@ import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector.CrashInfoLoadersFactory;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
+import org.chromium.base.test.util.Batch;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,8 @@ import java.util.List;
  * Unit tests for WebViewCrashInfoCollector.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@OnlyRunIn(SINGLE_PROCESS)
+@OnlyRunIn(SINGLE_PROCESS) // These are unit tests
+@Batch(Batch.UNIT_TESTS)
 public class WebViewCrashInfoCollectorTest {
     private static class CrashInfoLoadersTestFactory extends CrashInfoLoadersFactory {
         private final List<CrashInfo> mCrashInfoList;

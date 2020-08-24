@@ -217,18 +217,9 @@ void XWindow::Init(const Configuration& config) {
   if (!activatable_ || config.override_redirect)
     req.override_redirect = x11::Bool32(true);
 
-  // It seems like there is a difference how tests are instantiated in case of
-  // non-Ozone X11 and Ozone. See more details in
-  // EnableTestConfigForPlatformWindows. The reason why this must be here is
-  // that we removed X11WindowBase in favor of the XWindow. The X11WindowBase
-  // was only used with PlatformWindow, which meant non-Ozone X11 did not use it
-  // and set override_redirect based only on |activatable_| variable or
-  // WindowType. But now as XWindow is subclassed by X11Window, which is also a
-  // PlatformWindow, and non-Ozone X11 uses it, we have to add this workaround
-  // here. Otherwise, tests for non-Ozone X11 fail.
-  // TODO(msisov): figure out usage of this for non-Ozone X11.
-  if (features::IsUsingOzonePlatform() && UseTestConfigForPlatformWindows())
-    req.override_redirect = x11::Bool32(true);
+#if defined(OS_CHROMEOS)
+  req.override_redirect = x11::Bool32(UseTestConfigForPlatformWindows());
+#endif
 
   override_redirect_ = req.override_redirect.has_value();
 

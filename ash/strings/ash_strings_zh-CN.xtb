@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">已固定</translation>
 <translation id="4351433414020964307">智能助理正在加载中…</translation>
 <translation id="4356930093361201197">高对比度模式</translation>
-<translation id="4368583494516669646"><ph name="GIVEN_NAME" />，晚安</translation>
 <translation id="4371348193907997655">投射设置</translation>
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="4379531060876907730">这些是您的触控笔工具</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">向上滚动</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> 小时 <ph name="MINUTES" /> 分 <ph name="SECONDS" /> 秒</translation>
-<translation id="4970352680959471247"><ph name="GIVEN_NAME" />，晚上好</translation>
 <translation id="5030687792513154421">时间到</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />已连接到新手机</translation>
 <translation id="5035389544768382859">确认显示屏配置</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="54609108002486618">托管</translation>
 <translation id="5465662442746197494">需要帮助？</translation>
-<translation id="5485091064403948243"><ph name="GIVEN_NAME" />，早上好</translation>
 <translation id="5496819745535887422">您的管理员正在回滚您的设备。设备重启后，所有数据都会被删除。</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">退出会话</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">换算</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
-<translation id="7436182601308224670"><ph name="GIVEN_NAME" />，下午好</translation>
 <translation id="7466449121337984263">请轻触传感器</translation>
 <translation id="7497767806359279797">选择语言和键盘布局</translation>
 <translation id="7526573455193969409">网络可能受到了监控</translation>

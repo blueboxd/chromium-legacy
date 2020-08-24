@@ -256,7 +256,8 @@ void PointerEventManager::SetElementUnderPointer(PointerEvent* pointer_event,
         element_under_pointer_.at(pointer_event->pointerId());
     if (!target) {
       element_under_pointer_.erase(pointer_event->pointerId());
-    } else if (target != node->target) {
+    } else if (target !=
+               element_under_pointer_.at(pointer_event->pointerId())->target) {
       element_under_pointer_.Set(
           pointer_event->pointerId(),
           MakeGarbageCollected<EventTargetAttributes>(target));
@@ -304,7 +305,7 @@ void PointerEventManager::HandlePointerInterruption(
   for (auto pointer_event : canceled_pointer_events) {
     // If we are sending a pointercancel we have sent the pointerevent to some
     // target before.
-    CHECK(element_under_pointer_.Contains(pointer_event->pointerId()));
+    DCHECK(element_under_pointer_.Contains(pointer_event->pointerId()));
     Element* target =
         element_under_pointer_.at(pointer_event->pointerId())->target;
 

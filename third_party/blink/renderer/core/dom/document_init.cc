@@ -105,6 +105,11 @@ DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,
   return *this;
 }
 
+DocumentInit& DocumentInit::ForInitialEmptyDocument(bool empty) {
+  is_initial_empty_document_ = empty;
+  return *this;
+}
+
 // static
 DocumentInit::Type DocumentInit::ComputeDocumentType(
     LocalFrame* frame,

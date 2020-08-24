@@ -15,8 +15,10 @@ std::vector<RendererType> GetRendererTypes(bool include_software,
   std::vector<RendererType> types;
   if (include_software)
     types.push_back(RendererType::kSoftware);
+#if defined(ENABLE_VIZ_GL_TESTS)
   types.push_back(RendererType::kGL);
   types.push_back(RendererType::kSkiaGL);
+#endif
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
   types.push_back(RendererType::kSkiaVulkan);
 #endif

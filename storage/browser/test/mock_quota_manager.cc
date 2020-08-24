@@ -83,17 +83,18 @@ bool MockQuotaManager::OriginHasData(const url::Origin& origin,
   return false;
 }
 
-void MockQuotaManager::GetOriginsModifiedSince(blink::mojom::StorageType type,
-                                               base::Time modified_since,
-                                               GetOriginsCallback callback) {
+void MockQuotaManager::GetOriginsModifiedBetween(blink::mojom::StorageType type,
+                                                 base::Time begin,
+                                                 base::Time end,
+                                                 GetOriginsCallback callback) {
   auto origins_to_return = std::make_unique<std::set<url::Origin>>();
   for (const auto& info : origins_) {
-    if (info.type == type && info.modified >= modified_since)
+    if (info.type == type && info.modified >= begin && info.modified < end)
       origins_to_return->insert(info.origin);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&MockQuotaManager::DidGetModifiedSince,
+      FROM_HERE, base::BindOnce(&MockQuotaManager::DidGetModifiedInTimeRange,
                                 weak_factory_.GetWeakPtr(), std::move(callback),
                                 std::move(origins_to_return), type));
 }
@@ -133,7 +134,7 @@ void MockQuotaManager::UpdateUsage(const url::Origin& origin,
   usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
 }
 
-void MockQuotaManager::DidGetModifiedSince(
+void MockQuotaManager::DidGetModifiedInTimeRange(
     GetOriginsCallback callback,
     std::unique_ptr<std::set<url::Origin>> origins,
     blink::mojom::StorageType storage_type) {

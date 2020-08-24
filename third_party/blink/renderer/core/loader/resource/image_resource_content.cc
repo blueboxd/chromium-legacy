@@ -484,7 +484,7 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
-        mojom::blink::DocumentPolicyFeature::kUnoptimizedLossyImages,
+        mojom::blink::DocumentPolicyFeature::kLossyImagesMaxBpp,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
   }

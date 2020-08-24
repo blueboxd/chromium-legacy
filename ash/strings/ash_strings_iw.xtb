@@ -14,6 +14,7 @@
 <translation id="109942774857561566">משעמם לי</translation>
 <translation id="1104084341931202936">צפייה בהגדרות הנגישות</translation>
 <translation id="1104621072296271835">ביחד, המכשירים שלך יוכלו לעבוד עוד יותר טוב</translation>
+<translation id="1119348796022671382">במצב 'צבעים מעוצבים' נעשה שימוש בצבעים שנשלפים מהטפט שלך להוספת קצת צבע לממשק.</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
 <translation id="1175572348579024023">גלילה</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">מופעלת</translation>
 <translation id="1419738280318246476">כדי לבצע את פעולת ההודעה יש לבטל את נעילת המכשיר</translation>
 <translation id="1420408895951708260">הפעלה או כיבוי של תאורת הלילה. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">צילום מסך בוצע ונשמר בלוח</translation>
 <translation id="1426410128494586442">כן</translation>
 <translation id="1455242230282523554">הצגת הגדרות השפה</translation>
 <translation id="1460620680449458626">צלילים מושתקים.</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">ניתן להשבית את התכונה 'גישה באמצעות מתג' דרך 'הגדרות' &gt; 'נגישות'.</translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
 <translation id="1665244008632896072">הפעלה או כיבוי של מצב כהה. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">במצב 'צבעים ניטרליים' לא נעשה שימוש בצבעים שנשלפו מהטפט, אלא בערכת גוונים ניטרליים, בהירים וכהים.</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
 <translation id="1698080062160024910">טיימר של <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">‏כתובת IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3033545621352269033">מופעל</translation>
+<translation id="3038571455154067151">‏לכניסה, יש להזין קוד גישה להורים ב-Family Link</translation>
 <translation id="3051128274746680507">פרופיל המשתמש בפיקוח שלך יוסר בקרוב. יש להיכנס לחשבון כדי לקבל מידע נוסף.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">מגש סטטוס, זמן <ph name="TIME" />,‏
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3977512764614765090">‏שיעור הטעינה של הסוללה הוא ‎<ph name="PERCENTAGE" />%‎ והטעינה נמשכת.</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
+<translation id="40062176907008878">כתב יד</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="4021716437419160885">גלילה למטה</translation>
 <translation id="4028481283645788203">יש להזין סיסמה כדי לענות על דרישות האבטחה המוגברות</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">כדי להציג הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> מנוהל על ידי <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">הגדרות של עיצוב כהה</translation>
 <translation id="4181841719683918333">שפות</translation>
 <translation id="4195877955194704651">לחצן קליקים אוטומטיים</translation>
 <translation id="4197790712631116042">כבוי</translation>
 <translation id="4212472694152630271">מעבר לקוד אימות</translation>
 <translation id="4215497585250573029">‏הגדרות VPN</translation>
 <translation id="4217571870635786043">הכתבה</translation>
+<translation id="4229328187280698237">מעבר למצב 'טאבלט'</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
@@ -307,7 +314,6 @@
 <translation id="4350065043422286972">הצמדות</translation>
 <translation id="4351433414020964307">‏Assistant בטעינה...</translation>
 <translation id="4356930093361201197">מצב ניגודיות גבוהה</translation>
-<translation id="4368583494516669646">לילה טוב <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">‏הגדרות העברה (cast)</translation>
 <translation id="4378551569595875038">התחברות...</translation>
 <translation id="4379531060876907730">אלה כלי הסטיילוס שלך</translation>
@@ -362,12 +368,12 @@
 <translation id="495046168593986294">גלילה למעלה</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> שעות <ph name="MINUTES" /> דקות <ph name="SECONDS" /> שניות</translation>
-<translation id="4970352680959471247">ערב טוב <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">נגמר הזמן</translation>
 <translation id="5035236842988137213">מכשיר <ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
 <translation id="5035389544768382859">אישור הגדרת המסך</translation>
 <translation id="5083553833479578423">‏אפשר להפעיל תכונות Assistant נוספות.</translation>
 <translation id="5114495209940374989">צילומי מסך</translation>
+<translation id="5123162024343028706">חלון צף למעלה</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
@@ -381,6 +387,7 @@
 <translation id="5297704307811127955">כבויה</translation>
 <translation id="5302048478445481009">שפה</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
+<translation id="5314219114274263156">התבצעה הקלטת מסך</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
 <translation id="5379115545237091094">יותר מדי ניסיונות</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL" />) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
@@ -391,7 +398,6 @@
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
 <translation id="54609108002486618">מנוהל</translation>
 <translation id="5465662442746197494">זקוק לעזרה?</translation>
-<translation id="5485091064403948243">בוקר טוב <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">מנהל המערכת מחזיר את המכשיר למצב קודם. כל הנתונים יימחקו אחרי שהמכשיר יופעל מחדש.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">יציאה מההפעלה</translation>
@@ -421,6 +427,7 @@
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5837036133683224804">הפסקת <ph name="ROUTE_TITLE" /> במכשיר <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">כבוי</translation>
+<translation id="5876666360658629066">יש להזין קוד גישה להורים</translation>
 <translation id="5887866489674258948">מצב כהה</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +488,7 @@
 <translation id="652139407789908527">במהלך העדכון, ייתכן שהתצוגה במסך תופסק לפרק זמן ארוך מהרגיל (עד דקה). אין ללחוץ על לחצן ההפעלה עד להשלמת העדכון.</translation>
 <translation id="6527303717912515753">שיתוף</translation>
 <translation id="6528179044667508675">נא לא להפריע</translation>
+<translation id="65320610082834431">אמוג'י</translation>
 <translation id="6537270692134705506">צילום מסך</translation>
 <translation id="6537924328260219877">עוצמת האות: <ph name="SIGNAL_STRENGTH" />, סוללת הטלפון: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">מעביר אל <ph name="RECEIVER_NAME" /></translation>
@@ -555,7 +563,6 @@
 <translation id="741244894080940828">המרה</translation>
 <translation id="742594950370306541">המצלמה נמצאת בשימוש.</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
-<translation id="7436182601308224670">אחה"צ טובים <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">יש לגעת בחיישן</translation>
 <translation id="7497767806359279797">בחירת שפה ומקלדת</translation>
 <translation id="7526573455193969409">ייתכן שהרשת מנוטרת</translation>
@@ -569,8 +576,10 @@
 <translation id="7568637526529101738">‏כשלוחצים לחיצה ימנית או לחיצה ארוכה, ה-Assistant מציג פריט מידע, למשל ההגדרה של המילה או המרת היחידות של הטקסט שבחרת.</translation>
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7579778809502851308">צילום מסך</translation>
+<translation id="7590883480672980941">הגדרות קלט</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7600875258240007829">הצגת כל ההתראות</translation>
+<translation id="7618774594543487847">ניטרלי</translation>
 <translation id="7624117708979618027">‎<ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">פתיחת ההגדרות של <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>
@@ -667,12 +676,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת</translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480">טיימר של <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">‏כדי להוסיף משתמש, יש להזין קוד גישה להורים ב-Family Link</translation>
 <translation id="8649101189709089199">הקראה</translation>
 <translation id="8652175077544655965">סגירת ההגדרות</translation>
 <translation id="8653151467777939995">צפייה בהגדרות של הודעות. ההודעות מופעלות</translation>
 <translation id="8660331759611631213">השורש הריבועי של 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">צפייה ברשימת הרשתות. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">מצב הצבעים</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>
 <translation id="8683506306463609433">מעקב הביצועים פעיל</translation>
@@ -696,6 +707,8 @@
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="890616557918890486">שינוי המקור</translation>
 <translation id="8909138438987180327">שיעור הטעינה של הסוללה הוא <ph name="PERCENTAGE" /> אחוזים.</translation>
+<translation id="8913384980486163186">מעוצב (ברירת מחדל)</translation>
+<translation id="8918251165865262378">מעבר למצב 'מחשב נייד'</translation>
 <translation id="8921554779039049422">+H</translation>
 <translation id="8921624153894383499">‏Google Assistant לא מדבר בשפה הזאת.</translation>
 <translation id="8936501819958976551">מושבתת</translation>

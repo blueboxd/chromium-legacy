@@ -64,7 +64,7 @@ namespace ui {
 
 namespace {
 
-constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
+static OzonePlatform::PlatformProperties kX11PlatformProperties{
     .needs_view_token = false,
     .custom_frame_pref_default = false,
     .use_system_title_bar = true,
@@ -83,7 +83,12 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
 class OzonePlatformX11 : public OzonePlatform,
                          public ui::OSExchangeDataProviderFactoryOzone {
  public:
-  OzonePlatformX11() { SetInstance(this); }
+  OzonePlatformX11() {
+    SetInstance(this);
+
+    kX11PlatformProperties.custom_frame_pref_default =
+        ui::GetCustomFramePrefDefault();
+  }
 
   ~OzonePlatformX11() override {}
 

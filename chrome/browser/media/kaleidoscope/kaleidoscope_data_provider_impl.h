@@ -51,7 +51,6 @@ class KaleidoscopeDataProviderImpl
   void GetCredentials(GetCredentialsCallback cb) override;
   void GetShouldShowFirstRunExperience(
       GetShouldShowFirstRunExperienceCallback cb) override;
-  void SetFirstRunExperienceCompleted() override;
   void SetFirstRunExperienceStep(
       media::mojom::KaleidoscopeFirstRunExperienceStep step) override;
   void GetAllMediaFeeds(GetAllMediaFeedsCallback cb) override;

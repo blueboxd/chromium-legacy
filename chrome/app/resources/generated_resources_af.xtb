@@ -253,6 +253,7 @@
 <translation id="1285484354230578868">Stoor data in jou Google Drive-rekening</translation>
 <translation id="1288037062697528143">Aandbeligting sal met sondsondergang outomaties aanskakel</translation>
 <translation id="1288300545283011870">Spraakeienskappe</translation>
+<translation id="1290331692326790741">Swak sein</translation>
 <translation id="1293264513303784526">USB C-toestel (poort aan linkerkant)</translation>
 <translation id="1293556467332435079">Lêers</translation>
 <translation id="1296911687402551044">Speld geselekteerde oortjie vas</translation>
@@ -638,7 +639,6 @@
 <translation id="1743970419083351269">Maak Aflaaibalk toe</translation>
 <translation id="1744060673522309905">Kan nie die toestel aan die domein koppel nie. Maak seker dat jy nie die aantal toestelle oorskry het wat jy kan byvoeg nie.</translation>
 <translation id="1744108098763830590">agtergrondbladsy</translation>
-<translation id="1746901632585754462">Toesteldata sal uitgevee word</translation>
 <translation id="1748563609363301860">Jy kan hierdie wagwoord in jou Google-rekening of net op hierdie toestel stoor</translation>
 <translation id="1750172676754093297">Jou sekuriteitsleutel kan nie vingerafdrukke berg nie</translation>
 <translation id="1751249301761991853">Persoonlik</translation>
@@ -1894,7 +1894,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3289668031376215426">Outohoofletters</translation>
 <translation id="3289856944988573801">Gebruik asseblief Ethernet of Wi-Fi om te kyk of daar opdaterings is.</translation>
 <translation id="3290356915286466215">Onbeveilig</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> deaktiveer tans ADB-ontfouting, wat jou toestel sal terugstel. Rugsteun jou lêers voordat jy weer begin.</translation>
 <translation id="3293644607209440645">Stuur hierdie bladsy</translation>
 <translation id="32939749466444286">Die Linux-houer het nie begin nie. Probeer asseblief weer.</translation>
 <translation id="3294437725009624529">Gas</translation>
@@ -5046,6 +5045,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7225179976675429563">Netwerktipe ontbreek</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Verkoper: <ph name="VENDOR_ID" />; Produk: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Manipuleer instellings wat spesifiseer of webwerwe kenmerke soos geoligging, mikrofoon, kamera, ens. kan gebruik.</translation>
+<translation id="7228523857728654909">Skermslot en aanmelding</translation>
 <translation id="7229570126336867161">Benodig EVDO</translation>
 <translation id="7230787553283372882">Pasmaak jou teksgrootte</translation>
 <translation id="7232750842195536390">Kon nie hernoem nie</translation>
@@ -5871,7 +5871,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8226628635270268143">Kies jou gunstelingfoto's en -albums</translation>
 <translation id="8226742006292257240">Hieronder is die TPM-wagwoord wat lukraak gegenereer is en wat aan jou rekenaar toegewys is:</translation>
 <translation id="8227119283605456246">Heg lêer aan</translation>
-<translation id="8229943166551236192">Toesteldata sal binne 24 uur uitgevee word</translation>
 <translation id="8230134520748321204">Stoor wagwoord vir <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Help asseblief ons ingenieurs om hierdie probleem op te los. Sê vir ons wat gebeur het net voordat jy die profielfoutboodskap gekry het:</translation>
 <translation id="8236917170563564587">Deel eerder hierdie oortjie</translation>

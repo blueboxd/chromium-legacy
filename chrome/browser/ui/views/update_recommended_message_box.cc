@@ -48,11 +48,11 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
       IDS_UPDATE_RECOMMENDED, BrowserList::GetIncognitoBrowserCount());
 #endif
 
-  views::MessageBoxView::InitParams params(update_message);
-  params.message_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      ChromeDistanceMetric::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   // Also deleted when the window closes.
-  message_box_view_ = new views::MessageBoxView(params);
+  message_box_view_ = new views::MessageBoxView(update_message);
+  message_box_view_->SetMessageWidth(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          ChromeDistanceMetric::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::UPDATE_RECOMMENDED);
 }
 

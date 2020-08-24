@@ -276,8 +276,8 @@ void OtaActivatorImpl::AttemptConnectionToCellularNetwork() {
   if (!cellular_network->IsConnectingOrConnected()) {
     network_connection_handler_->ConnectToNetwork(
         cellular_network->path(), base::DoNothing(),
-        base::Bind(&OnNetworkConnectionError), false /* check_error_state */,
-        ConnectCallbackMode::ON_STARTED);
+        base::BindOnce(&OnNetworkConnectionError),
+        false /* check_error_state */, ConnectCallbackMode::ON_STARTED);
     return;
   }
 
@@ -332,11 +332,11 @@ void OtaActivatorImpl::AttemptToCompleteActivation() {
 
   network_activation_handler_->CompleteActivation(
       GetCellularNetworkState()->path(),
-      base::Bind(&OtaActivatorImpl::FinishActivationAttempt,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 mojom::ActivationResult::kSuccessfullyStartedActivation),
-      base::Bind(&OtaActivatorImpl::OnCompleteActivationError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&OtaActivatorImpl::FinishActivationAttempt,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     mojom::ActivationResult::kSuccessfullyStartedActivation),
+      base::BindOnce(&OtaActivatorImpl::OnCompleteActivationError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OtaActivatorImpl::OnCompleteActivationError(

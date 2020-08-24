@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
+#include "chrome/updater/update_service.h"
 
 // Definitions for native COM updater classes.
 
@@ -21,6 +22,37 @@ namespace updater {
 // registration and unregistration code in both server and service_main
 // compilation units.
 //
+// This class implements the IUpdateState interface and exposes it as a COM
+// object. The purpose of this class is to remote the state of the
+// |UpdateService|. Instances of this class are typically passed as arguments
+// to RPC method calls which model COM events.
+class UpdateStateImpl
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUpdateState> {
+ public:
+  explicit UpdateStateImpl(const UpdateService::UpdateState& update_state)
+      : update_state_(update_state) {}
+  UpdateStateImpl(const UpdateStateImpl&) = delete;
+  UpdateStateImpl& operator=(const UpdateStateImpl&) = delete;
+
+  // Overrides for IUpdateState.
+  IFACEMETHODIMP get_state(LONG* state) override;
+  IFACEMETHODIMP get_appId(BSTR* app_id) override;
+  IFACEMETHODIMP get_nextVersion(BSTR* next_version) override;
+  IFACEMETHODIMP get_downloadedBytes(LONGLONG* downloaded_bytes) override;
+  IFACEMETHODIMP get_totalBytes(LONGLONG* total_bytes) override;
+  IFACEMETHODIMP get_installProgress(LONG* install_progress) override;
+  IFACEMETHODIMP get_errorCategory(LONG* error_category) override;
+  IFACEMETHODIMP get_errorCode(LONG* error_code) override;
+  IFACEMETHODIMP get_extraCode1(LONG* extra_code1) override;
+
+ private:
+  ~UpdateStateImpl() override = default;
+
+  const UpdateService::UpdateState update_state_;
+};
+
 // This class implements the ICompleteStatus interface and exposes it as a COM
 // object.
 class CompleteStatusImpl

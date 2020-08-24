@@ -113,31 +113,28 @@ class VIEWS_EXPORT Textfield : public View,
   // textfield.
   const base::string16& GetText() const;
 
-  // Sets the text currently displayed in the Textfield and the cursor position.
-  // Calls to |SetText| are often followed by updating the selection or cursor,
-  // which does not update the edit history. I.e. the cursor position after
-  // redoing this change will be determined by |cursor_position| here and not by
-  // any subsequent calls to e.g. |SetSelectedRange|. Selections are not
-  // explicitly set here since redo's clear the selection anyways.
+  // Sets the text currently displayed in the Textfield.
   void SetText(const base::string16& new_text);
-  void SetText(const base::string16& new_text, size_t cursor_position);
 
-  // Similar to calling SetText followed by SetSelectedRange calls, but will
-  // dedupe some calls. Notably, this prevents OnCaretBoundsChanged from being
-  // called multiple times for a single change which can cause issues for
-  // accessibility tools.
-  // - |text| and |cursor_position| see SetText() comment above.
-  // - |scroll_positions| a vector of positions to scroll into view. This can
-  // contain multiple positions which can be useful to e.g. ensure multiple
-  // positions are in view (if possible). Scrolls are applied in the order of
-  // |scroll_positions|; i.e., later positions will have priority over earlier
-  // positions.
-  // - |range| is used to invoke SetSelectedRange and will also be scrolled to.
-  void SetTextAndScrollAndSelectRange(
-      const base::string16& text,
-      const size_t cursor_position,
-      const std::vector<size_t>& scroll_positions,
-      const gfx::Range range);
+  // Sets the text currently displayed in the Textfield and the cursor position.
+  // Does not fire notifications about the caret bounds changing. This is
+  // intended for low-level use, where callers need precise control over what
+  // notifications are fired when, e.g. to avoid firing duplicate accessibility
+  // notifications, which can cause issues for accessibility tools. Updating the
+  // selection or cursor separately afterwards does not update the edit history,
+  // i.e. the cursor position after redoing this change will be determined by
+  // |cursor_position| and not by subsequent calls to e.g. SetSelectedRange().
+  void SetTextWithoutCaretBoundsChangeNotification(const base::string16& text,
+                                                   size_t cursor_position);
+
+  // Scrolls all of |scroll_positions| into view, if possible. For each
+  // position, the minimum scrolling change necessary to just bring the position
+  // into view is applied. |scroll_positions| are applied in order, so later
+  // positions will have priority over earlier positions if not all can be
+  // visible simultaneously.
+  // NOTE: Unlike MoveCursorTo(), this will not fire any accessibility
+  // notifications.
+  void Scroll(const std::vector<size_t>& scroll_positions);
 
   // Appends the given string to the previously-existing text in the field.
   void AppendText(const base::string16& new_text);
@@ -235,7 +232,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Selects the specified logical text range.
   void SetSelectedRange(const gfx::Range& range);
-  void SetSelectedRange(const gfx::Range& range, bool primary);
+
+  // Without clearing the current selected range, adds |range| as an additional
+  // selection.
+  // NOTE: Unlike SetSelectedRange(), this will not fire any accessibility
+  // notifications.
+  void AddSecondarySelectedRange(const gfx::Range& range);
 
   // Gets the text selection model.
   const gfx::SelectionModel& GetSelectionModel() const;
@@ -469,6 +471,8 @@ class VIEWS_EXPORT Textfield : public View,
  private:
   friend class TextfieldTestApi;
 
+  enum class TextChangeType { kNone, kInternal, kUserTriggered };
+
   // View overrides:
   // Declared final since overriding by subclasses would interfere with the
   // accounting related to the scheduled text edit command. Subclasses should
@@ -504,7 +508,12 @@ class VIEWS_EXPORT Textfield : public View,
   void UpdateSelectionBackgroundColor();
 
   // Does necessary updates when the text and/or cursor position changes.
-  void UpdateAfterChange(bool text_changed, bool cursor_changed);
+  // If |notify_caret_bounds_changed| is not explicitly set, it will be computed
+  // based on whether either of the other arguments is set.
+  void UpdateAfterChange(
+      TextChangeType text_change_type,
+      bool cursor_changed,
+      base::Optional<bool> notify_caret_bounds_changed = base::nullopt);
 
   // Updates cursor visibility and blinks the cursor if needed.
   void ShowCursor();

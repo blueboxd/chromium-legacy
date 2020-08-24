@@ -92,7 +92,8 @@ bool GetAppOutputInternal(CommandLine::StringPieceType cl,
   win::ScopedProcessInformation proc_info(temp_process_info);
   debug::GlobalActivityTracker* tracker = debug::GlobalActivityTracker::Get();
   if (tracker)
-    tracker->RecordProcessLaunch(proc_info.process_id(), cl.as_string());
+    tracker->RecordProcessLaunch(proc_info.process_id(),
+                                 CommandLine::StringType(cl));
 
   // Close our writing end of pipe now. Otherwise later read would not be able
   // to detect end of child's output.

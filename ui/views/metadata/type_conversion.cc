@@ -203,8 +203,7 @@ base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
 
   for (auto v : shadow_value_strings) {
     base::string16 member_string;
-    base::RemoveChars(v.as_string(), base::ASCIIToUTF16("()rgba"),
-                      &member_string);
+    base::RemoveChars(v, base::ASCIIToUTF16("()rgba"), &member_string);
     const auto members = base::SplitStringPiece(
         member_string, base::ASCIIToUTF16(","), base::TRIM_WHITESPACE,
         base::SPLIT_WANT_NONEMPTY);

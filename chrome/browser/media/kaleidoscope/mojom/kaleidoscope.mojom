@@ -61,10 +61,6 @@ interface KaleidoscopeDataProvider {
   // Returns true if the first run experience should be shown.
   GetShouldShowFirstRunExperience() => (bool should_show_first_run);
 
-  // Called when the user successfully completes the first run experience.
-  // DEPRECATED: will be removed as soon as a private-side CL also lands.
-  SetFirstRunExperienceCompleted();
-
   // While the user is on the First Run Experience, this will be called each
   // time they move onto a different step. Used to set prefs and record metrics
   // on what step the user stopped at.

@@ -14,9 +14,10 @@ enum DocumentPolicyFeature {
   kLosslessImagesMaxBpp = 2,
   // Controls whether the browser should allow navigations that cause the page to scroll.
   kForceLoadAtTop = 3,
-
+  // Takes a parameter, |bpp|, i.e. byte-per-pixel ratio, that images
+  // needs to obey.
   kLosslessImagesStrictMaxBpp = 4,
-  kUnoptimizedLossyImages = 5,
+  kLossyImagesMaxBpp = 5,
   // Takes a parameter, |scale_ratio|, and restricts source image sizes to be
   // no more than |scale_ratio| x larger than the image's containing block.
   kOversizedImages = 6,

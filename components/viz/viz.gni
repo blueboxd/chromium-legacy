@@ -4,6 +4,10 @@
 
 import("//testing/test.gni")
 
+# Fuchsia doesn't support GL rendering so there is no need to run tests for
+# that code path.
+enable_viz_gl_tests = !is_fuchsia
+
 viz_remove_configs = []
 viz_add_configs = [ "//build/config:precompiled_headers" ]
 

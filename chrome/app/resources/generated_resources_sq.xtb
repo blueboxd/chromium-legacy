@@ -253,6 +253,7 @@
 <translation id="1285484354230578868">Ruaji të dhënat në llogarinë tënde të "Diskut të Google"</translation>
 <translation id="1288037062697528143">"Drita e natës" do të aktivizohet automatikisht kur të perëndojë dielli</translation>
 <translation id="1288300545283011870">Karakteristikat e ligjërimit</translation>
+<translation id="1290331692326790741">Sinjal i dobët</translation>
 <translation id="1293264513303784526">Pajisja USB-C (porta majtas)</translation>
 <translation id="1293556467332435079">Skedarët</translation>
 <translation id="1296911687402551044">Gozhdo skedën e zgjedhur</translation>
@@ -635,7 +636,6 @@
 <translation id="1743970419083351269">Mbyll shiritin e shkarkimeve</translation>
 <translation id="1744060673522309905">Pajisja nuk mund t'i bashkohet domenit. Sigurohu që nuk ke tejkaluar numrin e pajisjeve që mund të shtosh.</translation>
 <translation id="1744108098763830590">faqja e sfondit</translation>
-<translation id="1746901632585754462">Të dhënat e pajisjes do të fshihen</translation>
 <translation id="1748563609363301860">Mund ta ruash këtë fjalëkalim në "Llogarinë tënde të Google" ose vetëm në këtë pajisje</translation>
 <translation id="1750172676754093297">Çelësi yt i sigurisë nuk mund t'i ruajë gjurmët e gishtave</translation>
 <translation id="1751249301761991853">Personale</translation>
@@ -1891,7 +1891,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3289668031376215426">Kapitalizim automatik</translation>
 <translation id="3289856944988573801">Për të kontrolluar për përditësime, përdor rrjetin Ethernet ose Wi-Fi.</translation>
 <translation id="3290356915286466215">I pasiguruar</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> po çaktivizon korrigjimin e ADB-së, që do ta rivendosë pajisjen tënde. Rezervo skedarët përpara se të fillosh.</translation>
 <translation id="3293644607209440645">Dërgoje këtë faqe</translation>
 <translation id="32939749466444286">Kontejneri i Linux nuk filloi. Provo sërish.</translation>
 <translation id="3294437725009624529">Vizitor</translation>
@@ -5042,6 +5041,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7225179976675429563">Mungon lloji i rrjetit</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Tregtuesi: <ph name="VENDOR_ID" />, Produkti: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Manipulo cilësimet që specifikojnë nëse sajtet e uebit mund të përdorin funksione si vendndodhja gjeografike, mikrofoni, kamera etj.</translation>
+<translation id="7228523857728654909">Kyçja e ekranit dhe identifikimi</translation>
 <translation id="7229570126336867161">Nevojitet EVDO</translation>
 <translation id="7230787553283372882">Personalizo madhësinë e tekstit</translation>
 <translation id="7232750842195536390">Riemërtimi dështoi</translation>
@@ -5866,7 +5866,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8226628635270268143">Zgjidh fotografitë dhe albumet e tua të preferuara</translation>
 <translation id="8226742006292257240">Poshtë është fjalëkalimi TPM i gjeneruar rastësisht që i është caktuar kompjuterit tënd.</translation>
 <translation id="8227119283605456246">Bashkëngjit skedarin</translation>
-<translation id="8229943166551236192">Të dhënat e pajisjes do të fshihen brenda 24 orësh</translation>
 <translation id="8230134520748321204">Të ruhet fjalëkalimi për <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Ndihmoji inxhinierët tanë ta rregullojnë këtë problem. Na trego se çfarë ndodhi përpara se të merrje mesazhin e gabimit të profilit:</translation>
 <translation id="8236917170563564587">Ndaj këtë skedë më mirë</translation>

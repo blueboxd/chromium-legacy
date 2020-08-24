@@ -2772,6 +2772,14 @@ enum WebFeature {
   kPluginFilename = 3444,
   kPluginDescription = 3445,
   kSubresourceWebBundles = 3446,
+  kRTCPeerConnectionSetRemoteDescriptionPromise = 3447,
+  kRTCPeerConnectionSetLocalDescriptionPromise = 3448,
+  kRTCPeerConnectionCreateOfferPromise = 3449,
+  kRTCPeerConnectionCreateAnswerPromise = 3450,
+  kRTCPeerConnectionSetRemoteDescription = 3451,
+  kRTCPeerConnectionSetLocalDescription = 3452,
+  kRTCPeerConnectionCreateOffer = 3453,
+  kRTCPeerConnectionCreateAnswer = 3454,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

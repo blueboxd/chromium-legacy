@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordUserAction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /** Helper class for recording metrics related to TabbedPaintPreview. */
 public class TabbedPaintPreviewMetricsHelper {
@@ -56,11 +57,19 @@ public class TabbedPaintPreviewMetricsHelper {
         mShownTime = System.currentTimeMillis();
     }
 
-    void onFirstPaint(long activityOnCreateTimestamp) {
+    void onFirstPaint(long activityOnCreateTimestamp, Callable<Boolean> wasBackgrounded) {
         mFirstPaintHappened = true;
-        RecordHistogram.recordLongTimesHistogram(
-                "Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap",
-                SystemClock.elapsedRealtime() - activityOnCreateTimestamp);
+        boolean shouldRecordHistogram = false;
+        try {
+            shouldRecordHistogram = !wasBackgrounded.call();
+        } catch (Exception e) {
+            // no-op just proceed.
+        }
+        if (shouldRecordHistogram) {
+            RecordHistogram.recordLongTimesHistogram(
+                    "Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap",
+                    SystemClock.elapsedRealtime() - activityOnCreateTimestamp);
+        }
     }
 
     void onTabLoadFinished() {

@@ -126,9 +126,8 @@ std::wstring GetServiceName(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data) {
 
   // Windows pads this string with a variable number of NUL bytes for no
   // discernible reason.
-  return base::TrimString(*property, base::WStringPiece(L"\0", 1),
-                          base::TRIM_TRAILING)
-      .as_string();
+  return std::wstring(base::TrimString(*property, base::WStringPiece(L"\0", 1),
+                                       base::TRIM_TRAILING));
 }
 
 bool GetDeviceInterfaceDetails(HDEVINFO dev_info,

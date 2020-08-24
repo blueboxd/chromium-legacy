@@ -1,3 +1,5 @@
+# Note: don't add "+chrome/browser/ui" here, because it will
+# cause a circular dependency.  See crbug.com/1030821.
 include_rules = [
   "+components/openscreen_platform",
   "+services/network",

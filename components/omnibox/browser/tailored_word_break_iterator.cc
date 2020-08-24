@@ -55,7 +55,7 @@ base::StringPiece16 TailoredWordBreakIterator::GetStringPiece() const {
 }
 
 base::string16 TailoredWordBreakIterator::GetString() const {
-  return GetStringPiece().as_string();
+  return base::string16(GetStringPiece());
 }
 
 size_t TailoredWordBreakIterator::prev() const {

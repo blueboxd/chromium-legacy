@@ -5385,6 +5385,12 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
+    {"safe-browsing-client-side-detection-android",
+     flag_descriptions::kSafeBrowsingClientSideDetectionAndroidName,
+     flag_descriptions::kSafeBrowsingClientSideDetectionAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(safe_browsing::kClientSideDetectionForAndroid)},
+
     {"safe-browsing-enhanced-protection-android",
      flag_descriptions::kSafeBrowsingEnhancedProtectionAndroidName,
      flag_descriptions::kSafeBrowsingEnhancedProtectionAndroidDescription,
@@ -5520,19 +5526,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(
          previews::switches::kEnableDeferAllScriptWithoutOptimizationHints)},
-
-#if defined(OS_CHROMEOS)
-    {"enable-edu-coexistence", flag_descriptions::kEnableEduCoexistenceName,
-     flag_descriptions::kEnableEduCoexistenceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistence)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
-    {"enable-edu-coexistence-consent-log",
-     flag_descriptions::kEnableEduCoexistenceConsentLogName,
-     flag_descriptions::kEnableEduCoexistenceConsentLogDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistenceConsentLog)},
-#endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
     {"enable-assistant-routines",

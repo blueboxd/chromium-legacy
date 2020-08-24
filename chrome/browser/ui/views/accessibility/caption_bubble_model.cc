@@ -29,7 +29,6 @@ void CaptionBubbleModel::SetObserver(CaptionBubble* observer) {
     return;
   observer_ = observer;
   if (observer_) {
-    observer_->OnReadyChanged();
     observer_->OnTextChanged();
     observer_->OnErrorChanged();
   }
@@ -53,21 +52,7 @@ void CaptionBubbleModel::Close() {
   final_text_.clear();
   partial_text_.clear();
   is_closed_ = true;
-  is_ready_ = false;
   OnTextChanged();
-}
-
-void CaptionBubbleModel::OnReady() {
-  final_text_.clear();
-  partial_text_.clear();
-  is_ready_ = true;
-  // The label text must not be empty when it is displayed, so there is a
-  // special OnReadyChanged() function in the CaptionBubble that handles the
-  // on_ready state change.
-  // TODO(1055150): Fix the bug in RenderText and then change this to
-  // OnTextChanged().
-  if (observer_)
-    observer_->OnReadyChanged();
 }
 
 void CaptionBubbleModel::OnError() {
@@ -85,10 +70,8 @@ void CaptionBubbleModel::DidFinishNavigation(
   final_text_.clear();
   partial_text_.clear();
   is_closed_ = false;
-  is_ready_ = false;
   has_error_ = false;
   if (observer_) {
-    observer_->OnReadyChanged();
     observer_->OnTextChanged();
     observer_->OnErrorChanged();
   }

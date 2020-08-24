@@ -417,7 +417,7 @@ void AutofillAgent::DoAcceptDataListSuggestion(
     if (parts.size() == 0)
       parts.push_back(base::StringPiece16());
 
-    base::string16 last_part = parts.back().as_string();
+    base::string16 last_part(parts.back());
     // We want to keep just the leading whitespace.
     for (size_t i = 0; i < last_part.size(); ++i) {
       if (!base::IsUnicodeWhitespace(last_part[i])) {

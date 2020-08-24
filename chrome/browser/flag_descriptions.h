@@ -363,12 +363,6 @@ extern const char kEnableDeferAllScriptDescription[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsName[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
 
-extern const char kEnableEduCoexistenceName[];
-extern const char kEnableEduCoexistenceDescription[];
-
-extern const char kEnableEduCoexistenceConsentLogName[];
-extern const char kEnableEduCoexistenceConsentLogDescription[];
-
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
@@ -1766,6 +1760,9 @@ extern const char kRelatedSearchesDescription[];
 
 extern const char kReportFeedUserActionsName[];
 extern const char kReportFeedUserActionsDescription[];
+
+extern const char kSafeBrowsingClientSideDetectionAndroidName[];
+extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
 
 extern const char kSafeBrowsingEnhancedProtectionAndroidName[];
 extern const char kSafeBrowsingEnhancedProtectionAndroidDescription[];

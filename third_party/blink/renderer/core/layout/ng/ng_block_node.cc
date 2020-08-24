@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -348,6 +349,7 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 }
 
 bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
+                                      const NGConstraintSpace& constraint_space,
                                       const NGBlockNode& node) {
   // Obviously can't use the cache if our intrinsic logical widths are dirty.
   if (node.GetLayoutBox()->IntrinsicLogicalWidthsDirty())
@@ -370,6 +372,11 @@ bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
       input.percentage_resolution_block_size !=
           node.GetLayoutBox()
               ->IntrinsicLogicalWidthsPercentageResolutionBlockSize())
+    return false;
+
+  if (node.IsNGTableCell() && To<LayoutNGTableCell>(node.GetLayoutBox())
+                                      ->IntrinsicLogicalWidthsBorderSizes() !=
+                                  constraint_space.TableCellBorders())
     return false;
 
   return true;
@@ -765,7 +772,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
   }
 
   bool can_use_cached_intrinsic_inline_sizes =
-      CanUseCachedIntrinsicInlineSizes(input, *this);
+      CanUseCachedIntrinsicInlineSizes(input, *constraint_space, *this);
 
   // Use our cached sizes if either:
   //  - The %-block-sizes match.
@@ -869,6 +876,11 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
       input.percentage_resolution_block_size, depends_on_percentage_block_size,
       /* child_depends_on_percentage_block_size */
       result.depends_on_percentage_block_size, &result.sizes);
+
+  if (IsNGTableCell()) {
+    To<LayoutNGTableCell>(box_)->SetIntrinsicLogicalWidthsBorderSizes(
+        constraint_space->TableCellBorders());
+  }
 
   // We report to our parent if we depend on the %-block-size if we used the
   // input %-block-size, or one of children said it depended on this.

@@ -658,11 +658,8 @@ bool LocalFrame::ShouldClose() {
 }
 
 void LocalFrame::DetachChildren() {
-  DCHECK(loader_.StateMachine()->CreatingInitialEmptyDocument() ||
-         GetDocument());
-
-  if (Document* document = this->GetDocument())
-    ChildFrameDisconnector(*document).Disconnect();
+  DCHECK(GetDocument());
+  ChildFrameDisconnector(*GetDocument()).Disconnect();
 }
 
 void LocalFrame::DidAttachDocument() {
@@ -1141,27 +1138,25 @@ void LocalFrame::WindowSegmentsChanged(
   if (!RuntimeEnabledFeatures::CSSFoldablesEnabled())
     return;
 
+  DCHECK(IsLocalRoot());
+
   // A change in the window segments requires re-evaluation of media queries
   // for the local frame subtree (the segments affect the "screen-spanning"
   // feature).
   MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange::kOther);
 
-  // Also need to update the environment variables related to window segments
-  // on the local frame subtree.
+  // Also need to update the environment variables related to window segments.
   UpdateCSSFoldEnvironmentVariables(window_segments);
-  for (Frame* child = Tree().FirstChild(); child;
-       child = child->Tree().NextSibling()) {
-    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
-      child_local_frame->UpdateCSSFoldEnvironmentVariables(window_segments);
-  }
 }
 
 void LocalFrame::UpdateCSSFoldEnvironmentVariables(
     const WebVector<WebRect>& window_segments) {
   DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
 
-  DocumentStyleEnvironmentVariables& vars =
-      GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+  // Update the variable values on the root instance so that documents that
+  // are created after the values change automatically have the right values.
+  StyleEnvironmentVariables& vars =
+      StyleEnvironmentVariables::GetRootInstance();
 
   // CSS environment variables related to window segments currently only
   // expose values for a single fold (i.e. if there are two segments). In all
@@ -1922,7 +1917,7 @@ bool LocalFrame::NeedsOcclusionTracking() const {
 void LocalFrame::ForceSynchronousDocumentInstall(
     const AtomicString& mime_type,
     scoped_refptr<SharedBuffer> data) {
-  CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
+  CHECK(GetDocument()->IsInitialEmptyDocument());
   DCHECK(!Client()->IsLocalFrameClientImpl());
 
   // Any Document requires Shutdown() before detach, even the initial empty
@@ -1933,8 +1928,6 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   DomWindow()->InstallNewDocument(DocumentInit::Create()
                                       .WithWindow(DomWindow(), nullptr)
                                       .WithTypeFrom(mime_type));
-  loader_.StateMachine()->AdvanceTo(
-      FrameLoaderStateMachine::kCommittedFirstRealLoad);
 
   GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
                                    AtomicString("UTF-8"));

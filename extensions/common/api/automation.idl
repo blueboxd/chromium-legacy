@@ -486,6 +486,67 @@ enum EventMoveDirectionType {
   backward
 };
 
+// A sort applied to a table row or column header.
+enum SortDirectionType {
+  unsorted,
+  ascending,
+  descending,
+  other
+};
+
+// A set of events inferred by Chrome based upon the tree and node data.
+enum GeneratedEventType {
+  accessKeyChanged,
+  atomicChanged,
+  autoCompleteChanged,
+  busyChanged,
+  classNameChanged,
+  collapsed,
+  describedByChanged,
+  descriptionChanged,
+  dropeffectChanged,
+  enabledChanged,
+  expanded,
+  focusChanged,
+  flowFromChanged,
+  flowToChanged,
+  grabbedChanged,
+  haspopupChanged,
+  hierarchicalLevelChanged,
+  ignoredChanged,
+  imageAnnotationChanged,
+  keyShortcutsChanged,
+  labeledByChanged,
+  languageChanged,
+  layoutInvalidated,   // fired when aria-busy goes false
+  liveRegionNodeChanged,  // fired on a node within a live region.
+  liveRelevantChanged,
+  liveStatusChanged,
+  menuItemSelected,
+  multilineStateChanged,
+  multiselectableStateChanged,
+  nameChanged,
+  objectAttributeChanged,
+  otherAttributeChanged,
+  placeholderChanged,
+  portalActivated,
+  positionInSetChanged,
+  relatedNodeChanged,
+  readonlyChanged,
+  requiredStateChanged,
+  roleChanged,
+  scrollHorizontalPositionChanged,
+  scrollVerticalPositionChanged,
+  selectedChanged,
+  setSizeChanged,
+  sortChanged,
+  subtreeCreated,
+  textAttributeChanged,
+  valueMaxChanged,
+  valueMinChanged,
+  valueStepChanged
+};
+
   dictionary Rect {
     long left;
     long top;
@@ -556,6 +617,9 @@ enum EventMoveDirectionType {
 
     // The type of the event.
     EventType type;
+
+    // The type of the generated event, if any.
+    GeneratedEventType? generatedType;
 
     // The source of this event.
     DOMString eventFrom;
@@ -1172,6 +1236,9 @@ enum EventMoveDirectionType {
     // The index of this node in its parent node's list of children. If this is
     // the root node, this will be undefined.
     long? indexInParent;
+
+    // The sort direction of this node.
+    SortDirectionType sortDirection;
 
     //
     // Actions.

@@ -2701,10 +2701,10 @@ Here are some things you can try to get started.
       </message>
       <!-- Switch Between TABLET/LAPTOP MODE-->
       <message name="IDS_ASH_SWITCH_TO_TABLET_MODE" desc="Alert of switching to tablet mode.">
-        Switch to tablet mode
+        Switched to tablet mode
       </message>
       <message name="IDS_ASH_SWITCH_TO_LAPTOP_MODE" desc="Alert of switching to laptop mode.">
-        Switch to laptop mode
+        Switched to laptop mode
       </message>
     </messages>
   </release>

@@ -1,7 +1,7 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Revision: 924f28bdb1f32b7504d6813ee911ba1949be6130
-Version: 2.2.4-dev
+Revision: e13467c2cee237bceaa4d002472ede43d9a116e8
+Version: unknown
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
@@ -26,7 +26,13 @@ Update Instructions:
 # Download R8:
 git clone https://r8.googlesource.com/r8
 cd r8
+# Find latest tag:
+git fetch origin --tags
+git tag -l  # Often unnecessary as output from the fetch includes recent tags.
+git checkout $TAG  # e.g. 2.2.9-dev
+
 # Apply patches:
+git checkout -b my_branch
 git am $CHROMIUM_SRC/third_party/r8/patches/*.patch
 # Build:
 tools/gradle.py r8
@@ -48,7 +54,3 @@ cipd create --pkg-def cipd.yaml # Make note of the instance ID
 # Manually update:
 * README.chromium (version number via "java -cp lib/r8.jar com.android.tools.r8.R8 --version")
 * //DEPS (instance ID output by cipd create)
-
-# To create a new patch:
-* Make commits to the r8 repro
-* Run: git format-patch $R8_REVISION_BEFORE_PATCHES

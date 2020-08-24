@@ -99,14 +99,6 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
 namespace {
 
-// Concurrent marking should stop every once in a while to flush private
-// segments to v8 marking worklist. It should also stop to avoid priority
-// inversion.
-//
-// TODO(omerkatz): What is a good value to set here?
-constexpr base::TimeDelta kConcurrentMarkingStepDuration =
-    base::TimeDelta::FromMilliseconds(2);
-
 constexpr size_t kMaxTerminationGCLoops = 20;
 
 // Helper function to convert a byte count to a KB count, capping at
@@ -1722,12 +1714,8 @@ void ThreadState::PerformConcurrentMark(base::JobDelegate* job) {
                 this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
                 task_id);
 
-  Heap().AdvanceConcurrentMarking(
-      concurrent_visitor.get(), job,
-      base::TimeTicks::Now() + kConcurrentMarkingStepDuration);
-
-  marking_scheduling_->AddConcurrentlyMarkedBytes(
-      concurrent_visitor->marked_bytes());
+  Heap().AdvanceConcurrentMarking(concurrent_visitor.get(), job,
+                                  marking_scheduling_.get());
 
   concurrent_visitor->FlushWorklists();
 }

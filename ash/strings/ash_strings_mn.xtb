@@ -315,7 +315,6 @@
 <translation id="4350065043422286972">Тэмдэглэсэн файлууд</translation>
 <translation id="4351433414020964307">Туслах ачааллаж байна...</translation>
 <translation id="4356930093361201197">өндөр ялгаралтай горим</translation>
-<translation id="4368583494516669646">Сайхан амраарай <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Дамжуулах тохиргоо</translation>
 <translation id="4378551569595875038">Холбож байна...</translation>
 <translation id="4379531060876907730">Эдгээр нь таны мэдрэгч үзэгний хэрэгслүүд юм</translation>
@@ -370,7 +369,6 @@
 <translation id="495046168593986294">Дээш гүйлгэх</translation>
 <translation id="4961318399572185831">Дэлгэцийг каст хийх</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />ц <ph name="MINUTES" />м <ph name="SECONDS" />с</translation>
-<translation id="4970352680959471247">Оройн мэнд <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Хугацаа дууслаа</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> шинэ утсанд холбогдсон байна</translation>
 <translation id="5035389544768382859">Дэлгэцийн тохируулгыг баталгаажуулах</translation>
@@ -401,7 +399,6 @@
 <translation id="544691375626129091">Бүх боломжтой хэрэглэгчдийг энэ хуралдаанд оруулсан байна.</translation>
 <translation id="54609108002486618">Удирдсан</translation>
 <translation id="5465662442746197494">Танд тусламж хэрэгтэй байна уу?</translation>
-<translation id="5485091064403948243">Өглөөний мэнд <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Tаны админ төхөөрөмжийг тань буцаан шилжүүлж байна. Төхөөрөмжийг дахин эхлүүлсний дараа бүх өгөгдөл устсан байх болно.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Харилцан үйлдлээс гарч байна</translation>
@@ -567,7 +564,6 @@
 <translation id="741244894080940828">хөрвүүлэлт</translation>
 <translation id="742594950370306541">Камерыг ашиглаж байна.</translation>
 <translation id="743058460480092004">Камер болон микрофоныг ашиглаж байна.</translation>
-<translation id="7436182601308224670">Өдрийн мэнд <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Мэдрэгчид хүрнэ үү</translation>
 <translation id="7497767806359279797">Хэл болон гарыг сонгох</translation>
 <translation id="7526573455193969409">Сүлжээг хянаж байж болзошгүй</translation>

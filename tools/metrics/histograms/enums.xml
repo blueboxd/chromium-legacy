@@ -1308,6 +1308,15 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Not QUIC, destination different from origin"/>
 </enum>
 
+<enum name="AmbientModePhotoSource">
+  <int value="0" label="Default"/>
+  <int value="1" label="Art Gallery"/>
+  <int value="2" label="Google Photos Recent Highlights Only"/>
+  <int value="3" label="Google Photos Personal Albums Only"/>
+  <int value="4" label="Google Photos Recent Highlights plus Personal Album"/>
+  <int value="5" label="Google Photos No Albums"/>
+</enum>
+
 <enum name="Android.ChildProcessBindingStateCombination">
   <int value="0" label="No waived no moderate no strong"/>
   <int value="1" label="No waived no moderate has strong"/>
@@ -16983,7 +16992,7 @@ Called by update_document_policy_enum.py.-->
   <int value="2" label="LosslessImagesMaxBpp"/>
   <int value="3" label="ForceLoadAtTop"/>
   <int value="4" label="LosslessImagesStrictMaxBpp"/>
-  <int value="5" label="UnoptimizedLossyImages"/>
+  <int value="5" label="LossyImagesMaxBpp"/>
   <int value="6" label="OversizedImages"/>
   <int value="7" label="UnsizedMedia"/>
   <int value="8" label="LayoutAnimations"/>
@@ -28906,6 +28915,14 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3444" label="PluginFilename"/>
   <int value="3445" label="PluginDescription"/>
   <int value="3446" label="SubresourceWebBundles"/>
+  <int value="3447" label="RTCPeerConnectionSetRemoteDescriptionPromise"/>
+  <int value="3448" label="RTCPeerConnectionSetLocalDescriptionPromise"/>
+  <int value="3449" label="RTCPeerConnectionCreateOfferPromise"/>
+  <int value="3450" label="RTCPeerConnectionCreateAnswerPromise"/>
+  <int value="3451" label="RTCPeerConnectionSetRemoteDescription"/>
+  <int value="3452" label="RTCPeerConnectionSetLocalDescription"/>
+  <int value="3453" label="RTCPeerConnectionCreateOffer"/>
+  <int value="3454" label="RTCPeerConnectionCreateAnswer"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34936,6 +34953,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147167998" label="ITF_E_EXTRACT_LOCALIZED_STRINGS_FAILED"/>
   <int value="-2147167997"
       label="ITF_E_EXTRACT_NO_FULL_NAME_OR_POSTSCRIPT_NAME"/>
+  <int value="-2147167996" label="ITF_E_EXTRACT_NO_FAMILY_NAME"/>
   <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
   <int value="-2147024893" label="ERROR_PATH_NOT_FOUND"/>
   <int value="-2147024891" label="E_ACCESSDENIED"/>
@@ -43296,6 +43314,8 @@ from previous Chrome versions.
       label="ForceSecurePaymentConfirmationDialog:disabled"/>
   <int value="1117795262" label="BloatedRendererDetection:disabled"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
+  <int value="1119473147"
+      label="SafeBrowsingClientSideDetectionForAndroid:enabled"/>
   <int value="1120428727" label="TabGridLayoutAndroid:enabled"/>
   <int value="1126061778" label="CaptureThumbnailOnLoadFinished:enabled"/>
   <int value="1126956909" label="UseXpsForPrintingFromPdf:disabled"/>
@@ -43531,6 +43551,8 @@ from previous Chrome versions.
   <int value="1360969228" label="RevampedContextMenu:enabled"/>
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
+  <int value="1362002249"
+      label="SafeBrowsingClientSideDetectionForAndroid:disabled"/>
   <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>
   <int value="1363151585" label="SyncPseudoUSSAppList:enabled"/>
   <int value="1367467733" label="AutoplayIgnoreWebAudio:enabled"/>

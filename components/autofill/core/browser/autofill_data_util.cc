@@ -232,15 +232,15 @@ bool SplitCJKName(const std::vector<base::StringPiece16>& name_tokens,
           1, StartsWithAny(name, common_cjk_multi_char_surnames,
                            base::size(common_cjk_multi_char_surnames)));
     }
-    parts->family = name.substr(0, surname_length).as_string();
-    parts->given = name.substr(surname_length).as_string();
+    parts->family = base::string16(name.substr(0, surname_length));
+    parts->given = base::string16(name.substr(surname_length));
     return true;
   }
   if (name_tokens.size() == 2) {
     // The user entered a space between the two name parts. This makes our job
     // easier. Family name first, given name second.
-    parts->family = name_tokens[0].as_string();
-    parts->given = name_tokens[1].as_string();
+    parts->family = base::string16(name_tokens[0]);
+    parts->given = base::string16(name_tokens[1]);
     return true;
   }
   // We don't know what to do if there are more than 2 tokens.
@@ -413,13 +413,13 @@ NameParts SplitName(base::StringPiece16 name) {
 
   if (name_tokens.empty()) {
     // Bad things have happened; just assume the whole thing is a given name.
-    parts.given = name.as_string();
+    parts.given = base::string16(name);
     return parts;
   }
 
   // Only one token, assume given name.
   if (name_tokens.size() == 1) {
-    parts.given = name_tokens[0].as_string();
+    parts.given = base::string16(name_tokens[0]);
     return parts;
   }
 
@@ -442,7 +442,7 @@ NameParts SplitName(base::StringPiece16 name) {
   // Take the last remaining token as the middle name (if there are at least 2
   // tokens).
   if (name_tokens.size() >= 2) {
-    parts.middle = name_tokens.back().as_string();
+    parts.middle = base::string16(name_tokens.back());
     name_tokens.pop_back();
   }
 

@@ -1588,6 +1588,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
         accessibility_focused_tree_id_ = tree_id;
         tree_wrapper->SetAccessibilityFocus(node->id());
       });
+  RouteNodeIDFunction(
+      "GetSortDirection",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->HasIntAttribute(ax::mojom::IntAttribute::kSortDirection)) {
+          const std::string& sort_direction_str = ui::ToString(
+              static_cast<ax::mojom::SortDirection>(node->GetIntAttribute(
+                  ax::mojom::IntAttribute::kSortDirection)));
+          result.Set(v8::String::NewFromUtf8(isolate,
+                                             sort_direction_str.c_str(),
+                                             v8::NewStringType::kNormal)
+                         .ToLocalChecked());
+        }
+      });
   RouteNodeIDPlusEventFunction(
       "EventListenerAdded",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -2344,7 +2358,8 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
     ui::AXTreeID tree_id,
     const gfx::Point& mouse_location,
     const ui::AXEvent& event,
-    api::automation::EventType event_type) {
+    api::automation::EventType event_type,
+    api::automation::GeneratedEventType generated_event_type) {
   AutomationAXTreeWrapper* tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(tree_id);
   if (!tree_wrapper)
@@ -2378,6 +2393,9 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
   event_params.SetKey("targetID", base::Value(event.id));
   event_params.SetKey("eventType",
                       base::Value(api::automation::ToString(event_type)));
+  event_params.SetKey(
+      "generatedEventType",
+      base::Value(api::automation::ToString(generated_event_type)));
   event_params.SetKey("eventFrom", base::Value(ui::ToString(event.event_from)));
   event_params.SetKey("actionRequestID", base::Value(event.action_request_id));
   event_params.SetKey("mouseX", base::Value(mouse_location.x()));

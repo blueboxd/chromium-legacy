@@ -66,9 +66,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
 
-  views::MessageBoxView::InitParams params((base::string16()));
-  params.message_width = kMessageWidth;
-  message_box_view_ = new views::MessageBoxView(params);
+  message_box_view_ = new views::MessageBoxView();
+  message_box_view_->SetMessageWidth(kMessageWidth);
 
   gfx::NativeWindow parent_window;
   if (web_contents) {

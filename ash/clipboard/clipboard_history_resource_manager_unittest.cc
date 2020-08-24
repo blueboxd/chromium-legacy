@@ -10,13 +10,11 @@
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/clipboard/clipboard_history_item.h"
+#include "ash/clipboard/test_support/clipboard_history_item_builder.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
-#include "base/optional.h"
-#include "base/pickle.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -25,8 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_data.h"
-#include "ui/base/clipboard/clipboard_format_type.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -56,137 +52,6 @@ ui::ImageModel GetRandomImageModel() {
   return ui::ImageModel::FromImageSkia(
       gfx::ImageSkia::CreateFrom1xBitmap(GetRandomBitmap()));
 }
-
-// ClipboardHistoryItemBuilder ------------------------------------------------
-
-class ClipboardHistoryItemBuilder {
- public:
-  ClipboardHistoryItemBuilder() = default;
-  ClipboardHistoryItemBuilder(const ClipboardHistoryItemBuilder&) = delete;
-  ClipboardHistoryItemBuilder& operator=(const ClipboardHistoryItemBuilder&) =
-      delete;
-  ~ClipboardHistoryItemBuilder() = default;
-
-  ClipboardHistoryItem Build() const {
-    ui::ClipboardData data;
-    if (text_.has_value())
-      data.set_text(text_.value());
-    if (markup_.has_value())
-      data.set_markup_data(markup_.value());
-    if (rtf_.has_value())
-      data.SetRTFData(rtf_.value());
-    if (bookmark_title_.has_value())
-      data.set_bookmark_title(bookmark_title_.value());
-    if (bitmap_.has_value())
-      data.SetBitmapData(bitmap_.value());
-    if (custom_format_.has_value() && custom_data_.has_value())
-      data.SetCustomData(custom_format_.value(), custom_data_.value());
-    if (web_smart_paste_.has_value())
-      data.set_web_smart_paste(web_smart_paste_.value());
-    return ClipboardHistoryItem(std::move(data));
-  }
-
-  ClipboardHistoryItemBuilder& SetText(const std::string& text) {
-    text_ = text;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearText() {
-    text_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetMarkup(const std::string& markup) {
-    markup_ = markup;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearMarkup() {
-    markup_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetRtf(const std::string& rtf) {
-    rtf_ = rtf;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearRtf() {
-    rtf_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetBookmarkTitle(
-      const std::string& bookmark_title) {
-    bookmark_title_ = bookmark_title;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearBookmarkTitle() {
-    bookmark_title_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetBitmap(const SkBitmap& bitmap) {
-    bitmap_ = bitmap;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearBitmap() {
-    bitmap_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetCustomData(const std::string& custom_format,
-                                             const std::string& custom_data) {
-    custom_format_ = custom_format;
-    custom_data_ = custom_data;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearCustomData() {
-    custom_format_ = base::nullopt;
-    custom_data_ = base::nullopt;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& SetFileSystemData(
-      std::initializer_list<std::string>&& source_list) {
-    constexpr char kFileSystemSourcesType[] = "fs/sources";
-
-    base::Pickle custom_data;
-    ui::WriteCustomDataToPickle(
-        std::unordered_map<base::string16, base::string16>(
-            {{base::UTF8ToUTF16(kFileSystemSourcesType),
-              base::UTF8ToUTF16(base::JoinString(source_list, "\n"))}}),
-        &custom_data);
-
-    return SetCustomData(
-        ui::ClipboardFormatType::GetWebCustomDataType().GetName(),
-        std::string(static_cast<const char*>(custom_data.data()),
-                    custom_data.size()));
-  }
-
-  ClipboardHistoryItemBuilder& SetWebSmartPaste(bool web_smart_paste) {
-    web_smart_paste_ = web_smart_paste;
-    return *this;
-  }
-
-  ClipboardHistoryItemBuilder& ClearWebSmartPaste() {
-    web_smart_paste_ = base::nullopt;
-    return *this;
-  }
-
- private:
-  base::Optional<std::string> text_;
-  base::Optional<std::string> markup_;
-  base::Optional<std::string> rtf_;
-  base::Optional<std::string> bookmark_title_;
-  base::Optional<SkBitmap> bitmap_;
-  base::Optional<std::string> custom_format_;
-  base::Optional<std::string> custom_data_;
-  base::Optional<bool> web_smart_paste_;
-};
 
 }  // namespace
 
@@ -262,7 +127,7 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
       .SetRtf("Rtf")
       .SetBookmarkTitle("Bookmark Title")
       .SetBitmap(gfx::test::CreateBitmap(10, 10))
-      .SetCustomData("Custom Format", "Custom Data")
+      .SetFileSystemData({"/path/to/File.txt", "/path/to/Other%20File.txt"})
       .SetWebSmartPaste(true);
 
   // Bitmap data always take precedence.
@@ -301,16 +166,10 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
 
   builder.ClearWebSmartPaste();
 
-  // In the absence of web smart paste data, custom data takes precedence.
+  // In the absence of web smart paste data, file system data takes precedence.
+  // NOTE: File system data is the only kind of custom data currently supported.
   EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
-            base::UTF8ToUTF16("<Custom Data>"));
-
-  builder.SetFileSystemData(
-      {"/path/to/My%20File.txt", "/path/to/My%20Other%20File.txt"});
-
-  // We specially treat custom file system data to show a list of file names.
-  EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
-            base::UTF8ToUTF16("My File.txt, My Other File.txt"));
+            base::UTF8ToUTF16("File.txt, Other File.txt"));
 }
 
 // Tests that Render is called once when an eligible item is added

@@ -77,8 +77,8 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
                      base::Owned(pending_hosts)));
 
   for (const StorageType& type : types) {
-    quota_manager_->GetOriginsModifiedSince(
-        type, base::Time(),
+    quota_manager_->GetOriginsModifiedBetween(
+        type, base::Time(), base::Time::Max(),
         base::BindOnce(&BrowsingDataQuotaHelperImpl::GotOrigins,
                        weak_factory_.GetWeakPtr(), pending_hosts, completion));
   }

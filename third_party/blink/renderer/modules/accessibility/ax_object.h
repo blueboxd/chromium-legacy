@@ -663,6 +663,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual ax::mojom::blink::WritingDirection GetTextDirection() const {
     return ax::mojom::blink::WritingDirection::kLtr;
   }
+  virtual float GetTextIndent() const { return 0.0f; }
   virtual ax::mojom::blink::TextPosition GetTextPosition() const {
     return ax::mojom::blink::TextPosition::kNone;
   }

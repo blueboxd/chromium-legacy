@@ -5759,6 +5759,48 @@
       }
     },
 
+    # This test suite takes the standard ios test suites,
+    # and removes failing ones from ios14-sdk-simulator.
+    # The result is test suites with certain tests removed,
+    # identified by *_noncq.
+    # The list of variants to use is determined by
+    # ios-simulator and ios-simulator-full config's 12.4
+    # passing sims, converted to 14.0
+    'ios_simulator_noncq_tests': {
+      'ios_common_tests': {
+        'mixins': [
+          'xctest',
+        ],
+        'variants': [
+          'SIM_IPHONE_6S_14_0',
+        ]
+      },
+      'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          'SIM_IPHONE_6S_14_0',
+          'SIM_IPAD_AIR_2_14_0',
+          'SIM_IPHONE_X_14_0',
+        ]
+      },
+      'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          'SIM_IPHONE_6S_14_0',
+          'SIM_IPAD_AIR_2_14_0',
+          'SIM_IPHONE_X_14_0',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'mixins': [
+          'xctest',
+        ],
+        'variants': [
+          'SIM_IPHONE_6S_14_0',
+        ]
+      }
+    },
+
     'ios_simulator_tests': {
       'ios_common_tests': {
         'mixins': [

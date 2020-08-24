@@ -560,7 +560,7 @@ CommandLine::StringType CommandLine::GetCommandLineStringForShell() const {
   DCHECK(GetArgs().empty());
   StringType command_line_string = GetCommandLineString();
   return command_line_string + FILE_PATH_LITERAL(" ") +
-         kSwitchPrefixes[0].as_string() + kSingleArgument +
+         StringType(kSwitchPrefixes[0]) + kSingleArgument +
          FILE_PATH_LITERAL(" %1");
 }
 #endif  // defined(OS_WIN)
@@ -618,7 +618,7 @@ void CommandLine::ParseAsSingleArgument(
     return;
   const StringPieceType arg = raw_command_line_string_.substr(arg_position);
   if (!arg.empty()) {
-    AppendArgNative(arg.as_string());
+    AppendArgNative(StringType(arg));
   }
 }
 #endif  // defined(OS_WIN)

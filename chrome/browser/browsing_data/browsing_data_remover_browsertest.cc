@@ -461,6 +461,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     int count = -1;
     (new SiteDataCountingHelper(GetBrowser()->profile(), base::Time(),
+                                base::Time::Max(),
                                 base::BindLambdaForTesting([&](int c) {
                                   count = c;
                                   run_loop.Quit();

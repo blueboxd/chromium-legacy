@@ -65,8 +65,8 @@ class ChromeSpeechRecognitionClient
   media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
       scoped_refptr<media::AudioBuffer> buffer);
 
-  // Called as a response to sending a message to the browser.
-  void OnBrowserCallback(bool success);
+  // Called as a response to sending a transcription to the browser.
+  void OnTranscriptionCallback(bool success);
 
   media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
       std::unique_ptr<media::AudioBus> audio_bus,
@@ -115,9 +115,6 @@ class ChromeSpeechRecognitionClient
   bool is_browser_requesting_transcription_ = true;
 
   bool is_recognizer_bound_ = false;
-
-  // Whether or not the on ready message has been sent to the caption host.
-  bool on_ready_message_sent_to_caption_host_ = false;
 
   // The temporary audio bus used to mix multichannel audio into a single
   // channel.

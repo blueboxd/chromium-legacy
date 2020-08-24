@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_SCHEDULING_ORACLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_SCHEDULING_ORACLE_H_
 
-#include "base/synchronization/lock.h"
+#include <atomic>
+
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 
@@ -51,8 +52,7 @@ class PLATFORM_EXPORT MarkingSchedulingOracle {
   base::TimeDelta incremental_marking_time_so_far_;
 
   size_t incrementally_marked_bytes_ = 0;
-  size_t concurrently_marked_bytes_ = 0;
-  base::Lock concurrently_marked_bytes_lock_;
+  std::atomic_size_t concurrently_marked_bytes_{0};
 
   // Using -1 as sentinel to denote
   static constexpr double kNoSetElapsedTimeForTesting = -1;

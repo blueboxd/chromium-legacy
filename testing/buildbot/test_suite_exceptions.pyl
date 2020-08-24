@@ -13,6 +13,13 @@
 # it's not possible to add one-off tests to bots. Instead they have to
 # be added to one of the test suites in test_suites.pyl.
 #
+# Note that if you are excluding with variants, you will need to exclude
+# per variant, with the identifier appended to the test suite name.
+# For example, if you have ios_chrome_ui_eg2tests_module with variant
+# SIM_IPHONE_6S_14_0 (identifier = "iPhone 6s 14.0"), you
+# must exclude with the test name as:
+# "ios_chrome_ui_eg2tests_module_iPhone 6s 14.0"
+
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {

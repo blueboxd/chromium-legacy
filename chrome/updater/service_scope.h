@@ -5,6 +5,9 @@
 #ifndef CHROME_UPDATER_SERVICE_SCOPE_H_
 #define CHROME_UPDATER_SERVICE_SCOPE_H_
 
+#include "base/command_line.h"
+#include "chrome/updater/constants.h"
+
 namespace updater {
 
 // Scope of the update/control service invocation.
@@ -15,6 +18,12 @@ enum class ServiceScope {
   // The updater is running in the system's scope.
   kSystem = 2,
 };
+
+inline ServiceScope GetProcessScope() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kSystemSwitch)
+             ? ServiceScope::kSystem
+             : ServiceScope::kUser;
+}
 
 }  // namespace updater
 

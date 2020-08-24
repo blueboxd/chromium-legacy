@@ -90,9 +90,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       &ExternalProtocolHandler::RecordHandleStateMetrics,
       false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
 
-  views::MessageBoxView::InitParams params(
-      GetMessageTextForOrigin(initiating_origin_));
-  message_box_view_ = new views::MessageBoxView(params);
+  message_box_view_ =
+      new views::MessageBoxView(GetMessageTextForOrigin(initiating_origin_));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(

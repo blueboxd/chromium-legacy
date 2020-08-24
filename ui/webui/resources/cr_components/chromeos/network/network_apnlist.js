@@ -6,8 +6,6 @@
  * @fileoverview Polymer element for displaying and modifying a list of cellular
  * access points.
  */
-(function() {
-'use strict';
 
 const kDefaultAccessPointName = 'NONE';
 const kOtherAccessPointName = 'Other';
@@ -319,4 +317,3 @@ Polymer({
     return item.accessPointName === this.selectedApn_;
   }
 });
-})();

@@ -315,7 +315,7 @@ TEST_F(ConversionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
 }
 
 // TODO(crbug.com/1088449): Flaky on Linux and Android.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #define MAYBE_ExpiredReportsAtStartup_Delayed \
   DISABLED_ExpiredReportsAtStartup_Delayed
 #else

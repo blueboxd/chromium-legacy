@@ -397,11 +397,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, F6CyclesThroughCaptionBubbleToo) {
           caption_controller->GetCaptionBubbleControllerForBrowser(browser()));
   EXPECT_FALSE(bubble_controller->GetFocusableCaptionBubble());
 
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  caption_controller->OnSpeechRecognitionReady(contents);
   caption_controller->DispatchTranscription(
-      contents, chrome::mojom::TranscriptionResult::New("Hello, world", false));
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      chrome::mojom::TranscriptionResult::New("Hello, world", false));
   // Now the caption bubble exists but is not focused.
   views::View* bubble = bubble_controller->GetFocusableCaptionBubble();
   EXPECT_TRUE(bubble);

@@ -14,9 +14,9 @@
 <translation id="2785530881066938471">सामग्री स्क्रिप्ट के लिए '<ph name="RELATIVE_PATH" />' फ़ाइल लोड नहीं कर सका. यह UTF-8 एनकोड नहीं है.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को एडमिन ने ब्लॉक किया है. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3115238746683532089"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_ID" /> अज्ञात उत्पाद</translation>
+<translation id="3115238746683532089"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_ID" /> अज्ञात प्रॉडक्ट</translation>
 <translation id="3144135466825225871">crx फ़ाइल बदला नहीं जा सका. यह देखने के लिए जाँच करें कि क्या फ़ाइल उपयोग में है.</translation>
-<translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> प्रॉडक्ट</translation>
 <translation id="3302709122321372472">सामग्री स्क्रिप्ट के लिए css '<ph name="RELATIVE_PATH" />' लोड नहीं कर सका.</translation>
 <translation id="3369521687965833290">एक्सटेंशन को 'अनपैक' नहीं कर सका.  किसी एक्सटेंशन को सुरक्षित रूप से 'अनपैक' करने के लिए आपकी प्रोफ़ाइल निर्देशिका में एक ऐसा पाथ होना ज़रूरी है, जिसमें कोई सिमलिंक न हो.  ऐसा कोई भी पाथ आपकी प्रोफ़ाइल के लिए मौजूद नहीं है.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />)</translation>
@@ -37,7 +37,7 @@
 <translation id="5456409301717116725">एक्सटेंशन में कुंजी फ़ाइल '<ph name="KEY_PATH" />' शामिल है. संभवतः आप ऐसा नहीं करना चाहते हैं.</translation>
 <translation id="5486326529110362464">निजी कुंजी के लिए इनपुट मान मौजूद होना चाहिए.</translation>
 <translation id="5972529113578162692">इस मशीन के व्‍यवस्‍थापक के लिए आवश्‍यक है कि <ph name="EXTENSION_NAME" /> इंस्‍टॉल किया जाए. उसे अनइंस्‍टॉल नहीं किया जा सकता.</translation>
-<translation id="6027032947578871493"><ph name="VENDOR_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />) की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
+<translation id="6027032947578871493"><ph name="VENDOR_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />) की ओर से अज्ञात <ph name="PRODUCT_ID" /> प्रॉडक्ट</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> विक्रेता की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="6143635259298204954">एक्सटेंशन को 'अनपैक' नहीं कर सका.  किसी एक्सटेंशन को सुरक्षित रूप से 'अनपैक' करने के लिए आपकी प्रोफ़ाइल निर्देशिका में एक ऐसा पाथ होना ज़रूरी है, जिसमें कोई सिमलिंक न हो.  ऐसा कोई भी पाथ आपकी प्रोफ़ाइल के लिए मौजूद नहीं है.</translation>
 <translation id="6322279351188361895">निजी कुंजी को पढ़ने में विफल.</translation>
@@ -48,7 +48,7 @@
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> का <ph name="PRODUCT_NAME" /> (सीरियल नंबर <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="677806580227005219">माइमहैंडलर: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">इस एक्सटेंशन ने स्वयं को बहुत जल्दी-जल्दी फिर से लोड किया.</translation>
-<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> प्रॉडक्ट</translation>
 <translation id="7068383018033524534">मेनिफ़ेस्ट फ़ाइल गलत है</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME" /> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
 <translation id="7612608473764576263">निजी कुंजी के लिए इनपुट मान एक सही फ़ॉर्मेट में होना चाहिए (PKCS#8-फ़ॉर्मेट PEM-कोड में बदली गई RSA कुंजी).</translation>

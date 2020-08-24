@@ -435,7 +435,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  decoder_.NewRequest());
 
   decoder_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "fuchsia.mediacodec.Codec disconnected.";
+    ZX_LOG(ERROR, status) << "fuchsia.media.StreamProcessor disconnected.";
     OnError();
   });
 

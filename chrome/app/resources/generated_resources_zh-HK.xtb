@@ -253,6 +253,7 @@
 <translation id="1285484354230578868">將數據儲存在「Google 雲端硬碟」帳戶中</translation>
 <translation id="1288037062697528143">「夜燈模式」將會在日落時自動開啟</translation>
 <translation id="1288300545283011870">語音屬性</translation>
+<translation id="1290331692326790741">訊號微弱</translation>
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1296911687402551044">固定已選取的分頁</translation>
@@ -638,7 +639,6 @@
 <translation id="1743970419083351269">閂下載內容列</translation>
 <translation id="1744060673522309905">無法將裝置加入網域。請確定您沒有超出可新增的裝置數量。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
-<translation id="1746901632585754462">系統將刪除裝置資料</translation>
 <translation id="1748563609363301860">您可將此密碼儲存在 Google 帳戶中，或只儲存在此裝置上</translation>
 <translation id="1750172676754093297">您的安全密鑰無法儲存指紋</translation>
 <translation id="1751249301761991853">個人化</translation>
@@ -1893,7 +1893,6 @@
 <translation id="3289668031376215426">自動大寫</translation>
 <translation id="3289856944988573801">如要檢查更新，請使用以太網絡或 Wi-Fi。</translation>
 <translation id="3290356915286466215">不安全</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> 將停用 ADB 偵錯，此操作會重設您的裝置。請在重新開機前備份檔案。</translation>
 <translation id="3293644607209440645">傳送此頁面</translation>
 <translation id="32939749466444286">Linux 容器無法啟動。請再試一次。</translation>
 <translation id="3294437725009624529">訪客</translation>
@@ -5044,6 +5043,7 @@
 <translation id="7225179976675429563">找不到網絡類型</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (供應商：<ph name="VENDOR_ID" />，產品：<ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">控制各種設定，包括指定網站能否使用地理位置、麥克風和相機等功能。</translation>
+<translation id="7228523857728654909">螢幕鎖定和登入</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="7230787553283372882">自訂文字大小</translation>
 <translation id="7232750842195536390">無法重新命名</translation>
@@ -5869,7 +5869,6 @@
 <translation id="8226628635270268143">選擇喜愛的相片和相簿</translation>
 <translation id="8226742006292257240">以下是您的電腦專用的 TPM 密碼 (由系統隨機產生)：</translation>
 <translation id="8227119283605456246">附加檔案</translation>
-<translation id="8229943166551236192">系統將在 24 小時後刪除裝置資料</translation>
 <translation id="8230134520748321204">要儲存 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="8234795456569844941">為協助我們的軟件工程師修正此問題，請說明您在收到設定檔錯誤訊息前發生的狀況：</translation>
 <translation id="8236917170563564587">改為分享此分頁</translation>

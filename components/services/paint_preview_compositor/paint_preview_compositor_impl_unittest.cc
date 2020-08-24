@@ -232,9 +232,9 @@ void PopulateFrameProto(
         subframe_id.GetLowForSerialization());
     content_id_embedding_token_pair->set_embedding_token_high(
         subframe_id.GetHighForSerialization());
-
     expected_frame_data->subframes.push_back(
         mojom::SubframeClipRect::New(subframe_id, clip_rect));
+    tracker.TransformClipForFrame(content_id);
   }
 
   sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();

@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -93,7 +94,7 @@ public class PaintPreviewHelper {
         if (!player.maybeShow(onShown, () -> {
                 onDismissed.run();
                 PageLoadMetrics.removeObserver(observer);
-            }, sActivityCreationTimeMs)) {
+            }, sActivityCreationTimeMs, UmaUtils::hasComeToBackground)) {
             return false;
         }
 

@@ -88,7 +88,7 @@ string16 MessageFormatter::FormatWithNumberedArgs(
   icu::FieldPosition ignore(icu::FieldPosition::DONT_CARE);
   format.format(args, args_count, formatted, ignore, error);
   if (U_FAILURE(error)) {
-    LOG(ERROR) << "MessageFormat(" << msg.as_string() << ") failed with "
+    LOG(ERROR) << "MessageFormat(" << msg << ") failed with "
                << u_errorName(error);
     return string16();
   }
@@ -131,7 +131,7 @@ string16 MessageFormatter::FormatWithNamedArgs(
   icu::UnicodeString formatted;
   format.format(names, args, args_count, formatted, error);
   if (U_FAILURE(error)) {
-    LOG(ERROR) << "MessageFormat(" << msg.as_string() << ") failed with "
+    LOG(ERROR) << "MessageFormat(" << msg << ") failed with "
                << u_errorName(error);
     return string16();
   }

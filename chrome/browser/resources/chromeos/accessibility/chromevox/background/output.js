@@ -1777,6 +1777,25 @@ Output = class {
     if (node.errorMessage) {
       ret.push({outputFormat: '$node(errorMessage)'});
     }
+
+    // Provide a hint for sort direction.
+    let sortDirectionNode = node;
+    while (sortDirectionNode && sortDirectionNode != sortDirectionNode.root) {
+      if (!sortDirectionNode.sortDirection) {
+        sortDirectionNode = sortDirectionNode.parent;
+        continue;
+      }
+      if (sortDirectionNode.sortDirection ===
+          chrome.automation.SortDirectionType.ASCENDING) {
+        ret.push({msgId: 'sort_ascending'});
+      } else if (
+          sortDirectionNode.sortDirection ===
+          chrome.automation.SortDirectionType.DESCENDING) {
+        ret.push({msgId: 'sort_descending'});
+      }
+      break;
+    }
+
     return ret;
   }
 

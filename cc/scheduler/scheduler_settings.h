@@ -41,12 +41,9 @@ class CC_EXPORT SchedulerSettings {
 
   // This is used to determine whether some begin-frames should be skipped
   // (either in the main-thread or the compositor-thread) if previous frames
-  // have had high latency.
-  // It is enabled by default on desktop platforms, and has been recently
-  // disabled by default on android. It may be disabled on all platforms. See
-  // more in https://crbug.com/933846
-  bool enable_impl_latency_recovery = true;
-  bool enable_main_latency_recovery = true;
+  // have had high latency. It is disabled by default.
+  bool enable_impl_latency_recovery = false;
+  bool enable_main_latency_recovery = false;
 
   // Turning this on effectively disables pipelining of compositor frame
   // production stages by waiting for each stage to complete before producing

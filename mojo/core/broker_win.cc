@@ -115,7 +115,7 @@ Broker::Broker(PlatformHandle handle, bool wait_for_channel_handle)
         reinterpret_cast<const base::char16*>(data + 1);
     CHECK(data->pipe_name_length);
     inviter_endpoint_ = NamedPlatformChannel::ConnectToServer(
-        base::StringPiece16(name_data, data->pipe_name_length).as_string());
+        base::string16(name_data, data->pipe_name_length));
   }
 }
 

@@ -58,10 +58,8 @@ CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
       nullptr);
   AddChildView(message_label);
 
-  views::MessageBoxView::InitParams error_box_init_params(
-      base::UTF8ToUTF16(error_message));
   views::MessageBoxView* error_box =
-      new views::MessageBoxView(error_box_init_params);
+      new views::MessageBoxView(base::UTF8ToUTF16(error_message));
   AddChildView(error_box);
 
   set_close_on_deactivate(true);

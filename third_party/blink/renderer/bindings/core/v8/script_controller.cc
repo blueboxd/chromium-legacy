@@ -317,7 +317,7 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
   v8::Context::Scope scope(context);
   v8::EscapableHandleScope handle_scope(GetIsolate());
 
-  if (GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
+  if (GetFrame()->GetDocument()->IsInitialEmptyDocument())
     GetFrame()->Loader().DidAccessInitialDocument();
 
   v8::Local<v8::Value> object = ExecuteScriptAndReturnValue(

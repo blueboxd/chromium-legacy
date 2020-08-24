@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/updater/win/constants.h"
@@ -38,8 +39,10 @@ std::unique_ptr<ScopedPrefsLock> AcquireGlobalPrefsLock(
   auto lock = std::make_unique<ScopedPrefsLockImpl>();
 
   // TODO(crbug.com/1096654): need to pass is_machine instead of 'false' here.
+  DVLOG(2) << "Trying to acquire the lock.";
   if (!lock->Initialize(false, timeout))
     return nullptr;
+  DVLOG(2) << "Lock acquired.";
 
   return std::make_unique<ScopedPrefsLock>(std::move(lock));
 }
@@ -56,8 +59,10 @@ bool ScopedPrefsLockImpl::Initialize(bool is_machine, base::TimeDelta timeout) {
 }
 
 ScopedPrefsLockImpl::~ScopedPrefsLockImpl() {
-  if (mutex_.IsValid())
+  if (mutex_.IsValid()) {
     ::ReleaseMutex(mutex_.Get());
+    DVLOG(2) << "Lock released.";
+  }
 }
 
 }  // namespace updater

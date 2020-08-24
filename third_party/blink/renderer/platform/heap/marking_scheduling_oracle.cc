@@ -32,13 +32,12 @@ void MarkingSchedulingOracle::UpdateIncrementalMarkingStats(
 }
 
 void MarkingSchedulingOracle::AddConcurrentlyMarkedBytes(size_t marked_bytes) {
-  base::AutoLock lock(concurrently_marked_bytes_lock_);
-  concurrently_marked_bytes_ += marked_bytes;
+  concurrently_marked_bytes_.fetch_add(marked_bytes, std::memory_order_relaxed);
 }
 
 size_t MarkingSchedulingOracle::GetOverallMarkedBytes() {
-  base::AutoLock lock(concurrently_marked_bytes_lock_);
-  return incrementally_marked_bytes_ + concurrently_marked_bytes_;
+  return incrementally_marked_bytes_ +
+         concurrently_marked_bytes_.load(std::memory_order_relaxed);
 }
 
 double MarkingSchedulingOracle::GetElapsedTimeInMs(base::TimeTicks start_time) {

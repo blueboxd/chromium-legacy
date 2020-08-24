@@ -77,11 +77,11 @@ static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
   base::android::Java_TraceEvent_setEnabled(env, false);
 }
 static void JNI_TraceEvent_StartATrace(JNIEnv* env,
-                                       base::android::JavaParamRef<jstring>&) {}
+                                       const JavaParamRef<jstring>&) {}
 static void JNI_TraceEvent_StopATrace(JNIEnv* env) {}
 static void JNI_TraceEvent_SetupATraceStartupTrace(
     JNIEnv* env,
-    base::android::JavaParamRef<jstring>&) {}
+    const JavaParamRef<jstring>&) {}
 
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 

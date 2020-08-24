@@ -7592,9 +7592,9 @@
       'example_value': ['https://example.com'],
       'id': 402,
       'caption': '''URLs/domains automatically permitted direct Security Key attestation''',
-      'desc': '''Specifies URLs and domains for which no prompt will be shown when attestation certificates from Security Keys are requested. Additionally, a signal will be sent to the Security Key indicating that individual attestation may be used. Without this, users will be prompted in Chrome 65+ when sites request attestation of Security Keys.
+      'desc': '''Setting the policy specifies URLs and domains for which no prompt appears when attestation certificates from Security Keys are requested. A signal is also sent to the Security Key indicating that individual attestation may be used. Without this, when sites request attestation of Security Keys, users are prompted in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 65 and later.
 
-      URLs (like https://example.com/some/path) will only match as U2F appIDs. Domains (like example.com) only match as webauthn RP IDs. Thus, to cover both U2F and webauthn APIs for a given site, both the appID URL and domain would need to be listed.''',
+      URLs will only match as U2F appIDs. Domains only match as webauthn RP IDs. So to cover both U2F and webauthn APIs, list the appID URL and domain for a given site.''',
     },
     {
       'name': 'GCFUserDataDir',
@@ -7827,17 +7827,11 @@
       'tags': ['filtering'],
       'desc': '''This policy is deprecated, please use the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy instead.
 
-      This policy prevents the user from loading web pages from blocked URLs. The blocklist provides a list of URL patterns that specify which URLs will be blocked.
+      Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://www.chromium.org/administrators/url-blacklist-filter-format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
 
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+      From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 73, you can block javascript://* URLs. However, it affects only JavaScript entered in the address bar (or, for example, bookmarklets). In-page JavaScript URLs with dynamically loaded data aren't subject to this policy. For example, if you block example.com/abc, then example.com can still load example.com/abc using XMLHTTPRequest.
 
-      Exceptions can be defined in the URL allowlist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
-
-      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
-
-      From Chrome 73 you can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
-
-      If this policy is not set no URL will be blocked in the browser.''',
+      Note: Blocking internal chrome://* URLs can lead to unexpected errors.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7865,19 +7859,13 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>' policy instead.
 
-      Allows access to the listed URLs, as exceptions to the URL blocklist.
+      Setting the policy provides access to the listed URLs, as exceptions to the URL blocklist. See that policy's description for the format of entries of this list. For example, * can be prohibited to block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths. The most specific filter determines if a URL is blocked or allowed. The allowlist takes precedence over blocklist. This policy is limited to 1,000 entries.
 
-      See the description of the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy for the format of entries of this list.
+      This policy also allows enabling the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:".
 
-      This policy can be used to open exceptions to restrictive blocklists. For example, '*' can be used to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+      Leaving the policy unset allows no exceptions.
 
-      The most specific filter will determine if a URL is blocked or allowed. The allowlist takes precedence over the blocklist.
-
-      This policy is limited to 1000 entries; subsequent entries will be ignored.
-
-      This policy also allows to enable the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:". This functionality is only available for on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.
-
-      If this policy is not set there will be no exceptions to the blocklist from the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7903,17 +7891,11 @@
       'id': 736,
       'caption': '''Block access to a list of URLs''',
       'tags': ['filtering'],
-      'desc': '''This policy prevents the user from loading web pages from blocked URLs. The blocklist provides a list of URL patterns that specify which URLs will be blocked.
+      'desc': '''Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://www.chromium.org/administrators/url-blacklist-filter-format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
 
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+      From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 73, you can block javascript://* URLs. However, it affects only JavaScript entered in the address bar (or, for example, bookmarklets). In-page JavaScript URLs with dynamically loaded data aren't subject to this policy. For example, if you block example.com/abc, then example.com can still load example.com/abc using XMLHTTPRequest.
 
-      Exceptions can be defined in the URL allowlist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
-
-      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
-
-      You can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
-
-      If this policy is not set no URL will be blocked in the browser.''',
+      Note: Blocking internal chrome://* URLs can lead to unexpected errors.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7939,19 +7921,13 @@
       'id': 737,
       'caption': '''Allow access to a list of URLs''',
       'tags': [],
-      'desc': '''Allows access to the listed URLs, as exceptions to the URL blocklist.
+      'desc': '''Setting the policy provides access to the listed URLs, as exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. See that policy's description for the format of entries of this list. For example, * can be prohibited to block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths. The most specific filter determines if a URL is blocked or allowed. The <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph> policy takes precedence over <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. This policy is limited to 1,000 entries.
 
-      See the description of the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy for the format of entries of this list.
+      This policy also allows enabling the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:".
 
-      This policy can be used to open exceptions to restrictive blocklists. For example, '*' can be used to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+      Leaving the policy unset allows no exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>.
 
-      The most specific filter will determine if a URL is blocked or allowed. The allowlist takes precedence over the blocklist.
-
-      This policy is limited to 1000 entries; subsequent entries will be ignored.
-
-      This policy also allows to enable the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:". This functionality is only available for on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.
-
-      If this policy is not set there will be no exceptions to the blocklist from the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -13719,9 +13695,9 @@
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
       'tags': [],
-      'desc': '''If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is TLS 1.0.
+      'desc': '''Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
 
-      Otherwise it may be set to one of the following values: "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.''',
+      If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version of TLS 1.0.''',
     },
     {
       'name': 'SSLVersionFallbackMin',
@@ -14055,8 +14031,9 @@
       'id': 300,
       'caption': '''Allow proceeding from the SSL warning page''',
       'tags': [],
-      'desc': '''Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
-      Setting this policy to false disallows users to click through any warning page.''',
+      'desc': '''Setting the policy to Enabled or leaving it unset lets users click through warning pages <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> shows when users navigate to sites that have SSL errors.
+
+      Setting the policy to Disabled prevent users from clicking through any warning pages.''',
     },
     {
       'name': 'QuicAllowed',
@@ -14447,9 +14424,9 @@
       'name': 'SuppressUnsupportedOSWarning',
       'owners': ['grt@chromium.org'],
       'caption': '''Suppress the unsupported OS warning''',
-      'desc': '''Suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on a computer or operating system that is no longer supported.
+      'desc': '''Setting the policy to Enabled suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on an unsupported computer or operating system.
 
-      If this policy is false or unset, the warnings will appear on such unsupported computers or operating systems.''',
+      Setting the policy to Disabled or leaving it unset means the warnings appear on unsupported systems.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:49-','chrome_os:49-'],
@@ -15800,22 +15777,25 @@
       },
       'caption': '''Configure <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update behavior''',
       'tags': [],
-      'desc': '''Configures availability and behavior of <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality.
+      'desc': '''Setting the policy configures availability and behavior of <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates.
 
-      Individual settings can be specified in JSON properties:
+      Specify individual settings in JSON properties:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
+      * <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users can trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE">allow-user-initiated-preserve-device-state</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE">true</ph>, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update flow that preserves device-wide state (including enterprise enrollment), but loses user data. This update flow is available starting from version 68.
+      * <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE">allow-user-initiated-preserve-device-state</ph> (available starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 68): If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE">true</ph>, users can invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update flow that preserves device-wide state, including enterprise enrollment, but loses user data.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE">auto-update-mode</ph>: Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware. All flows preserve local device state.
-        If set to 1 or left not set, TPM firmware updates are not enforced.
-        If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot after user acknowledges the update.
-        If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot.
-        If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated after enrollment, before user sign-in.
-        This option is available starting from version 75.
+      * <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE">auto-update-mode</ph> (available starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 75): Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware. All flows preserve local device state. If set to:
 
-      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
+        * 1 or left not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates are not enforced.
+
+        * 2, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates at the next reboot after user acknowledges the update.
+
+        * 3, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates at the next reboot.
+
+        * 4, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates after enrollment, before user sign-in.
+
+      Leaving the policy unset renders <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update unavailable.''',
     },
     {
       'name': 'MinimumRequiredChromeVersion',
@@ -16772,15 +16752,11 @@
       'id': 399,
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
-      'desc': '''
-      This setting, SitePerProcess, may be used to disallow users from opting out of the default behavior of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to opt out of site isolation
-      (e.g. using "Disable site isolation" entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
-      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      'desc': '''Setting the policy to Enabled isolates all sites. (Each site runs in its own process.) Setting the policy to Disabled or leaving it unset doesn't turn off site isolation, but it lets users opt out (for example, by using Disable site isolation in chrome://flags).
 
-      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
-      ''',
+      <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> might also be useful for fine-tuning origins. On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. (Because if the values don't match, a delay can occur when entering a user session.)
+
+      Note: For Android, use the <ph name="SITE_PER_PROCESS_ANDROID_POLICY_NAME">SitePerProcessAndroid</ph> policy instead.''',
     },
     {
       'name': 'DeviceLoginScreenIsolateOrigins',
@@ -16864,16 +16840,13 @@
       'id': 446,
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
-      'desc': '''
-      You might want to look at the IsolateOriginsAndroid policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOriginsAndroid with a list of the sites you want to isolate. This setting, SitePerProcessAndroid, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
+      'desc': '''Setting the policy to Enabled isolates all sites (each site runs in its own process). Setting the policy to Disabled means no explicit site isolation happens and field trials of IsolateOriginsAndroid and SitePerProcessAndroid are off. Users can still turn the policy on manually.
 
-      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
+      Leaving the policy unset means users can change this setting.
 
-      NOTE: This policy applies only to Chrome on Android running on devices with strictly more than 1GB of RAM. To apply the policy on non-Android platforms, use SitePerProcess.
-      ''',
+      To get isolation and limited impact for users, use <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME">IsolateOriginsAndroid</ph> with a list of the sites you want to isolate.
+
+      Note: Site isolation support for Android will improve, but currently it may cause performance problems. This policy applies only to Chrome on Android running on devices with strictly more than 1 GB of RAM. To apply the policy on non-Android platforms, use <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph>.''',
     },
     {
       'name': 'WebDriverOverridesIncompatiblePolicies',
@@ -17125,9 +17098,11 @@
       'id': 407,
       'caption': '''Enable third party software injection blocking''',
       'tags': [],
-      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.
+      'desc': '''Setting the policy to Enabled or leaving it unset prevents third-party software from injecting executable code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
 
-      Regardless of the value of this policy, the browser will not currently block third party software from injecting executable code into its processes on a machine that is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+      Setting the policy to Disabled allows this software to inject such code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
+
+      Regardless of the value of this policy, the browser won't block third-party software from injecting executable code into its processes on a machine that's joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
     {
       'name': 'SpellcheckEnabled',

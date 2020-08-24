@@ -5,8 +5,10 @@
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -1269,6 +1271,15 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         AddAttributeToList("text-align", "justify", attributes);
         break;
     }
+  }
+
+  float text_indent;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kTextIndent, &text_indent) !=
+      0.0f) {
+    // Round value to two decimal places.
+    std::stringstream value;
+    value << std::fixed << std::setprecision(2) << text_indent << "mm";
+    AddAttributeToList("text-indent", value.str(), attributes);
   }
 
   // Text fields need to report the attribute "text-model:a1" to instruct

@@ -813,6 +813,11 @@ void AXObject::Serialize(ui::AXNodeData* node_data) {
     node_data->SetTextAlign(GetTextAlign());
   }
 
+  if (GetTextIndent() != 0.0f) {
+    node_data->AddFloatAttribute(ax::mojom::blink::FloatAttribute::kTextIndent,
+                                 GetTextIndent());
+  }
+
   // If this is an HTMLFrameOwnerElement (such as an iframe), we may need
   // to embed the ID of the child frame.
   if (auto* html_frame_owner_element =

@@ -483,9 +483,8 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
       // The control sequence came to an end.
       started_control_sequence = false;
       size_t placeholder_start = processed_until_index + 2;
-      base::string16 type_name =
-          format_piece.substr(placeholder_start, i - placeholder_start)
-              .as_string();
+      base::string16 type_name(
+          format_piece.substr(placeholder_start, i - placeholder_start));
       base::string16 value;
       if (GetValueAndStatusForTypeIfPossible(base::UTF16ToASCII(type_name),
                                              &value, nullptr)) {

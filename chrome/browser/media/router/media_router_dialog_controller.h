@@ -47,7 +47,7 @@ class MediaRouterDialogController {
   // Returns true if the dialog is created as a result of this call.
   // If the dialog already exists, or dialog cannot be created, then false is
   // returned, and |error_cb| will be invoked.
-  bool ShowMediaRouterDialogForPresentation(
+  virtual bool ShowMediaRouterDialogForPresentation(
       std::unique_ptr<StartPresentationContext> context);
 
   // Shows the media router dialog modal to |initiator_|.

@@ -140,7 +140,9 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   InitializeCrashReporting();
 
-  return HandleUpdaterCommands(command_line);
+  const int retval = HandleUpdaterCommands(command_line);
+  DVLOG(1) << __func__ << " returned " << retval << ".";
+  return retval;
 }
 
 }  // namespace updater

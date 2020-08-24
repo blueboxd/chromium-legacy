@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">Ամրացված</translation>
 <translation id="4351433414020964307">Օգնականը բեռնվում է...</translation>
 <translation id="4356930093361201197">բարձր կոնտրաստի ռեժիմ</translation>
-<translation id="4368583494516669646">Բարի գիշեր, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Հեռարձակման կարգավորումներ</translation>
 <translation id="4378551569595875038">Միացում…</translation>
 <translation id="4379531060876907730">Սրանք ձեր ստիլուսի գործիքներն են</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">Ոլորել վեր</translation>
 <translation id="4961318399572185831">Էկրանի հեռարձակում</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ժ <ph name="MINUTES" /> ր <ph name="SECONDS" /> վ</translation>
-<translation id="4970352680959471247">Բարի երեկո, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Ժամանակը սպառվեց</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> սարքը կապվեց նոր հեռախոսի հետ</translation>
 <translation id="5035389544768382859">Հաստատեք էկրանի կազմաձևումը</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">Բոլոր առկա օգտատերերն արդեն հավելվել են այս աշխատաշրջանին:</translation>
 <translation id="54609108002486618">Կառավարվող</translation>
 <translation id="5465662442746197494">Օգնությո՞ւն է պետք:</translation>
-<translation id="5485091064403948243">Բարի լույս, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Ձեր ադմինիստրատորը վերակայում է ձեր սարքը: Երբ սարքը վերագործարկվի, բոլոր տվյալները կջնջվեն:</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Ելք աշխատաշրջանից</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">փոխարկում</translation>
 <translation id="742594950370306541">Տեսախցիկն օգտագործվում է:</translation>
 <translation id="743058460480092004">Տեսախցիկն ու խոսափողը օգտագործվում են:</translation>
-<translation id="7436182601308224670">Բարի օր, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Մատը դրեք տվիչին</translation>
 <translation id="7497767806359279797">Ընտրել լեզու և ստեղնաշար</translation>
 <translation id="7526573455193969409">Ցանցը կարող է վերահսկվել</translation>

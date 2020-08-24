@@ -164,7 +164,7 @@ class SessionRestoreObserverTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreObserverTest);
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_SingleTabSessionRestore DISABLED_SingleTabSessionRestore
 #else
 #define MAYBE_SingleTabSessionRestore SingleTabSessionRestore

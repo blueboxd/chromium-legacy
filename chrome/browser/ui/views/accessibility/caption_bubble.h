@@ -105,16 +105,10 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // the model has an error, otherwise displays the latest text.
   void OnErrorChanged();
 
-  // Called by the CaptionBubbleModel to notify this object that the model's
-  // on ready state has changed. Makes the caption bubble become visible and
-  // show the wait text.
-  void OnReadyChanged();
-
   // Called when the caption bubble expanded state has changed. Changes the
   // number of lines displayed.
   void OnIsExpandedChanged();
 
-  void UpdateBubbleAndWaitTextVisibility();
   // The caption bubble manages its own visibility based on whether there's
   // space for it to be shown, and if it has an error or text to display.
   void UpdateBubbleVisibility();
@@ -129,7 +123,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
-  views::Label* wait_text_;
   views::Label* error_text_;
   views::ImageView* error_icon_;
   views::View* error_message_;

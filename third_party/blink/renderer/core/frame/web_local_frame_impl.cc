@@ -1937,7 +1937,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
   // during init().
   frame_->Init(opener_frame);
   CHECK(frame_);
-  CHECK(frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument());
+  CHECK(frame_->GetDocument()->IsInitialEmptyDocument());
   if (!Parent() && !Opener() &&
       frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
     frame_->DomWindow()->GetMutableSecurityOrigin()->GrantUniversalAccess();
@@ -2238,10 +2238,7 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
 bool WebLocalFrameImpl::IsLoading() const {
   if (!GetFrame() || !GetFrame()->GetDocument())
     return false;
-  return GetFrame()
-             ->Loader()
-             .StateMachine()
-             ->IsDisplayingInitialEmptyDocument() ||
+  return GetFrame()->GetDocument()->IsInitialEmptyDocument() ||
          GetFrame()->Loader().HasProvisionalNavigation() ||
          !GetFrame()->GetDocument()->LoadEventFinished();
 }
@@ -2256,15 +2253,14 @@ bool WebLocalFrameImpl::IsNavigationScheduledWithin(
 
 void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
   DCHECK(GetFrame());
-  GetFrame()->Loader().StateMachine()->AdvanceTo(
-      FrameLoaderStateMachine::kCommittedFirstRealLoad);
+  GetFrame()->GetDocument()->OverrideIsInitialEmptyDocument();
   GetFrame()->Loader().SetDidLoadNonEmptyDocument();
   GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
 }
 
 bool WebLocalFrameImpl::HasCommittedFirstRealLoad() {
   DCHECK(GetFrame());
-  return GetFrame()->Loader().StateMachine()->CommittedFirstRealDocumentLoad();
+  return !GetFrame()->GetDocument()->IsInitialEmptyDocument();
 }
 
 void WebLocalFrameImpl::BlinkFeatureUsageReport(

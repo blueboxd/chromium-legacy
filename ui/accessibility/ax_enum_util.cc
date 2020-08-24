@@ -1831,6 +1831,8 @@ const char* ToString(ax::mojom::FloatAttribute float_attribute) {
       return "fontSize";
     case ax::mojom::FloatAttribute::kFontWeight:
       return "fontWeight";
+    case ax::mojom::FloatAttribute::kTextIndent:
+      return "textIndent";
   }
 
   return "";
@@ -1851,6 +1853,8 @@ ax::mojom::FloatAttribute ParseFloatAttribute(const char* float_attribute) {
     return ax::mojom::FloatAttribute::kFontSize;
   if (0 == strcmp(float_attribute, "fontWeight"))
     return ax::mojom::FloatAttribute::kFontWeight;
+  if (0 == strcmp(float_attribute, "textIndent"))
+    return ax::mojom::FloatAttribute::kTextIndent;
   return ax::mojom::FloatAttribute::kNone;
 }
 

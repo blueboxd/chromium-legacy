@@ -48,8 +48,9 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
       tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
   PictureSerializationContext* context =
       tracker.GetPictureSerializationContext();
-  EXPECT_TRUE(context->count(content_id));
-  EXPECT_EQ((*context)[content_id], kEmbeddingTokenChild);
+  EXPECT_TRUE(context->content_id_to_embedding_token.count(content_id));
+  EXPECT_EQ(context->content_id_to_embedding_token[content_id],
+            kEmbeddingTokenChild);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(100, 100);
@@ -75,8 +76,9 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPictureWithScroll) {
       tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
   PictureSerializationContext* context =
       tracker.GetPictureSerializationContext();
-  EXPECT_TRUE(context->count(content_id));
-  EXPECT_EQ((*context)[content_id], kEmbeddingTokenChild);
+  EXPECT_TRUE(context->content_id_to_embedding_token.count(content_id));
+  EXPECT_EQ(context->content_id_to_embedding_token[content_id],
+            kEmbeddingTokenChild);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(100, 100);

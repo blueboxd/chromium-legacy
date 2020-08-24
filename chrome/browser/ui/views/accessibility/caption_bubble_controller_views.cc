@@ -69,18 +69,6 @@ void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
   browser_ = nullptr;
 }
 
-bool CaptionBubbleControllerViews::OnSpeechRecognitionReady(
-    content::WebContents* web_contents) {
-  if (!caption_bubble_ || !caption_bubble_models_.count(web_contents) ||
-      caption_bubble_models_[web_contents]->IsClosed())
-    return false;
-
-  CaptionBubbleModel* caption_bubble_model =
-      caption_bubble_models_[web_contents].get();
-  caption_bubble_model->OnReady();
-  return true;
-}
-
 bool CaptionBubbleControllerViews::OnTranscription(
     const chrome::mojom::TranscriptionResultPtr& transcription_result,
     content::WebContents* web_contents) {

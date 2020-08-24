@@ -89,9 +89,10 @@ const char kForceUpdateInfoMessage[] =
     "checked in the DevTools Application panel.";
 
 void RunSoon(base::OnceClosure callback) {
-  if (!callback.is_null())
+  if (callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
+  }
 }
 
 template <typename CallbackArray, typename Arg>
@@ -664,7 +665,7 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::StartExternalRequest(
     return ServiceWorkerExternalRequestResult::kWorkerNotRunning;
   }
 
-  if (external_request_uuid_to_request_id_.count(request_uuid) > 0u)
+  if (base::Contains(external_request_uuid_to_request_id_, request_uuid))
     return ServiceWorkerExternalRequestResult::kBadRequestId;
 
   int request_id =
@@ -695,10 +696,11 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
 
 ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
     const std::string& request_uuid) {
-  if (running_status() == EmbeddedWorkerStatus::STARTING)
+  if (running_status() == EmbeddedWorkerStatus::STARTING) {
     return pending_external_requests_.erase(request_uuid) > 0u
                ? ServiceWorkerExternalRequestResult::kOk
                : ServiceWorkerExternalRequestResult::kBadRequestId;
+  }
 
   // If it's STOPPED, there is no request to finish. We could just consider this
   // a success, but the caller may want to know about it. (If it's STOPPING,
@@ -756,13 +758,6 @@ void ServiceWorkerVersion::AddControllee(
   // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
-
-  // TODO(yuzus, crbug.com/951571): Remove these CHECKs once we figure out the
-  // cause of crash.
-  CHECK_NE(status_, NEW);
-  CHECK_NE(status_, INSTALLING);
-  CHECK_NE(status_, INSTALLED);
-  CHECK_NE(status_, REDUNDANT);
 
   // Set the idle timeout to the default value if there's no controllee and the
   // worker is running because the worker's idle delay has been set to a shorter
@@ -1117,10 +1112,6 @@ void ServiceWorkerVersion::SetTickClockForTesting(
   tick_clock_ = tick_clock;
 }
 
-void ServiceWorkerVersion::SetClockForTesting(base::Clock* clock) {
-  clock_ = clock;
-}
-
 bool ServiceWorkerVersion::HasNoWork() const {
   return !HasWorkInBrowser() && worker_is_idle_on_renderer_;
 }
@@ -1187,10 +1178,11 @@ void ServiceWorkerVersion::OnStarted(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
   if (status == blink::ServiceWorkerStatusCode::kOk &&
-      fetch_handler_existence_ == FetchHandlerExistence::UNKNOWN)
+      fetch_handler_existence_ == FetchHandlerExistence::UNKNOWN) {
     set_fetch_handler_existence(has_fetch_handler
                                     ? FetchHandlerExistence::EXISTS
                                     : FetchHandlerExistence::DOES_NOT_EXIST);
+  }
 
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);

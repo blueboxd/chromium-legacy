@@ -4,9 +4,9 @@
 
 #include "ash/clipboard/clipboard_history_resource_manager.h"
 
-#include <array>
 #include <string>
 
+#include "ash/clipboard/clipboard_history_util.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
@@ -25,22 +25,7 @@ namespace ash {
 
 namespace {
 
-constexpr char kFileSystemSourcesType[] = "fs/sources";
-
-// The array of formats in the order of decreasing priority.
-constexpr std::array<ui::ClipboardInternalFormat, 7> kPrioritizedFormats = {
-    ui::ClipboardInternalFormat::kBitmap,   ui::ClipboardInternalFormat::kText,
-    ui::ClipboardInternalFormat::kHtml,     ui::ClipboardInternalFormat::kRtf,
-    ui::ClipboardInternalFormat::kBookmark, ui::ClipboardInternalFormat::kWeb,
-    ui::ClipboardInternalFormat::kCustom};
-
 // Helpers ---------------------------------------------------------------------
-
-// Returns true if |data| contains the specified |format|.
-bool ContainsFormat(const ui::ClipboardData& data,
-                    ui::ClipboardInternalFormat format) {
-  return data.format() & static_cast<int>(format);
-}
 
 // Returns the localized string for the specified |resource_id|.
 base::string16 GetLocalizedString(int resource_id) {
@@ -48,21 +33,14 @@ base::string16 GetLocalizedString(int resource_id) {
       resource_id);
 }
 
-// TODO(crbug/1108902): Handle fallback case.
 // Returns the label to display for the custom data contained within |data|.
 base::string16 GetLabelForCustomData(const ui::ClipboardData& data) {
-  DCHECK(ContainsFormat(data, ui::ClipboardInternalFormat::kCustom));
-
-  // Attempt to read file system sources in the custom data.
-  base::string16 sources;
-  ui::ReadCustomDataForType(
-      data.custom_data_data().c_str(), data.custom_data_data().size(),
-      base::UTF8ToUTF16(kFileSystemSourcesType), &sources);
-
+  // Currently the only supported type of custom data is file system data. This
+  // code should not be reached if `data` does not contain file system data.
+  base::string16 sources = ClipboardHistoryUtil::GetFileSystemSources(data);
   if (sources.empty()) {
-    // TODO(https://crbug.com/1119931): Move this to a grd file to make sure it
-    // is internationalized.
-    return base::UTF8ToUTF16("<Custom Data>");
+    NOTREACHED();
+    return base::string16();
   }
 
   // Split sources into a list.
@@ -104,6 +82,9 @@ ui::ImageModel ClipboardHistoryResourceManager::GetImageModel(
   if (cached_image_model != cached_image_models_.end())
     return cached_image_model->image_model;
 
+  // Alias `ClipboardHistoryUtil::ContainsFormat` to prevent wrapping below.
+  const auto& ContainsFormat = ClipboardHistoryUtil::ContainsFormat;
+
   // TODO(newcomer): Show a smaller version of the bitmap.
   if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kBitmap))
     return ui::ImageModel();
@@ -117,10 +98,9 @@ ui::ImageModel ClipboardHistoryResourceManager::GetImageModel(
     return ui::ImageModel::FromVectorIcon(ash::kRtfIcon);
   if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kText))
     return ui::ImageModel::FromVectorIcon(ash::kTextIcon);
-  // TODO(crbug/1108901): Handle file manager case.
-  // TODO(crbug/1108902): Handle fallback case.
   if (ContainsFormat(item.data(), ui::ClipboardInternalFormat::kCustom))
     return ui::ImageModel();
+
   NOTREACHED();
   return ui::ImageModel();
 }
@@ -128,7 +108,7 @@ ui::ImageModel ClipboardHistoryResourceManager::GetImageModel(
 base::string16 ClipboardHistoryResourceManager::GetLabel(
     const ClipboardHistoryItem& item) const {
   const ui::ClipboardData& data = item.data();
-  switch (CalculateMainFormat(item)) {
+  switch (ClipboardHistoryUtil::CalculateMainFormat(data).value()) {
     case ui::ClipboardInternalFormat::kBitmap:
       return GetLocalizedString(IDS_CLIPBOARD_MENU_IMAGE);
     case ui::ClipboardInternalFormat::kText:
@@ -146,20 +126,7 @@ base::string16 ClipboardHistoryResourceManager::GetLabel(
   }
 }
 
-ui::ClipboardInternalFormat
-ClipboardHistoryResourceManager::CalculateMainFormat(
-    const ClipboardHistoryItem& item) const {
-  const ui::ClipboardData& data = item.data();
-  for (const auto& format : kPrioritizedFormats) {
-    if (ContainsFormat(data, format))
-      return format;
-  }
-
-  NOTREACHED();
-  return ui::ClipboardInternalFormat::kText;
-}
-
-ClipboardHistoryResourceManager::CachedImageModel::CachedImageModel() {}
+ClipboardHistoryResourceManager::CachedImageModel::CachedImageModel() = default;
 
 ClipboardHistoryResourceManager::CachedImageModel::CachedImageModel(
     const CachedImageModel& other) = default;

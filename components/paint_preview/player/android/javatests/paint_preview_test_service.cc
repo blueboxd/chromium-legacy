@@ -178,8 +178,8 @@ PaintPreviewTestService::CreateSingleSkp(
     const int y = child_rects[i * 4 + 1];
     const int width = child_rects[i * 4 + 2];
     const int height = child_rects[i * 4 + 3];
-    auto sub_pic =
-        SkPicture::MakePlaceholder(SkRect::MakeXYWH(x, y, width, height));
+    auto rect = SkRect::MakeXYWH(x, y, width, height);
+    auto sub_pic = SkPicture::MakePlaceholder(rect);
     SkMatrix matrix = SkMatrix::Translate(x, y);
     uint32_t sub_id = sub_pic->uniqueID();
     canvas->drawPicture(sub_pic, &matrix, nullptr);
@@ -198,7 +198,10 @@ PaintPreviewTestService::CreateSingleSkp(
     // Re-find |data| as it may have moved when emplacing the new frame.
     it = frames_.find(id);
     data = &it->second;
-    data->ctx.insert(std::make_pair(sub_id, token));
+    data->ctx.content_id_to_embedding_token.insert(
+        std::make_pair(sub_id, token));
+    data->ctx.content_id_to_transformed_clip.insert(
+        std::make_pair(sub_id, rect));
   }
 
   data->skp = recorder.finishRecordingAsPicture();

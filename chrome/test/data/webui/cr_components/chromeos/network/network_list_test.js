@@ -35,7 +35,7 @@ suite('NetworkNetworkListTest', function() {
     Polymer.dom.flush();
   });
 
-  test('focus() focuses the first item', async () => {
+  test('focus() focuses the first item', function() {
     const testNetworks = [
       OncMojo.getDefaultNetworkState(mojom.NetworkType.kEthernet, 'eth0'),
       OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi'),

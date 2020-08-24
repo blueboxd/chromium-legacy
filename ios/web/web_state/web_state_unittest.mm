@@ -226,18 +226,16 @@ TEST_F(WebStateTest, CreateFullPagePdf_ValidURL) {
   GURL url("https://www.chromium.org");
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", url);
+  [[[UIApplication sharedApplication] keyWindow]
+      addSubview:web_state()->GetView()];
 
   NavigationManager::WebLoadParams load_params(url);
   web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForPageLoadTimeout, ^bool {
-        return web_state()->GetLastCommittedURL() == url;
+        return web_state()->GetLastCommittedURL() == url &&
+               !web_state()->IsLoading();
       }));
-
-  // Add the subview. Since it does not get immediately painted, adding a small
-  // delay is necessary.
-  [[[UIApplication sharedApplication] keyWindow]
-      addSubview:web_state()->GetView()];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
 
   // Create a PDF for this page and validate the data.

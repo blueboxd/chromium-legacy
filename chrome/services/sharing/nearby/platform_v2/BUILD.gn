@@ -8,6 +8,10 @@ source_set("platform_v2") {
     "atomic_boolean.h",
     "atomic_uint32.cc",
     "atomic_uint32.h",
+    "ble_medium.cc",
+    "ble_medium.h",
+    "ble_peripheral.cc",
+    "ble_peripheral.h",
     "bluetooth_adapter.cc",
     "bluetooth_adapter.h",
     "bluetooth_classic_medium.cc",
@@ -63,6 +67,7 @@ source_set("unit_tests") {
   sources = [
     "atomic_boolean_unittest.cc",
     "atomic_uint32_unittest.cc",
+    "ble_medium_unittest.cc",
     "bluetooth_adapter_unittest.cc",
     "bluetooth_classic_medium_unittest.cc",
     "bluetooth_server_socket_unittest.cc",

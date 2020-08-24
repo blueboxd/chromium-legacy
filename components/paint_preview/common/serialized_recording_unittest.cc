@@ -50,10 +50,13 @@ sk_sp<const SkPicture> PaintGrayPictureWithSubframes(
   for (const auto& subframe : subframes) {
     const base::UnguessableToken& subframe_id = subframe.first;
     gfx::Rect clip_rect = subframe.second;
-    sk_sp<SkPicture> temp = SkPicture::MakePlaceholder(SkRect::MakeXYWH(
-        clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height()));
+    SkRect rect = SkRect::MakeXYWH(clip_rect.x(), clip_rect.y(),
+                                   clip_rect.width(), clip_rect.height());
+    sk_sp<SkPicture> temp = SkPicture::MakePlaceholder(rect);
     expected_deserialization_context->insert({temp->uniqueID(), clip_rect});
-    context->insert({temp->uniqueID(), subframe_id});
+    context->content_id_to_embedding_token.insert(
+        {temp->uniqueID(), subframe_id});
+    context->content_id_to_transformed_clip.insert({temp->uniqueID(), rect});
     canvas->drawPicture(temp.get());
   }
 

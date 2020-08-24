@@ -13,6 +13,8 @@ import static androidx.test.espresso.intent.matcher.UriMatchers.hasScheme;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.content.Intent;
 import android.os.Build;
 
@@ -24,15 +26,19 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.devui.util.CrashBugUrlFactory;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tests for CrashBugUrlFactory class
+ * Unit tests for CrashBugUrlFactory class
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@OnlyRunIn(SINGLE_PROCESS) // These are unit tests
+@Batch(Batch.UNIT_TESTS)
 public class CrashBugUrlFactoryTest {
     @Test
     @SmallTest

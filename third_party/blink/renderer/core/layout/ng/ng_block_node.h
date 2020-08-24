@@ -95,6 +95,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBlockNode GetFieldsetContent() const;
 
   bool IsNGTable() const { return IsTable() && box_->IsLayoutNGMixin(); }
+  bool IsNGTableCell() const {
+    return box_->IsTableCell() && !box_->IsTableCellLegacy();
+  }
+
   bool IsFixedTableLayout() const;
   const NGBoxStrut& GetTableBorders() const;
 

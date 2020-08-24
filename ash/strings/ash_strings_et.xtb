@@ -315,7 +315,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4350065043422286972">Kinnitatud</translation>
 <translation id="4351433414020964307">Assistenti laaditakse …</translation>
 <translation id="4356930093361201197">suure kontrastsusega režiim</translation>
-<translation id="4368583494516669646">Head ööd, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Ülekandmise seaded</translation>
 <translation id="4378551569595875038">Ühendamine ...</translation>
 <translation id="4379531060876907730">Need on teie elektronpliiatsi tööriistad</translation>
@@ -370,7 +369,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="495046168593986294">Keri üles</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
-<translation id="4970352680959471247">Tere õhtust, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Aeg on läbi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ühendati uue telefoniga</translation>
 <translation id="5035389544768382859">Kuva seadistuse kinnitamine</translation>
@@ -401,7 +399,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="544691375626129091">Kõik saadaval kasutajad on sellesse seanssi juba lisatud.</translation>
 <translation id="54609108002486618">Hallatud</translation>
 <translation id="5465662442746197494">Kas vajate abi?</translation>
-<translation id="5485091064403948243">Tere hommikust, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Administraator viib seadme vanemale versioonile. Seadme taaskäivitamisel kustutatakse kõik andmed.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Seansist väljumine</translation>
@@ -567,7 +564,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="741244894080940828">teisendus</translation>
 <translation id="742594950370306541">Kaamera on kasutusel.</translation>
 <translation id="743058460480092004">Kaamera ja mikrofon on kasutusel.</translation>
-<translation id="7436182601308224670">Tere päevast, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Puudutage andurit</translation>
 <translation id="7497767806359279797">Valige keel ja klaviatuur</translation>
 <translation id="7526573455193969409">Võrku võidakse jälgida</translation>

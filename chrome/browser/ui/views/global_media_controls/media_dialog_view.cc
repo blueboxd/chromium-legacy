@@ -27,8 +27,8 @@ MediaDialogView* MediaDialogView::instance_ = nullptr;
 bool MediaDialogView::has_been_opened_ = false;
 
 // static
-void MediaDialogView::ShowDialog(views::View* anchor_view,
-                                 MediaNotificationService* service) {
+views::Widget* MediaDialogView::ShowDialog(views::View* anchor_view,
+                                           MediaNotificationService* service) {
   DCHECK(!instance_);
   DCHECK(service);
   instance_ = new MediaDialogView(anchor_view, service);
@@ -40,6 +40,8 @@ void MediaDialogView::ShowDialog(views::View* anchor_view,
   base::UmaHistogramBoolean("Media.GlobalMediaControls.RepeatUsage",
                             has_been_opened_);
   has_been_opened_ = true;
+
+  return widget;
 }
 
 // static

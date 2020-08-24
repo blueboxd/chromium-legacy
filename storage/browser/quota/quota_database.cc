@@ -470,20 +470,34 @@ bool QuotaDatabase::GetLRUOrigin(StorageType type,
   return statement.Succeeded();
 }
 
-bool QuotaDatabase::GetOriginsModifiedSince(StorageType type,
-                                            std::set<url::Origin>* origins,
-                                            base::Time modified_since) {
+bool QuotaDatabase::GetOriginsModifiedBetween(StorageType type,
+                                              std::set<url::Origin>* origins,
+                                              base::Time begin,
+                                              base::Time end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(origins);
   if (!LazyOpen(false))
     return false;
 
-  const char* kSql = "SELECT origin FROM OriginInfoTable"
-                     " WHERE type = ? AND last_modified_time >= ?";
+  DCHECK(!begin.is_max() && end != base::Time());
+  static constexpr char kSqlQuerySince[] =
+      "SELECT origin FROM OriginInfoTable"
+      " WHERE type = ? AND last_modified_time >= ?";
 
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
+  static constexpr char kSqlQueryBetween[] =
+      "SELECT origin FROM OriginInfoTable"
+      " WHERE type = ? AND last_modified_time >= ? AND last_modified_time < ?";
+
+  sql::Statement statement;
+  if (end.is_max()) {
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSqlQuerySince));
+  } else {
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSqlQueryBetween));
+  }
   statement.BindInt(0, static_cast<int>(type));
-  statement.BindInt64(1, TimeToSqlValue(modified_since));
+  statement.BindInt64(1, TimeToSqlValue(begin));
+  if (!end.is_max())
+    statement.BindInt64(2, TimeToSqlValue(end));
 
   origins->clear();
   while (statement.Step())

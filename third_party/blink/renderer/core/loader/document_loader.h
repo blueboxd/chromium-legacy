@@ -171,7 +171,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void FillNavigationParamsForErrorPage(WebNavigationParams*);
 
-  void MarkAsCommitted();
   void SetSentDidFinishLoad() { state_ = kSentDidFinishLoad; }
   bool SentDidFinishLoad() const { return state_ == kSentDidFinishLoad; }
 
@@ -341,6 +340,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation();
+  void RecordUseCountersForCommit();
+  void RecordConsoleMessagesForCommit();
 
   void CreateParserPostCommit();
 

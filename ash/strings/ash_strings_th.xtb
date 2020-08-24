@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">ตรึงแล้ว</translation>
 <translation id="4351433414020964307">Assistant กำลังโหลด...</translation>
 <translation id="4356930093361201197">โหมดคอนทราสต์สูง</translation>
-<translation id="4368583494516669646">ราตรีสวัสดิ์ <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">การตั้งค่าการแคสต์</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ</translation>
 <translation id="4379531060876907730">นี่คือเครื่องมือสไตลัส</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">เลื่อนขึ้น</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ชม. <ph name="MINUTES" /> นาที <ph name="SECONDS" /> วินาที</translation>
-<translation id="4970352680959471247">สวัสดียามเย็น <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">หมดเวลา</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> เชื่อมต่อโทรศัพท์เครื่องใหม่แล้ว</translation>
 <translation id="5035389544768382859">ยืนยันการกำหนดค่าจอแสดงผล</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="54609108002486618">มีการจัดการ</translation>
 <translation id="5465662442746197494">หากต้องการความช่วยเหลือ</translation>
-<translation id="5485091064403948243">อรุณสวัสดิ์ <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">ผู้ดูแลระบบกำลังคืนค่าสถานะของอุปกรณ์ ระบบจะลบข้อมูลทั้งหมดเมื่อรีสตาร์ทอุปกรณ์</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">กำลังออกจากเซสชัน</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">การแปลง</translation>
 <translation id="742594950370306541">ใช้กล้องถ่ายรูปอยู่</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
-<translation id="7436182601308224670">สวัสดียามบ่าย <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">โปรดแตะเซ็นเซอร์</translation>
 <translation id="7497767806359279797">เลือกภาษาและแป้นพิมพ์</translation>
 <translation id="7526573455193969409">อาจมีการตรวจสอบเครือข่าย</translation>

@@ -4,11 +4,11 @@
 
 #include "ash/clipboard/views/clipboard_history_item_view.h"
 
-#include "ash/clipboard/clipboard_history_controller.h"
-#include "ash/clipboard/clipboard_history_resource_manager.h"
+#include "ash/clipboard/clipboard_history_item.h"
+#include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/views/clipboard_history_bitmap_item_view.h"
 #include "ash/clipboard/views/clipboard_history_text_item_view.h"
-#include "ash/shell.h"
+#include "ui/base/clipboard/clipboard_data.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -57,10 +57,7 @@ std::unique_ptr<ClipboardHistoryItemView>
 ClipboardHistoryItemView::CreateFromClipboardHistoryItem(
     const ClipboardHistoryItem& item,
     views::MenuItemView* container) {
-  switch (Shell::Get()
-              ->clipboard_history_controller()
-              ->resource_manager()
-              ->CalculateMainFormat(item)) {
+  switch (ClipboardHistoryUtil::CalculateMainFormat(item.data()).value()) {
     case ui::ClipboardInternalFormat::kBitmap:
       return std::make_unique<ClipboardHistoryBitmapItemView>(item, container);
     case ui::ClipboardInternalFormat::kText:

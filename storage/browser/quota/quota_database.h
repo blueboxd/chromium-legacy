@@ -124,10 +124,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
                     base::Optional<url::Origin>* origin);
 
   // Populates |origins| with the ones that have been modified since
-  // the |modified_since|. Returns whether the operation succeeded.
-  bool GetOriginsModifiedSince(blink::mojom::StorageType type,
-                               std::set<url::Origin>* origins,
-                               base::Time modified_since);
+  // the |begin| and until the |end|. Returns whether the
+  // operation succeeded.
+  bool GetOriginsModifiedBetween(blink::mojom::StorageType type,
+                                 std::set<url::Origin>* origins,
+                                 base::Time begin,
+                                 base::Time end);
 
   // Returns false if SetOriginDatabaseBootstrapped has never
   // been called before, which means existing origins may not have been

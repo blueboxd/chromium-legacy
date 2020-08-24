@@ -323,12 +323,13 @@ void InputInjectorMac::Core::InjectTextEvent(const TextEvent& event) {
       // Applications that ignore UnicodeString field will see the text event as
       // Space key.
       ui_thread_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
-                                    /*pressed=*/true, 0, grapheme.as_string()));
+          FROM_HERE,
+          base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
+                         /*pressed=*/true, 0, base::string16(grapheme)));
       ui_thread_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(CreateAndPostKeyEvent, kVK_Space,
-                         /*pressed=*/false, 0, grapheme.as_string()));
+                         /*pressed=*/false, 0, base::string16(grapheme)));
     }
   }
 }

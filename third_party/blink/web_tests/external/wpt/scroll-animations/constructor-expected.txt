@@ -1,8 +1,9 @@
 This is a testharness.js-based test.
-Found 60 tests; 58 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 61 tests; 59 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A ScrollTimeline can be created with a scrollSource
 PASS A ScrollTimeline can be created with a non-scrolling scrollSource
-PASS A ScrollTimeline created with a null scrollSource should use the document.scrollingElement
+PASS A ScrollTimeline created with a null scrollSource should have no scrollSource
+PASS A ScrollTimeline created without a scrollSource should use the document.scrollingElement
 PASS A ScrollTimeline created with the default orientation should default to 'block'
 PASS 'block' is a valid orientation value
 PASS 'inline' is a valid orientation value

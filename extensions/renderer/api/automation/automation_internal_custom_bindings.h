@@ -83,10 +83,13 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   bool SendTreeChangeEvent(api::automation::TreeChangeType change_type,
                            ui::AXTree* tree,
                            ui::AXNode* node);
-  void SendAutomationEvent(ui::AXTreeID tree_id,
-                           const gfx::Point& mouse_location,
-                           const ui::AXEvent& event,
-                           api::automation::EventType event_type);
+  void SendAutomationEvent(
+      ui::AXTreeID tree_id,
+      const gfx::Point& mouse_location,
+      const ui::AXEvent& event,
+      api::automation::EventType event_type,
+      api::automation::GeneratedEventType generated_event_type =
+          api::automation::GENERATED_EVENT_TYPE_NONE);
 
   void MaybeSendFocusAndBlur(
       AutomationAXTreeWrapper* tree,

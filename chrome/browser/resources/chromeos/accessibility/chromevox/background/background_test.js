@@ -2860,3 +2860,35 @@ TEST_F('ChromeVoxBackgroundTest', 'PopupButtonExpanded', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'SortDirection', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <table border="1">
+      <th aria-sort="ascending"><button id="sort">Date</button></th>
+      <tr><td>1/2/20</td></tr>
+      <tr><td>2/2/20</td></tr>
+    </table>
+    <script>
+      let ascending = true;
+      const sortButton = document.getElementById('sort');
+      sortButton.addEventListener('click', () => {
+        ascending = !ascending;
+        sortButton.parentElement.setAttribute(
+            'aria-sort', ascending ? 'ascending' : 'descending');
+      });
+    </script>
+  `,
+      function(root) {
+        const sortButton = root.find({role: RoleType.BUTTON});
+        mockFeedback.expectSpeech('Button', 'Ascending sort')
+            .call(sortButton.doDefault.bind(sortButton))
+            .expectSpeech('Descending sort')
+            .call(sortButton.doDefault.bind(sortButton))
+            .expectSpeech('Ascending sort')
+            .call(sortButton.doDefault.bind(sortButton))
+            .expectSpeech('Descending sort')
+            .replay();
+      });
+});

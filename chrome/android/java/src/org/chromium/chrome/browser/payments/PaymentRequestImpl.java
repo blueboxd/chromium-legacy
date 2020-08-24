@@ -1126,7 +1126,9 @@ public class PaymentRequestImpl
                     mPaymentUIsManager.getShippingOptions(details.shippingOptions));
         }
 
-        if (mSkipToGPayHelper != null && !mSkipToGPayHelper.setShippingOption(details)) {
+        if (mSkipToGPayHelper != null && !mSkipToGPayHelper.setShippingOptionIfValid(details)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return false;
         }
 

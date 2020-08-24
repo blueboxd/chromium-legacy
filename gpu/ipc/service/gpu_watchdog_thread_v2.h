@@ -27,6 +27,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded,
       base::TimeDelta timeout,
+      int init_factor,
+      int restart_factor,
       int max_extra_cycles_before_kill,
       bool test_mode);
 
@@ -67,6 +69,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   };
 
   GpuWatchdogThreadImplV2(base::TimeDelta timeout,
+                          int init_factor,
+                          int restart_factor,
                           int max_extra_cycles_before_kill,
                           bool test_mode);
   void OnAddPowerObserver();
@@ -134,6 +138,13 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // Timeout on the watchdog thread to check if gpu hangs.
   base::TimeDelta watchdog_timeout_;
+
+  // The one-time watchdog timeout multiplier in the gpu initialization.
+  int watchdog_init_factor_;
+
+  // The one-time watchdog timeout multiplier after the watchdog pauses and
+  // restarts.
+  int watchdog_restart_factor_;
 
   // The time the gpu watchdog was created.
   base::TimeTicks watchdog_start_timeticks_;

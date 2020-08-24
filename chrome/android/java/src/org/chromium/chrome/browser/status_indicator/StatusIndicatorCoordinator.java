@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.status_indicator;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import androidx.annotation.ColorInt;
@@ -42,6 +43,7 @@ public class StatusIndicatorCoordinator {
     }
 
     private StatusIndicatorMediator mMediator;
+    private PropertyModelChangeProcessor mMCP;
     private StatusIndicatorSceneLayer mSceneLayer;
     private boolean mIsShowing;
     private Runnable mRemoveOnLayoutChangeListener;
@@ -51,7 +53,7 @@ public class StatusIndicatorCoordinator {
      * @param activity The {@link Activity} to find and inflate the status indicator view.
      * @param resourceManager The {@link ResourceManager} for the status indicator's cc layer.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} to listen to
-     *                          for the changes in controls offsets.
+     *                                     for the changes in controls offsets.
      * @param statusBarColorWithoutStatusIndicatorSupplier A supplier that will get the status bar
      *                                                     color without taking the status indicator
      *                                                     into account.
@@ -65,41 +67,73 @@ public class StatusIndicatorCoordinator {
             BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
             Supplier<Boolean> canAnimateNativeBrowserControls, Callback<Runnable> requestRender) {
-        // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
-        // when we have the public API figured out. First, we should avoid inflating the view here
-        // in case it's never used.
-        final ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
-        ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
-        mSceneLayer = new StatusIndicatorSceneLayer(root, () -> browserControlsStateProvider);
-        PropertyModel model =
-                new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                        .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
-                        .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
-                        .build();
-        PropertyModelChangeProcessor.create(model,
-                new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
-                StatusIndicatorViewBinder::bind);
+        mSceneLayer = new StatusIndicatorSceneLayer(browserControlsStateProvider);
+
+        // This will create the view before showing it.
+        Runnable inflateView = () -> {
+            ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
+            ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
+            resourceManager.getDynamicResourceLoader().registerResource(
+                    root.getId(), root.getResourceAdapter());
+            mSceneLayer.setResourceId(root.getId());
+            PropertyModel model =
+                    new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
+                            .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
+                            .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
+                            .build();
+            mMCP = PropertyModelChangeProcessor.create(model,
+                    new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
+                    StatusIndicatorViewBinder::bind);
+            mMediator.setModel(model);
+            root.addOnLayoutChangeListener(mMediator);
+            mRemoveOnLayoutChangeListener = () -> root.removeOnLayoutChangeListener(mMediator);
+        };
+
+        // This will run to destroy the view once it's hidden.
+        Runnable destroyView = () -> {
+            mRemoveOnLayoutChangeListener.run();
+            mRemoveOnLayoutChangeListener = null;
+            ViewResourceFrameLayout root = activity.findViewById(R.id.status_indicator);
+            mSceneLayer.setResourceId(0);
+            resourceManager.getDynamicResourceLoader().unregisterResource(root.getId());
+            mMediator.setModel(null);
+            mMCP.destroy();
+            mMCP = null;
+
+            // Remove the view and add a ViewStub in its place. This is basically returning the
+            // view tree to its initial condition and will make it possible to inflate the view
+            // easily the next time it's needed, i.e. next #show() call.
+            final ViewGroup parent = ((ViewGroup) root.getParent());
+            final int index = parent.indexOfChild(root);
+            parent.removeViewAt(index);
+            final ViewStub stub = new ViewStub(activity);
+            stub.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            stub.setId(R.id.status_indicator_stub);
+            stub.setInflatedId(R.id.status_indicator);
+            stub.setLayoutResource(R.layout.status_indicator_container);
+            parent.addView(stub, index);
+        };
         Callback<Runnable> invalidateCompositorView = callback -> {
+            ViewResourceFrameLayout root = activity.findViewById(R.id.status_indicator);
             root.getResourceAdapter().invalidate(null);
             requestRender.onResult(callback);
         };
-        Runnable requestLayout = () -> root.requestLayout();
-
-        mMediator = new StatusIndicatorMediator(model, browserControlsStateProvider,
-                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls,
-                invalidateCompositorView, requestLayout);
-        resourceManager.getDynamicResourceLoader().registerResource(
-                root.getId(), root.getResourceAdapter());
-        root.addOnLayoutChangeListener(mMediator);
-        mRemoveOnLayoutChangeListener = () -> root.removeOnLayoutChangeListener(mMediator);
+        Runnable requestLayout = () -> {
+            ViewResourceFrameLayout root = activity.findViewById(R.id.status_indicator);
+            root.requestLayout();
+        };
+        mMediator = new StatusIndicatorMediator(browserControlsStateProvider,
+                statusBarColorWithoutStatusIndicatorSupplier, inflateView, destroyView,
+                canAnimateNativeBrowserControls, invalidateCompositorView, requestLayout);
     }
 
     public void destroy() {
-        mRemoveOnLayoutChangeListener.run();
+        if (mRemoveOnLayoutChangeListener != null) {
+            mRemoveOnLayoutChangeListener.run();
+        }
         mMediator.destroy();
     }
-
-    // TODO(sinansahin): Destroy the view when not needed.
 
     /**
      * Show the status indicator with the initial properties with animations.

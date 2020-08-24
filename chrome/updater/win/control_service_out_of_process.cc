@@ -22,12 +22,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_checker.h"
 #include "base/win/scoped_bstr.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/win/constants.h"
 
 namespace updater {
 namespace {
+
+using ICompleteStatusPtr = ::Microsoft::WRL::ComPtr<ICompleteStatus>;
 
 static constexpr base::TaskTraits kComClientTraits = {
     base::TaskPriority::BEST_EFFORT,
@@ -54,10 +57,34 @@ class UpdaterControlObserver
   UpdaterControlObserver& operator=(const UpdaterControlObserver&) = delete;
 
   // Overrides for IUpdaterObserver.
-  IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
+  IFACEMETHODIMP OnStateChange(IUpdateState* update_state) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP OnComplete(ICompleteStatus* complete_status) override {
+    DCHECK(complete_status);
+    DVLOG(2) << __func__ << " returned " << QueryStatus(complete_status) << ".";
+    com_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&UpdaterControlObserver::OnCompleteOnSTA,
+                                  base::WrapRefCounted(this)));
+    return S_OK;
+  }
+
+  // Disconnects this observer from its subject and ensures the callbacks are
+  // not posted after this function is called. Returns the completion callback
+  // so that the owner of this object can take back the callback ownership.
+  base::OnceClosure Disconnect();
 
  private:
   ~UpdaterControlObserver() override = default;
+
+  // Called in sequence on the |com_task_runner_|.
+  void OnCompleteOnSTA();
+
+  // Returns the value of the status code.]
+  LONG QueryStatus(ICompleteStatus* complete_status);
+
+  // Bound to the STA thread.
+  THREAD_CHECKER(thread_checker_);
 
   // Bound to the STA thread.
   scoped_refptr<base::SequencedTaskRunner> com_task_runner_;
@@ -70,21 +97,33 @@ class UpdaterControlObserver
   base::OnceClosure callback_;
 };
 
-HRESULT UpdaterControlObserver::OnComplete(ICompleteStatus* status) {
-  DCHECK(status);
+base::OnceClosure UpdaterControlObserver::Disconnect() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(2) << __func__;
+  updater_control_ = nullptr;
+  return std::move(callback_);
+}
+
+LONG UpdaterControlObserver::QueryStatus(ICompleteStatus* complete_status) {
+  DCHECK(complete_status);
 
   LONG code = 0;
   base::win::ScopedBstr message;
-  CHECK(SUCCEEDED(status->get_statusCode(&code)));
-  CHECK(SUCCEEDED(status->get_statusMessage(message.Receive())));
+  CHECK(SUCCEEDED(complete_status->get_statusCode(&code)));
 
-  VLOG(2) << "UpdaterObserver::OnComplete(" << code << ", " << message.Get()
-          << ")";
+  return code;
+}
 
-  com_task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback_)));
+void UpdaterControlObserver::OnCompleteOnSTA() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   updater_control_ = nullptr;
-  return S_OK;
+
+  if (!callback_) {
+    DVLOG(2) << "Skipping posting the completion callback.";
+    return;
+  }
+  com_task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback_)));
 }
 
 }  // namespace
@@ -101,7 +140,7 @@ ControlServiceOutOfProcess::~ControlServiceOutOfProcess() {
 }
 
 void ControlServiceOutOfProcess::ModuleStop() {
-  VLOG(2) << __func__ << ": COM client is shutting down.";
+  DVLOG(2) << __func__ << ": COM client is shutting down.";
 }
 
 void ControlServiceOutOfProcess::Uninitialize() {
@@ -133,8 +172,8 @@ void ControlServiceOutOfProcess::RunOnSTA(base::OnceClosure callback) {
   HRESULT hr = ::CoCreateInstance(CLSID_UpdaterControlServiceClass, nullptr,
                                   CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&server));
   if (FAILED(hr)) {
-    VLOG(2) << "Failed to instantiate the updater control server. " << std::hex
-            << hr;
+    DVLOG(2) << "Failed to instantiate the updater control server. " << std::hex
+             << hr;
     std::move(callback).Run();
     return;
   }
@@ -142,8 +181,8 @@ void ControlServiceOutOfProcess::RunOnSTA(base::OnceClosure callback) {
   Microsoft::WRL::ComPtr<IUpdaterControl> updater_control;
   hr = server.As(&updater_control);
   if (FAILED(hr)) {
-    VLOG(2) << "Failed to query the updater_control interface. " << std::hex
-            << hr;
+    DVLOG(2) << "Failed to query the updater_control interface. " << std::hex
+             << hr;
     std::move(callback).Run();
     return;
   }
@@ -160,8 +199,14 @@ void ControlServiceOutOfProcess::RunOnSTA(base::OnceClosure callback) {
       updater_control, std::move(callback));
   hr = updater_control->Run(observer.Get());
   if (FAILED(hr)) {
-    VLOG(2) << "Failed to call IUpdaterControl::Run" << std::hex << hr;
-    std::move(callback).Run();
+    DVLOG(2) << "Failed to call IUpdaterControl::Run" << std::hex << hr;
+
+    // Since the RPC call returned an error, it can't be determined what the
+    // state of the update server is. The observer may or may not post any
+    // callback. Disconnecting the observer resolves this ambiguity and
+    // transfers the ownership of the callback back to the owner of the
+    // observer.
+    observer->Disconnect().Run();
     return;
   }
 }

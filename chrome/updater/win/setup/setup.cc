@@ -107,10 +107,11 @@ void AddComInterfacesWorkItems(HKEY root,
     return;
   }
 
-  for (const auto& iid : {__uuidof(IUpdater), __uuidof(IUpdaterControl),
-                          __uuidof(IUpdaterObserver), __uuidof(ICompleteStatus),
-                          __uuidof(IGoogleUpdate3Web), __uuidof(IAppBundleWeb),
-                          __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
+  for (const auto& iid :
+       {__uuidof(IUpdater), __uuidof(IUpdaterControl),
+        __uuidof(IUpdaterObserver), __uuidof(IUpdateState),
+        __uuidof(ICompleteStatus), __uuidof(IGoogleUpdate3Web),
+        __uuidof(IAppBundleWeb), __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
     const base::string16 iid_reg_path = GetComIidRegistryPath(iid);
     const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid);
 

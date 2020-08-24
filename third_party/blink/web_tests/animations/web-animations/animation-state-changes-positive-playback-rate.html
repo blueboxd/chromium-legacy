@@ -417,8 +417,10 @@ async_test(function(t) {
   var timelineCurrentTime = document.timeline.currentTime;
   animation.ready.then(t.step_func_done(() => {
     assert_equals(animation.playState, 'running');
-    assert_greater_than_equal(animation.startTime, timelineCurrentTime);
-    assert_greater_than_equal(animation.currentTime, animationCurrentTime);
+    assert_time_greater_than_equal(animation.startTime,
+                                   timelineCurrentTime);
+    assert_time_greater_than_equal(animation.currentTime,
+                                   animationCurrentTime);
   }));
 }, "PlayState is 'running' while playing a cancelled animation");
 
@@ -429,7 +431,8 @@ async_test(function(t) {
   animation.ready.then(t.step_func_done(() => {
     assert_equals(animation.playState, 'paused');
     assert_equals(animation.startTime, null);
-    assert_greater_than_equal(animation.currentTime, animationCurrentTime);
+    assert_time_greater_than_equal(animation.currentTime,
+                                   animationCurrentTime);
   }));
 }, "PlayState is 'running' while pausing a running animation");
 </script>

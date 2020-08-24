@@ -22,6 +22,7 @@ GEN('#include "content/public/test/browser_test.h"');
   ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.js',
     ['../../cr_elements/cr_policy_strings.js']
   ],
+  ['NetworkApnlist', 'network/network_apnlist_test.js', []],
   ['NetworkConfig', 'network/network_config_test.js',
     [
       '//ui/webui/resources/js/assert.js',
@@ -43,6 +44,7 @@ GEN('#include "content/public/test/browser_test.h"');
 [
   ['BasePage', 'cellular_setup/base_page_test.js', []],
   ['FinalPage', 'cellular_setup/final_page_test.js', []],
+  ['ProvisioningPage', 'cellular_setup/provisioning_page_test.js',[]],
   ['SimDetectPage', 'cellular_setup/sim_detect_page_test.js', []],
 ].forEach(test => registerTest('CellularSetup', 'cellular-setup', ...test));
 // clang-format on

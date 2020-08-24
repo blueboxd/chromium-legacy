@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">Закрепленные</translation>
 <translation id="4351433414020964307">Загрузка Ассистента…</translation>
 <translation id="4356930093361201197">Режим высокой контрастности</translation>
-<translation id="4368583494516669646">Доброй ночи, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Настройки трансляции</translation>
 <translation id="4378551569595875038">Подключение…</translation>
 <translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">Прокрутить вверх</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ч. <ph name="MINUTES" /> мин. <ph name="SECONDS" /> сек.</translation>
-<translation id="4970352680959471247">Добрый вечер, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Время вышло</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
 <translation id="5035389544768382859">Подтвердите конфигурацию экрана</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
 <translation id="54609108002486618">Автоматическое управление</translation>
 <translation id="5465662442746197494">Справка</translation>
-<translation id="5485091064403948243">Доброе утро, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Администратор возвращает ваше устройство к прежней версии системы. После перезагрузки все данные с устройства будут удалены.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Завершение сеанса</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">перевести в другие ед. измерения</translation>
 <translation id="742594950370306541">Камера используется.</translation>
 <translation id="743058460480092004">Камера и микрофон используются.</translation>
-<translation id="7436182601308224670">Добрый день, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Приложите палец к сканеру.</translation>
 <translation id="7497767806359279797">Выберите язык и клавиатуру</translation>
 <translation id="7526573455193969409">Сеть может отслеживаться</translation>

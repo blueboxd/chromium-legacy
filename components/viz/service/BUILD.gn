@@ -460,9 +460,6 @@ viz_source_set("unit_tests") {
     "display/display_unittest.cc",
     "display/draw_polygon_unittest.cc",
     "display/frame_rate_decider_unittest.cc",
-    "display/gl_renderer_copier_pixeltest.cc",
-    "display/gl_renderer_copier_unittest.cc",
-    "display/gl_renderer_unittest.cc",
     "display/layer_quad_unittest.cc",
     "display/renderer_pixeltest.cc",
     "display/shader_unittest.cc",
@@ -495,6 +492,14 @@ viz_source_set("unit_tests") {
     "surfaces/referenced_surface_tracker_unittest.cc",
     "surfaces/surface_unittest.cc",
   ]
+
+  if (enable_viz_gl_tests) {
+    sources += [
+      "display/gl_renderer_copier_pixeltest.cc",
+      "display/gl_renderer_copier_unittest.cc",
+      "display/gl_renderer_unittest.cc",
+    ]
+  }
 
   if (!use_aura && !is_mac) {
     sources -= [ "display_embedder/buffer_queue_unittest.cc" ]
@@ -570,6 +575,10 @@ viz_source_set("unit_tests") {
   }
 
   defines = []
+
+  if (enable_viz_gl_tests) {
+    defines += [ "ENABLE_VIZ_GL_TESTS" ]
+  }
 
   if (enable_vulkan) {
     deps += [

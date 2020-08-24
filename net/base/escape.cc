@@ -232,10 +232,10 @@ base::string16 UnescapeForHTML(base::StringPiece16 input) {
   constexpr size_t kEscapeToCharsCount = base::size(kEscapeToChars);
 
   if (input.find(base::ASCIIToUTF16("&")) == std::string::npos)
-    return input.as_string();
+    return base::string16(input);
 
   base::string16 ampersand_chars[kEscapeToCharsCount];
-  base::string16 text = input.as_string();
+  base::string16 text(input);
   for (base::string16::iterator iter = text.begin();
        iter != text.end(); ++iter) {
     if (*iter == '&') {

@@ -14,7 +14,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="109942774857561566">Me aburro</translation>
 <translation id="1104084341931202936">Muestra configuración de accesibilidad</translation>
 <translation id="1104621072296271835">Tus dispositivos funcionan aún mejor juntos</translation>
-<translation id="1119348796022671382">El modo de color mediante un tema usa colores extraídos del fondo de pantalla para colorear ligeramente la interfaz.</translation>
+<translation id="1119348796022671382">El modo de color mediante un tema usa colores extraídos de tu fondo de pantalla para colorear ligeramente la interfaz.</translation>
 <translation id="112308213915226829">Autoocultar estantería</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1175572348579024023">Desplazarse</translation>
@@ -184,7 +184,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3000461861112256445">Audio en mono</translation>
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3033545621352269033">Activada</translation>
-<translation id="3038571455154067151">Para iniciar sesión, escribe tu código de acceso parental de Family Link</translation>
+<translation id="3038571455154067151">Para iniciar sesión, introduce tu código de acceso parental de Family Link</translation>
 <translation id="3051128274746680507">Tu perfil de usuario supervisado se eliminará pronto. Inicia sesión para obtener más información.</translation>
 <translation id="3055162170959710888">Hoy has utilizado este dispositivo durante <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Bandeja de estado: hora <ph name="TIME" />,
@@ -315,7 +315,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4350065043422286972">Fijados</translation>
 <translation id="4351433414020964307">El Asistente se está cargando...</translation>
 <translation id="4356930093361201197">modo de contraste alto</translation>
-<translation id="4368583494516669646">Buenas noches, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Configuración de envío</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas son las herramientas del lápiz óptico</translation>
@@ -370,7 +369,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="495046168593986294">Desplazarse hacia arriba</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
-<translation id="4970352680959471247">Buenas noches, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Se ha agotado el tiempo</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> está conectado a un nuevo teléfono</translation>
 <translation id="5035389544768382859">Confirma la configuración de la pantalla</translation>
@@ -401,7 +399,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
 <translation id="54609108002486618">Administrado</translation>
 <translation id="5465662442746197494">¿Necesitas ayuda?</translation>
-<translation id="5485091064403948243">Buenos días, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">El administrador va a instalar una versión anterior en tu dispositivo. Se eliminarán todos los datos cuando se reinicie.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Saliendo de la sesión</translation>
@@ -431,7 +428,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Parar <ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Desactivado</translation>
-<translation id="5876666360658629066">Escribe el código parental</translation>
+<translation id="5876666360658629066">Introduce el código parental</translation>
 <translation id="5887866489674258948">Modo oscuro</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>
@@ -567,7 +564,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="742594950370306541">La cámara se está utilizando.</translation>
 <translation id="743058460480092004">La cámara y el micrófono se están utilizando.</translation>
-<translation id="7436182601308224670">Buenas tardes, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Toca el sensor</translation>
 <translation id="7497767806359279797">Seleccionar idioma y teclado</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
@@ -679,7 +675,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8646417893960517480">Temporizador de <ph name="TOTAL_TIME" /></translation>
-<translation id="8647931990447795414">Para añadir un perfil, escribe tu código de acceso parental de Family Link</translation>
+<translation id="8647931990447795414">Para añadir un perfil, introduce tu código de acceso parental de Family Link</translation>
 <translation id="8649101189709089199">Enunciar Selección</translation>
 <translation id="8652175077544655965">Cerrar ajustes</translation>
 <translation id="8653151467777939995">Muestra la configuración de notificaciones. Las notificaciones están activadas.</translation>

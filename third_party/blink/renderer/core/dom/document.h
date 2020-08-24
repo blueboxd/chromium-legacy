@@ -318,6 +318,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using TreeScope::getElementById;
 
+  bool IsInitialEmptyDocument() const { return is_initial_empty_document_; }
+  // Sometimes we permit an initial empty document to cease to be the initial
+  // empty document. This is needed for cross-process navigations, where a new
+  // LocalFrame needs to be created but the conceptual frame might have had
+  // other Documents in a different process. document.open() also causes the
+  // document to cease to be the initial empty document.
+  void OverrideIsInitialEmptyDocument() { is_initial_empty_document_ = false; }
+
   // Gets the associated LocalDOMWindow even if this Document is associated with
   // an HTMLImportsController.
   LocalDOMWindow* ExecutingWindow() const;
@@ -1782,6 +1790,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void HasTrustTokensAnswererConnectionError();
 
   DocumentLifecycle lifecycle_;
+
+  bool is_initial_empty_document_;
 
   bool evaluate_media_queries_on_style_recalc_;
 

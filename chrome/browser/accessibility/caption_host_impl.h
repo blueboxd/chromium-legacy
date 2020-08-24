@@ -39,8 +39,6 @@ class CaptionHostImpl : public chrome::mojom::CaptionHost,
       mojo::PendingReceiver<chrome::mojom::CaptionHost> receiver);
 
   // chrome::mojom::CaptionHost:
-  void OnSpeechRecognitionReady(
-      OnSpeechRecognitionReadyCallback reply) override;
   void OnTranscription(
       chrome::mojom::TranscriptionResultPtr transcription_result,
       OnTranscriptionCallback reply) override;

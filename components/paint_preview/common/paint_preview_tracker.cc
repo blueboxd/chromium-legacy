@@ -99,8 +99,9 @@ uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(
       SkRect::MakeXYWH(rect.x() + scroll_.width(), rect.y() + scroll_.height(),
                        rect.width(), rect.height()));
   const uint32_t content_id = pic->uniqueID();
-  DCHECK(!base::Contains(content_id_to_embedding_token_, content_id));
-  content_id_to_embedding_token_[content_id] = embedding_token;
+  DCHECK(!base::Contains(picture_context_.content_id_to_embedding_token,
+                         content_id));
+  picture_context_.content_id_to_embedding_token[content_id] = embedding_token;
   subframe_pics_[content_id] = pic;
   return content_id;
 }
@@ -147,37 +148,25 @@ void PaintPreviewTracker::AnnotateLink(const GURL& url, const SkRect& rect) {
                      out_rect.height())));
 }
 
-uint32_t PaintPreviewTracker::TransformContentForRemoteFrame(uint32_t old_id) {
-  if (matrix_.isIdentity())
-    return old_id;
-
-  auto pic_it = subframe_pics_.find(old_id);
+void PaintPreviewTracker::TransformClipForFrame(uint32_t id) {
+  auto pic_it = subframe_pics_.find(id);
   if (pic_it == subframe_pics_.end())
-    return old_id;
+    return;
 
   SkRect out_rect;
   matrix_.mapRect(&out_rect, pic_it->second->cullRect());
-
-  base::UnguessableToken embedding_token =
-      content_id_to_embedding_token_[old_id];
-  uint32_t new_id = CreateContentForRemoteFrame(
-      gfx::Rect(out_rect.x(), out_rect.y(), out_rect.width(),
-                out_rect.height()),
-      embedding_token);
-  subframe_pics_.erase(old_id);
-  content_id_to_embedding_token_.erase(old_id);
-  return new_id;
+  picture_context_.content_id_to_transformed_clip.emplace(id, out_rect);
 }
 
 void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,
                                                         uint32_t content_id) {
-  auto map_it = content_id_to_embedding_token_.find(content_id);
-  if (map_it == content_id_to_embedding_token_.end())
+  auto map_it = picture_context_.content_id_to_embedding_token.find(content_id);
+  if (map_it == picture_context_.content_id_to_embedding_token.end())
     return;
 
   auto it = subframe_pics_.find(content_id);
   // DCHECK is sufficient as |subframe_pics_| has same entries as
-  // |content_id_to_proxy_id_|.
+  // |content_id_to_proxy_id|.
   DCHECK(it != subframe_pics_.end());
 
   SkRect rect = it->second->cullRect();

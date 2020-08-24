@@ -93,15 +93,10 @@ JavaScriptTabModalDialogViewViews::JavaScriptTabModalDialogViewViews(
       },
       base::Unretained(this)));
 
-  int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
+  message_box_view_ = new views::MessageBoxView(
+      message_text, /* detect_directionality = */ true);
   if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
-    options |= views::MessageBoxView::HAS_PROMPT_FIELD;
-
-  views::MessageBoxView::InitParams params(message_text);
-  params.options = options;
-  params.default_prompt = default_prompt_text;
-  message_box_view_ = new views::MessageBoxView(params);
-  DCHECK(message_box_view_);
+    message_box_view_->SetPromptField(default_prompt_text);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(message_box_view_);

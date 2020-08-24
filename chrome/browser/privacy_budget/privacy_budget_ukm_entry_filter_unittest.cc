@@ -56,7 +56,6 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
   EXPECT_TRUE(filtered.empty());
 }
 
-// TODO(crbug.com/1117358) Flaky
 TEST(PrivacyBudgetUkmEntryFilterStandaloneTest, AllowsOtherMetricsByDefault) {
   IdentifiabilityStudyState::ResetStateForTesting();
   TestingPrefServiceSimple pref_service;

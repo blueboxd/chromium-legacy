@@ -774,22 +774,23 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
 // time frame.
 //
 // This class is granted ownership of itself when it is passed to
-// DidGetModifiedSince() via base::Owned(). When the closure for said function
-// goes out of scope, the object is deleted.
-// This is a thread-safe class.
+// DidGetModifiedBetween() via base::Owned(). When the closure for said
+// function goes out of scope, the object is deleted. This is a thread-safe
+// class.
 class QuotaManager::GetModifiedSinceHelper {
  public:
-  bool GetModifiedSinceOnDBThread(StorageType type,
-                                  base::Time modified_since,
-                                  QuotaDatabase* database) {
+  bool GetModifiedBetweenOnDBThread(StorageType type,
+                                    base::Time begin,
+                                    base::Time end,
+                                    QuotaDatabase* database) {
     DCHECK(database);
-    return database->GetOriginsModifiedSince(type, &origins_, modified_since);
+    return database->GetOriginsModifiedBetween(type, &origins_, begin, end);
   }
 
-  void DidGetModifiedSince(const base::WeakPtr<QuotaManager>& manager,
-                           GetOriginsCallback callback,
-                           StorageType type,
-                           bool success) {
+  void DidGetModifiedBetween(const base::WeakPtr<QuotaManager>& manager,
+                             GetOriginsCallback callback,
+                             StorageType type,
+                             bool success) {
     if (!manager) {
       // The operation was aborted.
       std::move(callback).Run(std::set<url::Origin>(), type);
@@ -1189,17 +1190,18 @@ bool QuotaManager::IsStorageUnlimited(const url::Origin& origin,
          special_storage_policy_->IsStorageUnlimited(origin.GetURL());
 }
 
-void QuotaManager::GetOriginsModifiedSince(StorageType type,
-                                           base::Time modified_since,
-                                           GetOriginsCallback callback) {
+void QuotaManager::GetOriginsModifiedBetween(StorageType type,
+                                             base::Time begin,
+                                             base::Time end,
+                                             GetOriginsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LazyInitialize();
   GetModifiedSinceHelper* helper = new GetModifiedSinceHelper;
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
-      base::BindOnce(&GetModifiedSinceHelper::GetModifiedSinceOnDBThread,
-                     base::Unretained(helper), type, modified_since),
-      base::BindOnce(&GetModifiedSinceHelper::DidGetModifiedSince,
+      base::BindOnce(&GetModifiedSinceHelper::GetModifiedBetweenOnDBThread,
+                     base::Unretained(helper), type, begin, end),
+      base::BindOnce(&GetModifiedSinceHelper::DidGetModifiedBetween,
                      base::Owned(helper), weak_factory_.GetWeakPtr(),
                      std::move(callback), type));
 }

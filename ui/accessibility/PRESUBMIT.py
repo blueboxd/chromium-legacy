@@ -155,6 +155,8 @@ def CheckEnumsMatch(input_api, output_api):
                    'EventTextBoundaryType', errs, output_api)
   CheckMatchingEnum(ax_enums, 'MoveDirection', automation_enums,
                    'EventMoveDirectionType', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'SortDirection', automation_enums,
+                   'SortDirectionType', errs, output_api)
   return errs
 
 # Given a full path to c++ header, return an array of the first static

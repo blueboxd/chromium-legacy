@@ -80,15 +80,20 @@ NGTableTypes::Column NGTableTypes::CreateColumn(
   bool is_constrained = inline_size.has_value();
   if (percentage_inline_size && *percentage_inline_size == 0.0f)
     percentage_inline_size.reset();
-  return Column{min_inline_size.value_or(LayoutUnit()), inline_size,
-                percentage_inline_size, is_constrained, kIndefiniteSize};
+  bool is_collapsed = style.Visibility() == EVisibility::kCollapse;
+  return Column{min_inline_size.value_or(LayoutUnit()),
+                inline_size,
+                percentage_inline_size,
+                is_constrained,
+                is_collapsed,
+                kIndefiniteSize};
 }
 
 // Implements https://www.w3.org/TR/css-tables-3/#computing-cell-measures
 // "outer min-content and outer max-content widths for table cells"
 // Note: this method calls NGBlockNode::ComputeMinMaxSizes.
 NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
-    const NGLayoutInputNode& node,
+    const NGBlockNode& node,
     WritingMode table_writing_mode,
     bool is_fixed_layout,
     const NGBoxStrut& cell_border,
@@ -108,17 +113,29 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
 
   MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kIntrinsic);
   MinMaxSizesResult min_max_size;
-  if (is_collapsed) {
+  bool is_parallel =
+      IsParallelWritingMode(table_writing_mode, node.Style().GetWritingMode());
+  bool need_constraint_space = is_collapsed || !is_parallel;
+  if (need_constraint_space) {
     NGConstraintSpaceBuilder builder(table_writing_mode,
                                      node.Style().GetWritingMode(),
-                                     /* is_new_fc */ false);
+                                     /* is_new_fc */ true);
     builder.SetTableCellBorders(cell_border);
     builder.SetIsTableCell(true, /* is_legacy_table_cell */ false);
+    builder.SetCacheSlot(NGCacheSlot::kMeasure);
+    if (!is_parallel) {
+      PhysicalSize icb_size = node.InitialContainingBlockSize();
+      builder.SetOrthogonalFallbackInlineSize(
+          IsHorizontalWritingMode(table_writing_mode) ? icb_size.height
+                                                      : icb_size.width);
+
+      builder.SetIsShrinkToFit(node.Style().LogicalWidth().IsAuto());
+      builder.SetTextDirection(node.Style().Direction());
+    }
     NGConstraintSpace space = builder.ToConstraintSpace();
     // It'd be nice to avoid computing minmax if not needed, but the criteria
     // is not clear.
-    min_max_size = To<NGBlockNode>(node).ComputeMinMaxSizes(table_writing_mode,
-                                                            input, &space);
+    min_max_size = node.ComputeMinMaxSizes(table_writing_mode, input, &space);
   } else {
     min_max_size = node.ComputeMinMaxSizes(table_writing_mode, input);
   }

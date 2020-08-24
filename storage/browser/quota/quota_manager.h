@@ -241,9 +241,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   bool IsStorageUnlimited(const url::Origin& origin,
                           blink::mojom::StorageType type) const;
 
-  virtual void GetOriginsModifiedSince(blink::mojom::StorageType type,
-                                       base::Time modified_since,
-                                       GetOriginsCallback callback);
+  virtual void GetOriginsModifiedBetween(blink::mojom::StorageType type,
+                                         base::Time begin,
+                                         base::Time end,
+                                         GetOriginsCallback callback);
 
   bool ResetUsageTracker(blink::mojom::StorageType type);
 

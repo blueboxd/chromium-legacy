@@ -1075,6 +1075,7 @@ test("views_unittests") {
     "controls/menu/submenu_view_unittest.cc",
     "controls/menu/test_menu_item_view.cc",
     "controls/menu/test_menu_item_view.h",
+    "controls/message_box_view_unittest.cc",
     "controls/native/native_view_host_test_base.cc",
     "controls/native/native_view_host_test_base.h",
     "controls/native/native_view_host_unittest.cc",

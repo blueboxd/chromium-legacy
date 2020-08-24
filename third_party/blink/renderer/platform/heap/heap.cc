@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
+#include "third_party/blink/renderer/platform/heap/marking_scheduling_oracle.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_bloom_filter.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
@@ -341,18 +342,6 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
       [deadline]() { return deadline <= base::TimeTicks::Now(); }, task_id);
 }
 
-template <size_t kDeadlineCheckInterval = kDefaultDeadlineCheckInterval,
-          typename Worklist,
-          typename Callback>
-bool DrainWorklistWithYielding(base::JobDelegate* delegate,
-                               Worklist* worklist,
-                               Callback callback,
-                               int task_id) {
-  return DrainWorklist<kDeadlineCheckInterval>(
-      worklist, std::move(callback),
-      [delegate]() { return delegate->ShouldYield(); }, task_id);
-}
-
 }  // namespace
 
 bool ThreadHeap::InvokeEphemeronCallbacks(
@@ -524,30 +513,33 @@ size_t ThreadHeap::ConcurrentMarkingGlobalWorkSize() const {
          ephemeron_pairs_to_process_worklist_->GlobalPoolSize();
 }
 
-bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
-                                          base::JobDelegate* delegate,
-                                          base::TimeTicks deadline) {
+bool ThreadHeap::AdvanceConcurrentMarking(
+    ConcurrentMarkingVisitor* visitor,
+    base::JobDelegate* delegate,
+    MarkingSchedulingOracle* marking_scheduler) {
+  auto should_yield_callback = [marking_scheduler, visitor, delegate]() {
+    marking_scheduler->AddConcurrentlyMarkedBytes(
+        visitor->RecentlyMarkedBytes());
+    return delegate->ShouldYield();
+  };
   bool finished;
   do {
     // Convert |previously_not_fully_constructed_worklist_| to
     // |marking_worklist_|. This merely re-adds items with the proper
     // callbacks.
-    finished =
-        DrainWorklistWithYielding<kDefaultConcurrentDeadlineCheckInterval>(
-            delegate, previously_not_fully_constructed_worklist_.get(),
-            [visitor](NotFullyConstructedItem& item) {
-              visitor->DynamicallyMarkAddress(
-                  reinterpret_cast<ConstAddress>(item));
-            },
-            visitor->task_id());
+    finished = DrainWorklist<kDefaultConcurrentDeadlineCheckInterval>(
+        previously_not_fully_constructed_worklist_.get(),
+        [visitor](NotFullyConstructedItem& item) {
+          visitor->DynamicallyMarkAddress(reinterpret_cast<ConstAddress>(item));
+        },
+        should_yield_callback, visitor->task_id());
     if (!finished)
       break;
 
     // Iteratively mark all objects that are reachable from the objects
     // currently pushed onto the marking worklist.
-    finished = DrainWorklistWithYielding<
-        kDefaultConcurrentDeadlineCheckInterval>(
-        delegate, marking_worklist_.get(),
+    finished = DrainWorklist<kDefaultConcurrentDeadlineCheckInterval>(
+        marking_worklist_.get(),
         [visitor](const MarkingItem& item) {
           HeapObjectHeader* header =
               HeapObjectHeader::FromPayload(item.base_object_payload);
@@ -558,13 +550,12 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
           item.callback(visitor, item.base_object_payload);
           visitor->AccountMarkedBytes(header);
         },
-        visitor->task_id());
+        should_yield_callback, visitor->task_id());
     if (!finished)
       break;
 
-    finished = DrainWorklistWithYielding<
-        kDefaultConcurrentDeadlineCheckInterval>(
-        delegate, write_barrier_worklist_.get(),
+    finished = DrainWorklist<kDefaultConcurrentDeadlineCheckInterval>(
+        write_barrier_worklist_.get(),
         [visitor](HeapObjectHeader* header) {
           PageFromObject(header)->SynchronizedLoad();
           DCHECK(
@@ -573,7 +564,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
           GCInfo::From(header->GcInfoIndex()).trace(visitor, header->Payload());
           visitor->AccountMarkedBytes(header);
         },
-        visitor->task_id());
+        should_yield_callback, visitor->task_id());
     if (!finished)
       break;
 
@@ -587,13 +578,13 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
       // by the mutator thread and then invoked either concurrently or by the
       // mutator thread (in the atomic pause at latest).
       finished =
-          DrainWorklistWithYielding<kDefaultConcurrentDeadlineCheckInterval>(
-              delegate, ephemeron_pairs_to_process_worklist_.get(),
+          DrainWorklist<kDefaultConcurrentDeadlineCheckInterval>(
+              ephemeron_pairs_to_process_worklist_.get(),
               [visitor](EphemeronPairItem& item) {
                 visitor->VisitEphemeron(item.key, item.value,
                                         item.value_trace_callback);
               },
-              visitor->task_id());
+              should_yield_callback, visitor->task_id());
       if (!finished)
         break;
     }

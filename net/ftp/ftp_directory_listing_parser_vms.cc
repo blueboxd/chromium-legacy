@@ -178,7 +178,7 @@ bool VmsDateListingToTime(const std::vector<base::string16>& columns,
     return false;
   if (!base::StringToInt(date_parts[0], &time_exploded.day_of_month))
     return false;
-  if (!FtpUtil::AbbreviatedMonthToNumber(date_parts[1].as_string(),
+  if (!FtpUtil::AbbreviatedMonthToNumber(base::string16(date_parts[1]),
                                          &time_exploded.month))
     return false;
   if (!base::StringToInt(date_parts[2], &time_exploded.year))

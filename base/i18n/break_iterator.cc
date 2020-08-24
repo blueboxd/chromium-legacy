@@ -297,7 +297,7 @@ bool BreakIterator::IsGraphemeBoundary(size_t position) const {
 }
 
 string16 BreakIterator::GetString() const {
-  return GetStringPiece().as_string();
+  return string16(GetStringPiece());
 }
 
 StringPiece16 BreakIterator::GetStringPiece() const {

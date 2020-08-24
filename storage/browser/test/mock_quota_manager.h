@@ -34,8 +34,8 @@ namespace storage {
 //
 // For time-based deletion test:
 // Origins can be added to the mock by calling AddOrigin, and that list of
-// origins is then searched through in GetOriginsModifiedSince.
-// Neither GetOriginsModifiedSince nor DeleteOriginData touches the actual
+// origins is then searched through in GetOriginsModifiedBetween.
+// Neither GetOriginsModifiedBetween nor DeleteOriginData touches the actual
 // origin data stored in the profile.
 class MockQuotaManager : public QuotaManager {
  public:
@@ -55,9 +55,10 @@ class MockQuotaManager : public QuotaManager {
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
-  void GetOriginsModifiedSince(blink::mojom::StorageType type,
-                               base::Time modified_since,
-                               GetOriginsCallback callback) override;
+  void GetOriginsModifiedBetween(blink::mojom::StorageType type,
+                                 base::Time begin,
+                                 base::Time end,
+                                 GetOriginsCallback callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
   // anything on disk. The caller must provide |quota_client_types| which
@@ -78,7 +79,7 @@ class MockQuotaManager : public QuotaManager {
 
   // Helper methods for timed-deletion testing:
   // Adds an origin to the canned list that will be searched through via
-  // GetOriginsModifiedSince.
+  // GetOriginsModifiedBetween.
   // |quota_clients| specified the types of QuotaClients this canned origin
   // contains.
   bool AddOrigin(const url::Origin& origin,
@@ -140,9 +141,9 @@ class MockQuotaManager : public QuotaManager {
 
   // This must be called via MockQuotaManagerProxy.
   void UpdateUsage(const url::Origin& origin, StorageType type, int64_t delta);
-  void DidGetModifiedSince(GetOriginsCallback callback,
-                           std::unique_ptr<std::set<url::Origin>> origins,
-                           StorageType storage_type);
+  void DidGetModifiedInTimeRange(GetOriginsCallback callback,
+                                 std::unique_ptr<std::set<url::Origin>> origins,
+                                 StorageType storage_type);
   void DidDeleteOriginData(StatusCallback callback,
                            blink::mojom::QuotaStatusCode status);
 

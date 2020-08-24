@@ -233,8 +233,7 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
 
   // TODO(nhiroki): Figure out why ServiceWorkerContainer needs to be eagerly
   // initialized.
-  auto& frame_loader = document.GetFrame()->Loader();
-  if (!frame_loader.StateMachine()->IsDisplayingInitialEmptyDocument())
+  if (!document.IsInitialEmptyDocument())
     NavigatorServiceWorker::From(window);
 
   DOMWindowStorageController::From(document);

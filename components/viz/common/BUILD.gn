@@ -345,14 +345,6 @@ viz_source_set("unit_tests") {
     "frame_sinks/begin_frame_source_unittest.cc",
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
-    "gl_i420_converter_pixeltest.cc",
-    "gl_i420_converter_unittest.cc",
-    "gl_scaler_overscan_pixeltest.cc",
-    "gl_scaler_pixeltest.cc",
-    "gl_scaler_shader_pixeltest.cc",
-    "gl_scaler_test_util.cc",
-    "gl_scaler_test_util.h",
-    "gl_scaler_unittest.cc",
     "gpu/context_cache_controller_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_io_unittest.cc",
@@ -365,6 +357,19 @@ viz_source_set("unit_tests") {
     "surfaces/surface_range_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
+
+  if (enable_viz_gl_tests) {
+    sources += [
+      "gl_i420_converter_pixeltest.cc",
+      "gl_i420_converter_unittest.cc",
+      "gl_scaler_overscan_pixeltest.cc",
+      "gl_scaler_pixeltest.cc",
+      "gl_scaler_shader_pixeltest.cc",
+      "gl_scaler_test_util.cc",
+      "gl_scaler_test_util.h",
+      "gl_scaler_unittest.cc",
+    ]
+  }
 
   deps = [
     ":common",

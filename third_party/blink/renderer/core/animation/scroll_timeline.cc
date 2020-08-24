@@ -95,7 +95,7 @@ Node* ResolveScrollSource(Element* scroll_source) {
 ScrollTimeline* ScrollTimeline::Create(Document& document,
                                        ScrollTimelineOptions* options,
                                        ExceptionState& exception_state) {
-  Element* scroll_source = options->scrollSource()
+  Element* scroll_source = options->hasScrollSource()
                                ? options->scrollSource()
                                : document.scrollingElement();
 

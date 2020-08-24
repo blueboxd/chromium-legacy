@@ -18,7 +18,6 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/id_map.h"
-#include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -495,9 +494,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Used to allow tests to change time for testing.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
-
-  // Used to allow tests to change wall clock for testing.
-  void SetClockForTesting(base::Clock* clock);
 
   // Returns true when the service worker isn't handling any events or stream
   // responses, initiated from either the browser or the renderer.
@@ -1052,7 +1048,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const base::TickClock* tick_clock_;
 
   // The clock used for actual (wall clock) time
-  base::Clock* clock_;
+  base::Clock* const clock_;
 
   ServiceWorkerPingController ping_controller_;
 
@@ -1062,7 +1058,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // version completed, or used during the lifetime of |this|.
   std::set<blink::mojom::WebFeature> used_features_;
 
-  std::unique_ptr<blink::TrialTokenValidator> validator_;
+  std::unique_ptr<blink::TrialTokenValidator> const validator_;
 
   // Stores the result of byte-to-byte update check for each script. Used only
   // when ServiceWorkerImportedScriptUpdateCheck is enabled.

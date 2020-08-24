@@ -33,7 +33,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   void PreSandboxStartup() override;
   int RunProcess(const std::string& process_type,
                  const MainFunctionParams& main_function_params) override;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
   void PreCreateMainMessageLoop() override;

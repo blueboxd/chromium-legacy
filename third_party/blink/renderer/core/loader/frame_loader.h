@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
-#include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -192,8 +191,6 @@ class CORE_EXPORT FrameLoader final {
   bool DetachDocument(SecurityOrigin* committing_origin,
                       base::Optional<Document::UnloadEventTiming>*);
 
-  FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
-
   bool ShouldClose(bool is_reload = false);
 
   // Dispatches the Unload event for the current document. If this is due to the
@@ -291,11 +288,6 @@ class CORE_EXPORT FrameLoader final {
 
   Member<LocalFrame> frame_;
 
-  // FIXME: These should be std::unique_ptr<T> to reduce build times and
-  // simplify header dependencies unless performance testing proves otherwise.
-  // Some of these could be lazily created for memory savings on devices.
-  mutable FrameLoaderStateMachine state_machine_;
-
   Member<ProgressTracker> progress_tracker_;
 
   // Document loader for frame loading.
@@ -311,8 +303,12 @@ class CORE_EXPORT FrameLoader final {
 
   network::mojom::blink::WebSandboxFlags forced_sandbox_flags_;
 
+  // The state is set to kInitialized when Init() completes, and kDetached
+  // during teardown in Detach().
+  enum class State { kUninitialized, kInitialized, kDetached };
+  State state_ = State::kUninitialized;
+
   bool dispatching_did_clear_window_object_in_main_world_;
-  bool detached_;
   bool committing_navigation_ = false;
   bool has_accessed_initial_document_ = false;
 

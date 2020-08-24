@@ -73,6 +73,8 @@ void GpuWatchdogTest::SetUp() {
   watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
       /*start_backgrounded*/ false,
       /*timeout*/ kGpuWatchdogTimeoutForTesting,
+      /*init_factor*/ kInitFactor,
+      /*restart_factor*/ kRestartFactor,
       /*max_extra_cycles_before_kill*/ kMaxExtraCyclesBeforeKillForTesting,
       /*test_mode*/ true);
 }

@@ -62,6 +62,7 @@ class PageBloomFilter;
 class PagePool;
 class ProcessHeapReporter;
 class RegionTree;
+class MarkingSchedulingOracle;
 
 using MarkingItem = TraceDescriptor;
 using NotFullyConstructedItem = const void*;
@@ -307,7 +308,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // Returns true if marker is done
   bool AdvanceConcurrentMarking(ConcurrentMarkingVisitor*,
                                 base::JobDelegate*,
-                                base::TimeTicks);
+                                MarkingSchedulingOracle* marking_scheduler);
 
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.

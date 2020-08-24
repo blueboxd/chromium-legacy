@@ -306,11 +306,13 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->NotifyOriginNoLongerInUse(origin);
   }
 
-  void GetOriginsModifiedSince(StorageType type, base::Time modified_since) {
+  void GetOriginsModifiedBetween(StorageType type,
+                                 base::Time begin,
+                                 base::Time end) {
     modified_origins_.clear();
     modified_origins_type_ = StorageType::kUnknown;
-    quota_manager_->GetOriginsModifiedSince(
-        type, modified_since,
+    quota_manager_->GetOriginsModifiedBetween(
+        type, begin, end,
         base::BindOnce(&QuotaManagerTest::DidGetModifiedOrigins,
                        weak_factory_.GetWeakPtr()));
   }
@@ -2291,7 +2293,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   EXPECT_EQ(ToOrigin("http://a.com/"), *eviction_origin());
 }
 
-TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
+TEST_F(QuotaManagerTest, GetOriginsModifiedBetween) {
   static const MockOriginData kData[] = {
     { "http://a.com/",   kTemp,  0 },
     { "http://a.com:1/", kTemp,  0 },
@@ -2304,7 +2306,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
                               {blink::mojom::StorageType::kTemporary,
                                blink::mojom::StorageType::kPersistent});
 
-  GetOriginsModifiedSince(kTemp, base::Time());
+  GetOriginsModifiedBetween(kTemp, base::Time(), base::Time::Max());
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(modified_origins().empty());
   EXPECT_EQ(modified_origins_type(), kTemp);
@@ -2318,7 +2320,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   client->ModifyOriginAndNotify(ToOrigin("http://c.com/"), kTemp, 10);
   base::Time time3 = client->IncrementMockTime();
 
-  GetOriginsModifiedSince(kTemp, time1);
+  GetOriginsModifiedBetween(kTemp, time1, base::Time::Max());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(4U, modified_origins().size());
   EXPECT_EQ(modified_origins_type(), kTemp);
@@ -2327,18 +2329,18 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
       EXPECT_EQ(1U, modified_origins().count(ToOrigin(data.origin)));
   }
 
-  GetOriginsModifiedSince(kTemp, time2);
+  GetOriginsModifiedBetween(kTemp, time2, base::Time::Max());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(2U, modified_origins().size());
 
-  GetOriginsModifiedSince(kTemp, time3);
+  GetOriginsModifiedBetween(kTemp, time3, base::Time::Max());
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(modified_origins().empty());
   EXPECT_EQ(modified_origins_type(), kTemp);
 
   client->ModifyOriginAndNotify(ToOrigin("http://a.com/"), kTemp, 10);
 
-  GetOriginsModifiedSince(kTemp, time3);
+  GetOriginsModifiedBetween(kTemp, time3, base::Time::Max());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, modified_origins().size());
   EXPECT_EQ(1U, modified_origins().count(ToOrigin("http://a.com/")));

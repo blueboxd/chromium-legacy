@@ -407,8 +407,8 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  OnCaretBoundsChanged();
   UpdateCursorViewPosition();
+  OnCaretBoundsChanged();
   OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
 
@@ -425,33 +425,38 @@ const base::string16& Textfield::GetText() const {
 }
 
 void Textfield::SetText(const base::string16& new_text) {
-  SetText(new_text, new_text.length());
+  SetTextWithoutCaretBoundsChangeNotification(new_text, new_text.length());
+  // The above call already notified for the text change; fire notifications
+  // etc. for the cursor changes as well.
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
-void Textfield::SetText(const base::string16& new_text,
-                        size_t cursor_position) {
-  model_->SetText(new_text, cursor_position);
-  OnCaretBoundsChanged();
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
-  SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+void Textfield::SetTextWithoutCaretBoundsChangeNotification(
+    const base::string16& text,
+    size_t cursor_position) {
+  model_->SetText(text, cursor_position);
+  UpdateAfterChange(TextChangeType::kInternal, false, false);
+}
+
+void Textfield::Scroll(const std::vector<size_t>& positions) {
+  for (const auto position : positions) {
+    model_->MoveCursorTo(position);
+    GetRenderText()->GetUpdatedCursorBounds();
+  }
 }
 
 void Textfield::AppendText(const base::string16& new_text) {
   if (new_text.empty())
     return;
   model_->Append(new_text);
-  OnCaretBoundsChanged();
-  SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  UpdateAfterChange(TextChangeType::kInternal, false);
 }
 
 void Textfield::InsertOrReplaceText(const base::string16& new_text) {
   if (new_text.empty())
     return;
   model_->InsertText(new_text);
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
 }
 
 base::string16 Textfield::GetSelectedText() const {
@@ -462,18 +467,18 @@ void Textfield::SelectAll(bool reversed) {
   model_->SelectAll(reversed);
   if (HasSelection() && performing_user_action_)
     UpdateSelectionClipboard();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::SelectWordAt(const gfx::Point& point) {
   model_->MoveCursorTo(point, false);
   model_->SelectWord();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::ClearSelection() {
   model_->ClearSelection();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 bool Textfield::HasSelection(bool primary_only) const {
@@ -531,8 +536,7 @@ void Textfield::SetCursorEnabled(bool enabled) {
     return;
 
   GetRenderText()->SetCursorEnabled(enabled);
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
+  UpdateAfterChange(TextChangeType::kNone, true, false);
   OnPropertyChanged(&model_ + kTextfieldCursorEnabled, kPropertyEffectsPaint);
 }
 
@@ -593,15 +597,13 @@ const gfx::Range& Textfield::GetSelectedRange() const {
 }
 
 void Textfield::SetSelectedRange(const gfx::Range& range) {
-  SetSelectedRange(range, true);
+  model_->SelectRange(range);
+  UpdateAfterChange(TextChangeType::kNone, true);
+  OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
-void Textfield::SetSelectedRange(const gfx::Range& range, bool primary) {
-  model_->SelectRange(range, primary);
-  if (primary)
-    UpdateAfterChange(false, true);
-  else
-    SchedulePaint();
+void Textfield::AddSecondarySelectedRange(const gfx::Range& range) {
+  model_->SelectRange(range, false);
   OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
@@ -611,31 +613,11 @@ const gfx::SelectionModel& Textfield::GetSelectionModel() const {
 
 void Textfield::SelectSelectionModel(const gfx::SelectionModel& sel) {
   model_->SelectSelectionModel(sel);
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 size_t Textfield::GetCursorPosition() const {
   return model_->GetCursorPosition();
-}
-
-void Textfield::SetTextAndScrollAndSelectRange(
-    const base::string16& text,
-    const size_t cursor_position,
-    const std::vector<size_t>& positions,
-    const gfx::Range range) {
-  // Pass cursor_position to SetText to ensure edit history works as expected.
-  model_->SetText(text, cursor_position);
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
-  for (auto position : positions) {
-    model_->MoveCursorTo(position);
-    GetRenderText()->GetUpdatedCursorBounds();
-  }
-  model_->SelectRange(range);
-  OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
-  // We don't set the |text_changed| param to true because that would notify
-  // the TextfieldController::ContentsChanged(), which should only occur when
-  // the user changes the text.
-  UpdateAfterChange(false, true);
 }
 
 void Textfield::SetColor(SkColor value) {
@@ -714,9 +696,7 @@ void Textfield::FitToLocalBounds() {
   bounds.Inset(insets.left(), 0, insets.right(), 0);
   bounds.set_x(GetMirroredXForRect(bounds));
   GetRenderText()->SetDisplayRect(bounds);
-  OnCaretBoundsChanged();
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1086,7 +1066,7 @@ int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
     model_->InsertText(new_text);
   }
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
   return move ? ui::DragDropTypes::DRAG_MOVE : ui::DragDropTypes::DRAG_COPY;
 }
@@ -1185,16 +1165,9 @@ void Textfield::OnFocus() {
 #endif  // defined(OS_APPLE)
 
   GetRenderText()->set_focused(true);
-  if (ShouldShowCursor()) {
-    UpdateCursorViewPosition();
-    cursor_view_->SetVisible(true);
-  }
   if (GetInputMethod())
     GetInputMethod()->SetFocusedTextInputClient(this);
-  OnCaretBoundsChanged();
-  if (ShouldBlinkCursor())
-    StartBlinkingCursor();
-  SchedulePaint();
+  UpdateAfterChange(TextChangeType::kNone, true);
   View::OnFocus();
 }
 
@@ -1503,7 +1476,7 @@ void Textfield::SetCompositionText(const ui::CompositionText& composition) {
   skip_input_method_cancel_composition_ = true;
   model_->SetCompositionText(composition);
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1519,7 +1492,7 @@ uint32_t Textfield::ConfirmCompositionText(bool keep_selection) {
   skip_input_method_cancel_composition_ = true;
   const uint32_t confirmed_text_length = model_->ConfirmCompositionText();
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
   return confirmed_text_length;
 }
@@ -1532,7 +1505,7 @@ void Textfield::ClearCompositionText() {
   skip_input_method_cancel_composition_ = true;
   model_->CancelCompositionText();
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1549,7 +1522,7 @@ void Textfield::InsertText(const base::string16& new_text) {
   skip_input_method_cancel_composition_ = true;
   model_->InsertText(filtered_new_text);
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1684,7 +1657,7 @@ bool Textfield::DeleteRange(const gfx::Range& range) {
   model_->SelectRange(range);
   if (model_->HasSelection()) {
     model_->DeleteSelection();
-    UpdateAfterChange(true, true);
+    UpdateAfterChange(TextChangeType::kUserTriggered, true);
   }
   OnAfterUserAction();
   return true;
@@ -1919,7 +1892,7 @@ void Textfield::DoInsertChar(base::char16 ch) {
   model_->InsertChar(ch);
   skip_input_method_cancel_composition_ = false;
 
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1967,8 +1940,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   if (!IsTextEditCommandEnabled(command))
     return;
 
-  bool text_changed = false;
-  bool cursor_changed = false;
+  bool changed = false;
   bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
   gfx::VisualCursorDirection begin = rtl ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
   gfx::VisualCursorDirection end = rtl ? gfx::CURSOR_LEFT : gfx::CURSOR_RIGHT;
@@ -1977,34 +1949,34 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnBeforeUserAction();
   switch (command) {
     case ui::TextEditCommand::DELETE_BACKWARD:
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_FORWARD:
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
       model_->MoveCursor(gfx::FIELD_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       model_->MoveCursor(gfx::FIELD_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
       model_->MoveCursor(gfx::WORD_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
       model_->MoveCursor(gfx::WORD_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::MOVE_BACKWARD:
       model_->MoveCursor(gfx::CHARACTER_BREAK, begin, gfx::SELECTION_NONE);
@@ -2113,28 +2085,28 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
                          kWordSelectionBehavior);
       break;
     case ui::TextEditCommand::UNDO:
-      text_changed = cursor_changed = model_->Undo();
+      changed = model_->Undo();
       break;
     case ui::TextEditCommand::REDO:
-      text_changed = cursor_changed = model_->Redo();
+      changed = model_->Redo();
       break;
     case ui::TextEditCommand::CUT:
-      text_changed = cursor_changed = Cut();
+      changed = Cut();
       break;
     case ui::TextEditCommand::COPY:
       Copy();
       break;
     case ui::TextEditCommand::PASTE:
-      text_changed = cursor_changed = Paste();
+      changed = Paste();
       break;
     case ui::TextEditCommand::SELECT_ALL:
       SelectAll(false);
       break;
     case ui::TextEditCommand::TRANSPOSE:
-      text_changed = cursor_changed = model_->Transpose();
+      changed = model_->Transpose();
       break;
     case ui::TextEditCommand::YANK:
-      text_changed = cursor_changed = model_->Yank();
+      changed = model_->Yank();
       break;
     case ui::TextEditCommand::INSERT_TEXT:
     case ui::TextEditCommand::SET_MARK:
@@ -2144,10 +2116,13 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       break;
   }
 
-  cursor_changed |= GetSelectionModel() != selection_model;
+  const auto text_change_type =
+      changed ? TextChangeType::kUserTriggered : TextChangeType::kNone;
+  const bool cursor_changed =
+      changed || (GetSelectionModel() != selection_model);
   if (cursor_changed && HasSelection())
     UpdateSelectionClipboard();
-  UpdateAfterChange(text_changed, cursor_changed);
+  UpdateAfterChange(text_change_type, cursor_changed);
   OnAfterUserAction();
 }
 
@@ -2259,7 +2234,9 @@ void Textfield::OnBeforePointerAction() {
 void Textfield::OnAfterPointerAction(bool text_changed,
                                      bool selection_changed) {
   OnAfterUserAction();
-  UpdateAfterChange(text_changed, selection_changed);
+  const auto text_change_type =
+      text_changed ? TextChangeType::kUserTriggered : TextChangeType::kNone;
+  UpdateAfterChange(text_change_type, selection_changed);
 }
 
 bool Textfield::PasteSelectionClipboard() {
@@ -2327,9 +2304,12 @@ void Textfield::UpdateSelectionBackgroundColor() {
                     kPropertyEffectsPaint);
 }
 
-void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
-  if (text_changed) {
-    if (controller_)
+void Textfield::UpdateAfterChange(
+    TextChangeType text_change_type,
+    bool cursor_changed,
+    base::Optional<bool> notify_caret_bounds_changed) {
+  if (text_change_type != TextChangeType::kNone) {
+    if ((text_change_type == TextChangeType::kUserTriggered) && controller_)
       controller_->ContentsChanged(this, GetText());
     NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   }
@@ -2337,10 +2317,12 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     UpdateCursorViewPosition();
     UpdateCursorVisibility();
   }
-  if (text_changed || cursor_changed) {
+  const bool anything_changed =
+      (text_change_type != TextChangeType::kNone) || cursor_changed;
+  if (notify_caret_bounds_changed.value_or(anything_changed))
     OnCaretBoundsChanged();
+  if (anything_changed)
     SchedulePaint();
-  }
 }
 
 void Textfield::UpdateCursorVisibility() {
@@ -2403,7 +2385,7 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
 
 void Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
   if (model_->MoveCursorTo(point, select))
-    UpdateAfterChange(false, true);
+    UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::OnCaretBoundsChanged() {

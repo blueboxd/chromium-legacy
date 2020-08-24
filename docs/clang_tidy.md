@@ -75,7 +75,7 @@ clang-tidy across all of Chromium is a single command:
 
 ```
 $ cd ${chromium}/src
-$ ${chromium_build}/scripts/slave/recipes/tricium_clang_tidy_wrapper.resources/tricium_clang_tidy.py \
+$ ${chromium_build}/scripts/slave/recipe_modules/tricium_clang_tidy/resources/tricium_clang_tidy.py \
     --base_path $PWD \
     --out_dir out/Linux \
     --findings_file all_findings.json \

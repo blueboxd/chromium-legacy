@@ -20,13 +20,18 @@ TEST(PaintPreviewSerialUtils, TestMakeEmptyPicture) {
   EXPECT_GE(data->size(), 0U);
 }
 
-TEST(PaintPreviewSerialUtils, TestPictureProcs) {
+TEST(PaintPreviewSerialUtils, TestTransformedPictureProcs) {
   auto pic = MakeEmptyPicture();
   uint32_t content_id = pic->uniqueID();
   const base::UnguessableToken kFrameGuid = base::UnguessableToken::Create();
   PictureSerializationContext picture_ctx;
-  EXPECT_TRUE(
-      picture_ctx.insert(std::make_pair(content_id, kFrameGuid)).second);
+  EXPECT_TRUE(picture_ctx.content_id_to_embedding_token
+                  .insert(std::make_pair(content_id, kFrameGuid))
+                  .second);
+  auto new_clip = SkRect::MakeXYWH(10, 20, 30, 40);
+  EXPECT_TRUE(picture_ctx.content_id_to_transformed_clip
+                  .insert(std::make_pair(content_id, new_clip))
+                  .second);
 
   TypefaceUsageMap usage_map;
   TypefaceSerializationContext typeface_ctx(&usage_map);
@@ -47,10 +52,10 @@ TEST(PaintPreviewSerialUtils, TestPictureProcs) {
       serial_pic_data->data(), serial_pic_data->size(),
       deserial_procs.fPictureCtx);
   EXPECT_TRUE(deserial_ctx.count(content_id));
-  EXPECT_EQ(deserial_ctx[content_id].x(), pic->cullRect().x());
-  EXPECT_EQ(deserial_ctx[content_id].y(), pic->cullRect().y());
-  EXPECT_EQ(deserial_ctx[content_id].width(), pic->cullRect().width());
-  EXPECT_EQ(deserial_ctx[content_id].height(), pic->cullRect().height());
+  EXPECT_EQ(deserial_ctx[content_id].x(), new_clip.x());
+  EXPECT_EQ(deserial_ctx[content_id].y(), new_clip.y());
+  EXPECT_EQ(deserial_ctx[content_id].width(), new_clip.width());
+  EXPECT_EQ(deserial_ctx[content_id].height(), new_clip.height());
 }
 
 TEST(PaintPreviewSerialUtils, TestSerialPictureNotInMap) {

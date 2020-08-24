@@ -184,7 +184,7 @@
 <translation id="3000461861112256445">مونو آڈیو</translation>
 <translation id="3009178788565917040">آؤٹ پٹ</translation>
 <translation id="3033545621352269033">آن</translation>
-<translation id="3038571455154067151">‏سائن ان کرنے کے لیے، اپنے Family Link کا والدین کا رسائی کوڈ درج کریں</translation>
+<translation id="3038571455154067151">‏سائن ان کرنے کے لیے، اپنی Family Link کا والدین کا رسائی کوڈ درج کریں</translation>
 <translation id="3051128274746680507">آپ کے تحفظ یافتہ صارف کے پروفائل کو جلد ہی ہٹا دیا جائے گا۔ مزید جاننے کیلئے سائن ان کریں۔</translation>
 <translation id="3055162170959710888">آپ نے اس آلہ کو آج <ph name="USED_TIME" /> تک استعمال کیا ہے</translation>
 <translation id="3076778413190775903">صورتحال کی ٹرے، وقت <ph name="TIME" />،
@@ -314,7 +314,6 @@
 <translation id="4350065043422286972">پن کردہ</translation>
 <translation id="4351433414020964307">اسسٹنٹ لوڈ ہو رہا ہے...</translation>
 <translation id="4356930093361201197">اعلی تناسب امتزاج وضع</translation>
-<translation id="4368583494516669646">شب بخیر <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">کاسٹ کی ترتیبات</translation>
 <translation id="4378551569595875038">منسلک ہو رہا ہے…</translation>
 <translation id="4379531060876907730">یہ آپ کے اسٹائلس ٹولز ہیں</translation>
@@ -369,7 +368,6 @@
 <translation id="495046168593986294">اوپر اسکرول کریں</translation>
 <translation id="4961318399572185831">اسکرین کاسٹ کریں</translation>
 <translation id="4969092041573468113">h <ph name="MINUTES" />m <ph name="SECONDS" />s<ph name="HOURS" /></translation>
-<translation id="4970352680959471247">شام بخیر <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">وقت ختم ہو گیا</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> نئے فون سے منسلک ہو گیا</translation>
 <translation id="5035389544768382859">ڈسپلے کنفیگریشن کی تصدیق کریں</translation>
@@ -400,7 +398,6 @@
 <translation id="544691375626129091">سبھی دستیاب صارفین کو پہلے ہی اس سیشن میں شامل کر دیا گیا ہے۔</translation>
 <translation id="54609108002486618">نظم کردہ</translation>
 <translation id="5465662442746197494">مدد درکار ہے؟</translation>
-<translation id="5485091064403948243">صبح بخیر <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">آپ کا منتظم آپ کے آلے کو رول بیک کر رہا ہے۔ آلہ کے ری سٹارٹ کرنے پر تمام ڈیٹا حذف ہو جائے گا۔</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">سیشن سے باہر نکل رہے ہیں</translation>
@@ -566,7 +563,6 @@
 <translation id="741244894080940828">تبدیلی</translation>
 <translation id="742594950370306541">کیمرا زیر استعمال ہے۔</translation>
 <translation id="743058460480092004">کیمرا اور مائیکروفون زیر استعمال ہیں۔</translation>
-<translation id="7436182601308224670">سہ پہر بخیر <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">براہ کرم سینسر کو ٹچ کریں</translation>
 <translation id="7497767806359279797">زبان اور کی بورڈ منتخب کریں</translation>
 <translation id="7526573455193969409">ممکن ہے نیٹ ورک کو مانیٹر کیا جا رہا ہو</translation>
@@ -678,7 +674,7 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، آپ کے منتظم کے زیر انتظام ہے</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> ٹائمر</translation>
-<translation id="8647931990447795414">‏کسی فرد کو شامل کرنے کے لیے، اپنے Family Link کا والدین کا رسائی کا کوڈ درج کریں</translation>
+<translation id="8647931990447795414">‏کسی فرد کو شامل کرنے کے لیے، اپنی Family Link کا والدین کا رسائی کا کوڈ درج کریں</translation>
 <translation id="8649101189709089199">سننے کے لیے منتخب کریں</translation>
 <translation id="8652175077544655965">ترتیبات بند کریں</translation>
 <translation id="8653151467777939995">اطلاع کی ترتیبات دکھائیں۔ اطلاعات آن ہیں</translation>

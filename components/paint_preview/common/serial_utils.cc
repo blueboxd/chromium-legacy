@@ -22,6 +22,10 @@ struct SerializedRectData {
   int64_t y;
   int64_t width;
   int64_t height;
+  int64_t transformed_x;
+  int64_t transformed_y;
+  int64_t transformed_width;
+  int64_t transformed_height;
 };
 #pragma pack(pop)
 
@@ -29,14 +33,20 @@ struct SerializedRectData {
 sk_sp<SkData> SerializePictureAsRectData(SkPicture* picture, void* ctx) {
   const PictureSerializationContext* context =
       reinterpret_cast<PictureSerializationContext*>(ctx);
-  SerializedRectData rect_data = {
-      picture->uniqueID(), picture->cullRect().x(), picture->cullRect().y(),
-      picture->cullRect().width(), picture->cullRect().height()};
 
-  if (context->count(picture->uniqueID()))
-    return SkData::MakeWithCopy(&rect_data, sizeof(rect_data));
+  auto it = context->content_id_to_transformed_clip.find(picture->uniqueID());
   // Defers picture serialization behavior to Skia.
-  return nullptr;
+  if (it == context->content_id_to_transformed_clip.end())
+    return nullptr;
+
+  const SkRect& transformed_cull_rect = it->second;
+  SerializedRectData rect_data = {
+      picture->uniqueID(),           picture->cullRect().x(),
+      picture->cullRect().y(),       picture->cullRect().width(),
+      picture->cullRect().height(),  transformed_cull_rect.x(),
+      transformed_cull_rect.y(),     transformed_cull_rect.width(),
+      transformed_cull_rect.height()};
+  return SkData::MakeWithCopy(&rect_data, sizeof(rect_data));
 }
 
 // De-duplicates and subsets used typefaces and discards any unused typefaces.
@@ -76,7 +86,8 @@ sk_sp<SkPicture> DeserializePictureAsRectData(const void* data,
   auto* context = reinterpret_cast<DeserializationContext*>(ctx);
   context->insert(
       {rect_data.content_id,
-       gfx::Rect(rect_data.x, rect_data.y, rect_data.width, rect_data.height)});
+       gfx::Rect(rect_data.transformed_x, rect_data.transformed_y,
+                 rect_data.transformed_width, rect_data.transformed_height)});
   return MakeEmptyPicture();
 }
 
@@ -115,6 +126,14 @@ sk_sp<SkPicture> GetPictureFromDeserialContext(const void* data,
 }
 
 }  // namespace
+
+PictureSerializationContext::PictureSerializationContext() = default;
+PictureSerializationContext::~PictureSerializationContext() = default;
+
+PictureSerializationContext::PictureSerializationContext(
+    PictureSerializationContext&&) = default;
+PictureSerializationContext& PictureSerializationContext::operator=(
+    PictureSerializationContext&&) = default;
 
 TypefaceSerializationContext::TypefaceSerializationContext(
     TypefaceUsageMap* usage)

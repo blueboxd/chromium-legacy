@@ -4474,7 +4474,15 @@
         'additional_compile_targets': [
           'all'
         ],
-        'test_suites': {},
+        'mixins': [
+          'mac_10.15',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_12a8189h',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_noncq_tests'
+        },
       },
       'mac-arm64-rel': {
         'additional_compile_targets': [

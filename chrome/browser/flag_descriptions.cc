@@ -607,17 +607,6 @@ const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[] =
     "that the ECT trigger threshold is set to 4G (which is otherwise provided "
     "by the optimization hints). Rest of the checks are still executed.";
 
-const char kEnableEduCoexistenceName[] =
-    "Enable Family Link managed accounts and EDU accounts coexistence";
-const char kEnableEduCoexistenceDescription[] =
-    "Allows Family Link managed users to add secondary EDU accounts.";
-
-const char kEnableEduCoexistenceConsentLogName[] =
-    "Enable parent consent logging in EDU account addition flow";
-const char kEnableEduCoexistenceConsentLogDescription[] =
-    "If enabled, parent consent gets logged to ARI before adding the account "
-    "to the device.";
-
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
@@ -3060,6 +3049,11 @@ const char kReportFeedUserActionsName[] =
 const char kReportFeedUserActionsDescription[] =
     "Enable the report of click actions on cards in Chrome's Feed on Android."
     " Also enable the feed header menu to manage the feed.";
+
+const char kSafeBrowsingClientSideDetectionAndroidName[] =
+    "Safe Browsing Client Side Detection on Android";
+const char kSafeBrowsingClientSideDetectionAndroidDescription[] =
+    "Enable DOM feature collection on Safe Browsing pings on Android";
 
 const char kSafeBrowsingEnhancedProtectionAndroidName[] =
     "Safe Browsing Enhanced Protection on Android";

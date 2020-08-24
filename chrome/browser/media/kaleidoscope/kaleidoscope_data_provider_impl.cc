@@ -159,11 +159,6 @@ void KaleidoscopeDataProviderImpl::GetShouldShowFirstRunExperience(
   std::move(cb).Run(false);
 }
 
-void KaleidoscopeDataProviderImpl::SetFirstRunExperienceCompleted() {
-  SetFirstRunExperienceStep(
-      media::mojom::KaleidoscopeFirstRunExperienceStep::kCompleted);
-}
-
 void KaleidoscopeDataProviderImpl::SetFirstRunExperienceStep(
     media::mojom::KaleidoscopeFirstRunExperienceStep step) {
   if (metrics_recorder_)
@@ -197,6 +192,7 @@ void KaleidoscopeDataProviderImpl::SetMediaFeedsConsent(
   if (!prefs)
     return;
   prefs->SetBoolean(prefs::kMediaFeedsBackgroundFetching, accepted_media_feeds);
+  prefs->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled, accepted_media_feeds);
 
   // If the user declined to use Media Feeds at all, then there's nothing left
   // to do.

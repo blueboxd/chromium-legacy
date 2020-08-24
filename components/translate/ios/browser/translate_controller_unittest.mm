@@ -12,6 +12,7 @@
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "net/http/http_status_code.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"
@@ -173,7 +174,7 @@ TEST_F(TranslateControllerTest, TranslationFailure) {
   EXPECT_FALSE(error_type_ == TranslateErrors::NONE);
 }
 
-// Tests that OnTranslateLoadJavaScript() is called with the right paramters
+// Tests that OnTranslateLoadJavaScript() is called with the right parameters
 // when a |translate.loadjavascript| message is received from the JS side.
 TEST_F(TranslateControllerTest, OnTranslateLoadJavascript) {
   base::DictionaryValue command;
@@ -184,9 +185,9 @@ TEST_F(TranslateControllerTest, OnTranslateLoadJavascript) {
       &fake_main_frame_));
 }
 
-// Tests that OnTranslateSendRequest() is called with the right paramters
+// Tests that OnTranslateSendRequest() is called with the right parameters
 // when a |translate.sendrequest| message is received from the JS side.
-TEST_F(TranslateControllerTest, OnTranslateSendRequest) {
+TEST_F(TranslateControllerTest, OnTranslateSendRequestWithValidCommand) {
   base::DictionaryValue command;
   command.SetString("command", "translate.sendrequest");
   command.SetString("method", "POST");
@@ -197,6 +198,51 @@ TEST_F(TranslateControllerTest, OnTranslateSendRequest) {
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
       command, GURL("http://google.com"), /*interacting=*/false,
       &fake_main_frame_));
+}
+
+// Tests that OnTranslateSendRequest() rejects a bad url contained in the
+// |translate.sendrequest| message received from Javascript.
+TEST_F(TranslateControllerTest, OnTranslateSendRequestWithBadURL) {
+  base::DictionaryValue command;
+  command.SetString("command", "translate.sendrequest");
+  command.SetString("method", "POST");
+  command.SetString("url", "https://badurl.example.com");
+  command.SetString("body", "helloworld");
+  command.SetDouble("requestID", 0);
+  EXPECT_FALSE(translate_controller_->OnJavascriptCommandReceived(
+      command, GURL("http://google.com"), /*interacting=*/false,
+      &fake_main_frame_));
+}
+
+// Tests that OnTranslateSendRequest() called with a bad method will eventually
+// cause the request to fail.
+TEST_F(TranslateControllerTest, OnTranslateSendRequestWithBadMethod) {
+  base::DictionaryValue command;
+  command.SetString("command", "translate.sendrequest");
+  command.SetString("method", "POST\r\nHost: other.example.com");
+  command.SetString("url",
+                    "https://translate.googleapis.com/translate?key=abcd");
+  command.SetString("body", "helloworld");
+  command.SetDouble("requestID", 0);
+
+  [[mock_js_translate_manager_ expect]
+      handleTranslateResponseWithURL:
+          @"https://translate.googleapis.com/translate?key=abcd"
+                           requestID:0
+                        responseCode:net::HttpStatusCode::HTTP_BAD_REQUEST
+                          statusText:@""
+                         responseURL:@"https://translate.googleapis.com/"
+                                     @"translate?key=abcd"
+                        responseText:@""];
+
+  // The command will be accepted, but a bad method should cause the request to
+  // fail shortly thereafter.
+  EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
+      command, GURL("http://google.com"), /*interacting=*/false,
+      &fake_main_frame_));
+  task_environment_.RunUntilIdle();
+
+  [mock_js_translate_manager_ verify];
 }
 
 }  // namespace translate

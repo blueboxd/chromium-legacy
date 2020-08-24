@@ -186,19 +186,10 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::IDLE_DETECTION;
   } else if (name == "periodic-background-sync") {
     *permission_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
-  } else if (name == "wake-lock") {
-    if (!descriptor->HasType()) {
-      return Response::InvalidParams(
-          "Could not parse WakeLockPermissionDescriptor with property type");
-    }
-    const std::string type = descriptor->GetType("");
-    if (type == "screen") {
-      *permission_type = PermissionType::WAKE_LOCK_SCREEN;
-    } else if (type == "system") {
-      *permission_type = PermissionType::WAKE_LOCK_SYSTEM;
-    } else {
-      return Response::InvalidParams("Invalid WakeLockType: " + type);
-    }
+  } else if (name == "screen-wake-lock") {
+    *permission_type = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (name == "system-wake-lock") {
+    *permission_type = PermissionType::WAKE_LOCK_SYSTEM;
   } else if (name == "nfc") {
     *permission_type = PermissionType::NFC;
   } else if (name == "window-placement") {

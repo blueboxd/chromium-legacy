@@ -57,7 +57,7 @@ void DeleteComService() {
 
 void DeleteComInterfaces(HKEY root) {
   for (const auto& iid :
-       {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
+       {__uuidof(IUpdater), __uuidof(IUpdaterObserver), __uuidof(IUpdateState),
         __uuidof(ICompleteStatus), __uuidof(IGoogleUpdate3Web),
         __uuidof(IAppBundleWeb), __uuidof(IAppWeb), __uuidof(ICurrentState)}) {
     for (const auto& reg_path :

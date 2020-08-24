@@ -2240,9 +2240,9 @@ TEST_F(WebRtcEventLogManagerTest,
   EXPECT_EQ(filename, expected_filename);
 
   // Compare extension.
-  EXPECT_EQ(
-      base::FilePath::kExtensionSeparator + remote_log_extension_.as_string(),
-      file_path->Extension());
+  EXPECT_EQ(base::FilePath::kExtensionSeparator +
+                base::FilePath::StringType(remote_log_extension_),
+            file_path->Extension());
 }
 
 TEST_F(WebRtcEventLogManagerTest, StartRemoteLoggingCreatesEmptyFile) {

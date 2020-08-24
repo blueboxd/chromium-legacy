@@ -884,16 +884,14 @@ void OmniboxViewViews::SetTextAndSelectedRanges(
   static const uint32_t kPadTrailing = 30;
   static const uint32_t kPadLeading = 10;
 
-  // We use SetTextAndScrollAndSelectRange instead of SetText and
-  // SetSelectedRange in order to avoid triggering accessibility events multiple
-  // times.
-  SetTextAndScrollAndSelectRange(
-      text, ranges[0].end(),
-      {0, std::min<size_t>(ranges[0].end() + kPadTrailing, text.size()),
-       ranges[0].end() - std::min(kPadLeading, ranges[0].end())},
-      ranges[0]);
-  for (size_t i = 1; i < ranges.size(); i++)
-    SetSelectedRange(ranges[i], false);
+  // We use SetTextWithoutCaretBoundsChangeNotification() in order to avoid
+  // triggering accessibility events multiple times.
+  SetTextWithoutCaretBoundsChangeNotification(text, ranges[0].end());
+  Scroll({0, std::min<size_t>(ranges[0].end() + kPadTrailing, text.size()),
+          ranges[0].end() - std::min(kPadLeading, ranges[0].end())});
+  // Setting the primary selected range will also fire an appropriate final
+  // accessibility event after the changes above.
+  SetSelectedRanges(ranges);
 
   // Clear the additional text.
   SetAdditionalText(base::string16());
@@ -907,7 +905,7 @@ void OmniboxViewViews::SetSelectedRanges(
 
   SetSelectedRange(ranges[0]);
   for (size_t i = 1; i < ranges.size(); i++)
-    SetSelectedRange(ranges[i], false);
+    AddSecondarySelectedRange(ranges[i]);
 }
 
 base::string16 OmniboxViewViews::GetSelectedText() const {

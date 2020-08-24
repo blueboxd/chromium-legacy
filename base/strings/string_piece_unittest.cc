@@ -299,8 +299,8 @@ TYPED_TEST(CommonStringPieceTest, CheckFind) {
   ASSERT_EQ(a.rfind(c, 0U), Piece::npos);
   ASSERT_EQ(b.rfind(c), Piece::npos);
   ASSERT_EQ(b.rfind(c, 0U), Piece::npos);
-  ASSERT_EQ(a.rfind(d), static_cast<size_t>(a.as_string().rfind(TypeParam())));
-  ASSERT_EQ(a.rfind(e), a.as_string().rfind(TypeParam()));
+  ASSERT_EQ(a.rfind(d), static_cast<size_t>(a.rfind(TypeParam())));
+  ASSERT_EQ(a.rfind(e), a.rfind(TypeParam()));
   ASSERT_EQ(a.rfind(d), static_cast<size_t>(TypeParam(a).rfind(TypeParam())));
   ASSERT_EQ(a.rfind(e), TypeParam(a).rfind(TypeParam()));
   ASSERT_EQ(a.rfind(d, 12), 12U);
@@ -521,12 +521,6 @@ TYPED_TEST(CommonStringPieceTest, CheckCustom) {
   c = {foobar.c_str(), 7};  // Note, has an embedded NULL
   ASSERT_NE(c, a);
 
-  // as_string
-  TypeParam s3(a.as_string().c_str(), 7);  // Note, has an embedded NULL
-  ASSERT_EQ(c, s3);
-  TypeParam s4(e.as_string());
-  ASSERT_TRUE(s4.empty());
-
   // operator STRING_TYPE()
   TypeParam s5(TypeParam(a).c_str(), 7);  // Note, has an embedded NULL
   ASSERT_EQ(c, s5);
@@ -558,10 +552,6 @@ TYPED_TEST(CommonStringPieceTest, CheckNULL) {
   ASSERT_EQ(s.size(), 0U);
 
   TypeParam str(s);
-  ASSERT_EQ(str.length(), 0U);
-  ASSERT_EQ(str, TypeParam());
-
-  str = s.as_string();
   ASSERT_EQ(str.length(), 0U);
   ASSERT_EQ(str, TypeParam());
 }
@@ -617,10 +607,7 @@ TEST(StringPiece16Test, CheckSTL) {
 TEST(StringPiece16Test, CheckConversion) {
   // Make sure that we can convert from UTF8 to UTF16 and back. We use a two
   // byte character (G clef) to test this.
-  ASSERT_EQ(
-      UTF16ToUTF8(
-          StringPiece16(UTF8ToUTF16("\xf0\x9d\x84\x9e")).as_string()),
-      "\xf0\x9d\x84\x9e");
+  ASSERT_EQ(UTF16ToUTF8(UTF8ToUTF16("\xf0\x9d\x84\x9e")), "\xf0\x9d\x84\x9e");
 }
 
 TYPED_TEST(CommonStringPieceTest, CheckConstructors) {

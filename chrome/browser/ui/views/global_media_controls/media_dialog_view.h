@@ -21,8 +21,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
                         public MediaDialogDelegate,
                         public MediaNotificationContainerObserver {
  public:
-  static void ShowDialog(views::View* anchor_view,
-                         MediaNotificationService* service);
+  static views::Widget* ShowDialog(views::View* anchor_view,
+                                   MediaNotificationService* service);
   static void HideDialog();
   static bool IsShowing();
 

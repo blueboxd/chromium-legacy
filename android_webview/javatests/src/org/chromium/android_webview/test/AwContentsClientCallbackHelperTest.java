@@ -25,6 +25,7 @@ import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHel
 import org.chromium.android_webview.test.TestAwContentsClient.OnLoadResourceHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.PictureListenerHelper;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
@@ -37,6 +38,7 @@ import java.util.concurrent.Callable;
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS) // These are unit tests. No need to repeat for multiprocess.
+@Batch(Batch.UNIT_TESTS)
 public class AwContentsClientCallbackHelperTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();

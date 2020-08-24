@@ -14,6 +14,7 @@
 <translation id="109942774857561566">退屈だな</translation>
 <translation id="1104084341931202936">ユーザー補助機能の設定を表示</translation>
 <translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
+<translation id="1119348796022671382">壁紙から抽出した色を使用して、インターフェースに薄く色付けします。</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1175572348579024023">スクロール</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">オン</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
 <translation id="1420408895951708260">夜間モードのオンとオフを切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">スクリーンショットを撮影し、クリップボードに保存しました</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1460620680449458626">音量はミュートされています。</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">スイッチ アクセスは [設定] &gt; [ユーザー補助機能] で無効にできます。</translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
 <translation id="1665244008632896072">ダークモードを切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">壁紙から抽出した色の代わりに、ライトまたはダークな色調の中間色を使用します。</translation>
 <translation id="1677472565718498478">残り <ph name="TIME" /></translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> タイマー · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 アドレス: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">モノラル音声</translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="3033545621352269033">オン</translation>
+<translation id="3038571455154067151">ログインするには、ファミリー リンクの保護者のアクセスコードを入力してください</translation>
 <translation id="3051128274746680507">管理対象のユーザー プロフィールはまもなく削除されます。ログインして詳細をご確認ください。</translation>
 <translation id="3055162170959710888">あなたは今日、このデバイスを <ph name="USED_TIME" />使用しました</translation>
 <translation id="3076778413190775903">ステータス トレイ、時間 <ph name="TIME" />、
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3977512764614765090">電池残量は <ph name="PERCENTAGE" />% です（現在充電中）。</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
+<translation id="40062176907008878">手書き</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
 <translation id="4021716437419160885">下にスクロール</translation>
 <translation id="4028481283645788203">セキュリティ強化のためパスワードが必要です</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
 <translation id="4146833061457621061">音楽を再生して</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> は <ph name="DOMAIN" /> によって管理されています</translation>
+<translation id="4157822100366708405">ダークテーマの設定</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4197790712631116042">オフ</translation>
 <translation id="4212472694152630271">PIN に切り替え</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
 <translation id="4217571870635786043">音声入力</translation>
+<translation id="4229328187280698237">タブレット モードに切り替えます</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
 <translation id="4269883910223712419">このデバイスの管理者は以下を行うことができます。</translation>
@@ -307,7 +314,6 @@
 <translation id="4350065043422286972">固定済み</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
 <translation id="4356930093361201197">ハイ コントラスト モード</translation>
-<translation id="4368583494516669646">おやすみなさい、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="4371348193907997655">キャスト設定</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
@@ -362,12 +368,12 @@
 <translation id="495046168593986294">上にスクロール</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />時間<ph name="MINUTES" />分<ph name="SECONDS" />秒</translation>
-<translation id="4970352680959471247">こんばんは、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="5030687792513154421">時間切れです</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> が新しいスマートフォンに接続されました</translation>
 <translation id="5035389544768382859">ディスプレイ設定の確定</translation>
 <translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="5114495209940374989">スクリーンショット</translation>
+<translation id="5123162024343028706">上部に表示</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
@@ -381,6 +387,7 @@
 <translation id="5297704307811127955">オフ</translation>
 <translation id="5302048478445481009">言語</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
+<translation id="5314219114274263156">画面を録画しました</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
 <translation id="5379115545237091094">試行回数が上限を超えました</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
@@ -391,7 +398,6 @@
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="54609108002486618">管理対象</translation>
 <translation id="5465662442746197494">不明点がある場合</translation>
-<translation id="5485091064403948243">おはようございます、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="5496819745535887422">管理者がお使いのデバイスをロールバックしています。デバイスの再起動時にデータはすべて削除されます。</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">セッションの終了</translation>
@@ -421,6 +427,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> の「<ph name="ROUTE_TITLE" />」を停止します</translation>
 <translation id="5860033963881614850">オフ</translation>
+<translation id="5876666360658629066">保護者のコードを入力してください</translation>
 <translation id="5887866489674258948">ダークモード</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +488,7 @@
 <translation id="652139407789908527">更新中は、空白の画面が通常より長く表示されます（最長 1 分）。更新中は電源ボタンを押さないでください。</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6528179044667508675">サイレント</translation>
+<translation id="65320610082834431">絵文字</translation>
 <translation id="6537270692134705506">画面をキャプチャ</translation>
 <translation id="6537924328260219877">信号強度 <ph name="SIGNAL_STRENGTH" />、電池残量 <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> にキャストしています</translation>
@@ -556,7 +564,6 @@
 <translation id="741244894080940828">単位変換</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
-<translation id="7436182601308224670">こんにちは、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="7466449121337984263">センサーをタッチしてください</translation>
 <translation id="7497767806359279797">言語とキーボードを選択</translation>
 <translation id="7526573455193969409">ネットワークが監視されている可能性があります</translation>
@@ -568,8 +575,10 @@
 <translation id="7568637526529101738">右クリックするか長押しすると、選択した項目の情報（定義や単位変換など）が表示されます。</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7579778809502851308">スクリーン キャプチャ</translation>
+<translation id="7590883480672980941">入力設定</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7600875258240007829">通知をすべて表示</translation>
+<translation id="7618774594543487847">中間色</translation>
 <translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" /> 度</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> の設定を開きます、<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
@@ -666,12 +675,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
 <translation id="8639760480004882931">バッテリー残量: <ph name="PERCENTAGE" /></translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> タイマー</translation>
+<translation id="8647931990447795414">ユーザーを追加するには、ファミリー リンクの保護者のアクセスコードを入力してください</translation>
 <translation id="8649101189709089199">選択して読み上げ</translation>
 <translation id="8652175077544655965">設定を閉じます</translation>
 <translation id="8653151467777939995">通知設定を表示します。通知はオンです</translation>
 <translation id="8660331759611631213">71 の平方根は</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">ネットワーク リストを表示します。<ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">色モード</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="8683506306463609433">パフォーマンス追跡機能が有効</translation>
@@ -695,6 +706,8 @@
 <translation id="8878886163241303700">画面を拡張しています</translation>
 <translation id="890616557918890486">ソースを変更</translation>
 <translation id="8909138438987180327">電池残量は <ph name="PERCENTAGE" />% です。</translation>
+<translation id="8913384980486163186">テーマ（デフォルト）</translation>
+<translation id="8918251165865262378">ノートパソコン モードに切り替えます</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
 <translation id="8936501819958976551">無効</translation>

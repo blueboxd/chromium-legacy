@@ -861,12 +861,16 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
       RTCSessionDescriptionRequestPromiseImpl::Create(
           RTCCreateSessionDescriptionOperation::kCreateOffer, this, resolver,
           "RTCPeerConnection", "createOffer");
+
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateOffer);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateOfferPromise);
   if (options->hasOfferToReceiveAudio() || options->hasOfferToReceiveVideo()) {
-    ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(
         context,
         WebFeature::kRTCPeerConnectionCreateOfferOptionsOfferToReceive);
   }
+
   auto platform_transceivers = peer_handler_->CreateOffer(
       request, ConvertToRTCOfferOptionsPlatform(options));
   for (auto& platform_transceiver : platform_transceivers)
@@ -910,6 +914,7 @@ ScriptPromise RTCPeerConnection::CreateOffer(
   ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(
       context, WebFeature::kRTCPeerConnectionCreateOfferLegacyFailureCallback);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateOffer);
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
@@ -978,6 +983,10 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateAnswer);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateAnswerPromise);
+
   call_setup_state_tracker_.NoteAnswererStateEvent(
       AnswererState::kCreateAnswerPending, HasDocumentMedia());
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -1023,6 +1032,7 @@ ScriptPromise RTCPeerConnection::CreateAnswer(
   DCHECK(success_callback);
   DCHECK(error_callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionCreateAnswer);
   UseCounter::Count(
       context, WebFeature::kRTCPeerConnectionCreateAnswerLegacyFailureCallback);
   if (media_constraints.IsObject()) {
@@ -1374,6 +1384,11 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   }
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetLocalDescription,
                                  *session_description_init);
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionSetLocalDescription);
+  UseCounter::Count(context,
+                    WebFeature::kRTCPeerConnectionSetLocalDescriptionPromise);
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
@@ -1403,6 +1418,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
                       session_description_init);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context, WebFeature::kRTCPeerConnectionSetLocalDescription);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,
@@ -1490,6 +1506,12 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     return ScriptPromise();
   }
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context,
+                    WebFeature::kRTCPeerConnectionSetRemoteDescription);
+  UseCounter::Count(context,
+                    WebFeature::kRTCPeerConnectionSetRemoteDescriptionPromise);
+
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetRemoteDescription,
                                  *session_description_init);
   if (ContainsLegacyRtpDataChannel(session_description_init->sdp())) {
@@ -1526,6 +1548,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                       session_description_init);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
+  UseCounter::Count(context,
+                    WebFeature::kRTCPeerConnectionSetRemoteDescription);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,

@@ -1,5 +1,5 @@
 <?php
-header("Document-Policy: unoptimized-lossy-images=0.5");
+header("Document-Policy: lossy-images-max-bpp=0.5");
 ?>
 <!DOCTYPE html>
 <style>

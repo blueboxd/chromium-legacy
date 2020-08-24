@@ -64,7 +64,7 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
             mContainer = getActivity().findViewById(R.id.status_indicator);
             mStatusTextView = mContainer.findViewById(R.id.status_text);
 
-            mSceneLayer = new MockStatusIndicatorSceneLayer(mContainer);
+            mSceneLayer = new MockStatusIndicatorSceneLayer();
             mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
                              .with(StatusIndicatorProperties.STATUS_TEXT, "")
                              .with(StatusIndicatorProperties.STATUS_ICON, null)
@@ -197,8 +197,8 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
 
     /** Mock {@link StatusIndicatorSceneLayer} class to avoid native initialization. */
     private class MockStatusIndicatorSceneLayer extends StatusIndicatorSceneLayer {
-        MockStatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator) {
-            super(statusIndicator, null);
+        MockStatusIndicatorSceneLayer() {
+            super(null);
         }
 
         @Override

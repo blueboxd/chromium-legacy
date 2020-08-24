@@ -165,9 +165,9 @@ bool CanAccessWindowInternal(
 
   // Notify the loader's client if the initial document has been accessed.
   LocalFrame* target_frame = local_target_window->GetFrame();
-  if (target_frame &&
-      target_frame->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
+  if (target_frame && target_frame->GetDocument()->IsInitialEmptyDocument()) {
     target_frame->Loader().DidAccessInitialDocument();
+  }
 
   return true;
 }

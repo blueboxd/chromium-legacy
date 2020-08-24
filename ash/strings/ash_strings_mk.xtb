@@ -315,7 +315,6 @@
 <translation id="4350065043422286972">Закачени</translation>
 <translation id="4351433414020964307">„Помошникот“ се вчитува…</translation>
 <translation id="4356930093361201197">режим на висок контраст</translation>
-<translation id="4368583494516669646">Добра ноќ <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Поставки за Cast</translation>
 <translation id="4378551569595875038">Се поврзува…</translation>
 <translation id="4379531060876907730">Ова се вашите пенкала</translation>
@@ -370,7 +369,6 @@
 <translation id="495046168593986294">Оди нагоре</translation>
 <translation id="4961318399572185831">Емитувај го екранот</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ч. <ph name="MINUTES" /> м. <ph name="SECONDS" /> с.</translation>
-<translation id="4970352680959471247">Добровечер <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Времето истече</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> е поврзан со нов телефон</translation>
 <translation id="5035389544768382859">Потврдете ја конфигурацијата на екранот</translation>
@@ -401,7 +399,6 @@
 <translation id="544691375626129091">Сите достапни корисници веќе се додадени на оваа сесија.</translation>
 <translation id="54609108002486618">Управуван</translation>
 <translation id="5465662442746197494">Потребна ви е помош?</translation>
-<translation id="5485091064403948243">Добро утро <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Администраторот го враќа вашиот уред на фабричките поставки. Сите податоци ќе се избришат кога уредот ќе се рестартира.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Излегува од сесијата</translation>
@@ -567,7 +564,6 @@
 <translation id="741244894080940828">конверзија</translation>
 <translation id="742594950370306541">Фотоапаратот е во употреба.</translation>
 <translation id="743058460480092004">Се користат фотоапаратот и микрофонот.</translation>
-<translation id="7436182601308224670">Добар ден <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Допрете го сензорот</translation>
 <translation id="7497767806359279797">Изберете јазик и тастатура</translation>
 <translation id="7526573455193969409">Мрежата можеби се следи</translation>

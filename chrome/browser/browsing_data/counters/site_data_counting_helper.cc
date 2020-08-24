@@ -36,9 +36,11 @@ using content::BrowserThread;
 SiteDataCountingHelper::SiteDataCountingHelper(
     Profile* profile,
     base::Time begin,
+    base::Time end,
     base::OnceCallback<void(int)> completion_callback)
     : profile_(profile),
       begin_(begin),
+      end_(end),
       completion_callback_(std::move(completion_callback)),
       tasks_(0) {}
 
@@ -73,8 +75,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
       tasks_ += 1;
       content::GetIOThreadTaskRunner({})->PostTask(
           FROM_HERE,
-          base::BindOnce(&storage::QuotaManager::GetOriginsModifiedSince,
-                         quota_manager, type, begin_, origins_callback));
+          base::BindOnce(&storage::QuotaManager::GetOriginsModifiedBetween,
+                         quota_manager, type, begin_, end_, origins_callback));
     }
   }
 
@@ -103,8 +105,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
 #if defined(OS_ANDROID)
   // Count origins with media licenses on Android.
   tasks_ += 1;
-  Done(cdm::MediaDrmStorageImpl::GetOriginsModifiedSince(profile_->GetPrefs(),
-                                                         begin_));
+  Done(cdm::MediaDrmStorageImpl::GetOriginsModifiedBetween(profile_->GetPrefs(),
+                                                           begin_, end_));
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -156,7 +158,7 @@ void SiteDataCountingHelper::GetCookiesCallback(
     const net::CookieList& cookies) {
   std::vector<GURL> origins;
   for (const net::CanonicalCookie& cookie : cookies) {
-    if (cookie.CreationDate() >= begin_) {
+    if (cookie.CreationDate() >= begin_ && cookie.CreationDate() < end_) {
       GURL url = net::cookie_util::CookieOriginToURL(cookie.Domain(),
                                                      cookie.IsSecure());
       origins.push_back(url);
@@ -185,7 +187,7 @@ void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(
     const std::vector<content::StorageUsageInfo>& infos) {
   std::vector<GURL> origins;
   for (const auto& info : infos) {
-    if (info.last_modified >= begin_ &&
+    if (info.last_modified >= begin_ && info.last_modified < end_ &&
         (!policy || !policy->IsStorageProtected(info.origin.GetURL()))) {
       origins.push_back(info.origin.GetURL());
     }
@@ -207,7 +209,7 @@ void SiteDataCountingHelper::SitesWithMediaLicensesCallback(
         media_license_info_list) {
   std::vector<GURL> origins;
   for (const auto& info : media_license_info_list) {
-    if (info.last_modified_time >= begin_)
+    if (info.last_modified_time >= begin_ && info.last_modified_time < end_)
       origins.push_back(info.origin);
   }
   Done(origins);

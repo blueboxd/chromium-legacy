@@ -3040,6 +3040,9 @@ ci.mac_ios_builder(
 
 ci.mac_ios_builder(
     name = "ios-simulator-noncq",
+    caches = [
+        xcode_cache.x12a8189h,
+    ],
     console_view_entry = ci.console_view_entry(
         category = "ios|default",
         short_name = "non",
@@ -3047,6 +3050,9 @@ ci.mac_ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
+    properties = {
+        "xcode_build_version": "12a8189h",
+    },
 )
 
 ci.memory_builder(

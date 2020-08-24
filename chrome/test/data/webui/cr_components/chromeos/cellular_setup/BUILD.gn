@@ -9,5 +9,6 @@ js_modulizer("modulize") {
     "base_page_test.js",
     "final_page_test.js",
     "sim_detect_page_test.js",
+    "provisioning_page_test.js",
   ]
 }

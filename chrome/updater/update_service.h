@@ -10,10 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
-
-namespace update_client {
-class Configurator;
-}  // namespace update_client
+#include "chrome/updater/util.h"
 
 namespace updater {
 
@@ -69,10 +66,12 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     kInstall = 3,
     kService = 4,
     kUpdateCheck = 5,
+    // Change the traits class in this file when adding new values.
   };
 
   struct UpdateState {
-    // Possible states for updating an app.
+    // Possible states for updating an app. Add new values at the end of
+    // the definition, and do not mutate the existing values.
     enum class State {
       // This value represents the absence of a state. No update request has
       // yet been issued.
@@ -95,16 +94,18 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
       // The engine found and installed an update for this product. The update
       // is complete and the state will not change.
-      kUpdated = 100,
+      kUpdated = 6,
 
       // The engine checked for updates. This product is already up to date.
       // No update has been installed for this product. The update is complete
       // and the state will not change.
-      kNoUpdate = 101,
+      kNoUpdate = 7,
 
       // The engine encountered an error updating this product. The update has
       // halted and the state will not change.
-      kUpdateError = 102,
+      kUpdateError = 8,
+
+      // Change the traits class in this file when adding new values.
     };
 
     UpdateState();
@@ -200,9 +201,23 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   virtual ~UpdateService() = default;
 };
 
+// These specializations must be defined in the |updater| namespace.
+template <>
+struct EnumTraits<UpdateService::UpdateState::State> {
+  using State = UpdateService::UpdateState::State;
+  static constexpr State first_elem = State::kUnknown;
+  static constexpr State last_elem = State::kUpdateError;
+};
+
+template <>
+struct EnumTraits<UpdateService::ErrorCategory> {
+  using ErrorCategory = UpdateService::ErrorCategory;
+  static constexpr ErrorCategory first_elem = ErrorCategory::kNone;
+  static constexpr ErrorCategory last_elem = ErrorCategory::kUpdateCheck;
+};
+
 // A factory method to create an UpdateService class instance.
-scoped_refptr<UpdateService> CreateUpdateService(
-    scoped_refptr<update_client::Configurator> config);
+scoped_refptr<UpdateService> CreateUpdateService();
 
 }  // namespace updater
 

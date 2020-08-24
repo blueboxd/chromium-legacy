@@ -184,16 +184,16 @@ TEST(PaintPreviewRecorderUtilsTest, TestTransformSubframeRects) {
 
   ParseGlyphsAndLinks(record.get(), &tracker);
 
-  map = tracker.GetSubframePicsForTesting();
-  ASSERT_EQ(map.size(), 1U);
-  // Iterate over the one element since we don't know the key.
-  for (const auto& pair : map) {
-    auto old_cull_rect = pair.second->cullRect();
-    EXPECT_EQ(rect.x() + 10, old_cull_rect.x());
-    EXPECT_EQ(rect.y() + 20, old_cull_rect.y());
-    EXPECT_EQ(rect.width(), old_cull_rect.width());
-    EXPECT_EQ(rect.height(), old_cull_rect.height());
-  }
+  auto* picture_ctx = tracker.GetPictureSerializationContext();
+  ASSERT_EQ(picture_ctx->content_id_to_transformed_clip.size(), 1U);
+  auto clip_it = picture_ctx->content_id_to_transformed_clip.find(old_id);
+  ASSERT_NE(clip_it, picture_ctx->content_id_to_transformed_clip.end());
+
+  SkRect new_cull_rect = clip_it->second;
+  EXPECT_EQ(rect.x() + 10, new_cull_rect.x());
+  EXPECT_EQ(rect.y() + 20, new_cull_rect.y());
+  EXPECT_EQ(rect.width(), new_cull_rect.width());
+  EXPECT_EQ(rect.height(), new_cull_rect.height());
 }
 
 class PaintPreviewRecorderUtilsSerializeAsSkPictureTest
@@ -270,10 +270,13 @@ TEST_P(PaintPreviewRecorderUtilsSerializeAsSkPictureTest, Roundtrip) {
   uint32_t content_id = tracker.CreateContentForRemoteFrame(
       gfx::Rect(10, 10), base::UnguessableToken::Create());
   canvas->recordCustomData(content_id);
+  tracker.TransformClipForFrame(content_id);
   ctx.insert(content_id);
+
   content_id = tracker.CreateContentForRemoteFrame(
       gfx::Rect(20, 20), base::UnguessableToken::Create());
   canvas->recordCustomData(content_id);
+  tracker.TransformClipForFrame(content_id);
   ctx.insert(content_id);
 
   size_t out_size = 0;
@@ -324,10 +327,10 @@ TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {
   EXPECT_THAT(response->links[1]->url, GURL("www.chromium.org"));
   EXPECT_THAT(response->links[1]->rect, gfx::Rect(10, 20, 10, 20));
 
-  auto* content_map = tracker.GetPictureSerializationContext();
+  auto* picture_ctx = tracker.GetPictureSerializationContext();
   for (const auto& id_pair : response->content_id_to_embedding_token) {
-    auto it = content_map->find(id_pair.first);
-    EXPECT_NE(it, content_map->end());
+    auto it = picture_ctx->content_id_to_embedding_token.find(id_pair.first);
+    EXPECT_NE(it, picture_ctx->content_id_to_embedding_token.end());
     EXPECT_EQ(id_pair.first, it->first);
     EXPECT_EQ(id_pair.second, it->second);
   }

@@ -9,6 +9,7 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_boolean.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_uint32.h"
+#include "chrome/services/sharing/nearby/platform_v2/ble_medium.h"
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_adapter.h"
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_classic_medium.h"
 #include "chrome/services/sharing/nearby/platform_v2/condition_variable.h"
@@ -136,11 +137,13 @@ ImplementationPlatform::CreateBluetoothClassicMedium(
 
 std::unique_ptr<BleMedium> ImplementationPlatform::CreateBleMedium(
     api::BluetoothAdapter& adapter) {
-  return nullptr;
+  // TODO (hansberry): Inject bluetooth::mojom::Adapter into BleMedium.
+  return std::make_unique<chrome::BleMedium>();
 }
 
 std::unique_ptr<ble_v2::BleMedium> ImplementationPlatform::CreateBleV2Medium(
     api::BluetoothAdapter& adapter) {
+  // Do nothing. ble_v2::BleMedium is not yet supported in Chrome Nearby.
   return nullptr;
 }
 

@@ -48,7 +48,9 @@ struct QRVersionInfo {
         (version < 7 && encoded_version != 0) ||
         (version >= 7 &&
          encoded_version >> 12 != static_cast<uint32_t>(version)) ||
-        (version <= kMaxVersionWith8BitLength && input_bytes() >= 256)) {
+        (version <= kMaxVersionWith8BitLength && input_bytes() >= 256) ||
+        (group2_num_blocks != 0 &&
+         group2_block_ec_bytes() != group1_block_ec_bytes())) {
       __builtin_unreachable();
     }
   }
@@ -255,10 +257,10 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
 
   if (version_info != version_info_) {
     version_info_ = version_info;
-    d_ = std::make_unique<uint8_t[]>(version_info_->total_size());
+    d_.resize(version_info_->total_size());
   }
   // Previous data and "set" bits must be cleared.
-  memset(d_.get(), 0, version_info_->total_size());
+  memset(&d_[0], 0, version_info_->total_size());
 
   PutVerticalTiming(6);
   PutHorizontalTiming(6);
@@ -309,8 +311,9 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
   // Details are in Table 3.
   // Since 12 and 20 are not a multiple of eight, a frame-shift of all
   // subsequent bytes is required.
-  size_t data_bytes = version_info_->total_bytes();
-  uint8_t prefixed_data[data_bytes];
+  const size_t framed_input_size =
+      version_info_->group1_data_bytes() + version_info_->group2_data_bytes();
+  std::vector<uint8_t> prefixed_data(framed_input_size);
   size_t framing_offset_bytes = 0;
   if (version_info->version <= kMaxVersionWith8BitLength) {
     DCHECK_LT(in.size(), 0x100u) << "in.size() too large for 8-bit length";
@@ -332,19 +335,20 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
     }
     framing_offset_bytes = 3;
   }
+  DCHECK_LE(in.size() + framing_offset_bytes, prefixed_data.size());
 
   for (size_t i = 0; i < in.size() - 1; i++) {
     prefixed_data[i + framing_offset_bytes] = (in[i] << 4) | (in[i + 1] >> 4);
   }
   if (!in.empty()) {
-    prefixed_data[in.size() + 1] = in[in.size() + 1 - framing_offset_bytes]
-                                   << 4;
+    prefixed_data[in.size() - 1 + framing_offset_bytes] = in[in.size() - 1]
+                                                          << 4;
   }
 
   // The QR code looks a little odd with fixed padding. Thus replicate the
   // message to fill the input.
-  for (size_t i = in.size() + framing_offset_bytes;
-       i < version_info_->input_bytes(); i++) {
+  for (size_t i = in.size() + framing_offset_bytes; i < framed_input_size;
+       i++) {
     prefixed_data[i] = prefixed_data[i % (in.size() + framing_offset_bytes)];
   }
 
@@ -354,20 +358,24 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
   // Error Correction for Group 1, present for all versions.
   const size_t group1_num_blocks = version_info_->group1_num_blocks;
   const size_t group1_block_bytes = version_info_->group1_block_bytes();
+  const size_t group1_block_data_bytes = version_info_->group1_block_data_bytes;
   const size_t group1_block_ec_bytes = version_info_->group1_block_ec_bytes();
-  uint8_t expanded_blocks[group1_num_blocks][group1_block_bytes];
+  std::vector<std::vector<uint8_t>> expanded_blocks(group1_num_blocks);
   for (size_t i = 0; i < group1_num_blocks; i++) {
+    expanded_blocks[i].resize(group1_block_bytes);
     AddErrorCorrection(
-        &expanded_blocks[i][0],
-        &prefixed_data[version_info_->group1_block_data_bytes * i],
+        expanded_blocks[i],
+        base::span<const uint8_t>(&prefixed_data[group1_block_data_bytes * i],
+                                  group1_block_data_bytes),
         group1_block_bytes, group1_block_ec_bytes);
   }
 
   // Error Correction for Group 2, present for some versions.
   // Factor out the number of bytes written by the prior group.
-  const size_t group_data_offset = group1_block_bytes * group1_num_blocks;
+  const size_t group_data_offset = version_info_->group1_data_bytes();
   const size_t group2_num_blocks = version_info_->group2_num_blocks;
   const size_t group2_block_bytes = version_info_->group2_block_bytes();
+  const size_t group2_block_data_bytes = version_info_->group2_block_data_bytes;
   const size_t group2_block_ec_bytes = version_info_->group2_block_ec_bytes();
 
   std::vector<std::vector<uint8_t>> expanded_blocks_2;
@@ -376,9 +384,10 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
     for (size_t i = 0; i < group2_num_blocks; i++) {
       expanded_blocks_2[i].resize(group2_block_bytes);
       AddErrorCorrection(
-          &expanded_blocks_2[i][0],
-          &prefixed_data[group_data_offset +
-                         version_info_->group2_block_data_bytes * i],
+          expanded_blocks_2[i],
+          base::span<const uint8_t>(
+              &prefixed_data[group_data_offset + group2_block_data_bytes * i],
+              group2_block_data_bytes),
           group2_block_bytes, group2_block_ec_bytes);
     }
   }
@@ -390,23 +399,46 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
       << "internal error";
 
   size_t k = 0;
-  // Interleave data from all blocks.
-  // If we have multiple groups, the later groups may have more bytes in their
-  // blocks after we exhaust data in the first group.
-  size_t max_group_block_bytes =
-      std::max(group1_block_bytes, group2_block_bytes);
-  for (size_t j = 0; j < max_group_block_bytes; j++) {
-    if (j < group1_block_bytes) {
-      for (size_t i = 0; i < group1_num_blocks; i++) {
-        interleaved_data[k++] = expanded_blocks[i][j];
-      }
+  // Interleave data from all blocks. All non-ECC data is written before any ECC
+  // data. The group two blocks, if any, will be longer than the group one
+  // blocks. Once group one is exhausted then the interleave considers only
+  // group two.
+  DCHECK(group2_num_blocks == 0 || version_info_->group2_block_data_bytes >
+                                       version_info_->group1_block_data_bytes);
+
+  size_t j = 0;
+  for (; j < version_info_->group1_block_data_bytes; j++) {
+    for (size_t i = 0; i < group1_num_blocks; i++) {
+      interleaved_data[k++] = expanded_blocks[i][j];
     }
-    if (j < group2_block_bytes) {
+    for (size_t i = 0; i < group2_num_blocks; i++) {
+      interleaved_data[k++] = expanded_blocks_2[i][j];
+    }
+  }
+  if (group2_num_blocks > 0) {
+    for (; j < version_info_->group2_block_data_bytes; j++) {
       for (size_t i = 0; i < group2_num_blocks; i++) {
         interleaved_data[k++] = expanded_blocks_2[i][j];
       }
     }
   }
+
+  // The number of ECC bytes in each group is the same so the interleave
+  // considers them uniformly.
+  DCHECK(version_info_->group2_num_blocks == 0 ||
+         version_info_->group2_block_ec_bytes() ==
+             version_info_->group1_block_ec_bytes());
+  for (size_t j = 0; j < version_info_->group1_block_ec_bytes(); j++) {
+    for (size_t i = 0; i < group1_num_blocks; i++) {
+      interleaved_data[k++] =
+          expanded_blocks[i][version_info_->group1_block_data_bytes + j];
+    }
+    for (size_t i = 0; i < group2_num_blocks; i++) {
+      interleaved_data[k++] =
+          expanded_blocks_2[i][version_info_->group2_block_data_bytes + j];
+    }
+  }
+  DCHECK_EQ(k, total_bytes);
 
   // The mask pattern is fixed for this implementation. A full implementation
   // would generate QR codes with every mask pattern and evaluate a quality
@@ -416,7 +448,7 @@ base::Optional<QRCodeGenerator::GeneratedCode> QRCodeGenerator::Generate(
   PutBits(interleaved_data, sizeof(interleaved_data), MaskFunction3);
 
   GeneratedCode code;
-  code.data = base::span<uint8_t>(d_.get(), version_info_->total_size());
+  code.data = base::span<uint8_t>(&d_[0], version_info_->total_size());
   code.qr_size = version_info_->size;
   return code;
 }
@@ -674,8 +706,8 @@ uint8_t QRCodeGenerator::GF28Mul(uint16_t a, uint16_t b) {
 // |out|.
 // |out| should have length block_bytes for the code's version.
 // |in| should have length block_data_bytes for the code's version.
-void QRCodeGenerator::AddErrorCorrection(uint8_t out[],
-                                         const uint8_t in[],
+void QRCodeGenerator::AddErrorCorrection(base::span<uint8_t> out,
+                                         base::span<const uint8_t> in,
                                          size_t block_bytes,
                                          size_t block_ec_bytes) {
   // kGenerator is the product of (z - x^i) for 0 <= i < |block_ec_bytes|,
@@ -743,6 +775,7 @@ void QRCodeGenerator::AddErrorCorrection(uint8_t out[],
 
   // Multiplication of |in| by x^k thus just involves moving it up.
   uint8_t remainder[block_bytes];
+  DCHECK_LE(block_ec_bytes, block_bytes);
   memset(remainder, 0, block_ec_bytes);
   size_t block_data_bytes = block_bytes - block_ec_bytes;
   // Reed-Solomon input is backwards. See section 7.5.2.
@@ -762,7 +795,7 @@ void QRCodeGenerator::AddErrorCorrection(uint8_t out[],
     }
   }
 
-  memmove(out, in, block_data_bytes);
+  memmove(&out[0], &in[0], block_data_bytes);
   // Remove the Reed-Solomon remainder again to match QR's convention.
   for (size_t i = 0; i < block_ec_bytes; i++) {
     out[block_data_bytes + i] = remainder[block_ec_bytes - 1 - i];

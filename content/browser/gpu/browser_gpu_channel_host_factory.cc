@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
+#include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 
@@ -444,11 +445,20 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
     BUILDFLAG(ORDERFILE_INSTRUMENTATION)
   constexpr int64_t kGpuChannelTimeoutInSeconds = 40;
 #else
-  // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
-  // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
-  // chance to crash itself before crashing the browser.
-  constexpr int64_t kGpuChannelTimeoutInSeconds = 20;
+  // This is also monitored by the GPU watchdog (restart or initialization
+  // event) in the GPU process. Make this slightly longer than the GPU watchdog
+  // timeout to give the GPU a chance to crash itself before crashing the
+  // browser.
+  int64_t kGpuChannelTimeoutInSeconds =
+      gpu::kGpuWatchdogTimeout.InSeconds() * gpu::kRestartFactor + 5;
+
+  // TODO(magchen@): To be removed. For finch only.
+  if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2NewTimeout)) {
+    kGpuChannelTimeoutInSeconds =
+        gpu::kGpuWatchdogTimeout.InSeconds() * gpu::kRestartFactorFinch + 5;
+  }
 #endif
+
   timeout_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
                  base::BindOnce(&TimerFired));

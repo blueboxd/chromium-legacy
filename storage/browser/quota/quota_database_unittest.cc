@@ -219,12 +219,13 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_FALSE(origin.has_value());
   }
 
-  void OriginLastModifiedSince(const base::FilePath& kDbFile) {
+  void OriginLastModifiedBetween(const base::FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
     ASSERT_TRUE(db.LazyOpen(true));
 
     std::set<url::Origin> origins;
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins, base::Time()));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(kTemporary, &origins, base::Time(),
+                                             base::Time::Max()));
     EXPECT_TRUE(origins.empty());
 
     const url::Origin kOrigin1 = url::Origin::Create(GURL("http://a/"));
@@ -239,37 +240,58 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
         kOrigin3, kTemporary, QuotaDatabase::TimeFromSqlValue(20)));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins, base::Time()));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(kTemporary, &origins, base::Time(),
+                                             base::Time::Max()));
     EXPECT_EQ(3U, origins.size());
     EXPECT_EQ(1U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           QuotaDatabase::TimeFromSqlValue(5)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(kTemporary, &origins,
+                                             QuotaDatabase::TimeFromSqlValue(5),
+                                             base::Time::Max()));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(15)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(15),
+        base::Time::Max()));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(0U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(25)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(25),
+        base::Time::Max()));
     EXPECT_TRUE(origins.empty());
+
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(5),
+        QuotaDatabase::TimeFromSqlValue(15)));
+    EXPECT_EQ(1U, origins.size());
+    EXPECT_EQ(0U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(0U, origins.count(kOrigin3));
+
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kTemporary, &origins, QuotaDatabase::TimeFromSqlValue(0),
+        QuotaDatabase::TimeFromSqlValue(20)));
+    EXPECT_EQ(2U, origins.size());
+    EXPECT_EQ(1U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(0U, origins.count(kOrigin3));
 
     // Update origin1's mod time but for persistent storage.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
         kOrigin1, kPersistent, QuotaDatabase::TimeFromSqlValue(30)));
 
     // Must have no effects on temporary origins info.
-    EXPECT_TRUE(db.GetOriginsModifiedSince(kTemporary, &origins,
-                                           QuotaDatabase::TimeFromSqlValue(5)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(kTemporary, &origins,
+                                             QuotaDatabase::TimeFromSqlValue(5),
+                                             base::Time::Max()));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
@@ -279,15 +301,17 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
         kOrigin2, kPersistent, QuotaDatabase::TimeFromSqlValue(40)));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kPersistent, &origins, QuotaDatabase::TimeFromSqlValue(25)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kPersistent, &origins, QuotaDatabase::TimeFromSqlValue(25),
+        base::Time::Max()));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(1U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(0U, origins.count(kOrigin3));
 
-    EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kPersistent, &origins, QuotaDatabase::TimeFromSqlValue(35)));
+    EXPECT_TRUE(db.GetOriginsModifiedBetween(
+        kPersistent, &origins, QuotaDatabase::TimeFromSqlValue(35),
+        base::Time::Max()));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
@@ -614,12 +638,12 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   OriginLastAccessTimeLRU(base::FilePath());
 }
 
-TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
+TEST_F(QuotaDatabaseTest, OriginLastModifiedBetween) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
-  OriginLastModifiedSince(kDbFile);
-  OriginLastModifiedSince(base::FilePath());
+  OriginLastModifiedBetween(kDbFile);
+  OriginLastModifiedBetween(base::FilePath());
 }
 
 TEST_F(QuotaDatabaseTest, OriginLastEvicted) {

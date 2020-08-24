@@ -33,6 +33,21 @@
 // has been translated.
 - (void)revertTranslation;
 
+// Returns the response to a XHR request that was proxied to the browser from
+// javascript. See function __gCrWeb.translate.handleResponse.
+// |URL| The original URL that was requested.
+// |requestID| An ID for keeping track of inflight requests.
+// |responeCode| The HTTP response code.
+// |statusText| The status text associated with the response code, may be empty.
+// |responseURL| The final URL from which the response originates.
+// |responseText| The contents of the response.
+- (void)handleTranslateResponseWithURL:(NSString*)URL
+                             requestID:(int)requestID
+                          responseCode:(int)responseCode
+                            statusText:(NSString*)statusText
+                           responseURL:(NSString*)responseURL
+                          responseText:(NSString*)responseText;
+
 @end
 
 #endif  // COMPONENTS_TRANSLATE_IOS_BROWSER_JS_TRANSLATE_MANAGER_H_

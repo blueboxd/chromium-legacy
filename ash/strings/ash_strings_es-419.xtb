@@ -315,7 +315,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4350065043422286972">Fijada</translation>
 <translation id="4351433414020964307">El Asistente se está cargando…</translation>
 <translation id="4356930093361201197">modo de contraste alto</translation>
-<translation id="4368583494516669646">Buenas noches, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Configuración de transmisión</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4379531060876907730">Estas son las herramientas de la pluma stylus</translation>
@@ -370,7 +369,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="495046168593986294">Desplazar hacia arriba</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
-<translation id="4970352680959471247">Buenas noches, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
 <translation id="5035236842988137213">Se conectó el dispositivo <ph name="DEVICE_NAME" /> a un teléfono nuevo</translation>
 <translation id="5035389544768382859">Confirma la configuración de la pantalla</translation>
@@ -401,7 +399,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
 <translation id="54609108002486618">Gestionado</translation>
 <translation id="5465662442746197494">¿Necesitas ayuda?</translation>
-<translation id="5485091064403948243">Buenos días, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">El administrador está restableciendo tu dispositivo. Cuando se reinicie, se borrarán todos los datos.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Salir de la sesión</translation>
@@ -567,7 +564,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
-<translation id="7436182601308224670">Buenas tardes, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Toca el sensor</translation>
 <translation id="7497767806359279797">Elegir idioma y teclado</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>

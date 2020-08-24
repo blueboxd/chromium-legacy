@@ -11,6 +11,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
@@ -392,7 +394,7 @@ class AppInstallController
       public ui::ProgressWndEvents,
       public WTL::CMessageFilter {
  public:
-  explicit AppInstallController(scoped_refptr<Configurator> configurator);
+  AppInstallController();
 
   AppInstallController(const AppInstallController&) = delete;
   AppInstallController& operator=(const AppInstallController&) = delete;
@@ -432,7 +434,6 @@ class AppInstallController
   void DoInstallApp();
   void InstallComplete(UpdateService::Result result);
   void HandleInstallResult(const UpdateService::UpdateState& update_state);
-  void PrefsCommit();
 
   // Returns the thread id of the thread which owns the progress window.
   DWORD GetUIThreadID() const;
@@ -454,9 +455,7 @@ class AppInstallController
   std::string app_id_;
   const base::string16 app_name_;
 
-  // The |UpdateService| objects and dependencies.
-  scoped_refptr<Configurator> config_;
-  scoped_refptr<PersistedData> persisted_data_;
+  // The out-of-process service used for making RPC calls to install the app.
   scoped_refptr<UpdateService> update_service_;
 
   // The message loop associated with the UI.
@@ -475,17 +474,13 @@ class AppInstallController
 
 // TODO(sorin): fix the hardcoding of the application name.
 // https:crbug.com/1014298
-AppInstallController::AppInstallController(
-    scoped_refptr<Configurator> configurator)
+AppInstallController::AppInstallController()
     : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
-      app_name_(kAppNameChrome),
-      config_(configurator),
-      persisted_data_(
-          base::MakeRefCounted<PersistedData>(config_->GetPrefService())) {}
+      app_name_(kAppNameChrome) {}
 AppInstallController::~AppInstallController() = default;
 
 void AppInstallController::InstallApp(const std::string& app_id,
@@ -511,7 +506,7 @@ void AppInstallController::DoInstallApp() {
   ui_task_runner_->PostTask(FROM_HERE,
                             base::BindOnce(&AppInstallController::RunUI, this));
 
-  update_service_ = CreateUpdateService(config_);
+  update_service_ = CreateUpdateService();
 
   install_progress_observer_ipc_ =
       std::make_unique<InstallProgressObserverIPC>(progress_wnd_.get());
@@ -522,9 +517,11 @@ void AppInstallController::DoInstallApp() {
       base::BindOnce(&AppInstallController::InstallComplete, this));
 }
 
+// TODO(crbug.com/1116492) - handle the case when this callback is posted
+// and no other |StateChange| callbacks were received. Since UI is driven by
+// state changes only, then the UI is not going to close in this case.
 void AppInstallController::InstallComplete(UpdateService::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  PrefsCommit();
   update_service_ = nullptr;
 }
 
@@ -659,11 +656,6 @@ BOOL AppInstallController::PreTranslateMessage(MSG* msg) {
   return false;
 }
 
-void AppInstallController::PrefsCommit() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  config_->GetPrefService()->CommitPendingWrite();
-}
-
 DWORD AppInstallController::GetUIThreadID() const {
   DCHECK(progress_wnd_);
   return ::GetWindowThreadProcessId(progress_wnd_->m_hWnd, nullptr);
@@ -682,32 +674,51 @@ class AppInstall : public App {
 
   // Overrides for App.
   void Initialize() override;
-  void Uninitialize() override;
   void FirstTaskRun() override;
 
   void SetupDone(int result);
 
-  std::unique_ptr<LocalPrefs> local_prefs_;
-  scoped_refptr<Configurator> config_;
+  // Handles the --app-id command line argument, and triggers installing of the
+  // corresponding app-id if the argument is present.
+  void HandleAppId();
+
+  // Makes this version of the updater active, self-registers for updates, then
+  // runs the |done| closure.
+  void MakeActive(base::OnceClosure done);
+
+  // Bound to the main sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
+
   scoped_refptr<AppInstallController> app_install_controller_;
 
   // The splash screen has a fading effect. That means that the splash screen
   // needs to be alive for a while, until the fading effect is over.
   std::unique_ptr<ui::SplashScreen> splash_screen_;
+
+  // These prefs objects are used to make the updater active and register this
+  // version of the updater for self-updates.
+  //
+  // TODO(crbug.com/1109231) - this is a temporary workaround until a better
+  // fix is found.
+  std::unique_ptr<LocalPrefs> local_prefs_;
+  std::unique_ptr<GlobalPrefs> global_prefs_;
+
+  scoped_refptr<base::TaskRunner> make_active_task_runner_;
 };
 
 void AppInstall::Initialize() {
   base::i18n::InitializeICU();
-  local_prefs_ = CreateLocalPrefs();
-  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
-}
 
-void AppInstall::Uninitialize() {
-  PrefsCommitPendingWrites(local_prefs_->GetPrefService());
-  PrefsCommitPendingWrites(config_->GetPrefService());
+  // Creating |global_prefs_| requires acquiring a global lock, and this lock is
+  // typical owned by the RPC server. That means that if the server is
+  // running, the following code will block, and the install will not proceed
+  // until the server releases the lock.
+  global_prefs_ = CreateGlobalPrefs();
+  local_prefs_ = CreateLocalPrefs();
 }
 
 void AppInstall::FirstTaskRun() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   splash_screen_ = std::make_unique<ui::SplashScreen>(kAppNameChrome);
@@ -729,36 +740,51 @@ void AppInstall::FirstTaskRun() {
 // Updates the prefs if the setup is successful, then continue installing
 // the application if --appid is specified on the command line.
 void AppInstall::SetupDone(int result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (result != 0) {
     Shutdown(result);
     return;
   }
 
-  // TODO(crbug.com/1109231) - this is a temporary workaround until a better
-  // fix is found. For now, promote this updater instance and make it active
-  // when it is invoked with --install.
-  local_prefs_->SetQualified(true);
+  // Invoke |HandleAppId| to continue the execution flow.
+  MakeActive(base::BindOnce(&AppInstall::HandleAppId, this));
+}
 
-  base::MakeRefCounted<PersistedData>(config_->GetPrefService())
-      ->SetProductVersion(kUpdaterAppId, base::Version(UPDATER_VERSION_STRING));
+void AppInstall::HandleAppId() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto app_id =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kAppIdSwitch);
   if (app_id.empty()) {
-    Shutdown(result);
+    Shutdown(0);
     return;
   }
 
-  app_install_controller_ = base::MakeRefCounted<AppInstallController>(config_);
+  // This releases the prefs lock, and the RPC server can be started.
+  global_prefs_ = nullptr;
+  local_prefs_ = nullptr;
+
+  app_install_controller_ = base::MakeRefCounted<AppInstallController>();
   app_install_controller_->InstallApp(
       app_id, base::BindOnce(&AppInstall::Shutdown, this));
 }
 
+// TODO(crbug.com/1109231) - this is a temporary workaround.
+void AppInstall::MakeActive(base::OnceClosure done) {
+  local_prefs_->SetQualified(true);
+  local_prefs_->GetPrefService()->CommitPendingWrite(base::BindOnce(
+      [](base::OnceClosure done, PrefService* pref_service) {
+        DCHECK(pref_service);
+        auto persisted_data = base::MakeRefCounted<PersistedData>(pref_service);
+        persisted_data->SetProductVersion(
+            kUpdaterAppId, base::Version(UPDATER_VERSION_STRING));
+        pref_service->CommitPendingWrite(std::move(done));
+      },
+      std::move(done), global_prefs_->GetPrefService()));
+}
+
 scoped_refptr<App> MakeAppInstall() {
-  // TODO(sorin) "--install" must be run with "--single-process" until
-  // crbug.com/1053729 is resolved.
-  DCHECK(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch));
   return base::MakeRefCounted<AppInstall>();
 }
 

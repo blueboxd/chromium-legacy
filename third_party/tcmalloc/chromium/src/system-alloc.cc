@@ -109,7 +109,7 @@ static bool CheckAddressBits(uintptr_t ptr) {
 
 namespace {
 
-#if defined(OS_LINUX) && defined(__x86_64__)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
 #define ASLR_IS_SUPPORTED
 #endif
 

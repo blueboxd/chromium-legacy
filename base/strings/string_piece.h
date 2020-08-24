@@ -237,11 +237,16 @@ template <typename STRING_TYPE> class BasicStringPiece {
   }
 
   // This is the style of conversion preferred by std::string_view in C++17.
-  explicit operator STRING_TYPE() const { return as_string(); }
-
-  STRING_TYPE as_string() const {
-    // std::string doesn't like to take a NULL pointer even with a 0 size.
+  explicit operator STRING_TYPE() const {
     return empty() ? STRING_TYPE() : STRING_TYPE(data(), size());
+  }
+
+  // Deprecated, use operator STRING_TYPE() instead.
+  // TODO(crbug.com/1049498): Remove for all STRING_TYPEs.
+  template <typename StrT = STRING_TYPE,
+            typename = std::enable_if_t<std::is_same<StrT, std::string>::value>>
+  STRING_TYPE as_string() const {
+    return STRING_TYPE(*this);
   }
 
   const_iterator begin() const { return ptr_; }

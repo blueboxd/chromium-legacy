@@ -11,9 +11,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
+#include "chrome/updater/service_scope.h"
 #include "chrome/updater/update_service.h"
 
 namespace base {
+class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -32,7 +34,7 @@ namespace updater {
 // All public functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
-  UpdateServiceOutOfProcess();
+  explicit UpdateServiceOutOfProcess(ServiceScope service_scope);
 
   // Overrides for updater::UpdateService.
   void RegisterApp(
@@ -48,13 +50,19 @@ class UpdateServiceOutOfProcess : public UpdateService {
  private:
   ~UpdateServiceOutOfProcess() override;
 
-  // Runs on the |com_task_runner_|.
+  // These two functions runs on the |com_task_runner_|.
   void UpdateAllOnSTA(StateChangeCallback state_update, Callback callback);
+  void UpdateOnSTA(const std::string& app_id,
+                   StateChangeCallback state_update,
+                   Callback callback);
 
   static void ModuleStop();
 
   // Bound to the main sequence.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Bound to the main sequence.
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // Runs the tasks which involve outbound COM calls and inbound COM callbacks.
   // This task runner is thread-affine with the COM STA.

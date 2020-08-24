@@ -31,6 +31,7 @@
 
 namespace {
 const size_t kAvatarIconSize = 74;
+const size_t kProfileCreationAvatarSize = 100;
 }
 
 ProfilePickerHandler::ProfilePickerHandler() = default;
@@ -167,7 +168,7 @@ void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
   gfx::Image icon = profiles::GetPlaceholderAvatarIconWithColors(
       /*fill_color=*/theme_colors.frame_color,
       /*stroke_color=*/GetAvatarStrokeColor(theme_colors.frame_color),
-      kAvatarIconSize);
+      kProfileCreationAvatarSize);
   dict.SetStringKey("themeGenericAvatar",
                     webui::GetBitmapDataUrl(icon.AsBitmap()));
 

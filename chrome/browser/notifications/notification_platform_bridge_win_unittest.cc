@@ -122,14 +122,13 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   // NOTE: If you find yourself needing to change this value, make sure that
   // NotificationPlatformBridgeWinImpl::Close supports specifying the right
   // group value for RemoveGroupedTagWithId.
-  ASSERT_STREQ(L"Notifications", group.Get().as_string().c_str());
+  ASSERT_EQ(L"Notifications", group.Get());
 
   HSTRING hstring_tag;
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Tag(&hstring_tag));
   base::win::ScopedHString tag(hstring_tag);
   std::string tag_data = std::string(kNotificationId) + "|" + kProfileId + "|0";
-  ASSERT_STREQ(base::NumberToString16(base::Hash(tag_data)).c_str(),
-               tag.Get().as_string().c_str());
+  ASSERT_EQ(base::NumberToWString(base::Hash(tag_data)), tag.Get());
 }
 
 TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
@@ -166,7 +165,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
     ASSERT_HRESULT_SUCCEEDED(toastB->get_Tag(&hstring_tagB));
     base::win::ScopedHString tagB(hstring_tagB);
 
-    ASSERT_TRUE(tagA.Get().as_string() != tagB.Get().as_string());
+    ASSERT_NE(tagA.Get(), tagB.Get());
   }
 
   // Same profile, different incognito status -> Unique tags.
@@ -185,7 +184,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
     ASSERT_HRESULT_SUCCEEDED(toastB->get_Tag(&hstring_tagB));
     base::win::ScopedHString tagB(hstring_tagB);
 
-    ASSERT_TRUE(tagA.Get().as_string() != tagB.Get().as_string());
+    ASSERT_NE(tagA.Get(), tagB.Get());
   }
 
   // Same profile, same incognito status -> Identical tags.
@@ -204,8 +203,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
     ASSERT_HRESULT_SUCCEEDED(toastB->get_Tag(&hstring_tagB));
     base::win::ScopedHString tagB(hstring_tagB);
 
-    ASSERT_STREQ(tagA.Get().as_string().c_str(),
-                 tagB.Get().as_string().c_str());
+    ASSERT_EQ(tagA.Get(), tagB.Get());
   }
 }
 

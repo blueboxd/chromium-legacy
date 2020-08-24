@@ -2388,7 +2388,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         style_->GetWritingDirection() != new_style.GetWritingDirection() ||
         style_->InsideLink() != new_style.InsideLink() ||
         style_->VerticalAlign() != new_style.VerticalAlign() ||
-        style_->GetTextAlign() != new_style.GetTextAlign()) {
+        style_->GetTextAlign() != new_style.GetTextAlign() ||
+        style_->TextIndent() != new_style.TextIndent()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
         cache->StyleChanged(this);
     }

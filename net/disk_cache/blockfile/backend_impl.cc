@@ -1381,7 +1381,31 @@ bool BackendImpl::CreateBackingStore(disk_cache::File* file) {
   if (!file->Write(&header, sizeof(header), 0))
     return false;
 
-  return file->SetLength(GetIndexSize(header.table_len));
+  size_t size = GetIndexSize(header.table_len);
+  if (!file->SetLength(size))
+    return false;
+
+  // The call to SetLength() above is supposed to have already expanded the file
+  // to |size| and zero-filled it, but on some systems the actual storage may
+  // not get allocated until the pages are actually touched... resulting in a
+  // SIGBUS trying to search through the index if the system is out of disk
+  // space. So actually write out the zeroes (for pages after the one with the
+  // header), to force allocation now and fail cleanly if there is no space.
+  //
+  // See https://crbug.com/1097518
+  const int kPageSize = 4096;
+  static_assert(sizeof(disk_cache::IndexHeader) < kPageSize,
+                "Code below assumes it wouldn't overwrite header by starting "
+                "at kPageSize");
+  std::unique_ptr<char[]> page(new char[kPageSize]);
+  memset(page.get(), 0, kPageSize);
+
+  for (size_t offset = kPageSize; offset < size; offset += kPageSize) {
+    size_t end = std::min(offset + kPageSize, size);
+    if (!file->Write(page.get(), end - offset, offset))
+      return false;
+  }
+  return true;
 }
 
 bool BackendImpl::InitBackingStore(bool* file_created) {

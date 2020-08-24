@@ -9,8 +9,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "content/public/browser/web_contents.h"
@@ -44,6 +48,38 @@ MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   media_router_ui_service_->RemoveObserver(this);
 }
 
+bool MediaRouterDialogControllerViews::ShowMediaRouterDialogForPresentation(
+    std::unique_ptr<StartPresentationContext> context) {
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    // Show global media controls instead of the Cast dialog.
+    Profile* const profile =
+        Profile::FromBrowserContext(initiator()->GetBrowserContext());
+    MediaNotificationService* const service =
+        MediaNotificationServiceFactory::GetForProfile(profile);
+    Browser* const browser = chrome::FindBrowserWithWebContents(initiator());
+    BrowserView* const browser_view =
+        browser ? BrowserView::GetBrowserViewForBrowser(browser) : nullptr;
+    ToolbarView* const toolbar_view =
+        browser_view ? browser_view->toolbar() : nullptr;
+    MediaToolbarButtonView* const media_button =
+        toolbar_view ? toolbar_view->media_button() : nullptr;
+    // TODO(crbug/1111120): When |media_button| is null, we want to show the
+    // global media controls anchored to the top of the web contents. As it is
+    // now, it shows the dialog in the wrong place with a big blue border around
+    // it.  Fixing the position probably involves doing something similar to the
+    // computation of |anchor_bounds| in CreateMediaRouterDialog() below, but
+    // just doing the same thing here doesn't work.  I suspect that approach
+    // will work, though, once the issue causing the blue border is fixed.
+    scoped_widget_observer_.Add(
+        MediaDialogView::ShowDialog(media_button, service));
+    return true;
+  } else {
+    // Delegate to the base class, which will show the Cast dialog.
+    return MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
+        std::move(context));
+  }
+}
+
 void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
     MediaRouterDialogOpenOrigin activation_location) {
   base::Time dialog_creation_time = base::Time::Now();
@@ -52,10 +88,11 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
 
   Profile* profile =
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
-  InitializeMediaRouterUI();
 
+  InitializeMediaRouterUI();
   Browser* browser = chrome::FindBrowserWithWebContents(initiator());
   if (browser) {
+    // Show the Cast dialog anchored to the Cast toolbar button.
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     if (browser_view->toolbar()->cast_button()) {
       CastDialogView::ShowDialogWithToolbarAction(
@@ -65,6 +102,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
           ui_.get(), browser, dialog_creation_time, activation_location);
     }
   } else {
+    // Show the Cast dialog anchored to the top of the web contents.
     gfx::Rect anchor_bounds = initiator()->GetContainerBounds();
     // Set the height to 0 so that the dialog gets anchored to the top of the
     // window.
@@ -74,6 +112,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
                                        activation_location);
   }
   scoped_widget_observer_.Add(CastDialogView::GetCurrentDialogWidget());
+
   if (dialog_creation_callback_)
     dialog_creation_callback_.Run();
 }

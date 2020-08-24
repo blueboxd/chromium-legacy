@@ -73,6 +73,13 @@ typedef interface IAppWeb IAppWeb;
 #endif 	/* __IAppWeb_FWD_DEFINED__ */
 
 
+#ifndef __IUpdateState_FWD_DEFINED__
+#define __IUpdateState_FWD_DEFINED__
+typedef interface IUpdateState IUpdateState;
+
+#endif 	/* __IUpdateState_FWD_DEFINED__ */
+
+
 #ifndef __ICompleteStatus_FWD_DEFINED__
 #define __ICompleteStatus_FWD_DEFINED__
 typedef interface ICompleteStatus ICompleteStatus;
@@ -1114,6 +1121,166 @@ EXTERN_C const IID IID_IAppWeb;
 #endif 	/* __IAppWeb_INTERFACE_DEFINED__ */
 
 
+#ifndef __IUpdateState_INTERFACE_DEFINED__
+#define __IUpdateState_INTERFACE_DEFINED__
+
+/* interface IUpdateState */
+/* [unique][helpstring][uuid][dual][object] */ 
+
+
+EXTERN_C const IID IID_IUpdateState;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("46ACF70B-AC13-406D-B53B-B2C4BF091FF6")
+    IUpdateState : public IUnknown
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_state( 
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0000) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_appId( 
+            /* [retval][out] */ BSTR *__MIDL__IUpdateState0001) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_nextVersion( 
+            /* [retval][out] */ BSTR *__MIDL__IUpdateState0002) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_downloadedBytes( 
+            /* [retval][out] */ LONGLONG *__MIDL__IUpdateState0003) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_totalBytes( 
+            /* [retval][out] */ LONGLONG *__MIDL__IUpdateState0004) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_installProgress( 
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0005) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_errorCategory( 
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0006) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_errorCode( 
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0007) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_extraCode1( 
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0008) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IUpdateStateVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IUpdateState * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IUpdateState * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IUpdateState * This);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_state )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0000);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_appId )( 
+            IUpdateState * This,
+            /* [retval][out] */ BSTR *__MIDL__IUpdateState0001);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_nextVersion )( 
+            IUpdateState * This,
+            /* [retval][out] */ BSTR *__MIDL__IUpdateState0002);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_downloadedBytes )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONGLONG *__MIDL__IUpdateState0003);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_totalBytes )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONGLONG *__MIDL__IUpdateState0004);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_installProgress )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0005);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_errorCategory )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0006);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_errorCode )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0007);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_extraCode1 )( 
+            IUpdateState * This,
+            /* [retval][out] */ LONG *__MIDL__IUpdateState0008);
+        
+        END_INTERFACE
+    } IUpdateStateVtbl;
+
+    interface IUpdateState
+    {
+        CONST_VTBL struct IUpdateStateVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IUpdateState_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IUpdateState_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IUpdateState_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IUpdateState_get_state(This,__MIDL__IUpdateState0000)	\
+    ( (This)->lpVtbl -> get_state(This,__MIDL__IUpdateState0000) ) 
+
+#define IUpdateState_get_appId(This,__MIDL__IUpdateState0001)	\
+    ( (This)->lpVtbl -> get_appId(This,__MIDL__IUpdateState0001) ) 
+
+#define IUpdateState_get_nextVersion(This,__MIDL__IUpdateState0002)	\
+    ( (This)->lpVtbl -> get_nextVersion(This,__MIDL__IUpdateState0002) ) 
+
+#define IUpdateState_get_downloadedBytes(This,__MIDL__IUpdateState0003)	\
+    ( (This)->lpVtbl -> get_downloadedBytes(This,__MIDL__IUpdateState0003) ) 
+
+#define IUpdateState_get_totalBytes(This,__MIDL__IUpdateState0004)	\
+    ( (This)->lpVtbl -> get_totalBytes(This,__MIDL__IUpdateState0004) ) 
+
+#define IUpdateState_get_installProgress(This,__MIDL__IUpdateState0005)	\
+    ( (This)->lpVtbl -> get_installProgress(This,__MIDL__IUpdateState0005) ) 
+
+#define IUpdateState_get_errorCategory(This,__MIDL__IUpdateState0006)	\
+    ( (This)->lpVtbl -> get_errorCategory(This,__MIDL__IUpdateState0006) ) 
+
+#define IUpdateState_get_errorCode(This,__MIDL__IUpdateState0007)	\
+    ( (This)->lpVtbl -> get_errorCode(This,__MIDL__IUpdateState0007) ) 
+
+#define IUpdateState_get_extraCode1(This,__MIDL__IUpdateState0008)	\
+    ( (This)->lpVtbl -> get_extraCode1(This,__MIDL__IUpdateState0008) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IUpdateState_INTERFACE_DEFINED__ */
+
+
 #ifndef __ICompleteStatus_INTERFACE_DEFINED__
 #define __ICompleteStatus_INTERFACE_DEFINED__
 
@@ -1219,6 +1386,9 @@ EXTERN_C const IID IID_IUpdaterObserver;
     IUpdaterObserver : public IUnknown
     {
     public:
+        virtual HRESULT STDMETHODCALLTYPE OnStateChange( 
+            /* [in] */ IUpdateState *update_state) = 0;
+        
         virtual HRESULT STDMETHODCALLTYPE OnComplete( 
             /* [in] */ ICompleteStatus *status) = 0;
         
@@ -1242,6 +1412,10 @@ EXTERN_C const IID IID_IUpdaterObserver;
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IUpdaterObserver * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnStateChange )( 
+            IUpdaterObserver * This,
+            /* [in] */ IUpdateState *update_state);
         
         HRESULT ( STDMETHODCALLTYPE *OnComplete )( 
             IUpdaterObserver * This,
@@ -1269,6 +1443,9 @@ EXTERN_C const IID IID_IUpdaterObserver;
 #define IUpdaterObserver_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
+
+#define IUpdaterObserver_OnStateChange(This,update_state)	\
+    ( (This)->lpVtbl -> OnStateChange(This,update_state) ) 
 
 #define IUpdaterObserver_OnComplete(This,status)	\
     ( (This)->lpVtbl -> OnComplete(This,status) ) 

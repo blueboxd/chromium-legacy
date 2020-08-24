@@ -567,7 +567,7 @@ class SchedulerTest : public testing::Test {
   }
 
   void AdvanceAndMissOneFrame();
-  void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
+  void CheckMainFrameNotSkippedAfterLateCommit();
   void ImplFrameSkippedAfterLateAck(bool is_already_receiving_begin_frames,
                                     bool receive_ack_before_deadline);
   void ImplFrameNotSkippedAfterLateAck();
@@ -1462,8 +1462,7 @@ void SchedulerTest::AdvanceAndMissOneFrame() {
   client_->Reset();
 }
 
-void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
-    bool expect_send_begin_main_frame) {
+void SchedulerTest::CheckMainFrameNotSkippedAfterLateCommit() {
   AdvanceAndMissOneFrame();
 
   scheduler_->SetNeedsBeginMainFrame();
@@ -1471,11 +1470,9 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_EQ(expect_send_begin_main_frame,
-            scheduler_->MainThreadMissedLastDeadline());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_TRUE(client_->HasAction("WillBeginImplFrame"));
-  EXPECT_EQ(expect_send_begin_main_frame,
-            client_->HasAction("ScheduledActionSendBeginMainFrame"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
 }
 
 TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginFrame) {
@@ -1563,27 +1560,24 @@ TEST_F(SchedulerTest, FrameIntervalUpdated) {
   EXPECT_EQ(client_->frame_interval(), interval);
 }
 
-TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {
+TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
-  bool expect_send_begin_main_frame = false;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 // Response times of BeginMainFrame's without the critical path flag set
 // should not affect whether we recover latency or not.
-TEST_F(SchedulerTest,
-       MainFrameSkippedAfterLateCommit_LongMainFrameQueueDurationNotCritical) {
+TEST_F(
+    SchedulerTest,
+    MainFrameNotSkippedAfterLateCommit_LongMainFrameQueueDurationNotCritical) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
 
-  bool expect_send_begin_main_frame = false;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 // Response times of BeginMainFrame's with the critical path flag set
@@ -1597,9 +1591,7 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 TEST_F(SchedulerTest,
@@ -1610,9 +1602,7 @@ TEST_F(SchedulerTest,
       ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 TEST_F(SchedulerTest,
@@ -1622,9 +1612,7 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_
       ->SetBeginMainFrameStartToReadyToCommitDurationEstimate(kSlowDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 TEST_F(SchedulerTest,
@@ -1634,9 +1622,7 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       kSlowDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 TEST_F(SchedulerTest,
@@ -1645,9 +1631,7 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetActivateDurationEstimate(kSlowDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
@@ -1655,9 +1639,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kSlowDuration);
 
-  bool expect_send_begin_main_frame = true;
-  EXPECT_SCOPED(
-      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+  EXPECT_SCOPED(CheckMainFrameNotSkippedAfterLateCommit());
 }
 
 // If the BeginMainFrame aborts, it doesn't actually insert a frame into the
@@ -1854,6 +1836,8 @@ void SchedulerTest::ImplFrameSkippedAfterLateAck(
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateAck_FastEstimates_SubmitAckThenDeadline) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
@@ -1865,6 +1849,8 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateAck_FastEstimates_DeadlineThenSubmitAck) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
@@ -1876,6 +1862,8 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateAck_LongMainFrameQueueDurationNotCritical) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
@@ -1888,6 +1876,8 @@ TEST_F(SchedulerTest,
 }
 
 TEST_F(SchedulerTest, ImplFrameSkippedAfterLateAck_ImplLatencyTakesPriority) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
   SetUpScheduler(EXTERNAL_BFS);
 
   // Even if every estimate related to the main thread is slow, we should
@@ -1909,6 +1899,8 @@ TEST_F(SchedulerTest, ImplFrameSkippedAfterLateAck_ImplLatencyTakesPriority) {
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateAck_OnlyImplSideUpdatesExpected) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
   // This tests that we recover impl thread latency when there are no commits.
   SetUpScheduler(EXTERNAL_BFS);
 
@@ -2063,6 +2055,9 @@ TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateAck_DrawEstimateTooLong) {
 }
 
 TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
+  // Latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
+  scheduler_settings_.enable_main_latency_recovery = true;
   // Set up client with custom estimates.
   // This test starts off with expensive estimates to prevent latency recovery
   // initially, then lowers the estimates to enable it once both the main
@@ -3911,6 +3906,9 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
 }
 
 TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_impl_latency_recovery = true;
+
   SetUpScheduler(EXTERNAL_BFS);
 
   // To get into a high latency state, this test disables automatic swap acks.
@@ -4318,6 +4316,8 @@ TEST_F(SchedulerTest, SynchronousCompositorImplSideInvalidation) {
 TEST_F(SchedulerTest, DontSkipMainFrameAfterClearingHistory) {
   // Set up a fast estimate for the main frame and make it miss the deadline.
   scheduler_settings_.main_frame_before_activation_enabled = true;
+  // Compositor thread latency recovery should be enabled for this test.
+  scheduler_settings_.enable_main_latency_recovery = true;
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   client_->Reset();

@@ -54,6 +54,18 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
                      newRange.start.node, newRange.end.node) ||
         newRange.start.node;
 
+    // Some re-targeting is needed for cases like tables.
+    let retarget = this.node_;
+    while (retarget && retarget != retarget.root) {
+      // Table headers require retargeting for events because they often have
+      // event types we care about e.g. sort direction.
+      if (retarget.role == RoleType.COLUMN_HEADER ||
+          retarget.role == RoleType.ROW_HEADER) {
+        this.node_ = retarget;
+        break;
+      }
+      retarget = retarget.parent;
+    }
     this.addListener_(
         EventType.ARIA_ATTRIBUTE_CHANGED, this.onAriaAttributeChanged);
     this.addListener_(EventType.AUTOCORRECTION_OCCURED, this.onEventIfInRange);
@@ -128,6 +140,24 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
 
     // Don't report changes in static text nodes which can be extremely noisy.
     if (evt.target.role == RoleType.STATIC_TEXT) {
+      return;
+    }
+
+    // Report attribute changes for specific generated events.
+    if (evt.generatedType ==
+        chrome.automation.GeneratedEventType.SORT_CHANGED) {
+      let msgId;
+      if (evt.target.sortDirection ==
+          chrome.automation.SortDirectionType.ASCENDING) {
+        msgId = 'sort_ascending';
+      } else if (
+          evt.target.sortDirection ==
+          chrome.automation.SortDirectionType.DESCENDING) {
+        msgId = 'sort_descending';
+      }
+      if (msgId) {
+        new Output().withString(Msgs.getMsg(msgId)).go();
+      }
       return;
     }
 

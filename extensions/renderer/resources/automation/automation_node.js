@@ -558,7 +558,14 @@ var GetMarkers = natives.GetMarkers;
  * @param {boolean} isUpstream
  * @return {!Object}
  */
-var createAutomationPosition = natives.CreateAutomationPosition;
+var CreateAutomationPosition = natives.CreateAutomationPosition;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {string} The sort direction.
+ */
+var GetSortDirection = natives.GetSortDirection;
 
 var logging = requireNative('logging');
 var utils = require('utils');
@@ -660,6 +667,10 @@ AutomationNodeImpl.prototype = {
         'getTextLocation', {startIndex: startIndex, endIndex: endIndex},
         callback);
     return;
+  },
+
+  get sortDirection() {
+    return GetSortDirection(this.treeID, this.id);
   },
 
   get unclippedLocation() {
@@ -853,7 +864,7 @@ AutomationNodeImpl.prototype = {
   },
 
   createPosition: function(offset, opt_isUpstream) {
-    var nativePosition = createAutomationPosition(
+    var nativePosition = CreateAutomationPosition(
         this.treeID, this.id, offset, !!opt_isUpstream);
 
     // Attach a getter for the node, which is only available in js.
@@ -1068,7 +1079,8 @@ AutomationNodeImpl.prototype = {
              attributes: this.attributes };
   },
 
-  dispatchEvent: function(eventType, eventFrom, mouseX, mouseY, intents) {
+  dispatchEvent: function(
+      eventType, generatedEventType, eventFrom, mouseX, mouseY, intents) {
     var path = [];
     var parent = this.parent;
     while (parent) {
@@ -1076,6 +1088,7 @@ AutomationNodeImpl.prototype = {
       parent = parent.parent;
     }
     var event = new AutomationEvent(eventType, this.wrapper, eventFrom);
+    event.generatedType = generatedEventType;
     event.mouseX = mouseX;
     event.mouseY = mouseY;
     event.intents = intents;
@@ -1746,8 +1759,9 @@ AutomationRootNodeImpl.prototype = {
     if (targetNode) {
       var targetNodeImpl = privates(targetNode).impl;
       targetNodeImpl.dispatchEvent(
-          eventParams.eventType, eventParams.eventFrom,
-          eventParams.mouseX, eventParams.mouseY, eventParams.intents);
+          eventParams.eventType, eventParams.generatedEventType,
+          eventParams.eventFrom, eventParams.mouseX, eventParams.mouseY,
+          eventParams.intents);
 
       if (eventParams.actionRequestID != -1) {
         this.onActionResult(eventParams.actionRequestID, targetNode);
@@ -1890,6 +1904,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'restriction',
         'role',
         'root',
+        'sortDirection',
         'standardActions',
         'state',
         'tableCellAriaColumnIndex',

@@ -214,8 +214,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
                                    bool is_system_modal)
     : window_title_(title),
       type_(type),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(message))),
+      message_box_view_(new views::MessageBoxView(message)),
       is_system_modal_(is_system_modal) {
   SetButtons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
                  ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL

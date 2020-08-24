@@ -43,8 +43,8 @@ void SiteDataCounter::Count() {
       base::BindOnce(&SiteDataCounter::Done, weak_ptr_factory_.GetWeakPtr());
   // Use a helper class that owns itself to avoid issues when SiteDataCounter is
   // deleted before counting finished.
-  auto* helper =
-      new SiteDataCountingHelper(profile_, begin, std::move(done_callback));
+  auto* helper = new SiteDataCountingHelper(profile_, begin, GetPeriodEnd(),
+                                            std::move(done_callback));
   helper->CountAndDestroySelfWhenFinished();
 }
 

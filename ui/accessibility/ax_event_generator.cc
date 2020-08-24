@@ -424,6 +424,9 @@ void AXEventGenerator::OnFloatAttributeChanged(AXTree* tree,
     case ax::mojom::FloatAttribute::kFontWeight:
       AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
       break;
+    case ax::mojom::FloatAttribute::kTextIndent:
+      AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;

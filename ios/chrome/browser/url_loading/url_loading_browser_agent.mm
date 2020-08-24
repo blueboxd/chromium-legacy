@@ -33,8 +33,16 @@ namespace {
 
 // Rapidly starts leaking memory by 10MB blocks.
 void StartLeakingMemory() {
-  int* leak = new int[10 * 1024 * 1024];
-  ALLOW_UNUSED_LOCAL(leak);
+  static NSMutableArray* memory = nil;
+  if (!memory)
+    memory = [[NSMutableArray alloc] init];
+
+  // Store block of memory into NSArray to ensure that compiler does not throw
+  // away unused code.
+  NSUInteger leak_size = 10 * 1024 * 1024;
+  int* leak = new int[leak_size];
+  [memory addObject:[NSData dataWithBytes:leak length:leak_size]];
+
   base::ThreadPool::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
 }
 

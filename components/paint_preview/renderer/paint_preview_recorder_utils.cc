@@ -46,7 +46,7 @@ void ParseGlyphsAndLinks(const cc::PaintOpBuffer* buffer,
       }
       case cc::PaintOpType::CustomData: {
         auto* custom_op = static_cast<cc::CustomDataOp*>(*it);
-        custom_op->id = tracker->TransformContentForRemoteFrame(custom_op->id);
+        tracker->TransformClipForFrame(custom_op->id);
         break;
       }
       case cc::PaintOpType::Save: {
@@ -125,7 +125,7 @@ void BuildResponse(PaintPreviewTracker* tracker,
   PictureSerializationContext* picture_context =
       tracker->GetPictureSerializationContext();
   if (picture_context) {
-    for (const auto& id_pair : *picture_context) {
+    for (const auto& id_pair : picture_context->content_id_to_embedding_token) {
       response->content_id_to_embedding_token.insert(
           {id_pair.first, id_pair.second});
     }

@@ -12,6 +12,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 // clang-format off
 [['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.m.js'],
+ ['NetworkApnlist', 'network/network_apnlist_test.m.js'],
  ['NetworkConfigElementBehavior', 'network/network_config_element_behavior_test.m.js'],
  ['NetworkIpConfig', 'network/network_ip_config_test.m.js'],
  ['NetworkList', 'network/network_list_test.m.js'],
@@ -23,6 +24,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 
 [['BasePage', 'cellular_setup/base_page_test.m.js'],
  ['FinalPage', 'cellular_setup/final_page_test.m.js'],
+ ['ProvisioningPage', 'cellular_setup/provisioning_page_test.m.js'],
  ['SimDetectPage', 'cellular_setup/sim_detect_page_test.m.js'],
 ].forEach(test => registerTest('CellularSetup', ...test));
 // clang-format on
@@ -50,6 +52,7 @@ function registerTest(componentName, testName, module, caseName) {
       return {
         enabled: [
           'chromeos::features::kOsSettingsPolymer3',
+          'chromeos::features::kUpdatedCellularActivationUi',
         ],
       };
     }

@@ -12,7 +12,7 @@
 namespace chrome_cleaner {
 
 MessageBuilder::MessageItem::MessageItem(base::WStringPiece value)
-    : value_(value.as_string()) {}
+    : value_(value) {}
 
 MessageBuilder::MessageItem::MessageItem(base::StringPiece value)
     : value_(base::UTF8ToWide(value.as_string())) {}

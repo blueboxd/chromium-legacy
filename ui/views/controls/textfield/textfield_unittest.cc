@@ -845,98 +845,91 @@ TEST_F(TextfieldTest, ModelChangesTest) {
   EXPECT_STR_EQ("this is a test", textfield_->GetSelectedText());
   EXPECT_TRUE(last_contents_.empty());
 
-  textfield_->SetTextAndScrollAndSelectRange(ASCIIToUTF16("another test"), 3,
-                                             {}, {4, 5});
+  textfield_->SetTextWithoutCaretBoundsChangeNotification(
+      ASCIIToUTF16("another test"), 3);
   EXPECT_STR_EQ("another test", model_->text());
   EXPECT_STR_EQ("another test", textfield_->GetText());
-  EXPECT_STR_EQ("h", textfield_->GetSelectedText());
+  EXPECT_EQ(textfield_->GetCursorPosition(), 3u);
   EXPECT_TRUE(last_contents_.empty());
 }
 
-TEST_F(TextfieldTest, SetTextAndScrollAndSelectRange_Scrolling) {
+TEST_F(TextfieldTest, Scroll) {
   InitTextfield();
 
   // Size the textfield wide enough to hold 10 characters.
   gfx::test::RenderTextTestApi render_text_test_api(test_api_->GetRenderText());
-  render_text_test_api.SetGlyphWidth(10);
-  // 10px/char * 10chars + 1px for cursor width
-  test_api_->GetRenderText()->SetDisplayRect(gfx::Rect(0, 0, 101, 20));
-
-  // Should scroll cursor into view.
+  constexpr int kGlyphWidth = 10;
+  render_text_test_api.SetGlyphWidth(kGlyphWidth);
+  constexpr int kCursorWidth = 1;
+  test_api_->GetRenderText()->SetDisplayRect(
+      gfx::Rect(0, 0, kGlyphWidth * 10 + kCursorWidth, 20));
+  textfield_->SetTextWithoutCaretBoundsChangeNotification(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0);
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {0, 20});
-  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(0, 20));
 
-  // Cursor position should not affect scroll.
-  test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 30, {}, {20, 20});
+  // Empty Scroll() call should have no effect.
+  textfield_->Scroll({});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), 0);
+
+  // Selected range should scroll cursor into view.
+  textfield_->SetSelectedRange({0, 20});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
+
+  // Selected range should override new cursor position.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextWithoutCaretBoundsChangeNotification(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 30);
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
 
   // Scroll positions should affect scroll.
+  textfield_->SetSelectedRange(gfx::Range());
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30}, {20, 20});
+  textfield_->Scroll({30});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -200);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
 
-  // Should scroll no more than necessary; e.g., scrolling right should put the
-  // cursor at the right edge.
+  // Should scroll right no more than necessary.
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  textfield_->Scroll({15});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -50);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
 
-  // Should scroll no more than necessary; e.g., scrolling left should put the
-  // cursor at the left edge.
+  // Should scroll left no more than necessary.
   test_api_->SetDisplayOffsetX(-200);  // Scroll all the way right.
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  textfield_->Scroll({15});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -150);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
 
-  // Should scroll no more than necessary; e.g., scrolling to a position already
-  // in view should not change the offset.
+  // Should not scroll if position is already in view.
   test_api_->SetDisplayOffsetX(-100);  // Scroll the middle 10 chars into view.
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  textfield_->Scroll({15});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
 
-  // With multiple scroll positions, the Last scroll position should be scrolled
-  // to after previous scroll positions.
+  // With multiple scroll positions, the Last scroll position takes priority.
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30, 0}, {20, 20});
+  textfield_->Scroll({30, 0});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), 0);
+  textfield_->Scroll({30, 0, 20});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
 
   // With multiple scroll positions, the previous scroll positions should be
   // scrolled to anyways.
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30, 20}, {20, 20});
+  textfield_->Scroll({30, 20});
   EXPECT_EQ(test_api_->GetDisplayOffsetX(), -200);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
 
-  // With a non empty selection, only the selection end should affect scrolling.
+  // Only the selection end should affect scrolling.
   test_api_->SetDisplayOffsetX(0);
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {0}, {30, 0});
-  EXPECT_EQ(test_api_->GetDisplayOffsetX(), 0);
-  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(30, 0));
+  textfield_->Scroll({20});
+  textfield_->SetSelectedRange({30, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
 }
 
-TEST_F(TextfieldTest, SetTextAndScrollAndSelectRange_ModelEditHistory) {
+TEST_F(TextfieldTest,
+       SetTextWithoutCaretBoundsChangeNotification_ModelEditHistory) {
   InitTextfield();
 
-  // The cursor and selected range should reflect the |range| parameter.
-  textfield_->SetTextAndScrollAndSelectRange(
-      ASCIIToUTF16("0123456789_123456789_123456789"), 20, {}, {10, 15});
+  // The cursor and selected range should reflect the selected range.
+  textfield_->SetTextWithoutCaretBoundsChangeNotification(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 20);
+  textfield_->SetSelectedRange({10, 15});
   EXPECT_EQ(textfield_->GetCursorPosition(), 15u);
   EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(10, 15));
 
@@ -1292,7 +1285,7 @@ TEST_F(TextfieldTest, ModifySelectionWithMultipleSelections) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("0123456 89"));
   textfield_->SetSelectedRange(gfx::Range(3, 5));
-  textfield_->SetSelectedRange(gfx::Range(8, 9), false);
+  textfield_->AddSecondarySelectedRange(gfx::Range(8, 9));
 
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION);
@@ -1411,8 +1404,8 @@ TEST_F(TextfieldTest, DeletionWithMultipleSelections) {
     textfield_->SetText(ASCIIToUTF16("one two three"));
     // Select: o[ne] [two] th[re]e
     textfield_->SetSelectedRange(gfx::Range(4, 7));
-    textfield_->SetSelectedRange(gfx::Range(10, 12), false);
-    textfield_->SetSelectedRange(gfx::Range(1, 3), false);
+    textfield_->AddSecondarySelectedRange(gfx::Range(10, 12));
+    textfield_->AddSecondarySelectedRange(gfx::Range(1, 3));
     SendWordEvent(cases[i].key, cases[i].shift);
     EXPECT_STR_EQ("o  the", textfield_->GetText());
     EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
@@ -1709,14 +1702,14 @@ TEST_F(TextfieldTest, CursorMovementWithMultipleSelections) {
   textfield_->SetText(ASCIIToUTF16("012 456 890 234 678"));
   //                                    [p]     [s]
   textfield_->SetSelectedRange({4, 7});
-  textfield_->SetSelectedRange({12, 15}, false);
+  textfield_->AddSecondarySelectedRange({12, 15});
 
   test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_LEFT);
   EXPECT_EQ(gfx::Range(4, 4), textfield_->GetSelectedRange());
   EXPECT_EQ(0U, textfield_->GetSelectionModel().secondary_selections().size());
 
   textfield_->SetSelectedRange({4, 7});
-  textfield_->SetSelectedRange({12, 15}, false);
+  textfield_->AddSecondarySelectedRange({12, 15});
 
   test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_RIGHT);
   EXPECT_EQ(gfx::Range(7, 7), textfield_->GetSelectedRange());
@@ -1730,13 +1723,13 @@ TEST_F(TextfieldTest, ShouldShowCursor) {
   // should show cursor when there's no primary selection
   textfield_->SetSelectedRange({4, 4});
   EXPECT_TRUE(test_api_->ShouldShowCursor());
-  textfield_->SetSelectedRange({1, 3}, false);
+  textfield_->AddSecondarySelectedRange({1, 3});
   EXPECT_TRUE(test_api_->ShouldShowCursor());
 
   // should not show cursor when there's a primary selection
   textfield_->SetSelectedRange({4, 7});
   EXPECT_FALSE(test_api_->ShouldShowCursor());
-  textfield_->SetSelectedRange({1, 3}, false);
+  textfield_->AddSecondarySelectedRange({1, 3});
   EXPECT_FALSE(test_api_->ShouldShowCursor());
 }
 

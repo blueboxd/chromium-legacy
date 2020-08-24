@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
@@ -73,6 +74,10 @@ void AddStrings(content::WebUIDataSource* html_source) {
        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_NOT_NOW_BUTTON_LABEL},
       {"localProfileCreationTitle",
        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_TITLE},
+      {"createProfileNamePlaceholder",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_INPUT_NAME},
+      {"createDesktopShortcutLabel",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_SHORTCUT_TEXT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   html_source->AddBoolean("askOnStartup",
@@ -91,6 +96,8 @@ void AddStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isGuestModeEnabled", IsGuestModeEnabled());
   html_source->AddBoolean("isProfileCreationAllowed",
                           IsProfileCreationAllowed());
+  html_source->AddBoolean("profileShortcutsEnabled",
+                          ProfileShortcutManager::IsFeatureEnabled());
   // TODO(crbug.com/1063856): Check if |BrowserSignin| device policy exists.
 }
 

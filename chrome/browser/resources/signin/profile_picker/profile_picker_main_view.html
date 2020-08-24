@@ -1,10 +1,8 @@
 <style include="profile-picker-shared">
   :host {
     --avatar-icon-size: 74px;
-    --banner-img-height: 628px;
-    --banner-img-width: 250px;
-    min-height: var(--view-min-size);
-    min-width: var(--view-min-size);
+    --banner-img-height: 400px;
+    --banner-img-width: 169px;
   }
 
   .banner {
@@ -28,12 +26,14 @@
 
   .title-container {
     margin: 30px auto 0 auto;
+    padding-inline-end: calc(var(--banner-img-width) - 10px);
+    padding-inline-start: calc(var(--banner-img-width) - 10px);
     text-align: center;
   }
 
   #wrapper {
     display: flex;
-    height: calc(max(100vh, var(--main-view-min-height)) - 260px);
+    height: calc(max(100vh, var(--view-min-size)) - 290px);
     margin-inline-end: 140px;
     margin-inline-start: 140px;
   }

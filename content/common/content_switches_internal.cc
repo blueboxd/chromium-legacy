@@ -144,7 +144,7 @@ std::vector<std::string> FeaturesFromSwitch(
     arg.remove_prefix(prefix.size());
     if (!IsStringASCII(arg))
       continue;
-    auto vals = SplitString(FromNativeString(arg.as_string()), ",",
+    auto vals = SplitString(FromNativeString(NativeString(arg)), ",",
                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     features.insert(features.end(), vals.begin(), vals.end());
   }

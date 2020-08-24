@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/common/content_features.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -149,7 +150,7 @@ const base::Feature kClickPointerEvent{"ClickPointerEvent",
 
 // When enabled, code cache does not use a browsing_data filter for deletions.
 extern const base::Feature kCodeCacheDeletionWithoutFilter{
-    "CodeCacheDeletionWithoutFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CodeCacheDeletionWithoutFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, event.movement is calculated in blink instead of in browser.
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",

@@ -14,7 +14,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="109942774857561566">Jeg keder mig</translation>
 <translation id="1104084341931202936">Vis indstillinger for hjælpefunktioner</translation>
 <translation id="1104621072296271835">Dine enheder fungerer endnu bedre sammen</translation>
-<translation id="1119348796022671382">Tilstanden med temafarve anvender farver fra din baggrund til at give grænsefladen en svag farve.</translation>
+<translation id="1119348796022671382">Tilstanden med temafarver anvender farver fra din baggrund til at give grænsefladen en svag farve.</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
 <translation id="1175572348579024023">Rul</translation>
@@ -67,7 +67,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1632985212731562677">Kontaktadgang kan deaktiveres under Indstillinger &gt; Hjælpefunktioner.</translation>
 <translation id="1654477262762802994">Start en stemmeforespørgsel</translation>
 <translation id="1665244008632896072">Slå mørk tilstand til/fra. <ph name="STATE_TEXT" /></translation>
-<translation id="1667964833127753507">Tilstanden med neutral farve anvender ikke farver fra baggrunden, men erstatter dem med et sæt lyse og mørke nuancer i neutrale farver.</translation>
+<translation id="1667964833127753507">Tilstanden med neutrale farver anvender ikke farver fra baggrunden, men erstatter dem med et sæt lyse og mørke nuancer i neutrale farver.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1698080062160024910">Timer på <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
@@ -314,7 +314,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4350065043422286972">Fastgjort</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
 <translation id="4356930093361201197">tilstanden Høj kontrast</translation>
-<translation id="4368583494516669646">Hej <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Cast-indstillinger</translation>
 <translation id="4378551569595875038">Tilslutter...</translation>
 <translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
@@ -369,7 +368,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="495046168593986294">Rul op</translation>
 <translation id="4961318399572185831">Cast skærm</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> t., <ph name="MINUTES" /> min. og <ph name="SECONDS" /> sek.</translation>
-<translation id="4970352680959471247">Godaften, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Tiden er gået</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har oprettet forbindelse til en ny telefon</translation>
 <translation id="5035389544768382859">Bekræft skærmkonfiguration</translation>
@@ -389,7 +387,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="5297704307811127955">Fra</translation>
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
-<translation id="5314219114274263156">Skærmoptagelse blev foretaget</translation>
+<translation id="5314219114274263156">Skærmen blev optaget</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøg</translation>
 <translation id="5397578532367286026">Denne brugers forbrug og historik kan ses af administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
@@ -400,7 +398,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="54609108002486618">Administreret</translation>
 <translation id="5465662442746197494">Har du brug for hjælp?</translation>
-<translation id="5485091064403948243">Godmorgen, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Din administrator gendanner en tidligere version på din enhed. Alle data slettes, når enheden genstartes.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Afslutter session</translation>
@@ -567,7 +564,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="741244894080940828">konvertering</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
-<translation id="7436182601308224670">Goddag, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Placer fingeren på sensoren</translation>
 <translation id="7497767806359279797">Vælg sprog og tastatur</translation>
 <translation id="7526573455193969409">Netværket kan være overvåget</translation>

@@ -9,6 +9,7 @@ import functools
 import math
 import multiprocessing
 import pathlib
+import os
 import subprocess
 import sys
 
@@ -188,6 +189,9 @@ def main():
                             default='gn',
                             help='Path to the gn executable.')
     arguments = arg_parser.parse_args()
+
+    # gn must be run from inside the git checkout.
+    os.chdir(SRC_PATH)
 
     print('Getting list of dependency jars...')
     gn_desc_output = _run_gn_desc_list_dependencies(arguments.build_output_dir,

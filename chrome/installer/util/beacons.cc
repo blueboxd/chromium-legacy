@@ -115,7 +115,7 @@ void Beacon::Initialize(base::StringPiece16 name) {
   if (scope_ == BeaconScope::PER_INSTALL ||
       !install_static::IsSystemInstall()) {
     key_path_ = install_details.GetClientStateKeyPath();
-    value_name_ = name.as_string();
+    value_name_.assign(name.data(), name.size());
   } else {
     key_path_ = install_details.GetClientStateMediumKeyPath();
     key_path_.push_back(L'\\');

@@ -20,6 +20,7 @@ import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.devui.util.UnuploadedFilesStateLoader;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
+import org.chromium.base.test.util.Batch;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
 import java.io.File;
@@ -30,7 +31,8 @@ import java.util.List;
  * Unit tests for UnuploadedFilesStateLoader.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@OnlyRunIn(SINGLE_PROCESS)
+@OnlyRunIn(SINGLE_PROCESS) // These are unit tests
+@Batch(Batch.UNIT_TESTS)
 public class UnuploadedFilesStateLoaderTest {
     private static final String LOCAL_ID = "localId1234";
     private static final String TEST_FILE_NAME = "test_file-" + LOCAL_ID;

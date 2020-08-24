@@ -2990,5 +2990,11 @@
   <message desc="Describes the media play/pause key on a Chromebook. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_MEDIA_PLAY_PAUSE" is_accessibility_with_no_ui="true">
     Media Play/Pause
   </message>
+  <message desc="Describes a table header sorted in ascending order. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_SORT_ASCENDING" is_accessibility_with_no_ui="true">
+    Ascending sort
+  </message>
+  <message desc="Describes a table header sorted in descending order. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_SORT_DESCENDING" is_accessibility_with_no_ui="true">
+    Descending sort
+  </message>
 
 </grit-part>

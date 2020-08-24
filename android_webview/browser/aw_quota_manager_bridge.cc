@@ -88,9 +88,10 @@ void GetOriginsTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
+      base::BindOnce(&QuotaManager::GetOriginsModifiedBetween, quota_manager_,
                      blink::mojom::StorageType::kTemporary,
                      base::Time() /* Since beginning of time. */,
+                     base::Time::Max() /* Until the end of times */,
                      base::BindOnce(&GetOriginsTask::OnOriginsObtained, this)));
 }
 

@@ -68,8 +68,9 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver {
   void OnClipboardDataChanged() override;
 
  private:
-  // Adds |data| to the |history_list_|.
-  void CommitData(ui::ClipboardData data);
+  // Adds `data` to the `history_list_` if it's supported. If `data` is not
+  // supported by clipboard history, this method no-ops.
+  void MaybeCommitData(ui::ClipboardData data);
 
   void Pause();
   void Resume();

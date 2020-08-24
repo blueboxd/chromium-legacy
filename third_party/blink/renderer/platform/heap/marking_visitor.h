@@ -258,10 +258,15 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
     return true;
   }
 
+  size_t RecentlyMarkedBytes() {
+    return marked_bytes_ - std::exchange(last_marked_bytes_, marked_bytes_);
+  }
+
  private:
   NotSafeToConcurrentlyTraceWorklist::View
       not_safe_to_concurrently_trace_worklist_;
   NotFullyConstructedWorklist::View previously_not_fully_constructed_worklist_;
+  size_t last_marked_bytes_ = 0;
 };
 
 }  // namespace blink

@@ -52,9 +52,13 @@ base::TimeDelta GetGpuWatchdogTimeoutBasedOnCpuCores() {
 
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(
     base::TimeDelta timeout,
+    int init_factor,
+    int restart_factor,
     int max_extra_cycles_before_kill,
     bool is_test_mode)
     : watchdog_timeout_(timeout),
+      watchdog_init_factor_(init_factor),
+      watchdog_restart_factor_(restart_factor),
       in_gpu_initialization_(true),
       max_extra_cycles_before_kill_(max_extra_cycles_before_kill),
       is_test_mode_(is_test_mode),
@@ -111,10 +115,13 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded,
     base::TimeDelta timeout,
+    int init_factor,
+    int restart_factor,
     int max_extra_cycles_before_kill,
     bool is_test_mode) {
-  auto watchdog_thread = base::WrapUnique(new GpuWatchdogThreadImplV2(
-      timeout, max_extra_cycles_before_kill, is_test_mode));
+  auto watchdog_thread = base::WrapUnique(
+      new GpuWatchdogThreadImplV2(timeout, init_factor, restart_factor,
+                                  max_extra_cycles_before_kill, is_test_mode));
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   watchdog_thread->StartWithOptions(options);
@@ -127,6 +134,8 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded) {
   base::TimeDelta gpu_watchdog_timeout = kGpuWatchdogTimeout;
+  int init_factor = kInitFactor;
+  int restart_factor = kRestartFactor;
   int max_extra_cycles_before_kill = kMaxExtraCyclesBeforeKill;
 
   if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2NewTimeout)) {
@@ -140,6 +149,10 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     // timeout length.
     gpu_watchdog_timeout = GetGpuWatchdogTimeoutBasedOnCpuCores();
     constexpr int kFinchMaxExtraCyclesBeforeKill = 0;
+#elif defined(OS_ANDROID)
+    constexpr int kFinchMaxExtraCyclesBeforeKill = 0;
+    init_factor = kInitFactorFinch;
+    restart_factor = kRestartFactorFinch;
 #elif defined(OS_MAC)
     constexpr int kFinchMaxExtraCyclesBeforeKill = 1;
 #else
@@ -156,8 +169,8 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
         kFinchMaxExtraCyclesBeforeKill);
   }
 
-  return Create(start_backgrounded, gpu_watchdog_timeout,
-                max_extra_cycles_before_kill, false);
+  return Create(start_backgrounded, gpu_watchdog_timeout, init_factor,
+                restart_factor, max_extra_cycles_before_kill, false);
 }
 
 // Do not add power observer during watchdog init, PowerMonitor might not be up
@@ -328,7 +341,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
       if (!is_backgrounded_)
         return;
       is_backgrounded_ = false;
-      timeout = watchdog_timeout_ * kRestartFactor;
+      timeout = watchdog_timeout_ * watchdog_restart_factor_;
       foregrounded_timeticks_ = base::TimeTicks::Now();
       foregrounded_event_ = true;
       num_of_timeout_after_foregrounded_ = 0;
@@ -337,7 +350,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
       if (!in_power_suspension_)
         return;
       in_power_suspension_ = false;
-      timeout = watchdog_timeout_ * kRestartFactor;
+      timeout = watchdog_timeout_ * watchdog_restart_factor_;
       power_resume_timeticks_ = base::TimeTicks::Now();
       power_resumed_event_ = true;
       num_of_timeout_after_power_resume_ = 0;
@@ -346,7 +359,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
       if (!is_paused_)
         return;
       is_paused_ = false;
-      timeout = watchdog_timeout_ * kInitFactor;
+      timeout = watchdog_timeout_ * watchdog_init_factor_;
       watchdog_resume_timeticks_ = base::TimeTicks::Now();
       break;
   }

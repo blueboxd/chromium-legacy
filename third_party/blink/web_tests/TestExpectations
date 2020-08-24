@@ -3069,8 +3069,6 @@ crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Pass ]
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onnegotiationneeded.https.html [ Pass ]
 
-crbug.com/1110833 external/wpt/webrtc/RTCPeerConnection-explicit-rollback-iceGatheringState.html [ Timeout ]
-
 # Tests that start hanging after implementing RTCRtpTransceiver.stop
 crbug.com/1115087 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 
@@ -6458,6 +6456,7 @@ crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.work
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
+crbug.com/1011811 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
 
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Pass Failure ]

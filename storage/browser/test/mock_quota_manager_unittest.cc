@@ -51,9 +51,9 @@ class MockQuotaManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetModifiedOrigins(StorageType type, base::Time since) {
-    manager_->GetOriginsModifiedSince(
-        type, since,
+  void GetModifiedOrigins(StorageType type, base::Time begin, base::Time end) {
+    manager_->GetOriginsModifiedBetween(
+        type, begin, end,
         base::BindOnce(&MockQuotaManagerTest::GotModifiedOrigins,
                        weak_factory_.GetWeakPtr()));
   }
@@ -194,13 +194,13 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   base::TimeDelta an_hour = base::TimeDelta::FromMilliseconds(3600000);
   base::TimeDelta a_minute = base::TimeDelta::FromMilliseconds(60000);
 
-  GetModifiedOrigins(kTemporary, then);
+  GetModifiedOrigins(kTemporary, then, base::Time::Max());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(origins().empty());
 
   manager()->AddOrigin(kOrigin1, kTemporary, {kClientFile}, now - an_hour);
 
-  GetModifiedOrigins(kTemporary, then);
+  GetModifiedOrigins(kTemporary, then, base::Time::Max());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());
@@ -210,7 +210,7 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
 
   manager()->AddOrigin(kOrigin2, kTemporary, {kClientFile}, now);
 
-  GetModifiedOrigins(kTemporary, then);
+  GetModifiedOrigins(kTemporary, then, base::Time::Max());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());
@@ -218,7 +218,15 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   EXPECT_EQ(1UL, origins().count(kOrigin1));
   EXPECT_EQ(1UL, origins().count(kOrigin2));
 
-  GetModifiedOrigins(kTemporary, now - a_minute);
+  GetModifiedOrigins(kTemporary, then, now);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTemporary, type());
+  EXPECT_EQ(1UL, origins().size());
+  EXPECT_EQ(1UL, origins().count(kOrigin1));
+  EXPECT_EQ(0UL, origins().count(kOrigin2));
+
+  GetModifiedOrigins(kTemporary, now - a_minute, now + a_minute);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());

@@ -314,7 +314,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="4350065043422286972">Festet</translation>
 <translation id="4351433414020964307">Assistenten lastes inn …</translation>
 <translation id="4356930093361201197">høykontrastmodus</translation>
-<translation id="4368583494516669646">God natt, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Cast-innstillinger</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
@@ -369,7 +368,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="495046168593986294">Rull opp</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> t <ph name="MINUTES" /> m <ph name="SECONDS" /> s</translation>
-<translation id="4970352680959471247">God kveld, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
 <translation id="5035389544768382859">Bekreft skjermkonfigurasjon</translation>
@@ -400,7 +398,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
 <translation id="54609108002486618">Administrert</translation>
 <translation id="5465662442746197494">Trenger du hjelp?</translation>
-<translation id="5485091064403948243">God morgen, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Administratoren din tilbakestiller enheten din til forrige versjon. Alle data blir slettet når enheten starter på nytt.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Avslutning av økten</translation>
@@ -566,7 +563,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="741244894080940828">omregning</translation>
 <translation id="742594950370306541">Kameraet er i bruk.</translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
-<translation id="7436182601308224670">God ettermiddag, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Trykk på sensoren</translation>
 <translation id="7497767806359279797">Velg språk og tastatur</translation>
 <translation id="7526573455193969409">Nettverket kan være overvåket</translation>

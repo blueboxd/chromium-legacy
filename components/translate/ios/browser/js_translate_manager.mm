@@ -56,6 +56,22 @@
                  completionHandler:nil];
 }
 
+- (void)handleTranslateResponseWithURL:(NSString*)URL
+                             requestID:(int)requestID
+                          responseCode:(int)responseCode
+                            statusText:(NSString*)statusText
+                           responseURL:(NSString*)responseURL
+                          responseText:(NSString*)responseText {
+  DCHECK([self hasBeenInjected]);
+
+  // Return the response details to function defined in translate_ios.js.
+  NSString* script = [NSString
+      stringWithFormat:
+          @"__gCrWeb.translate.handleResponse('%@', %d, %d, '%@', '%@', '%@')",
+          URL, requestID, responseCode, statusText, responseURL, responseText];
+  [self.receiver executeJavaScript:script completionHandler:nil];
+}
+
 #pragma mark -
 #pragma mark CRWJSInjectionManager methods
 

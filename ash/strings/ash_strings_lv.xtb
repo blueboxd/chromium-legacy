@@ -314,7 +314,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="4350065043422286972">Piespraustie</translation>
 <translation id="4351433414020964307">Notiek Asistenta ielāde...</translation>
 <translation id="4356930093361201197">augsta kontrasta režīms</translation>
-<translation id="4368583494516669646">Arlabunakti, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Apraides iestatījumi</translation>
 <translation id="4378551569595875038">Pievienojas...</translation>
 <translation id="4379531060876907730">Šie ir jūsu skārienekrāna pildspalvas rīki</translation>
@@ -369,7 +368,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="495046168593986294">Ritināt uz augšu</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
-<translation id="4970352680959471247">Labvakar, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Izmantošanas laiks beidzies</translation>
 <translation id="5035236842988137213">Ierīce <ph name="DEVICE_NAME" /> ir savienota ar jaunu tālruni</translation>
 <translation id="5035389544768382859">Displeja konfigurācijas apstiprināšana</translation>
@@ -400,7 +398,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="544691375626129091">Visi pieejamie lietotāji jau ir pievienoti šai sesijai.</translation>
 <translation id="54609108002486618">Pārvaldītais</translation>
 <translation id="5465662442746197494">Vai nepieciešama palīdzība?</translation>
-<translation id="5485091064403948243">Labrīt, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Administrators jūsu ierīcē veic atriti. Kad ierīce tiks restartēta, visi dati tiks dzēsti.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Iziešana no sesijas</translation>
@@ -566,7 +563,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="741244894080940828">izteikšana citās mērvienībās</translation>
 <translation id="742594950370306541">Kamera tiek lietota.</translation>
 <translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
-<translation id="7436182601308224670">Labdien, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Lūdzu, pieskarieties sensoram.</translation>
 <translation id="7497767806359279797">Izvēlēties valodu un tastatūru</translation>
 <translation id="7526573455193969409">Var tikt pārraudzītas tīklā veiktās darbības</translation>

@@ -4,6 +4,11 @@
     font-size: 100%;
     margin: 0;
   }
+
+  cr-view-manager > [slot='view'] {
+    min-height: var(--view-min-size);
+    min-width: var(--view-min-size);
+  }
 </style>
 <cr-view-manager id="viewManager">
   <profile-picker-main-view id="mainView" slot="view">

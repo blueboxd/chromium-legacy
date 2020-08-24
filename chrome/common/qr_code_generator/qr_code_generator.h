@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/containers/span.h"
 #include "base/optional.h"
 
@@ -112,8 +114,8 @@ class QRCodeGenerator {
   // |in| should have length block_data_bytes for the code's version.
   // |block_bytes| and |block_ec_bytes| must be provided for the current
   // version/level/group.
-  void AddErrorCorrection(uint8_t out[],
-                          const uint8_t in[],
+  void AddErrorCorrection(base::span<uint8_t> out,
+                          base::span<const uint8_t> in,
                           size_t block_bytes,
                           size_t block_ec_bytes);
 
@@ -127,7 +129,7 @@ class QRCodeGenerator {
   // is part of the structure of the QR code, i.e. finder or alignment symbols,
   // timing patterns, or format data.
   // Initialized and possibly reinitialized in Generate().
-  std::unique_ptr<uint8_t[]> d_;
+  std::vector<uint8_t> d_;
 
   // clip_dump_ is the target of paints that would otherwise fall outside of the
   // QR code.

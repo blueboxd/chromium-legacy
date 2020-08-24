@@ -68,7 +68,8 @@ class UpdaterObserver
   UpdaterObserver(const UpdaterObserver&) = delete;
   UpdaterObserver& operator=(const UpdaterObserver&) = delete;
 
-  // Overrides for IUpdaterObserver
+  // Overrides for IUpdaterObserver.
+  IFACEMETHODIMP OnStateChange(IUpdateState* update_state) override;
   IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
 
  private:
@@ -91,6 +92,10 @@ UpdaterObserver::UpdaterObserver(Microsoft::WRL::ComPtr<IUpdater> updater,
       callback_(std::move(callback)) {}
 
 UpdaterObserver::~UpdaterObserver() = default;
+
+HRESULT UpdaterObserver::OnStateChange(IUpdateState* update_state) {
+  return E_NOTIMPL;
+}
 
 HRESULT UpdaterObserver::OnComplete(ICompleteStatus* status) {
   DCHECK(status);

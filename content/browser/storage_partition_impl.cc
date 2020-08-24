@@ -911,6 +911,7 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   void ClearDataOnIOThread(
       const scoped_refptr<storage::QuotaManager>& quota_manager,
       const base::Time begin,
+      const base::Time end,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       StoragePartition::OriginMatcherFunction origin_matcher,
@@ -976,6 +977,7 @@ class StoragePartitionImpl::DataDeletionHelper {
   void ClearQuotaManagedDataOnIOThread(
       const scoped_refptr<storage::QuotaManager>& quota_manager,
       const base::Time begin,
+      const base::Time end,
       const GURL& storage_origin,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
@@ -1021,6 +1023,7 @@ class StoragePartitionImpl::DataDeletionHelper {
 void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const scoped_refptr<storage::QuotaManager>& quota_manager,
     const base::Time begin,
+    const base::Time end,
     const GURL& storage_origin,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     StoragePartition::OriginMatcherFunction origin_matcher,
@@ -1035,7 +1038,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
               ? base::nullopt
               : base::make_optional(url::Origin::Create(storage_origin)),
           std::move(callback));
-  helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
+  helper->ClearDataOnIOThread(quota_manager, begin, end, special_storage_policy,
                               std::move(origin_matcher),
                               perform_storage_cleanup);
 }
@@ -1928,6 +1931,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     const scoped_refptr<storage::QuotaManager>& quota_manager,
     const base::Time begin,
+    const base::Time end,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     StoragePartition::OriginMatcherFunction origin_matcher,
     bool perform_storage_cleanup) {
@@ -1941,8 +1945,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     // Ask the QuotaManager for all origins with persistent quota modified
     // within the user-specified timeframe, and deal with the resulting set in
     // ClearQuotaManagedOriginsOnIOThread().
-    quota_manager->GetOriginsModifiedSince(
-        blink::mojom::StorageType::kPersistent, begin,
+    quota_manager->GetOriginsModifiedBetween(
+        blink::mojom::StorageType::kPersistent, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, origin_matcher,
@@ -1952,8 +1956,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   // Do the same for temporary quota.
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
-    quota_manager->GetOriginsModifiedSince(
-        blink::mojom::StorageType::kTemporary, begin,
+    quota_manager->GetOriginsModifiedBetween(
+        blink::mojom::StorageType::kTemporary, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, origin_matcher,
@@ -1963,8 +1967,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   // Do the same for syncable quota.
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
-    quota_manager->GetOriginsModifiedSince(
-        blink::mojom::StorageType::kSyncable, begin,
+    quota_manager->GetOriginsModifiedBetween(
+        blink::mojom::StorageType::kSyncable, begin, end,
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, std::move(origin_matcher),
@@ -2140,7 +2144,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         FROM_HERE,
         base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
                        base::Unretained(this),
-                       base::WrapRefCounted(quota_manager), begin,
+                       base::WrapRefCounted(quota_manager), begin, end,
                        storage_origin, storage_policy_ref, origin_matcher,
                        perform_storage_cleanup,
                        CreateTaskCompletionClosure(TracingDataType::kQuota)));

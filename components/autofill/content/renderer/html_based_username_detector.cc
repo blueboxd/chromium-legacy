@@ -103,7 +103,7 @@ void AppendValueAndShortTokens(
   std::vector<base::string16> short_tokens;
   for (const base::StringPiece16& token : tokens) {
     if (token.size() < kMinimumWordLength)
-      short_tokens.push_back(token.as_string());
+      short_tokens.emplace_back(token);
     field_data_value->append(token.data(), token.size());
   }
   // It is better to insert elements to a |base::flat_set| in one operation.

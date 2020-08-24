@@ -146,9 +146,12 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   static HeapVector<Member<HTMLInputElement>> FindAllRadioButtonsWithSameName(
       HTMLInputElement* radio_button);
   String GetText() const override;
-  ax::mojom::blink::TextAlign GetTextAlign() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
   int TextLength() const override;
+
+  // Object attributes.
+  ax::mojom::blink::TextAlign GetTextAlign() const final;
+  float GetTextIndent() const final;
 
   // Properties of interactive elements.
   ax::mojom::blink::AriaCurrentState GetAriaCurrentState() const final;

@@ -31,7 +31,7 @@ class TestLifecycleUnit : public LifecycleUnitBase {
 
   void SetSortKey(LifecycleUnit::SortKey sort_key) { sort_key_ = sort_key; }
 
-  void SetTitle(base::StringPiece16 title) { title_ = title.as_string(); }
+  void SetTitle(base::StringPiece16 title) { title_ = base::string16(title); }
 
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;

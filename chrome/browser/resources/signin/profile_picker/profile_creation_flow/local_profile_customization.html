@@ -1,9 +1,45 @@
 <style include="profile-creation-shared">
+  :host {
+    --vertical-gap: 24px;
+  }
+
   #title {
     color: var(--theme-text-color);
     font-weight: normal;
     padding-top: 84px;
     text-align: center;
+  }
+
+  #nameInput {
+    --cr-input-placeholder-color: rgba(var(--google-grey-900-rgb), .5);
+    --cr-input-border-bottom: 1px solid var(--cr-secondary-text-color);
+    height: 32px;
+    margin: calc(var(--avatar-size)/2 + var(--vertical-gap)) auto 0 auto;
+    width: 300px;
+  }
+
+  #colorPicker {
+    height: 220px;
+    margin: var(--vertical-gap) auto var(--vertical-gap) auto;
+    width: 370px;
+  }
+
+  cr-checkbox {
+    --cr-checkbox-label-color:  var(--cr-secondary-text-color);
+    --cr-checkbox-label-padding-start: 8px;
+    height: 20px;
+    margin: auto;
+    width: fit-content;
+  }
+
+  cr-checkbox[hidden] {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #nameInput {
+      --cr-input-placeholder-color: rgba(var(--google-grey-200-rgb), .5);
+    }
   }
 </style>
 
@@ -15,6 +51,21 @@
   <cr-icon-button id="backButton" class="icon-arrow-back"
         on-click="onClickBack_" aria-label="$i18n{backButtonLabel}">
   </cr-icon-button>
-  <h2 id="title">$i18n{localProfileCreationTitle}<h2>
+  <h2 id="title">$i18n{localProfileCreationTitle}</h2>
   <img class="avatar" src$="[[profileThemeInfo.themeGenericAvatar]]">
 </div>
+
+<cr-input id="nameInput" value="{{profileName_}}" pattern=".*\\S.*"
+    placeholder="$i18n{createProfileNamePlaceholder}"
+    auto-validate spellcheck="false">
+</cr-input>
+
+<!-- TODO(crbug.com/1115301): Add color picker. -->
+<div id="colorPicker"
+    style$="background-color:[[profileThemeInfo.themeFrameColor]]">
+</div>
+
+<cr-checkbox checked="{{createShortcut_}}"
+    hidden="[[!isProfileShortcutsEnabled_]]">
+    $i18n{createDesktopShortcutLabel}
+</cr-checkbox>

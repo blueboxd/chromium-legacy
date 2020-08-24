@@ -48,6 +48,10 @@
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/cr_policy_network_indicator_mojo.m.js"
            use_base_dir="false"
            type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_NETWORK_APNLIST_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_apnlist.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
     <include name="IDR_WEBUI_CHROMEOS_NETWORK_CONFIG_ELEMENT_BEHAVIOR_M_JS"
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_config_element_behavior.m.js"
            use_base_dir="false"
@@ -138,6 +142,10 @@
            type="BINDATA" />
     <include name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_SIM_DETECT_PAGE_M_JS"
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/sim_detect_page.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+     <include name="IDR_WEBUI_CHROMEOS_CELLULAR_PROVISIONING_PAGE_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/provisioning_page.m.js"
            use_base_dir="false"
            type="BINDATA" />
   </if>

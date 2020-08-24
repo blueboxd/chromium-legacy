@@ -152,11 +152,13 @@
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_SYNC_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_browser_proxy.m.js"
            use_base_dir="false"
+           preprocess="true"
            compress="false"
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_SYNC_ACCOUNT_CONTROL_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_account_control.m.js"
            use_base_dir="false"
+           preprocess="true"
            compress="false"
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_SYNC_ENCRYPTION_OPTIONS_M_JS"
@@ -172,11 +174,13 @@
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_SYNC_CONTROLS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_controls.m.js"
            use_base_dir="false"
+           preprocess="true"
            compress="false"
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PEOPLE_PAGE_SYNC_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_page.m.js"
            use_base_dir="false"
+           preprocess="true"
            compress="false"
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_SETTINGS_PRIVACY_PAGE_M_JS"
@@ -194,6 +198,7 @@
   <include name="IDR_OS_SETTINGS_PRIVACY_PAGE_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.m.js"
            use_base_dir="false"
+           preprocess="true"
            compress="false"
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_PARENTAL_CONTROLS_PAGE_M_JS"

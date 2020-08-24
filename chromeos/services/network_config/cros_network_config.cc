@@ -2011,19 +2011,19 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     std::string user_id_hash = LoginState::Get()->primary_user_hash();
     network_configuration_handler_->CreateConfiguration(
         user_id_hash, *onc,
-        base::Bind(&CrosNetworkConfig::SetPropertiesConfigureSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::SetPropertiesFailure,
-                   weak_factory_.GetWeakPtr(), guid, callback_id));
+        base::BindOnce(&CrosNetworkConfig::SetPropertiesConfigureSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::SetPropertiesFailure,
+                       weak_factory_.GetWeakPtr(), guid, callback_id));
     return;
   }
 
   network_configuration_handler_->SetProperties(
       network->path(), *onc,
-      base::Bind(&CrosNetworkConfig::SetPropertiesSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::SetPropertiesFailure,
-                 weak_factory_.GetWeakPtr(), guid, callback_id));
+      base::BindOnce(&CrosNetworkConfig::SetPropertiesSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::SetPropertiesFailure,
+                     weak_factory_.GetWeakPtr(), guid, callback_id));
 }
 
 void CrosNetworkConfig::SetPropertiesSuccess(int callback_id) {
@@ -2089,10 +2089,10 @@ void CrosNetworkConfig::ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
 
   network_configuration_handler_->CreateConfiguration(
       user_id_hash, *onc,
-      base::Bind(&CrosNetworkConfig::ConfigureNetworkSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::ConfigureNetworkFailure,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CrosNetworkConfig::ConfigureNetworkSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::ConfigureNetworkFailure,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CrosNetworkConfig::ConfigureNetworkSuccess(int callback_id,
@@ -2152,17 +2152,17 @@ void CrosNetworkConfig::ForgetNetwork(const std::string& guid,
   if (allow_forget_shared_config) {
     network_configuration_handler_->RemoveConfiguration(
         network->path(),
-        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
-                   weak_factory_.GetWeakPtr(), guid, callback_id));
+        base::BindOnce(&CrosNetworkConfig::ForgetNetworkSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::ForgetNetworkFailure,
+                       weak_factory_.GetWeakPtr(), guid, callback_id));
   } else {
     network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
         network->path(),
-        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
-                   weak_factory_.GetWeakPtr(), guid, callback_id));
+        base::BindOnce(&CrosNetworkConfig::ForgetNetworkSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::ForgetNetworkFailure,
+                       weak_factory_.GetWeakPtr(), guid, callback_id));
   }
 }
 
@@ -2240,10 +2240,10 @@ void CrosNetworkConfig::SetCellularSimState(
     network_device_handler_->UnblockPin(
         device_state->path(), sim_state->current_pin_or_puk,
         *sim_state->new_pin,
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
-                   weak_factory_.GetWeakPtr(), callback_id));
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateFailure,
+                       weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -2251,10 +2251,10 @@ void CrosNetworkConfig::SetCellularSimState(
     // Unlock locked SIM.
     network_device_handler_->EnterPin(
         device_state->path(), sim_state->current_pin_or_puk,
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
-                   weak_factory_.GetWeakPtr(), callback_id));
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateFailure,
+                       weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -2263,10 +2263,10 @@ void CrosNetworkConfig::SetCellularSimState(
     network_device_handler_->ChangePin(
         device_state->path(), sim_state->current_pin_or_puk,
         *sim_state->new_pin,
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
-                   weak_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
-                   weak_factory_.GetWeakPtr(), callback_id));
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                       weak_factory_.GetWeakPtr(), callback_id),
+        base::BindOnce(&CrosNetworkConfig::SetCellularSimStateFailure,
+                       weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -2274,10 +2274,10 @@ void CrosNetworkConfig::SetCellularSimState(
   network_device_handler_->RequirePin(
       device_state->path(), sim_state->require_pin,
       sim_state->current_pin_or_puk,
-      base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::SetCellularSimStateFailure,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CrosNetworkConfig::SetCellularSimStateSuccess(int callback_id) {
@@ -2318,10 +2318,10 @@ void CrosNetworkConfig::SelectCellularMobileNetwork(
 
   network_device_handler_->RegisterCellularNetwork(
       device_state->path(), network_id,
-      base::Bind(&CrosNetworkConfig::SelectCellularMobileNetworkSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::SelectCellularMobileNetworkFailure,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CrosNetworkConfig::SelectCellularMobileNetworkSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::SelectCellularMobileNetworkFailure,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CrosNetworkConfig::SelectCellularMobileNetworkSuccess(int callback_id) {
@@ -2385,8 +2385,8 @@ void CrosNetworkConfig::StartConnect(const std::string& guid,
       service_path,
       base::BindOnce(&CrosNetworkConfig::StartConnectSuccess,
                      weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::StartConnectFailure,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::StartConnectFailure,
+                     weak_factory_.GetWeakPtr(), callback_id),
       true /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
 }
 
@@ -2447,8 +2447,8 @@ void CrosNetworkConfig::StartDisconnect(const std::string& guid,
       service_path,
       base::BindOnce(&CrosNetworkConfig::StartDisconnectSuccess,
                      weak_factory_.GetWeakPtr(), callback_id),
-      base::Bind(&CrosNetworkConfig::StartDisconnectFailure,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CrosNetworkConfig::StartDisconnectFailure,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CrosNetworkConfig::StartDisconnectSuccess(int callback_id) {

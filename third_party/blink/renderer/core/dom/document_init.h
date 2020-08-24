@@ -105,6 +105,9 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithWindow(LocalDOMWindow*, Document* owner_document);
   LocalDOMWindow* GetWindow() const { return window_; }
 
+  DocumentInit& ForInitialEmptyDocument(bool empty);
+  bool IsInitialEmptyDocument() const { return is_initial_empty_document_; }
+
   // Compute the type of document to be loaded inside a |frame|, given its |url|
   // and its |mime_type|.
   //
@@ -144,6 +147,7 @@ class CORE_EXPORT DocumentInit final {
   static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
   Type type_ = Type::kUnspecified;
+  bool is_initial_empty_document_ = false;
   String mime_type_;
   LocalDOMWindow* window_ = nullptr;
   HTMLImportsController* imports_controller_ = nullptr;

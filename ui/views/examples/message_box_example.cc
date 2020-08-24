@@ -33,7 +33,7 @@ void MessageBoxExample::CreateExampleView(View* container) {
       std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical));
 
   message_box_view_ = container->AddChildView(std::make_unique<MessageBoxView>(
-      MessageBoxView::InitParams(GetStringUTF16(IDS_MESSAGE_INTRO_LABEL))));
+      GetStringUTF16(IDS_MESSAGE_INTRO_LABEL)));
   message_box_view_->SetCheckBoxLabel(
       GetStringUTF16(IDS_MESSAGE_CHECK_BOX_LABEL));
 

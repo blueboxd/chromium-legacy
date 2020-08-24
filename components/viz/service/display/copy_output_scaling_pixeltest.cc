@@ -293,22 +293,22 @@ class CopyOutputScalingPixelTest
 
 // Parameters common to all test instantiations. These are tuples consisting of
 // {scale_from, scale_to, i420_format}.
-const auto kParameters = testing::Combine(
-    // TODO(crbug.com/1117587): Don't run with GLRenderer on Fuchsia.
-    testing::Values(RendererType::kGL,
-#if !defined(OS_FUCHSIA)
-                    RendererType::kSkiaGL,
+const auto kParameters =
+    testing::Combine(testing::Values(
+#if defined(ENABLE_VIZ_GL_TESTS)
+                         RendererType::kGL,
+                         RendererType::kSkiaGL,
 #endif
-                    RendererType::kSoftware),
-    testing::Values(gfx::Vector2d(1, 1),
-                    gfx::Vector2d(2, 1),
-                    gfx::Vector2d(1, 2),
-                    gfx::Vector2d(2, 2)),
-    testing::Values(gfx::Vector2d(1, 1),
-                    gfx::Vector2d(2, 1),
-                    gfx::Vector2d(1, 2)),
-    testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
-                    CopyOutputResult::Format::I420_PLANES));
+                         RendererType::kSoftware),
+                     testing::Values(gfx::Vector2d(1, 1),
+                                     gfx::Vector2d(2, 1),
+                                     gfx::Vector2d(1, 2),
+                                     gfx::Vector2d(2, 2)),
+                     testing::Values(gfx::Vector2d(1, 1),
+                                     gfx::Vector2d(2, 1),
+                                     gfx::Vector2d(1, 2)),
+                     testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
+                                     CopyOutputResult::Format::I420_PLANES));
 
 TEST_P(CopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();

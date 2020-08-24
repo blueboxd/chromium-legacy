@@ -225,7 +225,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
               ? frame_->Tree().Parent()->GetSecurityContext()->GetSandboxFlags()
               : network::mojom::blink::WebSandboxFlags::kNone),
       dispatching_did_clear_window_object_in_main_world_(false),
-      detached_(false),
       virtual_time_pauser_(
           frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
               "FrameLoader",
@@ -237,7 +236,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 }
 
 FrameLoader::~FrameLoader() {
-  DCHECK(detached_);
+  DCHECK_EQ(state_, State::kDetached);
 }
 
 void FrameLoader::Trace(Visitor* visitor) const {
@@ -265,9 +264,6 @@ void FrameLoader::Init() {
 
   frame_->GetDocument()->CancelParsing();
 
-  state_machine_.AdvanceTo(
-      FrameLoaderStateMachine::kDisplayingInitialEmptyDocument);
-
   // Suppress finish notifications for initial empty documents, since they don't
   // generate start notifications.
   document_loader_->SetSentDidFinishLoad();
@@ -275,6 +271,8 @@ void FrameLoader::Init() {
   frame_->OnPageLifecycleStateUpdated();
 
   TakeObjectSnapshot();
+
+  state_ = State::kInitialized;
 }
 
 LocalFrameClient* FrameLoader::Client() const {
@@ -355,9 +353,6 @@ void FrameLoader::DispatchUnloadEvent(
 void FrameLoader::DidExplicitOpen() {
   probe::LifecycleEvent(frame_, GetDocumentLoader(), "init",
                         base::TimeTicks::Now().since_origin().InSecondsF());
-  // Calling document.open counts as committing the first real document load.
-  if (!state_machine_.CommittedFirstRealDocumentLoad())
-    state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
   if (empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty)
     empty_document_status_ = EmptyDocumentStatus::kOnlyEmptyButExplicitlyOpened;
 
@@ -374,7 +369,7 @@ void FrameLoader::DidExplicitOpen() {
 }
 
 void FrameLoader::FinishedParsing() {
-  if (state_machine_.CreatingInitialEmptyDocument())
+  if (state_ == State::kUninitialized)
     return;
 
   progress_tracker_->FinishedParsing();
@@ -952,6 +947,7 @@ void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
     CommitReason commit_reason) {
+  DCHECK(document_loader_);
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
@@ -1003,7 +999,6 @@ void FrameLoader::CommitNavigation(
   // might need to copy state from it. Note that the current DocumentLoader
   // should always exist, as the initial empty document is committed through
   // FrameLoader::Init.
-  DCHECK(!StateMachine()->CreatingInitialEmptyDocument());
   HistoryItem* previous_history_item = GetDocumentLoader()->GetHistoryItem();
 
   // Check if the CSP of the response should block the new document from
@@ -1205,8 +1200,6 @@ void FrameLoader::CommitDocumentLoader(
         unload_timing->unload_event_end);
   }
 
-  document_loader_->MarkAsCommitted();
-
   TakeObjectSnapshot();
 
   Client()->TransitionToCommittedForNewPage();
@@ -1233,9 +1226,8 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     const HistoryItem::ViewState& view_state,
     HistoryScrollRestorationType scroll_restoration_type) {
   LocalFrameView* view = frame_->View();
-  if (!view || !view->LayoutViewport() ||
-      !state_machine_.CommittedFirstRealDocumentLoad() ||
-      !frame_->IsAttached()) {
+  if (!view || !view->LayoutViewport() || !frame_->IsAttached() ||
+      frame_->GetDocument()->IsInitialEmptyDocument()) {
     return;
   }
   if (!NeedsHistoryItemRestore(load_type))
@@ -1274,7 +1266,7 @@ void FrameLoader::Detach() {
   }
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID("loading", "FrameLoader", this);
-  detached_ = true;
+  state_ = State::kDetached;
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
@@ -1534,7 +1526,7 @@ void FrameLoader::ForceSandboxFlags(
 }
 
 void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
-  if (state_machine_.CreatingInitialEmptyDocument())
+  if (state_ == State::kUninitialized)
     return;
 
   Settings* settings = frame_->GetSettings();
@@ -1688,7 +1680,6 @@ std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
   traced_value->SetString("id_ref", IdentifiersFactory::FrameId(frame_.Get()));
   traced_value->EndDictionary();
   traced_value->SetBoolean("isLoadingMainFrame", frame_->IsMainFrame());
-  traced_value->SetString("stateMachine", state_machine_.ToString());
   traced_value->SetString(
       "documentLoaderURL",
       document_loader_ ? document_loader_->Url().GetString() : String());
@@ -1696,7 +1687,7 @@ std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
 }
 
 inline void FrameLoader::TakeObjectSnapshot() const {
-  if (detached_) {
+  if (state_ == State::kDetached) {
     // We already logged TRACE_EVENT_OBJECT_DELETED_WITH_ID in detach().
     return;
   }

@@ -41,6 +41,12 @@ constexpr int kInitFactor = 2;
 constexpr int kInitFactor = 1;
 #endif
 
+// TODO(magchen@): To be removed. For kGpuWatchdogV2NewTimeout finch only.
+#if defined(OS_ANDROID)
+constexpr int kInitFactorFinch = 4;
+constexpr int kRestartFactorFinch = 4;
+#endif
+
 // Do not change this number. It's for histogram "GPU.GPUChannelHostWaitTime".
 // This is the max wait time when waiting for sync in the GPU channel Host. It
 // needs to be bigger than (kGpuWatchdogTimeout * kRestartFactor) for all

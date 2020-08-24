@@ -122,3 +122,4 @@ Modifications:
 - Include <atomic> in malloc_extension.h due to std::atomic usage
 - Precompute the pointer mask for doubly linked free lists instead of computing it on each access.
 - Move spinlock to function static variable to fix static initializer check error.
+- Enable ASLR support on both Linux and ChromeOS

@@ -67,7 +67,7 @@ class CORE_EXPORT NGTableTypes {
     base::Optional<float> percent;  // 100% is stored as 100.0f
     // True if any cell for this column is constrained.
     bool is_constrained = false;
-
+    bool is_collapsed = false;
     // The final inline-size of the column after all constraints have been
     // applied.
     LayoutUnit computed_inline_size;
@@ -169,6 +169,7 @@ class CORE_EXPORT NGTableTypes {
   struct ColumnLocation {
     LayoutUnit offset;  // inline offset from table edge.
     LayoutUnit size;
+    bool is_collapsed;
   };
 
   struct Section {
@@ -185,7 +186,7 @@ class CORE_EXPORT NGTableTypes {
                              base::Optional<LayoutUnit> default_inline_size);
 
   static CellInlineConstraint CreateCellInlineConstraint(
-      const NGLayoutInputNode&,
+      const NGBlockNode&,
       WritingMode table_writing_mode,
       bool is_fixed_layout,
       const NGBoxStrut& cell_border,

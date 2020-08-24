@@ -110,7 +110,7 @@ public class SkipToGPayHelper {
      * @return True if a shipping is requested and a single pre-selected shipping option exists.
      * False otherwise.
      */
-    public boolean setShippingOption(PaymentDetails details) {
+    public boolean setShippingOptionIfValid(PaymentDetails details) {
         if (!mPaymentOptionsRequestShipping) return true;
         if (details.shippingOptions == null || details.shippingOptions.length != 1
                 || !details.shippingOptions[0].selected) {

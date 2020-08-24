@@ -353,8 +353,12 @@ void AudioDecoderBroker::OnDecodeDone(int cb_id, media::DecodeStatus status) {
   DCHECK(pending_decode_cb_map_.Contains(cb_id));
 
   auto iter = pending_decode_cb_map_.find(cb_id);
-  std::move(iter->value).Run(status);
+  DecodeCB decode_cb = std::move(iter->value);
   pending_decode_cb_map_.erase(cb_id);
+
+  // Do this last. Caller may destruct |this| in response to the callback while
+  // this method is still on the stack.
+  std::move(decode_cb).Run(status);
 }
 
 void AudioDecoderBroker::Reset(base::OnceClosure reset_cb) {
@@ -382,8 +386,12 @@ void AudioDecoderBroker::OnReset(int cb_id) {
   DCHECK(pending_reset_cb_map_.Contains(cb_id));
 
   auto iter = pending_reset_cb_map_.find(cb_id);
-  std::move(iter->value).Run();
+  base::OnceClosure reset_cb = std::move(iter->value);
   pending_reset_cb_map_.erase(cb_id);
+
+  // Do this last. Caller may destruct |this| in response to the callback while
+  // this method is still on the stack.
+  std::move(reset_cb).Run();
 }
 
 void AudioDecoderBroker::OnDecodeOutput(

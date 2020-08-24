@@ -21,7 +21,7 @@ enum class FastInitVersion : uint8_t {
   kV1 = 0,
 };
 
-#if defined(CHROME_OS)
+#if defined(OS_CHROMEOS)
 constexpr base::TimeDelta kMinFastInitAdvertisingInterval =
     base::TimeDelta::FromMilliseconds(100);
 constexpr base::TimeDelta kMaxFastInitAdvertisingInterval =
@@ -94,7 +94,7 @@ void FastInitiationManager::StartAdvertising(
   start_callback_ = std::move(callback);
   start_error_callback_ = std::move(error_callback);
 
-#if defined(CHROME_OS)
+#if defined(OS_CHROMEOS)
   adapter_->SetAdvertisingInterval(
       kMinFastInitAdvertisingInterval, kMaxFastInitAdvertisingInterval,
       base::BindOnce(&FastInitiationManager::OnSetAdvertisingInterval,
@@ -116,7 +116,7 @@ void FastInitiationManager::StopAdvertising(
     return;
   }
 
-#if defined(CHROME_OS)
+#if defined(OS_CHROMEOS)
   adapter_->SetAdvertisingInterval(
       kMinDefaultAdvertisingInterval, kMaxDefaultAdvertisingInterval,
       base::BindOnce(&FastInitiationManager::OnRestoreAdvertisingInterval,

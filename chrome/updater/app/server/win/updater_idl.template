@@ -209,6 +209,27 @@ interface IAppWeb : IDispatch {
   [propput] HRESULT serverInstallDataIndex([in] BSTR);
 };
 
+// The new interface definitions. For documentation, see the similar
+// types defined in updater::UpdateService or updater::ControlService.
+[
+  object,
+  dual,
+  uuid(IUPDATESTATE_IID),
+  helpstring("IUpdateState Interface"),
+  pointer_default(unique)
+]
+interface IUpdateState : IUnknown {
+  [propget] HRESULT state([out, retval] LONG*);
+  [propget] HRESULT appId([out, retval] BSTR*);
+  [propget] HRESULT nextVersion([out, retval] BSTR*);
+  [propget] HRESULT downloadedBytes([out, retval] LONGLONG*);
+  [propget] HRESULT totalBytes([out, retval] LONGLONG*);
+  [propget] HRESULT installProgress([out, retval] LONG*);
+  [propget] HRESULT errorCategory([out, retval] LONG*);
+  [propget] HRESULT errorCode([out, retval] LONG*);
+  [propget] HRESULT extraCode1([out, retval] LONG*);
+};
+
 [
   object,
   dual,
@@ -229,6 +250,7 @@ interface ICompleteStatus : IUnknown {
   pointer_default(unique)
 ]
 interface IUpdaterObserver : IUnknown {
+  HRESULT OnStateChange([in] IUpdateState* update_state);
   HRESULT OnComplete([in] ICompleteStatus* status);
 };
 

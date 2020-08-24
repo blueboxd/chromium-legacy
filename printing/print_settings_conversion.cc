@@ -180,7 +180,7 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
       !pages_per_sheet.has_value()) {
     return false;
   }
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::Optional<int> dpi_horizontal =
       job_settings.FindIntKey(kSettingDpiHorizontal);
   base::Optional<int> dpi_vertical =

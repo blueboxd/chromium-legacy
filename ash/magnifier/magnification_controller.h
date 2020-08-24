@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ime/ime_bridge_observer.h"
+#include "ui/base/ime/chromeos/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"

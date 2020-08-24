@@ -243,8 +243,8 @@ void DuplicateCheckDone(const GURL& url,
   bool duplicate_request_exists =
       result == OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND;
   OfflinePageInfoBarDelegate::Create(
-      base::Bind(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref,
-                 origin),
+      base::BindOnce(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref,
+                     origin),
       url, duplicate_request_exists, web_contents);
 }
 
@@ -263,15 +263,16 @@ content::WebContents::Getter GetWebContentsGetter(
   // The FrameTreeNode ID should be used to access the WebContents.
   int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
   if (frame_tree_node_id != -1) {
-    return base::Bind(content::WebContents::FromFrameTreeNodeId,
-                      frame_tree_node_id);
+    return base::BindRepeating(content::WebContents::FromFrameTreeNodeId,
+                               frame_tree_node_id);
   }
 
   // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
   // the WebContents.
-  return base::Bind(&GetWebContentsByFrameID,
-                    web_contents->GetMainFrame()->GetProcess()->GetID(),
-                    web_contents->GetMainFrame()->GetRoutingID());
+  return base::BindRepeating(
+      &GetWebContentsByFrameID,
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
 }
 
 void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
@@ -328,7 +329,8 @@ void OnOfflinePageAcquireFileAccessPermissionDone(
       chrome::GetBrowserContextRedirectedInIncognito(
           web_contents->GetBrowserContext()),
       url,
-      base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref, origin));
+      base::BindOnce(&DuplicateCheckDone, url, original_url, j_tab_ref,
+                     origin));
 }
 
 void InitializeBackendOnProfileCreated(Profile* profile) {

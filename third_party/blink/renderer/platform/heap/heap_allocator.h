@@ -474,20 +474,61 @@ template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V>>
     : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {};
 
+// IMPORTANT! Do not use this class, unless you need to work around a
+// HeapLinkedHashSet issue. Contact chrome-memory-tok@ if you do.
+// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
 template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
           typename TraitsArg = HashTraits<ValueArg>>
-class HeapLinkedHashSet
-    : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
+class HeapLegacyLinkedHashSet
+    : public LegacyLinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
   IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
-  // HeapLinkedHashSet is using custom callbacks for compaction that rely on the
-  // fact that the container itself does not move.
+  // HeapLegacyLinkedHashSet is using custom callbacks for compaction that rely
+  // on the fact that the container itself does not move.
   DISALLOW_IN_CONTAINER();
+
+  static void CheckType() {
+    static_assert(
+        internal::IsMemberOrWeakMemberType<ValueArg>,
+        "HeapLegacyLinkedHashSet supports only Member and WeakMember.");
+    static_assert(
+        IsAllowedInContainer<ValueArg>::value,
+        "Not allowed to directly nest type. Use Member<> indirection instead.");
+    static_assert(
+        WTF::IsTraceable<ValueArg>::value,
+        "For sets without traceable elements, use LegacyLinkedHashSet<> "
+        "instead of HeapLegacyLinkedHashSet<>.");
+  }
+
+ public:
+  template <typename>
+  static void* AllocateObject(size_t size) {
+    return ThreadHeap::Allocate<
+        HeapLegacyLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size);
+  }
+
+  HeapLegacyLinkedHashSet() { CheckType(); }
+};
+
+// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
+template <typename T, typename U, typename V>
+struct GCInfoTrait<HeapLegacyLinkedHashSet<T, U, V>>
+    : public GCInfoTrait<LegacyLinkedHashSet<T, U, V, HeapAllocator>> {};
+
+template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
+class HeapLinkedHashSet
+    : public LinkedHashSet<ValueArg, TraitsArg, HeapAllocator> {
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
+  DISALLOW_NEW();
 
   static void CheckType() {
     static_assert(internal::IsMemberOrWeakMemberType<ValueArg>,
                   "HeapLinkedHashSet supports only Member and WeakMember.");
+    // If not trivially destructible, we have to add a destructor which will
+    // hinder performance.
+    static_assert(std::is_trivially_destructible<HeapLinkedHashSet>::value,
+                  "HeapLinkedHashSet must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<ValueArg>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
@@ -499,54 +540,15 @@ class HeapLinkedHashSet
  public:
   template <typename>
   static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<
-        HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size);
+    return ThreadHeap::Allocate<HeapLinkedHashSet<ValueArg, TraitsArg>>(size);
   }
 
   HeapLinkedHashSet() { CheckType(); }
 };
 
-template <typename T, typename U, typename V>
-struct GCInfoTrait<HeapLinkedHashSet<T, U, V>>
-    : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {};
-
-// This class is still experimental. Do not use this class.
-template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
-class HeapNewLinkedHashSet
-    : public NewLinkedHashSet<ValueArg, TraitsArg, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
-  DISALLOW_NEW();
-
-  static void CheckType() {
-    static_assert(internal::IsMemberOrWeakMemberType<ValueArg>,
-                  "HeapNewLinkedHashSet supports only Member and WeakMember.");
-    // If not trivially destructible, we have to add a destructor which will
-    // hinder performance.
-    static_assert(std::is_trivially_destructible<HeapNewLinkedHashSet>::value,
-                  "HeapNewLinkedHashSet must be trivially destructible.");
-    static_assert(
-        IsAllowedInContainer<ValueArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(WTF::IsTraceable<ValueArg>::value,
-                  "For sets without traceable elements, use NewLinkedHashSet<> "
-                  "instead of HeapNewLinkedHashSet<>.");
-  }
-
- public:
-  template <typename>
-  static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<HeapNewLinkedHashSet<ValueArg, TraitsArg>>(
-        size);
-  }
-
-  HeapNewLinkedHashSet() {
-    CheckType();
-  }
-};
-
 template <typename T, typename U>
-struct GCInfoTrait<HeapNewLinkedHashSet<T, U>>
-    : public GCInfoTrait<NewLinkedHashSet<T, U, HeapAllocator>> {};
+struct GCInfoTrait<HeapLinkedHashSet<T, U>>
+    : public GCInfoTrait<LinkedHashSet<T, U, HeapAllocator>> {};
 
 template <typename ValueArg,
           wtf_size_t inlineCapacity =
@@ -751,7 +753,7 @@ struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
 };
 
 // These traits are used in VectorBackedLinkedList to support WeakMember in
-// HeapNewLinkedHashSet though HeapVector<WeakMember> usage is still banned.
+// HeapLinkedHashSet though HeapVector<WeakMember> usage is still banned.
 // (See the discussion in https://crrev.com/c/2246014)
 template <typename T>
 struct VectorTraits<blink::WeakMember<T>>

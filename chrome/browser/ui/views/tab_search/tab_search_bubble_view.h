@@ -17,6 +17,16 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class TabSearchOpenAction {
+  kMouseClick = 0,
+  kKeyboardNavigation = 1,
+  kKeyboardShortcut = 2,
+  kTouchGesture = 3,
+  kMaxValue = kTouchGesture,
+};
+
 class TabSearchBubbleView : public views::BubbleDialogDelegateView {
  public:
   // TODO(tluk): Since the Bubble is shown asynchronously, we shouldn't call

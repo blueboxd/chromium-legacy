@@ -41,7 +41,7 @@ namespace {
 template <typename Set>
 class ListOrLinkedHashSetTest : public testing::Test {};
 
-// These custom traits affect only NewLinkedHashSet tests.
+// These custom traits affect only LinkedHashSet tests.
 struct CustomHashTraitsForInt : public HashTraits<int> {
   static const bool kEmptyValueIsZero = false;
   static int EmptyValue() { return INT_MAX; }
@@ -52,8 +52,8 @@ struct CustomHashTraitsForInt : public HashTraits<int> {
 
 using SetTypes = testing::Types<ListHashSet<int>,
                                 ListHashSet<int, 1>,
-                                LinkedHashSet<int>,
-                                NewLinkedHashSet<int, CustomHashTraitsForInt>>;
+                                LegacyLinkedHashSet<int>,
+                                LinkedHashSet<int, CustomHashTraitsForInt>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetTest, SetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
@@ -240,8 +240,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   using Set = TypeParam;
   bool can_modify_while_iterating =
-      !std::is_same<Set, LinkedHashSet<int>>::value &&
-      !std::is_same<Set, NewLinkedHashSet<int, CustomHashTraitsForInt>>::value;
+      !std::is_same<Set, LegacyLinkedHashSet<int>>::value &&
+      !std::is_same<Set, LinkedHashSet<int, CustomHashTraitsForInt>>::value;
   Set set;
   set.insert(-1);
   set.insert(0);
@@ -373,16 +373,15 @@ class ListOrLinkedHashSetRefPtrTest : public testing::Test {};
 using RefPtrSetTypes =
     testing::Types<ListHashSet<scoped_refptr<DummyRefCounted>>,
                    ListHashSet<scoped_refptr<DummyRefCounted>, 1>,
-                   LinkedHashSet<scoped_refptr<DummyRefCounted>>,
-                   NewLinkedHashSet<scoped_refptr<DummyRefCounted>>>;
+                   LegacyLinkedHashSet<scoped_refptr<DummyRefCounted>>,
+                   LinkedHashSet<scoped_refptr<DummyRefCounted>>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   using Set = TypeParam;
   int expected = 1;
-  // NewLinkedHashSet stores each object twice.
-  if (std::is_same<Set,
-                   NewLinkedHashSet<scoped_refptr<DummyRefCounted>>>::value)
+  // LinkedHashSet stores each object twice.
+  if (std::is_same<Set, LinkedHashSet<scoped_refptr<DummyRefCounted>>>::value)
     expected = 2;
   bool is_deleted = false;
   DummyRefCounted::ref_invokes_count_ = 0;
@@ -485,11 +484,11 @@ struct ComplexityTranslator {
 template <typename Set>
 class ListOrLinkedHashSetTranslatorTest : public testing::Test {};
 
-// TODO(bartekn): Add NewLinkedHashSet once it supports custom hash function.
+// TODO(bartekn): Add LinkedHashSet once it supports custom hash function.
 using TranslatorSetTypes =
     testing::Types<ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
                    ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
-                   LinkedHashSet<Complicated, ComplicatedHashFunctions>>;
+                   LegacyLinkedHashSet<Complicated, ComplicatedHashFunctions>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
@@ -595,8 +594,8 @@ class ListOrLinkedHashSetCountCopyTest : public testing::Test {};
 
 using CountCopySetTypes = testing::Types<ListHashSet<CountCopy>,
                                          ListHashSet<CountCopy, 1>,
-                                         LinkedHashSet<CountCopy>,
-                                         NewLinkedHashSet<CountCopy>>;
+                                         LegacyLinkedHashSet<CountCopy>,
+                                         LinkedHashSet<CountCopy>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetCountCopyTest,
@@ -626,10 +625,10 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
 template <typename Set>
 class ListOrLinkedHashSetMoveOnlyTest : public testing::Test {};
 
-// TODO(bartekn): Add NewLinkedHashSet once it supports move-only type.
+// TODO(bartekn): Add LinkedHashSet once it supports move-only type.
 using MoveOnlySetTypes = testing::Types<ListHashSet<MoveOnlyHashValue>,
                                         ListHashSet<MoveOnlyHashValue, 1>,
-                                        LinkedHashSet<MoveOnlyHashValue>>;
+                                        LegacyLinkedHashSet<MoveOnlyHashValue>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
@@ -722,11 +721,11 @@ struct DefaultHash<InvalidZeroValue> {
 template <typename Set>
 class ListOrLinkedHashSetInvalidZeroTest : public testing::Test {};
 
-// NewLinkedHashSet is tested in NewLinkedHashSetEmptyTest.EmptyString
+// LinkedHashSet is tested in LinkedHashSetEmptyTest.EmptyString
 using InvalidZeroValueSetTypes =
     testing::Types<ListHashSet<InvalidZeroValue>,
                    ListHashSet<InvalidZeroValue, 1>,
-                   LinkedHashSet<InvalidZeroValue>>;
+                   LegacyLinkedHashSet<InvalidZeroValue>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetInvalidZeroTest, InvalidZeroValueSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetInvalidZeroTest, InvalidZeroValue) {

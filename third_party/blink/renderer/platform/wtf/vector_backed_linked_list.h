@@ -155,6 +155,10 @@ class VectorBackedLinkedList {
 
  private:
   using Node = VectorBackedLinkedListNode<ValueType, Allocator>;
+  // Using Vector like this (instead of HeapVector for garbage collected types)
+  // skips the checks for HeapVector in heap_allocator.h. This is necessary
+  // because HeapVector doesn't allow WeakMember, but we need to support
+  // VectorBackedLinkedList<WeakMember>.
   using VectorType = Vector<Node, 0, Allocator>;
 
  public:
@@ -167,15 +171,6 @@ class VectorBackedLinkedList {
       VectorBackedLinkedListReverseIterator<VectorBackedLinkedList>;
   using const_reverse_iterator =
       VectorBackedLinkedListConstReverseIterator<VectorBackedLinkedList>;
-
-  VectorBackedLinkedList();
-
-  VectorBackedLinkedList(const VectorBackedLinkedList&) = default;
-  VectorBackedLinkedList(VectorBackedLinkedList&&) = default;
-  VectorBackedLinkedList& operator=(const VectorBackedLinkedList&) = default;
-  VectorBackedLinkedList& operator=(VectorBackedLinkedList&&) = default;
-
-  ~VectorBackedLinkedList() = default;
 
   void swap(VectorBackedLinkedList&);
 
@@ -273,6 +268,22 @@ class VectorBackedLinkedList {
 #endif
 
  private:
+  // The constructors are private, because the class is used only by
+  // LinkedHashSet and we don't want it to be instantiated directly otherwise.
+  // There are a couple resonts for that:
+  // 1. We know that usage of VectorBackedLinkedList in LinkedHashSet is safe,
+  //    since it is limited to Member and WeakMember for GCed sets. Other
+  //    potential usages might not be safe.
+  // 2. LinkedHashSet relies on indices inside VectorBackedLinkedList not
+  //    changing. Usage of VectorBackedLinkedList outside of LinkedHashSet may
+  //    encourage code optimizations that may break that assumption.
+  VectorBackedLinkedList();
+  VectorBackedLinkedList(const VectorBackedLinkedList&) = default;
+  VectorBackedLinkedList(VectorBackedLinkedList&&) = default;
+  VectorBackedLinkedList& operator=(const VectorBackedLinkedList&) = default;
+  VectorBackedLinkedList& operator=(VectorBackedLinkedList&&) = default;
+  ~VectorBackedLinkedList() = default;
+
   bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
 
   wtf_size_t UsedFirstIndex() const {
@@ -328,7 +339,19 @@ class VectorBackedLinkedList {
 #endif
 
   template <typename T, typename U, typename V>
-  friend class NewLinkedHashSet;
+  friend class LinkedHashSet;
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, Insert);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, PushFront);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, PushBack);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, MoveTo);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, Erase);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, PopFront);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, PopBack);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, Clear);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, Iterator);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, ConstIterator);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, String);
+  FRIEND_TEST_ALL_PREFIXES(VectorBackedLinkedListTest, UniquePtr);
 };
 
 template <typename VectorBackedLinkedListType>

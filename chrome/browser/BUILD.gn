@@ -4108,8 +4108,6 @@ static_library("browser") {
       "chrome_browser_main_extra_parts_lacros.h",
       "lacros/lacros_chrome_service_delegate_impl.cc",
       "lacros/lacros_chrome_service_delegate_impl.h",
-      "lacros/system_logs/user_log_files_log_source.cc",
-      "lacros/system_logs/user_log_files_log_source.h",
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
       "notifications/notification_platform_bridge_chromeos.cc",

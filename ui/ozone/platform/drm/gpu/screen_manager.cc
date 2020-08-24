@@ -95,11 +95,40 @@ CrtcController* GetCrtcController(HardwareDisplayController* controller,
 
 }  // namespace
 
-ScreenManager::ScreenManager() {}
+ScreenManager::ScreenManager() = default;
 
 ScreenManager::~ScreenManager() {
   DCHECK(window_map_.empty());
 }
+
+ScreenManager::ControllerConfigParams::ControllerConfigParams(
+    int64_t display_id,
+    scoped_refptr<DrmDevice> drm,
+    uint32_t crtc,
+    uint32_t connector,
+    gfx::Point origin,
+    std::unique_ptr<drmModeModeInfo> pmode)
+    : display_id(display_id),
+      drm(drm),
+      crtc(crtc),
+      connector(connector),
+      origin(origin),
+      mode(std::move(pmode)) {}
+
+ScreenManager::ControllerConfigParams::ControllerConfigParams(
+    ControllerConfigParams&& other)
+    : display_id(other.display_id),
+      drm(other.drm),
+      crtc(other.crtc),
+      connector(other.connector),
+      origin(other.origin) {
+  if (other.mode) {
+    drmModeModeInfo mode_obj = *other.mode.get();
+    mode = std::make_unique<drmModeModeInfo>(mode_obj);
+  }
+}
+
+ScreenManager::ControllerConfigParams::~ControllerConfigParams() = default;
 
 void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
                                          uint32_t crtc,
@@ -115,8 +144,7 @@ void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
   }
 
   controllers_.push_back(std::make_unique<HardwareDisplayController>(
-      std::unique_ptr<CrtcController>(new CrtcController(drm, crtc, connector)),
-      gfx::Point()));
+      std::make_unique<CrtcController>(drm, crtc, connector), gfx::Point()));
 }
 
 void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
@@ -132,26 +160,33 @@ void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
   }
 }
 
-bool ScreenManager::ConfigureDisplayController(
-    const scoped_refptr<DrmDevice>& drm,
-    uint32_t crtc,
-    uint32_t connector,
-    const gfx::Point& origin,
-    const drmModeModeInfo& mode) {
-  bool status =
-      ActualConfigureDisplayController(drm, crtc, connector, origin, mode);
-  if (status)
+base::flat_map<int64_t, bool> ScreenManager::ConfigureDisplayControllers(
+    const std::vector<ScreenManager::ControllerConfigParams>&
+        controllers_params) {
+  base::flat_map<int64_t, bool> statuses;
+  bool has_everything_succeeded = true;
+
+  for (auto& params : controllers_params) {
+    bool status =
+        params.mode
+            ? EnableDisplayController(params.drm, params.crtc, params.connector,
+                                      params.origin, *params.mode)
+            : DisableDisplayController(params.drm, params.crtc);
+
+    statuses.insert(std::make_pair(params.display_id, status));
+    has_everything_succeeded &= status;
+  }
+  if (has_everything_succeeded)
     UpdateControllerToWindowMapping();
 
-  return status;
+  return statuses;
 }
 
-bool ScreenManager::ActualConfigureDisplayController(
-    const scoped_refptr<DrmDevice>& drm,
-    uint32_t crtc,
-    uint32_t connector,
-    const gfx::Point& origin,
-    const drmModeModeInfo& mode) {
+bool ScreenManager::EnableDisplayController(const scoped_refptr<DrmDevice>& drm,
+                                            uint32_t crtc,
+                                            uint32_t connector,
+                                            const gfx::Point& origin,
+                                            const drmModeModeInfo& mode) {
   gfx::Rect modeset_bounds(origin.x(), origin.y(), mode.hdisplay,
                            mode.vdisplay);
   HardwareDisplayControllers::iterator it = FindDisplayController(drm, crtc);
@@ -210,7 +245,6 @@ bool ScreenManager::DisableDisplayController(
     }
 
     controller->Disable();
-    UpdateControllerToWindowMapping();
     return true;
   }
 

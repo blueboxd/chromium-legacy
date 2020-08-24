@@ -66,7 +66,7 @@ bool IsSupportedByDownload(content::BrowserContext* browser_context,
 void CheckDuplicateOngoingDownloads(
     content::BrowserContext* browser_context,
     const GURL& url,
-    const OfflinePageUtils::DuplicateCheckCallback& callback) {
+    OfflinePageUtils::DuplicateCheckCallback callback) {
   RequestCoordinator* request_coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (!request_coordinator)
@@ -74,7 +74,7 @@ void CheckDuplicateOngoingDownloads(
 
   auto request_coordinator_continuation =
       [](content::BrowserContext* browser_context, const GURL& url,
-         const OfflinePageUtils::DuplicateCheckCallback& callback,
+         OfflinePageUtils::DuplicateCheckCallback callback,
          std::vector<std::unique_ptr<SavePageRequest>> requests) {
         base::Time latest_request_time;
         for (auto& request : requests) {
@@ -87,7 +87,8 @@ void CheckDuplicateOngoingDownloads(
         }
 
         if (latest_request_time.is_null()) {
-          callback.Run(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND);
+          std::move(callback).Run(
+              OfflinePageUtils::DuplicateCheckResult::NOT_FOUND);
         } else {
           // Using CUSTOM_COUNTS instead of time-oriented histogram to record
           // samples in seconds rather than milliseconds.
@@ -97,13 +98,14 @@ void CheckDuplicateOngoingDownloads(
               base::TimeDelta::FromSeconds(1).InSeconds(),
               base::TimeDelta::FromDays(7).InSeconds(), 50);
 
-          callback.Run(
+          std::move(callback).Run(
               OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND);
         }
       };
 
-  request_coordinator->GetAllRequests(base::BindOnce(
-      request_coordinator_continuation, browser_context, url, callback));
+  request_coordinator->GetAllRequests(
+      base::BindOnce(request_coordinator_continuation, browser_context, url,
+                     std::move(callback)));
 }
 
 void DoCalculateSizeBetween(
@@ -133,15 +135,16 @@ content::WebContents::Getter GetWebContentsGetter(
   // The FrameTreeNode ID should be used to access the WebContents.
   int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
   if (frame_tree_node_id != -1) {
-    return base::Bind(content::WebContents::FromFrameTreeNodeId,
-                      frame_tree_node_id);
+    return base::BindRepeating(content::WebContents::FromFrameTreeNodeId,
+                               frame_tree_node_id);
   }
 
   // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
   // the WebContents.
-  return base::Bind(&GetWebContentsByFrameID,
-                    web_contents->GetMainFrame()->GetProcess()->GetID(),
-                    web_contents->GetMainFrame()->GetRoutingID());
+  return base::BindRepeating(
+      &GetWebContentsByFrameID,
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
 }
 
 void AcquireFileAccessPermissionDoneForScheduleDownload(
@@ -256,7 +259,7 @@ GURL OfflinePageUtils::GetOriginalURLFromWebContents(
 void OfflinePageUtils::CheckDuplicateDownloads(
     content::BrowserContext* browser_context,
     const GURL& url,
-    const DuplicateCheckCallback& callback) {
+    DuplicateCheckCallback callback) {
   // First check for finished downloads, that is, saved pages.
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
@@ -264,8 +267,7 @@ void OfflinePageUtils::CheckDuplicateDownloads(
     return;
 
   auto continuation = [](content::BrowserContext* browser_context,
-                         const GURL& url,
-                         const DuplicateCheckCallback& callback,
+                         const GURL& url, DuplicateCheckCallback callback,
                          const std::vector<OfflinePageItem>& pages) {
     base::Time latest_saved_time;
     for (const auto& offline_page_item : pages) {
@@ -277,7 +279,7 @@ void OfflinePageUtils::CheckDuplicateDownloads(
     }
     if (latest_saved_time.is_null()) {
       // Then check for ongoing downloads, that is, requests.
-      CheckDuplicateOngoingDownloads(browser_context, url, callback);
+      CheckDuplicateOngoingDownloads(browser_context, url, std::move(callback));
     } else {
       // Using CUSTOM_COUNTS instead of time-oriented histogram to record
       // samples in seconds rather than milliseconds.
@@ -287,13 +289,14 @@ void OfflinePageUtils::CheckDuplicateDownloads(
           base::TimeDelta::FromSeconds(1).InSeconds(),
           base::TimeDelta::FromDays(7).InSeconds(), 50);
 
-      callback.Run(DuplicateCheckResult::DUPLICATE_PAGE_FOUND);
+      std::move(callback).Run(DuplicateCheckResult::DUPLICATE_PAGE_FOUND);
     }
   };
   PageCriteria criteria;
   criteria.url = url;
   offline_page_model->GetPagesWithCriteria(
-      criteria, base::BindOnce(continuation, browser_context, url, callback));
+      criteria,
+      base::BindOnce(continuation, browser_context, url, std::move(callback)));
 }
 
 // static

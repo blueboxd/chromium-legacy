@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/input_method/ui/suggestion_window_view.h"
 #include "chrome/browser/chromeos/input_method/ui/undo_window.h"
 #include "content/public/browser/tts_controller.h"
-#include "ui/base/ime/ime_assistive_window_handler_interface.h"
+#include "ui/base/ime/chromeos/ime_assistive_window_handler_interface.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;

@@ -108,9 +108,9 @@ void SetUpIPCAdapter(
     NaClIPCAdapter::ResolveFileTokenCallback resolve_file_token_cb,
     NaClIPCAdapter::OpenResourceCallback open_resource_cb) {
   mojo::MessagePipe pipe;
-  scoped_refptr<NaClIPCAdapter> ipc_adapter(
-      new NaClIPCAdapter(pipe.handle0.release(), task_runner,
-                         resolve_file_token_cb, open_resource_cb));
+  scoped_refptr<NaClIPCAdapter> ipc_adapter(new NaClIPCAdapter(
+      pipe.handle0.release(), task_runner, std::move(resolve_file_token_cb),
+      std::move(open_resource_cb)));
   ipc_adapter->ConnectChannel();
   *handle = pipe.handle1.release();
 
@@ -261,7 +261,7 @@ bool NaClListener::OnOpenResource(
     prefetched_resource_files_.erase(it);
     // A pre-opened resource descriptor is available. Run the reply callback
     // and return true.
-    cb.Run(msg, file, path);
+    std::move(cb).Run(msg, file, path);
     return true;
   }
 
@@ -327,11 +327,12 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
                   NACL_CHROME_DESC_BASE + 1,
                   NaClIPCAdapter::ResolveFileTokenCallback(),
                   NaClIPCAdapter::OpenResourceCallback());
-  SetUpIPCAdapter(
-      &manifest_service_handle, io_thread_.task_runner(), nap,
-      NACL_CHROME_DESC_BASE + 2,
-      base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
-      base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
+  SetUpIPCAdapter(&manifest_service_handle, io_thread_.task_runner(), nap,
+                  NACL_CHROME_DESC_BASE + 2,
+                  base::BindRepeating(&NaClListener::ResolveFileToken,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&NaClListener::OnOpenResource,
+                                      base::Unretained(this)));
 
   mojo::PendingRemote<nacl::mojom::NaClRendererHost> renderer_host;
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
@@ -437,12 +438,12 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
 void NaClListener::ResolveFileToken(
     uint64_t token_lo,
     uint64_t token_hi,
-    base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)> cb) {
+    NaClIPCAdapter::ResolveFileTokenReplyCallback cb) {
   if (!Send(new NaClProcessMsg_ResolveFileToken(token_lo, token_hi))) {
-    cb.Run(IPC::PlatformFileForTransit(), base::FilePath());
+    std::move(cb).Run(IPC::PlatformFileForTransit(), base::FilePath());
     return;
   }
-  resolved_cb_ = cb;
+  resolved_cb_ = std::move(cb);
 }
 
 void NaClListener::OnFileTokenResolved(
@@ -450,6 +451,6 @@ void NaClListener::OnFileTokenResolved(
     uint64_t token_hi,
     IPC::PlatformFileForTransit ipc_fd,
     base::FilePath file_path) {
-  resolved_cb_.Run(ipc_fd, file_path);
-  resolved_cb_.Reset();
+  if (resolved_cb_)
+    std::move(resolved_cb_).Run(ipc_fd, file_path);
 }

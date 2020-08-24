@@ -11,12 +11,17 @@
 
 namespace WTF {
 
+static_assert(!WTF::IsTraceable<LinkedHashSet<int>>::value,
+              "LinkedHashSet must not be traceable.");
+static_assert(!WTF::IsTraceable<LinkedHashSet<String>>::value,
+              "LinkedHashSet must not be traceable.");
+
 template <typename T>
 int* const ValueInstanceCount<T>::kDeletedValue =
     reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
 
-TEST(NewLinkedHashSetTest, CopyConstructAndAssignInt) {
-  using Set = NewLinkedHashSet<ValueInstanceCount<int>>;
+TEST(LinkedHashSetTest, CopyConstructAndAssignInt) {
+  using Set = LinkedHashSet<ValueInstanceCount<int>>;
   // Declare the counters before the set, because they have to outlive teh set.
   int counter1 = 0;
   int counter2 = 0;
@@ -53,8 +58,8 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignInt) {
   EXPECT_EQ(counter3, 6);
 }
 
-TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
-  using Set = NewLinkedHashSet<int*>;
+TEST(LinkedHashSetTest, CopyConstructAndAssignIntPtr) {
+  using Set = LinkedHashSet<int*>;
   Set set1;
   EXPECT_EQ(set1.size(), 0u);
   EXPECT_TRUE(set1.IsEmpty());
@@ -99,8 +104,8 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
   }
 }
 
-TEST(NewLinkedHashSetTest, CopyConstructAndAssignString) {
-  using Set = NewLinkedHashSet<String>;
+TEST(LinkedHashSetTest, CopyConstructAndAssignString) {
+  using Set = LinkedHashSet<String>;
   Set set1;
   EXPECT_EQ(set1.size(), 0u);
   EXPECT_TRUE(set1.IsEmpty());
@@ -144,8 +149,8 @@ TEST(NewLinkedHashSetTest, CopyConstructAndAssignString) {
   }
 }
 
-TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
-  using Set = NewLinkedHashSet<ValueInstanceCount<int>>;
+TEST(LinkedHashSetTest, MoveConstructAndAssignInt) {
+  using Set = LinkedHashSet<ValueInstanceCount<int>>;
   int counter1 = 0;
   int counter2 = 0;
   int counter3 = 0;
@@ -181,8 +186,8 @@ TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
   EXPECT_EQ(counter3, 4);
 }
 
-TEST(NewLinkedHashSetTest, MoveConstructAndAssignString) {
-  using Set = NewLinkedHashSet<ValueInstanceCount<String>>;
+TEST(LinkedHashSetTest, MoveConstructAndAssignString) {
+  using Set = LinkedHashSet<ValueInstanceCount<String>>;
   int counter1 = 0;
   int counter2 = 0;
   int counter3 = 0;
@@ -218,15 +223,15 @@ TEST(NewLinkedHashSetTest, MoveConstructAndAssignString) {
   EXPECT_EQ(counter3, 4);
 }
 
-TEST(NewLinkedHashSetTest, Iterator) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, Iterator) {
+  using Set = LinkedHashSet<int>;
   Set set;
   EXPECT_TRUE(set.begin() == set.end());
   EXPECT_TRUE(set.rbegin() == set.rend());
 }
 
-TEST(NewLinkedHashSetTest, FrontAndBack) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, FrontAndBack) {
+  using Set = LinkedHashSet<int>;
   Set set;
   EXPECT_EQ(set.size(), 0u);
   EXPECT_TRUE(set.IsEmpty());
@@ -252,8 +257,8 @@ TEST(NewLinkedHashSetTest, FrontAndBack) {
   EXPECT_EQ(set.back(), 1);
 }
 
-TEST(NewLinkedHashSetTest, FindAndContains) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, FindAndContains) {
+  using Set = LinkedHashSet<int>;
   Set set;
   set.insert(2);
   set.AppendOrMoveToLast(2);
@@ -284,8 +289,8 @@ TEST(NewLinkedHashSetTest, FindAndContains) {
   EXPECT_FALSE(set.Contains(10));
 }
 
-TEST(NewLinkedHashSetTest, Insert) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, Insert) {
+  using Set = LinkedHashSet<int>;
   Set set;
   Set::AddResult result = set.insert(1);
   EXPECT_TRUE(result.is_new_entry);
@@ -317,8 +322,8 @@ TEST(NewLinkedHashSetTest, Insert) {
   EXPECT_TRUE(it == set.end());
 }
 
-TEST(NewLinkedHashSetTest, InsertBefore) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, InsertBefore) {
+  using Set = LinkedHashSet<int>;
   Set set;
 
   set.InsertBefore(set.begin(), 1);
@@ -344,8 +349,8 @@ TEST(NewLinkedHashSetTest, InsertBefore) {
   EXPECT_TRUE(it == set.end());
 }
 
-TEST(NewLinkedHashSetTest, AppendOrMoveToLast) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, AppendOrMoveToLast) {
+  using Set = LinkedHashSet<int>;
   Set set;
   Set::AddResult result = set.AppendOrMoveToLast(1);
   EXPECT_TRUE(result.is_new_entry);
@@ -371,8 +376,8 @@ TEST(NewLinkedHashSetTest, AppendOrMoveToLast) {
   EXPECT_EQ(*it, 3);
 }
 
-TEST(NewLinkedHashSetTest, PrependOrMoveToFirst) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, PrependOrMoveToFirst) {
+  using Set = LinkedHashSet<int>;
   Set set;
   Set::AddResult result = set.PrependOrMoveToFirst(1);
   EXPECT_TRUE(result.is_new_entry);
@@ -398,8 +403,8 @@ TEST(NewLinkedHashSetTest, PrependOrMoveToFirst) {
   EXPECT_EQ(*it, 2);
 }
 
-TEST(NewLinkedHashSetTest, Erase) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, Erase) {
+  using Set = LinkedHashSet<int>;
   Set set;
   set.insert(1);
   set.insert(2);
@@ -442,8 +447,8 @@ TEST(NewLinkedHashSetTest, Erase) {
   EXPECT_EQ(*it, 6);
 }
 
-TEST(NewLinkedHashSetTest, RemoveFirst) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, RemoveFirst) {
+  using Set = LinkedHashSet<int>;
   Set set;
   set.insert(1);
   set.insert(2);
@@ -463,8 +468,8 @@ TEST(NewLinkedHashSetTest, RemoveFirst) {
   EXPECT_TRUE(set.begin() == set.end());
 }
 
-TEST(NewLinkedHashSetTest, pop_back) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, pop_back) {
+  using Set = LinkedHashSet<int>;
   Set set;
   set.insert(1);
   set.insert(2);
@@ -484,8 +489,8 @@ TEST(NewLinkedHashSetTest, pop_back) {
   EXPECT_TRUE(set.begin() == set.end());
 }
 
-TEST(NewLinkedHashSetTest, Clear) {
-  using Set = NewLinkedHashSet<int>;
+TEST(LinkedHashSetTest, Clear) {
+  using Set = LinkedHashSet<int>;
   Set set;
   set.insert(1);
   set.insert(2);
@@ -544,13 +549,13 @@ struct DefaultHash<EmptyString> {
   };
 };
 
-// This ensures that NewLinkedHashSet can store a struct that needs
+// This ensures that LinkedHashSet can store a struct that needs
 // HashTraits<>::kEmptyValueIsZero set to false. The default EmptyValue() of
 // SimpleClassHashTraits<> returns a value created with the default constructor,
 // so a custom HashTraits that sets kEmptyValueIsZero to false and also
 // overrides EmptyValue() to provide another empty value is needed.
-TEST(NewLinkedHashSetEmptyTest, EmptyString) {
-  using Set = NewLinkedHashSet<EmptyString>;
+TEST(LinkedHashSetEmptyTest, EmptyString) {
+  using Set = LinkedHashSet<EmptyString>;
   Set set;
   set.insert(EmptyString());
 }

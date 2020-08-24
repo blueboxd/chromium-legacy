@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
@@ -2632,6 +2633,8 @@ const views::Widget* BrowserView::GetWidget() const {
 void BrowserView::CreateTabSearchBubble() {
   TabSearchBubbleView::CreateTabSearchBubble(browser_->profile(),
                                              tabstrip_->tab_search_button());
+  base::UmaHistogramEnumeration("Tabs.TabSearch.OpenAction",
+                                TabSearchOpenAction::kKeyboardShortcut);
 }
 
 void BrowserView::RevealTabStripIfNeeded() {

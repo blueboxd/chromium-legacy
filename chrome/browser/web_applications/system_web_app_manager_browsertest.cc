@@ -1119,21 +1119,36 @@ class SystemWebAppManagerUpgradeBrowserTest
  public:
   SystemWebAppManagerUpgradeBrowserTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
-    SystemWebAppManager::EnableAllSystemAppsForTesting();
+    features_.InitAndEnableFeature(features::kEnableAllSystemWebApps);
   }
   ~SystemWebAppManagerUpgradeBrowserTest() override = default;
+
+  unsigned int GetExpectedNumberOfInstalledSystemApps() {
+#if defined(OFFICIAL_BUILD)
+    return 8;
+#else
+    // TODO(http://crbug.com/1120208): Telemetry isn't available for install
+    // unless its flag is enabled. So it's not included here. Update this after
+    // Telemetry is available for install without a flag.
+    return 9;
+#endif  // defined(OFFICIAL_BUILD)
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
 };
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, PRE_Upgrade) {
   WaitForTestSystemAppInstall();
-  EXPECT_GE(GetManager().GetAppIds().size(), 1U);
+  EXPECT_GE(GetExpectedNumberOfInstalledSystemApps(),
+            GetManager().GetAppIds().size());
 }
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, Upgrade) {
   WaitForTestSystemAppInstall();
   const auto& app_ids = GetManager().GetAppIds();
 
-  EXPECT_GE(app_ids.size(), 1U);
+  EXPECT_EQ(GetExpectedNumberOfInstalledSystemApps(), app_ids.size());
 
   for (const auto& app_id : app_ids) {
     const auto type = GetManager().GetSystemAppTypeForAppId(app_id).value();

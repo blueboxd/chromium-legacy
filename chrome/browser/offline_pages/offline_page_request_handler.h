@@ -253,7 +253,7 @@ class OfflinePageRequestHandler {
   void Redirect(const GURL& redirected_url);
 
   void OpenFile(const base::FilePath& file_path,
-                const base::Callback<void(int)>& callback);
+                const base::RepeatingCallback<void(int)>& callback);
   void UpdateDigestOnBackground(
       scoped_refptr<net::IOBuffer> buffer,
       size_t len,

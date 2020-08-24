@@ -8,11 +8,11 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/base/ime/chromeos/ime_assistive_window_handler_interface.h"
+#include "ui/base/ime/chromeos/ime_bridge_observer.h"
+#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
-#include "ui/base/ime/ime_assistive_window_handler_interface.h"
-#include "ui/base/ime/ime_bridge_observer.h"
-#include "ui/base/ime/ime_candidate_window_handler_interface.h"
 
 class IMECandidateWindowHandlerInterface;
 class IMEAssistiveWindowHandlerInterface;

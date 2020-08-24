@@ -73,10 +73,6 @@ std::string GetEnumNameForProperty(drmModeObjectProperties* property_values,
   return std::string();
 }
 
-gfx::Size GetDrmModeSize(const drmModeModeInfo& mode) {
-  return gfx::Size(mode.hdisplay, mode.vdisplay);
-}
-
 std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
   std::vector<drmModeModeInfo> modes;
   for (int i = 0; i < connector->count_modes; ++i)
@@ -99,11 +95,8 @@ void FillPowerFunctionValues(std::vector<display::GammaRampRGBEntry>* table,
 
 }  // namespace
 
-DrmDisplay::DrmDisplay(ScreenManager* screen_manager,
-                       const scoped_refptr<DrmDevice>& drm)
-    : screen_manager_(screen_manager),
-      drm_(drm),
-      current_color_space_(gfx::ColorSpace::CreateSRGB()) {}
+DrmDisplay::DrmDisplay(const scoped_refptr<DrmDevice>& drm)
+    : drm_(drm), current_color_space_(gfx::ColorSpace::CreateSRGB()) {}
 
 DrmDisplay::~DrmDisplay() = default;
 
@@ -138,33 +131,6 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
 #endif
 
   return params;
-}
-
-bool DrmDisplay::Configure(const drmModeModeInfo* mode,
-                           const gfx::Point& origin) {
-  VLOG(1) << "DRM configuring: device=" << drm_->device_path().value()
-          << " crtc=" << crtc_ << " connector=" << connector_->connector_id
-          << " origin=" << origin.ToString()
-          << " size=" << (mode ? GetDrmModeSize(*mode).ToString() : "0x0")
-          << " refresh_rate=" << (mode ? mode->vrefresh : 0) << "Hz";
-
-  if (mode) {
-    if (!screen_manager_->ConfigureDisplayController(
-            drm_, crtc_, connector_->connector_id, origin, *mode)) {
-      VLOG(1) << "Failed to configure: device=" << drm_->device_path().value()
-              << " crtc=" << crtc_ << " connector=" << connector_->connector_id;
-      return false;
-    }
-  } else {
-    if (!screen_manager_->DisableDisplayController(drm_, crtc_)) {
-      VLOG(1) << "Failed to disable device=" << drm_->device_path().value()
-              << " crtc=" << crtc_;
-      return false;
-    }
-  }
-
-  origin_ = origin;
-  return true;
 }
 
 bool DrmDisplay::GetHDCPState(display::HDCPState* state) {

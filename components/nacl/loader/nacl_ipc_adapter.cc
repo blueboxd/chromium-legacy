@@ -356,8 +356,8 @@ NaClIPCAdapter::NaClIPCAdapter(
     : lock_(),
       cond_var_(&lock_),
       task_runner_(runner),
-      resolve_file_token_cb_(resolve_file_token_cb),
-      open_resource_cb_(open_resource_cb),
+      resolve_file_token_cb_(std::move(resolve_file_token_cb)),
+      open_resource_cb_(std::move(open_resource_cb)),
       locked_data_() {
   io_thread_data_.channel_ = IPC::Channel::CreateServer(handle, this, runner);
   // Note, we can not PostTask for ConnectChannelOnIOThread here. If we did,
@@ -527,11 +527,8 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
 
       // resolve_file_token_cb_ must be invoked from the I/O thread.
       resolve_file_token_cb_.Run(
-          token_lo,
-          token_hi,
-          base::Bind(&NaClIPCAdapter::SaveOpenResourceMessage,
-                     this,
-                     msg));
+          token_lo, token_hi,
+          base::BindOnce(&NaClIPCAdapter::SaveOpenResourceMessage, this, msg));
 
       // In this case, we don't release the message to NaCl untrusted code
       // immediately. We defer it until we get an async message back from the
@@ -818,7 +815,7 @@ void NaClIPCAdapter::SendMessageOnIOThread(
     // from the I/O thread.
     if (open_resource_cb_.Run(
             *message.get(), key,
-            base::Bind(&NaClIPCAdapter::SaveOpenResourceMessage, this))) {
+            base::BindOnce(&NaClIPCAdapter::SaveOpenResourceMessage, this))) {
       // The callback sent a reply to the untrusted side.
       return;
     }

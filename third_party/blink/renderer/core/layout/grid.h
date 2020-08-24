@@ -17,9 +17,20 @@
 
 namespace blink {
 
+struct OrderedTrackIndexSetHashTraits : public HashTraits<size_t> {
+  static const bool kEmptyValueIsZero = false;
+  static size_t EmptyValue() { return UINT_MAX; }
+
+  static void ConstructDeletedValue(size_t& slot, bool) { slot = UINT_MAX - 1; }
+  static bool IsDeletedValue(const size_t& value) {
+    return value == UINT_MAX - 1;
+  }
+};
+
 // TODO(svillar): Perhaps we should use references here.
 typedef Vector<LayoutBox*, 1> GridItemList;
-typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
+typedef LinkedHashSet<size_t, OrderedTrackIndexSetHashTraits>
+    OrderedTrackIndexSet;
 
 class LayoutGrid;
 class GridIterator;
@@ -62,7 +73,6 @@ class CORE_EXPORT Grid {
   size_t AutoRepeatTracks(GridTrackSizingDirection) const;
   void SetAutoRepeatTracks(size_t auto_repeat_rows, size_t auto_repeat_columns);
 
-  typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
   void SetAutoRepeatEmptyColumns(std::unique_ptr<OrderedTrackIndexSet>);
   void SetAutoRepeatEmptyRows(std::unique_ptr<OrderedTrackIndexSet>);
 

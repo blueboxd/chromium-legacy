@@ -171,7 +171,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   int64_t last_file_size_;
   std::string last_digest_;
   bool async_operation_completed_ = false;
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
 
   TestScopedOfflineClock clock_;
 
@@ -222,7 +222,7 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
   last_file_size_ = file_size;
   last_digest_ = digest;
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 void OfflinePageMHTMLArchiverTest::PumpLoop() {

@@ -6708,3 +6708,5 @@ crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
 # Sheriff 2020-0-21
 crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
 
+# Sheriff 2020-08-24
+crbug.com/1121015 [ Linux ] external/wpt/webcodecs/video-decoder.html [ Pass Crash ]

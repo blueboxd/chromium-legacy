@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_
-#define UI_BASE_IME_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_
+#ifndef UI_BASE_IME_CHROMEOS_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_
+#define UI_BASE_IME_CHROMEOS_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_
 
 #include <stdint.h>
 
@@ -21,7 +21,8 @@ class CandidateWindow;
 namespace chromeos {
 
 // A interface to handle the candidate window related method call.
-class COMPONENT_EXPORT(UI_BASE_IME) IMECandidateWindowHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
+    IMECandidateWindowHandlerInterface {
  public:
   virtual ~IMECandidateWindowHandlerInterface() {}
 
@@ -52,4 +53,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMECandidateWindowHandlerInterface {
 
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_
+#endif  // UI_BASE_IME_CHROMEOS_IME_CANDIDATE_WINDOW_HANDLER_INTERFACE_H_

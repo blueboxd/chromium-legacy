@@ -605,8 +605,9 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   } else {
     file_path = GetCurrentOfflinePage().file_path;
   }
-  OpenFile(file_path, base::Bind(&OfflinePageRequestHandler::DidOpenForServing,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  OpenFile(file_path,
+           base::BindRepeating(&OfflinePageRequestHandler::DidOpenForServing,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestHandler::VisitTrustedOfflinePage() {
@@ -712,7 +713,7 @@ bool OfflinePageRequestHandler::IsProcessingFileOrContentUrlIntent() const {
 
 void OfflinePageRequestHandler::OpenFile(
     const base::FilePath& file_path,
-    const base::Callback<void(int)>& callback) {
+    const base::RepeatingCallback<void(int)>& callback) {
   if (!stream_)
     stream_ = std::make_unique<net::FileStream>(file_task_runner_);
 
@@ -814,8 +815,8 @@ void OfflinePageRequestHandler::DidGetFileSizeForValidation(
 
   // Open file to compute the digest.
   OpenFile(GetCurrentOfflinePage().file_path,
-           base::Bind(&OfflinePageRequestHandler::DidOpenForValidation,
-                      weak_ptr_factory_.GetWeakPtr()));
+           base::BindRepeating(&OfflinePageRequestHandler::DidOpenForValidation,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestHandler::DidOpenForValidation(int result) {

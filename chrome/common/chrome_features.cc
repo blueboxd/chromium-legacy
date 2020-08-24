@@ -292,6 +292,11 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enables all registered system web apps, regardless of their respective
+// feature flags.
+const base::Feature kEnableAllSystemWebApps{"EnableAllSystemWebApps",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Disables ambient authentication in guest sessions.
 const base::Feature kEnableAmbientAuthenticationInGuestSession{
     "EnableAmbientAuthenticationInGuestSession",

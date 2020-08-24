@@ -73,10 +73,6 @@ const char kFileHandlingOriginTrial[] = "FileHandling";
 // bailing out.
 const int kInstallFailureAttempts = 3;
 
-// When set to |true|, SystemWebAppManager will enable all registered System
-// Apps, regardless of their respective feature flag.
-bool g_enable_all_system_web_apps_for_testing = false;
-
 // Use #if defined to avoid compiler error on unused function.
 #if defined(OS_CHROMEOS)
 
@@ -284,7 +280,7 @@ const char SystemWebAppManager::kInstallDurationHistogramName[];
 
 // static
 bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
-  if (g_enable_all_system_web_apps_for_testing)
+  if (base::FeatureList::IsEnabled(features::kEnableAllSystemWebApps))
     return true;
 
 #if defined(OS_CHROMEOS)
@@ -319,11 +315,6 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
 #else
   return false;
 #endif  // OS_CHROMEOS
-}
-
-// static
-void SystemWebAppManager::EnableAllSystemAppsForTesting() {
-  g_enable_all_system_web_apps_for_testing = true;
 }
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile)

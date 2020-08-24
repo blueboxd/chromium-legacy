@@ -72,21 +72,22 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   };
 #pragma pack(pop)
 
-  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
+  typedef base::OnceCallback<void(IPC::PlatformFileForTransit, base::FilePath)>
       ResolveFileTokenReplyCallback;
 
-  typedef base::Callback<void(uint64_t,  // file_token_lo
-                              uint64_t,  // file_token_hi
-                              ResolveFileTokenReplyCallback)>
+  typedef base::RepeatingCallback<void(uint64_t,  // file_token_lo
+                                       uint64_t,  // file_token_hi
+                                       ResolveFileTokenReplyCallback)>
       ResolveFileTokenCallback;
 
-  typedef base::Callback<void(const IPC::Message&,
-                              IPC::PlatformFileForTransit,
-                              base::FilePath)> OpenResourceReplyCallback;
+  typedef base::OnceCallback<
+      void(const IPC::Message&, IPC::PlatformFileForTransit, base::FilePath)>
+      OpenResourceReplyCallback;
 
-  typedef base::Callback<bool(const IPC::Message&,
-                              const std::string&,  // key
-                              OpenResourceReplyCallback)> OpenResourceCallback;
+  typedef base::RepeatingCallback<bool(const IPC::Message&,
+                                       const std::string&,  // key
+                                       OpenResourceReplyCallback)>
+      OpenResourceCallback;
 
   // Creates an adapter, using the thread associated with the given task
   // runner for posting messages. In normal use, the task runner will post to

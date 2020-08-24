@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "ipc/ipc_listener.h"
 
@@ -58,11 +59,9 @@ class NaClListener : public IPC::Listener {
     return trusted_listener_.get();
   }
 
-  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
-      ResolveFileTokenCallback;
   void ResolveFileToken(uint64_t token_lo,
                         uint64_t token_hi,
-                        ResolveFileTokenCallback cb);
+                        NaClIPCAdapter::ResolveFileTokenReplyCallback cb);
   void OnFileTokenResolved(uint64_t token_lo,
                            uint64_t token_hi,
                            IPC::PlatformFileForTransit ipc_fd,
@@ -75,13 +74,9 @@ class NaClListener : public IPC::Listener {
 
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  typedef base::Callback<void(const IPC::Message&,
-                              IPC::PlatformFileForTransit,
-                              base::FilePath)> OpenResourceReplyCallback;
-
   bool OnOpenResource(const IPC::Message& msg,
                       const std::string& key,
-                      OpenResourceReplyCallback cb);
+                      NaClIPCAdapter::OpenResourceReplyCallback cb);
 
   void OnAddPrefetchedResource(
       const nacl::NaClResourcePrefetchResult& prefetched_resource_file);
@@ -112,7 +107,7 @@ class NaClListener : public IPC::Listener {
 
   std::unique_ptr<NaClTrustedListener> trusted_listener_;
 
-  ResolveFileTokenCallback resolved_cb_;
+  NaClIPCAdapter::ResolveFileTokenReplyCallback resolved_cb_;
 
   // Used to identify what thread we're on.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

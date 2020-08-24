@@ -43,7 +43,7 @@ TEST(VectorBackedLinkedListTest, Insert) {
   }
 }
 
-TEST(VectorBackedLinkedList, PushFront) {
+TEST(VectorBackedLinkedListTest, PushFront) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -62,7 +62,7 @@ TEST(VectorBackedLinkedList, PushFront) {
   }
 }
 
-TEST(VectorBackedLinkedList, PushBack) {
+TEST(VectorBackedLinkedListTest, PushBack) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -81,7 +81,7 @@ TEST(VectorBackedLinkedList, PushBack) {
   }
 }
 
-TEST(VectorBackedLinkedList, MoveTo) {
+TEST(VectorBackedLinkedListTest, MoveTo) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -140,7 +140,7 @@ TEST(VectorBackedLinkedList, MoveTo) {
   EXPECT_EQ(*it, 2);
 }
 
-TEST(VectorBackedLinkedList, Erase) {
+TEST(VectorBackedLinkedListTest, Erase) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -183,7 +183,7 @@ TEST(VectorBackedLinkedList, Erase) {
   EXPECT_EQ(list.back(), 6);
 }
 
-TEST(VectorBackedLinkedList, PopFront) {
+TEST(VectorBackedLinkedListTest, PopFront) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -211,7 +211,7 @@ TEST(VectorBackedLinkedList, PopFront) {
   EXPECT_TRUE(list.empty());
 }
 
-TEST(VectorBackedLinkedList, PopBack) {
+TEST(VectorBackedLinkedListTest, PopBack) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -233,7 +233,7 @@ TEST(VectorBackedLinkedList, PopBack) {
   EXPECT_TRUE(list.empty());
 }
 
-TEST(VectorBackedLinkedList, Clear) {
+TEST(VectorBackedLinkedListTest, Clear) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -254,7 +254,7 @@ TEST(VectorBackedLinkedList, Clear) {
   EXPECT_EQ(list.size(), 1u);
 }
 
-TEST(VectorBackedLinkedList, Iterator) {
+TEST(VectorBackedLinkedListTest, Iterator) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -297,7 +297,7 @@ TEST(VectorBackedLinkedList, Iterator) {
   EXPECT_EQ(*rit, 1);
 }
 
-TEST(VectorBackedLinkedList, ConstIterator) {
+TEST(VectorBackedLinkedListTest, ConstIterator) {
   using List = VectorBackedLinkedList<int>;
   List list;
 
@@ -333,7 +333,7 @@ TEST(VectorBackedLinkedList, ConstIterator) {
   EXPECT_EQ(*crit, 1);
 }
 
-TEST(VectorBackedLinkedList, String) {
+TEST(VectorBackedLinkedListTest, String) {
   using List = VectorBackedLinkedList<String>;
   List list;
 
@@ -394,7 +394,7 @@ TEST(VectorBackedLinkedList, String) {
   EXPECT_TRUE(list.empty());
 }
 
-TEST(VectorBackedLinkedList, UniquePtr) {
+TEST(VectorBackedLinkedListTest, UniquePtr) {
   using List = VectorBackedLinkedList<std::unique_ptr<Dummy>>;
   List list;
 

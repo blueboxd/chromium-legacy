@@ -56,8 +56,6 @@ component("ime") {
   sources = [
     "constants.cc",
     "constants.h",
-    "ime_assistive_window_handler_interface.h",
-    "ime_candidate_window_handler_interface.h",
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",

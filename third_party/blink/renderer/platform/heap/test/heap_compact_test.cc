@@ -224,8 +224,8 @@ TEST_F(HeapCompactTest, CompactDeques) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 }
 
-TEST_F(HeapCompactTest, CompactLinkedHashSet) {
-  using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
+TEST_F(HeapCompactTest, CompactLegacyLinkedHashSet) {
+  using OrderedHashSet = HeapLegacyLinkedHashSet<Member<IntWrapper>>;
   Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::Create(i, HashTablesAreCompacted);
@@ -247,6 +247,135 @@ TEST_F(HeapCompactTest, CompactLinkedHashSet) {
     EXPECT_EQ(expected, v->Value());
     expected++;
   }
+}
+
+TEST_F(HeapCompactTest, CompactLegacyLinkedHashSetVector) {
+  using OrderedHashSet = HeapLegacyLinkedHashSet<Member<IntVector>>;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
+  for (int i = 0; i < 13; ++i) {
+    IntWrapper* value = IntWrapper::Create(i);
+    IntVector* vector = MakeGarbageCollected<IntVector>(19, value);
+    set->insert(vector);
+  }
+  EXPECT_EQ(13u, set->size());
+
+  int expected = 0;
+  for (IntVector* v : *set) {
+    EXPECT_EQ(expected, (*v)[0]->Value());
+    expected++;
+  }
+
+  PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
+
+  expected = 0;
+  for (IntVector* v : *set) {
+    EXPECT_EQ(expected, (*v)[0]->Value());
+    expected++;
+  }
+}
+
+TEST_F(HeapCompactTest, CompactLegacyLinkedHashSetMap) {
+  using Inner = HeapHashSet<Member<IntWrapper>>;
+  using OrderedHashSet = HeapLegacyLinkedHashSet<Member<Inner>>;
+
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
+  for (int i = 0; i < 13; ++i) {
+    IntWrapper* value = IntWrapper::Create(i);
+    Inner* inner = MakeGarbageCollected<Inner>();
+    inner->insert(value);
+    set->insert(inner);
+  }
+  EXPECT_EQ(13u, set->size());
+
+  int expected = 0;
+  for (const Inner* v : *set) {
+    EXPECT_EQ(1u, v->size());
+    EXPECT_EQ(expected, (*v->begin())->Value());
+    expected++;
+  }
+
+  PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
+
+  expected = 0;
+  for (const Inner* v : *set) {
+    EXPECT_EQ(1u, v->size());
+    EXPECT_EQ(expected, (*v->begin())->Value());
+    expected++;
+  }
+}
+
+TEST_F(HeapCompactTest, CompactLegacyLinkedHashSetNested) {
+  using Inner = HeapLegacyLinkedHashSet<Member<IntWrapper>>;
+  using OrderedHashSet = HeapLegacyLinkedHashSet<Member<Inner>>;
+
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
+  for (int i = 0; i < 13; ++i) {
+    IntWrapper* value = IntWrapper::Create(i);
+    Inner* inner = MakeGarbageCollected<Inner>();
+    inner->insert(value);
+    set->insert(inner);
+  }
+  EXPECT_EQ(13u, set->size());
+
+  int expected = 0;
+  for (const Inner* v : *set) {
+    EXPECT_EQ(1u, v->size());
+    EXPECT_EQ(expected, (*v->begin())->Value());
+    expected++;
+  }
+
+  PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
+
+  expected = 0;
+  for (const Inner* v : *set) {
+    EXPECT_EQ(1u, v->size());
+    EXPECT_EQ(expected, (*v->begin())->Value());
+    expected++;
+  }
+}
+
+TEST_F(HeapCompactTest, CompactLinkedHashSet) {
+  using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
+  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
+  for (int i = 0; i < 13; ++i) {
+    IntWrapper* value = IntWrapper::Create(i, HashTablesAreCompacted);
+    set->insert(value);
+  }
+  EXPECT_EQ(13u, set->size());
+
+  int expected = 0;
+  for (IntWrapper* v : *set) {
+    EXPECT_EQ(expected, v->Value());
+    expected++;
+  }
+
+  for (int i = 1; i < 13; i += 2) {
+    auto it = set->begin();
+    for (int j = 0; j < (i + 1) / 2; ++j) {
+      ++it;
+    }
+    set->erase(it);
+  }
+  EXPECT_EQ(7u, set->size());
+
+  expected = 0;
+  for (IntWrapper* v : *set) {
+    EXPECT_EQ(expected, v->Value());
+    expected += 2;
+  }
+
+  PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
+
+  expected = 0;
+  for (IntWrapper* v : *set) {
+    EXPECT_EQ(expected, v->Value());
+    expected += 2;
+  }
+  EXPECT_EQ(7u, set->size());
 }
 
 TEST_F(HeapCompactTest, CompactLinkedHashSetVector) {
@@ -309,135 +438,6 @@ TEST_F(HeapCompactTest, CompactLinkedHashSetMap) {
 TEST_F(HeapCompactTest, CompactLinkedHashSetNested) {
   using Inner = HeapLinkedHashSet<Member<IntWrapper>>;
   using OrderedHashSet = HeapLinkedHashSet<Member<Inner>>;
-
-  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
-  for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::Create(i);
-    Inner* inner = MakeGarbageCollected<Inner>();
-    inner->insert(value);
-    set->insert(inner);
-  }
-  EXPECT_EQ(13u, set->size());
-
-  int expected = 0;
-  for (const Inner* v : *set) {
-    EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->Value());
-    expected++;
-  }
-
-  PerformHeapCompaction();
-  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
-
-  expected = 0;
-  for (const Inner* v : *set) {
-    EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->Value());
-    expected++;
-  }
-}
-
-TEST_F(HeapCompactTest, CompactNewLinkedHashSet) {
-  using OrderedHashSet = HeapNewLinkedHashSet<Member<IntWrapper>>;
-  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
-  for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::Create(i, HashTablesAreCompacted);
-    set->insert(value);
-  }
-  EXPECT_EQ(13u, set->size());
-
-  int expected = 0;
-  for (IntWrapper* v : *set) {
-    EXPECT_EQ(expected, v->Value());
-    expected++;
-  }
-
-  for (int i = 1; i < 13; i += 2) {
-    auto it = set->begin();
-    for (int j = 0; j < (i + 1) / 2; ++j) {
-      ++it;
-    }
-    set->erase(it);
-  }
-  EXPECT_EQ(7u, set->size());
-
-  expected = 0;
-  for (IntWrapper* v : *set) {
-    EXPECT_EQ(expected, v->Value());
-    expected += 2;
-  }
-
-  PerformHeapCompaction();
-  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
-
-  expected = 0;
-  for (IntWrapper* v : *set) {
-    EXPECT_EQ(expected, v->Value());
-    expected += 2;
-  }
-  EXPECT_EQ(7u, set->size());
-}
-
-TEST_F(HeapCompactTest, CompactNewLinkedHashSetVector) {
-  using OrderedHashSet = HeapNewLinkedHashSet<Member<IntVector>>;
-  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
-  for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::Create(i);
-    IntVector* vector = MakeGarbageCollected<IntVector>(19, value);
-    set->insert(vector);
-  }
-  EXPECT_EQ(13u, set->size());
-
-  int expected = 0;
-  for (IntVector* v : *set) {
-    EXPECT_EQ(expected, (*v)[0]->Value());
-    expected++;
-  }
-
-  PerformHeapCompaction();
-  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
-
-  expected = 0;
-  for (IntVector* v : *set) {
-    EXPECT_EQ(expected, (*v)[0]->Value());
-    expected++;
-  }
-}
-
-TEST_F(HeapCompactTest, CompactNewLinkedHashSetMap) {
-  using Inner = HeapHashSet<Member<IntWrapper>>;
-  using OrderedHashSet = HeapNewLinkedHashSet<Member<Inner>>;
-
-  Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
-  for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::Create(i);
-    Inner* inner = MakeGarbageCollected<Inner>();
-    inner->insert(value);
-    set->insert(inner);
-  }
-  EXPECT_EQ(13u, set->size());
-
-  int expected = 0;
-  for (const Inner* v : *set) {
-    EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->Value());
-    expected++;
-  }
-
-  PerformHeapCompaction();
-  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
-
-  expected = 0;
-  for (const Inner* v : *set) {
-    EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->Value());
-    expected++;
-  }
-}
-
-TEST_F(HeapCompactTest, CompactNewLinkedHashSetNested) {
-  using Inner = HeapNewLinkedHashSet<Member<IntWrapper>>;
-  using OrderedHashSet = HeapNewLinkedHashSet<Member<Inner>>;
 
   Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {

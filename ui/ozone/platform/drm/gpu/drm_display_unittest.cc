@@ -14,7 +14,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 using ::testing::_;
 using ::testing::SizeIs;
@@ -117,7 +116,7 @@ class DrmDisplayTest : public testing::Test {
   DrmDisplayTest()
       : mock_drm_device_(base::MakeRefCounted<MockDrmDevice>(
             std::make_unique<MockGbmDevice>())),
-        drm_display_(&screen_manager_, mock_drm_device_) {}
+        drm_display_(mock_drm_device_) {}
 
   MockHardwareDisplayPlaneManager* AddMockHardwareDisplayPlaneManager() {
     auto mock_hardware_display_plane_manager =
@@ -132,7 +131,6 @@ class DrmDisplayTest : public testing::Test {
 
   base::test::TaskEnvironment env_;
   scoped_refptr<DrmDevice> mock_drm_device_;
-  ScreenManager screen_manager_;
   DrmDisplay drm_display_;
 };
 

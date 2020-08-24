@@ -418,9 +418,10 @@ void OfflinePageTabHelper::ScheduleDownloadHelper(
     const std::string& request_origin) {
   OfflinePageUtils::CheckDuplicateDownloads(
       web_contents->GetBrowserContext(), url,
-      base::Bind(&OfflinePageTabHelper::DuplicateCheckDoneForScheduleDownload,
-                 weak_ptr_factory_.GetWeakPtr(), web_contents, name_space, url,
-                 ui_action, request_origin));
+      base::BindOnce(
+          &OfflinePageTabHelper::DuplicateCheckDoneForScheduleDownload,
+          weak_ptr_factory_.GetWeakPtr(), web_contents, name_space, url,
+          ui_action, request_origin));
 }
 
 void OfflinePageTabHelper::DuplicateCheckDoneForScheduleDownload(
@@ -435,9 +436,9 @@ void OfflinePageTabHelper::DuplicateCheckDoneForScheduleDownload(
         static_cast<int>(
             OfflinePageUtils::DownloadUIActionFlags::PROMPT_DUPLICATE)) {
       OfflinePageUtils::ShowDuplicatePrompt(
-          base::Bind(&OfflinePageTabHelper::DoDownloadPageLater,
-                     weak_ptr_factory_.GetWeakPtr(), web_contents, name_space,
-                     url, ui_action, request_origin),
+          base::BindOnce(&OfflinePageTabHelper::DoDownloadPageLater,
+                         weak_ptr_factory_.GetWeakPtr(), web_contents,
+                         name_space, url, ui_action, request_origin),
           url,
           result ==
               OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND,

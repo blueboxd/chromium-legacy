@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 
-#include "base/scoped_observer.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -13,7 +13,18 @@
 
 namespace {
 constexpr int kIconSize = 20;
+
+TabSearchOpenAction GetActionForEvent(const ui::Event& event) {
+  if (event.IsMouseEvent()) {
+    return TabSearchOpenAction::kMouseClick;
+  } else if (event.IsKeyEvent()) {
+    return TabSearchOpenAction::kKeyboardNavigation;
+  } else {
+    return TabSearchOpenAction::kTouchGesture;
+  }
 }
+
+}  // namespace
 
 TabSearchButton::TabSearchButton(TabStrip* tab_strip,
                                  views::ButtonListener* listener)
@@ -40,6 +51,9 @@ void TabSearchButton::ButtonPressed(views::Button* sender,
 
   // Hold the pressed lock while the |bubble_| is active.
   pressed_lock_ = menu_button_controller_->TakeLock();
+
+  base::UmaHistogramEnumeration("Tabs.TabSearch.OpenAction",
+                                GetActionForEvent(event));
 }
 
 void TabSearchButton::OnWidgetClosing(views::Widget* widget) {

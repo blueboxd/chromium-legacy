@@ -419,7 +419,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 
   // Runs on IO thread.
   void CreateFileWithContentOnIO(const std::string& content,
-                                 const base::Closure& callback);
+                                 base::OnceClosure callback);
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
@@ -454,7 +454,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   int file_name_sequence_num_ = 0;
 
   bool async_operation_completed_ = false;
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
 
   OfflinePageURLLoaderBuilder interceptor_factory_;
 
@@ -572,7 +572,7 @@ void OfflinePageRequestHandlerTest::WaitForAsyncOperation() {
 
 void OfflinePageRequestHandlerTest::CreateFileWithContentOnIO(
     const std::string& content,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!temp_dir_.IsValid()) {
@@ -584,7 +584,7 @@ void OfflinePageRequestHandlerTest::CreateFileWithContentOnIO(
   temp_file_path_ = temp_dir_.GetPath().AppendASCII(file_name);
   ASSERT_NE(base::WriteFile(temp_file_path_, content.c_str(), content.length()),
             -1);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 base::FilePath OfflinePageRequestHandlerTest::CreateFileWithContent(
@@ -888,7 +888,7 @@ void OfflinePageRequestHandlerTest::OnSavePageDone(SavePageResult result,
 
   async_operation_completed_ = true;
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 OfflinePageItem OfflinePageRequestHandlerTest::GetPage(int64_t offline_id) {

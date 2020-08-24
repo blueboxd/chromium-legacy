@@ -9,9 +9,11 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/drm/gpu/drm_display.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -29,6 +31,24 @@ class DrmWindow;
 // Responsible for keeping track of active displays and configuring them.
 class ScreenManager {
  public:
+  struct ControllerConfigParams {
+    ControllerConfigParams(int64_t display_id,
+                           scoped_refptr<DrmDevice> drm,
+                           uint32_t crtc,
+                           uint32_t connector,
+                           gfx::Point origin,
+                           std::unique_ptr<drmModeModeInfo> pmode);
+    ControllerConfigParams(ControllerConfigParams&& other);
+    ~ControllerConfigParams();
+
+    const int64_t display_id;
+    const scoped_refptr<DrmDevice> drm;
+    const uint32_t crtc;
+    const uint32_t connector;
+    const gfx::Point origin;
+    std::unique_ptr<drmModeModeInfo> mode = nullptr;
+  };
+
   ScreenManager();
   virtual ~ScreenManager();
 
@@ -43,18 +63,10 @@ class ScreenManager {
   void RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
                                uint32_t crtc);
 
-  // Configure a display controller. The display controller is identified by
-  // (|crtc|, |connector|) and the controller is modeset using |mode|.
-  bool ConfigureDisplayController(const scoped_refptr<DrmDevice>& drm,
-                                  uint32_t crtc,
-                                  uint32_t connector,
-                                  const gfx::Point& origin,
-                                  const drmModeModeInfo& mode);
-
-  // Disable the display controller identified by |crtc|. Note, the controller
-  // may still be connected, so this does not remove the controller.
-  bool DisableDisplayController(const scoped_refptr<DrmDevice>& drm,
-                                uint32_t crtc);
+  // Enables/Disables the display controller based on if a mode exists.
+  base::flat_map<int64_t, bool> ConfigureDisplayControllers(
+      const std::vector<ScreenManager::ControllerConfigParams>&
+          controllersParams);
 
   // Returns a reference to the display controller configured to display within
   // |bounds|. If the caller caches the controller it must also register as an
@@ -90,11 +102,18 @@ class ScreenManager {
       const scoped_refptr<DrmDevice>& drm,
       uint32_t crtc);
 
-  bool ActualConfigureDisplayController(const scoped_refptr<DrmDevice>& drm,
-                                        uint32_t crtc,
-                                        uint32_t connector,
-                                        const gfx::Point& origin,
-                                        const drmModeModeInfo& mode);
+  // Configure a display controller. The display controller is identified by
+  // (|crtc|, |connector|) and the controller is modeset using |mode|.
+  bool EnableDisplayController(const scoped_refptr<DrmDevice>& drm,
+                               uint32_t crtc,
+                               uint32_t connector,
+                               const gfx::Point& origin,
+                               const drmModeModeInfo& mode);
+
+  // Disable the display controller identified by |crtc|. Note, the controller
+  // may still be connected, so this does not remove the controller.
+  bool DisableDisplayController(const scoped_refptr<DrmDevice>& drm,
+                                uint32_t crtc);
 
   // Returns an iterator into |controllers_| for the controller located at
   // |origin|.

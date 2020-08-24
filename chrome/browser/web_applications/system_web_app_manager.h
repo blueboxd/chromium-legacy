@@ -59,6 +59,9 @@ enum class SystemAppType {
   TELEMETRY,
   SAMPLE,
 #endif  // !defined(OFFICIAL_BUILD)
+
+  // When adding a new system app, update system_web_app_manager_browsertest.cc
+  // |GetExpectedNumberOfInstalledSystemApps| method accordingly.
 };
 
 using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
@@ -155,11 +158,6 @@ class SystemWebAppManager {
   void Start();
 
   static bool IsEnabled();
-
-  // This call will instruct System Web App Manager to include all registered
-  // System Apps for installation. Must be called before SystemWebAppManager is
-  // constructed.
-  static void EnableAllSystemAppsForTesting();
 
   // The SystemWebAppManager is disabled in browser tests by default because it
   // pollutes the startup state (several tests expect the Extensions state to be

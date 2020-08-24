@@ -35,12 +35,12 @@ bool OfflinePageUtils::CurrentlyShownInCustomTab(
 
 // static
 void OfflinePageUtils::ShowDuplicatePrompt(
-    const base::Closure& confirm_continuation,
+    base::OnceClosure confirm_continuation,
     const GURL& url,
     bool exists_duplicate_request,
     content::WebContents* web_contents) {
-  OfflinePageInfoBarDelegate::Create(
-      confirm_continuation, url, exists_duplicate_request, web_contents);
+  OfflinePageInfoBarDelegate::Create(std::move(confirm_continuation), url,
+                                     exists_duplicate_request, web_contents);
 }
 
 // static

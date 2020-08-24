@@ -18,5 +18,5 @@ int RunAllTestsImpl() {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   testing::InitGoogleTest(&argc, argv);
-  return base::LaunchUnitTests(argc, argv, base::Bind(&RunAllTestsImpl));
+  return base::LaunchUnitTests(argc, argv, base::BindOnce(&RunAllTestsImpl));
 }

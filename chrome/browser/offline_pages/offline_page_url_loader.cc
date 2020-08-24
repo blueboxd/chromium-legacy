@@ -217,14 +217,14 @@ int OfflinePageURLLoader::GetPageTransition() const {
 
 OfflinePageRequestHandler::Delegate::WebContentsGetter
 OfflinePageURLLoader::GetWebContentsGetter() const {
-  return base::Bind(&GetWebContents, frame_tree_node_id_);
+  return base::BindRepeating(&GetWebContents, frame_tree_node_id_);
 }
 
 OfflinePageRequestHandler::Delegate::TabIdGetter
 OfflinePageURLLoader::GetTabIdGetter() const {
   if (!tab_id_getter_.is_null())
     return tab_id_getter_;
-  return base::Bind(&GetTabId);
+  return base::BindRepeating(&GetTabId);
 }
 
 void OfflinePageURLLoader::ReadRawData() {

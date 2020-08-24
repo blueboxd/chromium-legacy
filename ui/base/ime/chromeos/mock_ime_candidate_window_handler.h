@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "ui/base/ime/candidate_window.h"
-#include "ui/base/ime/ime_candidate_window_handler_interface.h"
+#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {

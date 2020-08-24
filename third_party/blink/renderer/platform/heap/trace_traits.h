@@ -376,21 +376,22 @@ struct TraceInCollectionTrait<
   }
 };
 
-// Nodes used by LinkedHashSet.  Again we need two versions to disambiguate the
-// template.
+// Nodes used by LegacyLinkedHashSet.  Again we need two versions to
+// disambiguate the template.
+// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
 template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
-                              LinkedHashSetNode<Value>,
+                              LegacyLinkedHashSetNode<Value>,
                               Traits> {
   static bool IsAlive(const blink::LivenessBroker& info,
-                      const LinkedHashSetNode<Value>& self) {
+                      const LegacyLinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kNoWeakHandling, Value,
         typename Traits::ValueTraits>::IsAlive(info, self.value_);
   }
 
   static void Trace(blink::Visitor* visitor,
-                    const LinkedHashSetNode<Value>& self) {
+                    const LegacyLinkedHashSetNode<Value>& self) {
     static_assert(
         IsTraceableInCollectionTrait<Traits>::value || IsWeak<Value>::value,
         "T should be traceable (or weak)");
@@ -401,16 +402,18 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 };
 
 template <typename Value, typename Traits>
-struct TraceInCollectionTrait<kWeakHandling, LinkedHashSetNode<Value>, Traits> {
+struct TraceInCollectionTrait<kWeakHandling,
+                              LegacyLinkedHashSetNode<Value>,
+                              Traits> {
   static bool IsAlive(const blink::LivenessBroker& info,
-                      const LinkedHashSetNode<Value>& self) {
+                      const LegacyLinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kWeakHandling, Value,
         typename Traits::ValueTraits>::IsAlive(info, self.value_);
   }
 
   static void Trace(blink::Visitor* visitor,
-                    const LinkedHashSetNode<Value>& self) {
+                    const LegacyLinkedHashSetNode<Value>& self) {
     TraceInCollectionTrait<kWeakHandling, Value,
                            typename Traits::ValueTraits>::Trace(visitor,
                                                                 self.value_);

@@ -53,8 +53,9 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // containing intra-object pointers, all of which must be relocated/rebased
   // with respect to the moved-to location.
   //
-  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
+  // |HeapLegacyLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
+  // TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
   void RegisterBackingStoreCallback(const void*, MovingObjectCallback) final;
 
   void RegisterMovableSlot(const void* const*) final;

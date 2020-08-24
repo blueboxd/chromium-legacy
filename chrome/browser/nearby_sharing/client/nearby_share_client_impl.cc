@@ -385,13 +385,13 @@ void NearbyShareClientImpl::OnFlowSuccess(
     OnApiCallFailed(NearbyShareHttpError::kResponseMalformed);
     return;
   }
-  std::move(result_callback).Run(response);
   notifier_->NotifyOfResponse(response);
+  std::move(result_callback).Run(response);
 }
 
 void NearbyShareClientImpl::OnApiCallFailed(NearbyShareHttpError error) {
+  NS_LOG(ERROR) << "Nearby Share RPC call failed with error " << error;
   std::move(error_callback_).Run(error);
-  NS_LOG(ERROR) << error;
 }
 
 NearbyShareClientFactoryImpl::NearbyShareClientFactoryImpl(

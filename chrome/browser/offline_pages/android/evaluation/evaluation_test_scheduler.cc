@@ -41,7 +41,8 @@ void GetAllRequestsDone(
     Profile* profile = ProfileManager::GetLastUsedProfile();
     RequestCoordinator* coordinator =
         RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
-    coordinator->StartImmediateProcessing(base::Bind(&ProcessingDoneCallback));
+    coordinator->StartImmediateProcessing(
+        base::BindRepeating(&ProcessingDoneCallback));
   }
 }
 
@@ -57,7 +58,7 @@ void StartProcessing() {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
-  coordinator->GetAllRequests(base::Bind(&GetAllRequestsDone));
+  coordinator->GetAllRequests(base::BindOnce(&GetAllRequestsDone));
 }
 
 }  // namespace

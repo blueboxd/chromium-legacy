@@ -6,6 +6,7 @@
 
 #include <drm_fourcc.h>
 #include <stdint.h>
+#include <xf86drm.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -105,9 +106,13 @@ void DrmWindowTest::SetUp() {
   auto gbm_device = std::make_unique<ui::MockGbmDevice>();
   drm_ = new ui::MockDrmDevice(std::move(gbm_device));
   screen_manager_ = std::make_unique<ui::ScreenManager>();
+
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
-  screen_manager_->ConfigureDisplayController(
-      drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
+  std::vector<ui::ScreenManager::ControllerConfigParams> controllers_to_enable;
+  controllers_to_enable.push_back(
+      {1 /*display_id*/, drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(),
+       std::make_unique<drmModeModeInfo>(kDefaultMode)});
+  screen_manager_->ConfigureDisplayControllers(controllers_to_enable);
 
   drm_device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
 
@@ -161,10 +166,15 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
   auto gbm_device = std::make_unique<ui::MockGbmDevice>();
   scoped_refptr<ui::MockDrmDevice> drm =
       new ui::MockDrmDevice(std::move(gbm_device));
+
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
-  screen_manager_->ConfigureDisplayController(
-      drm, kDefaultCrtc, kDefaultConnector,
-      gfx::Point(0, kDefaultMode.vdisplay), kDefaultMode);
+
+  std::vector<ui::ScreenManager::ControllerConfigParams> controllers_to_enable;
+  controllers_to_enable.push_back(
+      {2 /*display_id*/, drm, kDefaultCrtc, kDefaultConnector,
+       gfx::Point(0, kDefaultMode.vdisplay),
+       std::make_unique<drmModeModeInfo>(kDefaultMode)});
+  screen_manager_->ConfigureDisplayControllers(controllers_to_enable);
 
   // Move window to the display on the new device.
   screen_manager_->GetWindow(kDefaultWidgetHandle)

@@ -673,7 +673,12 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 
 - (CWVWebView*)createWebViewWithConfiguration:
     (CWVWebViewConfiguration*)configuration {
-  CWVWebView* webView = [[CWVWebView alloc] initWithFrame:[_contentView bounds]
+  // Set a non empty CGRect to avoid DCHECKs that occur when a load happens
+  // after state restoration, and before the view hierarchy is laid out for the
+  // first time.
+  // https://source.chromium.org/chromium/chromium/src/+/master:ios/web/web_state/ui/crw_web_request_controller.mm;l=518;drc=df887034106ef438611326745a7cd276eedd4953
+  CGRect frame = CGRectMake(0, 0, 1, 1);
+  CWVWebView* webView = [[CWVWebView alloc] initWithFrame:frame
                                             configuration:configuration];
   [_contentView addSubview:webView];
 

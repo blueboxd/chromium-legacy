@@ -26,8 +26,6 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/accessibility/ax_event_manager.h"
-#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
@@ -37,6 +35,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
@@ -260,22 +259,6 @@ class CancelMenuOnMousePressView : public View {
 
  private:
   MenuController* controller_;
-};
-
-class TestAXEventObserver : public views::AXEventObserver {
- public:
-  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
-  ~TestAXEventObserver() override {
-    views::AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  bool saw_selected_children_changed_ = false;
-
-  void OnViewEvent(views::View*, ax::mojom::Event event_type) override {
-    if (event_type == ax::mojom::Event::kSelectedChildrenChanged) {
-      saw_selected_children_changed_ = true;
-    }
-  }
 };
 
 }  // namespace
@@ -2565,18 +2548,17 @@ TEST_F(MenuControllerTest, AccessibilityDoDefaultCallsAccept) {
 // Test that the kSelectedChildrenChanged event is emitted on
 // the root menu item when the selected menu item changes.
 TEST_F(MenuControllerTest, AccessibilityEmitsSelectChildrenChanged) {
-  TestAXEventObserver observer;
+  AXEventCounter ax_counter(views::AXEventManager::Get());
   menu_controller()->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                          MenuAnchorPosition::kTopLeft, false, false);
 
   // Arrow down to select an item checking the event has been emitted.
-  EXPECT_EQ(observer.saw_selected_children_changed_, false);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kSelectedChildrenChanged), 0);
   DispatchKey(ui::VKEY_DOWN);
-  EXPECT_EQ(observer.saw_selected_children_changed_, true);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kSelectedChildrenChanged), 1);
 
-  observer.saw_selected_children_changed_ = false;
   DispatchKey(ui::VKEY_DOWN);
-  EXPECT_EQ(observer.saw_selected_children_changed_, true);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kSelectedChildrenChanged), 2);
 }
 
 #if defined(OS_APPLE)

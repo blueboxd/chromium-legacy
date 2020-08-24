@@ -16,13 +16,12 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/accessibility/ax_event_manager.h"
-#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,48 +40,6 @@ class TestButton : public Button {
   TestButton(const TestButton&) = delete;
   TestButton& operator=(const TestButton&) = delete;
   ~TestButton() override = default;
-};
-
-class TestAXEventObserver : public views::AXEventObserver {
- public:
-  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
-  ~TestAXEventObserver() override {
-    views::AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  void OnViewEvent(views::View*, ax::mojom::Event event_type) override {
-    switch (event_type) {
-      case ax::mojom::Event::kMenuStart:
-        // Fired once at the very start of menu interactions.
-        ++menu_start_count_;
-        break;
-      case ax::mojom::Event::kMenuPopupStart:
-        // Fired once for each menu/submenu that is opened/shown.
-        ++menu_popup_start_count_;
-        break;
-      case ax::mojom::Event::kMenuPopupEnd:
-        // Fired once for each menu/submenu that is closed/hidden.
-        ++menu_popup_end_count_;
-        break;
-      case ax::mojom::Event::kMenuEnd:
-        // Fired once at the very end of menu interactions.
-        ++menu_end_count_;
-        break;
-      default:
-        break;
-    }
-  }
-
-  int GetMenuStartCount() const { return menu_start_count_; }
-  int GetMenuPopupStartCount() const { return menu_popup_start_count_; }
-  int GetMenuPopupEndCount() const { return menu_popup_end_count_; }
-  int GetMenuEndCount() const { return menu_end_count_; }
-
- protected:
-  int menu_start_count_ = 0;
-  int menu_popup_end_count_ = 0;
-  int menu_popup_start_count_ = 0;
-  int menu_end_count_ = 0;
 };
 
 }  // namespace
@@ -178,19 +135,19 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
 
   // SetupMenu leaves the mouse position where the first menu item will be
   // when we run the menu.
-  TestAXEventObserver observer;
-  EXPECT_EQ(observer.GetMenuStartCount(), 0);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 0);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 0);
-  EXPECT_EQ(observer.GetMenuEndCount(), 0);
+  AXEventCounter ax_counter(views::AXEventManager::Get());
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 0);
   SetupMenu(widget);
 
-  EXPECT_EQ(observer.GetMenuStartCount(), 1);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 1);
   // SetupMenu creates, opens and closes a popup menu, so there will be a
   // a menu popup end. There is also a menu end since it's the last menu.
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 1);
-  EXPECT_EQ(observer.GetMenuEndCount(), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 1);
   EXPECT_FALSE(first_item_->IsSelected());
 #if !defined(OS_CHROMEOS)  // ChromeOS does not use popup focus override.
   EXPECT_FALSE(first_item_->GetViewAccessibility().IsFocusedForTesting());
@@ -198,10 +155,10 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   menu_runner_->RunMenuAt(widget, nullptr, gfx::Rect(),
                           views::MenuAnchorPosition::kTopLeft,
                           ui::MENU_SOURCE_NONE);
-  EXPECT_EQ(observer.GetMenuStartCount(), 2);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 2);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 1);
-  EXPECT_EQ(observer.GetMenuEndCount(), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 1);
   EXPECT_FALSE(first_item_->IsSelected());
   // One or two mouse events are posted by the menu being shown.
   // Process event(s), and check what's selected in the menu.
@@ -228,10 +185,10 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   EXPECT_FALSE(first_item_->GetViewAccessibility().IsFocusedForTesting());
   EXPECT_TRUE(button.GetViewAccessibility().IsFocusedForTesting());
 #endif
-  EXPECT_EQ(observer.GetMenuStartCount(), 2);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 2);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 2);
-  EXPECT_EQ(observer.GetMenuEndCount(), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 2);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 2);
   widget->Close();
 }
 
@@ -248,11 +205,11 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
   ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
   MenuDelegate menu_delegate;
   MenuItemView* menu_item = new MenuItemView(&menu_delegate);
-  TestAXEventObserver observer;
-  EXPECT_EQ(observer.GetMenuStartCount(), 0);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 0);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 0);
-  EXPECT_EQ(observer.GetMenuEndCount(), 0);
+  AXEventCounter ax_counter(views::AXEventManager::Get());
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 0);
   std::unique_ptr<MenuRunner> menu_runner(
       std::make_unique<MenuRunner>(menu_item, views::MenuRunner::CONTEXT_MENU));
   MenuItemView* first_item =
@@ -261,10 +218,10 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
   menu_runner->RunMenuAt(nullptr, nullptr, gfx::Rect(),
                          views::MenuAnchorPosition::kTopLeft,
                          ui::MENU_SOURCE_NONE);
-  EXPECT_EQ(observer.GetMenuStartCount(), 1);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 1);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 0);
-  EXPECT_EQ(observer.GetMenuEndCount(), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 0);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 0);
   base::RunLoop loop;
   // SendKeyPress fails if the window doesn't have focus.
   ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
@@ -275,10 +232,10 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
   EXPECT_TRUE(first_item->GetViewAccessibility().IsFocusedForTesting());
   menu_runner->Cancel();
   EXPECT_FALSE(first_item->GetViewAccessibility().IsFocusedForTesting());
-  EXPECT_EQ(observer.GetMenuStartCount(), 1);
-  EXPECT_EQ(observer.GetMenuPopupStartCount(), 1);
-  EXPECT_EQ(observer.GetMenuPopupEndCount(), 1);
-  EXPECT_EQ(observer.GetMenuEndCount(), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuStart), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupStart), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuPopupEnd), 1);
+  EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kMenuEnd), 1);
 }
 #endif  // OS_WIN
 

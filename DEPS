@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3cdc259008b52e4f31e6cda8cf907db5b091ee98',
+  'skia_revision': '216b984d394647beff67ea8e9f18268fd99f5bb0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8c86f0d9176704623b9d66165d14fd24f824abf4',
+  'angle_revision': '09b5e6b1950b8f58cf051b99ca8d4d8176df9078',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '01f7fadf76bf56f4e9a36003c17b01124bdbd2f5',
+  'devtools_frontend_revision': 'ecc4ecb65cd8285f5dc4eb6b02efb10787e440f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1470,7 +1470,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'f7cf133ad5f0a1341a6e31d58ffea8e63e8b22e4',
+    Var('webrtc_git') + '/src.git' + '@' + '70b2cf8b368d63143935cc37a84b7e6f403aae65',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

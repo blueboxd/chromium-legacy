@@ -20,8 +20,7 @@
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/accessibility/ax_event_manager.h"
-#include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/slider_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -107,28 +106,6 @@ void TestSliderListener::SliderDragEnded(views::Slider* sender) {
   last_drag_ended_sender_ = sender;
   last_drag_ended_epoch_ = ++last_event_epoch_;
 }
-
-class TestAXEventObserver : public views::AXEventObserver {
- public:
-  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
-
-  ~TestAXEventObserver() override {
-    views::AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  bool value_changed() const { return value_changed_; }
-
-  // views::AXEventObserver:
-  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
-    if (event_type == ax::mojom::Event::kValueChanged)
-      value_changed_ = true;
-  }
-
- private:
-  bool value_changed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
-};
 
 }  // namespace
 
@@ -368,8 +345,8 @@ TEST_F(SliderTest, SliderListenerEventsForMultiFingerScrollGesture) {
 // Verifies the correct SliderListener events are raised for an accessible
 // slider.
 TEST_F(SliderTest, SliderRaisesA11yEvents) {
-  TestAXEventObserver observer;
-  EXPECT_FALSE(observer.value_changed());
+  test::AXEventCounter ax_counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kValueChanged));
 
   // First, detach/reattach the slider without setting value.
   // Temporarily detach the slider.
@@ -378,18 +355,18 @@ TEST_F(SliderTest, SliderRaisesA11yEvents) {
 
   // Re-attachment should cause nothing to get fired.
   root_view->AddChildView(slider());
-  EXPECT_FALSE(observer.value_changed());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kValueChanged));
 
   // Now, set value before reattaching.
   root_view->RemoveChildView(slider());
 
   // Value changes won't trigger accessibility events before re-attachment.
   slider()->SetValue(22);
-  EXPECT_FALSE(observer.value_changed());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kValueChanged));
 
   // Re-attachment should trigger the value change.
   root_view->AddChildView(slider());
-  EXPECT_TRUE(observer.value_changed());
+  EXPECT_EQ(1, ax_counter.GetCount(ax::mojom::Event::kValueChanged));
 }
 
 #endif  // !defined(OS_APPLE) || defined(USE_AURA)

@@ -884,6 +884,8 @@ source_set("test_support") {
     "controls/textfield/textfield_test_api.h",
     "layout/animating_layout_manager_test_util.cc",
     "layout/animating_layout_manager_test_util.h",
+    "test/ax_event_counter.cc",
+    "test/ax_event_counter.h",
     "test/button_test_api.cc",
     "test/button_test_api.h",
     "test/capture_tracking_view.cc",

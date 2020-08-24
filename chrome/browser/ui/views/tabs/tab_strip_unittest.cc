@@ -35,11 +35,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/accessibility/ax_event_manager.h"
-#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
@@ -56,38 +55,6 @@ views::View* FindTabView(views::View* view) {
   }
   return current;
 }
-
-class TestAXEventObserver : public views::AXEventObserver {
- public:
-  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
-  TestAXEventObserver(const TestAXEventObserver&) = delete;
-  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
-  ~TestAXEventObserver() override {
-    views::AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  // views::AXEventObserver:
-  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
-    if (event_type == ax::mojom::Event::kSelectionRemove) {
-      remove_count_++;
-    }
-    if (event_type == ax::mojom::Event::kSelection) {
-      change_count_++;
-    }
-    if (event_type == ax::mojom::Event::kSelectionAdd) {
-      add_count_++;
-    }
-  }
-
-  int add_count() { return add_count_; }
-  int change_count() { return change_count_; }
-  int remove_count() { return remove_count_; }
-
- private:
-  int add_count_ = 0;
-  int change_count_ = 0;
-  int remove_count_ = 0;
-};
 
 }  // namespace
 
@@ -291,7 +258,7 @@ TEST_P(TabStripTest, GetModelCount) {
 }
 
 TEST_P(TabStripTest, AccessibilityEvents) {
-  TestAXEventObserver observer;
+  views::test::AXEventCounter ax_counter(views::AXEventManager::Get());
 
   // When adding tabs, SetSelection() is called after AddTabAt(), as
   // otherwise the index would not be meaningful.
@@ -300,24 +267,24 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   ui::ListSelectionModel selection;
   selection.SetSelectedIndex(1);
   tab_strip_->SetSelection(selection);
-  EXPECT_EQ(0, observer.add_count());
-  EXPECT_EQ(1, observer.change_count());
-  EXPECT_EQ(0, observer.remove_count());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionAdd));
+  EXPECT_EQ(1, ax_counter.GetCount(ax::mojom::Event::kSelection));
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
 
   // When removing tabs, SetSelection() is called before RemoveTabAt(), as
   // otherwise the index would not be meaningful.
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
   tab_strip_->RemoveTabAt(nullptr, 1, true);
-  EXPECT_EQ(0, observer.add_count());
-  EXPECT_EQ(2, observer.change_count());
-  EXPECT_EQ(0, observer.remove_count());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionAdd));
+  EXPECT_EQ(2, ax_counter.GetCount(ax::mojom::Event::kSelection));
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
 
   // When activating widget, refire selection event on tab.
   widget_->OnNativeWidgetActivationChanged(true);
-  EXPECT_EQ(0, observer.add_count());
-  EXPECT_EQ(3, observer.change_count());
-  EXPECT_EQ(0, observer.remove_count());
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionAdd));
+  EXPECT_EQ(3, ax_counter.GetCount(ax::mojom::Event::kSelection));
+  EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
 }
 
 TEST_P(TabStripTest, AccessibilityData) {

@@ -305,7 +305,10 @@ bool DragLeftMouseTo(views::View* target, const gfx::Point& point) {
 
 }  // namespace
 
-class TableViewTest : public ViewsTestBase {
+// The test parameter is used to control whether or not to test the TableView
+// using the default construction path.
+class TableViewTest : public ViewsTestBase,
+                      public ::testing::WithParamInterface<bool> {
  public:
   TableViewTest() = default;
 
@@ -319,8 +322,17 @@ class TableViewTest : public ViewsTestBase {
     columns[1].title = base::ASCIIToUTF16("Title Column 1");
     columns[1].id = 1;
     columns[1].sortable = true;
-    auto table =
-        std::make_unique<TableView>(model_.get(), columns, TEXT_ONLY, false);
+
+    std::unique_ptr<TableView> table;
+
+    // Run the tests using both default and non-default TableView construction.
+    if (GetParam()) {
+      table = std::make_unique<TableView>();
+      table->Init(model_.get(), columns, TEXT_ONLY, false);
+    } else {
+      table =
+          std::make_unique<TableView>(model_.get(), columns, TEXT_ONLY, false);
+    }
     table_ = table.get();
     auto scroll_view = TableView::CreateScrollViewWithTable(std::move(table));
     scroll_view->SetBounds(0, 0, 10000, 10000);
@@ -447,8 +459,10 @@ class TableViewTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(TableViewTest);
 };
 
+INSTANTIATE_TEST_SUITE_P(All, TableViewTest, testing::Values(false, true));
+
 // Verifies GetPaintRegion.
-TEST_F(TableViewTest, GetPaintRegion) {
+TEST_P(TableViewTest, GetPaintRegion) {
   // Two columns should be visible.
   EXPECT_EQ(2u, helper_->visible_col_count());
 
@@ -457,7 +471,7 @@ TEST_F(TableViewTest, GetPaintRegion) {
             helper_->GetPaintRegion(gfx::Rect(0, 0, 1, table_->height())));
 }
 
-TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
+TEST_P(TableViewTest, UpdateVirtualAccessibilityChildren) {
   const ViewAccessibility& view_accessibility = table_->GetViewAccessibility();
   ui::AXNodeData data;
   view_accessibility.GetAccessibleNodeData(&data);
@@ -518,7 +532,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
 // TableView (rows and cells) is updated appropriately as the table changes. For
 // example, verifies that if a column is resized or hidden, the bounds are
 // updated.
-TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBounds) {
+TEST_P(TableViewTest, UpdateVirtualAccessibilityChildrenBounds) {
   // Verify the bounds are updated correctly when the TableView and its widget
   // have been shown. Initially some widths would be 0 until the TableView's
   // bounds are fully set up, so make sure the virtual children bounds have been
@@ -527,7 +541,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBounds) {
   VerifyTableAccChildrenBounds(table_->GetViewAccessibility(), expected_bounds);
 }
 
-TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsWithResize) {
+TEST_P(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsWithResize) {
   // Resize the first column 10 pixels smaller and check the bounds are updated.
   int x = table_->GetVisibleColumn(0).width;
   PressLeftMouseAt(helper_->header(), gfx::Point(x, 0));
@@ -538,7 +552,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsWithResize) {
                                expected_bounds_after_resize);
 }
 
-TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
+TEST_P(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
   // Hide 1 column and check the bounds are updated.
   table_->SetColumnVisibility(1, false);
   auto expected_bounds_after_hiding = helper_->GenerateExpectedBounds();
@@ -546,7 +560,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
                                expected_bounds_after_hiding);
 }
 
-TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
+TEST_P(TableViewTest, GetVirtualAccessibilityRow) {
   for (int i = 0; i < table_->GetRowCount(); ++i) {
     const AXVirtualView* row = helper_->GetVirtualAccessibilityRow(i);
     ASSERT_TRUE(row);
@@ -557,7 +571,7 @@ TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
   }
 }
 
-TEST_F(TableViewTest, GetVirtualAccessibilityCell) {
+TEST_P(TableViewTest, GetVirtualAccessibilityCell) {
   for (int i = 0; i < table_->GetRowCount(); ++i) {
     for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
       const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(i, j);
@@ -573,7 +587,7 @@ TEST_F(TableViewTest, GetVirtualAccessibilityCell) {
 }
 
 // Verifies SetColumnVisibility().
-TEST_F(TableViewTest, ColumnVisibility) {
+TEST_P(TableViewTest, ColumnVisibility) {
   // Two columns should be visible.
   EXPECT_EQ(2u, helper_->visible_col_count());
 
@@ -606,7 +620,7 @@ TEST_F(TableViewTest, ColumnVisibility) {
 }
 
 // Verifies resizing a column using the mouse works.
-TEST_F(TableViewTest, Resize) {
+TEST_P(TableViewTest, Resize) {
   const int x = table_->GetVisibleColumn(0).width;
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
@@ -619,7 +633,7 @@ TEST_F(TableViewTest, Resize) {
 }
 
 // Verifies resizing a column works with a gesture.
-TEST_F(TableViewTest, ResizeViaGesture) {
+TEST_P(TableViewTest, ResizeViaGesture) {
   const int x = table_->GetVisibleColumn(0).width;
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
@@ -639,7 +653,7 @@ TEST_F(TableViewTest, ResizeViaGesture) {
 
 // Verifies resizing a column works with the keyboard.
 // The resize keyboard amount is 5 pixels.
-TEST_F(TableViewTest, ResizeViaKeyboard) {
+TEST_P(TableViewTest, ResizeViaKeyboard) {
   if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
     return;
 
@@ -673,7 +687,7 @@ TEST_F(TableViewTest, ResizeViaKeyboard) {
 
 // Verifies resizing a column won't reduce the column width below the width of
 // the column's title text.
-TEST_F(TableViewTest, ResizeHonorsMinimum) {
+TEST_P(TableViewTest, ResizeHonorsMinimum) {
   TableViewTestHelper helper(table_);
   const int x = table_->GetVisibleColumn(0).width;
   EXPECT_NE(0, x);
@@ -691,7 +705,7 @@ TEST_F(TableViewTest, ResizeHonorsMinimum) {
 }
 
 // Assertions for table sorting.
-TEST_F(TableViewTest, Sort) {
+TEST_P(TableViewTest, Sort) {
   // Initial ordering.
   EXPECT_TRUE(table_->sort_descriptors().empty());
   EXPECT_EQ("0 1 2 3", GetViewToModelAsString(table_));
@@ -822,7 +836,7 @@ TEST_F(TableViewTest, Sort) {
 }
 
 // Verifies clicking on the header sorts.
-TEST_F(TableViewTest, SortOnMouse) {
+TEST_P(TableViewTest, SortOnMouse) {
   EXPECT_TRUE(table_->sort_descriptors().empty());
 
   const int x = table_->GetVisibleColumn(0).width / 2;
@@ -839,7 +853,7 @@ TEST_F(TableViewTest, SortOnMouse) {
 
 // Verifies that pressing the space bar when a particular visible column is
 // active will sort by that column.
-TEST_F(TableViewTest, SortOnSpaceBar) {
+TEST_P(TableViewTest, SortOnSpaceBar) {
   if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
     return;
 
@@ -874,7 +888,7 @@ TEST_F(TableViewTest, SortOnSpaceBar) {
   EXPECT_FALSE(table_->sort_descriptors()[1].ascending);
 }
 
-TEST_F(TableViewTest, Tooltip) {
+TEST_P(TableViewTest, Tooltip) {
   // Column 0 uses the TableModel's GetTooltipText override for tooltips.
   table_->SetVisibleColumnWidth(0, 10);
   auto local_point_for_row = [&](int row) {
@@ -925,7 +939,7 @@ class TableGrouperImpl : public TableGrouper {
 }  // namespace
 
 // Assertions around grouping.
-TEST_F(TableViewTest, Grouping) {
+TEST_P(TableViewTest, Grouping) {
   // Configure the grouper so that there are two groups:
   // A 0
   //   1
@@ -1022,7 +1036,7 @@ class TableViewObserverImpl : public TableViewObserver {
 }  // namespace
 
 // Assertions around changing the selection.
-TEST_F(TableViewTest, Selection) {
+TEST_P(TableViewTest, Selection) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
 
@@ -1108,7 +1122,7 @@ TEST_F(TableViewTest, Selection) {
   table_->set_observer(nullptr);
 }
 
-TEST_F(TableViewTest, RemoveUnselectedRows) {
+TEST_P(TableViewTest, RemoveUnselectedRows) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
 
@@ -1135,7 +1149,7 @@ TEST_F(TableViewTest, RemoveUnselectedRows) {
 // remove 1 -> 0 1 (none selected)
 // select 0 -> [0] 1
 // remove 0 -> 0 (none selected)
-TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
+TEST_P(TableViewTest, SelectionNoSelectOnRemove) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
   table_->SetSelectOnRemove(false);
@@ -1181,7 +1195,7 @@ TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
 #if !defined(OS_APPLE)
 // Verifies selection works by way of a gesture.
-TEST_F(TableViewTest, SelectOnTap) {
+TEST_P(TableViewTest, SelectOnTap) {
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
@@ -1200,7 +1214,7 @@ TEST_F(TableViewTest, SelectOnTap) {
 #endif
 
 // Verifies up/down correctly navigate through groups.
-TEST_F(TableViewTest, KeyUpDown) {
+TEST_P(TableViewTest, KeyUpDown) {
   // Configure the grouper so that there are three groups:
   // A 0
   //   1
@@ -1331,7 +1345,7 @@ TEST_F(TableViewTest, KeyUpDown) {
 }
 
 // Verifies left/right correctly navigate through visible columns.
-TEST_F(TableViewTest, KeyLeftRight) {
+TEST_P(TableViewTest, KeyLeftRight) {
   if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
     return;
 
@@ -1430,7 +1444,7 @@ TEST_F(TableViewTest, KeyLeftRight) {
 }
 
 // Verifies home/end do the right thing.
-TEST_F(TableViewTest, HomeEnd) {
+TEST_P(TableViewTest, HomeEnd) {
   // Configure the grouper so that there are three groups:
   // A 0
   //   1
@@ -1466,7 +1480,7 @@ TEST_F(TableViewTest, HomeEnd) {
 }
 
 // Verifies multiple selection gestures work (control-click, shift-click ...).
-TEST_F(TableViewTest, Multiselection) {
+TEST_P(TableViewTest, Multiselection) {
   // Configure the grouper so that there are three groups:
   // A 0
   //   1
@@ -1522,7 +1536,7 @@ TEST_F(TableViewTest, Multiselection) {
 }
 
 // Verifies multiple selection gestures work when sorted.
-TEST_F(TableViewTest, MultiselectionWithSort) {
+TEST_P(TableViewTest, MultiselectionWithSort) {
   // Configure the grouper so that there are three groups:
   // A 0
   //   1
@@ -1564,7 +1578,7 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
   EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 }
 
-TEST_F(TableViewTest, MoveRowsWithMultipleSelection) {
+TEST_P(TableViewTest, MoveRowsWithMultipleSelection) {
   model_->AddRow(3, 77, 0);
 
   // Hide column 1.
@@ -1620,7 +1634,7 @@ TEST_F(TableViewTest, MoveRowsWithMultipleSelection) {
   table_->set_observer(nullptr);
 }
 
-TEST_F(TableViewTest, MoveRowsWithMultipleSelectionAndSort) {
+TEST_P(TableViewTest, MoveRowsWithMultipleSelectionAndSort) {
   model_->AddRow(3, 77, 0);
 
   // Sort ascending by column 0, and hide column 1. The view order should not
@@ -1681,7 +1695,7 @@ TEST_F(TableViewTest, MoveRowsWithMultipleSelectionAndSort) {
 
 // Verifies we don't crash after removing the selected row when there is
 // sorting and the anchor/active index also match the selected row.
-TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
+TEST_P(TableViewTest, FocusAfterRemovingAnchor) {
   table_->ToggleSortOrder(0);
 
   ui::ListSelectionModel new_selection;
@@ -1694,7 +1708,7 @@ TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
   table_->RequestFocus();
 }
 
-TEST_F(TableViewTest, RemovingInvalidRowIsNoOp) {
+TEST_P(TableViewTest, RemovingInvalidRowIsNoOp) {
   table_->Select(3);
   EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
   table_->OnItemsRemoved(4, 1);
@@ -1758,10 +1772,12 @@ WidgetDelegate* TableViewFocusTest::GetWidgetDelegate(Widget* widget) {
   return delegate_.get();
 }
 
+INSTANTIATE_TEST_SUITE_P(All, TableViewFocusTest, testing::Values(false, true));
+
 // Verifies that the active focus is cleared when the widget is destroyed.
 // In MD mode, if that doesn't happen a DCHECK in View::DoRemoveChildView(...)
 // will trigger due to an attempt to modify the child view list while iterating.
-TEST_F(TableViewFocusTest, FocusClearedDuringWidgetDestruction) {
+TEST_P(TableViewFocusTest, FocusClearedDuringWidgetDestruction) {
   TestFocusChangeListener listener;
   GetFocusChangeListenerDelegate()->SetFocusChangeListener(&listener);
 
@@ -1779,4 +1795,41 @@ TEST_F(TableViewFocusTest, FocusClearedDuringWidgetDestruction) {
   EXPECT_EQ(listener.focus_changes()[0], ViewPair(table_, nullptr));
 }
 
+class TableViewDefaultConstructabilityTest : public ViewsTestBase {
+ public:
+  TableViewDefaultConstructabilityTest() = default;
+  TableViewDefaultConstructabilityTest(
+      const TableViewDefaultConstructabilityTest&) = delete;
+  TableViewDefaultConstructabilityTest& operator=(
+      const TableViewDefaultConstructabilityTest&) = delete;
+  ~TableViewDefaultConstructabilityTest() override = default;
+
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    widget_ = std::make_unique<Widget>();
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 650, 650);
+    widget_->Init(std::move(params));
+    widget_->Show();
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    ViewsTestBase::TearDown();
+  }
+
+  Widget* widget() { return widget_.get(); }
+
+ private:
+  std::unique_ptr<Widget> widget_;
+};
+
+TEST_F(TableViewDefaultConstructabilityTest, TestFunctionalWithoutModel) {
+  auto scroll_view =
+      TableView::CreateScrollViewWithTable(std::make_unique<TableView>());
+  scroll_view->SetBounds(0, 0, 10000, 10000);
+  scroll_view->Layout();
+  widget()->GetContentsView()->AddChildView(std::move(scroll_view));
+}
 }  // namespace views

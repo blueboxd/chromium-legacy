@@ -6321,15 +6321,6 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
     LayoutObject* container) const {
   // Only propagate interior layout overflow if we don't clip it.
   LayoutRect rect = BorderBoxRect();
-  // We want to include the margin, but only when it adds height. Quirky margins
-  // don't contribute height nor do the margins of self-collapsing blocks.
-  if (!StyleRef().HasMarginAfterQuirk() && !IsSelfCollapsingBlock()) {
-    const ComputedStyle* container_style =
-        container ? container->Style() : nullptr;
-    rect.Expand(IsHorizontalWritingMode()
-                    ? LayoutSize(LayoutUnit(), MarginAfter(container_style))
-                    : LayoutSize(MarginAfter(container_style), LayoutUnit()));
-  }
 
   if (!ShouldClipOverflow() && !ShouldApplyLayoutContainment())
     rect.Unite(LayoutOverflowRect());

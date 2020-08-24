@@ -43,10 +43,6 @@ std::string AnonymizeAccountEmail(const std::string& email) {
   return result + "@example.com";
 }
 
-bool GaiaActionButtonsEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
-}
-
 // Returns a base64-encoded hash code of "signin_scoped_device_id:gaia_id".
 std::string GetAccountDeviceId(const std::string& signin_scoped_device_id,
                                const std::string& gaia_id) {
@@ -276,7 +272,7 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
                             Profile::FromWebUI(web_ui()),
                             params.FindStringKey("email"))));
   params.SetBoolean("dontResizeNonEmbeddedPages", true);
-  params.SetBoolean("enableGaiaActionButtons", GaiaActionButtonsEnabled());
+  params.SetBoolean("enableGaiaActionButtons", true);
 
   // For in-session login flows, request Gaia to ignore third party SAML IdP SSO
   // redirection policies (and redirect to SAML IdPs by default), otherwise some

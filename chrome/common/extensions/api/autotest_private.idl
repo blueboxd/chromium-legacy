@@ -38,7 +38,8 @@ namespace autotestPrivate {
     MacNative,
     PluginVm,
     Lacros,
-    Remote
+    Remote,
+    Borealis
   };
 
   // A mapping of apps::mojom::Readiness

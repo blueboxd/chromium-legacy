@@ -13,7 +13,6 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "content/common/content_to_visible_time_reporter.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -428,35 +428,52 @@ void ParamTraits<net::SHA256HashValue>::Log(const param_type& p,
   l->append("<SHA256HashValue>");
 }
 
-void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
+void ParamTraits<blink::mojom::RecordContentToVisibleTimeRequestPtr>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.event_start_time);
-  WriteParam(m, p.destination_is_loaded);
-  WriteParam(m, p.show_reason_tab_switching);
-  WriteParam(m, p.show_reason_unoccluded);
-  WriteParam(m, p.show_reason_bfcache_restore);
+  const bool is_set = static_cast<bool>(p);
+  WriteParam(m, is_set);
+  if (p) {
+    WriteParam(m, p->event_start_time);
+    WriteParam(m, p->destination_is_loaded);
+    WriteParam(m, p->show_reason_tab_switching);
+    WriteParam(m, p->show_reason_unoccluded);
+    WriteParam(m, p->show_reason_bfcache_restore);
+  }
 }
 
-bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
+bool ParamTraits<blink::mojom::RecordContentToVisibleTimeRequestPtr>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
-  if (!ReadParam(m, iter, &r->event_start_time) ||
-      !ReadParam(m, iter, &r->destination_is_loaded) ||
-      !ReadParam(m, iter, &r->show_reason_tab_switching) ||
-      !ReadParam(m, iter, &r->show_reason_unoccluded) ||
-      !ReadParam(m, iter, &r->show_reason_bfcache_restore)) {
+  bool is_set = false;
+  if (!iter->ReadBool(&is_set))
+    return false;
+
+  if (!is_set) {
+    *r = blink::mojom::RecordContentToVisibleTimeRequestPtr();
+    return true;
+  }
+
+  auto output = blink::mojom::RecordContentToVisibleTimeRequest::New();
+  if (!ReadParam(m, iter, &output->event_start_time))
+    return false;
+
+  if (!ReadParam(m, iter, &output->destination_is_loaded) ||
+      !ReadParam(m, iter, &output->show_reason_tab_switching) ||
+      !ReadParam(m, iter, &output->show_reason_unoccluded) ||
+      !ReadParam(m, iter, &output->show_reason_bfcache_restore)) {
     return false;
   }
+  *r = std::move(output);
 
   return true;
 }
 
-void ParamTraits<content::RecordContentToVisibleTimeRequest>::Log(
+void ParamTraits<blink::mojom::RecordContentToVisibleTimeRequestPtr>::Log(
     const param_type& p,
     std::string* l) {
-  l->append("<content::RecordContentToVisibleTimeRequest>");
+  l->append("<blink::mojom::RecordContentToVisibleTimeRequestPtr>");
 }
 
 }  // namespace IPC

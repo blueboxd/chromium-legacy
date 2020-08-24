@@ -8,6 +8,8 @@
 
 namespace borealis {
 
+const char kBorealisAppId[] = "dkecggknbdokeipkgnhifhiokailichf";
+
 bool IsBorealisAllowed() {
   // Check that the Borealis feature is enabled.
   return base::FeatureList::IsEnabled(features::kBorealis);

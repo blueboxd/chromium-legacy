@@ -2376,9 +2376,6 @@ extern const char kFrameThrottleFps30[];
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
 
-extern const char kGaiaActionButtonsName[];
-extern const char kGaiaActionButtonsDescription[];
-
 extern const char kHelpAppReleaseNotesName[];
 extern const char kHelpAppReleaseNotesDescription[];
 

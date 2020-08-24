@@ -4079,11 +4079,6 @@ const char kFsNosymfollowDescription[] =
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
 
-const char kGaiaActionButtonsName[] =
-    "Enable action buttons on Gaia login screen";
-const char kGaiaActionButtonsDescription[] =
-    "Enable primary/secondary action button on Gaia login screen.";
-
 const char kHelpAppReleaseNotesName[] = "Help App Release Notes";
 const char kHelpAppReleaseNotesDescription[] =
     "Enables release notes in the help app";

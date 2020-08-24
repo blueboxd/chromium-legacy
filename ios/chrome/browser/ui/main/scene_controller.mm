@@ -632,7 +632,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // If this is first run, show the first run UI on top of the new tab.
   // If this isn't first run, check if the sign-in promo needs to display.
-  if (firstRun && !self.mainController.isPresentingFirstRunUI) {
+  if (firstRun && launchMode != ApplicationMode::INCOGNITO &&
+      !self.mainController.isPresentingFirstRunUI) {
     [self.mainController prepareForFirstRunUI:self.sceneState];
     [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
@@ -1518,10 +1519,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     return YES;
   }
 
-  // If there is a URLLoading activity, avoid opening a new tab as the NTP would
-  // flash before the target URL is loaded.
-  return browser->GetWebStateList()->empty() &&
-         !(browser->GetBrowserState()->IsOffTheRecord());
+  return browser->GetWebStateList()->empty();
 }
 
 #pragma mark - SceneURLLoadingServiceDelegate

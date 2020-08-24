@@ -2729,24 +2729,6 @@
   },
   'views_unittests': {
     'modifications': {
-      # https://crbug.com/1119787
-      'Linux ASan LSan Tests (1)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter',
-        ],
-      },
-      # https://crbug.com/1119787
-      'Linux TSan Tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter',
-        ],
-      },
-      # https://crbug.com/1119787
-      'Linux Tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.x11_views_unittests.filter',
-        ],
-      },
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,

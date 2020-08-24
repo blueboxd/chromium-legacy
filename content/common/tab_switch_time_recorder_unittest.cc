@@ -103,10 +103,11 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedWithSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -133,10 +134,11 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrame) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -162,10 +164,12 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameUnloaded) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start, /* destination_is_loaded */ false,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start,
+          /* destination_is_loaded */ false,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -192,10 +196,11 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureWithSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
@@ -214,10 +219,11 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureNoSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
@@ -235,10 +241,12 @@ TEST_F(ContentToVisibleTimeReporterTest,
   const auto start1 = base::TimeTicks::Now();
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start1, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start1,
+          /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start1);
 
   task_environment_.FastForwardBy(kDuration);
@@ -261,10 +269,12 @@ TEST_F(ContentToVisibleTimeReporterTest,
   const auto start2 = base::TimeTicks::Now();
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start2, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start2,
+          /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start2);
   const auto end2 = start2 + kOtherDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -296,10 +306,12 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
   const auto start1 = base::TimeTicks::Now();
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start1, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start1,
+          /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start1);
 
   task_environment_.FastForwardBy(kDuration);
@@ -319,10 +331,12 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
   const auto start2 = base::TimeTicks::Now();
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start2, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start2,
+          /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ false),
       start2);
   const auto end2 = start2 + kOtherDuration;
 
@@ -357,10 +371,11 @@ TEST_F(ContentToVisibleTimeReporterTest, UnoccludedTimeIsRecorded) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start, base::Optional<bool>() /* destination_is_loaded */,
-       /* show_reason_tab_switching */ false,
-       /* show_reason_unoccluded */ true,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ false,
+          /* show_reason_tab_switching */ false,
+          /* show_reason_unoccluded */ true,
+          /* show_reason_bfcache_restore */ false),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -381,10 +396,11 @@ TEST_F(ContentToVisibleTimeReporterTest,
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ true,
-       /* show_reason_bfcache_restore */ false},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ true,
+          /* show_reason_tab_switching */ true,
+          /* show_reason_unoccluded */ true,
+          /* show_reason_bfcache_restore */ false),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -415,10 +431,11 @@ TEST_F(ContentToVisibleTimeReporterTest, BfcacheRestoreTimeIsRecorded) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
-      {start, base::Optional<bool>() /* destination_is_loaded */,
-       /* show_reason_tab_switching */ false,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ true},
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start, /* destination_is_loaded */ false,
+          /* show_reason_tab_switching */ false,
+          /* show_reason_unoccluded */ false,
+          /* show_reason_bfcache_restore */ true),
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -436,11 +453,11 @@ class RecordContentToVisibleTimeRequestTest : public testing::Test {
  protected:
   // event_start_times are random, so caller is expected to provide failure
   // message useful for debugging timestamps inequality.
-  void ExpectEqual(const RecordContentToVisibleTimeRequest& left,
-                   const RecordContentToVisibleTimeRequest& right,
+  void ExpectEqual(const blink::mojom::RecordContentToVisibleTimeRequest& left,
+                   const blink::mojom::RecordContentToVisibleTimeRequest& right,
                    const std::string& msg) const {
     EXPECT_EQ(left.event_start_time, right.event_start_time) << msg;
-    EXPECT_EQ(left.destination_is_loaded, right.destination_is_loaded);
+    EXPECT_TRUE(left.destination_is_loaded == right.destination_is_loaded);
     EXPECT_EQ(left.show_reason_tab_switching, right.show_reason_tab_switching);
     EXPECT_EQ(left.show_reason_unoccluded, right.show_reason_unoccluded);
     EXPECT_EQ(left.show_reason_bfcache_restore,
@@ -450,9 +467,9 @@ class RecordContentToVisibleTimeRequestTest : public testing::Test {
 
 TEST_F(RecordContentToVisibleTimeRequestTest, MergeEmpty) {
   // Merge two empty requests
-  RecordContentToVisibleTimeRequest request;
-  request.UpdateRequest(RecordContentToVisibleTimeRequest());
-  ExpectEqual(request, RecordContentToVisibleTimeRequest(), std::string());
+  blink::mojom::RecordContentToVisibleTimeRequest request;
+  request += {};
+  ExpectEqual(request, {}, std::string());
 }
 
 // Merge two requests. Tuple represents the parameters of the two requests.
@@ -467,32 +484,22 @@ class RecordContentToVisibleTimeRequest_MergeRequestTest
                                                     bool,
                                                     bool>> {
  protected:
-  RecordContentToVisibleTimeRequest GetRequest1() const {
+  blink::mojom::RecordContentToVisibleTimeRequestPtr GetRequest1() const {
     const base::TimeTicks timestamp = RandomRequestTimeTicks();
-    return RecordContentToVisibleTimeRequest(
-        timestamp,
-        std::get<0>(GetParam())
-            ? base::Optional<bool>(true)
-            : base::Optional<bool>() /* destination_is_loaded */,
+    return blink::mojom::RecordContentToVisibleTimeRequest::New(
+        timestamp, std::get<0>(GetParam()) /* destination_is_loaded */,
         std::get<1>(GetParam()) /* show_reason_tab_switching */,
         std::get<2>(GetParam()) /* show_reason_unoccluded */,
         std::get<3>(GetParam()) /* show_reason_bfcache_restore */);
   }
 
-  RecordContentToVisibleTimeRequest GetRequest2() const {
+  blink::mojom::RecordContentToVisibleTimeRequestPtr GetRequest2() const {
     const base::TimeTicks timestamp = RandomRequestTimeTicks();
-    return RecordContentToVisibleTimeRequest(
-        timestamp,
-        std::get<4>(GetParam())
-            ? base::Optional<bool>(true)
-            : base::Optional<bool>() /* destination_is_loaded */,
+    return blink::mojom::RecordContentToVisibleTimeRequest::New(
+        timestamp, std::get<4>(GetParam()) /* destination_is_loaded */,
         std::get<5>(GetParam()) /* show_reason_tab_switching */,
         std::get<6>(GetParam()) /* show_reason_unoccluded */,
         std::get<7>(GetParam()) /* show_reason_bfcache_restore */);
-  }
-
-  bool isOptionalBoolTrue(const base::Optional<bool>& data) {
-    return data.has_value() && data.value();
   }
 
  private:
@@ -505,32 +512,29 @@ class RecordContentToVisibleTimeRequest_MergeRequestTest
 };
 
 TEST_P(RecordContentToVisibleTimeRequest_MergeRequestTest, DoMerge) {
-  RecordContentToVisibleTimeRequest request1 = GetRequest1();
-  const RecordContentToVisibleTimeRequest request2 = GetRequest2();
+  auto request1 = GetRequest1();
+  const auto request2 = GetRequest2();
 
   // Timestamps are random, log them in case of failure.
   std::ostringstream buf;
-  buf << "Original request1.event_start_time = " << request1.event_start_time
-      << ",  merged request2.event_start_time = " << request2.event_start_time
+  buf << "Original request1->event_start_time = " << request1->event_start_time
+      << ",  merged request2->event_start_time = " << request2->event_start_time
       << ".";
 
-  request1.UpdateRequest(request2);
+  *request1 += *request2;
 
   // We expect to get minimal timestamp and all the boolean flags set in any
   // request.
-  const RecordContentToVisibleTimeRequest expected(
-      std::min(request1.event_start_time, request2.event_start_time),
-      (request1.destination_is_loaded.has_value() ||
-       request2.destination_is_loaded.has_value())
-          ? isOptionalBoolTrue(request1.destination_is_loaded) ||
-                isOptionalBoolTrue(request2.destination_is_loaded)
-          : base::Optional<bool>(),
-      request1.show_reason_tab_switching || request2.show_reason_tab_switching,
-      request1.show_reason_unoccluded || request2.show_reason_unoccluded,
-      request1.show_reason_bfcache_restore ||
-          request2.show_reason_bfcache_restore);
+  const blink::mojom::RecordContentToVisibleTimeRequest expected(
+      std::min(request1->event_start_time, request2->event_start_time),
+      request1->destination_is_loaded || request2->destination_is_loaded,
+      request1->show_reason_tab_switching ||
+          request2->show_reason_tab_switching,
+      request1->show_reason_unoccluded || request2->show_reason_unoccluded,
+      request1->show_reason_bfcache_restore ||
+          request2->show_reason_bfcache_restore);
 
-  ExpectEqual(request1, expected, buf.str());
+  ExpectEqual(*request1, expected, buf.str());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

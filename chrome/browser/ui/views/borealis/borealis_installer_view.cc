@@ -52,10 +52,8 @@ void borealis::ShowBorealisInstallerView(Profile* profile) {
     g_borealis_installer_view = new BorealisInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_borealis_installer_view,
                                               nullptr, nullptr);
-    // TODO(danielng): link dialog to shelf item with real values.
     g_borealis_installer_view->GetWidget()->GetNativeWindow()->SetProperty(
-        ash::kShelfIDKey,
-        ash::ShelfID("lgjpclljbbmphhnalkeplcmnborealis").Serialize());
+        ash::kShelfIDKey, ash::ShelfID(borealis::kBorealisAppId).Serialize());
   }
   g_borealis_installer_view->SetButtonRowInsets(kButtonRowInsets);
   g_borealis_installer_view->GetWidget()->Show();

@@ -5541,12 +5541,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantRoutines)},
 #endif  // OS_CHROMEOS
 
-#if defined(OS_CHROMEOS)
-    {"gaia-action-buttons", flag_descriptions::kGaiaActionButtonsName,
-     flag_descriptions::kGaiaActionButtonsDescription, kOsCrOSOwnerOnly,
-     FEATURE_VALUE_TYPE(chromeos::features::kGaiaActionButtons)},
-#endif  // defined(OS_CHROMEOS)
-
     {"notification-scheduler-debug-options",
      flag_descriptions::kNotificationSchedulerDebugOptionName,
      flag_descriptions::kNotificationSchedulerDebugOptionDescription,

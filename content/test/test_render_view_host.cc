@@ -300,7 +300,7 @@ void TestRenderViewHost::SimulateWasHidden() {
 }
 
 void TestRenderViewHost::SimulateWasShown() {
-  GetWidget()->WasShown(base::nullopt /* record_tab_switch_time_request */);
+  GetWidget()->WasShown({} /* record_tab_switch_time_request */);
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebPreferences() {

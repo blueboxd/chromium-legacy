@@ -12,6 +12,10 @@ namespace {
 
 const char kAppName[] = "Nearby";
 
+constexpr int kMajorVersion = 1;
+constexpr int kMinorVersion = 24;
+constexpr int kPointVersion = 0;
+
 void BuildId(chrome_browser_nearby_sharing_instantmessaging::Id* req_id,
              const std::string& id) {
   DCHECK(req_id);
@@ -33,6 +37,9 @@ void BuildHeader(
       chrome_browser_nearby_sharing_instantmessaging::ApiVersion::V4);
   info->set_platform_type(
       chrome_browser_nearby_sharing_instantmessaging::Platform::DESKTOP);
+  info->set_version_major(kMajorVersion);
+  info->set_version_minor(kMinorVersion);
+  info->set_version_point(kPointVersion);
 }
 
 }  // namespace
@@ -55,11 +62,14 @@ void WebRtcSignalingMessenger::SendMessage(const std::string& self_id,
   BuildId(request.mutable_dest_id(), peer_id);
   BuildHeader(request.mutable_header(), self_id);
 
-  std::string message_id = base::Token::CreateRandom().ToString();
   chrome_browser_nearby_sharing_instantmessaging::InboxMessage* inbox_message =
       request.mutable_message();
-  inbox_message->set_message_id(message_id);
+  inbox_message->set_message_id(base::Token::CreateRandom().ToString());
   inbox_message->set_message(message);
+  inbox_message->set_message_class(
+      chrome_browser_nearby_sharing_instantmessaging::InboxMessage::EPHEMERAL);
+  inbox_message->set_message_type(
+      chrome_browser_nearby_sharing_instantmessaging::InboxMessage::BASIC);
 
   send_message_express_.SendMessage(request, std::move(callback));
 }

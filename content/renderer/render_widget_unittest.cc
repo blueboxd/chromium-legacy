@@ -601,7 +601,7 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     WidgetMsg_WasShown msg(widget()->routing_id(),
                            /*show_request_timestamp=*/base::TimeTicks(),
                            /*was_evicted=*/false,
-                           /*record_tab_switch_time_request=*/base::nullopt);
+                           /*record_tab_switch_time_request=*/{});
     widget()->OnMessageReceived(msg);
 
     // TODO(danakj): This usually happens through

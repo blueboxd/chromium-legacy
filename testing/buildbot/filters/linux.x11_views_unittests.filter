@@ -1,3 +1,0 @@
-# TODO(1119787): fix these two failing tests.
--DesktopDragDropClientOzoneTest.StartDrag
--DesktopDragDropClientOzoneTest.StartDragCtrlPressed

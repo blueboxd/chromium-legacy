@@ -242,8 +242,7 @@ class ErrorScreenWatcher : public OobeUI::Observer {
 class WebviewLoginTest : public OobeBaseTest {
  public:
   WebviewLoginTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kGaiaActionButtons, features::kChildSpecificSignin}, {});
+    scoped_feature_list_.InitWithFeatures({features::kChildSpecificSignin}, {});
   }
   ~WebviewLoginTest() override = default;
 
@@ -662,8 +661,7 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
   WebviewClientCertsLoginTestBase() {
     // TODO(crbug.com/1101318): Fix tests when kChildSpecificSignin is enabled.
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures({features::kGaiaActionButtons},
-                                          {features::kChildSpecificSignin});
+    scoped_feature_list_.InitWithFeatures({}, {features::kChildSpecificSignin});
   }
   WebviewClientCertsLoginTestBase(const WebviewClientCertsLoginTestBase&) =
       delete;
@@ -1337,8 +1335,7 @@ class WebviewLoginTestWithChildSigninDisabled : public WebviewLoginTest {
  public:
   WebviewLoginTestWithChildSigninDisabled() {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures({features::kGaiaActionButtons},
-                                          {features::kChildSpecificSignin});
+    scoped_feature_list_.InitWithFeatures({}, {features::kChildSpecificSignin});
   }
 };
 

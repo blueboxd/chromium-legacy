@@ -286,10 +286,6 @@ bool ExtractSamlPasswordAttributesEnabled() {
   return base::FeatureList::IsEnabled(::features::kInSessionPasswordChange);
 }
 
-bool GaiaActionButtonsEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
-}
-
 PinDialogManager* GetLoginScreenPinDialogManager() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
   CertificateProviderService* certificate_provider_service =
@@ -583,7 +579,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetBoolean("extractSamlPasswordAttributes",
                     ExtractSamlPasswordAttributesEnabled());
-  params.SetBoolean("enableGaiaActionButtons", GaiaActionButtonsEnabled());
+  params.SetBoolean("enableGaiaActionButtons", true);
 
   if (public_saml_url_fetcher_) {
     params.SetBoolean("startsOnSamlPage", true);

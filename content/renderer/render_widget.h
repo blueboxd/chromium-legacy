@@ -48,6 +48,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -407,11 +408,10 @@ class CONTENT_EXPORT RenderWidget
   void OnClose();
   void OnCreatingNewAck();
   void OnWasHidden();
-  void OnWasShown(
-      base::TimeTicks show_request_timestamp,
-      bool was_evicted,
-      const base::Optional<content::RecordContentToVisibleTimeRequest>&
-          record_tab_switch_time_request);
+  void OnWasShown(base::TimeTicks show_request_timestamp,
+                  bool was_evicted,
+                  const blink::mojom::RecordContentToVisibleTimeRequestPtr&
+                      record_tab_switch_time_request);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();

@@ -15,12 +15,7 @@ WaylandSurface::WaylandSurface(WaylandConnection* connection,
       root_window_(root_window),
       surface_(connection->CreateSurface()) {}
 
-WaylandSurface::~WaylandSurface() {
-  if (surface_) {
-    wl_surface_add_listener(surface_.get(), nullptr, nullptr);
-    wl_surface_set_user_data(surface_.get(), nullptr);
-  }
-}
+WaylandSurface::~WaylandSurface() = default;
 
 uint32_t WaylandSurface::GetSurfaceId() const {
   if (!surface_)
@@ -35,8 +30,6 @@ gfx::AcceleratedWidget WaylandSurface::GetWidget() const {
 bool WaylandSurface::Initialize() {
   if (!surface_)
     return false;
-
-  wl_surface_set_user_data(surface_.get(), this);
 
   static struct wl_surface_listener surface_listener = {
       &WaylandSurface::Enter,

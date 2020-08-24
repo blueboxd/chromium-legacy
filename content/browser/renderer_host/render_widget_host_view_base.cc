@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -765,27 +766,26 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
 
 void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
     base::TimeTicks start_time,
-    base::Optional<bool> destination_is_loaded,
+    bool destination_is_loaded,
     bool show_reason_tab_switching,
     bool show_reason_unoccluded,
     bool show_reason_bfcache_restore) {
-  if (last_record_tab_switch_time_request_.has_value()) {
-    last_record_tab_switch_time_request_.value().UpdateRequest(
-        RecordContentToVisibleTimeRequest(
-            start_time, destination_is_loaded, show_reason_tab_switching,
-            show_reason_unoccluded, show_reason_bfcache_restore));
+  auto record_tab_switch_time_request =
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          start_time, destination_is_loaded, show_reason_tab_switching,
+          show_reason_unoccluded, show_reason_bfcache_restore);
+
+  if (last_record_tab_switch_time_request_) {
+    *last_record_tab_switch_time_request_ += *record_tab_switch_time_request;
   } else {
-    last_record_tab_switch_time_request_.emplace(
-        start_time, destination_is_loaded, show_reason_tab_switching,
-        show_reason_unoccluded, show_reason_bfcache_restore);
+    last_record_tab_switch_time_request_ =
+        std::move(record_tab_switch_time_request);
   }
 }
 
-base::Optional<RecordContentToVisibleTimeRequest>
+blink::mojom::RecordContentToVisibleTimeRequestPtr
 RenderWidgetHostViewBase::TakeRecordContentToVisibleTimeRequest() {
-  auto stored_state = std::move(last_record_tab_switch_time_request_);
-  last_record_tab_switch_time_request_.reset();
-  return stored_state;
+  return std::move(last_record_tab_switch_time_request_);
 }
 
 void RenderWidgetHostViewBase::SynchronizeVisualProperties() {

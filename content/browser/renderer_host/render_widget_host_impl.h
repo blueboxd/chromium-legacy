@@ -63,6 +63,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -355,7 +356,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(const base::Optional<RecordContentToVisibleTimeRequest>&
+  void WasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request);
 
 #if defined(OS_ANDROID)

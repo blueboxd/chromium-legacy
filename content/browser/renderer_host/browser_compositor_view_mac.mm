@@ -285,7 +285,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
       delegated_frame_host_->HasSavedFrame();
   delegated_frame_host_->WasShown(
       GetRendererLocalSurfaceIdAllocation().local_surface_id(), dfh_size_dip_,
-      base::nullopt /* record_tab_switch_time_request */);
+      {} /* record_tab_switch_time_request */);
 }
 
 // static

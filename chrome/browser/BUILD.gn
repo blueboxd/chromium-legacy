@@ -3893,6 +3893,8 @@ static_library("browser") {
       "apps/app_service/arc_apps_factory.h",
       "apps/app_service/arc_icon_once_loader.cc",
       "apps/app_service/arc_icon_once_loader.h",
+      "apps/app_service/borealis_apps.cc",
+      "apps/app_service/borealis_apps.h",
       "apps/app_service/built_in_chromeos_apps.cc",
       "apps/app_service/built_in_chromeos_apps.h",
       "apps/app_service/crostini_apps.cc",

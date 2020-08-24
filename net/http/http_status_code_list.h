@@ -13,7 +13,7 @@
 // http://www.iana.org/assignments/http-status-codes/http-status-codes.xml
 
 #ifndef HTTP_STATUS
-#error "HTTP_STATUS should be defined before including this file"
+#error "Do #include net/http/http_status_code.h instead of this file directly."
 #endif
 
 // Informational 1xx

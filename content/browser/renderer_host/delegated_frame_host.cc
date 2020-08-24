@@ -23,6 +23,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -79,7 +80,7 @@ void DelegatedFrameHost::RemoveObserverForTesting(Observer* observer) {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    const base::Optional<RecordContentToVisibleTimeRequest>&
+    blink::mojom::RecordContentToVisibleTimeRequestPtr
         record_tab_switch_time_request) {
   // Cancel any pending frame eviction and unpause it if paused.
   SetFrameEvictionStateAndNotifyObservers(FrameEvictionState::kNotStarted);
@@ -88,8 +89,8 @@ void DelegatedFrameHost::WasShown(
   if (record_tab_switch_time_request && compositor_) {
     compositor_->RequestPresentationTimeForNextFrame(
         tab_switch_time_recorder_.TabWasShown(
-            true /* has_saved_frames */, record_tab_switch_time_request.value(),
-            base::TimeTicks::Now()));
+            true /* has_saved_frames */,
+            std::move(record_tab_switch_time_request), base::TimeTicks::Now()));
   }
 
   // Use the default deadline to synchronize web content with browser UI.

@@ -2638,11 +2638,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "gaia-action-buttons",
-    "owners": [ "jeroendh@google.com", "rsorokin" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 89

@@ -266,7 +266,8 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientOzoneTest);
 };
 
-TEST_F(DesktopDragDropClientOzoneTest, StartDrag) {
+// TODO(1119787): fix this.
+TEST_F(DesktopDragDropClientOzoneTest, DISABLED_StartDrag) {
   // Set the operation which the destination can accept.
   dragdrop_delegate_->SetOperation(ui::DragDropTypes::DRAG_COPY);
   // Start Drag and Drop with the operations suggested.
@@ -283,7 +284,8 @@ TEST_F(DesktopDragDropClientOzoneTest, StartDrag) {
   EXPECT_EQ(ui::EF_NONE, dragdrop_delegate_->last_event_flags());
 }
 
-TEST_F(DesktopDragDropClientOzoneTest, StartDragCtrlPressed) {
+// TODO(1119787): fix this.
+TEST_F(DesktopDragDropClientOzoneTest, DISABLED_StartDragCtrlPressed) {
   SetModifiers(ui::EF_CONTROL_DOWN);
   // Set the operation which the destination can accept.
   dragdrop_delegate_->SetOperation(ui::DragDropTypes::DRAG_COPY);

@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -279,7 +280,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // should be reported.
   virtual void SetRecordContentToVisibleTimeRequest(
       base::TimeTicks start_time,
-      base::Optional<bool> destination_is_loaded,
+      bool destination_is_loaded,
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) = 0;

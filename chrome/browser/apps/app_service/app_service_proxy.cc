@@ -195,6 +195,7 @@ void AppServiceProxy::Initialize() {
           app_service_, profile_, apps::mojom::AppType::kWeb,
           &instance_registry_);
     }
+    borealis_apps_ = std::make_unique<BorealisApps>(app_service_, profile_);
 #else
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
       web_apps_ = std::make_unique<WebApps>(app_service_, profile_);
@@ -492,6 +493,9 @@ void AppServiceProxy::FlushMojoCallsForTesting() {
     web_apps_->FlushMojoCallsForTesting();
   } else {
     extension_web_apps_->FlushMojoCallsForTesting();
+  }
+  if (borealis_apps_) {
+    borealis_apps_->FlushMojoCallsForTesting();
   }
 #endif
   receivers_.FlushForTesting();

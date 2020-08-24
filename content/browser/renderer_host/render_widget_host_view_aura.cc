@@ -575,8 +575,7 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
 
   if (old_visibility == Visibility::OCCLUDED) {
     SetRecordContentToVisibleTimeRequest(
-        base::TimeTicks::Now(),
-        base::Optional<bool>() /* destination_is_loaded */,
+        base::TimeTicks::Now(), false /* destination_is_loaded */,
         false /* show_reason_tab_switching */,
         true /* show_reason_unoccluded */,
         false /* show_reason_bfcache_restore */);
@@ -592,10 +591,13 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
           : false;
 
   // No need to check for saved frames for the case of bfcache restore.
-  if (show_reason_bfcache_restore)
-    host()->WasShown(tab_switch_start_state);
-  else
-    host()->WasShown(has_saved_frame ? base::nullopt : tab_switch_start_state);
+  if (show_reason_bfcache_restore) {
+    host()->WasShown(tab_switch_start_state.Clone());
+  } else {
+    host()->WasShown(has_saved_frame
+                         ? blink::mojom::RecordContentToVisibleTimeRequestPtr()
+                         : tab_switch_start_state.Clone());
+  }
   aura::Window* root = window_->GetRootWindow();
   if (root) {
     aura::client::CursorClient* cursor_client =
@@ -610,7 +612,8 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
     delegated_frame_host_->WasShown(
         GetLocalSurfaceIdAllocation().local_surface_id(),
         window_->bounds().size(),
-        has_saved_frame ? tab_switch_start_state : base::nullopt);
+        has_saved_frame ? std::move(tab_switch_start_state)
+                        : blink::mojom::RecordContentToVisibleTimeRequestPtr());
   }
 
 #if defined(OS_WIN)

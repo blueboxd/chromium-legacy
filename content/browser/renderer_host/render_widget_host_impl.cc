@@ -767,7 +767,7 @@ void RenderWidgetHostImpl::WasHidden() {
 }
 
 void RenderWidgetHostImpl::WasShown(
-    const base::Optional<RecordContentToVisibleTimeRequest>&
+    blink::mojom::RecordContentToVisibleTimeRequestPtr
         record_tab_switch_time_request) {
   if (!is_hidden_)
     return;
@@ -787,7 +787,7 @@ void RenderWidgetHostImpl::WasShown(
       routing_id_,
       record_tab_switch_time_request ? base::TimeTicks::Now()
                                      : base::TimeTicks(),
-      view_->is_evicted(), record_tab_switch_time_request));
+      view_->is_evicted(), std::move(record_tab_switch_time_request)));
   view_->reset_is_evicted();
 
   process_->UpdateClientPriority(this);

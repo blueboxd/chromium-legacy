@@ -250,6 +250,8 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
       FALLTHROUGH;
     case apps::mojom::AppType::kPluginVm:
       FALLTHROUGH;
+    case apps::mojom::AppType::kBorealis:
+      FALLTHROUGH;
     default:
       return ShelfContextMenu::IsCommandIdChecked(command_id);
   }
@@ -449,6 +451,8 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
       FALLTHROUGH;
     case apps::mojom::AppType::kPluginVm:
       FALLTHROUGH;
+    case apps::mojom::AppType::kBorealis:
+      FALLTHROUGH;
     default:
       return;
   }
@@ -537,6 +541,8 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       FALLTHROUGH;
     case apps::mojom::AppType::kMacNative:
       return false;
+    case apps::mojom::AppType::kBorealis:
+      FALLTHROUGH;
     default:
       NOTREACHED() << "All AppType must decide if pin menu should be added.";
       return false;

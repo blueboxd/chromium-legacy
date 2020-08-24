@@ -31,7 +31,7 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
   void Trace(Visitor* visitor) const override;
 
   void NotifyLoaded();
-  void OnWebBundleError(const String& message);
+  void OnWebBundleError(const String& message) const;
 
   // LinkResource overrides:
   void Process() override;

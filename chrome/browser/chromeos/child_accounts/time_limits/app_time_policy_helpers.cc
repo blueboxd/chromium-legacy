@@ -33,6 +33,8 @@ const char kActivityReportingEnabled[] = "activity_reporting_enabled";
 apps::mojom::AppType PolicyStringToAppType(const std::string& app_type) {
   if (app_type == "ARC")
     return apps::mojom::AppType::kArc;
+  if (app_type == "BOREALIS")
+    return apps::mojom::AppType::kBorealis;
   if (app_type == "BUILT-IN")
     return apps::mojom::AppType::kBuiltIn;
   if (app_type == "CROSTINI")
@@ -52,6 +54,8 @@ std::string AppTypeToPolicyString(apps::mojom::AppType app_type) {
   switch (app_type) {
     case apps::mojom::AppType::kArc:
       return "ARC";
+    case apps::mojom::AppType::kBorealis:
+      return "BOREALIS";
     case apps::mojom::AppType::kBuiltIn:
       return "BUILT-IN";
     case apps::mojom::AppType::kCrostini:

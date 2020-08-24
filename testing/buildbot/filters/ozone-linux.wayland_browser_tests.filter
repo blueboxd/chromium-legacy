@@ -16,8 +16,6 @@
 -OmniboxPopupContentsViewTest.ClickOmnibox
 -OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground
 -OutOfProcessPPAPITest.FlashClipboard
--PPAPINaClNewlibTest.TrueTypeFont
--PPAPINaClPNaClNonSfiTest.TrueTypeFont
 -PageInfoBubbleViewBrowserTest.FocusDoesNotReturnToContentsOnReloadPrompt
 -PageInfoBubbleViewBrowserTest.FocusReturnsToContentOnClose
 -PaymentRequestCreditCardEditorTest.EditingExpiredCard

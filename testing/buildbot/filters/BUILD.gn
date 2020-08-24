@@ -163,10 +163,6 @@ source_set("linux_ozone_views_unittests_filters") {
   ]
 }
 
-source_set("linux_views_unittests_filters") {
-  data = [ "//testing/buildbot/filters/linux.x11_views_unittests.filter" ]
-}
-
 source_set("linux_trusty_rel_browser_tests_filters") {
   data = [ "//testing/buildbot/filters/linux_trusty_rel.browser_tests.filter" ]
 }

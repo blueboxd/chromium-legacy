@@ -220,6 +220,8 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
       FALLTHROUGH;
     case apps::mojom::AppType::kPluginVm:
       FALLTHROUGH;
+    case apps::mojom::AppType::kBorealis:
+      FALLTHROUGH;
     default:
       return AppContextMenu::IsCommandIdChecked(command_id);
   }
@@ -344,6 +346,8 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
     case apps::mojom::AppType::kBuiltIn:
       FALLTHROUGH;
     case apps::mojom::AppType::kPluginVm:
+      FALLTHROUGH;
+    case apps::mojom::AppType::kBorealis:
       FALLTHROUGH;
     default:
       return;

@@ -33,6 +33,7 @@
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-forward.h"
@@ -120,7 +121,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   GetTouchSelectionControllerClientManager() override;
   void SetRecordContentToVisibleTimeRequest(
       base::TimeTicks start_time,
-      base::Optional<bool> destination_is_loaded,
+      bool destination_is_loaded,
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) final;
@@ -188,7 +189,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // |event_start_time| field of the returned struct will have a null
   // timestamp. Calling this will reset |last_record_tab_switch_time_request_|
   // to null.
-  base::Optional<RecordContentToVisibleTimeRequest>
+  blink::mojom::RecordContentToVisibleTimeRequestPtr
   TakeRecordContentToVisibleTimeRequest();
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
@@ -670,7 +671,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The last tab switch processing start request. This should only be set and
   // retrieved using SetRecordContentToVisibleTimeRequest and
   // TakeRecordContentToVisibleTimeRequest.
-  base::Optional<RecordContentToVisibleTimeRequest>
+  blink::mojom::RecordContentToVisibleTimeRequestPtr
       last_record_tab_switch_time_request_;
 
   // True when StopFlingingIfNecessary() calls StopFling().

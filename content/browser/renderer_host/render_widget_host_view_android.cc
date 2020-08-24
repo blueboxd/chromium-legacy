@@ -1447,8 +1447,9 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
       content_to_visible_start_state
           ? content_to_visible_start_state->show_reason_bfcache_restore
           : false;
-  host()->WasShown(show_reason_bfcache_restore ? content_to_visible_start_state
-                                               : base::nullopt);
+  host()->WasShown(show_reason_bfcache_restore
+                       ? std::move(content_to_visible_start_state)
+                       : blink::mojom::RecordContentToVisibleTimeRequestPtr());
 
   if (delegated_frame_host_) {
     delegated_frame_host_->WasShown(

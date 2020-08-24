@@ -16,6 +16,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "ui/base/ime/text_input_action.h"
@@ -50,7 +51,7 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 IPC_MESSAGE_ROUTED3(WidgetMsg_WasShown,
                     base::TimeTicks /* show_request_timestamp */,
                     bool /* was_evicted */,
-                    base::Optional<content::RecordContentToVisibleTimeRequest>
+                    blink::mojom::RecordContentToVisibleTimeRequestPtr
                     /* record_tab_switch_time_request */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint

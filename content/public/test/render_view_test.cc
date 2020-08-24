@@ -483,7 +483,7 @@ void RenderViewTest::SetUp() {
   WidgetMsg_WasShown msg(render_widget->routing_id(),
                          /* show_request_timestamp=*/base::TimeTicks(),
                          /* was_evicted=*/false,
-                         /*record_tab_switch_time_request=*/base::nullopt);
+                         /*record_tab_switch_time_request=*/{});
   render_widget->OnMessageReceived(msg);
 
   view_ = view;

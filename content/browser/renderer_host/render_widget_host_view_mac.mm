@@ -456,8 +456,8 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
   host()->WasShown(renderer_should_record_presentation_time
-                       ? tab_switch_start_state
-                       : base::nullopt);
+                       ? tab_switch_start_state.Clone()
+                       : blink::mojom::RecordContentToVisibleTimeRequestPtr());
 
   if (delegated_frame_host) {
     // If the frame for the renderer is already available, then the
@@ -467,7 +467,9 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
         browser_compositor_->GetRendererLocalSurfaceIdAllocation()
             .local_surface_id(),
         browser_compositor_->GetRendererSize(),
-        record_presentation_time ? tab_switch_start_state : base::nullopt);
+        record_presentation_time
+            ? std::move(tab_switch_start_state)
+            : blink::mojom::RecordContentToVisibleTimeRequestPtr());
   }
 }
 

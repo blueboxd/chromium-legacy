@@ -105,8 +105,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableImeSandbox;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kGaiaActionButtons;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGamepadVibration;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGesturePropertiesDBusService;

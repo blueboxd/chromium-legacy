@@ -28,7 +28,8 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
                   const KURL& url)
       : link_web_bundle_(&link_web_bundle),
         pending_factory_receiver_(loader_factory_.BindNewPipeAndPassReceiver()),
-        url_(url) {
+        url_(url),
+        security_origin_(SecurityOrigin::Create(url)) {
     ResourceRequest request(url);
     request.SetUseStreamOnResponse(true);
     // TODO(crbug.com/1082020): Revisit these once the fetch and process the
@@ -84,6 +85,9 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   void DidFailRedirectCheck() override { DidFailInternal(); }
 
   const KURL& url() const { return url_; }
+  scoped_refptr<SecurityOrigin> GetSecurityOrigin() const {
+    return security_origin_;
+  }
 
  private:
   void DidFailInternal() {
@@ -113,6 +117,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
       pending_factory_receiver_;
   bool failed_ = false;
   KURL url_;
+  scoped_refptr<SecurityOrigin> security_origin_;
 };
 
 LinkWebBundle::LinkWebBundle(HTMLLinkElement* owner) : LinkResource(owner) {
@@ -132,7 +137,7 @@ void LinkWebBundle::NotifyLoaded() {
     owner_->ScheduleEvent();
 }
 
-void LinkWebBundle::OnWebBundleError(const String& message) {
+void LinkWebBundle::OnWebBundleError(const String& message) const {
   if (!owner_)
     return;
   ExecutionContext* context = owner_->GetDocument().GetExecutionContext();
@@ -180,7 +185,17 @@ void LinkWebBundle::OwnerRemoved() {
 }
 
 bool LinkWebBundle::CanHandleRequest(const KURL& url) const {
-  return owner_ && owner_->ValidResourceUrls().Contains(url);
+  if (!owner_ || !owner_->ValidResourceUrls().Contains(url))
+    return false;
+  DCHECK(bundle_loader_);
+  if (!bundle_loader_->GetSecurityOrigin()->IsSameOriginWith(
+          SecurityOrigin::Create(url).get())) {
+    OnWebBundleError(url.ElidedString() + " cannot be loaded from WebBundle " +
+                     bundle_loader_->url().ElidedString() +
+                     ": bundled resource must be same origin with the bundle.");
+    return false;
+  }
+  return true;
 }
 
 mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>

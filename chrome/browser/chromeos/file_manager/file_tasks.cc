@@ -18,8 +18,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -286,6 +289,21 @@ Profile* GetProfileForExtensionTask(Profile* profile,
   if (extension.is_platform_app())
     return profile->GetOriginalProfile();
   return profile;
+}
+
+GURL GetIconURL(Profile* profile, const Extension& extension) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile) &&
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+              ->AppRegistryCache()
+              .GetAppType(extension.id()) != apps::mojom::AppType::kUnknown) {
+    return apps::AppIconSource::GetIconURL(
+        extension.id(), extension_misc::EXTENSION_ICON_SMALL);
+  }
+  return extensions::ExtensionIconSource::GetIconURL(
+      &extension, extension_misc::EXTENSION_ICON_SMALL,
+      ExtensionIconSet::MATCH_BIGGER,
+      false);  // grayscale
 }
 
 void ExecuteByArcAfterMimeTypesCollected(
@@ -707,10 +725,7 @@ void FindFileHandlerTasks(Profile* profile,
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
-      GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
-          extension, extension_misc::EXTENSION_ICON_SMALL,
-          ExtensionIconSet::MATCH_BIGGER,
-          false);  // grayscale
+      const GURL best_icon = GetIconURL(profile, *extension);
 
       // If file handler doesn't match as good match, regards it as generic file
       // handler.
@@ -768,10 +783,7 @@ void FindFileBrowserHandlerTasks(
 
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
-    const GURL icon_url = extensions::ExtensionIconSource::GetIconURL(
-        extension, extension_misc::EXTENSION_ICON_SMALL,
-        ExtensionIconSet::MATCH_BIGGER,
-        false);  // grayscale
+    const GURL icon_url = GetIconURL(profile, *extension);
 
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(extension_id, file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,

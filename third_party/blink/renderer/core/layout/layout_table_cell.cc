@@ -446,6 +446,7 @@ void LayoutTableCell::UpdateStyleWritingModeFromRow(const LayoutObject* row) {
   SetModifiedStyleOutsideStyleRecalc(new_style,
                                      LayoutObject::ApplyStyleChanges::kNo);
   SetHorizontalWritingMode(StyleRef().IsHorizontalWritingMode());
+  UnmarkOrthogonalWritingModeRoot();
 }
 
 void LayoutTableCell::StyleDidChange(StyleDifference diff,

@@ -636,7 +636,7 @@ void RenderWidget::OnWasHidden() {
 void RenderWidget::OnWasShown(
     base::TimeTicks show_request_timestamp,
     bool was_evicted,
-    const base::Optional<content::RecordContentToVisibleTimeRequest>&
+    const blink::mojom::RecordContentToVisibleTimeRequestPtr&
         record_tab_switch_time_request) {
   // The frame must be attached to the frame tree (which makes it no longer
   // provisional) before changing visibility.
@@ -650,7 +650,7 @@ void RenderWidget::OnWasShown(
     layer_tree_host_->RequestPresentationTimeForNextFrame(
         tab_switch_time_recorder_.TabWasShown(
             false /* has_saved_frames */,
-            record_tab_switch_time_request.value(), show_request_timestamp));
+            record_tab_switch_time_request.Clone(), show_request_timestamp));
   }
 
   for (auto& observer : render_frames_)

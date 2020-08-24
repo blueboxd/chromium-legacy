@@ -3,8 +3,6 @@
 # Failed
 -DesktopCaptureApiTest.ChooseDesktopMedia
 -OutOfProcessPPAPITest.FlashClipboard
--PPAPINaClNewlibTest.TrueTypeFont
--PPAPINaClPNaClNonSfiTest.TrueTypeFont
 -WebRtcDesktopCaptureBrowserTest.RunsScreenshareFromOneTabToAnother
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideo
 -WebRtcGetDisplayMediaBrowserTestWithPicker.GetDisplayMediaVideoAndAudio

@@ -9,7 +9,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "chrome/browser/browser_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 const NearbySharedBrowserTest = class extends PolymerTest {
   /** @override */
@@ -19,13 +18,7 @@ const NearbySharedBrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {
-      enabled: [
-        'features::kNearbySharing',
-        // required for linux-blink-cors-rel builder (post CQ)
-        'network::features::kOutOfBlinkCors',
-      ]
-    };
+    return {enabled: ['features::kNearbySharing']};
   }
 
   /** @override */

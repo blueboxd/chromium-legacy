@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 var TabStripBrowserTest = class extends testing.Test {
   get isAsync() {
@@ -19,11 +18,6 @@ var TabStripBrowserTest = class extends testing.Test {
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 

@@ -89,6 +89,14 @@ const base::Feature kBackForwardCacheMemoryControl{
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kBlockInsecurePrivateNetworkRequests is enabled, requests initiated
+// from a less-private network may only target a more-private network if the
+// initiating context is secure.
+//
+// https://wicg.github.io/cors-rfc1918/#integration-fetch
+const base::Feature kBlockInsecurePrivateNetworkRequests{
+    "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 const base::Feature kBrowserUseDisplayThreadPriority{

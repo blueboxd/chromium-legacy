@@ -109,7 +109,8 @@ base::Optional<std::string> ToFourDigitString(
   int hash = 0;
   int multiplier = 1;
   for (uint8_t byte : *bytes) {
-    hash = (hash + byte * multiplier) % kHashModulo;
+    // Java bytes are signed two's complement so cast to use the correct sign.
+    hash = (hash + static_cast<int8_t>(byte) * multiplier) % kHashModulo;
     multiplier = (multiplier * kHashBaseMultiplier) % kHashModulo;
   }
 
@@ -1644,7 +1645,10 @@ void NearbySharingServiceImpl::SendIntroduction(
 
   // Write the introduction to the remote device.
   sharing::nearby::Frame frame;
-  frame.mutable_v1()->set_allocated_introduction(introduction.release());
+  frame.set_version(sharing::nearby::Frame::V1);
+  sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->set_type(sharing::nearby::V1Frame::INTRODUCTION);
+  v1_frame->set_allocated_introduction(introduction.release());
 
   std::vector<uint8_t> data(frame.ByteSize());
   frame.SerializeToArray(data.data(), frame.ByteSize());
@@ -1763,7 +1767,9 @@ void NearbySharingServiceImpl::WriteResponse(
     NearbyConnection& connection,
     sharing::nearby::ConnectionResponseFrame::Status status) {
   sharing::nearby::Frame frame;
+  frame.set_version(sharing::nearby::Frame::V1);
   sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->set_type(sharing::nearby::V1Frame::RESPONSE);
   v1_frame->mutable_connection_response()->set_status(status);
 
   std::vector<uint8_t> data(frame.ByteSize());
@@ -2253,9 +2259,9 @@ void NearbySharingServiceImpl::OnReceiveConnectionResponse(
       std::move((*frame)->get_connection_response());
   switch (response->status) {
     case sharing::mojom::ConnectionResponseFrame::Status::kAccept: {
-      info->frames_reader()->ReadFrame(base::BindOnce(
-          &NearbySharingServiceImpl::OnFrameRead,
-          weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
+      info->frames_reader()->ReadFrame(
+          base::BindOnce(&NearbySharingServiceImpl::OnFrameRead,
+                         weak_ptr_factory_.GetWeakPtr(), share_target));
 
       info->transfer_update_callback()->OnTransferUpdate(
           share_target, TransferMetadataBuilder()

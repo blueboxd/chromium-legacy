@@ -306,6 +306,20 @@ class LOCKABLE MaybeSpinLock<ThreadSafe> {
 };
 #endif  // DCHECK_IS_ON()
 
+template <>
+class LOCKABLE MaybeSpinLock<NotThreadSafe> {
+ public:
+  void Lock() EXCLUSIVE_LOCK_FUNCTION() {}
+  void Unlock() UNLOCK_FUNCTION() {}
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {}
+
+  char padding_[sizeof(MaybeSpinLock<ThreadSafe>)];
+};
+
+static_assert(
+    sizeof(MaybeSpinLock<ThreadSafe>) == sizeof(MaybeSpinLock<NotThreadSafe>),
+    "Sizes should be equal to enseure identical layout of PartitionRoot");
+
 // An "extent" is a span of consecutive superpages. We link to the partition's
 // next extent (if there is one) to the very start of a superpage's metadata
 // area.
@@ -556,6 +570,13 @@ struct BASE_EXPORT PartitionRoot {
   void DecommitEmptyPages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 };
 
+static_assert(sizeof(PartitionRoot<internal::ThreadSafe>) ==
+                  sizeof(PartitionRoot<internal::NotThreadSafe>),
+              "Layouts should match");
+static_assert(offsetof(PartitionRoot<internal::ThreadSafe>, buckets) ==
+                  offsetof(PartitionRoot<internal::NotThreadSafe>, buckets),
+              "Layouts should match");
+
 template <bool thread_safe>
 ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
     Bucket* bucket,
@@ -754,14 +775,8 @@ PartitionAllocGetPageForSize(void* ptr) {
   // cause trouble, and the caller is responsible for that not happening.
   auto* page =
       internal::PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(ptr);
-  // This PA_DCHECK has been temporarily commented out, because
-  // CheckedPtr2OrMTEImpl calls ThreadSafe variant of
-  // PartitionAllocGetSlotOffset even in the NotThreadSafe case. Everything
-  // seems to work, except IsValidPage is failing (PartitionRoot's fields are
-  // laid out differently between variants).
-  // TODO(bartekn): Uncomment once we figure out thread-safety variant mismatch.
   // TODO(palmer): See if we can afford to make this a CHECK.
-  //  PA_DCHECK(PartitionRoot<thread_safe>::IsValidPage(page));
+  PA_DCHECK(PartitionRoot<thread_safe>::IsValidPage(page));
   return page;
 }
 }  // namespace internal
@@ -805,22 +820,24 @@ ALWAYS_INLINE void DCheckIfManagedByPartitionAllocNormalBuckets(const void*) {}
 // (if any).
 // CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
 // lead to undefined behavior.
-template <bool thread_safe>
+//
+// This function is not a template, and can be used on either variant
+// (thread-safe or not) of the allocator. This relies on the two PartitionRoot<>
+// having the same layout, which is enforced by static_assert().
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   internal::DCheckIfManagedByPartitionAllocNormalBuckets(ptr);
   // The only allocations that don't use tag are allocated outside of GigaCage,
   // hence we'd never get here in the use_tag=false case.
-  // TODO(bartekn): Add a DCHECK(page->root->allow_extras) to assert this, once
-  // we figure out the thread-safety variant mismatch problem (see the comment
-  // in PartitionAllocGetPageForSize for the problem description).
   ptr = internal::PartitionPointerAdjustSubtract(true /* use_tag */, ptr);
-  auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
+  auto* page =
+      internal::PartitionAllocGetPageForSize<internal::ThreadSafe>(ptr);
+  PA_DCHECK(PartitionRoot<internal::ThreadSafe>::FromPage(page)->allow_extras);
   size_t slot_size = page->bucket->slot_size;
 
   // Get the offset from the beginning of the slot span.
   uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
   uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
-      internal::PartitionPage<thread_safe>::ToPointer(page));
+      internal::PartitionPage<internal::ThreadSafe>::ToPointer(page));
   size_t offset_in_slot_span = ptr_addr - slot_span_start;
   // Knowing that slots are tightly packed in a slot span, calculate an offset
   // within a slot using simple % operation.

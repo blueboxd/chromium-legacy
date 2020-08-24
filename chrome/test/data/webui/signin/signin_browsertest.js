@@ -10,7 +10,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 
 class SigninBrowserTest extends PolymerTest {
@@ -25,11 +24,6 @@ class SigninBrowserTest extends PolymerTest {
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 }
 
@@ -116,12 +110,7 @@ var ProfilePickerAppTest = class extends SigninBrowserTest {
 
   /** @override */
   get featureList() {
-    return {
-      enabled: [
-        'network::features::kOutOfBlinkCors',
-        'features::kSignInProfileCreationFlow',
-      ]
-    };
+    return {enabled: ['features::kSignInProfileCreationFlow']};
   }
 };
 

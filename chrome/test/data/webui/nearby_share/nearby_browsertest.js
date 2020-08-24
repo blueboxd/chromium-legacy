@@ -9,7 +9,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "chrome/browser/browser_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for Polymer Nearby Share elements. */
 const NearbyBrowserTest = class extends PolymerTest {
@@ -37,12 +36,7 @@ const NearbyBrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {
-      enabled: [
-        'features::kNearbySharing',
-        'network::features::kOutOfBlinkCors',
-      ]
-    };
+    return {enabled: ['features::kNearbySharing']};
   }
 };
 

@@ -243,6 +243,13 @@ void NearbySharingDecoder::DecodeFrame(const std::vector<uint8_t>& data,
     return;
   }
 
+  if (!proto_frame.has_version() ||
+      proto_frame.version() != sharing::nearby::Frame_Version_V1) {
+    LOG(ERROR) << "Invalid or missing incoming frame version";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   if (!proto_frame.has_v1()) {
     LOG(ERROR) << "Missing incoming v1frame";
     std::move(callback).Run(nullptr);

@@ -3843,7 +3843,7 @@ class RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked
  public:
   RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked() {
     feature_list_.InitAndEnableFeature(
-        network::features::kBlockInsecurePrivateNetworkRequests);
+        features::kBlockInsecurePrivateNetworkRequests);
   }
 
  private:

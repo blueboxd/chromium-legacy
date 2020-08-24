@@ -4175,7 +4175,7 @@ void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
             url::Origin::Create(common_params_->url));
 
     if (base::FeatureList::IsEnabled(
-            network::features::kBlockInsecurePrivateNetworkRequests)) {
+            features::kBlockInsecurePrivateNetworkRequests)) {
       ContentBrowserClient* client = GetContentClient()->browser();
       BrowserContext* context =
           frame_tree_node_->navigator().GetController()->GetBrowserContext();

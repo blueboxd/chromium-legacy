@@ -571,8 +571,17 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_MAC)
+// Fails flakily with compared ID differences. TODO(crbug.com/1121099): Re-nable
+// this test.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_CachingAsyncHitTest_WithPinchZoom \
+  DISABLED_CachingAsyncHitTest_WithPinchZoom
+#else
+#define MAYBE_CachingAsyncHitTest_WithPinchZoom \
+  CachingAsyncHitTest_WithPinchZoom
+#endif
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       CachingAsyncHitTest_WithPinchZoom) {
+                       MAYBE_CachingAsyncHitTest_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));

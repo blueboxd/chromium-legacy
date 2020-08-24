@@ -355,8 +355,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
       runtimeFeatureNameToChromiumFeatureMapping[] = {
-          {"AddressSpace",
-           network::features::kBlockInsecurePrivateNetworkRequests,
+          {"AddressSpace", features::kBlockInsecurePrivateNetworkRequests,
            kEnableOnly},
           {"AllowContentInitiatedDataUrlNavigations",
            features::kAllowContentInitiatedDataUrlNavigations,

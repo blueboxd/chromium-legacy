@@ -254,7 +254,7 @@ TEST_F(ServiceConnectionTest,
   bool infer_callback_done = false;
   text_classifier->Annotate(
       std::move(request),
-      base::Bind(
+      base::BindOnce(
           [](bool* infer_callback_done,
              std::vector<mojom::TextAnnotationPtr> annotations) {
             *infer_callback_done = true;
@@ -301,16 +301,15 @@ TEST_F(ServiceConnectionTest,
   request->user_selection = mojom::CodepointSpan::New();
   bool infer_callback_done = false;
   text_classifier->SuggestSelection(
-      std::move(request),
-      base::Bind(
-          [](bool* infer_callback_done,
-             mojom::CodepointSpanPtr suggested_span) {
-            *infer_callback_done = true;
-            // Check if the suggestion is correct.
-            EXPECT_EQ(suggested_span->start_offset, 1u);
-            EXPECT_EQ(suggested_span->end_offset, 2u);
-          },
-          &infer_callback_done));
+      std::move(request), base::BindOnce(
+                              [](bool* infer_callback_done,
+                                 mojom::CodepointSpanPtr suggested_span) {
+                                *infer_callback_done = true;
+                                // Check if the suggestion is correct.
+                                EXPECT_EQ(suggested_span->start_offset, 1u);
+                                EXPECT_EQ(suggested_span->end_offset, 2u);
+                              },
+                              &infer_callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(infer_callback_done);
 }
@@ -344,7 +343,7 @@ TEST_F(ServiceConnectionTest,
   std::string input_text = "dummy input text";
   bool infer_callback_done = false;
   text_classifier->FindLanguages(
-      input_text, base::Bind(
+      input_text, base::BindOnce(
                       [](bool* infer_callback_done,
                          std::vector<mojom::TextLanguagePtr> languages) {
                         *infer_callback_done = true;
@@ -396,7 +395,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
   bool infer_callback_done = false;
   recognizer->Recognize(
       std::move(query),
-      base::Bind(
+      base::BindOnce(
           [](bool* infer_callback_done,
              mojom::HandwritingRecognizerResultPtr result) {
             *infer_callback_done = true;

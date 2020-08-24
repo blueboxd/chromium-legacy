@@ -232,6 +232,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   int frames_received() const { return frames_received_; }
 
+  // Updates the maximum size of the header encoder compression table.
+  void UpdateHeaderEncoderTableSize(uint32_t value);
+  // Returns the maximum size of the header encoder compression table.
+  uint32_t header_encoder_table_size() const;
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 

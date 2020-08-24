@@ -7,7 +7,6 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
@@ -30,7 +29,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
   get featureList() {
     return {
       enabled: [
-        'network::features::kOutOfBlinkCors',
         'chromeos::features::kOsSettingsPolymer3',
       ],
     };

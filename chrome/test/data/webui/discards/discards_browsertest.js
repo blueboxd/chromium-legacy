@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * TestFixture for Discards WebUI testing.
@@ -19,11 +18,6 @@ var DiscardsTest = class extends testing.Test {
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   /** @override */

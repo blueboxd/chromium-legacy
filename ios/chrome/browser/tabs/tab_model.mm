@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -120,7 +119,7 @@ void RecordInterfaceOrientationMetric() {
 
 }  // anonymous namespace
 
-@interface TabModel ()<CRWWebStateObserver, WebStateListObserving> {
+@interface TabModel () <CRWWebStateObserver> {
   // Weak reference to the underlying shared model implementation.
   WebStateList* _webStateList;
 
@@ -130,10 +129,6 @@ void RecordInterfaceOrientationMetric() {
   // WebStateListObservers reacting to modifications of the model (may send
   // notification, translate and forward events, update metrics, ...).
   std::vector<std::unique_ptr<WebStateListObserver>> _webStateListObservers;
-
-  // Strong references to id<WebStateListObserving> wrapped by non-owning
-  // WebStateListObserverBridges.
-  NSArray<id<WebStateListObserving>>* _retainedWebStateListObservers;
 
   // Weak reference to the session restoration agent.
   SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
@@ -187,26 +182,10 @@ void RecordInterfaceOrientationMetric() {
 
     _snapshotBrowserAgent = SnapshotBrowserAgent::FromBrowser(browser);
 
-    NSMutableArray<id<WebStateListObserving>>* retainedWebStateListObservers =
-        [[NSMutableArray alloc] init];
-
-    ClosingWebStateObserver* closingWebStateObserver =
-        [[ClosingWebStateObserver alloc]
-            initWithRestoreService:IOSChromeTabRestoreServiceFactory::
-                                       GetForBrowserState(_browserState)];
-    [retainedWebStateListObservers addObject:closingWebStateObserver];
-
-    _webStateListObservers.push_back(
-        std::make_unique<WebStateListObserverBridge>(self));
-
-    _webStateListObservers.push_back(
-        std::make_unique<WebStateListObserverBridge>(closingWebStateObserver));
-
     _webStateListObservers.push_back(std::make_unique<TabParentingObserver>());
 
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
-    _retainedWebStateListObservers = [retainedWebStateListObservers copy];
 
     // Register for resign active notification.
     [[NSNotificationCenter defaultCenter]
@@ -248,7 +227,6 @@ void RecordInterfaceOrientationMetric() {
   for (const auto& webStateListObserver : _webStateListObservers)
     _webStateList->RemoveObserver(webStateListObserver.get());
   _webStateListObservers.clear();
-  _retainedWebStateListObservers = nil;
   _webStateList = nullptr;
 
   _clearPoliciesTaskTracker.TryCancelAll();
@@ -374,33 +352,6 @@ void RecordInterfaceOrientationMetric() {
   // detached from WebStateList which happens before WebState destructor,
   // so this method should never be called.
   NOTREACHED();
-}
-
-#pragma mark - WebStateListObserving
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  DCHECK(webState);
-  webState->AddObserver(_webStateObserver.get());
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex {
-  DCHECK(oldWebState);
-  DCHECK(newWebState);
-  newWebState->AddObserver(_webStateObserver.get());
-  oldWebState->RemoveObserver(_webStateObserver.get());
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  DCHECK(webState);
-  webState->RemoveObserver(_webStateObserver.get());
 }
 
 @end

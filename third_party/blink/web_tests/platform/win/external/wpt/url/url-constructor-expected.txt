@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 548 tests; 413 PASS, 135 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 561 tests; 413 PASS, 148 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -565,6 +565,19 @@ FAIL Parsing: <ldap://localhost:389/ou=People,o=JNDITutorial> against <about:bla
 FAIL Parsing: <git+https://github.com/foo/bar> against <about:blank> assert_equals: host expected "github.com" but got ""
 PASS Parsing: <urn:ietf:rfc:2648> against <about:blank>
 PASS Parsing: <tag:joe@example.org,2001:foo/bar> against <about:blank>
+FAIL Parsing: <non-spec:/.//> against <about:blank> assert_equals: pathname expected "//" but got "/.//"
+FAIL Parsing: <non-spec:/..//> against <about:blank> assert_equals: href expected "non-spec:/.//" but got "non-spec:/..//"
+FAIL Parsing: <non-spec:/a/..//> against <about:blank> assert_equals: href expected "non-spec:/.//" but got "non-spec:/a/..//"
+FAIL Parsing: <non-spec:/.//path> against <about:blank> assert_equals: pathname expected "//path" but got "/.//path"
+FAIL Parsing: <non-spec:/..//path> against <about:blank> assert_equals: href expected "non-spec:/.//path" but got "non-spec:/..//path"
+FAIL Parsing: <non-spec:/a/..//path> against <about:blank> assert_equals: href expected "non-spec:/.//path" but got "non-spec:/a/..//path"
+FAIL Parsing: </.//path> against <non-spec:/p> assert_equals: href expected "non-spec:/.//path" but got "non-spec://path"
+FAIL Parsing: </..//path> against <non-spec:/p> assert_equals: href expected "non-spec:/.//path" but got "non-spec://path"
+FAIL Parsing: <..//path> against <non-spec:/p> assert_equals: href expected "non-spec:/.//path" but got "non-spec://path"
+FAIL Parsing: <a/..//path> against <non-spec:/p> assert_equals: href expected "non-spec:/.//path" but got "non-spec://path"
+FAIL Parsing: <> against <non-spec:/..//p> assert_equals: href expected "non-spec:/.//p" but got "non-spec:/..//p"
+FAIL Parsing: <path> against <non-spec:/..//p> assert_equals: href expected "non-spec:/.//path" but got "non-spec:/..//path"
+FAIL Parsing: <../path> against <non-spec:/.//p> assert_equals: href expected "non-spec:/path" but got "non-spec:/./path"
 FAIL Parsing: <non-special://%E2%80%A0/> against <about:blank> assert_equals: host expected "%E2%80%A0" but got ""
 FAIL Parsing: <non-special://H%4fSt/path> against <about:blank> assert_equals: host expected "H%4fSt" but got ""
 FAIL Parsing: <non-special://[1:2:0:0:5:0:0:0]/> against <about:blank> assert_equals: href expected "non-special://[1:2:0:0:5::]/" but got "non-special://[1:2:0:0:5:0:0:0]/"

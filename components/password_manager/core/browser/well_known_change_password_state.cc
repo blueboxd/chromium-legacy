@@ -17,6 +17,9 @@ using password_manager::WellKnownChangePasswordStateDelegate;
 
 namespace password_manager {
 
+namespace {
+// Creates a SimpleURLLoader for a request to the non existing resource path for
+// a given |url|.
 std::unique_ptr<network::SimpleURLLoader>
 CreateResourceRequestToWellKnownNonExistingResourceFor(const GURL& url) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -54,6 +57,7 @@ CreateResourceRequestToWellKnownNonExistingResourceFor(const GURL& url) {
   return network::SimpleURLLoader::Create(std::move(resource_request),
                                           traffic_annotation);
 }
+}  // namespace
 
 WellKnownChangePasswordState::WellKnownChangePasswordState(
     WellKnownChangePasswordStateDelegate* delegate)

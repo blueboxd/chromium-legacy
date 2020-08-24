@@ -101,6 +101,7 @@ std::unique_ptr<sharing::nearby::Frame> BuildResponseFrame(
     sharing::nearby::ConnectionResponseFrame_Status status) {
   std::unique_ptr<sharing::nearby::Frame> frame =
       std::make_unique<sharing::nearby::Frame>();
+  frame->set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame->mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_RESPONSE);
   sharing::nearby::ConnectionResponseFrame* response =
@@ -140,6 +141,7 @@ std::unique_ptr<sharing::nearby::Frame> BuildPairedKeyResultFrame(
     sharing::nearby::PairedKeyResultFrame_Status status) {
   std::unique_ptr<sharing::nearby::Frame> frame =
       std::make_unique<sharing::nearby::Frame>();
+  frame->set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame->mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_PAIRED_KEY_RESULT);
   sharing::nearby::PairedKeyResultFrame* paired_key =
@@ -253,14 +255,22 @@ TEST_F(NearbySharingDecoderTest, InvalidDeviceNameAdvertisementDecoding) {
   decoder()->DecodeAdvertisement(v1EndpointInfo, std::move(callback));
 }
 
+TEST_F(NearbySharingDecoderTest, MissingFrameVersionDecoding) {
+  sharing::nearby::Frame frame = sharing::nearby::Frame();
+
+  ExpectNullFrame(frame);
+}
+
 TEST_F(NearbySharingDecoderTest, MissingV1FrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
 
   ExpectNullFrame(frame);
 }
 
 TEST_F(NearbySharingDecoderTest, V1FrameMissingTypeDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->mutable_introduction();
 
@@ -269,6 +279,7 @@ TEST_F(NearbySharingDecoderTest, V1FrameMissingTypeDecoding) {
 
 TEST_F(NearbySharingDecoderTest, V1FrameMissingIntroductionFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_INTRODUCTION);
 
@@ -277,6 +288,7 @@ TEST_F(NearbySharingDecoderTest, V1FrameMissingIntroductionFrameDecoding) {
 
 TEST_F(NearbySharingDecoderTest, IntroductionFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_INTRODUCTION);
   sharing::nearby::IntroductionFrame* intro = v1frame->mutable_introduction();
@@ -348,6 +360,7 @@ TEST_F(NearbySharingDecoderTest, IntroductionFrameDecoding) {
 
 TEST_F(NearbySharingDecoderTest, V1FrameMissingResponseFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_RESPONSE);
 
@@ -455,6 +468,7 @@ TEST_F(NearbySharingDecoderTest, ResponseFrameUnknownDecoding) {
 TEST_F(NearbySharingDecoderTest,
        V1FrameMissingPairedKeyEncryptionFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_PAIRED_KEY_ENCRYPTION);
 
@@ -463,6 +477,7 @@ TEST_F(NearbySharingDecoderTest,
 
 TEST_F(NearbySharingDecoderTest, PairedKeyEncryptionFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_PAIRED_KEY_ENCRYPTION);
   sharing::nearby::PairedKeyEncryptionFrame* paired_key =
@@ -486,6 +501,7 @@ TEST_F(NearbySharingDecoderTest, PairedKeyEncryptionFrameDecoding) {
 
 TEST_F(NearbySharingDecoderTest, V1FrameMissingPairedKeyResultFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_PAIRED_KEY_RESULT);
 
@@ -494,6 +510,7 @@ TEST_F(NearbySharingDecoderTest, V1FrameMissingPairedKeyResultFrameDecoding) {
 
 TEST_F(NearbySharingDecoderTest, CancelFrameSuccessDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_CANCEL);
 
@@ -576,6 +593,7 @@ TEST_F(NearbySharingDecoderTest, PairedKeyResultFrameUnknownDecoding) {
 
 TEST_F(NearbySharingDecoderTest, V1FrameMissingCertificateFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_CERTIFICATE_INFO);
 
@@ -584,6 +602,7 @@ TEST_F(NearbySharingDecoderTest, V1FrameMissingCertificateFrameDecoding) {
 
 TEST_F(NearbySharingDecoderTest, CertificateFrameDecoding) {
   sharing::nearby::Frame frame = sharing::nearby::Frame();
+  frame.set_version(sharing::nearby::Frame_Version_V1);
   sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_CERTIFICATE_INFO);
   sharing::nearby::CertificateInfoFrame* cert_frame =

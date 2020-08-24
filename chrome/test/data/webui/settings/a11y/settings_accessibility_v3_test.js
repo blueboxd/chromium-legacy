@@ -10,8 +10,6 @@ GEN_INCLUDE([
   '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
-GEN('#include "services/network/public/cpp/features.h"');
-
 /**
  * Test fixture for Accessibility of Chrome Settings.
  * @constructor
@@ -75,12 +73,6 @@ SettingsAccessibilityV3Test.prototype = {
     '//chrome/test/data/webui/mocha_adapter.js',
     '//third_party/axe-core/axe.js',
   ],
-
-  /** @override */
-  featureList: {
-    enabled: ['network::features::kOutOfBlinkCors'],
-    disabled: [],
-  },
 
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);

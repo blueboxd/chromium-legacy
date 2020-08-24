@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * @constructor
@@ -26,14 +25,6 @@ SettingsIdleLoadV3BrowserTest.prototype = {
 
   /** @override */
   isAsync: true,
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: ['network::features::kOutOfBlinkCors'],
-      disabled: [],
-    };
-  },
 };
 
 TEST_F('SettingsIdleLoadV3BrowserTest', 'All', function() {

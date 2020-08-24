@@ -10,7 +10,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/browser_features.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for shared Polymer 3 components. */
 // eslint-disable-next-line no-var
@@ -59,14 +58,6 @@ var CrComponentsCertificateManagerV3Test =
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: ['network::features::kOutOfBlinkCors'],
-      disabled: [],
-    };
   }
 };
 

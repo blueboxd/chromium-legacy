@@ -16,14 +16,6 @@ class SharedURLLoaderFactory;
 }
 
 namespace password_manager {
-
-// Creates a SimpleURLLoader for a request to the non existing resource path for
-// a given |origin|.
-// TODO(crbug.com/927473): move method to anonymous namespace when State is
-// integrated in NavigationThrottle.
-std::unique_ptr<network::SimpleURLLoader>
-CreateResourceRequestToWellKnownNonExistingResourceFor(const GURL& url);
-
 // A delegate that is notified when the processing is done and its known if
 // .well-known/change-password is supported.
 class WellKnownChangePasswordStateDelegate {

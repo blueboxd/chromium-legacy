@@ -28,8 +28,6 @@ source_set("signin") {
     "gaia_auth_fetcher_ios_bridge.mm",
     "gaia_auth_fetcher_ios_ns_url_session_bridge.h",
     "gaia_auth_fetcher_ios_ns_url_session_bridge.mm",
-    "gaia_auth_fetcher_ios_wk_webview_bridge.h",
-    "gaia_auth_fetcher_ios_wk_webview_bridge.mm",
     "identity_manager_factory.cc",
     "identity_manager_factory.h",
     "identity_manager_factory_observer.h",
@@ -49,7 +47,6 @@ source_set("signin") {
     "signin_util.mm",
   ]
   deps = [
-    ":feature_flags",
     "//base",
     "//components/browser_sync",
     "//components/content_settings/core/browser",
@@ -84,15 +81,6 @@ source_set("signin") {
     "//net",
     "//url",
   ]
-}
-
-source_set("feature_flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "feature_flags.h",
-    "feature_flags.mm",
-  ]
-  deps = [ "//base" ]
 }
 
 source_set("test_support") {
@@ -132,7 +120,6 @@ source_set("unit_tests") {
     "signin_browser_state_info_updater_unittest.mm",
   ]
   deps = [
-    ":feature_flags",
     ":signin",
     ":test_support",
     "//base",

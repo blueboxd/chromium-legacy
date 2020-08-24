@@ -386,7 +386,7 @@ void NearbyNotificationManager::ShowProgress(
 
   // Show indeterminate progress while waiting for remote device to accept.
   if (transfer_metadata.status() == TransferMetadata::Status::kInProgress)
-    notification.set_progress(100.0 * transfer_metadata.progress());
+    notification.set_progress(transfer_metadata.progress());
   else
     notification.set_progress(-1);
 

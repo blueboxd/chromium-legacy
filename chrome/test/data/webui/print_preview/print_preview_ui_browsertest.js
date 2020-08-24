@@ -8,7 +8,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 const PrintPreviewTest = class extends PolymerTest {
   /** @override */
@@ -27,11 +26,6 @@ const PrintPreviewTest = class extends PolymerTest {
   // The name of the mocha suite. Should be overridden by subclasses.
   get suiteName() {
     return null;
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -612,7 +606,7 @@ var PrintPreviewDestinationStoreTestCros = class extends PrintPreviewTest {
   /** @override */
   get featureList() {
     const kPrintSaveToDrive = ['chromeos::features::kPrintSaveToDrive'];
-    const featureList = super.featureList;
+    const featureList = super.featureList || [];
     featureList.enabled = featureList.enabled ?
         featureList.enabled.concat(kPrintSaveToDrive) :
         kPrintSaveToDrive;
@@ -1149,7 +1143,7 @@ var PrintPreviewDestinationSelectTestCrOS = class extends PrintPreviewTest {
   /** @override */
   get featureList() {
     const kPrinterStatus = ['chromeos::features::kPrinterStatus'];
-    const featureList = super.featureList;
+    const featureList = super.featureList || [];
     featureList.disabled = featureList.disabled ?
         featureList.disabled.concat(kPrinterStatus) :
         kPrinterStatus;
@@ -1207,7 +1201,7 @@ var PrintPreviewDestinationSelectTestCrOSSaveToDriveEnabled =
   get featureList() {
     const kPrinterStatus = ['chromeos::features::kPrinterStatus'];
     const kPrintSaveToDrive = ['chromeos::features::kPrintSaveToDrive'];
-    const featureList = super.featureList;
+    const featureList = super.featureList || [];
     featureList.disabled = featureList.disabled ?
         featureList.disabled.concat(kPrinterStatus) :
         kPrinterStatus;
@@ -1240,7 +1234,7 @@ var PrintPreviewPrinterStatusTestCros = class extends PrintPreviewTest {
   /** @override */
   get featureList() {
     const kPrinterStatus = ['chromeos::features::kPrinterStatus'];
-    const featureList = super.featureList;
+    const featureList = super.featureList || [];
     featureList.enabled = featureList.enabled ?
         featureList.enabled.concat(kPrinterStatus) :
         kPrinterStatus;

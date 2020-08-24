@@ -72,8 +72,8 @@ class GaiaAuthFetcherIOS
                        net::Error net_error,
                        int response_code) override;
 
-  std::unique_ptr<GaiaAuthFetcherIOSBridge> bridge_;
   web::BrowserState* browser_state_;
+  std::unique_ptr<GaiaAuthFetcherIOSBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOS);
 };

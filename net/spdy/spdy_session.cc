@@ -2621,6 +2621,9 @@ void SpdySession::SendInitialData() {
 
 void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
   switch (id) {
+    case spdy::SETTINGS_HEADER_TABLE_SIZE:
+      buffered_spdy_framer_->UpdateHeaderEncoderTableSize(value);
+      break;
     case spdy::SETTINGS_MAX_CONCURRENT_STREAMS:
       max_concurrent_streams_ =
           std::min(static_cast<size_t>(value), kMaxConcurrentStreamLimit);

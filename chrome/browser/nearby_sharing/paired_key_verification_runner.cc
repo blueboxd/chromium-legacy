@@ -186,7 +186,9 @@ void PairedKeyVerificationRunner::OnReadPairedKeyResultFrame(
 void PairedKeyVerificationRunner::SendPairedKeyResultFrame(
     PairedKeyVerificationResult result) {
   sharing::nearby::Frame frame;
+  frame.set_version(sharing::nearby::Frame::V1);
   sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->set_type(sharing::nearby::V1Frame::PAIRED_KEY_RESULT);
   sharing::nearby::PairedKeyResultFrame* result_frame =
       v1_frame->mutable_paired_key_result();
 
@@ -222,7 +224,9 @@ void PairedKeyVerificationRunner::SendCertificateInfo() {
     return;
 
   sharing::nearby::Frame frame;
+  frame.set_version(sharing::nearby::Frame::V1);
   sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->set_type(sharing::nearby::V1Frame::CERTIFICATE_INFO);
   sharing::nearby::CertificateInfoFrame* cert_frame =
       v1_frame->mutable_certificate_info();
   for (const auto& certificate : certificates) {
@@ -249,8 +253,11 @@ void PairedKeyVerificationRunner::SendPairedKeyEncryptionFrame() {
       certificate_manager_->GetValidPrivateCertificate(Convert(visibility_));
 
   sharing::nearby::Frame frame;
+  frame.set_version(sharing::nearby::Frame::V1);
+  sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
+  v1_frame->set_type(sharing::nearby::V1Frame::PAIRED_KEY_ENCRYPTION);
   sharing::nearby::PairedKeyEncryptionFrame* encryption_frame =
-      frame.mutable_v1()->mutable_paired_key_encryption();
+      v1_frame->mutable_paired_key_encryption();
 
   base::Optional<std::vector<uint8_t>> signature =
       private_certificate.Sign(PadPrefix(local_prefix_, raw_token_));

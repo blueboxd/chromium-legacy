@@ -237,7 +237,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
 }
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsProgress) {
-  double progress = 0.75;
+  double progress = 75.0;
 
   ShareTarget share_target;
   TransferMetadata transfer_metadata =
@@ -250,17 +250,17 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsProgress) {
   ASSERT_EQ(1u, notifications.size());
 
   const message_center::Notification& notification = notifications[0];
-  EXPECT_EQ(100.0 * progress, notification.progress());
+  EXPECT_EQ(progress, notification.progress());
 }
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
   ShareTarget share_target;
   TransferMetadataBuilder transfer_metadata_builder;
-  transfer_metadata_builder.set_progress(0.75);
+  transfer_metadata_builder.set_progress(75.0);
 
   manager()->ShowProgress(share_target, transfer_metadata_builder.build());
 
-  double progress = 0.5;
+  double progress = 50.0;
   transfer_metadata_builder.set_progress(progress);
   manager()->ShowProgress(share_target, transfer_metadata_builder.build());
 
@@ -269,7 +269,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
   ASSERT_EQ(1u, notifications.size());
 
   const message_center::Notification& notification = notifications[0];
-  EXPECT_EQ(100.0 * progress, notification.progress());
+  EXPECT_EQ(progress, notification.progress());
 }
 
 TEST_P(NearbyNotificationManagerAttachmentsTest, ShowProgress) {

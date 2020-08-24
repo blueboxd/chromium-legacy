@@ -364,6 +364,10 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
                url, session_.get()) != kNoPushedStreamFound;
   }
 
+  uint32_t header_encoder_table_size() const {
+    return session_->buffered_spdy_framer_->header_encoder_table_size();
+  }
+
   RecordingBoundTestNetLog log_;
 
   // Original socket limits.  Some tests set these.  Safest to always restore
@@ -7208,6 +7212,37 @@ TEST(RecordPushedStreamHistogramTest, VaryResponseHeader) {
     histograms.ExpectBucketCount("Net.PushedStreamVaryResponseHeader",
                                  test_cases[i].expected_bucket, 2);
   }
+}
+
+// Regression test for https://crbug.com/1115492.
+TEST_F(SpdySessionTest, UpdateHeaderTableSize) {
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = 12345;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  MockRead reads[] = {CreateMockRead(settings_frame, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  MockWrite writes[] = {CreateMockWrite(settings_ack, 1)};
+
+  SequencedSocketData data(reads, writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_EQ(spdy::kDefaultHeaderTableSizeSetting, header_encoder_table_size());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(12345u, header_encoder_table_size());
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
 }  // namespace net

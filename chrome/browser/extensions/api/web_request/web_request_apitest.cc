@@ -60,7 +60,6 @@
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/embedder_support/switches.h"
 #include "components/google/core/common/google_switches.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -628,64 +627,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-enum class CorsMode {
-  kOutOfBlinkCors,
-  kBlinkCors,
-};
-
-class ExtensionWebRequestApiPolicyTest
-    : public ExtensionWebRequestApiTest,
-      public ::testing::WithParamInterface<CorsMode> {
- public:
-  const std::string& test_name() { return test_name_; }
-
- private:
-  void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-
-    switch (GetParam()) {
-      case CorsMode::kOutOfBlinkCors:
-        feature_list_.InitAndEnableFeature(network::features::kOutOfBlinkCors);
-        test_name_ += "?cors_mode=network_service";
-        break;
-      case CorsMode::kBlinkCors:
-        feature_list_.InitAndDisableFeature(network::features::kOutOfBlinkCors);
-        test_name_ += "?cors_mode=blink";
-        break;
-    }
-
-    ExtensionWebRequestApiTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void UpdatePolicy(const std::string& policy, base::Value value) {
-    policy::PolicyMap policy_map;
-    policy_map.Set(policy, policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::move(value), nullptr);
-    provider_.UpdateChromePolicy(policy_map);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  policy::MockConfigurationPolicyProvider provider_;
-  std::string test_name_ = "test_cors.html";
-};
-
-IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiPolicyTest,
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", test_name())) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_cors.html")) << message_;
 }
-
-INSTANTIATE_TEST_SUITE_P(Enabled,
-                         ExtensionWebRequestApiPolicyTest,
-                         testing::Values(CorsMode::kOutOfBlinkCors));
-
-INSTANTIATE_TEST_SUITE_P(Disabled,
-                         ExtensionWebRequestApiPolicyTest,
-                         testing::Values(CorsMode::kBlinkCors));
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());

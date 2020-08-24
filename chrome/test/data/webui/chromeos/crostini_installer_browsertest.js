@@ -9,7 +9,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 function CrostiniInstallerBrowserTest() {}
 
@@ -23,12 +22,6 @@ CrostiniInstallerBrowserTest.prototype = {
     '//third_party/mocha/mocha.js',
     '//chrome/test/data/webui/mocha_adapter.js',
   ],
-
-  featureList: {
-    enabled: [
-      'network::features::kOutOfBlinkCors',
-    ]
-  },
 };
 
 

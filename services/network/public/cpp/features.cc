@@ -118,14 +118,6 @@ const base::Feature kCrossOriginEmbedderPolicy{
 const base::Feature kCrossOriginIsolated{"CrossOriginIsolated",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When kBlockInsecurePrivateNetworkRequests is enabled, requests initiated
-// from a less-private network may only target a more-private network if the
-// initiating context is secure.
-//
-// https://wicg.github.io/cors-rfc1918/#integration-fetch
-const base::Feature kBlockInsecurePrivateNetworkRequests{
-    "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or defaults splittup up server (not proxy) entries in the
 // HttpAuthCache.
 const base::Feature kSplitAuthCacheByNetworkIsolationKey{

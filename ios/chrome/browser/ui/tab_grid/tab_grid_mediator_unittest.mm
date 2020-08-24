@@ -17,11 +17,12 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/closing_web_state_observer.h"
+#import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
@@ -142,6 +143,11 @@ class FakeTabRestoreService : public sessions::TabRestoreService {
   }
   Entries entries_;
 };
+
+std::unique_ptr<KeyedService> BuildFakeTabRestoreService(
+    web::BrowserState* browser_state) {
+  return std::make_unique<FakeTabRestoreService>();
+}
 }  // namespace
 
 // Test object that conforms to GridConsumer and exposes inner state for test
@@ -219,22 +225,23 @@ class TabGridMediatorTest : public PlatformTest {
 
   void SetUp() override {
     PlatformTest::SetUp();
-    browser_state_ = TestChromeBrowserState::Builder().Build();
+    TestChromeBrowserState::Builder builder;
+    builder.AddTestingFactory(IOSChromeTabRestoreServiceFactory::GetInstance(),
+                              base::BindRepeating(BuildFakeTabRestoreService));
+
+    browser_state_ = builder.Build();
+    tab_restore_service_ =
+        IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+            browser_state_.get());
     web_state_list_delegate_ =
         std::make_unique<TabHelperFakeWebStateListDelegate>();
     web_state_list_ =
         std::make_unique<WebStateList>(web_state_list_delegate_.get());
-    tab_restore_service_ = std::make_unique<FakeTabRestoreService>();
-    closing_web_state_observer_ = [[ClosingWebStateObserver alloc]
-        initWithRestoreService:tab_restore_service_.get()];
-    closing_web_state_observer_bridge_ =
-        std::make_unique<WebStateListObserverBridge>(
-            closing_web_state_observer_);
-    web_state_list_->AddObserver(closing_web_state_observer_bridge_.get());
     NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
     browser_ = std::make_unique<TestBrowser>(browser_state_.get(),
                                              web_state_list_.get());
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
+    ClosingWebStateObserverBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::FromBrowser(browser_.get())
         ->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
@@ -259,7 +266,7 @@ class TabGridMediatorTest : public PlatformTest {
     consumer_ = [[FakeConsumer alloc] init];
     mediator_ = [[TabGridMediator alloc] initWithConsumer:consumer_];
     mediator_.browser = browser_.get();
-    mediator_.tabRestoreService = tab_restore_service_.get();
+    mediator_.tabRestoreService = tab_restore_service_;
   }
 
   // Creates a TestWebState with a navigation history containing exactly only
@@ -280,7 +287,6 @@ class TabGridMediatorTest : public PlatformTest {
   }
 
   void TearDown() override {
-    web_state_list_->RemoveObserver(closing_web_state_observer_bridge_.get());
     PlatformTest::TearDown();
   }
 
@@ -297,16 +303,13 @@ class TabGridMediatorTest : public PlatformTest {
   std::unique_ptr<ChromeBrowserState> browser_state_;
   std::unique_ptr<TabHelperFakeWebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
-  std::unique_ptr<FakeTabRestoreService> tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
   id tab_model_;
   FakeConsumer* consumer_;
   TabGridMediator* mediator_;
   NSSet<NSString*>* original_identifiers_;
   NSString* original_selected_identifier_;
   std::unique_ptr<Browser> browser_;
-  ClosingWebStateObserver* closing_web_state_observer_;
-  std::unique_ptr<WebStateListObserverBridge>
-      closing_web_state_observer_bridge_;
 };
 
 #pragma mark - Consumer tests

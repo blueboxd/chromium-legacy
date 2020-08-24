@@ -12,9 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_bridge.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/net/cookies/system_cookie_util.h"
@@ -161,9 +159,6 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
 
   friend TestGaiaAuthFetcherIOSNSURLSessionBridge;
 
-  // kWKHTTPSystemCookieStore and kUseNSURLSessionForGaiaSigninRequests should
-  // be enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
   // Browser state for the tests.
   std::unique_ptr<ChromeBrowserState> browser_state_;
   // Instance used for the tests.
@@ -201,10 +196,6 @@ NSURLSession* TestGaiaAuthFetcherIOSNSURLSessionBridge::CreateNSURLSession(
 #pragma mark - GaiaAuthFetcherIOSNSURLSessionBridgeTest
 
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(kUseNSURLSessionForGaiaSigninRequests);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
   delegate_.reset(new FakeGaiaAuthFetcherIOSBridgeDelegate());
   browser_state_ = TestChromeBrowserState::Builder().Build();
   ns_url_session_bridge_.reset(new TestGaiaAuthFetcherIOSNSURLSessionBridge(

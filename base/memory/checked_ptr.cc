@@ -27,19 +27,12 @@ BASE_EXPORT bool CheckedPtr2OrMTEImplPartitionAllocSupport::EnabledForPtr(
   // PartitionAlloc supports it. (Currently not implemented for simplicity, but
   // there are no technological obstacles preventing it; whereas in case of
   // CheckedPtr2, PartitionAllocGetSlotOffset won't work with direct-map.)
-  //
-  // NOTE, CheckedPtr doesn't know which thread-safery PartitionAlloc variant
-  // it's dealing with. Just use ThreadSafe variant, because it's more common.
-  // NotThreadSafe is only used by Blink's layout, which is currently being
-  // transitioned to Oilpan. PartitionAllocGetSlotOffset is expected to return
-  // the same result regardless, anyway.
-  // TODO(bartekn): Figure out the thread-safety mismatch.
   return IsManagedByPartitionAllocNormalBuckets(ptr)
   // Checking offset is not needed for ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
   // but call it anyway for apples-to-apples comparison with
   // ENABLE_TAG_FOR_CHECKED_PTR2.
 #if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
-         && PartitionAllocGetSlotOffset<ThreadSafe>(ptr) == 0
+         && PartitionAllocGetSlotOffset(ptr) == 0
 #endif
       ;
 }

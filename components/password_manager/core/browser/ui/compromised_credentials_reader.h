@@ -27,8 +27,9 @@ class CompromisedCredentialsReader
         const std::vector<CompromisedCredentials>& compromised_credentials) = 0;
   };
 
-  // |store| cannot be null, and must outlive this class.
-  explicit CompromisedCredentialsReader(PasswordStore* store);
+  // |profile_store| cannot be null, and must outlive this class.
+  explicit CompromisedCredentialsReader(PasswordStore* profile_store,
+                                        PasswordStore* account_store = nullptr);
   CompromisedCredentialsReader(const CompromisedCredentialsReader&) = delete;
   CompromisedCredentialsReader& operator=(const CompromisedCredentialsReader&) =
       delete;
@@ -43,17 +44,25 @@ class CompromisedCredentialsReader
  private:
   // PasswordStore::DatabaseCompromisedCredentialsObserver:
   void OnCompromisedCredentialsChanged() override;
+  void OnCompromisedCredentialsChangedIn(PasswordStore* store) override;
 
   // CompromisedCredentialsConsumer:
   void OnGetCompromisedCredentials(
       std::vector<CompromisedCredentials> compromised_credentials) override;
+  void OnGetCompromisedCredentialsFrom(
+      PasswordStore* store,
+      std::vector<CompromisedCredentials> compromised_credentials) override;
 
-  // The password store containing the compromised credentials. It must outlive
-  // this class.
-  PasswordStore* store_;
+  // The password stores containing the compromised credentials.
+  // |profile_store_| must not be null and must outlive this class.
+  PasswordStore* profile_store_;
+  PasswordStore* account_store_;
 
-  // A scoped observer for |store_| to listen changes related to
-  // CompromisedCredentials only.
+  // Cache of the most recently obtained compromised credentials.
+  std::vector<CompromisedCredentials> compromised_credentials_;
+
+  // A scoped observer for |profile_store_|, and |account_store_| that listens
+  // to changes related to CompromisedCredentials only.
   ScopedObserver<PasswordStore,
                  PasswordStore::DatabaseCompromisedCredentialsObserver,
                  &PasswordStore::AddDatabaseCompromisedCredentialsObserver,

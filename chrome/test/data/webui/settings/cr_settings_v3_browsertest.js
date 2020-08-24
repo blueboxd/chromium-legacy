@@ -12,7 +12,6 @@ GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
@@ -32,18 +31,16 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {
-      enabled: [
-        'network::features::kOutOfBlinkCors',
-        ...(this.featureListInternal.enabled || []),
-      ],
-      disabled: this.featureListInternal.disabled || [],
-    };
+    if (!this.featureListInternal.enabled &&
+        !this.featureListInternal.disabled) {
+      return null;
+    }
+    return this.featureListInternal;
   }
 
   /** @return {!{enabled: !Array<string>, disabled: !Array<string>}} */
   get featureListInternal() {
-    return {enabled: [], disabled: []};
+    return {};
   }
 };
 

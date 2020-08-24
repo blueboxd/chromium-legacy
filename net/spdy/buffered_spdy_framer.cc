@@ -317,6 +317,14 @@ std::unique_ptr<spdy::SpdySerializedFrame> BufferedSpdyFramer::CreatePriority(
       spdy_framer_.SerializePriority(priority_ir));
 }
 
+void BufferedSpdyFramer::UpdateHeaderEncoderTableSize(uint32_t value) {
+  spdy_framer_.UpdateHeaderEncoderTableSize(value);
+}
+
+uint32_t BufferedSpdyFramer::header_encoder_table_size() const {
+  return spdy_framer_.header_encoder_table_size();
+}
+
 size_t BufferedSpdyFramer::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(spdy_framer_) +
          base::trace_event::EstimateMemoryUsage(deframer_) +

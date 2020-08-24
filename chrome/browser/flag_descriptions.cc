@@ -1924,7 +1924,8 @@ const char kPrivacySettingsRedesignDescription[] =
 
 const char kSafetyCheckAndroidName[] = "Safety Check on Android";
 const char kSafetyCheckAndroidDescription[] =
-    "A settings component for checking multiple areas of browser safety.";
+    "A settings component for checking multiple areas of browser safety. "
+    "Requires #password-check to also be enabled.";
 
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";

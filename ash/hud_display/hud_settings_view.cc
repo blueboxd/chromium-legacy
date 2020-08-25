@@ -75,8 +75,7 @@ base::RepeatingCallback<void(views::Checkbox*)> GetHandleClickCallback(
 
 }  // anonymous namespace
 
-BEGIN_METADATA(HUDSettingsView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(HUDSettingsView, View)
 END_METADATA()
 
 HUDSettingsView::HUDSettingsView() {

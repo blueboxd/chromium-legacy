@@ -48,6 +48,10 @@ void IOSBlockingPageTabHelper::AssociateBlockingPage(
   }
 }
 
+bool IOSBlockingPageTabHelper::ShouldDisplayURL() const {
+  return blocking_page_for_currently_committed_navigation_->ShouldDisplayURL();
+}
+
 IOSSecurityInterstitialPage* IOSBlockingPageTabHelper::GetCurrentBlockingPage()
     const {
   return blocking_page_for_currently_committed_navigation_.get();

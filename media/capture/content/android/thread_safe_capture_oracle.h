@@ -78,7 +78,9 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   // Signal device started to the client.
   void ReportStarted();
 
-  void OnConsumerReportingUtilization(int frame_number, double utilization);
+  void OnConsumerReportingUtilization(
+      int frame_number,
+      const media::VideoFrameFeedback& feedback);
 
  private:
   // Helper struct to hold the many arguments needed by DidCaptureFrame(), and

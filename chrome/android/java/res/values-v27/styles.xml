@@ -9,11 +9,6 @@
         <item name="android:navigationBarDividerColor">@color/bottom_system_nav_divider_color</item>
         <item name="android:windowLightNavigationBar">@bool/window_light_navigation_bar</item>
     </style>
-    <style name="Theme.Chromium.Fullscreen" parent="Base.Theme.Chromium.Fullscreen">
-        <item name="android:navigationBarColor">@color/bottom_system_nav_color</item>
-        <item name="android:navigationBarDividerColor">@color/bottom_system_nav_divider_color</item>
-        <item name="android:windowLightNavigationBar">@bool/window_light_navigation_bar</item>
-    </style>
     <style name="Theme.Chromium.WithActionBar" parent="Base.Theme.Chromium.WithActionBar">
         <item name="android:navigationBarColor">@color/bottom_system_nav_color</item>
         <item name="android:navigationBarDividerColor">@color/bottom_system_nav_divider_color</item>

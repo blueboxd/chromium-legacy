@@ -1947,7 +1947,7 @@ bool LayoutBlockFlow::ShouldTruncateOverflowingText() const {
       return false;
     object_to_check = parent;
   }
-  return object_to_check->HasOverflowClip() &&
+  return object_to_check->HasNonVisibleOverflow() &&
          object_to_check->StyleRef().TextOverflow() != ETextOverflow::kClip;
 }
 
@@ -2459,12 +2459,13 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
 void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
   DCHECK(!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
 
-  LayoutUnit end_padding = HasOverflowClip() ? PaddingEnd() : LayoutUnit();
+  LayoutUnit end_padding =
+      HasNonVisibleOverflow() ? PaddingEnd() : LayoutUnit();
   // FIXME: Need to find another way to do this, since scrollbars could show
   // when we don't want them to.
   // The test[1] verifies this.
   // [1] editing/input/editable-container-with-word-wrap-normal.html
-  if (HasOverflowClip() && !end_padding && GetNode() &&
+  if (HasNonVisibleOverflow() && !end_padding && GetNode() &&
       IsRootEditableElement(*GetNode()) &&
       StyleRef().IsLeftToRightDirection()) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {

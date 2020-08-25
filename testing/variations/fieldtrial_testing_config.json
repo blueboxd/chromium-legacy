@@ -1510,21 +1510,6 @@
             ]
         }
     ],
-    "CrOSUserSpaceLowMemoryNotification": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200520",
-                    "enable_features": [
-                        "CrOSUserSpaceLowMemoryNotification"
-                    ]
-                }
-            ]
-        }
-    ],
     "CrostiniWebUIUpgrader": [
         {
             "platforms": [
@@ -3812,6 +3797,21 @@
             ]
         }
     ],
+    "LiteVideo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LiteVideo"
+                    ]
+                }
+            ]
+        }
+    ],
     "LoadingPredictorDisregardAlwaysAccessesNetwork": [
         {
             "platforms": [
@@ -4434,6 +4434,21 @@
                     },
                     "enable_features": [
                         "OfflineIndicator"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OfflineIndicatorV2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OfflineIndicatorV2"
                     ]
                 }
             ]
@@ -5103,17 +5118,18 @@
             ]
         }
     ],
-    "PersistentHistogramsLocalMemory": [
+    "PersistentHistogramsFileMetrics": [
         {
             "platforms": [
                 "android_webview"
             ],
             "experiments": [
                 {
-                    "name": "EnabledOnLocalMemory",
+                    "name": "EnabledOnFileMetrics",
                     "params": {
+                        "prev_run_metrics_count_only": "true",
                         "send_unreported_metrics": "yes",
-                        "storage": "LocalMemory"
+                        "storage": "MappedFile"
                     },
                     "enable_features": [
                         "PersistentHistograms"

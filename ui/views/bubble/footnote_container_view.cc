@@ -92,8 +92,7 @@ void FootnoteContainerView::ResetBorder() {
                 ui::NativeTheme::kColorId_FootnoteContainerBorder)));
 }
 
-BEGIN_METADATA(FootnoteContainerView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(FootnoteContainerView, View)
 END_METADATA()
 
 }  // namespace views

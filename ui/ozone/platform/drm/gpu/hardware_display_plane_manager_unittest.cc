@@ -1141,6 +1141,72 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
   EXPECT_TRUE(callback_called);
 }
 
+TEST_P(HardwareDisplayPlaneManagerAtomicTest, OverlaySourceCrop) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_, use_atomic_);
+
+  {
+    ui::DrmOverlayPlaneList assigns;
+    assigns.push_back(ui::DrmOverlayPlane(fake_buffer_, 0));
+
+    fake_drm_->plane_manager()->BeginFrame(&state_);
+    EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+        &state_, assigns, crtc_properties_[0].id));
+
+    std::unique_ptr<gfx::GpuFence> out_fence;
+    scoped_refptr<ui::PageFlipRequest> page_flip_request =
+        base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
+    EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
+                                                   &out_fence));
+
+    EXPECT_EQ(2u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_W"));
+    EXPECT_EQ(2u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_H"));
+  }
+
+  {
+    ui::DrmOverlayPlaneList assigns;
+    assigns.push_back(ui::DrmOverlayPlane(
+        fake_buffer_, 0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+        gfx::Rect(kDefaultBufferSize), gfx::RectF(0, 0, .5, 1), false,
+        nullptr));
+
+    fake_drm_->plane_manager()->BeginFrame(&state_);
+    EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+        &state_, assigns, crtc_properties_[0].id));
+
+    scoped_refptr<ui::PageFlipRequest> page_flip_request =
+        base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
+    std::unique_ptr<gfx::GpuFence> out_fence;
+    EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
+                                                   &out_fence));
+
+    EXPECT_EQ(1u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_W"));
+    EXPECT_EQ(2u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_H"));
+  }
+
+  {
+    ui::DrmOverlayPlaneList assigns;
+    assigns.push_back(ui::DrmOverlayPlane(
+        fake_buffer_, 0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+        gfx::Rect(kDefaultBufferSize), gfx::RectF(0, 0, .999, .501), false,
+        nullptr));
+
+    fake_drm_->plane_manager()->BeginFrame(&state_);
+    EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+        &state_, assigns, crtc_properties_[0].id));
+
+    scoped_refptr<ui::PageFlipRequest> page_flip_request =
+        base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
+    std::unique_ptr<gfx::GpuFence> out_fence;
+    EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
+                                                   &out_fence));
+
+    EXPECT_EQ(2u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_W"));
+    EXPECT_EQ(1u << 16, GetPlanePropertyValue(kPlaneOffset, "SRC_H"));
+  }
+}
+
 class HardwareDisplayPlaneAtomicMock : public ui::HardwareDisplayPlaneAtomic {
  public:
   HardwareDisplayPlaneAtomicMock() : ui::HardwareDisplayPlaneAtomic(1) {}

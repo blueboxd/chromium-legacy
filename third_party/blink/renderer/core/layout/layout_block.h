@@ -437,9 +437,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void UpdateFromStyle() override;
 
   // Returns true if non-visible overflow should be respected. Otherwise
-  // hasOverflowClip() will be false and we won't create scrollable area for
-  // this object even if overflow is non-visible.
-  virtual bool AllowsOverflowClip() const;
+  // HasNonVisibleOverflow() will be false and we won't create scrollable area
+  // for this object even if overflow is non-visible.
+  virtual bool AllowsNonVisibleOverflow() const;
 
   bool SimplifiedLayout();
   virtual void SimplifiedNormalFlowLayout();

@@ -83,6 +83,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -402,6 +403,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1121363")
     public void testUndoClosureInDialog_DialogUndoBar() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);

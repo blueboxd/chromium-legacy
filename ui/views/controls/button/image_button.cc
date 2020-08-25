@@ -314,8 +314,7 @@ DEFINE_ENUM_CONVERTERS(ImageButton::VerticalAlignment,
                        {ImageButton::VerticalAlignment::ALIGN_BOTTOM,
                         base::ASCIIToUTF16("ALIGN_BOTTOM")})
 
-BEGIN_METADATA(ImageButton)
-METADATA_PARENT_CLASS(Button)
+BEGIN_METADATA(ImageButton, Button)
 ADD_PROPERTY_METADATA(ImageButton,
                       HorizontalAlignment,
                       ImageHorizontalAlignment)

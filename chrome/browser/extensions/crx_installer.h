@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/preload_check.h"
@@ -291,13 +291,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
       scoped_refptr<const Extension> extension,
       base::OnceCallback<void(bool)> callback) override;
   void OnUnpackFailure(const CrxInstallError& error) override;
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_dir,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const Extension* extension,
-      const SkBitmap& install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums) override;
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_dir,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon,
+                       declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override;
   void OnStageChanged(InstallationStage stage) override;
 
   // Called on the UI thread to start the requirements, policy and blocklist
@@ -352,7 +352,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
       std::unique_ptr<base::DictionaryValue> original_manifest,
       scoped_refptr<const Extension> extension,
       SkBitmap install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums);
+      declarative_net_request::RulesetInstallPrefs ruleset_install_prefs);
 
   void set_install_flag(int flag, bool val) {
     if (val)
@@ -521,9 +521,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // The checksums for the indexed rulesets corresponding to the Declarative Net
-  // Request API.
-  declarative_net_request::RulesetChecksums ruleset_checksums_;
+  // Install prefs needed for the Declarative Net Request API.
+  declarative_net_request::RulesetInstallPrefs ruleset_install_prefs_;
 
   // Checks that may run before installing the extension.
   std::unique_ptr<PreloadCheck> policy_check_;

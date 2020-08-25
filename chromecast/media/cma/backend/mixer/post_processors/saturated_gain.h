@@ -23,10 +23,7 @@ class SaturatedGain : public AudioPostProcessor2 {
   // AudioPostProcessor implementation:
   bool SetConfig(const Config& config) override;
   const Status& GetStatus() override;
-  void ProcessFrames(float* data,
-                     int frames,
-                     float volume,
-                     float volume_dbfs) override;
+  void ProcessFrames(float* data, int frames, Metadata* metadata) override;
   bool UpdateParameters(const std::string& message) override;
 
  private:

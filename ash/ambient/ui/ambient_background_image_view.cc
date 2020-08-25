@@ -102,8 +102,7 @@ void AmbientBackgroundImageView::InitLayout() {
   details_label_->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_BOTTOM);
 }
 
-BEGIN_METADATA(AmbientBackgroundImageView)
-METADATA_PARENT_CLASS(views::ImageView)
+BEGIN_METADATA(AmbientBackgroundImageView, views::ImageView)
 END_METADATA()
 
 }  // namespace ash

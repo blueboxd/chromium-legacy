@@ -248,7 +248,7 @@ void CrxInstaller::ConvertUserScriptOnSharedFileThread() {
 
   OnUnpackSuccessOnSharedFileThread(extension->path(), extension->path(),
                                     nullptr, extension, SkBitmap(),
-                                    {} /* ruleset_checksums */);
+                                    {} /* ruleset_install_prefs */);
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -319,7 +319,7 @@ void CrxInstaller::ConvertWebAppOnSharedFileThread(
 
   OnUnpackSuccessOnSharedFileThread(extension->path(), extension->path(),
                                     nullptr, extension, SkBitmap(),
-                                    {} /* ruleset_checksums */);
+                                    {} /* ruleset_install_prefs */);
 }
 
 base::Optional<CrxInstallError> CrxInstaller::CheckExpectations(
@@ -527,14 +527,14 @@ void CrxInstaller::OnUnpackSuccess(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     const Extension* extension,
     const SkBitmap& install_icon,
-    declarative_net_request::RulesetChecksums ruleset_checksums) {
+    declarative_net_request::RulesetInstallPrefs ruleset_install_prefs) {
   DCHECK(unpacker_task_runner_->RunsTasksInCurrentSequence());
   shared_file_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CrxInstaller::OnUnpackSuccessOnSharedFileThread, this,
                      temp_dir, extension_dir, std::move(original_manifest),
                      scoped_refptr<const Extension>(extension), install_icon,
-                     std::move(ruleset_checksums)));
+                     std::move(ruleset_install_prefs)));
 }
 
 void CrxInstaller::OnUnpackSuccessOnSharedFileThread(
@@ -543,12 +543,12 @@ void CrxInstaller::OnUnpackSuccessOnSharedFileThread(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     scoped_refptr<const Extension> extension,
     SkBitmap install_icon,
-    declarative_net_request::RulesetChecksums ruleset_checksums) {
+    declarative_net_request::RulesetInstallPrefs ruleset_install_prefs) {
   DCHECK(shared_file_task_runner_->RunsTasksInCurrentSequence());
 
   extension_ = extension;
   temp_dir_ = temp_dir;
-  ruleset_checksums_ = std::move(ruleset_checksums);
+  ruleset_install_prefs_ = std::move(ruleset_install_prefs);
   ReportInstallationStage(InstallationStage::kCheckingExpectations);
 
   if (!install_icon.empty())
@@ -1040,7 +1040,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   }
 
   service_weak_->OnExtensionInstalled(extension(), page_ordinal_,
-                                      install_flags_, ruleset_checksums_);
+                                      install_flags_, ruleset_install_prefs_);
   NotifyCrxInstallComplete(base::nullopt);
 }
 

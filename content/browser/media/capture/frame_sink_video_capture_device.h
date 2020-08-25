@@ -72,7 +72,8 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void MaybeSuspend() final;
   void Resume() final;
   void StopAndDeAllocate() final;
-  void OnUtilizationReport(int frame_feedback_id, double utilization) final;
+  void OnUtilizationReport(int frame_feedback_id,
+                           media::VideoFrameFeedback feedback) final;
 
   // FrameSinkVideoConsumer implementation.
   void OnFrameCaptured(

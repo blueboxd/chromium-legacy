@@ -120,7 +120,6 @@ class PrivetNotificationService
   void PrivetRemoveNotification() override;
 
   static bool IsEnabled();
-  static bool IsForced();
 
   PrivetDeviceLister* device_lister_for_test() { return device_lister_.get(); }
   PrivetTrafficDetector* traffic_detector_for_test() {

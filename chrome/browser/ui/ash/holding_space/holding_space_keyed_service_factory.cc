@@ -55,4 +55,9 @@ bool HoldingSpaceKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
   return true;
 }
 
+void HoldingSpaceKeyedServiceFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  HoldingSpaceKeyedService::RegisterProfilePrefs(registry);
+}
+
 }  // namespace ash

@@ -5,12 +5,18 @@
 #ifndef ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_ITEM_H_
 #define ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_ITEM_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 namespace ash {
 
@@ -19,11 +25,20 @@ namespace ash {
 class ASH_PUBLIC_EXPORT HoldingSpaceItem {
  public:
   // Items types supported by the holding space.
-  enum class Type { kPinnedFile, kScreenshot, kDownload };
+  // NOTE: These values are persisted in preferences so append new values to the
+  // end and do not change the meaning of existing values.
+  enum class Type {
+    kPinnedFile = 0,
+    kScreenshot = 1,
+    kDownload = 2,
+    kMaxValue = kDownload,
+  };
 
   HoldingSpaceItem(const HoldingSpaceItem&) = delete;
   HoldingSpaceItem operator=(const HoldingSpaceItem&) = delete;
   ~HoldingSpaceItem();
+
+  bool operator==(const HoldingSpaceItem& rhs) const;
 
   // Generates an item ID for a holding space item backed by a file, based on
   // the file's file system URL.
@@ -36,6 +51,25 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
       const base::FilePath& file_path,
       const GURL& file_system_url,
       const gfx::ImageSkia& image);
+
+  // Returns a file system URL for a given file path.
+  using FileSystemUrlResolver = base::OnceCallback<GURL(const base::FilePath&)>;
+
+  // Returns an image for a given file path.
+  using ImageResolver =
+      base::OnceCallback<gfx::ImageSkia(const base::FilePath&)>;
+
+  // Deserializes from `base::DictionaryValue` to `HoldingSpaceItem`.
+  static std::unique_ptr<HoldingSpaceItem> Deserialize(
+      const base::DictionaryValue& dict,
+      FileSystemUrlResolver file_system_url_resolver,
+      ImageResolver image_resolver);
+
+  // Deserializes id from a serialized `HoldingSpaceItem`.
+  static const std::string& DeserializeId(const base::DictionaryValue& dict);
+
+  // Serializes from `HoldingSpaceItem` to `base::DictionaryValue`.
+  base::DictionaryValue Serialize() const;
 
   const std::string& id() const { return id_; }
 
@@ -50,7 +84,7 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
   const GURL& file_system_url() const { return file_system_url_; }
 
  private:
-  // Contructor for file backed items.
+  // Constructor for file backed items.
   HoldingSpaceItem(Type type,
                    const std::string& id,
                    const base::FilePath& file_path,

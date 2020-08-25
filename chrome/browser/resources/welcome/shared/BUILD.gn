@@ -34,6 +34,7 @@ js_library("step_indicator") {
   deps = [
     ":nux_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 

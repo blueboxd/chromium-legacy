@@ -648,6 +648,53 @@
       "script": "//tools/perf/process_perf_results.py"
     }
   },
+  "android-pixel4a_power-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-chrome",
+          "--upload-results",
+          "--test-shard-map-filename=android-pixel4a_power-perf_map.json",
+          "--experimental-tbmv3-metrics"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "QD4A.200102.001.A1",
+              "device_os_flavor": "google",
+              "device_type": "sunfish",
+              "os": "Android",
+              "pool": "chrome.tests.pinpoint"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android_arm64-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",

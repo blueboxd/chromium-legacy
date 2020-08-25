@@ -135,6 +135,11 @@ std::string FakePeripheral::GetAddress() const {
   return address_;
 }
 
+device::BluetoothDevice::AddressType FakePeripheral::GetAddressType() const {
+  NOTREACHED();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 device::BluetoothDevice::VendorIDSource FakePeripheral::GetVendorIDSource()
     const {
   NOTREACHED();

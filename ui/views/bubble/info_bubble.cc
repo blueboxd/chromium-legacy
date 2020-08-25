@@ -125,8 +125,7 @@ void InfoBubble::UpdatePosition() {
   }
 }
 
-BEGIN_METADATA(InfoBubble)
-METADATA_PARENT_CLASS(BubbleDialogDelegateView)
+BEGIN_METADATA(InfoBubble, BubbleDialogDelegateView)
 END_METADATA()
 
 }  // namespace views

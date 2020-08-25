@@ -9,12 +9,15 @@
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './navi_colors_css.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {stepIndicatorModel} from './nux_types.js';
 
 Polymer({
   is: 'step-indicator',
+
+  behaviors: [I18nBehavior],
 
   _template: html`{__html_template__}`,
 
@@ -27,6 +30,16 @@ Polymer({
       type: Array,
       computed: 'computeDots_(model.total)',
     },
+  },
+
+  /**
+   * @param {number} active
+   * @param {number} total
+   * @return {string}
+   * @private
+   */
+  computeLabel_(active, total) {
+    return this.i18n('stepsLabel', active + 1, total);
   },
 
   /**

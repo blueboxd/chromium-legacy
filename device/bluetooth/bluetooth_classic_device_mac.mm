@@ -85,6 +85,11 @@ std::string BluetoothClassicDeviceMac::GetAddress() const {
   return GetDeviceAddress(device_);
 }
 
+BluetoothDevice::AddressType BluetoothClassicDeviceMac::GetAddressType() const {
+  NOTIMPLEMENTED();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 BluetoothDevice::VendorIDSource BluetoothClassicDeviceMac::GetVendorIDSource()
     const {
   return VENDOR_ID_UNKNOWN;

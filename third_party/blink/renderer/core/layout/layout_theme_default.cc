@@ -45,15 +45,12 @@ static const float kDefaultCancelButtonSize = 9;
 static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
-base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
-
 Color LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
 Color LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
 Color LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
 Color LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
 
 LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
-  caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
 }
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;

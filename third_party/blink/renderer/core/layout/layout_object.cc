@@ -539,7 +539,7 @@ bool LayoutObject::HasClipRelatedProperty() const {
   // CSS clip-path/mask/filter induces a stacking context and applies inherited
   // clip to that stacking context, while resetting clip for descendants. This
   // special behavior is already handled elsewhere.
-  if (HasClip() || HasOverflowClip())
+  if (HasClip() || HasNonVisibleOverflow())
     return true;
   // Paint containment establishes isolation which creates clip isolation nodes.
   // Style & Layout containment also establish isolation (see
@@ -1012,7 +1012,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   if (object->IsTextControl())
     return true;
 
-  if (!object->HasOverflowClip())
+  if (!object->HasNonVisibleOverflow())
     return false;
 
   // Scrollbar parts can be removed during layout. Avoid the complexity of
@@ -2504,7 +2504,7 @@ void LayoutObject::SetScrollAnchorDisablingStyleChangedOnAncestor() {
   Element* viewport_defining_element = GetDocument().ViewportDefiningElement();
   while (object) {
     auto* block = DynamicTo<LayoutBlock>(object);
-    if (block && (block->HasOverflowClip() ||
+    if (block && (block->HasNonVisibleOverflow() ||
                   block->GetNode() == viewport_defining_element)) {
       block->SetScrollAnchorDisablingStyleChanged(true);
       return;
@@ -3139,7 +3139,7 @@ PhysicalOffset LayoutObject::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
-  return o->HasOverflowClip()
+  return o->HasNonVisibleOverflow()
              ? OffsetFromScrollableContainer(o, ignore_scroll_offset)
              : PhysicalOffset();
 }
@@ -3147,7 +3147,7 @@ PhysicalOffset LayoutObject::OffsetFromContainerInternal(
 PhysicalOffset LayoutObject::OffsetFromScrollableContainer(
     const LayoutObject* container,
     bool ignore_scroll_offset) const {
-  DCHECK(container->HasOverflowClip());
+  DCHECK(container->HasNonVisibleOverflow());
   const LayoutBox* box = ToLayoutBox(container);
   if (!ignore_scroll_offset)
     return -PhysicalOffset(box->ScrolledContentOffset());

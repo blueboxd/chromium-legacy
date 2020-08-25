@@ -1585,9 +1585,7 @@ void NetworkContext::PreconnectSockets(
     request_info.load_flags = net::LOAD_NORMAL;
     request_info.privacy_mode = net::PRIVACY_MODE_DISABLED;
   } else {
-    request_info.load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                              net::LOAD_DO_NOT_SAVE_COOKIES |
-                              net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    request_info.load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
     request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
   }
   request_info.network_isolation_key = network_isolation_key;

@@ -29,10 +29,11 @@ class MockPostProcessor : public PostProcessingPipeline {
                     const base::Value* filter_description_list,
                     int channels);
   ~MockPostProcessor() override;
-  MOCK_METHOD4(ProcessFrames,
+  MOCK_METHOD5(ProcessFrames,
                double(float* data,
                       int num_frames,
                       float current_volume,
+                      float target_volume,
                       bool is_silence));
   MOCK_METHOD1(SetContentType, void(AudioContentType));
   bool SetOutputConfig(const AudioPostProcessor2::Config& config) override {
@@ -54,6 +55,7 @@ class MockPostProcessor : public PostProcessingPipeline {
   double DoProcessFrames(float* data,
                          int num_frames,
                          float current_volume,
+                         float target_volume,
                          bool is_silence) {
     output_buffer_ = data;
     return static_cast<double>(rendering_delay_frames_) / sample_rate_;

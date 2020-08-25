@@ -15,8 +15,7 @@ namespace hud_display {
 ////////////////////////////////////////////////////////////////////////////////
 // CpuGraphPageView, public:
 
-BEGIN_METADATA(CpuGraphPageView)
-METADATA_PARENT_CLASS(GraphPageViewBase)
+BEGIN_METADATA(CpuGraphPageView, GraphPageViewBase)
 END_METADATA()
 
 CpuGraphPageView::CpuGraphPageView()

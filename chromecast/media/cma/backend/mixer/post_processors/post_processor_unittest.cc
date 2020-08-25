@@ -96,9 +96,10 @@ void TestDelay(AudioPostProcessor2* pp,
   AlignedBuffer<float> data_out(data_in.size() * resample_factor);
   const int output_buf_size = kBufSizeFrames * resample_factor *
                               status.output_channels * sizeof(data_out[0]);
+  AudioPostProcessor2::Metadata metadata = {0, 0, 1.0};
   for (int i = 0; i < input_size_frames; i += kBufSizeFrames) {
-    pp->ProcessFrames(&data_in[i * num_input_channels], kBufSizeFrames, 1.0,
-                      0.0);
+    pp->ProcessFrames(&data_in[i * num_input_channels], kBufSizeFrames,
+                      &metadata);
     std::memcpy(&data_out[i * status.output_channels * resample_factor],
                 status.output_buffer, output_buf_size);
   }
@@ -143,14 +144,15 @@ void TestRingingTime(AudioPostProcessor2* pp,
   const int kSinFreq = 2000;
 
   // Send a second of data to excite the filter.
+  AudioPostProcessor2::Metadata metadata = {0, 0, 1.0};
   for (int i = 0; i < sample_rate; i += kNumFrames) {
     AlignedBuffer<float> data =
         GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
-    pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+    pp->ProcessFrames(data.data(), kNumFrames, &metadata);
   }
   AlignedBuffer<float> data =
       GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
-  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+  pp->ProcessFrames(data.data(), kNumFrames, &metadata);
 
   // Compute the amplitude of the last buffer
   ASSERT_NE(status.output_buffer, nullptr);
@@ -166,13 +168,13 @@ void TestRingingTime(AudioPostProcessor2* pp,
   while (frames_remaining > 0) {
     frames_to_process = std::min(frames_to_process, frames_remaining);
     data.assign(frames_to_process * num_input_channels, 0);
-    pp->ProcessFrames(data.data(), frames_to_process, 1.0, 0.0);
+    pp->ProcessFrames(data.data(), frames_to_process, &metadata);
     frames_remaining -= frames_to_process;
   }
 
   // Send a little more data and ensure the amplitude is < 1% the original.
   data.assign(kNumFrames * num_input_channels, 0);
-  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+  pp->ProcessFrames(data.data(), kNumFrames, &metadata);
 
   // Only look at the amplitude of the first few frames.
   EXPECT_LE(SineAmplitude(status.output_buffer, 10 * status.output_channels) /
@@ -205,7 +207,8 @@ void TestPassthrough(AudioPostProcessor2* pp,
       GetSineData(kNumFrames, kSinFreq, sample_rate, num_input_channels);
   AlignedBuffer<float> expected(data);
 
-  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+  AudioPostProcessor2::Metadata metadata = {0, 0, 1.0};
+  pp->ProcessFrames(data.data(), kNumFrames, &metadata);
   int delayed_frames = 0;
 
   while (status.rendering_delay_frames >= delayed_frames + kNumFrames) {
@@ -214,7 +217,7 @@ void TestPassthrough(AudioPostProcessor2* pp,
       EXPECT_EQ(0.0f, data[i]) << i;
     }
     data = expected;
-    pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
+    pp->ProcessFrames(data.data(), kNumFrames, &metadata);
 
     ASSERT_GE(status.rendering_delay_frames, delayed_frames);
   }
@@ -241,8 +244,9 @@ void AudioProcessorBenchmark(AudioPostProcessor2* pp,
       test_size_frames, std::vector<double>(num_input_channels, 0.0),
       std::vector<double>(num_input_channels, 1.0));
   clock_t start_clock = clock();
+  AudioPostProcessor2::Metadata metadata = {0, 0, 1.0};
   for (int i = 0; i < test_size_frames; i += kBufSizeFrames * kNumChannels) {
-    pp->ProcessFrames(&data_in[i], kBufSizeFrames, 1.0, 0.0);
+    pp->ProcessFrames(&data_in[i], kBufSizeFrames, &metadata);
   }
   clock_t stop_clock = clock();
   const ::testing::TestInfo* const test_info =

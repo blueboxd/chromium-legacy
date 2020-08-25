@@ -194,8 +194,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactUnitTest.java",
   "junit/src/org/chromium/chrome/browser/payments/handler/toolbar/PaymentHandlerToolbarMediatorTest.java",
-  "junit/src/org/chromium/chrome/browser/photo_picker/FileEnumWorkerTaskTest.java",
-  "junit/src/org/chromium/chrome/browser/photo_picker/PickerBitmapViewTest.java",
   "junit/src/org/chromium/chrome/browser/policy/EnterpriseInfoTest.java",
   "junit/src/org/chromium/chrome/browser/privacy/settings/PrivacyPreferencesManagerTest.java",
   "junit/src/org/chromium/chrome/browser/reengagement/ReengagementNotificationControllerTest.java",

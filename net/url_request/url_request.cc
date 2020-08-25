@@ -479,12 +479,11 @@ void URLRequest::set_referrer_policy(ReferrerPolicy referrer_policy) {
 }
 
 void URLRequest::set_allow_credentials(bool allow_credentials) {
+  allow_credentials_ = allow_credentials;
   if (allow_credentials) {
-    load_flags_ &= ~(LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
-                     LOAD_DO_NOT_SEND_AUTH_DATA);
+    load_flags_ &= ~LOAD_DO_NOT_SAVE_COOKIES;
   } else {
-    load_flags_ |= (LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
-                    LOAD_DO_NOT_SEND_AUTH_DATA);
+    load_flags_ |= LOAD_DO_NOT_SAVE_COOKIES;
   }
 }
 
@@ -547,7 +546,8 @@ URLRequest::URLRequest(const GURL& url,
       first_party_url_policy_(
           RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL),
       load_flags_(LOAD_NORMAL),
-      privacy_mode_(PRIVACY_MODE_ENABLED),
+      allow_credentials_(true),
+      privacy_mode_(PRIVACY_MODE_DISABLED),
       disable_secure_dns_(false),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_upload_depth_(0),
@@ -996,7 +996,7 @@ void URLRequest::NotifySSLCertificateError(int net_error,
 }
 
 bool URLRequest::CanGetCookies() const {
-  DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
+  DCHECK_EQ(PrivacyMode::PRIVACY_MODE_DISABLED, privacy_mode_);
   bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
     can_get_cookies =
@@ -1022,10 +1022,11 @@ bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
   return can_set_cookies;
 }
 
-net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
-  // Enable privacy mode if flags tell us not send or save cookies.
-  if ((load_flags_ & LOAD_DO_NOT_SEND_COOKIES) ||
-      (load_flags_ & LOAD_DO_NOT_SAVE_COOKIES)) {
+PrivacyMode URLRequest::DeterminePrivacyMode() const {
+  if (!allow_credentials_) {
+    // |allow_credentials_| implies LOAD_DO_NOT_SAVE_COOKIES.
+    DCHECK(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES);
+
     // TODO(https://crbug.com/775438): Client certs should always be
     // affirmatively omitted for these requests.
     return send_client_certs_ ? PRIVACY_MODE_ENABLED

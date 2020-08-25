@@ -123,8 +123,7 @@ void TooltipIcon::OnWidgetDestroyed(Widget* widget) {
   bubble_ = nullptr;
 }
 
-BEGIN_METADATA(TooltipIcon)
-METADATA_PARENT_CLASS(ImageView)
+BEGIN_METADATA(TooltipIcon, ImageView)
 END_METADATA()
 
 }  // namespace views

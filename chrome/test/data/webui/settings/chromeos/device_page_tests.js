@@ -694,346 +694,351 @@ cr.define('device_page_tests', function() {
       });
     });
 
-    test(assert(TestNames.Keyboard), async () => {
+    suite(assert(TestNames.Keyboard), function() {
       const name = k => `prefs.settings.language.${k}.value`;
       const get = k => devicePage.get(name(k));
       const set = (k, v) => devicePage.set(name(k), v);
-      // Open the keyboard subpage.
-      const keyboardPage =
-          await showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD);
-      // Initially, the optional keys are hidden.
-      expectFalse(!!keyboardPage.$$('#capsLockKey'));
+      let keyboardPage;
 
-      // Pretend no internal keyboard is available.
-      const keyboardParams = {
-        'showCapsLock': false,
-        'showExternalMetaKey': false,
-        'showAppleCommandKey': false,
-        'hasInternalKeyboard': false,
-        'hasAssistantKey': false,
-      };
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-      expectFalse(!!keyboardPage.$$('#capsLockKey'));
-      expectFalse(!!keyboardPage.$$('#externalMetaKey'));
-      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-      expectFalse(!!keyboardPage.$$('#assistantKey'));
+      setup(async () => {
+        keyboardPage =
+            await showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD);
+      });
 
-      // Pretend a Caps Lock key is now available.
-      keyboardParams['showCapsLock'] = true;
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-      expectTrue(!!keyboardPage.$$('#capsLockKey'));
-      expectFalse(!!keyboardPage.$$('#externalMetaKey'));
-      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-      expectFalse(!!keyboardPage.$$('#assistantKey'));
+      test('keyboard', async () => {
+        // Initially, the optional keys are hidden.
+        expectFalse(!!keyboardPage.$$('#capsLockKey'));
 
-      // Add a non-Apple external keyboard.
-      keyboardParams['showExternalMetaKey'] = true;
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-      expectTrue(!!keyboardPage.$$('#capsLockKey'));
-      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-      expectFalse(!!keyboardPage.$$('#externalCommandKey'));
-      expectFalse(!!keyboardPage.$$('#assistantKey'));
+        // Pretend no internal keyboard is available.
+        const keyboardParams = {
+          'showCapsLock': false,
+          'showExternalMetaKey': false,
+          'showAppleCommandKey': false,
+          'hasInternalKeyboard': false,
+          'hasAssistantKey': false,
+        };
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+        expectFalse(!!keyboardPage.$$('#capsLockKey'));
+        expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+        expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+        expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-      // Add an Apple keyboard.
-      keyboardParams['showAppleCommandKey'] = true;
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectFalse(!!keyboardPage.$$('#internalSearchKey'));
-      expectTrue(!!keyboardPage.$$('#capsLockKey'));
-      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-      expectFalse(!!keyboardPage.$$('#assistantKey'));
+        // Pretend a Caps Lock key is now available.
+        keyboardParams['showCapsLock'] = true;
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+        expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+        expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-      // Add an internal keyboard.
-      keyboardParams['hasInternalKeyboard'] = true;
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectTrue(!!keyboardPage.$$('#internalSearchKey'));
-      expectTrue(!!keyboardPage.$$('#capsLockKey'));
-      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-      expectFalse(!!keyboardPage.$$('#assistantKey'));
+        // Add a non-Apple external keyboard.
+        keyboardParams['showExternalMetaKey'] = true;
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+        expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+        expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-      // Pretend an Assistant key is now available.
-      keyboardParams['hasAssistantKey'] = true;
-      cr.webUIListenerCallback('show-keys-changed', keyboardParams);
-      Polymer.dom.flush();
-      expectTrue(!!keyboardPage.$$('#internalSearchKey'));
-      expectTrue(!!keyboardPage.$$('#capsLockKey'));
-      expectTrue(!!keyboardPage.$$('#externalMetaKey'));
-      expectTrue(!!keyboardPage.$$('#externalCommandKey'));
-      expectTrue(!!keyboardPage.$$('#assistantKey'));
+        // Add an Apple keyboard.
+        keyboardParams['showAppleCommandKey'] = true;
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+        expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+        expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-      const collapse = keyboardPage.$$('iron-collapse');
-      assertTrue(!!collapse);
-      expectTrue(collapse.opened);
+        // Add an internal keyboard.
+        keyboardParams['hasInternalKeyboard'] = true;
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectTrue(!!keyboardPage.$$('#internalSearchKey'));
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+        expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+        expectFalse(!!keyboardPage.$$('#assistantKey'));
 
-      expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-      expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
+        // Pretend an Assistant key is now available.
+        keyboardParams['hasAssistantKey'] = true;
+        cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+        Polymer.dom.flush();
+        expectTrue(!!keyboardPage.$$('#internalSearchKey'));
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+        expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+        expectTrue(!!keyboardPage.$$('#assistantKey'));
 
-      // Test interaction with the settings-slider's underlying cr-slider.
-      MockInteractions.pressAndReleaseKeyOn(
-          keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */, [],
-          'ArrowLeft');
-      MockInteractions.pressAndReleaseKeyOn(
-          keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
-          'ArrowRight');
-      expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
-      expectEquals(300, get('xkb_auto_repeat_interval_r2'));
+        const collapse = keyboardPage.$$('iron-collapse');
+        assertTrue(!!collapse);
+        expectTrue(collapse.opened);
 
-      // Test sliders change when prefs change.
-      set('xkb_auto_repeat_delay_r2', 1500);
-      await test_util.flushTasks();
-      expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
-      set('xkb_auto_repeat_interval_r2', 2000);
-      await test_util.flushTasks();
-      expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
+        expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+        expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-      // Test sliders round to nearest value when prefs change.
-      set('xkb_auto_repeat_delay_r2', 600);
-      await test_util.flushTasks();
-      expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-      set('xkb_auto_repeat_interval_r2', 45);
-      await test_util.flushTasks();
-      expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
+        // Test interaction with the settings-slider's underlying cr-slider.
+        MockInteractions.pressAndReleaseKeyOn(
+            keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */, [],
+            'ArrowLeft');
+        MockInteractions.pressAndReleaseKeyOn(
+            keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
+            'ArrowRight');
+        expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
+        expectEquals(300, get('xkb_auto_repeat_interval_r2'));
 
-      set('xkb_auto_repeat_enabled_r2', false);
-      expectFalse(collapse.opened);
+        // Test sliders change when prefs change.
+        set('xkb_auto_repeat_delay_r2', 1500);
+        await test_util.flushTasks();
+        expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
+        set('xkb_auto_repeat_interval_r2', 2000);
+        await test_util.flushTasks();
+        expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-      // Test keyboard shortcut viewer button.
-      keyboardPage.$$('#keyboardShortcutViewer').click();
-      expectEquals(
-          1,
-          settings.DevicePageBrowserProxyImpl.getInstance()
-              .keyboardShortcutViewerShown_);
+        // Test sliders round to nearest value when prefs change.
+        set('xkb_auto_repeat_delay_r2', 600);
+        await test_util.flushTasks();
+        expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+        set('xkb_auto_repeat_interval_r2', 45);
+        await test_util.flushTasks();
+        expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
+
+        set('xkb_auto_repeat_enabled_r2', false);
+        expectFalse(collapse.opened);
+
+        // Test keyboard shortcut viewer button.
+        keyboardPage.$$('#keyboardShortcutViewer').click();
+        expectEquals(
+            1,
+            settings.DevicePageBrowserProxyImpl.getInstance()
+                .keyboardShortcutViewerShown_);
+      });
     });
 
-    test(assert(TestNames.Display), function() {
+    suite(assert(TestNames.Display), function() {
       let displayPage;
-      const browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
-      return Promise
-          .all([
-            // Get the display sub-page.
-            showAndGetDeviceSubpage('display', settings.routes.DISPLAY)
-                .then(function(page) {
-                  displayPage = page;
-                  // Verify all the conditionals that get run during page load
-                  // before the display info has been populated.
-                  expectEquals(undefined, displayPage.displays);
-                  expectFalse(
-                      displayPage.showMirror_(true, displayPage.displays));
-                  expectFalse(
-                      displayPage.showMirror_(false, displayPage.displays));
-                  expectFalse(displayPage.isMirrored_(displayPage.displays));
-                  expectFalse(displayPage.showUnifiedDesktop_(
-                      true, true, displayPage.displays));
-                  expectFalse(displayPage.showUnifiedDesktop_(
-                      false, false, displayPage.displays));
-                  expectEquals(
-                      displayPage.invalidDisplayId_,
-                      browserProxy.lastHighlightedDisplayId_);
-                }),
-            // Wait for the initial call to getInfo.
-            fakeSystemDisplay.getInfoCalled.promise,
-          ])
-          .then(function() {
-            // Add a display.
-            addDisplay(1);
-            fakeSystemDisplay.onDisplayChanged.callListeners();
+      let browserProxy;
 
-            return Promise.all([
+      setup(async () => {
+        displayPage =
+            await showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
+        browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
+        await fakeSystemDisplay.getInfoCalled.promise;
+      });
+
+      test('display tests', function() {
+        // Verify all the conditionals that get run during page load
+        // before the display info has been populated.
+        expectEquals(undefined, displayPage.displays);
+        expectFalse(displayPage.showMirror_(true, displayPage.displays));
+        expectFalse(displayPage.showMirror_(false, displayPage.displays));
+        expectFalse(displayPage.isMirrored_(displayPage.displays));
+        expectFalse(
+            displayPage.showUnifiedDesktop_(true, true, displayPage.displays));
+        expectFalse(displayPage.showUnifiedDesktop_(
+            false, false, displayPage.displays));
+        expectEquals(
+            displayPage.invalidDisplayId_,
+            browserProxy.lastHighlightedDisplayId_);
+
+        // Add a display.
+        addDisplay(1);
+        fakeSystemDisplay.onDisplayChanged.callListeners();
+
+        return Promise
+            .all([
               fakeSystemDisplay.getInfoCalled.promise,
               fakeSystemDisplay.getLayoutCalled.promise,
-            ]);
-          })
-          .then(function() {
-            // There should be a single display which should be primary and
-            // selected. Mirroring should be disabled.
-            expectEquals(1, displayPage.displays.length);
-            expectEquals(
-                displayPage.displays[0].id, displayPage.selectedDisplay.id);
-            expectEquals(
-                displayPage.displays[0].id, displayPage.primaryDisplayId);
-            expectFalse(displayPage.showMirror_(false, displayPage.displays));
-            expectFalse(displayPage.isMirrored_(displayPage.displays));
+            ])
+            .then(function() {
+              // There should be a single display which should be primary and
+              // selected. Mirroring should be disabled.
+              expectEquals(1, displayPage.displays.length);
+              expectEquals(
+                  displayPage.displays[0].id, displayPage.selectedDisplay.id);
+              expectEquals(
+                  displayPage.displays[0].id, displayPage.primaryDisplayId);
+              expectFalse(displayPage.showMirror_(false, displayPage.displays));
+              expectFalse(displayPage.isMirrored_(displayPage.displays));
 
-            // Verify unified desktop only shown when enabled.
-            expectTrue(displayPage.showUnifiedDesktop_(
-                true, true, displayPage.displays));
-            expectFalse(displayPage.showUnifiedDesktop_(
-                false, false, displayPage.displays));
+              // Verify unified desktop only shown when enabled.
+              expectTrue(displayPage.showUnifiedDesktop_(
+                  true, true, displayPage.displays));
+              expectFalse(displayPage.showUnifiedDesktop_(
+                  false, false, displayPage.displays));
 
-            // Sanity check the first display is internal.
-            expectTrue(displayPage.displays[0].isInternal);
+              // Sanity check the first display is internal.
+              expectTrue(displayPage.displays[0].isInternal);
 
-            // Ambient EQ only shown when enabled.
-            expectTrue(displayPage.showAmbientColorSetting_(
-                true, displayPage.displays[0]));
-            expectFalse(displayPage.showAmbientColorSetting_(
-                false, displayPage.displays[0]));
+              // Ambient EQ only shown when enabled.
+              expectTrue(displayPage.showAmbientColorSetting_(
+                  true, displayPage.displays[0]));
+              expectFalse(displayPage.showAmbientColorSetting_(
+                  false, displayPage.displays[0]));
 
-            // Verify that the arrangement section is not shown.
-            expectEquals(null, displayPage.$$('#arrangement-section'));
+              // Verify that the arrangement section is not shown.
+              expectEquals(null, displayPage.$$('#arrangement-section'));
 
-            // Add a second display.
-            addDisplay(2);
-            fakeSystemDisplay.onDisplayChanged.callListeners();
+              // Add a second display.
+              addDisplay(2);
+              fakeSystemDisplay.onDisplayChanged.callListeners();
 
-            return Promise.all([
-              fakeSystemDisplay.getInfoCalled.promise,
-              fakeSystemDisplay.getLayoutCalled.promise,
-              new Promise(function(resolve, reject) {
-                setTimeout(resolve);
-              })
-            ]);
-          })
-          .then(function() {
-            // There should be two displays, the first should be primary and
-            // selected. Mirroring should be enabled but set to false.
-            expectEquals(2, displayPage.displays.length);
-            expectEquals(
-                displayPage.displays[0].id, displayPage.selectedDisplay.id);
-            expectEquals(
-                displayPage.displays[0].id, displayPage.primaryDisplayId);
-            expectTrue(displayPage.showMirror_(false, displayPage.displays));
-            expectFalse(displayPage.isMirrored_(displayPage.displays));
+              return Promise.all([
+                fakeSystemDisplay.getInfoCalled.promise,
+                fakeSystemDisplay.getLayoutCalled.promise,
+                new Promise(function(resolve, reject) {
+                  setTimeout(resolve);
+                })
+              ]);
+            })
+            .then(function() {
+              // There should be two displays, the first should be primary and
+              // selected. Mirroring should be enabled but set to false.
+              expectEquals(2, displayPage.displays.length);
+              expectEquals(
+                  displayPage.displays[0].id, displayPage.selectedDisplay.id);
+              expectEquals(
+                  displayPage.displays[0].id, displayPage.primaryDisplayId);
+              expectTrue(displayPage.showMirror_(false, displayPage.displays));
+              expectFalse(displayPage.isMirrored_(displayPage.displays));
 
-            // Verify unified desktop only shown when enabled.
-            expectTrue(displayPage.showUnifiedDesktop_(
-                true, true, displayPage.displays));
-            expectFalse(displayPage.showUnifiedDesktop_(
-                false, false, displayPage.displays));
+              // Verify unified desktop only shown when enabled.
+              expectTrue(displayPage.showUnifiedDesktop_(
+                  true, true, displayPage.displays));
+              expectFalse(displayPage.showUnifiedDesktop_(
+                  false, false, displayPage.displays));
 
-            // Sanity check the second display is not internal.
-            expectFalse(displayPage.displays[1].isInternal);
+              // Sanity check the second display is not internal.
+              expectFalse(displayPage.displays[1].isInternal);
 
 
-            // Verify the display modes are parsed correctly.
+              // Verify the display modes are parsed correctly.
 
-            // 5 total modes, 2 parent modes.
-            expectEquals(5, displayPage.modeToParentModeMap_.size);
-            expectEquals(0, displayPage.modeToParentModeMap_.get(0));
-            expectEquals(0, displayPage.modeToParentModeMap_.get(1));
-            expectEquals(2, displayPage.modeToParentModeMap_.get(2));
-            expectEquals(2, displayPage.modeToParentModeMap_.get(3));
-            expectEquals(2, displayPage.modeToParentModeMap_.get(4));
+              // 5 total modes, 2 parent modes.
+              expectEquals(5, displayPage.modeToParentModeMap_.size);
+              expectEquals(0, displayPage.modeToParentModeMap_.get(0));
+              expectEquals(0, displayPage.modeToParentModeMap_.get(1));
+              expectEquals(2, displayPage.modeToParentModeMap_.get(2));
+              expectEquals(2, displayPage.modeToParentModeMap_.get(3));
+              expectEquals(2, displayPage.modeToParentModeMap_.get(4));
 
-            // Two resolution options, one for each parent mode.
-            expectEquals(2, displayPage.refreshRateList_.length);
+              // Two resolution options, one for each parent mode.
+              expectEquals(2, displayPage.refreshRateList_.length);
 
-            // Each parent mode has the correct number of refresh rates.
-            expectEquals(2, displayPage.parentModeToRefreshRateMap_.size);
-            expectEquals(
-                2, displayPage.parentModeToRefreshRateMap_.get(0).length);
-            expectEquals(
-                3, displayPage.parentModeToRefreshRateMap_.get(2).length);
+              // Each parent mode has the correct number of refresh rates.
+              expectEquals(2, displayPage.parentModeToRefreshRateMap_.size);
+              expectEquals(
+                  2, displayPage.parentModeToRefreshRateMap_.get(0).length);
+              expectEquals(
+                  3, displayPage.parentModeToRefreshRateMap_.get(2).length);
 
-            // Ambient EQ never shown on non-internal display regardless of
-            // whether it is enabled.
-            expectFalse(displayPage.showAmbientColorSetting_(
-                true, displayPage.displays[1]));
-            expectFalse(displayPage.showAmbientColorSetting_(
-                false, displayPage.displays[1]));
+              // Ambient EQ never shown on non-internal display regardless of
+              // whether it is enabled.
+              expectFalse(displayPage.showAmbientColorSetting_(
+                  true, displayPage.displays[1]));
+              expectFalse(displayPage.showAmbientColorSetting_(
+                  false, displayPage.displays[1]));
 
-            // Verify that the arrangement section is shown.
-            expectTrue(!!displayPage.$$('#arrangement-section'));
+              // Verify that the arrangement section is shown.
+              expectTrue(!!displayPage.$$('#arrangement-section'));
 
-            // Select the second display and make it primary. Also change the
-            // orientation of the second display.
-            const displayLayout = displayPage.$$('#displayLayout');
-            assertTrue(!!displayLayout);
-            const displayDiv = displayLayout.$$('#_fakeDisplayId2');
-            assertTrue(!!displayDiv);
-            displayDiv.click();
-            expectEquals(
-                displayPage.displays[1].id, displayPage.selectedDisplay.id);
+              // Select the second display and make it primary. Also change the
+              // orientation of the second display.
+              const displayLayout = displayPage.$$('#displayLayout');
+              assertTrue(!!displayLayout);
+              const displayDiv = displayLayout.$$('#_fakeDisplayId2');
+              assertTrue(!!displayDiv);
+              displayDiv.click();
+              expectEquals(
+                  displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
-            displayPage.updatePrimaryDisplay_({target: {value: '0'}});
-            displayPage.onOrientationChange_({target: {value: '90'}});
-            fakeSystemDisplay.onDisplayChanged.callListeners();
+              displayPage.updatePrimaryDisplay_({target: {value: '0'}});
+              displayPage.onOrientationChange_({target: {value: '90'}});
+              fakeSystemDisplay.onDisplayChanged.callListeners();
 
-            return Promise.all([
-              fakeSystemDisplay.getInfoCalled.promise,
-              fakeSystemDisplay.getLayoutCalled.promise,
-              new Promise(function(resolve, reject) {
-                setTimeout(resolve);
-              })
-            ]);
-          })
-          .then(function() {
-            // Confirm that the second display is selected, primary, and
-            // rotated.
-            expectEquals(2, displayPage.displays.length);
-            expectEquals(
-                displayPage.displays[1].id, displayPage.selectedDisplay.id);
-            expectTrue(displayPage.displays[1].isPrimary);
-            expectEquals(
-                displayPage.displays[1].id, displayPage.primaryDisplayId);
-            expectEquals(90, displayPage.displays[1].rotation);
+              return Promise.all([
+                fakeSystemDisplay.getInfoCalled.promise,
+                fakeSystemDisplay.getLayoutCalled.promise,
+                new Promise(function(resolve, reject) {
+                  setTimeout(resolve);
+                })
+              ]);
+            })
+            .then(function() {
+              // Confirm that the second display is selected, primary, and
+              // rotated.
+              expectEquals(2, displayPage.displays.length);
+              expectEquals(
+                  displayPage.displays[1].id, displayPage.selectedDisplay.id);
+              expectTrue(displayPage.displays[1].isPrimary);
+              expectEquals(
+                  displayPage.displays[1].id, displayPage.primaryDisplayId);
+              expectEquals(90, displayPage.displays[1].rotation);
 
-            // Mirror the displays.
-            displayPage.onMirroredTap_({target: {blur: function() {}}});
-            fakeSystemDisplay.onDisplayChanged.callListeners();
+              // Mirror the displays.
+              displayPage.onMirroredTap_({target: {blur: function() {}}});
+              fakeSystemDisplay.onDisplayChanged.callListeners();
 
-            return Promise.all([
-              fakeSystemDisplay.getInfoCalled.promise,
-              fakeSystemDisplay.getLayoutCalled.promise,
-              new Promise(function(resolve, reject) {
-                setTimeout(resolve);
-              })
-            ]);
-          })
-          .then(function() {
-            // Confirm that there is now only one display and that it is primary
-            // and mirroring is enabled.
-            expectEquals(1, displayPage.displays.length);
-            expectEquals(
-                displayPage.displays[0].id, displayPage.selectedDisplay.id);
-            expectTrue(displayPage.displays[0].isPrimary);
-            expectTrue(displayPage.showMirror_(false, displayPage.displays));
-            expectTrue(displayPage.isMirrored_(displayPage.displays));
+              return Promise.all([
+                fakeSystemDisplay.getInfoCalled.promise,
+                fakeSystemDisplay.getLayoutCalled.promise,
+                new Promise(function(resolve, reject) {
+                  setTimeout(resolve);
+                })
+              ]);
+            })
+            .then(function() {
+              // Confirm that there is now only one display and that it is
+              // primary and mirroring is enabled.
+              expectEquals(1, displayPage.displays.length);
+              expectEquals(
+                  displayPage.displays[0].id, displayPage.selectedDisplay.id);
+              expectTrue(displayPage.displays[0].isPrimary);
+              expectTrue(displayPage.showMirror_(false, displayPage.displays));
+              expectTrue(displayPage.isMirrored_(displayPage.displays));
 
-            // Verify that the arrangement section is shown while mirroring.
-            expectTrue(!!displayPage.$$('#arrangement-section'));
+              // Verify that the arrangement section is shown while mirroring.
+              expectTrue(!!displayPage.$$('#arrangement-section'));
 
-            // Ensure that the zoom value remains unchanged while draggging.
-            function pointerEvent(eventType, ratio) {
-              const crSlider = displayPage.$.displaySizeSlider.$.slider;
-              const rect = crSlider.$.container.getBoundingClientRect();
-              crSlider.dispatchEvent(new PointerEvent(eventType, {
-                buttons: 1,
-                pointerId: 1,
-                clientX: rect.left + (ratio * rect.width),
-              }));
-            }
+              // Ensure that the zoom value remains unchanged while draggging.
+              function pointerEvent(eventType, ratio) {
+                const crSlider = displayPage.$.displaySizeSlider.$.slider;
+                const rect = crSlider.$.container.getBoundingClientRect();
+                crSlider.dispatchEvent(new PointerEvent(eventType, {
+                  buttons: 1,
+                  pointerId: 1,
+                  clientX: rect.left + (ratio * rect.width),
+                }));
+              }
 
-            expectEquals(1, displayPage.selectedZoomPref_.value);
-            pointerEvent('pointerdown', .6);
-            expectEquals(1, displayPage.selectedZoomPref_.value);
-            pointerEvent('pointermove', .3);
-            expectEquals(1, displayPage.selectedZoomPref_.value);
-            pointerEvent('pointerup', 0);
-            expectEquals(1.25, displayPage.selectedZoomPref_.value);
+              expectEquals(1, displayPage.selectedZoomPref_.value);
+              pointerEvent('pointerdown', .6);
+              expectEquals(1, displayPage.selectedZoomPref_.value);
+              pointerEvent('pointermove', .3);
+              expectEquals(1, displayPage.selectedZoomPref_.value);
+              pointerEvent('pointerup', 0);
+              expectEquals(1.25, displayPage.selectedZoomPref_.value);
 
-            // Navigate out of the display page.
-            return showAndGetDeviceSubpage('power', settings.routes.POWER);
-          })
-          .then(function() {
-            // Moving out of the display page should set selected display to
-            // invalid.
-            expectEquals(
-                displayPage.invalidDisplayId_,
-                browserProxy.lastHighlightedDisplayId_);
+              // Navigate out of the display page.
+              return showAndGetDeviceSubpage('power', settings.routes.POWER);
+            })
+            .then(function() {
+              // Moving out of the display page should set selected display to
+              // invalid.
+              expectEquals(
+                  displayPage.invalidDisplayId_,
+                  browserProxy.lastHighlightedDisplayId_);
 
-            // Navigate back to the display page.
-            return showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
-          });
+              // Navigate back to the display page.
+              return showAndGetDeviceSubpage(
+                  'display', settings.routes.DISPLAY);
+            });
+      });
     });
 
     test(assert(TestNames.NightLight), async function() {

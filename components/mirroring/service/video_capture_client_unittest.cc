@@ -24,7 +24,7 @@ namespace mirroring {
 
 namespace {
 
-constexpr double kUtilization = 0.6;
+const media::VideoFrameFeedback kFeedback(0.6, 30.0, 1000);
 
 media::mojom::VideoFrameInfoPtr GetVideoFrameInfo(const gfx::Size& size) {
   media::VideoFrameMetadata metadata;
@@ -61,7 +61,7 @@ class VideoCaptureClientTest : public ::testing::Test,
 
   MOCK_METHOD1(OnFrameReceived, void(const gfx::Size&));
   void OnFrameReady(scoped_refptr<media::VideoFrame> video_frame) {
-    video_frame->metadata()->resource_utilization = kUtilization;
+    *video_frame->feedback() = kFeedback;
     OnFrameReceived(video_frame->coded_size());
   }
 
@@ -101,7 +101,7 @@ class VideoCaptureClientTest : public ::testing::Test,
     // Expects to receive one frame.
     EXPECT_CALL(*this, OnFrameReceived(frame_size)).Times(1);
     // Expects to return the buffer after the frame is consumed.
-    EXPECT_CALL(*host_impl_, ReleaseBuffer(_, 0, kUtilization))
+    EXPECT_CALL(*host_impl_, ReleaseBuffer(_, 0, kFeedback))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     client_->OnBufferReady(buffer_id, GetVideoFrameInfo(frame_size));
     run_loop.Run();

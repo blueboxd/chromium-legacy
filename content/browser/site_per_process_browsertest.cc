@@ -3989,7 +3989,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
 // TODO(bokan): Pretty soon most/all platforms will use overlay scrollbars. This
 // test should find a better way to check for scrollability. crbug.com/662196.
 // Flaky on Linux. crbug.com/790929.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_FrameOwnerPropertiesPropagationScrolling \
   DISABLED_FrameOwnerPropertiesPropagationScrolling
 #else
@@ -13731,7 +13731,8 @@ class SitePerProcessBrowserTestWithSadFrameTabReload
 // shown. See https://crbug.com/841572.
 // crbug.com/1010119, fails on Win. crbug.com/1015971, fails on Linux.
 // crbug.com/1049885, fails on Android.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_ANDROID)
 #define MAYBE_ReloadHiddenTabWithCrashedSubframe \
   DISABLED_ReloadHiddenTabWithCrashedSubframe
 #else

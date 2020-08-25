@@ -6,9 +6,6 @@
 <resources>
     <color name="google_logo_tint">@android:color/white</color>
 
-    <color name="bottom_system_nav_color">@android:color/black</color>
-    <color name="bottom_system_nav_divider_color">@android:color/black</color>
-
     <!-- Account Signin Colors -->
     <color name="signin_header_animation_background">@color/header_background_dark</color>
     <color name="signin_header_animation_line_light">@color/modern_grey_700</color>
@@ -18,10 +15,6 @@
     <!-- Tab Strip Colors -->
     <color name="compositor_background_tab_bg">@color/modern_grey_900</color>
     <color name="compositor_background_tab_outline">@android:color/black</color>
-
-    <!-- Photo Picker colors -->
-    <color name="photo_picker_tile_bg_color">@color/modern_grey_800</color>
-    <color name="photo_picker_special_tile_bg_color">@color/modern_grey_800</color>
 
     <!-- History Navigation UI colors -->
     <color name="navigation_bubble_arrow">@android:color/white</color>

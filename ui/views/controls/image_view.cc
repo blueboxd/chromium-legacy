@@ -267,8 +267,7 @@ DEFINE_ENUM_CONVERTERS(
     {ImageView::Alignment::kCenter, base::ASCIIToUTF16("kCenter")},
     {ImageView::Alignment::kTrailing, base::ASCIIToUTF16("kTrailing")})
 
-BEGIN_METADATA(ImageView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(ImageView, View)
 ADD_PROPERTY_METADATA(ImageView, Alignment, HorizontalAlignment)
 ADD_PROPERTY_METADATA(ImageView, Alignment, VerticalAlignment)
 ADD_PROPERTY_METADATA(ImageView, base::string16, AccessibleName)

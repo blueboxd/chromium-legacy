@@ -185,6 +185,7 @@ BluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_device::kAddressProperty, &address);
+  RegisterProperty(bluetooth_device::kAddressTypeProperty, &address_type);
   RegisterProperty(bluetooth_device::kNameProperty, &name);
   RegisterProperty(bluetooth_device::kIconProperty, &icon);
   RegisterProperty(bluetooth_device::kClassProperty, &bluetooth_class);

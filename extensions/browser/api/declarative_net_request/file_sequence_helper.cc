@@ -87,6 +87,7 @@ class ReindexHelper : public base::RefCountedThreadSafe<ReindexHelper> {
   void OnReindexCompleted(RulesetInfo* ruleset,
                           base::OnceClosure done_closure,
                           IndexAndPersistJSONRulesetResult result) {
+    using IndexStatus = IndexAndPersistJSONRulesetResult::Status;
     DCHECK(ruleset);
 
     // The checksum of the reindexed ruleset should have been the same as the
@@ -95,13 +96,15 @@ class ReindexHelper : public base::RefCountedThreadSafe<ReindexHelper> {
     // other issue (like the JSON rules file has been modified from the one used
     // during installation or preferences are corrupted). But taking care of
     // these is beyond our scope here, so simply signal a failure.
-    bool reindexing_success = result.success && ruleset->expected_checksum() ==
-                                                    result.ruleset_checksum;
+    bool reindexing_success =
+        result.status == IndexStatus::kSuccess &&
+        ruleset->expected_checksum() == result.ruleset_checksum;
 
     // In case of updates to the ruleset version, the change of ruleset checksum
     // is expected.
-    if (result.success && ruleset->load_ruleset_result() ==
-                              LoadRulesetResult::kErrorVersionMismatch) {
+    if (result.status == IndexStatus::kSuccess &&
+        ruleset->load_ruleset_result() ==
+            LoadRulesetResult::kErrorVersionMismatch) {
       ruleset->set_new_checksum(result.ruleset_checksum);
 
       // Also change the |expected_checksum| so that any subsequent load

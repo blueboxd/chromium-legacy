@@ -216,9 +216,14 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     network::mojom::DataElementType type = body->elements()->begin()->type();
     if (type == network::mojom::DataElementType::kChunkedDataPipe ||
         type == network::mojom::DataElementType::kReadOnceStream) {
-      return std::make_unique<ChunkedDataPipeUploadDataStream>(
-          body,
-          body->elements_mutable()->begin()->ReleaseChunkedDataPipeGetter());
+      auto upload_data_stream =
+          std::make_unique<ChunkedDataPipeUploadDataStream>(
+              body, body->elements_mutable()
+                        ->begin()
+                        ->ReleaseChunkedDataPipeGetter());
+      if (type == network::mojom::DataElementType::kReadOnceStream)
+        upload_data_stream->EnableCache();
+      return upload_data_stream;
     }
   }
 
@@ -631,11 +636,6 @@ URLLoader::URLLoader(
   if (request.credentials_mode == mojom::CredentialsMode::kOmit ||
       request.credentials_mode ==
           mojom::CredentialsMode::kOmitBug_775438_Workaround) {
-    const auto creds_mask = net::LOAD_DO_NOT_SAVE_COOKIES |
-                            net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SEND_AUTH_DATA;
-    DCHECK((request.load_flags & creds_mask) == 0 ||
-           (request.load_flags & creds_mask) == creds_mask);
     url_request_->set_allow_credentials(false);
     url_request_->set_send_client_certs(request.credentials_mode ==
                                         mojom::CredentialsMode::kOmit);

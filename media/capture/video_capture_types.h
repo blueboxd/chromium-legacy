@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/base/video_types.h"

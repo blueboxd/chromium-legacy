@@ -272,7 +272,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
       IsEffectiveRootScroller())
     return kNormalPaintLayer;
 
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     return kOverflowClipPaintLayer;
 
   return kNoPaintLayer;
@@ -455,7 +455,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   // scroll offset may be outside the normal min/max range of the scrollable
   // area, which is weird but OK, because the scrollable area will update its
   // min/max in updateAfterLayout().
-  if (HasOverflowClip() && old_style &&
+  if (HasNonVisibleOverflow() && old_style &&
       old_style->EffectiveZoom() != new_style.EffectiveZoom()) {
     PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
     DCHECK(scrollable_area);
@@ -783,7 +783,7 @@ int LayoutBox::PixelSnappedOffsetHeight(const Element*) const {
 }
 
 LayoutUnit LayoutBox::ScrollWidth() const {
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     return GetScrollableArea()->ScrollWidth();
   // For objects with visible overflow, this matches IE.
   // FIXME: Need to work right with writing modes.
@@ -794,7 +794,7 @@ LayoutUnit LayoutBox::ScrollWidth() const {
 }
 
 LayoutUnit LayoutBox::ScrollHeight() const {
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     return GetScrollableArea()->ScrollHeight();
   // For objects with visible overflow, this matches IE.
   // FIXME: Need to work right with writing modes.
@@ -806,7 +806,7 @@ int LayoutBox::PixelSnappedScrollWidth() const {
 }
 
 int LayoutBox::PixelSnappedScrollHeight() const {
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     return SnapSizeToPixel(GetScrollableArea()->ScrollHeight(),
                            Location().Y() + ClientTop());
   // For objects with visible overflow, this matches IE.
@@ -843,7 +843,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     parent_box = ContainingBlock();
 
   PhysicalRect absolute_rect_for_parent;
-  if (!IsA<LayoutView>(this) && HasOverflowClip()) {
+  if (!IsA<LayoutView>(this) && HasNonVisibleOverflow()) {
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
@@ -1009,7 +1009,7 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
 }
 
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
-  if (!LayoutOverflowIsSet() || HasOverflowClip())
+  if (!LayoutOverflowIsSet() || HasNonVisibleOverflow())
     return LogicalHeight();
   LayoutRect overflow = LayoutOverflowRect();
   if (StyleRef().IsHorizontalWritingMode())
@@ -1209,18 +1209,19 @@ bool LayoutBox::CanResize() const {
   // We need a special case for <iframe> because they never have
   // hasOverflowClip(). However, they do "implicitly" clip their contents, so
   // we want to allow resizing them also.
-  return (HasOverflowClip() || IsLayoutIFrame()) && StyleRef().HasResize();
+  return (HasNonVisibleOverflow() || IsLayoutIFrame()) &&
+         StyleRef().HasResize();
 }
 
 int LayoutBox::VerticalScrollbarWidth() const {
-  if (!HasOverflowClip() || StyleRef().OverflowY() == EOverflow::kOverlay)
+  if (!HasNonVisibleOverflow() || StyleRef().OverflowY() == EOverflow::kOverlay)
     return 0;
 
   return GetScrollableArea()->VerticalScrollbarWidth();
 }
 
 int LayoutBox::HorizontalScrollbarHeight() const {
-  if (!HasOverflowClip() || StyleRef().OverflowX() == EOverflow::kOverlay)
+  if (!HasNonVisibleOverflow() || StyleRef().OverflowX() == EOverflow::kOverlay)
     return 0;
 
   return GetScrollableArea()->HorizontalScrollbarHeight();
@@ -1247,7 +1248,7 @@ bool LayoutBox::CanBeProgramaticallyScrolled() const {
   if (node && node->IsDocumentNode())
     return true;
 
-  if (!HasOverflowClip())
+  if (!HasNonVisibleOverflow())
     return false;
 
   bool has_scrollable_overflow =
@@ -1345,7 +1346,7 @@ LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
 }
 
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
-  if (delta.IsZero() || !HasOverflowClip())
+  if (delta.IsZero() || !HasNonVisibleOverflow())
     return;
 
   PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
@@ -1389,13 +1390,13 @@ IntPoint LayoutBox::ScrollOrigin() const {
 }
 
 LayoutSize LayoutBox::ScrolledContentOffset() const {
-  DCHECK(HasOverflowClip());
+  DCHECK(HasNonVisibleOverflow());
   DCHECK(GetScrollableArea());
   return LayoutSize(GetScrollableArea()->GetScrollOffset());
 }
 
 LayoutSize LayoutBox::PixelSnappedScrolledContentOffset() const {
-  DCHECK(HasOverflowClip());
+  DCHECK(HasNonVisibleOverflow());
   DCHECK(GetScrollableArea());
   return LayoutSize(GetScrollableArea()->ScrollOffsetInt());
 }
@@ -1530,7 +1531,7 @@ bool LayoutBox::ContainedContentsScroll(const LayoutObject& contents) const {
       contents.StyleRef().GetPosition() == EPosition::kFixed) {
     return false;
   }
-  return HasOverflowClip();
+  return HasNonVisibleOverflow();
 }
 
 bool LayoutBox::ApplyBoxClips(
@@ -1826,7 +1827,7 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
         HitTestRequest::kHitTestVisualOverflow) {
       overflow_box = PhysicalVisualOverflowRectIncludingFilters();
     } else {
-      overflow_box = (HasOverflowClip() || ShouldApplyPaintContainment())
+      overflow_box = (HasNonVisibleOverflow() || ShouldApplyPaintContainment())
                          ? PhysicalBorderBoxRect()
                          : PhysicalVisualOverflowRect();
     }
@@ -1846,7 +1847,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
                             HitTestAction action) {
   bool should_hit_test_self = IsInSelfHitTestingPhase(action);
 
-  if (should_hit_test_self && HasOverflowClip() &&
+  if (should_hit_test_self && HasNonVisibleOverflow() &&
       HitTestOverflowControl(result, hit_test_location, accumulated_offset))
     return true;
 
@@ -2287,7 +2288,7 @@ PhysicalRect LayoutBox::OverflowClipRect(
     clip_rect.Contract(BorderBoxOutsets());
   }
 
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     ExcludeScrollbars(clip_rect, overlay_scrollbar_clip_behavior);
 
   auto* input = DynamicTo<HTMLInputElement>(GetNode());
@@ -2539,7 +2540,7 @@ PhysicalOffset LayoutBox::OffsetFromContainerInternal(
 
   offset += PhysicalLocation();
 
-  if (o->HasOverflowClip())
+  if (o->HasNonVisibleOverflow())
     offset += OffsetFromScrollableContainer(o, ignore_scroll_offset);
 
   if (IsOutOfFlowPositioned() && o->IsLayoutInline() &&
@@ -6093,7 +6094,7 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
   // For overflow clip objects, we don't want to propagate overflow into
   // unreachable areas.
   LayoutRect overflow_rect(rect);
-  if (HasOverflowClip() || IsA<LayoutView>(this)) {
+  if (HasNonVisibleOverflow() || IsA<LayoutView>(this)) {
     // Overflow is in the block's coordinate space and thus is flipped for
     // vertical-rl writing
     // mode.  At this stage that is actually a simplification, since we can
@@ -6154,7 +6155,7 @@ void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
   // Otherwise we save contents visual overflow only if it overflows the border
   // box.
   LayoutRect border_box = BorderBoxRect();
-  if (!HasOverflowClip() && border_box.Contains(rect))
+  if (!HasNonVisibleOverflow() && border_box.Contains(rect))
     return;
 
   if (!VisualOverflowIsSet()) {
@@ -6278,7 +6279,7 @@ PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {
 const LayoutBlock& LayoutBox::EnclosingScrollportBox() const {
   const LayoutBlock* ancestor = ContainingBlock();
   for (; ancestor; ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->HasOverflowClip())
+    if (ancestor->HasNonVisibleOverflow())
       return *ancestor;
   }
   NOTREACHED();
@@ -6361,7 +6362,7 @@ LayoutRect LayoutBox::NoOverflowRect() const {
 LayoutRect LayoutBox::VisualOverflowRect() const {
   if (!VisualOverflowIsSet())
     return BorderBoxRect();
-  if (HasOverflowClip() || HasMask())
+  if (HasNonVisibleOverflow() || HasMask())
     return overflow_->visual_overflow->SelfVisualOverflowRect();
   return UnionRect(overflow_->visual_overflow->SelfVisualOverflowRect(),
                    overflow_->visual_overflow->ContentsVisualOverflowRect());
@@ -6776,7 +6777,8 @@ PhysicalRect LayoutBox::DebugRect() const {
 }
 
 bool LayoutBox::ComputeShouldClipOverflow() const {
-  return HasOverflowClip() || ShouldApplyPaintContainment() || HasControlClip();
+  return HasNonVisibleOverflow() || ShouldApplyPaintContainment() ||
+         HasControlClip();
 }
 
 void LayoutBox::MutableForPainting::SavePreviousOverflowData() {
@@ -6785,8 +6787,8 @@ void LayoutBox::MutableForPainting::SavePreviousOverflowData() {
   auto& previous_overflow = GetLayoutBox().overflow_->previous_overflow_data;
   if (!previous_overflow)
     previous_overflow.emplace();
-  previous_overflow->previously_had_overflow_clip =
-      GetLayoutBox().HasOverflowClip();
+  previous_overflow->previously_had_non_visible_overflow =
+      GetLayoutBox().HasNonVisibleOverflow();
   previous_overflow->previous_physical_layout_overflow_rect =
       GetLayoutBox().PhysicalLayoutOverflowRect();
   previous_overflow->previous_physical_self_visual_overflow_rect =
@@ -6844,7 +6846,7 @@ TextDirection LayoutBox::ResolvedDirection() const {
 
 bool LayoutBox::NeedsScrollNode(
     CompositingReasons direct_compositing_reasons) const {
-  if (!HasOverflowClip())
+  if (!HasNonVisibleOverflow())
     return false;
 
   if (direct_compositing_reasons & CompositingReason::kRootScroller)

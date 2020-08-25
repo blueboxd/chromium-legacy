@@ -113,9 +113,7 @@ void SingleClientVideoCaptureHost::Stop(
   for (const auto& entry : buffer_context_map_)
     buffers_in_use.push_back(entry.first);
   for (int buffer_id : buffers_in_use) {
-    OnFinishedConsumingBuffer(
-        buffer_id,
-        media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded);
+    OnFinishedConsumingBuffer(buffer_id, media::VideoFrameFeedback());
   }
   DCHECK(buffer_context_map_.empty());
   observer_->OnStateChanged(media::mojom::VideoCaptureState::ENDED);
@@ -152,11 +150,11 @@ void SingleClientVideoCaptureHost::RequestRefreshFrame(
 void SingleClientVideoCaptureHost::ReleaseBuffer(
     const base::UnguessableToken& device_id,
     int32_t buffer_id,
-    double consumer_resource_utilization) {
+    const media::VideoFrameFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
 
-  OnFinishedConsumingBuffer(buffer_id, consumer_resource_utilization);
+  OnFinishedConsumingBuffer(buffer_id, feedback);
 }
 
 void SingleClientVideoCaptureHost::GetDeviceSupportedFormats(
@@ -297,7 +295,7 @@ void SingleClientVideoCaptureHost::OnDeviceLaunchAborted() {
 
 void SingleClientVideoCaptureHost::OnFinishedConsumingBuffer(
     int buffer_context_id,
-    double consumer_resource_utilization) {
+    const media::VideoFrameFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer_);
   const auto buffer_context_iter = buffer_context_map_.find(buffer_context_id);
@@ -308,11 +306,9 @@ void SingleClientVideoCaptureHost::OnFinishedConsumingBuffer(
   }
   VideoFrameConsumerFeedbackObserver* feedback_observer =
       launched_device_.get();
-  if (feedback_observer &&
-      consumer_resource_utilization !=
-          VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded) {
+  if (feedback_observer && !feedback.Empty()) {
     feedback_observer->OnUtilizationReport(buffer_context_iter->second.first,
-                                           consumer_resource_utilization);
+                                           feedback);
   }
   buffer_context_map_.erase(buffer_context_iter);
   const auto retired_iter = retired_buffers_.find(buffer_context_id);

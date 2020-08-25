@@ -331,18 +331,24 @@ void VideoCaptureOracle::CancelAllCaptures() {
   num_frames_pending_ = 0;
 }
 
-void VideoCaptureOracle::RecordConsumerFeedback(int frame_number,
-                                                double resource_utilization) {
+void VideoCaptureOracle::RecordConsumerFeedback(
+    int frame_number,
+    const media::VideoFrameFeedback& feedback) {
   if (capture_size_throttling_mode_ == kThrottlingDisabled)
     return;
 
-  if (!std::isfinite(resource_utilization)) {
+  if (feedback.resource_utilization &&
+      !std::isfinite(feedback.resource_utilization.value())) {
     LOG(DFATAL) << "Non-finite utilization provided by consumer for frame #"
-                << frame_number << ": " << resource_utilization;
+                << frame_number << ": "
+                << feedback.resource_utilization.value();
     return;
   }
-  if (resource_utilization <= 0.0)
+  if (!feedback.resource_utilization ||
+      feedback.resource_utilization.value() <= 0.0)
     return;  // Non-positive values are normal, meaning N/A.
+
+  double resource_utilization = *feedback.resource_utilization;
 
   if (capture_size_throttling_mode_ != kThrottlingActive) {
     VLOG(1) << "Received consumer feedback at frame #" << frame_number

@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
@@ -60,6 +61,26 @@ bool InSessionAuthDialogClient::IsFingerprintAuthAvailable(
          quick_unlock_storage->fingerprint_storage()->IsFingerprintAvailable();
 }
 
+ExtendedAuthenticator* InSessionAuthDialogClient::GetExtendedAuthenticator() {
+  // Lazily allocate |extended_authenticator_| so that tests can inject a fake.
+  if (!extended_authenticator_)
+    extended_authenticator_ = ExtendedAuthenticator::Create(this);
+
+  return extended_authenticator_.get();
+}
+
+void InSessionAuthDialogClient::StartFingerprintAuthSession(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  GetExtendedAuthenticator()->StartFingerprintAuthSession(account_id,
+                                                          std::move(callback));
+}
+
+void InSessionAuthDialogClient::EndFingerprintAuthSession() {
+  DCHECK(extended_authenticator_);
+  extended_authenticator_->EndFingerprintAuthSession();
+}
+
 void InSessionAuthDialogClient::CheckPinAuthAvailability(
     const AccountId& account_id,
     base::OnceCallback<void(bool)> callback) {
@@ -89,10 +110,6 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
     LOG(FATAL) << "Incorrect Active Directory user type "
                << user_context.GetUserType();
   }
-
-  // Lazily allocate |extended_authenticator_| so that tests can inject a fake.
-  if (!extended_authenticator_)
-    extended_authenticator_ = ExtendedAuthenticator::Create(this);
 
   DCHECK(!pending_auth_state_);
   pending_auth_state_.emplace(std::move(callback));
@@ -139,7 +156,7 @@ void InSessionAuthDialogClient::AuthenticateWithPassword(
       FROM_HERE,
       base::BindOnce(
           &ExtendedAuthenticator::AuthenticateToCheck,
-          extended_authenticator_.get(), user_context,
+          GetExtendedAuthenticator(), user_context,
           base::Bind(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
                      weak_factory_.GetWeakPtr(), user_context)));
 }
@@ -151,6 +168,41 @@ void InSessionAuthDialogClient::OnPasswordAuthSuccess(
           user_context.GetAccountId());
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
+}
+
+void InSessionAuthDialogClient::AuthenticateUserWithFingerprint(
+    base::OnceCallback<void(bool, ash::FingerprintState)> callback) {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  DCHECK(user);
+  UserContext user_context(*user);
+
+  DCHECK(extended_authenticator_);
+  extended_authenticator_->AuthenticateWithFingerprint(
+      user_context,
+      base::BindOnce(&InSessionAuthDialogClient::OnFingerprintAuthDone,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(std::move(callback))));
+}
+
+void InSessionAuthDialogClient::OnFingerprintAuthDone(
+    base::OnceCallback<void(bool, ash::FingerprintState)> callback,
+    cryptohome::CryptohomeErrorCode error) {
+  switch (error) {
+    case cryptohome::CRYPTOHOME_ERROR_NOT_SET:
+      std::move(callback).Run(true, ash::FingerprintState::AVAILABLE_DEFAULT);
+      break;
+    case cryptohome::CRYPTOHOME_ERROR_FINGERPRINT_RETRY_REQUIRED:
+      std::move(callback).Run(false, ash::FingerprintState::AVAILABLE_DEFAULT);
+      break;
+    case cryptohome::CRYPTOHOME_ERROR_FINGERPRINT_DENIED:
+      std::move(callback).Run(false,
+                              ash::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      break;
+    default:
+      // Internal error.
+      std::move(callback).Run(false, ash::FingerprintState::UNAVAILABLE);
+  }
 }
 
 // AuthStatusConsumer:

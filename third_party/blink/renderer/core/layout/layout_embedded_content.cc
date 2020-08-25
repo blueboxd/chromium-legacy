@@ -402,7 +402,7 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // TODO(szager): Refactor this functionality into EmbeddedContentView, rather
   // than reimplementing in each concrete subclass.
   LayoutView* layout_view = View();
-  if (layout_view && layout_view->HasOverflowClip()) {
+  if (layout_view && layout_view->HasNonVisibleOverflow()) {
     // Floored because the PixelSnappedScrollOffset returns a ScrollOffset
     // which is a float-type but frame_rect in a content view is an IntRect. We
     // may want to reevaluate the use of pixel snapping that since scroll

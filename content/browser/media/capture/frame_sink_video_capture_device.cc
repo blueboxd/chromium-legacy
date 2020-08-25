@@ -182,8 +182,9 @@ void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
   }
 }
 
-void FrameSinkVideoCaptureDevice::OnUtilizationReport(int frame_feedback_id,
-                                                      double utilization) {
+void FrameSinkVideoCaptureDevice::OnUtilizationReport(
+    int frame_feedback_id,
+    media::VideoFrameFeedback feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Assumption: The mojo InterfacePtr in |frame_callbacks_| should be valid at
@@ -191,7 +192,7 @@ void FrameSinkVideoCaptureDevice::OnUtilizationReport(int frame_feedback_id,
   // VideoFrameReceiver signals it is done consuming the frame.
   const auto index = static_cast<size_t>(frame_feedback_id);
   DCHECK_LT(index, frame_callbacks_.size());
-  frame_callbacks_[index]->ProvideFeedback(utilization);
+  frame_callbacks_[index]->ProvideFeedback(feedback);
 }
 
 void FrameSinkVideoCaptureDevice::OnFrameCaptured(

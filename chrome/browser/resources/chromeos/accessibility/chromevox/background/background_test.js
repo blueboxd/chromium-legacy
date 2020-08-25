@@ -2892,3 +2892,17 @@ TEST_F('ChromeVoxBackgroundTest', 'SortDirection', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'InlineLineNavigation', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p>start</p>
+    <p><strong>This</strong><b>is</b>a <em>test</em></p>
+  `,
+      function(root) {
+        mockFeedback.call(doCmd('nextLine'))
+            .expectSpeech('This', 'is', 'a ', 'test')
+            .replay();
+      });
+});

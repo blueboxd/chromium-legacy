@@ -238,7 +238,7 @@ struct BoxOverflowModel {
   // Used by BoxPaintInvalidator. Stores the previous overflow data after the
   // last paint invalidation.
   struct PreviousOverflowData {
-    bool previously_had_overflow_clip = false;
+    bool previously_had_non_visible_overflow = false;
     PhysicalRect previous_physical_layout_overflow_rect;
     PhysicalRect previous_physical_self_visual_overflow_rect;
   };

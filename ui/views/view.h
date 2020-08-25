@@ -253,18 +253,16 @@ enum PropertyEffects {
 //   In the implementing .cc file, add the following macros to the same
 //   namespace in which the class resides.
 //
-//   BEGIN_METADATA(View)
+//   BEGIN_METADATA(View, ParentView)
 //   ADD_PROPERTY_METADATA(View, bool, Frobble)
 //   END_METADATA()
 //
 //   For each property, add a definition using ADD_PROPERTY_METADATA() between
 //   the begin and end macros.
 //
-//   Descendant classes must add the METADATA_PARENT_CLASS() macro to the
-//   similar block in the respective implementing file.
+//   Descendant classes must specify the parent class as a macro parameter.
 //
-//   BEGIN_METADATA(MyView)
-//   METADATA_PARENT_CLASS(views::View);
+//   BEGIN_METADATA(MyView, views::View)
 //   ADD_PROPERTY_METADATA(MyView, int, Bobble)
 //   END_METADATA()
 /////////////////////////////////////////////////////////////////////////////

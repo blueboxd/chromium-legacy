@@ -15,8 +15,7 @@ namespace hud_display {
 ////////////////////////////////////////////////////////////////////////////////
 // MemoryGraphPageView, public:
 
-BEGIN_METADATA(MemoryGraphPageView)
-METADATA_PARENT_CLASS(GraphPageViewBase)
+BEGIN_METADATA(MemoryGraphPageView, GraphPageViewBase)
 END_METADATA()
 
 MemoryGraphPageView::MemoryGraphPageView()

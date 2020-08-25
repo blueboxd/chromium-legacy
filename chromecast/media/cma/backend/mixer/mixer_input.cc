@@ -30,7 +30,7 @@ namespace media {
 namespace {
 
 const int64_t kMicrosecondsPerSecond = 1000 * 1000;
-const int kDefaultSlewTimeMs = 15;
+const int kDefaultSlewTimeMs = 50;
 const int kDefaultFillBufferFrames = 2048;
 
 int RoundUpMultiple(int value, int multiple) {

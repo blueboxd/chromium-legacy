@@ -38,7 +38,8 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
                                       base::OnceClosure done_cb) override;
 
-  void OnUtilizationReport(int frame_feedback_id, double utilization) override;
+  void OnUtilizationReport(int frame_feedback_id,
+                           media::VideoFrameFeedback feedback) override;
 
  private:
   void OnLostConnectionToSourceOrSubscription();

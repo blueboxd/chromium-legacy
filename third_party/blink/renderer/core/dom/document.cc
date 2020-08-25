@@ -1695,7 +1695,7 @@ Element* Document::ScrollingElementNoLayout() {
              lifecycle_.GetState() >= DocumentLifecycle::kStyleClean);
       HTMLBodyElement* body = FirstBodyElement();
       if (body && body->GetLayoutObject() &&
-          body->GetLayoutObject()->HasOverflowClip())
+          body->GetLayoutObject()->HasNonVisibleOverflow())
         return nullptr;
 
       return body;

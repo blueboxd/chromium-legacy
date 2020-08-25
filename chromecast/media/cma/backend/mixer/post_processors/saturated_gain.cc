@@ -50,15 +50,12 @@ const AudioPostProcessor2::Status& SaturatedGain::GetStatus() {
   return status_;
 }
 
-void SaturatedGain::ProcessFrames(float* data,
-                                  int frames,
-                                  float volume,
-                                  float volume_dbfs) {
+void SaturatedGain::ProcessFrames(float* data, int frames, Metadata* metadata) {
   DCHECK(data);
 
   status_.output_buffer = data;
-  if (volume_dbfs != last_volume_dbfs_) {
-    last_volume_dbfs_ = volume_dbfs;
+  if (metadata->volume_dbfs != last_volume_dbfs_) {
+    last_volume_dbfs_ = metadata->volume_dbfs;
     // Don't apply more gain than attenuation.
     float effective_gain = std::min(DbFsToScale(-last_volume_dbfs_), gain_);
     slew_volume_.SetVolume(effective_gain);

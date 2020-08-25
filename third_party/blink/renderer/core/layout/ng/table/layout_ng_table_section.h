@@ -42,7 +42,7 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;
 
-  bool AllowsOverflowClip() const override { return false; }
+  bool AllowsNonVisibleOverflow() const override { return false; }
 
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {
     return false;

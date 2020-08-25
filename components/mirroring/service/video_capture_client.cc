@@ -144,7 +144,8 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
                 << VideoPixelFormatToString(info->pixel_format);
   }
   if (!consume_buffer) {
-    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
+    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id,
+                                       media::VideoFrameFeedback());
     return;
   }
 
@@ -189,7 +190,8 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
       mojo::ScopedSharedBufferMapping mapping =
           buffer_iter->second->get_shared_buffer_handle()->Map(buffer_size);
       if (!mapping) {
-        video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
+        video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id,
+                                           media::VideoFrameFeedback());
         return;
       }
       mapping_iter =
@@ -226,13 +228,14 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
 
   if (!frame) {
     LOG(DFATAL) << "Unable to wrap shared memory mapping.";
-    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
+    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id,
+                                       media::VideoFrameFeedback());
     OnStateChanged(media::mojom::VideoCaptureState::FAILED);
     return;
   }
   frame->AddDestructionObserver(
       base::BindOnce(&VideoCaptureClient::DidFinishConsumingFrame,
-                     frame->metadata(), std::move(buffer_finished_callback)));
+                     frame->feedback(), std::move(buffer_finished_callback)));
 
   frame->set_metadata(info->metadata);
   if (info->color_space.has_value())
@@ -256,7 +259,7 @@ void VideoCaptureClient::OnBufferDestroyed(int32_t buffer_id) {
 void VideoCaptureClient::OnClientBufferFinished(
     int buffer_id,
     base::ReadOnlySharedMemoryMapping mapping,
-    double consumer_resource_utilization) {
+    media::VideoFrameFeedback feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
 
@@ -266,18 +269,17 @@ void VideoCaptureClient::OnClientBufferFinished(
     return;
   }
 
-  video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id,
-                                     consumer_resource_utilization);
+  video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, feedback);
 }
 
 // static
 void VideoCaptureClient::DidFinishConsumingFrame(
-    const media::VideoFrameMetadata* metadata,
+    const media::VideoFrameFeedback* feedback,
     BufferFinishedCallback callback) {
   // Note: This function may be called on any thread by the VideoFrame
-  // destructor.  |metadata| is still valid for read-access at this point.
+  // destructor.  |feedback| is still valid for read-access at this point.
   DCHECK(!callback.is_null());
-  std::move(callback).Run(metadata->resource_utilization.value_or(-1.0));
+  std::move(callback).Run(*feedback);
 }
 
 }  // namespace mirroring

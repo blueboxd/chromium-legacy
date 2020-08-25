@@ -90,6 +90,8 @@ const char kRuleNotParsedWarning[] =
     "Rule with * couldn't be parsed. Parse error: *.";
 const char kTooManyParseFailuresWarning[] =
     "Too many rule parse failures; Reporting the first *.";
+const char kIndexingRuleLimitExceeded[] =
+    "Ruleset with id * exceeds the indexing rule limit and will be ignored.";
 const char kInternalErrorUpdatingDynamicRules[] =
     "Internal error while updating dynamic rules.";
 const char kInternalErrorGettingDynamicRules[] =
@@ -128,6 +130,9 @@ const char kErrorGetMatchedRulesMissingPermissions[] =
     "The extension must have the declarativeNetRequestFeedback permission or "
     "have activeTab granted for the specified tab ID in order to call this "
     "function.";
+
+const base::Feature kDeclarativeNetRequestGlobalRules{
+    "DeclarativeNetRequestGlobalRules", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace declarative_net_request
 }  // namespace extensions

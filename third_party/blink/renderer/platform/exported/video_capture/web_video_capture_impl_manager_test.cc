@@ -83,7 +83,9 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
 
   MOCK_METHOD1(RequestRefreshFrame, void(const base::UnguessableToken&));
   MOCK_METHOD3(ReleaseBuffer,
-               void(const base::UnguessableToken&, int32_t, double));
+               void(const base::UnguessableToken&,
+                    int32_t,
+                    const media::VideoFrameFeedback&));
 
   void GetDeviceSupportedFormats(const base::UnguessableToken&,
                                  const base::UnguessableToken&,

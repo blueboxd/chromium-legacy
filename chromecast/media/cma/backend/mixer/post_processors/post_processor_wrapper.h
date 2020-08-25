@@ -40,10 +40,7 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
   // AudioPostProcessor2 implementation:
   bool SetConfig(const Config& config) override;
   const Status& GetStatus() override;
-  void ProcessFrames(float* data,
-                     int frames,
-                     float system_volume,
-                     float volume_dbfs) override;
+  void ProcessFrames(float* data, int frames, Metadata* metadata) override;
   bool UpdateParameters(const std::string& message) override;
   void SetContentType(AudioContentType content_type) override;
   void SetPlayoutChannel(int channel) override;

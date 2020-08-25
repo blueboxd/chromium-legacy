@@ -32,6 +32,9 @@ class IOSBlockingPageTabHelper
       int64_t navigation_id,
       std::unique_ptr<IOSSecurityInterstitialPage> blocking_page);
 
+  // Determines whether a URL should be shown on the current navigation page.
+  bool ShouldDisplayURL() const;
+
   // Returns the blocking page for the currently-visible interstitial, if any.
   IOSSecurityInterstitialPage* GetCurrentBlockingPage() const;
 

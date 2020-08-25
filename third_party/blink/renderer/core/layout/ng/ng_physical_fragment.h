@@ -254,8 +254,8 @@ class CORE_EXPORT NGPhysicalFragment
 
   // True if overflow != 'visible', except for certain boxes that do not allow
   // overflow clip; i.e., AllowOverflowClip() returns false.
-  bool HasOverflowClip() const {
-    return IsCSSBox() && layout_object_->HasOverflowClip();
+  bool HasNonVisibleOverflow() const {
+    return IsCSSBox() && layout_object_->HasNonVisibleOverflow();
   }
 
   bool ShouldClipOverflow() const {

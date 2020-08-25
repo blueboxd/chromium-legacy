@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/extensions/updater/fetched_crx_file.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -42,7 +42,7 @@ class ParallelUnpacker {
         std::unique_ptr<base::DictionaryValue> original_manifest,
         scoped_refptr<const Extension> extension,
         const SkBitmap& install_icon,
-        declarative_net_request::RulesetChecksums ruleset_checksums);
+        declarative_net_request::RulesetInstallPrefs ruleset_install_prefs);
     UnpackedExtension(UnpackedExtension&& other);
     UnpackedExtension& operator=(UnpackedExtension&&);
     ~UnpackedExtension();
@@ -69,9 +69,8 @@ class ParallelUnpacker {
     scoped_refptr<const Extension> extension;
     // The icon we will display in the installation UI, if any.
     SkBitmap install_icon;
-    // Checksums for the indexed rulesets corresponding to the Declarative Net
-    // Request API.
-    declarative_net_request::RulesetChecksums ruleset_checksums;
+    // Install prefs needed for the Declarative Net Request API.
+    declarative_net_request::RulesetInstallPrefs ruleset_install_prefs;
   };
 
   class Delegate {
@@ -120,7 +119,8 @@ class ParallelUnpacker {
         std::unique_ptr<base::DictionaryValue> original_manifest,
         const Extension* extension,
         const SkBitmap& install_icon,
-        declarative_net_request::RulesetChecksums ruleset_checksums) override;
+        declarative_net_request::RulesetInstallPrefs ruleset_install_prefs)
+        override;
     void OnUnpackFailure(const CrxInstallError& error) override;
 
     FetchedCRXFile& fetch_info() { return fetch_info_; }

@@ -119,7 +119,7 @@ LayoutBoxModelObject* AXLayoutObject::GetLayoutBoxModelObject() const {
 }
 
 bool IsProgrammaticallyScrollable(LayoutBox* box) {
-  if (!box->HasOverflowClip()) {
+  if (!box->HasNonVisibleOverflow()) {
     // If overflow is visible it is not scrollable.
     return false;
   }

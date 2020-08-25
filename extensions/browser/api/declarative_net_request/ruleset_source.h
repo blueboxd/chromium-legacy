@@ -40,40 +40,52 @@ class ParseInfo;
 
 struct IndexAndPersistJSONRulesetResult {
  public:
+  enum class Status {
+    // The ruleset was successfully indexed.
+    kSuccess,
+    // The ruleset was ignored during indexing since it exceeded the maximum
+    // rules limit.
+    kIgnore,
+    // The ruleset was unsuccessfully indexed and an error was raised.
+    kError,
+  };
+
   static IndexAndPersistJSONRulesetResult CreateSuccessResult(
       int ruleset_checksum,
       std::vector<InstallWarning> warnings,
       size_t rules_count,
       size_t regex_rules_count,
       base::TimeDelta index_and_persist_time);
+  static IndexAndPersistJSONRulesetResult CreateIgnoreResult(
+      std::vector<InstallWarning> warnings);
   static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
   ~IndexAndPersistJSONRulesetResult();
   IndexAndPersistJSONRulesetResult(IndexAndPersistJSONRulesetResult&&);
   IndexAndPersistJSONRulesetResult& operator=(
       IndexAndPersistJSONRulesetResult&&);
 
-  // Whether IndexAndPersistRules succeeded.
-  bool success = false;
+  // The result of IndexAndPersistRules.
+  Status status = Status::kError;
 
-  // Checksum of the persisted indexed ruleset file. Valid if |success| if true.
-  // Note: there's no sane default value for this, any integer value is a valid
-  // checksum value.
+  // Checksum of the persisted indexed ruleset file. Valid if |status| if
+  // kSuccess. Note: there's no sane default value for this, any integer value
+  // is a valid checksum value.
   int ruleset_checksum = 0;
 
-  // Valid if |success| is true.
+  // Valid if |status| is kSuccess or kIgnore.
   std::vector<InstallWarning> warnings;
 
-  // The number of indexed rules. Valid if |success| is true.
+  // The number of indexed rules. Valid if |status| is kSuccess.
   size_t rules_count = 0;
 
-  // The number of indexed regex rules. Valid if |success| is true.
+  // The number of indexed regex rules. Valid if |status| is kSuccess.
   size_t regex_rules_count = 0;
 
   // Time taken to deserialize the JSON rules and persist them in flatbuffer
-  // format. Valid if success is true.
+  // format. Valid if status is kSuccess.
   base::TimeDelta index_and_persist_time;
 
-  // Valid if |success| is false.
+  // Valid if |status| is kError.
   std::string error;
 
  private:
@@ -91,9 +103,13 @@ struct ReadJSONRulesResult {
     kJSONParseError = 3,
     kJSONIsNotList = 4,
 
+    // Status returned when the list of rules to be read exceeds the static rule
+    // count limit.
+    kRuleCountLimitExceeded = 5,
+
     // Magic constant used by histograms code. Should be equal to the maximum
     // enum value.
-    kMaxValue = kJSONIsNotList
+    kMaxValue = kRuleCountLimitExceeded
   };
 
   static ReadJSONRulesResult CreateErrorResult(Status status,

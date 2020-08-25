@@ -1454,8 +1454,7 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
       [](const auto* item) { return item->HasChecksOrRadioButtons(); });
 }
 
-BEGIN_METADATA(MenuItemView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(MenuItemView, View)
 END_METADATA()
 
 }  // namespace views

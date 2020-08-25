@@ -16,34 +16,13 @@
 // Generate the implementation of the metadata accessors and internal class with
 // additional macros for defining the class' properties.
 
-#define BEGIN_METADATA(class_name)                                          \
-  views::metadata::ClassMetaData* class_name::METADATA_CLASS_NAME_INTERNAL( \
-      class_name)::meta_data_ = nullptr;                                    \
-                                                                            \
-  views::metadata::ClassMetaData* class_name::MetaData() {                  \
-    if (!METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_)              \
-      METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_ =                \
-          views::metadata::MakeAndRegisterClassInfo<                        \
-              METADATA_CLASS_NAME_INTERNAL(class_name)>();                  \
-    return METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_;            \
-  }                                                                         \
-                                                                            \
-  views::metadata::ClassMetaData* class_name::GetClassMetaData() {          \
-    return MetaData();                                                      \
-  }                                                                         \
-                                                                            \
-  const char* class_name::GetClassName() const {                            \
-    return class_name::kViewClassName;                                      \
-  }                                                                         \
-  const char class_name::kViewClassName[] = #class_name;                    \
-                                                                            \
-  void METADATA_FUNCTION_PREFIX_INTERNAL(class_name)::BuildMetaData() {     \
-    SetTypeName(std::string(#class_name));
+#define BEGIN_METADATA_BASE(class_name) BEGIN_METADATA_INTERNAL(class_name)
+
+#define BEGIN_METADATA(class_name, parent_class_name) \
+  BEGIN_METADATA_INTERNAL(class_name)                 \
+  METADATA_PARENT_CLASS_INTERNAL(parent_class_name)
 
 #define END_METADATA() }
-
-#define METADATA_PARENT_CLASS(parent_class_name) \
-  SetParentClassMetaData(parent_class_name::MetaData());
 
 // This will fail to compile if the property accessors aren't in the form of
 // SetXXXX and GetXXXX.

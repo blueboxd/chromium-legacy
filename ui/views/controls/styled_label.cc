@@ -583,7 +583,7 @@ void StyledLabel::RemoveOrDeleteAllChildViews() {
   }
 }
 
-BEGIN_METADATA(StyledLabel)
+BEGIN_METADATA(StyledLabel, View)
 ADD_PROPERTY_METADATA(StyledLabel, base::string16, Text)
 ADD_PROPERTY_METADATA(StyledLabel, int, TextContext)
 ADD_PROPERTY_METADATA(StyledLabel, int, DefaultTextStyle)
@@ -592,7 +592,6 @@ ADD_PROPERTY_METADATA(StyledLabel, bool, AutoColorReadabilityEnabled)
 ADD_PROPERTY_METADATA(StyledLabel,
                       base::Optional<SkColor>,
                       DisplayedOnBackgroundColor)
-METADATA_PARENT_CLASS(View)
 END_METADATA()
 
 }  // namespace views

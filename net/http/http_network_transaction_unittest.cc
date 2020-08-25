@@ -3087,7 +3087,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotSendAuth) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -3471,7 +3471,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -3618,7 +3618,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -3761,7 +3761,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     request.url = GURL("https://www.example.org/");
     // Ensure that proxy authentication is attempted even
     // when the no authentication data flag is set.
-    request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+    request.privacy_mode = PRIVACY_MODE_ENABLED;
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -3873,7 +3873,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     request.url = GURL("https://www.example.org/");
     // Ensure that proxy authentication is attempted even
     // when the no authentication data flag is set.
-    request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+    request.privacy_mode = PRIVACY_MODE_ENABLED;
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -3982,7 +3982,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -4108,7 +4108,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   request.url = GURL("https://www.example.org/");
   // Ensure that proxy authentication is attempted even
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7717,7 +7717,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -11126,7 +11126,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.privacy_mode = PRIVACY_MODE_ENABLED;
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 

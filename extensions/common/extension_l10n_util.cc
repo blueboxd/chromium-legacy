@@ -532,7 +532,16 @@ bool ShouldSkipValidation(const base::FilePath& locales_path,
   if (base::Contains(subdir, '.'))
     return true;
 
-  if (all_locales.find(subdir) == all_locales.end())
+  // On case-insensitive file systems we will load messages by matching them
+  // with locale names (see LoadMessageCatalogs). Reversed comparison must still
+  // work here, when we match locale name with file name.
+  auto find_iter = std::find_if(all_locales.begin(), all_locales.end(),
+                                [subdir](const std::string& locale) {
+                                  return base::CompareCaseInsensitiveASCII(
+                                             subdir, locale) == 0;
+                                });
+
+  if (find_iter == all_locales.end())
     return true;
 
   return false;

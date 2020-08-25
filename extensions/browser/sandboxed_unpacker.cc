@@ -634,7 +634,7 @@ void SandboxedUnpacker::OnJSONRulesetsIndexed(
   if (!result.warnings.empty())
     extension_->AddInstallWarnings(std::move(result.warnings));
 
-  ruleset_checksums_ = std::move(result.ruleset_checksums);
+  ruleset_install_prefs_ = std::move(result.ruleset_install_prefs);
 
   CheckComputeHashes();
 }
@@ -894,11 +894,11 @@ void SandboxedUnpacker::ReportSuccess() {
       temp_dir_.Take(), extension_root_,
       base::DictionaryValue::From(
           base::Value::ToUniquePtrValue(std::move(manifest_.value()))),
-      extension_.get(), install_icon_, std::move(ruleset_checksums_));
+      extension_.get(), install_icon_, std::move(ruleset_install_prefs_));
 
   // Interestingly, the C++ standard doesn't guarantee that a moved-from vector
   // is empty.
-  ruleset_checksums_.clear();
+  ruleset_install_prefs_.clear();
 
   extension_.reset();
 

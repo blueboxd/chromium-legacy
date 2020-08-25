@@ -1627,7 +1627,7 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   // Check kids first.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
-      (!HasOverflowClip() ||
+      (!HasNonVisibleOverflow() ||
        hit_test_location.Intersects(OverflowClipRect(accumulated_offset)))) {
     for (LayoutObject* child = LastChild(); child;
          child = child->PreviousSibling()) {

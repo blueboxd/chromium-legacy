@@ -64,8 +64,7 @@ class MetadataTestBaseView : public views::View {
   int int_property_ = 0;
 };
 
-BEGIN_METADATA(MetadataTestBaseView)
-METADATA_PARENT_CLASS(views::View)
+BEGIN_METADATA(MetadataTestBaseView, views::View)
 ADD_PROPERTY_METADATA(MetadataTestBaseView, int, IntProperty)
 END_METADATA()
 
@@ -94,8 +93,7 @@ class MetadataTestView : public MetadataTestBaseView {
   float float_property_ = 0.f;
 };
 
-BEGIN_METADATA(MetadataTestView)
-METADATA_PARENT_CLASS(MetadataTestBaseView)
+BEGIN_METADATA(MetadataTestView, MetadataTestBaseView)
 ADD_PROPERTY_METADATA(MetadataTestView, float, FloatProperty)
 END_METADATA()
 

@@ -136,6 +136,16 @@ AuthDialogContentsView::AuthDialogContentsView(uint32_t auth_methods)
   InitPasswordView();
 }
 
+void AuthDialogContentsView::AddedToWidget() {
+  if (auth_methods_ & kAuthFingerprint) {
+    // Inject a callback from the contents view so that we can show retry
+    // prompt.
+    InSessionAuthDialogController::Get()->AuthenticateUserWithFingerprint(
+        base::BindOnce(&AuthDialogContentsView::OnFingerprintAuthComplete,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
 AuthDialogContentsView::~AuthDialogContentsView() = default;
 
 void AuthDialogContentsView::AddTitleView() {
@@ -261,11 +271,28 @@ views::LabelButton* AuthDialogContentsView::AddButton(const std::string& text,
 void AuthDialogContentsView::OnAuthSubmit(const base::string16& password) {
   InSessionAuthDialogController::Get()->AuthenticateUserWithPasswordOrPin(
       base::UTF16ToUTF8(password),
-      base::BindOnce(&AuthDialogContentsView::OnAuthComplete,
+      base::BindOnce(&AuthDialogContentsView::OnPasswordOrPinAuthComplete,
                      weak_factory_.GetWeakPtr()));
 }
 
 // TODO(b/156258540): Clear password/PIN if auth failed and retry is allowed.
-void AuthDialogContentsView::OnAuthComplete(base::Optional<bool> success) {}
+void AuthDialogContentsView::OnPasswordOrPinAuthComplete(
+    base::Optional<bool> success) {}
+
+void AuthDialogContentsView::OnFingerprintAuthComplete(
+    bool success,
+    FingerprintState fingerprint_state) {
+  if (!success) {
+    if (fingerprint_state == FingerprintState::AVAILABLE_DEFAULT) {
+      // TODO(b/156258540): Show animation and prompt in fingerprint_view_.
+      InSessionAuthDialogController::Get()->AuthenticateUserWithFingerprint(
+          base::BindOnce(&AuthDialogContentsView::OnFingerprintAuthComplete,
+                         weak_factory_.GetWeakPtr()));
+    } else {
+      fingerprint_view_->SetVisible(false);
+    }
+  }
+  // TODO(b/156258540): Show success animation before the dialog closes.
+}
 
 }  // namespace ash

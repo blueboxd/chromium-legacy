@@ -272,7 +272,8 @@ group("closure_compile_module") {
     "multidevice_page:closure_compile_module",
 
     #"os_a11y_page:closure_compile_module",
-    #"os_about_page:closure_compile_module",
+    "os_about_page:closure_compile_module",
+
     #"os_apps_page:closure_compile_module",
     #"os_apps_page/app_management_page/plugin_vm_page:closure_compile_module",
     "os_files_page:closure_compile_module",
@@ -435,10 +436,13 @@ group("polymer3_elements") {
     "..:modulize",
     "..:settings_shared_css_module",
     "..:settings_vars_css_module",
+    "../../settings:settings_page_css_module",
+    "../about_page:modulize",
     "../nearby_share_page:polymer3_elements",
     "../prefs:modulize",
     "../prefs:prefs_module",
     "../settings_page:settings_animated_pages_module",
+    "../settings_page:settings_section_module",
     "../settings_page:settings_subpage_module",
   ]
 }

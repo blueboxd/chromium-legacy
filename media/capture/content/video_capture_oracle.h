@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "media/base/feedback_signal_accumulator.h"
+#include "media/base/video_frame_feedback.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/content/animated_content_sampler.h"
 #include "media/capture/content/capture_resolution_chooser.h"
@@ -104,7 +105,8 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // utilization relative to a sustainable maximum (not the absolute maximum).
   // This method should only be called for frames where CompleteCapture()
   // returned true.
-  void RecordConsumerFeedback(int frame_number, double resource_utilization);
+  void RecordConsumerFeedback(int frame_number,
+                              const media::VideoFrameFeedback& feedback);
 
   // Sets the minimum amount of time that must pass between changes to the
   // capture size. This throttles the rate of size changes, to avoid stressing

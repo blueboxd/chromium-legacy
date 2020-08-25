@@ -286,8 +286,7 @@ void MdTextButton::UpdateColors() {
   SchedulePaint();
 }
 
-BEGIN_METADATA(MdTextButton)
-METADATA_PARENT_CLASS(LabelButton)
+BEGIN_METADATA(MdTextButton, LabelButton)
 ADD_PROPERTY_METADATA(MdTextButton, bool, Prominent)
 ADD_PROPERTY_METADATA(MdTextButton, float, CornerRadius)
 ADD_PROPERTY_METADATA(MdTextButton, base::Optional<SkColor>, BgColorOverride)

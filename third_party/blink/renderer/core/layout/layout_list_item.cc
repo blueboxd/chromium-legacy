@@ -148,7 +148,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr) {
     if (curr_child->IsFloating() || curr_child->IsOutOfFlowPositioned())
       continue;
 
-    if (curr->HasOverflowClip())
+    if (curr->HasNonVisibleOverflow())
       return curr;
 
     auto* child_block_flow = DynamicTo<LayoutBlockFlow>(curr_child);
@@ -278,7 +278,7 @@ bool LayoutListItem::UpdateMarkerLocation() {
 
   if (marker->IsOutsideListMarker())
     line_box_parent = GetParentOfFirstLineBox(this);
-  if (line_box_parent && (line_box_parent->HasOverflowClip() ||
+  if (line_box_parent && (line_box_parent->HasNonVisibleOverflow() ||
                           !line_box_parent->IsLayoutBlockFlow() ||
                           (line_box_parent->IsBox() &&
                            ToLayoutBox(line_box_parent)->IsWritingModeRoot())))
@@ -581,7 +581,7 @@ void LayoutListItem::UpdateOverflow() {
         layout_block_object->AddLayoutOverflow(marker_rect);
       }
 
-      if (object->HasOverflowClip())
+      if (object->HasNonVisibleOverflow())
         break;
 
       if (object->HasSelfPaintingLayer())

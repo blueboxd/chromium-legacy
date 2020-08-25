@@ -1052,7 +1052,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   do {                                                                    \
     auto itr = map->find(name);                                           \
     CHECK(itr != map->end()) << "Could not find processor for " << name;  \
-    EXPECT_CALL(*(itr->second), ProcessFrames(_, frames, _, silence))     \
+    EXPECT_CALL(*(itr->second), ProcessFrames(_, frames, _, _, silence))  \
         .Times(times);                                                    \
   } while (0);
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
 #include "components/account_id/account_id.h"
 
@@ -29,10 +30,21 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogClient {
   // Check whether fingerprint auth is available for |account_id|.
   virtual bool IsFingerprintAuthAvailable(const AccountId& account_id) = 0;
 
+  // Switch biometrics daemon to auth mode.
+  virtual void StartFingerprintAuthSession(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) = 0;
+
+  // Switch biometrics daemon to normal mode. Used when closing the dialog.
+  virtual void EndFingerprintAuthSession() = 0;
+
   // Check whether PIN auth is available for |account_id|.
   virtual void CheckPinAuthAvailability(
       const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) = 0;
+
+  virtual void AuthenticateUserWithFingerprint(
+      base::OnceCallback<void(bool, FingerprintState)> callback) = 0;
 
  protected:
   virtual ~InSessionAuthDialogClient() = default;

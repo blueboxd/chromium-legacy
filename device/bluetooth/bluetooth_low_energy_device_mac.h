@@ -42,6 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   std::string GetIdentifier() const override;
   uint32_t GetBluetoothClass() const override;
   std::string GetAddress() const override;
+  AddressType GetAddressType() const override;
   BluetoothDevice::VendorIDSource GetVendorIDSource() const override;
   uint16_t GetVendorID() const override;
   uint16_t GetProductID() const override;

@@ -52,6 +52,7 @@ class FilterGroup {
 
   int num_channels() const { return num_channels_; }
   float last_volume() const { return last_volume_; }
+  float target_volume() const { return target_volume_; }
   std::string name() const { return name_; }
   AudioContentType content_type() const { return content_type_; }
   int input_frames_per_write() const { return input_frames_per_write_; }
@@ -152,7 +153,8 @@ class FilterGroup {
   int input_samples_per_second_ = 0;
   int input_frames_per_write_ = 0;
   int frames_zeroed_ = 0;
-  float last_volume_ = 0.0;
+  float last_volume_ = 0.0f;
+  float target_volume_ = 0.0f;
   double delay_seconds_ = 0;
   MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay_to_output_;
   AudioContentType content_type_ = AudioContentType::kMedia;

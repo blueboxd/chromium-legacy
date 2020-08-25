@@ -68,11 +68,12 @@ void ScreenCaptureDeviceAndroid::RequestRefreshFrame() {
   capture_machine_.MaybeCaptureForRefresh();
 }
 
-void ScreenCaptureDeviceAndroid::OnUtilizationReport(int frame_feedback_id,
-                                                     double utilization) {
+void ScreenCaptureDeviceAndroid::OnUtilizationReport(
+    int frame_feedback_id,
+    media::VideoFrameFeedback feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(oracle_proxy_);
-  oracle_proxy_->OnConsumerReportingUtilization(frame_feedback_id, utilization);
+  oracle_proxy_->OnConsumerReportingUtilization(frame_feedback_id, feedback);
 }
 
 }  // namespace content

@@ -3547,7 +3547,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
     if (IsWebArea())
       *clips_children = true;
     else
-      *clips_children = layout_object->HasOverflowClip();
+      *clips_children = layout_object->HasNonVisibleOverflow();
   }
 
   if (IsWebArea()) {

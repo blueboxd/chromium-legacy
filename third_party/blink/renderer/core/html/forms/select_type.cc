@@ -1066,7 +1066,7 @@ void ListBoxSelectType::ScrollToOptionTask() {
 
   // The following code will not scroll parent boxes unlike ScrollRectToVisible.
   auto* box = select_->GetLayoutBox();
-  if (!box->HasOverflowClip())
+  if (!box->HasNonVisibleOverflow())
     return;
   DCHECK(box->Layer());
   DCHECK(box->Layer()->GetScrollableArea());

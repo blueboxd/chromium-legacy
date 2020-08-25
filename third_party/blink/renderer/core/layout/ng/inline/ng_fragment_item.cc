@@ -317,9 +317,9 @@ bool NGFragmentItem::IsListMarker() const {
   return layout_object_ && layout_object_->IsLayoutNGOutsideListMarker();
 }
 
-bool NGFragmentItem::HasOverflowClip() const {
+bool NGFragmentItem::HasNonVisibleOverflow() const {
   if (const NGPhysicalBoxFragment* fragment = BoxFragment())
-    return fragment->HasOverflowClip();
+    return fragment->HasNonVisibleOverflow();
   return false;
 }
 
@@ -375,7 +375,7 @@ PhysicalRect NGFragmentItem::InkOverflow() const {
     return box->PhysicalVisualOverflowRect();
   if (!HasInkOverflow())
     return LocalRect();
-  if (!IsContainer() || HasOverflowClip())
+  if (!IsContainer() || HasNonVisibleOverflow())
     return ink_overflow_.Self(InkOverflowType(), Size());
   return ink_overflow_.SelfAndContents(InkOverflowType(), Size());
 }

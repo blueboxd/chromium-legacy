@@ -57,16 +57,21 @@ std::unique_ptr<views::Widget> CreateAuthDialogWidget(aura::Window* parent) {
 
 InSessionAuthDialog::InSessionAuthDialog(uint32_t auth_methods) {
   widget_ = CreateAuthDialogWidget(nullptr);
-  auto* contents_view = widget_->SetContentsView(
+  contents_view_ = widget_->SetContentsView(
       std::make_unique<AuthDialogContentsView>(auth_methods));
   gfx::Rect bound = widget_->GetWindowBoundsInScreen();
   // Calculate initial height based on which child views are shown.
-  bound.set_height(contents_view->GetPreferredSize().height());
+  bound.set_height(contents_view_->GetPreferredSize().height());
   widget_->SetBounds(bound);
 
   widget_->Show();
 }
 
 InSessionAuthDialog::~InSessionAuthDialog() = default;
+
+uint32_t InSessionAuthDialog::GetAuthMethods() const {
+  DCHECK(contents_view_);
+  return contents_view_->auth_methods();
+}
 
 }  // namespace ash

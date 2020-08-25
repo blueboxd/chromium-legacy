@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -41,6 +40,8 @@ base::string16 GetUniqueShortcutFilenameForProfile(
 class ShortcutFilenameMatcher {
  public:
   explicit ShortcutFilenameMatcher(const base::string16& profile_name);
+  ShortcutFilenameMatcher(const ShortcutFilenameMatcher&) = delete;
+  ShortcutFilenameMatcher& operator=(const ShortcutFilenameMatcher&) = delete;
 
   // Check that shortcut filename has a name given by us (by
   // GetShortcutFilenameForProfile or GetUniqueShortcutFilenameForProfile).
@@ -50,8 +51,6 @@ class ShortcutFilenameMatcher {
   const base::string16 profile_shortcut_filename_;
   const base::StringPiece16 lnk_ext_;
   base::StringPiece16 profile_shortcut_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutFilenameMatcher);
 };
 
 // Returns the command-line flags to launch Chrome with the given profile.
@@ -82,6 +81,9 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   };
 
   explicit ProfileShortcutManagerWin(ProfileManager* manager);
+  ProfileShortcutManagerWin(const ProfileShortcutManagerWin&) = delete;
+  ProfileShortcutManagerWin& operator=(const ProfileShortcutManagerWin&) =
+      delete;
   ~ProfileShortcutManagerWin() override;
 
   // ProfileShortcutManager implementation:
@@ -123,8 +125,6 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
       bool incognito);
 
   ProfileManager* profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManagerWin);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_

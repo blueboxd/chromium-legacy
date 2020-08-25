@@ -58,8 +58,8 @@ class KioskExternalUpdateValidator
                        std::unique_ptr<base::DictionaryValue> original_manifest,
                        const extensions::Extension* extension,
                        const SkBitmap& install_icon,
-                       extensions::declarative_net_request::RulesetChecksums
-                           ruleset_checksums) override;
+                       extensions::declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override;
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

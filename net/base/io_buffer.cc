@@ -43,20 +43,8 @@ IOBuffer::~IOBuffer() {
   data_ = nullptr;
 }
 
-IOBufferWithSize::IOBufferWithSize(int size)
-    : IOBuffer(size),
-      size_(size) {
-  AssertValidBufferSize(size);
-}
-
 IOBufferWithSize::IOBufferWithSize(size_t size) : IOBuffer(size), size_(size) {
   // Note: Size check is done in superclass' constructor.
-}
-
-IOBufferWithSize::IOBufferWithSize(char* data, int size)
-    : IOBuffer(data),
-      size_(size) {
-  AssertValidBufferSize(size);
 }
 
 IOBufferWithSize::IOBufferWithSize(char* data, size_t size)

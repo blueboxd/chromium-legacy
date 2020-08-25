@@ -211,13 +211,6 @@ void PrivetNotificationService::DeviceCacheFlushed() {
 // static
 bool PrivetNotificationService::IsEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(
-      switches::kDisableDeviceDiscoveryNotifications);
-}
-
-// static
-bool PrivetNotificationService::IsForced() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableDeviceDiscoveryNotifications);
 }
 
@@ -309,9 +302,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 #if BUILDFLAG(ENABLE_MDNS)
   traffic_detector_.reset();
 
-  if (IsForced()) {
-    StartLister();
-  } else if (*enable_privet_notification_member_) {
+  if (*enable_privet_notification_member_) {
     traffic_detector_ = std::make_unique<PrivetTrafficDetector>(
         profile_, base::BindRepeating(&PrivetNotificationService::StartLister,
                                       AsWeakPtr()));
@@ -321,7 +312,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
     privet_notifications_listener_.reset();
   }
 #else
-  if (IsForced() || *enable_privet_notification_member_) {
+  if (*enable_privet_notification_member_) {
     StartLister();
   } else {
     device_lister_.reset();

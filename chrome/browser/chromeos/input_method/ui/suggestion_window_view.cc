@@ -263,8 +263,7 @@ void SuggestionWindowView::SetCandidateHighlighted(SuggestionView* candidate,
   highlighted_candidate_ = highlighted ? candidate : nullptr;
 }
 
-BEGIN_METADATA(SuggestionWindowView)
-METADATA_PARENT_CLASS(views::BubbleDialogDelegateView)
+BEGIN_METADATA(SuggestionWindowView, views::BubbleDialogDelegateView)
 END_METADATA()
 
 }  // namespace ime

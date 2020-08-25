@@ -302,6 +302,24 @@ std::string BluetoothDeviceBlueZ::GetAddress() const {
   return device::CanonicalizeBluetoothAddress(properties->address.value());
 }
 
+BluetoothDeviceBlueZ::AddressType BluetoothDeviceBlueZ::GetAddressType() const {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+
+  if (!properties->address_type.is_valid())
+    return ADDR_TYPE_UNKNOWN;
+
+  if (properties->address_type.value() == bluetooth_device::kAddressTypePublic)
+    return ADDR_TYPE_PUBLIC;
+  if (properties->address_type.value() == bluetooth_device::kAddressTypeRandom)
+    return ADDR_TYPE_RANDOM;
+
+  LOG(WARNING) << "Unknown address type: " << properties->address_type.value();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 BluetoothDevice::VendorIDSource BluetoothDeviceBlueZ::GetVendorIDSource()
     const {
   VendorIDSource vendor_id_source = VENDOR_ID_UNKNOWN;

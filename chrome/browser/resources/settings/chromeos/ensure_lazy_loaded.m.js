@@ -5,7 +5,7 @@
 let lazyLoadPromise = null;
 
 /** @return {!Promise<void>} Resolves when the lazy load module is imported. */
-export function ensureLazyLoadedOs() {
+export function ensureLazyLoaded() {
   if (!lazyLoadPromise) {
     const script = document.createElement('script');
     script.type = 'module';

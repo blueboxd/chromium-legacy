@@ -207,10 +207,16 @@ android_resources("java_resources") {
 android_library("test_support_java") {
   testonly = true
 
-  sources = [ "test/java/src/org/chromium/components/browser_ui/widget/highlight/ViewHighlighterTestUtils.java" ]
+  sources = [
+    "test/java/src/org/chromium/components/browser_ui/widget/RecyclerViewTestUtils.java",
+    "test/java/src/org/chromium/components/browser_ui/widget/highlight/ViewHighlighterTestUtils.java",
+  ]
   deps = [
     ":java",
+    "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/hamcrest:hamcrest_library_java",
   ]
 }
 

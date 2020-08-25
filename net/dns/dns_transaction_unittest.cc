@@ -827,7 +827,7 @@ class DnsTransactionTestBase : public testing::Test {
       }
     }
 
-    EXPECT_EQ(PRIVACY_MODE_ENABLED, request->privacy_mode());
+    EXPECT_FALSE(request->allow_credentials());
     EXPECT_TRUE(request->disable_secure_dns());
 
     std::string accept;

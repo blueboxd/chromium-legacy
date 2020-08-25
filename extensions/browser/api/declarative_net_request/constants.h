@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "base/feature_list.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 
 namespace extensions {
@@ -161,6 +162,7 @@ extern const char kEnabledRuleCountExceeded[];
 extern const char kEnabledRegexRuleCountExceeded[];
 extern const char kRuleNotParsedWarning[];
 extern const char kTooManyParseFailuresWarning[];
+extern const char kIndexingRuleLimitExceeded[];
 
 // Dynamic rules API errors.
 extern const char kInternalErrorUpdatingDynamicRules[];
@@ -190,6 +192,14 @@ extern const char kActionCountPlaceholderBadgeText[];
 // Error returned for the getMatchedRules extension function call, if the
 // extension does not have sufficient permissions to make the call.
 extern const char kErrorGetMatchedRulesMissingPermissions[];
+
+// The maximum amount of static rules in the global rule pool for a single
+// profile.
+constexpr int kMaxStaticRulesPerProfile = 300000;
+
+// Enables extensions to enable more rules than the per-extension static rule
+// count, up to a global limit shared between all extensions.
+extern const base::Feature kDeclarativeNetRequestGlobalRules;
 
 }  // namespace declarative_net_request
 }  // namespace extensions

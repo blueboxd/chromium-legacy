@@ -255,8 +255,7 @@ InkDropEventHandler* InkDropHostView::GetEventHandler() {
       const_cast<const InkDropHostView*>(this)->GetEventHandler());
 }
 
-BEGIN_METADATA(InkDropHostView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(InkDropHostView, View)
 ADD_READONLY_PROPERTY_METADATA(InkDropHostView, bool, Highlighted)
 END_METADATA()
 

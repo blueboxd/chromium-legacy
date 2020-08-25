@@ -95,8 +95,7 @@ void Separator::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect({x, y, w, h}, color);
 }
 
-BEGIN_METADATA(Separator)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Separator, View)
 ADD_PROPERTY_METADATA(Separator, SkColor, Color)
 ADD_PROPERTY_METADATA(Separator, int, PreferredHeight)
 END_METADATA()

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -45,7 +46,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ChunkedDataPipeUploadDataStream
 
   bool AllowHTTP1() const override;
 
+  static const size_t kDefaultDestinationWindowSize = 65535;
+  // This has ChunkedDataPipeUploadDataStream cache each chunk from the datapipe
+  // up to the size that just exceeds |dst_window_size| so that the destination
+  // resends the data.
+  // InitInternal() doesn't reset the data pipe and this instance replays the
+  // all cached chunks and continues datapipe withdrawing after that.
+  void EnableCache(size_t dst_window_size = kDefaultDestinationWindowSize);
+
  private:
+  enum class CacheState {
+    kDisabled,
+    kActive,
+    kExhausted,
+  };
+
   // net::UploadDataStream implementation.
   int InitInternal(const net::NetLogWithSource& net_log) override;
   int ReadInternal(net::IOBuffer* buf, int buf_len) override;
@@ -62,6 +77,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ChunkedDataPipeUploadDataStream
   void OnHandleReadable(MojoResult result);
 
   void OnDataPipeGetterClosed();
+
+  void WriteToCacheIfNeeded(net::IOBuffer* buf, uint32_t num_bytes);
+  int ReadFromCacheIfNeeded(net::IOBuffer* buf, int buf_len);
 
   scoped_refptr<ResourceRequestBody> resource_request_body_;
   mojo::Remote<mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter_;
@@ -84,6 +102,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ChunkedDataPipeUploadDataStream
   // Set to a net::Error other than net::OK if the DataPipeGetter returns an
   // error.
   int status_ = net::OK;
+
+  // Variables used for EnableCache().
+  CacheState cache_state_ = CacheState::kDisabled;
+  size_t dst_window_size_ = kDefaultDestinationWindowSize;
+  std::vector<char> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ChunkedDataPipeUploadDataStream);
 };

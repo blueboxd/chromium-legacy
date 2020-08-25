@@ -51,7 +51,6 @@ bool StructTraits<media::mojom::VideoFrameMetadataDataView,
   DESERIALIZE_INTO_OPT(root_scroll_offset_x);
   DESERIALIZE_INTO_OPT(root_scroll_offset_y);
   DESERIALIZE_INTO_OPT(top_controls_visible_height);
-  DESERIALIZE_INTO_OPT(resource_utilization);
   DESERIALIZE_INTO_OPT(frame_rate);
   DESERIALIZE_INTO_OPT(rtp_timestamp);
 

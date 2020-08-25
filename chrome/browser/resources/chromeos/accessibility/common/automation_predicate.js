@@ -293,7 +293,10 @@ AutomationPredicate = class {
    * @return {boolean}
    */
   static linebreak(first, second) {
-    // TODO(dtseng): Use next/previousOnLine once available.
+    if (first.nextOnLine == second) {
+      return false;
+    }
+
     const fl = first.unclippedLocation;
     const sl = second.unclippedLocation;
     return fl.top != sl.top || (fl.top + fl.height != sl.top + sl.height);

@@ -19,9 +19,6 @@ Still reading?
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/xml/network_security_config.xml"/>
     <ignore regexp="test"/>
   </issue>
-  <issue id="AllowBackup" severity="ignore"/>
-  <!-- TODO(crbug.com/804427): Remove this suppression or add rationale. -->
-  <issue id="AppCompatResource" severity="ignore"/>
   <issue id="Autofill">
     <!-- Filed https://crbug.com/1073966 to fix -->
     <ignore regexp="chrome/android/features/tab_ui/java/res/layout/bottom_tab_grid_toolbar.xml"/>
@@ -32,18 +29,16 @@ Still reading?
     <ignore regexp="chrome/android/javatests"/>
     <ignore regexp="Test.java"/>
   </issue>
-  <issue id="BadHostnameVerifier"/>
   <issue id="ButtonOrder">
     <ignore regexp="chrome/android/java/res/layout/homepage_editor.xml"/>
   </issue>
-  <issue id="ClickableViewAccessibility" severity="ignore"/>
   <issue id="ContentDescription">
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/layout/contacts_list_item_view.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
-    <ignore regexp="chrome/android/java/res/layout/photo_picker_dialog.xml"/>
+    <ignore regexp="components/browser_ui/photo_picker/android/java/res/layout/photo_picker_dialog.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
-    <ignore regexp="chrome/android/java/res/layout/video_player.xml"/>
+    <ignore regexp="components/browser_ui/photo_picker/android/java/res/layout/video_player.xml"/>
   </issue>
   <issue id="CustomViewStyleable">
     <!-- TODO(crbug.com/1077861): Old code, good to fix. -->
@@ -57,18 +52,10 @@ Still reading?
     <!-- TODO(crbug.com/1082222): Fix -->
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderProcessor.java"/>
   </issue>
-  <!--TODO(crbug.com/1069186): See if this new check is useful. -->
-  <issue id="DuplicateDefinition" severity="ignore"/>
   <issue id="DuplicateIds" severity="Fatal">
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/menu/main_menu.xml"/>
     <ignore regexp="chrome/android/java/res/menu/main_menu_regroup.xml"/>
-  </issue>
-  <!-- TODO(crbug.com/635567): Fix this properly. -->
-  <issue id="Deprecated">
-    <ignore regexp="/test/"/>
-    <ignore regexp="AndroidManifest.xml"/>
-    <ignore regexp="android:singleLine"/>
   </issue>
   <issue id="DrawAllocation">
     <ignore regexp="content/public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java"/>
@@ -78,18 +65,13 @@ Still reading?
   <issue id="EllipsizeMaxLines" severity="ignore"/>
   <issue id="ExifInterface">
     <!-- TODO(crbug.com/804438): Cannot update until android.media.ExifInterface supports file descriptors -->
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/photo_picker/BitmapUtils.java"/>
+    <ignore regexp="components/browser_ui/photo_picker/android/java/src/org/chromium/components/browser_ui/photo_picker/BitmapUtils.java"/>
   </issue>
   <issue id="ExportedContentProvider" severity="ignore"/>
   <issue id="ExportedService" severity="ignore"/>
-  <!-- TODO(crbug.com/635567): Fix this properly. -->
-  <issue id="GoogleAppIndexingUrlError" severity="ignore"/>
-  <!-- TODO(crbug.com/635567): Fix this properly. -->
-  <issue id="GoogleAppIndexingWarning" severity="ignore"/>
   <issue id="HandlerLeak">
     <ignore regexp="android_webview/glue/java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java"/>
   </issue>
-  <issue id="HardcodedDebugMode" severity="ignore"/>
   <issue id="IconColors">
     <ignore regexp="tools/android/audio_focus_grabber/java/res/drawable-.*/notification_icon.png"/>
   </issue>
@@ -167,8 +149,6 @@ Still reading?
   <issue id="InlinedApi" severity="ignore"/>
   <issue id="InvalidVectorPath" severity="ignore"/>
   <issue id="JobSchedulerService" severity="ignore"/>
-  <!-- TODO(crbug.com/804453): Remove this after fixing. -->
-  <issue id="KeyboardInaccessibleWidget" severity="ignore"/>
   <issue id="LabelFor">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml"/>
   </issue>
@@ -188,8 +168,6 @@ Still reading?
     <ignore regexp="chrome/android/java/res/layout-sw360dp/preference_spinner_single_line.xml"/>
   </issue>
   <issue id="MissingPermission" severity="ignore"/>
-  <!-- TODO(yolandyan) remove this once all tests are converted to junit4 -->
-  <issue id="MissingPrefix" severity="ignore"/>
   <issue id="MissingQuantity" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingSuperCall">
@@ -199,7 +177,6 @@ Still reading?
   <issue id="MissingTranslation">
     <ignore regexp="restriction_values.xml.*"/>
   </issue>
-  <issue id="MissingVersion" severity="ignore"/>
   <issue id="NewApi">
     <!-- Do not add new suppressions without rationale. -->
     <!-- 2: We support these via desugar. -->
@@ -223,7 +200,8 @@ Still reading?
   <issue id="ObsoleteSdkInt" severity="ignore"/>
   <issue id="OldTargetApi" severity="ignore"/>
   <issue id="OnClick">
-    <!-- False positive, see: http://issuetracker.google.com/148523770 for similar issue. -->
+    <!-- False positive, see: http://issuetracker.google.com/148523770 for
+         similar issue. -->
     <ignore regexp="tools/android/audio_focus_grabber/java/res/layout/audio_focus_grabber_activity.xml"/>
   </issue>
   <issue id="Overdraw" severity="ignore"/>
@@ -244,12 +222,11 @@ Still reading?
   <issue id="ResourceType">
     <ignore regexp="/javatests/"/>
   </issue>
-  <!-- TODO(crbug.com/831774): Play Services starts complaining about RestrictedApi. Needs investigation -->
-  <issue id="RestrictedApi" severity="ignore"/>
   <issue id="RtlCompat" severity="ignore"/>
   <issue id="RtlEnabled" severity="ignore"/>
   <issue id="RtlHardcoded">
-    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs
+        investigated.-->
     <ignore regexp="chrome/android/java/res/layout/sheet_tab_toolbar.xml"/>
   </issue>
   <issue id="RtlSymmetry" severity="ignore"/>
@@ -272,14 +249,16 @@ Still reading?
     <!-- This string has a % in it. -->
     <ignore regexp="data_reduction_promo_infobar_title"/>
   </issue>
-  <!-- Many .xtb files have a % that is not part of a formatted string. https://crbug.com/941164 -->
+  <!-- Many .xtb files have a % that is not part of a formatted string.
+       https://crbug.com/941164 -->
   <issue id="StringFormatInvalid" severity="ignore"/>
   <issue id="StringFormatMatches" severity="ignore"/>
+  <!-- Code is usually committed in English for all languages and later
+       translated. This avoids blocking translation updates. -->
+  <issue id="Typos" severity="ignore"/>
   <issue id="TypographyDashes">
     <ignore regexp="chrome/app/policy/android/values-v21/restriction_values.xml"/>
   </issue>
-  <!-- Typos check disabled due to lint bug: http://crbug.com/671170 -->
-  <issue id="Typos" severity="ignore"/>
   <issue id="UnusedIds" severity="ignore"/>
   <issue id="UnusedQuantity" severity="ignore"/>
   <issue id="UnusedResources">
@@ -388,12 +367,10 @@ Still reading?
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->
-    <ignore regexp="chrome/android/java/res/layout/photo_picker_bitmap_view.xml"/>
+    <ignore regexp="components/browser_ui/photo_picker/android/java/res/layout/photo_picker_bitmap_view.xml"/>
     <!-- Cannot add image to textview as the image is supplied through @style/TabBarShadow. -->
     <ignore regexp="chrome/browser/share/android/java/res/layout/qrcode_camera_error_layout.xml"/>
   </issue>
-  <!-- TODO(crbug.com/807734): Investigate and possible remove this -->
-  <issue id="UseSparseArrays" severity="ignore"/>
   <issue id="UselessParent">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml"/>
     <ignore regexp="chrome/android/java/res/layout/data_usage_breakdown.xml"/>

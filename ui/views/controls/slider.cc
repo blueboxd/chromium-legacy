@@ -376,8 +376,7 @@ int Slider::GetSliderExtraPadding() const {
   }
 }
 
-BEGIN_METADATA(Slider)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Slider, View)
 ADD_PROPERTY_METADATA(Slider, float, Value)
 ADD_PROPERTY_METADATA(Slider, bool, EnableAccessibilityEvents)
 END_METADATA()

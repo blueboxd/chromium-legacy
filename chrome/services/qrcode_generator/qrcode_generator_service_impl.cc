@@ -270,7 +270,8 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
       qr.Generate(base::span<const uint8_t>(
           reinterpret_cast<const uint8_t*>(request->data.data()),
           request->data.size()));
-  if (!qr_data) {
+  if (!qr_data || qr_data->data.data() == nullptr ||
+      qr_data->data.size() == 0) {
     // The above check should have caught the too-long-URL case.
     // Remaining errors can be treated as UNKNOWN.
     response->error_code = mojom::QRCodeGeneratorError::UNKNOWN_ERROR;
@@ -287,10 +288,9 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
 
   response->data.insert(response->data.begin(), qr_data_span.begin(),
                         qr_data_span.end());
-  response->data_size = {qr_data_span.size(), qr_data_span.size()};
+  response->data_size = {qr_data->qr_size, qr_data->qr_size};
   response->error_code = mojom::QRCodeGeneratorError::NONE;
-  gfx::Size qr_output_data_size = {qr_data->qr_size, qr_data->qr_size};
-  RenderBitmap(qr_data_span.data(), qr_output_data_size, request, &response);
+  RenderBitmap(qr_data_span.data(), response->data_size, request, &response);
 
   std::move(callback).Run(std::move(response));
 }

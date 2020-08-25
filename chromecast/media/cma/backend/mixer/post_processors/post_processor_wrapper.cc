@@ -43,11 +43,10 @@ const AudioPostProcessor2::Status& AudioPostProcessorWrapper::GetStatus() {
 
 void AudioPostProcessorWrapper::ProcessFrames(float* data,
                                               int frames,
-                                              float system_volume,
-                                              float volume_dbfs) {
+                                              Metadata* metadata) {
   status_.output_buffer = data;
-  status_.rendering_delay_frames =
-      pp_->ProcessFrames(data, frames, system_volume, volume_dbfs);
+  status_.rendering_delay_frames = pp_->ProcessFrames(
+      data, frames, metadata->system_volume, metadata->volume_dbfs);
 }
 
 bool AudioPostProcessorWrapper::UpdateParameters(const std::string& message) {

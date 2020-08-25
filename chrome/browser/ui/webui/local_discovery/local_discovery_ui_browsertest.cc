@@ -424,7 +424,6 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     chrome::kTestUserProfileDir);
 #endif
-    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
     WebUIBrowserTest::SetUpCommandLine(command_line);
   }
 

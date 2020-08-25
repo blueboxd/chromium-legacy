@@ -62,7 +62,8 @@ class GovernorTest : public ::testing::TestWithParam<float> {
   }
 
   void ProcessFrames(float volume) {
-    governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0);
+    AudioPostProcessor2::Metadata metadata = {0, 0, volume};
+    governor_->ProcessFrames(data_.data(), kNumFrames, &metadata);
   }
 
   void CompareBuffers() {

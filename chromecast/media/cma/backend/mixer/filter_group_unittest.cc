@@ -41,16 +41,17 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
 
   explicit MockPostProcessingPipeline(int num_output_channels)
       : num_output_channels_(num_output_channels) {
-    ON_CALL(*this, ProcessFrames(_, _, _, _))
+    ON_CALL(*this, ProcessFrames(_, _, _, _, _))
         .WillByDefault(
             testing::Invoke(this, &MockPostProcessingPipeline::StorePtr));
   }
 
   ~MockPostProcessingPipeline() override {}
-  MOCK_METHOD4(ProcessFrames,
+  MOCK_METHOD5(ProcessFrames,
                double(float* data,
                       int num_frames,
                       float current_volume,
+                      float target_volume,
                       bool is_silence));
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
@@ -71,6 +72,7 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   double StorePtr(float* data,
                   int num_frames,
                   float current_volume,
+                  float target_volume,
                   bool is_silence) {
     output_buffer_ = data;
     return 0;
@@ -89,17 +91,18 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
   explicit InvertChannelPostProcessor(int channels, int channel_to_invert)
       : MockPostProcessingPipeline(channels),
         channel_to_invert_(channel_to_invert) {
-    ON_CALL(*this, ProcessFrames(_, _, _, _))
+    ON_CALL(*this, ProcessFrames(_, _, _, _, _))
         .WillByDefault(testing::Invoke(
             this, &InvertChannelPostProcessor::DoInvertChannel));
   }
 
   ~InvertChannelPostProcessor() override {}
 
-  MOCK_METHOD4(ProcessFrames,
+  MOCK_METHOD5(ProcessFrames,
                double(float* data,
                       int num_frames,
                       float current_volume,
+                      float target_volume,
                       bool is_silence));
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
@@ -108,6 +111,7 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
   int DoInvertChannel(float* data,
                       int num_frames,
                       float current_volume,
+                      float target_volume,
                       bool is_silence) {
     output_buffer_ = data;
     for (int fr = 0; fr < num_frames; ++fr) {
@@ -214,7 +218,7 @@ class FilterGroupTest : public testing::Test {
 
 TEST_F(FilterGroupTest, Passthrough) {
   MakeFilterGroup(std::make_unique<NiceMock<MockPostProcessingPipeline>>());
-  EXPECT_CALL(*post_processor_, ProcessFrames(_, kInputFrames, _, false));
+  EXPECT_CALL(*post_processor_, ProcessFrames(_, kInputFrames, _, _, false));
 
   filter_group_->MixAndFilter(kInputFrames, RenderingDelay());
   AssertPassthrough();

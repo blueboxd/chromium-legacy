@@ -499,12 +499,6 @@ int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
       break;
   }
 
-  if (!resource_request_->AllowStoredCredentials()) {
-    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
-
   if (resource_request_->GetRequestContext() ==
       blink::mojom::RequestContextType::PREFETCH)
     load_flags |= net::LOAD_PREFETCH;

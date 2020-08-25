@@ -142,6 +142,8 @@ class ProfileManagerTest : public testing::Test {
       : local_state_(TestingBrowserProcess::GetGlobal()) {
   }
 
+  ProfileManagerTest(const ProfileManagerTest&) = delete;
+  ProfileManagerTest& operator=(const ProfileManagerTest&) = delete;
   ~ProfileManagerTest() override = default;
 
   void SetUp() override {
@@ -253,9 +255,6 @@ class ProfileManagerTest : public testing::Test {
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
 #endif
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileManagerTest);
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {
@@ -574,6 +573,8 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
 class ProfileManagerGuestTest : public ProfileManagerTest  {
  public:
   ProfileManagerGuestTest() = default;
+  ProfileManagerGuestTest(const ProfileManagerGuestTest&) = delete;
+  ProfileManagerGuestTest& operator=(const ProfileManagerGuestTest&) = delete;
   ~ProfileManagerGuestTest() override = default;
 
   void SetUp() override {
@@ -601,9 +602,6 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
         user_manager::UserManager::Get());
   }
 #endif
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileManagerGuestTest);
 };
 
 TEST_F(ProfileManagerGuestTest, GetLastUsedProfileAllowedByPolicy) {

@@ -1425,4 +1425,25 @@ TEST(SpanTest, IteratorConversions) {
                 "Error: const iterator should not be convertible to iterator");
 }
 
+TEST(SpanTest, ExtentMacro) {
+  constexpr size_t kSize = 10;
+  std::array<uint8_t, kSize> array;
+  static_assert(EXTENT(array) == kSize, "EXTENT broken");
+
+  const std::array<uint8_t, kSize>& reference = array;
+  static_assert(EXTENT(reference) == kSize, "EXTENT broken for references");
+
+  const std::array<uint8_t, kSize>* pointer = nullptr;
+  static_assert(EXTENT(*pointer) == kSize, "EXTENT broken for pointers");
+
+  uint8_t plain_array[kSize] = {0};
+  static_assert(EXTENT(plain_array) == kSize, "EXTENT broken for plain arrays");
+
+  // EXTENT should not result in |dynamic_extent|, it should be a compile-time
+  // error. However, we don't have compile-failure tests.
+  //
+  // std::vector<uint8_t> vector;
+  // static_assert(EXTENT(vector) == dynamic_extent, "Should not compile");
+}
+
 }  // namespace base

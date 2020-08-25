@@ -81,8 +81,7 @@ class NamedTestView : public views::View {
   SkColor color_property_ = SK_ColorGRAY;
 };
 
-BEGIN_METADATA(NamedTestView)
-METADATA_PARENT_CLASS(views::View)
+BEGIN_METADATA(NamedTestView, views::View)
 ADD_PROPERTY_METADATA(NamedTestView, bool, BoolProperty)
 ADD_PROPERTY_METADATA(NamedTestView, SkColor, ColorProperty)
 END_METADATA()

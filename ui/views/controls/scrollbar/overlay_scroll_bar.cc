@@ -187,8 +187,7 @@ void OverlayScrollBar::StartHideCountdown() {
       base::BindOnce(&OverlayScrollBar::Hide, base::Unretained(this)));
 }
 
-BEGIN_METADATA(OverlayScrollBar)
-METADATA_PARENT_CLASS(ScrollBar)
+BEGIN_METADATA(OverlayScrollBar, ScrollBar)
 END_METADATA()
 
 }  // namespace views

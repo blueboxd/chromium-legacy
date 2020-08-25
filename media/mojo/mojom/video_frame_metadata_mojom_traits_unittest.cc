@@ -79,7 +79,6 @@ TEST_F(VideoFrameMetadataStructTraitsTest, EmptyMetadata) {
   EXPECT_FALSE(metadata_out.root_scroll_offset_x.has_value());
   EXPECT_FALSE(metadata_out.root_scroll_offset_y.has_value());
   EXPECT_FALSE(metadata_out.top_controls_visible_height.has_value());
-  EXPECT_FALSE(metadata_out.resource_utilization.has_value());
   EXPECT_FALSE(metadata_out.frame_rate.has_value());
   EXPECT_FALSE(metadata_out.rtp_timestamp.has_value());
   EXPECT_FALSE(metadata_out.receive_time.has_value());
@@ -131,7 +130,6 @@ TEST_F(VideoFrameMetadataStructTraitsTest, ValidMetadata) {
   metadata_in.root_scroll_offset_x = 100.2;
   metadata_in.root_scroll_offset_y = 200.1;
   metadata_in.top_controls_visible_height = 25.5;
-  metadata_in.resource_utilization = 95.8;
   metadata_in.frame_rate = 29.94;
   metadata_in.rtp_timestamp = 1.0;
 
@@ -177,8 +175,6 @@ TEST_F(VideoFrameMetadataStructTraitsTest, ValidMetadata) {
             metadata_out.root_scroll_offset_y);
   EXPECT_EQ(metadata_in.top_controls_visible_height,
             metadata_out.top_controls_visible_height);
-  EXPECT_EQ(metadata_in.resource_utilization,
-            metadata_out.resource_utilization);
   EXPECT_EQ(metadata_in.frame_rate, metadata_out.frame_rate);
   EXPECT_EQ(metadata_in.rtp_timestamp, metadata_out.rtp_timestamp);
   EXPECT_EQ(metadata_in.receive_time, metadata_out.receive_time);

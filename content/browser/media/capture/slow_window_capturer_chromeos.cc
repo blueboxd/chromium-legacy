@@ -197,7 +197,7 @@ class SlowWindowCapturerChromeOS::InFlightFrame
     buffer_ = base::MappedReadOnlyRegion();
   }
 
-  void ProvideFeedback(double utilization) final {}
+  void ProvideFeedback(const media::VideoFrameFeedback& feedback) final {}
 
  private:
   base::WeakPtr<SlowWindowCapturerChromeOS> capturer_;

@@ -315,11 +315,14 @@ bool AreAllIndexedStaticRulesetsValid(
     content::BrowserContext* browser_context) {
   std::vector<RulesetSource> sources = RulesetSource::CreateStatic(extension);
 
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
   for (RulesetSource& source : sources) {
+    if (prefs->ShouldIgnoreDNRRuleset(extension.id(), source.id()))
+      continue;
+
     int expected_checksum = -1;
-    if (!ExtensionPrefs::Get(browser_context)
-             ->GetDNRStaticRulesetChecksum(extension.id(), source.id(),
-                                           &expected_checksum)) {
+    if (!prefs->GetDNRStaticRulesetChecksum(extension.id(), source.id(),
+                                            &expected_checksum)) {
       return false;
     }
 
@@ -338,6 +341,8 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
                            const RulesetSource& source,
                            std::unique_ptr<RulesetMatcher>* matcher,
                            int* expected_checksum) {
+  using IndexStatus = IndexAndPersistJSONRulesetResult::Status;
+
   // Serialize |rules|.
   ListBuilder builder;
   for (const auto& rule : rules)
@@ -347,7 +352,7 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   // Index ruleset.
   IndexAndPersistJSONRulesetResult result =
       source.IndexAndPersistJSONRulesetUnsafe();
-  if (!result.success) {
+  if (result.status == IndexStatus::kError) {
     DCHECK(result.error.empty()) << result.error;
     return false;
   }
@@ -355,6 +360,7 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   if (!result.warnings.empty())
     return false;
 
+  DCHECK_EQ(IndexStatus::kSuccess, result.status);
   if (expected_checksum)
     *expected_checksum = result.ruleset_checksum;
 

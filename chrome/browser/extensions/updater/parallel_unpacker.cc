@@ -26,14 +26,14 @@ ParallelUnpacker::UnpackedExtension::UnpackedExtension(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     scoped_refptr<const Extension> extension,
     const SkBitmap& install_icon,
-    declarative_net_request::RulesetChecksums ruleset_checksums)
+    declarative_net_request::RulesetInstallPrefs ruleset_install_prefs)
     : fetch_info(std::move(fetch_info)),
       temp_dir(temp_dir),
       extension_root(extension_root),
       original_manifest(std::move(original_manifest)),
       extension(extension),
       install_icon(install_icon),
-      ruleset_checksums(std::move(ruleset_checksums)) {}
+      ruleset_install_prefs(std::move(ruleset_install_prefs)) {}
 
 ParallelUnpacker::UnpackedExtension::UnpackedExtension(UnpackedExtension&&) =
     default;
@@ -118,12 +118,12 @@ void ParallelUnpacker::Client::OnUnpackSuccess(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     const Extension* extension,
     const SkBitmap& install_icon,
-    declarative_net_request::RulesetChecksums ruleset_checksums) {
+    declarative_net_request::RulesetInstallPrefs ruleset_install_prefs) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   UnpackedExtension unpacked_extension(
       std::move(fetch_info_), temp_dir, extension_root,
       std::move(original_manifest), extension, install_icon,
-      std::move(ruleset_checksums));
+      std::move(ruleset_install_prefs));
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&ParallelUnpacker::ReportSuccessOnUIThread,
                                 unpacker_, std::move(unpacked_extension)));

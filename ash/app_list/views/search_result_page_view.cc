@@ -92,8 +92,7 @@ class SearchCardView : public views::View {
   ~SearchCardView() override {}
 };
 
-BEGIN_METADATA(SearchCardView)
-METADATA_PARENT_CLASS(views::View)
+BEGIN_METADATA(SearchCardView, views::View)
 END_METADATA()
 
 class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {

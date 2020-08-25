@@ -489,8 +489,7 @@ void WebView::MaybeEnableAutoResize() {
   render_widget_host_view->EnableAutoResize(min_size_, max_size_);
 }
 
-BEGIN_METADATA(WebView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(WebView, View)
 END_METADATA()
 
 }  // namespace views

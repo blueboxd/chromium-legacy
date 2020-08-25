@@ -42303,6 +42303,7 @@ from previous Chrome versions.
   <int value="29212695" label="OfflineIndicator:enabled"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="32057053" label="EnterpriseReportingInBrowser:disabled"/>
+  <int value="32348093" label="DiagnosticsApp:disabled"/>
   <int value="32488630" label="EphemeralTab:enabled"/>
   <int value="32557641" label="HTTPAuthCommittedInterstitials:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
@@ -42359,6 +42360,7 @@ from previous Chrome versions.
   <int value="83422372"
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
+  <int value="87886288" label="DiagnosticsApp:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
@@ -59739,6 +59741,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="kFileReadError"/>
   <int value="3" label="kJSONParseError"/>
   <int value="4" label="kJSONIsNotList"/>
+  <int value="5" label="kRuleCountLimitExceeded"/>
 </enum>
 
 <enum name="ReaderModeEntryPoint">
@@ -66017,6 +66020,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Timed out"/>
   <int value="2" label="Connection Error"/>
   <int value="3" label="Cancelled"/>
+  <int value="4" label="Aborted"/>
 </enum>
 
 <enum name="SnackbarIdentifier">

@@ -82,15 +82,13 @@ var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsAboutPageTest', 'AboutPage', () => {
-  settings_about_page.registerTests();
-  mocha.run();
+TEST_F('OSSettingsAboutPageTest', 'AllBuilds', () => {
+  mocha.grep('/^(?!AboutPageTest_OfficialBuild).*$/').run();
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', () => {
-  settings_about_page.registerOfficialBuildTests();
-  mocha.run();
+  mocha.grep('AboutPageTest_OfficialBuild').run();
 });
 GEN('#endif');
 
@@ -502,7 +500,7 @@ TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the Device page.
+// Tests for the Bluetooth page.
 // eslint-disable-next-line no-var
 var OSSettingsBluetoothPageTest = class extends OSSettingsBrowserTest {
   /** @override */
@@ -679,7 +677,8 @@ var OSSettingsFingerprintListTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsFingerprintListTest', 'AllJsTests', () => {
+// TODO(https://crbug.com/1121139): Re-enable flaky test.
+TEST_F('OSSettingsFingerprintListTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 

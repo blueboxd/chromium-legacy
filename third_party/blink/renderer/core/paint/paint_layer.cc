@@ -1564,7 +1564,7 @@ void PaintLayer::UpdateStackingNode() {
 bool PaintLayer::RequiresScrollableArea() const {
   if (!GetLayoutBox())
     return false;
-  if (GetLayoutObject().HasOverflowClip())
+  if (GetLayoutObject().HasNonVisibleOverflow())
     return true;
   // Iframes with the resize property can be resized. This requires
   // scroll corner painting, which is implemented, in part, by
@@ -3299,7 +3299,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 }
 
 LayoutSize PaintLayer::PixelSnappedScrolledContentOffset() const {
-  if (GetLayoutObject().HasOverflowClip())
+  if (GetLayoutObject().HasNonVisibleOverflow())
     return GetLayoutBox()->PixelSnappedScrolledContentOffset();
   return LayoutSize();
 }

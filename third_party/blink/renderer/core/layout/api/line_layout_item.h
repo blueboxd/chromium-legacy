@@ -278,7 +278,9 @@ class LineLayoutItem {
     return LineLayoutItem(layout_object_->PreviousInPreOrder(stay_within));
   }
 
-  bool HasOverflowClip() const { return layout_object_->HasOverflowClip(); }
+  bool HasNonVisibleOverflow() const {
+    return layout_object_->HasNonVisibleOverflow();
+  }
 
   // TODO(dgrogan/eae): Can we instead add a TearDown method to the API
   // instead of exposing this and other shutdown code to line layout?

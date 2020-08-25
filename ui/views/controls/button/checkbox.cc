@@ -211,8 +211,7 @@ void Checkbox::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.checked = GetChecked();
 }
 
-BEGIN_METADATA(Checkbox)
-METADATA_PARENT_CLASS(LabelButton)
+BEGIN_METADATA(Checkbox, LabelButton)
 ADD_PROPERTY_METADATA(Checkbox, bool, Checked)
 ADD_PROPERTY_METADATA(Checkbox, bool, MultiLine)
 END_METADATA()

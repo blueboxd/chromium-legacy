@@ -1353,7 +1353,7 @@ int Element::clientHeight() {
 
 PaintLayerScrollableArea* Element::GetScrollableArea() const {
   LayoutBox* box = GetLayoutBox();
-  if (!box || !box->HasOverflowClip())
+  if (!box || !box->HasNonVisibleOverflow())
     return nullptr;
   return box->GetScrollableArea();
 }
@@ -3794,7 +3794,7 @@ void Element::setAttributeNS(
   if (exception_state.HadException())
     return;
 
-  setAttribute(parsed_name, value);
+  setAttribute(parsed_name, std::move(value));
 }
 
 void Element::RemoveAttributeInternal(
@@ -3828,13 +3828,14 @@ void Element::RemoveAttributeInternal(
 
 void Element::AppendAttributeInternal(
     const QualifiedName& name,
-    const AtomicString& value,
+    AtomicString value,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
   if (!in_synchronization_of_lazy_attribute)
     WillModifyAttribute(name, g_null_atom, value);
-  EnsureUniqueElementData().Attributes().Append(name, value);
+  const AtomicString& stored_value =
+      EnsureUniqueElementData().Attributes().Append(name, std::move(value));
   if (!in_synchronization_of_lazy_attribute)
-    DidAddAttribute(name, value);
+    DidAddAttribute(name, stored_value);
 }
 
 void Element::removeAttributeNS(const AtomicString& namespace_uri,
@@ -5544,9 +5545,9 @@ void Element::DidAddAttribute(const QualifiedName& name,
   DispatchSubtreeModifiedEvent();
 }
 
-void Element::DidModifyAttribute(const QualifiedName& name,
-                                 const AtomicString& old_value,
-                                 const AtomicString& new_value) {
+void Element::DidModifyAttribute(QualifiedName name,
+                                 AtomicString old_value,
+                                 AtomicString new_value) {
   if (name == html_names::kIdAttr)
     UpdateId(old_value, new_value);
   AttributeChanged(AttributeModificationParams(

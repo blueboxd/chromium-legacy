@@ -230,8 +230,7 @@ SkPath GetHighlightPath(const View* view) {
   return path;
 }
 
-BEGIN_METADATA(FocusRing)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(FocusRing, View)
 END_METADATA()
 
 }  // namespace views

@@ -326,9 +326,10 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
             received_frame_info.timestamp = frame_info->timestamp;
             received_frame_infos.emplace_back(received_frame_info);
 
-            const double kArbitraryUtilization = 0.5;
+            const media::VideoFrameFeedback kArbitraryFeedback =
+                media::VideoFrameFeedback(0.5, 60.0, base::nullopt);
             controller_->ReturnBuffer(id, &mock_controller_event_handler_,
-                                      buffer_id, kArbitraryUtilization);
+                                      buffer_id, kArbitraryFeedback);
 
             if ((received_frame_infos.size() >= kMinFramesToReceive &&
                  !must_wait_for_gpu_decode_to_start) ||

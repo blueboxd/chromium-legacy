@@ -85,6 +85,12 @@ std::ostream& operator<<(std::ostream& stream,
     case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
       stream << "[SMS Connect client]";
       break;
+    case cryptauth::SoftwareFeature::PHONE_HUB_HOST:
+      stream << "[Phone Hub host]";
+      break;
+    case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
+      stream << "[Phone Hub client]";
+      break;
     default:
       stream << "[unknown software feature]";
       break;
@@ -110,6 +116,10 @@ cryptauth::SoftwareFeature SoftwareFeatureStringToEnum(
     return cryptauth::SoftwareFeature::SMS_CONNECT_HOST;
   if (software_feature_as_string == "smsConnectClient")
     return cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT;
+  if (software_feature_as_string == "phoneHubHost")
+    return cryptauth::SoftwareFeature::PHONE_HUB_HOST;
+  if (software_feature_as_string == "phoneHubClient")
+    return cryptauth::SoftwareFeature::PHONE_HUB_CLIENT;
 
   return cryptauth::SoftwareFeature::UNKNOWN_FEATURE;
 }
@@ -133,6 +143,10 @@ std::string SoftwareFeatureEnumToString(
       return "smsConnectHost";
     case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
       return "smsConnectClient";
+    case cryptauth::SoftwareFeature::PHONE_HUB_HOST:
+      return "phoneHubHost";
+    case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
+      return "phoneHubClient";
     default:
       return "unknownFeature";
   }
@@ -157,6 +171,10 @@ std::string SoftwareFeatureEnumToStringAllCaps(
       return "SMS_CONNECT_HOST";
     case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
       return "SMS_CONNECT_CLIENT";
+    case cryptauth::SoftwareFeature::PHONE_HUB_HOST:
+      return "PHONE_HUB_HOST";
+    case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
+      return "PHONE_HUB_CLIENT";
     default:
       return "UNKNOWN_FEATURE";
   }

@@ -136,6 +136,10 @@ class BrowserAddedForProfileObserver : public BrowserListObserver {
  public:
   BrowserAddedForProfileObserver(Profile* profile,
                                  ProfileManager::CreateCallback callback);
+  BrowserAddedForProfileObserver(const BrowserAddedForProfileObserver&) =
+      delete;
+  BrowserAddedForProfileObserver& operator=(
+      const BrowserAddedForProfileObserver&) = delete;
   ~BrowserAddedForProfileObserver() override;
 
  private:
@@ -145,8 +149,6 @@ class BrowserAddedForProfileObserver : public BrowserListObserver {
   // Profile for which the browser should be opened.
   Profile* profile_;
   ProfileManager::CreateCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAddedForProfileObserver);
 };
 
 }  // namespace profiles

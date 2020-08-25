@@ -293,9 +293,6 @@ struct VideoFrameMetadata {
 
   mojo_base.mojom.TimeTicks? reference_time;
 
-  bool has_resource_utilization;
-  double resource_utilization;
-
   bool read_lock_fences_enabled;
 
   bool has_rotation;

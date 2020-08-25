@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/preload_check.h"
 #include "extensions/common/manifest.h"
 
@@ -160,9 +160,8 @@ class UnpackedInstaller
   // Runs the above checks.
   std::unique_ptr<PreloadCheckGroup> check_group_;
 
-  // The checksums for the indexed rulesets corresponding to the Declarative Net
-  // Request API.
-  declarative_net_request::RulesetChecksums ruleset_checksums_;
+  // Install prefs needed for the Declarative Net Request API.
+  declarative_net_request::RulesetInstallPrefs ruleset_install_prefs_;
 
   CompletionCallback callback_;
 

@@ -177,7 +177,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent,
         IsStickyPositioned())
       return kNormalPaintLayer;
 
-    if (HasOverflowClip())
+    if (HasNonVisibleOverflow())
       return kOverflowClipPaintLayer;
 
     return kNoPaintLayer;

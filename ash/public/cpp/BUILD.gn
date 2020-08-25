@@ -308,6 +308,7 @@ component("cpp") {
 
   deps = [
     "//ash/public/cpp/vector_icons",
+    "//base/util/values:values_util",
     "//chromeos/constants",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/services/assistant/public/cpp",
@@ -355,6 +356,7 @@ source_set("unit_tests") {
     "android_intent_helper_unittest.cc",
     "app_list/app_list_config_provider_unittest.cc",
     "default_scale_factor_retriever_unittest.cc",
+    "holding_space/holding_space_item_unittest.cc",
     "metrics_util_unittest.cc",
     "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",

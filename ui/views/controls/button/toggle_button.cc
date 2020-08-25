@@ -350,8 +350,7 @@ void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {
   Button::AnimationProgressed(animation);
 }
 
-BEGIN_METADATA(ToggleButton)
-METADATA_PARENT_CLASS(Button)
+BEGIN_METADATA(ToggleButton, Button)
 ADD_PROPERTY_METADATA(ToggleButton, bool, IsOn)
 ADD_PROPERTY_METADATA(ToggleButton, bool, AcceptsEvents)
 ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, ThumbOnColor)

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.ListContentManager;
 import org.chromium.chrome.browser.xsurface.ListContentManagerObserver;
@@ -105,9 +107,9 @@ public class FeedListContentManager implements ListContentManager {
          * Returns the native view if the content is supported by it. Null otherwise.
          */
         public View getNativeView(ViewGroup parent) {
+            Context context = parent.getContext();
             if (mNativeView == null) {
-                mNativeView =
-                        LayoutInflater.from(parent.getContext()).inflate(mResId, parent, false);
+                mNativeView = LayoutInflater.from(context).inflate(mResId, parent, false);
             }
 
             // If there's already a parent, we have already enclosed this view previously.
@@ -119,8 +121,13 @@ public class FeedListContentManager implements ListContentManager {
             }
 
             FrameLayout enclosingLayout = new FrameLayout(parent.getContext());
-            enclosingLayout.setLayoutParams(
+            // Set the left and right margins.
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                     new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            layoutParams.leftMargin = context.getResources().getDimensionPixelSize(
+                    R.dimen.ntp_header_lateral_margins_v2);
+            layoutParams.rightMargin = layoutParams.leftMargin;
+            enclosingLayout.setLayoutParams(layoutParams);
             enclosingLayout.addView(mNativeView);
             return enclosingLayout;
         }

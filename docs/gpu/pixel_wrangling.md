@@ -167,6 +167,12 @@ shift, and a calendar appointment.
         revert message, provide a clear description of what broke, links to
         failing builds, and excerpts of the failure logs, because the build
         logs expire after a few days.
+    1.  If the failure is one that you believe should have been caught by an
+        optional GPU trybot, you can use the script at
+        [`//content/test/gpu/trim_culprit_cls.py`][trim culprit cls] to help
+        trim down the blamelist by finding out which CLs passed said trybot
+        before submission. See the documentation at the top of the script for
+        example usage, etc.
 1.  Make sure the bots are running jobs.
     1.  Keep an eye on the console views of the various bots.
     1.  Make sure the bots are all actively processing jobs. If they go offline
@@ -269,6 +275,7 @@ shift, and a calendar appointment.
     modifier][gtest-DISABLED] to suppress any failures if necessary.
 
 [Sheriff-O-Matic]: https://sheriff-o-matic.appspot.com/chromium.gpu
+[trim culprit cls]: https://source.chromium.org/chromium/chromium/src/+/master:content/test/gpu/trim_culprit_cls.py
 [tree sheriffing page]: https://sites.google.com/a/chromium.org/dev/developers/tree-sheriffs
 [linux-rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel
 [luci.chromium.try]: https://ci.chromium.org/p/chromium/g/luci.chromium.try/builders

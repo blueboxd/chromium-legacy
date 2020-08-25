@@ -94,11 +94,6 @@
     <color name="light_background_color">@android:color/white</color>
     <color name="resizing_background_color">@android:color/white</color>
 
-    <!-- Photo Picker colors -->
-    <color name="photo_picker_tile_bg_color">@color/modern_grey_200</color>
-    <color name="photo_picker_special_tile_bg_color">@color/modern_grey_300</color>
-    <color name="photo_picker_special_tile_text_color">@color/default_text_color_secondary_list</color>
-
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">@color/black_alpha_11</color>
     <color name="bookmark_widget_background">@color/default_bg_color</color>
@@ -125,8 +120,6 @@
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0E0E0E</color>
-    <color name="bottom_system_nav_color">@android:color/white</color>
-    <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="thumbnail_placeholder_on_primary_bg" tools:ignore="UnusedResources">@color/default_bg_color_secondary</color>
     <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
     <color name="web_notification_text">#CCCCCC</color>

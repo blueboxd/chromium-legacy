@@ -754,8 +754,7 @@ void BubbleDialogDelegate::UpdateHighlightedButton(bool highlighted) {
     button->SetHighlighted(highlighted);
 }
 
-BEGIN_METADATA(BubbleDialogDelegateView)
-METADATA_PARENT_CLASS(DialogDelegateView)
+BEGIN_METADATA(BubbleDialogDelegateView, DialogDelegateView)
 END_METADATA()
 
 }  // namespace views

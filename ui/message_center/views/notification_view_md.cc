@@ -324,8 +324,7 @@ void NotificationMdTextButton::UpdateBackgroundColor() {
   // Overridden as no-op so we don't draw any background or border.
 }
 
-BEGIN_METADATA(NotificationMdTextButton)
-METADATA_PARENT_CLASS(views::MdTextButton)
+BEGIN_METADATA(NotificationMdTextButton, views::MdTextButton)
 END_METADATA()
 
 // NotificationInputContainerMD ////////////////////////////////////////////////

@@ -30,9 +30,9 @@
 
 namespace {
 
-// Mode of size 6x4.
-const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
-                                      0, 0, 0, 0, 0, 0, {'\0'}};
+// Mode of size 12x8.
+const drmModeModeInfo kDefaultMode = {0, 12, 0, 0, 0, 0, 8,     0,
+                                      0, 0,  0, 0, 0, 0, {'\0'}};
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 constexpr uint32_t kCrtcIdBase = 1;

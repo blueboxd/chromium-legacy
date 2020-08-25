@@ -107,8 +107,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                        std::unique_ptr<base::DictionaryValue> original_manifest,
                        const extensions::Extension* extension,
                        const SkBitmap& install_icon,
-                       extensions::declarative_net_request::RulesetChecksums
-                           ruleset_checksums) override {
+                       extensions::declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     const extensions::KioskModeInfo* info =

@@ -40,8 +40,13 @@ Polymer({
 
   /** @private */
   onContinueTap_() {
+    if (!this.updateInfo || !this.updateInfo.version || !this.updateInfo.size){
+      console.log('ERROR: requestUpdateOverCellular arguments are undefined');
+      return;
+    }
     this.browserProxy_.requestUpdateOverCellular(
-        this.updateInfo.version, this.updateInfo.size);
+        /** @type {!string} */ (this.updateInfo.version),
+        /** @type {!string} */ (this.updateInfo.size));
     this.$.dialog.close();
   },
 

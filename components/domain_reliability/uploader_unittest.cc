@@ -45,9 +45,8 @@ class UploadMockURLRequestJob : public net::URLRequestJob {
       : net::URLRequestJob(request, network_delegate),
         upload_stream_(nullptr),
         result_(result) {
-    int load_flags = request->load_flags();
-    EXPECT_TRUE(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-    EXPECT_TRUE(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+    EXPECT_FALSE(request->allow_credentials());
+    EXPECT_TRUE(request->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES);
   }
 
  protected:

@@ -63,14 +63,19 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
-  // Always grant the cookies permission. Denying cookies permission causes
-  // IndexDB and other types of storage to stop working. Given that this is an
-  // app that is part of Chrome OS, it makes sense to enable the cookies.
+  // Register common permissions for chrome-untrusted:// pages.
+  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // granted by default.
   auto* permissions_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
   const url::Origin untrusted_origin =
       url::Origin::Create(GURL(kChromeUIHelpAppUntrustedURL));
-  permissions_allowlist->RegisterAutoGrantedPermission(
-      untrusted_origin, ContentSettingsType::COOKIES);
+  permissions_allowlist->RegisterAutoGrantedPermissions(
+      untrusted_origin, {
+                            ContentSettingsType::COOKIES,
+                            ContentSettingsType::IMAGES,
+                            ContentSettingsType::JAVASCRIPT,
+                            ContentSettingsType::SOUND,
+                        });
 }
 
 HelpAppUI::~HelpAppUI() = default;

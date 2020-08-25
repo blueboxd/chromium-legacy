@@ -51,6 +51,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // The Bluetooth device address of the device. Read-only.
     dbus::Property<std::string> address;
 
+    // The Bluetooth address type of the device. Read-only.
+    dbus::Property<std::string> address_type;
+
     // The Bluetooth friendly name of the device. Read-only, to give a
     // different local name, use the |alias| property.
     dbus::Property<std::string> name;

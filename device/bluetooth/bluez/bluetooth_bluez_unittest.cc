@@ -1804,6 +1804,33 @@ TEST_F(BluetoothBlueZTest, DeviceProperties) {
   EXPECT_EQ(0x0306, devices[idx]->GetDeviceID());
 }
 
+TEST_F(BluetoothBlueZTest, DeviceAddressType) {
+  GetAdapter();
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  ASSERT_EQ(2U, devices.size());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[idx]->GetAddress());
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  properties->address_type.set_valid(false);
+  EXPECT_EQ(BluetoothDevice::ADDR_TYPE_UNKNOWN, devices[idx]->GetAddressType());
+
+  properties->address_type.set_valid(true);
+
+  properties->address_type.ReplaceValue(bluetooth_device::kAddressTypePublic);
+  EXPECT_EQ(BluetoothDevice::ADDR_TYPE_PUBLIC, devices[idx]->GetAddressType());
+
+  properties->address_type.ReplaceValue(bluetooth_device::kAddressTypeRandom);
+  EXPECT_EQ(BluetoothDevice::ADDR_TYPE_RANDOM, devices[idx]->GetAddressType());
+}
+
 TEST_F(BluetoothBlueZTest, DeviceClassChanged) {
   // Simulate a change of class of a device, as sometimes occurs
   // during discovery.

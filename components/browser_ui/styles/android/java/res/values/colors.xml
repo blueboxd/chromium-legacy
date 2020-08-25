@@ -27,4 +27,8 @@
     <color name="control_highlight_color" tools:ignore="UnusedResources">
         @color/default_control_color_highlight_light
     </color>
+
+    <!-- Navigation bar colors -->
+    <color name="bottom_system_nav_color">@color/modern_white</color>
+    <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
 </resources>

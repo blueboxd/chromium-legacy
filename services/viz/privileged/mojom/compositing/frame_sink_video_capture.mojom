@@ -21,12 +21,9 @@ interface FrameSinkVideoConsumerFrameCallbacks {
   // video frame.
   Done();
 
-  // Reports that the frame incurred some fractional |utilization| of the
-  // downstream pipeline's per-frame processing capacity. See code comments in
-  // media::base::VideoFrameMetadata for a discussion of how |utilization| is
-  // interpreted. The capturer uses this information to auto-adjust the capture
-  // resolution based on performance variances in the live system environment.
-  ProvideFeedback(double utilization);
+  // |feedback| contains consumer feedback like resource utilization,
+  // maximum requested frame-rate and resolution.
+  ProvideFeedback(media.mojom.VideoFrameFeedback feedback);
 };
 
 // Interface for a consumer that receives frames and notifications related to

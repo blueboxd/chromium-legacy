@@ -15,6 +15,39 @@
         <item name="colorControlNormal">@color/control_normal_color</item>
         <item name="colorControlActivated">@color/default_control_color_active</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
+
+        <!-- Window Properties -->
+        <item name="android:windowBackground">@color/default_bg_color</item>
+
+        <!-- Action bar color -->
+        <item name="colorPrimary">@color/default_bg_color</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
+
+        <!-- Spinner styles -->
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
+
+        <!-- Popup styles -->
+        <!-- Set android popup menu attributes for context menu styles because the context menus are
+             OS-dependent. -->
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">
+            @style/TextAppearance.TextLarge.Primary
+        </item>
+        <item name="android:textAppearanceSmallPopupMenu">
+            @style/TextAppearance.TextLarge.Primary
+        </item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
+    </style>
+
+    <!-- Popup and long-press context popup menu style -->
+    <style name="PopupMenuStyle" parent="Widget.AppCompat.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_bg_tinted</item>
+        <item name="android:overlapAnchor" tools:targetApi="21">true</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
     <!-- Basic theme for an overflow menu displayed in Chrome. -->
@@ -108,4 +141,14 @@
         <!-- The space between the checkbox and text. -->
         <item name="android:paddingStart">16dp</item>
     </style>
+
+    <!-- Fullscreen -->
+    <style name="Base.Theme.Chromium.Fullscreen" parent="Theme.BrowserUI">
+        <!-- With ActionBar but not window title -->
+        <!-- TODO(huayinz): Check if windowActionBar is actually needed. -->
+        <item name="windowActionBar">true</item>
+        <item name="colorPrimary">@color/default_control_color_active</item>
+        <item name="colorAccent">@color/default_control_color_active</item>
+    </style>
+    <style name="Theme.Chromium.Fullscreen" parent="Base.Theme.Chromium.Fullscreen" />
 </resources>

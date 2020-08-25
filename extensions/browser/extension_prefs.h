@@ -19,7 +19,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/string_ordinal.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs_scope.h"
@@ -199,16 +199,16 @@ class ExtensionPrefs : public KeyedService {
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is invalid then a page will be found for the App.
   // |install_flags| are a bitmask of extension::InstallFlags.
-  // |ruleset_checksums| are the checksum for the indexed static rulesets
-  // corresponding to the Declarative Net Request API.
-  void OnExtensionInstalled(
-      const Extension* extension,
-      Extension::State initial_state,
-      const syncer::StringOrdinal& page_ordinal,
-      int install_flags,
-      const std::string& install_parameter,
-      const declarative_net_request::RulesetChecksums& ruleset_checksums);
-  // OnExtensionInstalled with no install flags and |ruleset_checksums|.
+  // |ruleset_install_prefs| contains install prefs needed for the Declarative
+  // Net Request API.
+  void OnExtensionInstalled(const Extension* extension,
+                            Extension::State initial_state,
+                            const syncer::StringOrdinal& page_ordinal,
+                            int install_flags,
+                            const std::string& install_parameter,
+                            const declarative_net_request::RulesetInstallPrefs&
+                                ruleset_install_prefs);
+  // OnExtensionInstalled with no install flags and |ruleset_install_prefs|.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             const syncer::StringOrdinal& page_ordinal,
@@ -534,14 +534,14 @@ class ExtensionPrefs : public KeyedService {
   // to install it.
   //
   // |install_flags| are a bitmask of extension::InstallFlags.
-  void SetDelayedInstallInfo(
-      const Extension* extension,
-      Extension::State initial_state,
-      int install_flags,
-      DelayReason delay_reason,
-      const syncer::StringOrdinal& page_ordinal,
-      const std::string& install_parameter,
-      const declarative_net_request::RulesetChecksums& ruleset_checksums = {});
+  void SetDelayedInstallInfo(const Extension* extension,
+                             Extension::State initial_state,
+                             int install_flags,
+                             DelayReason delay_reason,
+                             const syncer::StringOrdinal& page_ordinal,
+                             const std::string& install_parameter,
+                             const declarative_net_request::RulesetInstallPrefs&
+                                 ruleset_install_prefs = {});
 
   // Removes any delayed install information we have for the given
   // |extension_id|. Returns true if there was info to remove; false otherwise.
@@ -675,6 +675,12 @@ class ExtensionPrefs : public KeyedService {
   bool GetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id) const;
   void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
                                        bool use_action_count_as_badge_text);
+
+  // Whether the ruleset for the given |extension_id| and |ruleset_id| should be
+  // ignored while loading the extension.
+  bool ShouldIgnoreDNRRuleset(
+      const ExtensionId& extension_id,
+      declarative_net_request::RulesetID ruleset_id) const;
 
   // Migrates the disable reasons extension pref for extensions that were
   // disabled due to a deprecated reason.
@@ -869,7 +875,7 @@ class ExtensionPrefs : public KeyedService {
       Extension::State initial_state,
       int install_flags,
       const std::string& install_parameter,
-      const declarative_net_request::RulesetChecksums& ruleset_checksums,
+      const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs,
       prefs::DictionaryValueUpdate* extension_dict) const;
 
   void InitExtensionControlledPrefs(const ExtensionsInfo& extensions_info);

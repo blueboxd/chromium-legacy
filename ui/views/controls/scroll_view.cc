@@ -1024,8 +1024,7 @@ void ScrollView::UpdateOverflowIndicatorVisibility(
           offset.x() < horiz_sb_->GetMaxPosition() && draw_overflow_indicator_);
 }
 
-BEGIN_METADATA(ScrollView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(ScrollView, View)
 ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MinHeight)
 ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MaxHeight)
 ADD_PROPERTY_METADATA(ScrollView, base::Optional<SkColor>, BackgroundColor)

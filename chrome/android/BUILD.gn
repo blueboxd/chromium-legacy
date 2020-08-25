@@ -253,14 +253,6 @@ android_library("app_hooks_java") {
   jacoco_never_instrument = true
 }
 
-android_aidl("photo_picker_aidl") {
-  import_include = [ "java/src/org/chromium/chrome/browser/photo_picker" ]
-  sources = [
-    "java/src/org/chromium/chrome/browser/photo_picker/IDecoderService.aidl",
-    "java/src/org/chromium/chrome/browser/photo_picker/IDecoderServiceCallback.aidl",
-  ]
-}
-
 java_cpp_template("vr_build_config") {
   package_path = "org/chromium/chrome/browser/vr"
   sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrBuildConfig.template" ]
@@ -362,6 +354,7 @@ android_library("chrome_java") {
     "//components/browser_ui/media/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",
+    "//components/browser_ui/photo_picker/android:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/share/android:java",
     "//components/browser_ui/site_settings/android:java",
@@ -518,7 +511,6 @@ android_library("chrome_java") {
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_product_config",
     ":chrome_strict_mode_switch",
-    ":photo_picker_aidl",
     ":resource_id_javagen",
     ":sync_user_settings_enums_java",
     ":vr_build_config",
@@ -1035,6 +1027,7 @@ android_library("chrome_test_java") {
     "//components/browser_ui/modaldialog/android:javatests",
     "//components/browser_ui/notifications/android:java",
     "//components/browser_ui/notifications/android:test_support_java",
+    "//components/browser_ui/photo_picker/android:javatests",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/share/android:java",
     "//components/browser_ui/share/android:javatests",
@@ -3118,7 +3111,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/password_manager/settings/PasswordEditingBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/settings/PasswordUIView.java",
     "java/src/org/chromium/chrome/browser/permissions/PermissionSettingsBridge.java",
-    "java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
     "java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
     "java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
     "java/src/org/chromium/chrome/browser/previews/PreviewsAndroidBridge.java",

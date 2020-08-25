@@ -315,6 +315,8 @@ source_set("base") {
     "video_encoder.h",
     "video_frame.cc",
     "video_frame.h",
+    "video_frame_feedback.cc",
+    "video_frame_feedback.h",
     "video_frame_layout.cc",
     "video_frame_layout.h",
     "video_frame_metadata.cc",

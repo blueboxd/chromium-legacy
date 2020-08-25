@@ -205,10 +205,10 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
   const auto& box = ToLayoutBox(object);
 
   PhysicalRect new_rect = box.PhysicalBorderBoxRect();
-  if (!box.HasOverflowClip())
+  if (!box.HasNonVisibleOverflow())
     new_rect.Unite(box.PhysicalLayoutOverflowRect());
   PhysicalRect old_rect = PhysicalRect(PhysicalOffset(), box.PreviousSize());
-  if (!box.PreviouslyHadOverflowClip())
+  if (!box.PreviouslyHadNonVisibleOverflow())
     old_rect.Unite(box.PreviousPhysicalLayoutOverflowRect());
 
   bool should_report_layout_shift = [&]() -> bool {

@@ -188,7 +188,9 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
     : url(request.url()),
       net_error(net_error),
       response_info(request.response_info()),
-      load_flags(request.load_flags()),
+      // This ignores cookie blocking by the NetworkDelegate, but probably
+      // should not. Unclear if it's worth fixing.
+      allow_credentials(request.allow_credentials()),
       upload_depth(
           DomainReliabilityUploader::GetURLRequestUploadDepth(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
@@ -206,15 +208,14 @@ DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 // static
 bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
     const DomainReliabilityMonitor::RequestInfo& request) {
-  // Always report DR upload requests, even though they have
-  // DO_NOT_SEND_COOKIES.
+  // Always report DR upload requests, even though they don't allow credentials.
   // Note: They are reported (i.e. generate a beacon) but do not necessarily
   // trigger an upload by themselves.
   if (request.upload_depth > 0)
     return true;
 
-  // Don't report requests that weren't supposed to send cookies.
-  if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
+  // Don't report requests that weren't supposed to send credentials.
+  if (!request.allow_credentials)
     return false;
 
   // Report requests that accessed the network or failed with an error code

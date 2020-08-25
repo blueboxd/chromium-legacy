@@ -15,6 +15,8 @@ class Widget;
 
 namespace ash {
 
+class AuthDialogContentsView;
+
 // InSessionAuthDialog gets instantiated on every request to show
 // an authentication dialog, and gets destroyed when the request is
 // completed.
@@ -29,10 +31,16 @@ class InSessionAuthDialog {
 
   bool is_shown() const { return !!widget_; }
 
+  uint32_t GetAuthMethods() const;
+
  private:
   // The dialog widget. Owned by this class so that we can close the widget
   // when auth completes.
   std::unique_ptr<views::Widget> widget_;
+
+  // Pointer to the contents view. Used to query and update the set of available
+  // auth methods.
+  AuthDialogContentsView* contents_view_ = nullptr;
 };
 
 }  // namespace ash

@@ -686,7 +686,7 @@ IntSize PaintLayerScrollableArea::MinimumScrollOffsetInt() const {
 }
 
 IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
-  if (!GetLayoutBox() || !GetLayoutBox()->HasOverflowClip())
+  if (!GetLayoutBox() || !GetLayoutBox()->HasNonVisibleOverflow())
     return ToIntSize(-ScrollOrigin());
 
   IntSize content_size = ContentsSize();
@@ -1919,7 +1919,7 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
   }
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   scoped_refptr<ComputedStyle> corner =
-      GetLayoutBox()->HasOverflowClip()
+      GetLayoutBox()->HasNonVisibleOverflow()
           ? style_source.GetUncachedPseudoElementStyle(
                 PseudoElementStyleRequest(kPseudoIdScrollbarCorner),
                 style_source.Style())
@@ -2068,7 +2068,7 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
 
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   scoped_refptr<ComputedStyle> resizer =
-      GetLayoutBox()->HasOverflowClip()
+      GetLayoutBox()->HasNonVisibleOverflow()
           ? style_source.GetUncachedPseudoElementStyle(
                 PseudoElementStyleRequest(kPseudoIdResizer),
                 style_source.Style())

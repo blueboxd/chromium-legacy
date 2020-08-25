@@ -66,8 +66,7 @@ class HTClientView : public views::ClientView {
   HUDDisplayView* hud_display_;
 };
 
-BEGIN_METADATA(HTClientView)
-METADATA_PARENT_CLASS(ClientView)
+BEGIN_METADATA(HTClientView, ClientView)
 END_METADATA()
 
 }  // namespace
@@ -75,8 +74,7 @@ END_METADATA()
 ////////////////////////////////////////////////////////////////////////////////
 // HUDDisplayView, public:
 
-BEGIN_METADATA(HUDDisplayView)
-METADATA_PARENT_CLASS(WidgetDelegateView)
+BEGIN_METADATA(HUDDisplayView, WidgetDelegateView)
 END_METADATA()
 
 // static

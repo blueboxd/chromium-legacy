@@ -32,7 +32,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
@@ -313,16 +313,17 @@ class ExtensionService : public ExtensionServiceInterface,
 
   // Informs the service that an extension's files are in place for loading.
   //
-  // |extension|            the extension
-  // |page_ordinal|         the location of the extension in the app launcher
-  // |install_flags|        a bitmask of InstallFlags
-  // |ruleset_checksums|    Checksums of the indexed rulesets for the
-  //                        Declarative Net Request API.
-  void OnExtensionInstalled(
-      const Extension* extension,
-      const syncer::StringOrdinal& page_ordinal,
-      int install_flags,
-      const declarative_net_request::RulesetChecksums& ruleset_checksums = {});
+  // |extension|                the extension
+  // |page_ordinal|             the location of the extension in the app
+  //                            launcher
+  // |install_flags|            a bitmask of InstallFlags
+  // |ruleset_install_prefs|    Install prefs needed for the Declarative Net
+  //                            Request API.
+  void OnExtensionInstalled(const Extension* extension,
+                            const syncer::StringOrdinal& page_ordinal,
+                            int install_flags,
+                            const declarative_net_request::RulesetInstallPrefs&
+                                ruleset_install_prefs = {});
   void OnExtensionInstalled(const Extension* extension,
                             const syncer::StringOrdinal& page_ordinal) {
     OnExtensionInstalled(extension, page_ordinal,
@@ -515,7 +516,8 @@ class ExtensionService : public ExtensionServiceInterface,
       int install_flags,
       const syncer::StringOrdinal& page_ordinal,
       const std::string& install_parameter,
-      const declarative_net_request::RulesetChecksums& ruleset_checksums);
+      const declarative_net_request::RulesetInstallPrefs&
+          ruleset_install_prefs);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const Extension* extension);

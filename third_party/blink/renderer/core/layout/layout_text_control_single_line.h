@@ -82,7 +82,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   // shouldn't affect outside of the INPUT box.  So we ignore child overflow.
   void AddLayoutOverflowFromChildren() final {}
 
-  bool AllowsOverflowClip() const override { return false; }
+  bool AllowsNonVisibleOverflow() const override { return false; }
 
   HTMLElement* InnerSpinButtonElement() const;
 
@@ -107,7 +107,7 @@ class LayoutTextControlInnerEditor : public LayoutBlockFlow {
       ScrollbarOrientation orientation) const override {
     return orientation == kHorizontalScrollbar;
   }
-  bool ScrollsOverflowX() const override { return HasOverflowClip(); }
+  bool ScrollsOverflowX() const override { return HasNonVisibleOverflow(); }
   bool ScrollsOverflowY() const override { return false; }
 };
 

@@ -312,7 +312,10 @@ TEST(VideoCaptureOracleTest, DoesNotRapidlyChangeCaptureSize) {
     const int frame_number = oracle.next_frame_number();
     oracle.RecordCapture(0.0);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.0);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.0, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 
   // Now run 30 seconds of frame captures with lots of random source size
@@ -342,7 +345,10 @@ TEST(VideoCaptureOracleTest, DoesNotRapidlyChangeCaptureSize) {
     const int frame_number = oracle.next_frame_number();
     oracle.RecordCapture(0.0);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.0);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.0, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 }
 
@@ -380,7 +386,10 @@ TEST(VideoCaptureOracleTest, ResizeThrottlingDisabled) {
     const int frame_number = oracle.next_frame_number();
     oracle.RecordCapture(0.0);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.0);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.0, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 }
 
@@ -422,12 +431,18 @@ void RunAutoThrottleTest(bool is_content_animating,
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
     if (with_consumer_feedback) {
-      oracle.RecordConsumerFeedback(frame_number, utilization);
+      oracle.RecordConsumerFeedback(
+          frame_number, media::VideoFrameFeedback(
+                            utilization, std::numeric_limits<float>::infinity(),
+                            base::nullopt));
     } else if (t == kInitialTestTimeTicks) {
       // Provide feedback with the very first capture to activate the capture
       // size auto-throttling logic. After this, no consumer feedback applies
       // and the buffer utilization will be the only consideration.
-      oracle.RecordConsumerFeedback(frame_number, 0.0);
+      oracle.RecordConsumerFeedback(
+          frame_number,
+          media::VideoFrameFeedback(0.0, std::numeric_limits<float>::infinity(),
+                                    base::nullopt));
     }
   }
 
@@ -464,7 +479,11 @@ void RunAutoThrottleTest(bool is_content_animating,
       base::TimeTicks ignored;
       ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       if (with_consumer_feedback)
-        oracle.RecordConsumerFeedback(frame_number, utilization);
+        oracle.RecordConsumerFeedback(
+            frame_number,
+            media::VideoFrameFeedback(utilization,
+                                      std::numeric_limits<float>::infinity(),
+                                      base::nullopt));
     }
   }
 
@@ -505,7 +524,11 @@ void RunAutoThrottleTest(bool is_content_animating,
       base::TimeTicks ignored;
       ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       if (with_consumer_feedback)
-        oracle.RecordConsumerFeedback(frame_number, utilization);
+        oracle.RecordConsumerFeedback(
+            frame_number,
+            media::VideoFrameFeedback(utilization,
+                                      std::numeric_limits<float>::infinity(),
+                                      base::nullopt));
     }
   }
 }
@@ -593,7 +616,10 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     oracle.RecordCapture(0.25);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.25);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.25, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 
   // Now, set the source size to 720p, continuing to report under-utilization,
@@ -614,7 +640,10 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     oracle.RecordCapture(0.25);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.25);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.25, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
   ASSERT_EQ(k720pSize, oracle.capture_size());
 
@@ -645,7 +674,10 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     oracle.RecordCapture(utilization);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, utilization);
+    oracle.RecordConsumerFeedback(
+        frame_number, media::VideoFrameFeedback(
+                          utilization, std::numeric_limits<float>::infinity(),
+                          base::nullopt));
   }
   ASSERT_FALSE(stepped_down_size.IsEmpty());
 
@@ -678,7 +710,10 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     oracle.RecordCapture(utilization);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, utilization);
+    oracle.RecordConsumerFeedback(
+        frame_number, media::VideoFrameFeedback(
+                          utilization, std::numeric_limits<float>::infinity(),
+                          base::nullopt));
   }
   ASSERT_FALSE(stepped_up_size.IsEmpty());
 }
@@ -704,7 +739,10 @@ TEST(VideoCaptureOracleTest, DoesNotAutoThrottleWhenResolutionIsFixed) {
     const int frame_number = oracle.next_frame_number();
     oracle.RecordCapture(0.9);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 0.9);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(0.9, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 
   // Now run 10 seconds with overload indicated.  Still, expect no capture size
@@ -718,7 +756,10 @@ TEST(VideoCaptureOracleTest, DoesNotAutoThrottleWhenResolutionIsFixed) {
     const int frame_number = oracle.next_frame_number();
     oracle.RecordCapture(2.0);
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
-    oracle.RecordConsumerFeedback(frame_number, 2.0);
+    oracle.RecordConsumerFeedback(
+        frame_number,
+        media::VideoFrameFeedback(2.0, std::numeric_limits<float>::infinity(),
+                                  base::nullopt));
   }
 }
 

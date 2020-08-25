@@ -882,6 +882,12 @@ const char kCrossOriginIsolatedDescription[] =
     "only host documents using a compatible set of {Origin,COOP,COEP}, "
     "effectively isolating.";
 
+const char kDiagnosticsAppName[] = "Diagnostics app";
+const char kDiagnosticsAppDescription[] =
+    "Enables the Diagnostics app that allows Chrome OS users to be able to "
+    "view their system telemetric information and run diagnostic tests for "
+    "their device.";
+
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
     "Disable fetch with keepalive set "

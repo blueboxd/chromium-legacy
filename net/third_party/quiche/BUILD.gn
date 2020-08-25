@@ -5,6 +5,16 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+# Since //net and //net/third_party/quiche have a circular dependency on each
+# other, exporting dependencies from the :quiche target directly does not work.
+# Thus, all public dependencies for QUICHE should go into the target below,
+# which is in turn propagated to all of //net source sets.
+source_set("quiche_public_deps") {
+  visibility = [ "//net:net_public_deps" ]
+
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
+}
+
 source_set("quiche") {
   sources = [
     "src/quic/core/quic_error_codes.cc",

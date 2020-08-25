@@ -386,7 +386,7 @@ void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
     // update layer position and ancestor inputs updates in the same walk).
     paint_layer->UpdateLayerPosition();
   }
-  if (paint_layer->IsRootLayer() || object.HasOverflowClip())
+  if (paint_layer->IsRootLayer() || object.HasNonVisibleOverflow())
     context.ancestor_overflow_paint_layer = paint_layer;
 }
 

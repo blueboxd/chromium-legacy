@@ -60,7 +60,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
     GURL url;
     int net_error;
     net::HttpResponseInfo response_info;
-    int load_flags;
+    bool allow_credentials;
     net::LoadTimingInfo load_timing_info;
     net::ConnectionAttempts connection_attempts;
     net::IPEndPoint remote_endpoint;

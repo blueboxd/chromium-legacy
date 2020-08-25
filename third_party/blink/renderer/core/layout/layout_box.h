@@ -1260,13 +1260,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                        bool is_middle_click_autoscroll);
 
   DISABLE_CFI_PERF bool HasAutoVerticalScrollbar() const {
-    return HasOverflowClip() && StyleRef().HasAutoVerticalScroll();
+    return HasNonVisibleOverflow() && StyleRef().HasAutoVerticalScroll();
   }
   DISABLE_CFI_PERF bool HasAutoHorizontalScrollbar() const {
-    return HasOverflowClip() && StyleRef().HasAutoHorizontalScroll();
+    return HasNonVisibleOverflow() && StyleRef().HasAutoHorizontalScroll();
   }
   DISABLE_CFI_PERF bool ScrollsOverflow() const {
-    return HasOverflowClip() && StyleRef().ScrollsOverflow();
+    return HasNonVisibleOverflow() && StyleRef().ScrollsOverflow();
   }
   // We place block-direction scrollbar on the left only if the writing-mode
   // is horizontal, so ShouldPlaceVerticalScrollbarOnLeft() is the same as
@@ -1289,10 +1289,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            PixelSnappedScrollHeight() != PixelSnappedClientHeight();
   }
   virtual bool ScrollsOverflowX() const {
-    return HasOverflowClip() && StyleRef().ScrollsOverflowX();
+    return HasNonVisibleOverflow() && StyleRef().ScrollsOverflowX();
   }
   virtual bool ScrollsOverflowY() const {
-    return HasOverflowClip() && StyleRef().ScrollsOverflowY();
+    return HasNonVisibleOverflow() && StyleRef().ScrollsOverflowY();
   }
 
   // Elements such as the <input> field override this to specify that they are
@@ -1655,9 +1655,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                ? rare_data_->previous_physical_content_box_rect_
                : PhysicalRect(PhysicalOffset(), PreviousSize());
   }
-  bool PreviouslyHadOverflowClip() const {
+  bool PreviouslyHadNonVisibleOverflow() const {
     return overflow_ && overflow_->previous_overflow_data &&
-           overflow_->previous_overflow_data->previously_had_overflow_clip;
+           overflow_->previous_overflow_data
+               ->previously_had_non_visible_overflow;
   }
   PhysicalRect PreviousPhysicalLayoutOverflowRect() const {
     return overflow_ && overflow_->previous_overflow_data

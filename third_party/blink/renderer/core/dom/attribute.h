@@ -39,8 +39,8 @@ class Attribute {
   DISALLOW_NEW();
 
  public:
-  Attribute(const QualifiedName& name, const AtomicString& value)
-      : name_(name), value_(value) {}
+  Attribute(const QualifiedName& name, AtomicString value)
+      : name_(name), value_(std::move(value)) {}
 
   // NOTE: The references returned by these functions are only valid for as long
   // as the Attribute stays in place. For example, calling a function that
@@ -56,7 +56,10 @@ class Attribute {
   bool Matches(const QualifiedName&) const;
   bool MatchesCaseInsensitive(const QualifiedName&) const;
 
-  void SetValue(const AtomicString& value) { value_ = value; }
+  void SetValue(AtomicString value) { value_ = std::move(value); }
+  AtomicString ExchangeValue(AtomicString value) {
+    return std::exchange(value_, std::move(value));
+  }
 
   // Note: This API is only for HTMLTreeBuilder.  It is not safe to change the
   // name of an attribute once parseAttribute has been called as DOM

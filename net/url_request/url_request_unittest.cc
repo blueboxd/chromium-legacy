@@ -1831,7 +1831,7 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
 
-  // Verify that the cookie isn't sent when LOAD_DO_NOT_SEND_COOKIES is set.
+  // Verify that the cookie isn't sent when credentials are not allowed.
   {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
@@ -1839,14 +1839,14 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES);
+    req->set_allow_credentials(false);
     req->Start();
     d.RunUntilComplete();
 
     EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1") ==
                 std::string::npos);
 
-    // LOAD_DO_NOT_SEND_COOKIES does not trigger OnGetCookies.
+    // When credentials are blocked, OnGetCookies() is not invoked.
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
@@ -8316,7 +8316,7 @@ TEST_F(URLRequestTestHTTP, NetworkCancelAfterCreateTransactionFailsTest) {
                             TRAFFIC_ANNOTATION_FOR_TESTS));
   // Don't send cookies (Collecting cookies is asynchronous, and need request to
   // try to create an HttpNetworkTransaction synchronously on start).
-  req->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES);
+  req->set_allow_credentials(false);
   req->Start();
   req->Cancel();
   d.RunUntilComplete();

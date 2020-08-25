@@ -81,7 +81,6 @@ struct StructTraits<media::mojom::VideoFrameMetadataDataView,
   GENERATE_OPT_SERIALIZATION(double, root_scroll_offset_x, 0.0)
   GENERATE_OPT_SERIALIZATION(double, root_scroll_offset_y, 0.0)
   GENERATE_OPT_SERIALIZATION(double, top_controls_visible_height, 0.0)
-  GENERATE_OPT_SERIALIZATION(double, resource_utilization, 0.0)
   GENERATE_OPT_SERIALIZATION(double, frame_rate, 0.0)
   GENERATE_OPT_SERIALIZATION(double, rtp_timestamp, 0.0)
 

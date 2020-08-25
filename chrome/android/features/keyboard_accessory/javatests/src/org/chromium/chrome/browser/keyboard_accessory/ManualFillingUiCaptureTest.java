@@ -33,7 +33,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 
 import java.util.concurrent.TimeoutException;
 

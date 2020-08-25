@@ -1769,6 +1769,7 @@ source_set("net_public_deps") {
     "//crypto:platform",
     "//net/third_party/quiche:net_quic_proto",
     "//net/third_party/quiche:net_quic_test_tools_proto",
+    "//net/third_party/quiche:quiche_public_deps",
     "//net/traffic_annotation",
     "//third_party/boringssl",
     "//url",

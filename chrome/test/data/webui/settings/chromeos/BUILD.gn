@@ -75,6 +75,8 @@ js_modulizer("modulize") {
     "cups_printer_test_utils.js",
     "cups_printer_landing_page_tests.js",
     "cups_printer_entry_tests.js",
+    "os_about_page_tests.js",
+    "test_about_page_browser_proxy_chromeos.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

@@ -299,7 +299,6 @@ class ImeMenuListView : public ImeListView {
     // DetailedViewDelegate:
     void TransitionToMainView(bool restore_focus) override {}
     void CloseBubble() override {}
-    bool IsOverflowIndicatorEnabled() const override { return true; }
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

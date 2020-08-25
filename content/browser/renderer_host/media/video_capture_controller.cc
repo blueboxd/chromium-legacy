@@ -180,8 +180,6 @@ VideoCaptureController::BufferContext::BufferContext(
       frame_feedback_id_(0),
       consumer_feedback_observer_(consumer_feedback_observer),
       buffer_handle_(std::move(buffer_handle)),
-      max_consumer_utilization_(
-          media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded),
       consumer_hold_count_(0) {}
 
 VideoCaptureController::BufferContext::~BufferContext() = default;
@@ -193,11 +191,8 @@ VideoCaptureController::BufferContext& VideoCaptureController::BufferContext::
 operator=(BufferContext&& other) = default;
 
 void VideoCaptureController::BufferContext::RecordConsumerUtilization(
-    double utilization) {
-  if (std::isfinite(utilization) && utilization >= 0.0) {
-    max_consumer_utilization_ =
-        std::max(max_consumer_utilization_, utilization);
-  }
+    const media::VideoFrameFeedback& feedback) {
+  combined_consumer_feedback_.Combine(feedback);
 }
 
 void VideoCaptureController::BufferContext::IncreaseConsumerCount() {
@@ -208,14 +203,12 @@ void VideoCaptureController::BufferContext::DecreaseConsumerCount() {
   consumer_hold_count_--;
   if (consumer_hold_count_ == 0) {
     if (consumer_feedback_observer_ != nullptr &&
-        max_consumer_utilization_ !=
-            media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded) {
+        !combined_consumer_feedback_.Empty()) {
       consumer_feedback_observer_->OnUtilizationReport(
-          frame_feedback_id_, max_consumer_utilization_);
+          frame_feedback_id_, combined_consumer_feedback_);
     }
     buffer_read_permission_.reset();
-    max_consumer_utilization_ =
-        media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded;
+    combined_consumer_feedback_ = media::VideoFrameFeedback();
   }
 }
 
@@ -355,9 +348,8 @@ base::UnguessableToken VideoCaptureController::RemoveClient(
     return base::UnguessableToken();
 
   for (const auto& buffer_id : client->buffers_in_use) {
-    OnClientFinishedConsumingBuffer(
-        client, buffer_id,
-        media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded);
+    OnClientFinishedConsumingBuffer(client, buffer_id,
+                                    media::VideoFrameFeedback());
   }
   client->buffers_in_use.clear();
 
@@ -447,7 +439,7 @@ void VideoCaptureController::ReturnBuffer(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    double consumer_resource_utilization) {
+    const media::VideoFrameFeedback& feedback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
@@ -467,8 +459,7 @@ void VideoCaptureController::ReturnBuffer(
   }
   client->buffers_in_use.erase(buffers_in_use_entry_iter);
 
-  OnClientFinishedConsumingBuffer(client, buffer_id,
-                                  consumer_resource_utilization);
+  OnClientFinishedConsumingBuffer(client, buffer_id, feedback);
 }
 
 const base::Optional<media::VideoCaptureFormat>
@@ -810,12 +801,12 @@ VideoCaptureController::FindUnretiredBufferContextFromBufferId(int buffer_id) {
 void VideoCaptureController::OnClientFinishedConsumingBuffer(
     ControllerClient* client,
     int buffer_context_id,
-    double consumer_resource_utilization) {
+    const media::VideoFrameFeedback& feedback) {
   auto buffer_context_iter =
       FindBufferContextFromBufferContextId(buffer_context_id);
   DCHECK(buffer_context_iter != buffer_contexts_.end());
 
-  buffer_context_iter->RecordConsumerUtilization(consumer_resource_utilization);
+  buffer_context_iter->RecordConsumerUtilization(feedback);
   buffer_context_iter->DecreaseConsumerCount();
   if (!buffer_context_iter->HasConsumers() &&
       buffer_context_iter->is_retired()) {

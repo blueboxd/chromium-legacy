@@ -26,15 +26,6 @@ void FakeLorgnetteManagerClient::ListScanners(
       FROM_HERE, base::BindOnce(std::move(callback), list_scanners_response_));
 }
 
-void FakeLorgnetteManagerClient::ScanImageToString(
-    std::string device_name,
-    const ScanProperties& properties,
-    DBusMethodCallback<std::string> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(scan_image_response_)));
-}
-
 void FakeLorgnetteManagerClient::StartScan(
     std::string device_name,
     const ScanProperties& properties,

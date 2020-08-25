@@ -109,24 +109,6 @@ struct MEDIA_EXPORT VideoFrameMetadata {
   // and for A/V synchronization purposes.
   base::Optional<base::TimeTicks> reference_time;
 
-  // A feedback signal that indicates the fraction of the tolerable maximum
-  // amount of resources that were utilized to process this frame.  A producer
-  // can check this value after-the-fact, usually via a VideoFrame destruction
-  // observer, to determine whether the consumer can handle more or less data
-  // volume, and achieve the right quality versus performance trade-off.
-  //
-  // Values are interpreted as follows:
-  // Less than 0.0 is meaningless and should be ignored.  1.0 indicates a
-  // maximum sustainable utilization.  Greater than 1.0 indicates the consumer
-  // is likely to stall or drop frames if the data volume is not reduced.
-  //
-  // Example: In a system that encodes and transmits video frames over the
-  // network, this value can be used to indicate whether sufficient CPU
-  // is available for encoding and/or sufficient bandwidth is available for
-  // transmission over the network.  The maximum of the two utilization
-  // measurements would be used as feedback.
-  base::Optional<double> resource_utilization;
-
   // Sources of VideoFrames use this marker to indicate that an instance of
   // VideoFrameExternalResources produced from the associated video frame
   // should use read lock fences.

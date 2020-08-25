@@ -140,7 +140,7 @@ class MockFrameSinkVideoConsumerFrameCallbacks
   }
 
   MOCK_METHOD0(Done, void());
-  MOCK_METHOD1(ProvideFeedback, void(double utilization));
+  MOCK_METHOD1(ProvideFeedback, void(const media::VideoFrameFeedback&));
 
  private:
   mojo::Receiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> receiver_{

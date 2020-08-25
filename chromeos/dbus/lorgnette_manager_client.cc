@@ -31,15 +31,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// It can take a scanner 2+ minutes to return one page at high resolution, so
-// extend the D-Bus timeout to 3 minutes.
-constexpr base::TimeDelta kScanImageDBusTimeout =
-    base::TimeDelta::FromMinutes(3);
-
-}  // namespace
-
 // The LorgnetteManagerClient implementation used in production.
 class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
  public:
@@ -60,43 +51,6 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
   // LorgnetteManagerClient override.
-  void ScanImageToString(std::string device_name,
-                         const ScanProperties& properties,
-                         DBusMethodCallback<std::string> callback) override {
-    auto scan_data_reader = std::make_unique<ScanDataReader>();
-    base::ScopedFD fd = scan_data_reader->Start();
-
-    // Issue the dbus request to scan an image.
-    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
-                                 lorgnette::kScanImageMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(device_name);
-    writer.AppendFileDescriptor(fd.get());
-
-    dbus::MessageWriter option_writer(nullptr);
-    dbus::MessageWriter element_writer(nullptr);
-    writer.OpenArray("{sv}", &option_writer);
-    if (!properties.mode.empty()) {
-      option_writer.OpenDictEntry(&element_writer);
-      element_writer.AppendString(lorgnette::kScanPropertyMode);
-      element_writer.AppendVariantOfString(properties.mode);
-      option_writer.CloseContainer(&element_writer);
-    }
-    if (properties.resolution_dpi) {
-      option_writer.OpenDictEntry(&element_writer);
-      element_writer.AppendString(lorgnette::kScanPropertyResolution);
-      element_writer.AppendVariantOfUint32(properties.resolution_dpi);
-      option_writer.CloseContainer(&element_writer);
-    }
-    writer.CloseContainer(&option_writer);
-
-    lorgnette_daemon_proxy_->CallMethod(
-        &method_call, kScanImageDBusTimeout.InMilliseconds(),
-        base::BindOnce(&LorgnetteManagerClientImpl::OnScanImageComplete,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       std::move(scan_data_reader)));
-  }
-
   void StartScan(std::string device_name,
                  const ScanProperties& properties,
                  DBusMethodCallback<std::string> completion_callback,
@@ -253,24 +207,6 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     }
 
     std::move(callback).Run(std::move(response_proto));
-  }
-
-  // Called when a response for ScanImage() is received.
-  void OnScanImageComplete(DBusMethodCallback<std::string> callback,
-                           std::unique_ptr<ScanDataReader> scan_data_reader,
-                           dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to scan image";
-      // Do not touch |scan_data_reader|, so that RAII deletes it and
-      // cancels the inflight operation.
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-    auto* reader = scan_data_reader.get();
-    reader->Wait(
-        base::BindOnce(&LorgnetteManagerClientImpl::OnScanDataCompleted,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       std::move(scan_data_reader)));
   }
 
   // Called when scan data read is completed.

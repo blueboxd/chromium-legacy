@@ -270,8 +270,7 @@ void Tab::UpdatePreferredTitleWidth() {
   SetState(old_state);
 }
 
-BEGIN_METADATA(Tab)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Tab, View)
 END_METADATA()
 
 // static
@@ -487,8 +486,7 @@ DEFINE_ENUM_CONVERTERS(TabbedPane::TabStripStyle,
                        {TabbedPane::TabStripStyle::kHighlight,
                         base::ASCIIToUTF16("HIGHLIGHT")})
 
-BEGIN_METADATA(TabStrip)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(TabStrip, View)
 ADD_READONLY_PROPERTY_METADATA(TabStrip, int, SelectedTabIndex)
 ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::Orientation, Orientation)
 ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::TabStripStyle, Style)
@@ -616,8 +614,7 @@ void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetName(selected_tab->GetTitleText());
 }
 
-BEGIN_METADATA(TabbedPane)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(TabbedPane, View)
 END_METADATA()
 
 }  // namespace views

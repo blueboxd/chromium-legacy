@@ -654,6 +654,5 @@ SadTab* SadTab::Create(content::WebContents* web_contents,
   return new SadTabView(web_contents, kind);
 }
 
-BEGIN_METADATA(SadTabView)
-METADATA_PARENT_CLASS(views::View)
+BEGIN_METADATA(SadTabView, views::View)
 END_METADATA()

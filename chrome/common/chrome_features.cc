@@ -603,11 +603,6 @@ const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Allows prediction operations (e.g., prefetching) on all connection types.
-const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
-    "PredictivePrefetchingAllowedOnAllConnectionTypes",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};

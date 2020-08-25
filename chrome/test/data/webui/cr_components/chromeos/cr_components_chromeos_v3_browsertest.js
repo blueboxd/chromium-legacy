@@ -23,6 +23,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 ].forEach(test => registerTest('NetworkComponents', ...test));
 
 [['BasePage', 'cellular_setup/base_page_test.m.js'],
+ ['ButtonBar', 'cellular_setup/button_bar_test.m.js'],
  ['FinalPage', 'cellular_setup/final_page_test.m.js'],
  ['ProvisioningPage', 'cellular_setup/provisioning_page_test.m.js'],
  ['SimDetectPage', 'cellular_setup/sim_detect_page_test.m.js'],

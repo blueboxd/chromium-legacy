@@ -6,6 +6,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/buildflags.h"');
+GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
@@ -65,6 +66,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['CupsPrinterPage', 'cups_printer_page_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
+ ['AboutPage', 'os_about_page_tests.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {
@@ -76,5 +78,19 @@ function registerTest(testName, module, caseName) {
     }
   };
 
-  TEST_F(className, caseName || 'All', () => mocha.run());
+  // AboutPage has a test suite that can only succeed on official builds where
+  // the is_chrome_branded build flag is enabled
+  if (testName === 'AboutPage') {
+    TEST_F(className, 'AllBuilds' || 'All', () => {
+      mocha.grep('/^(?!AboutPageTest_OfficialBuild).*$/').run();
+    });
+
+    GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+    TEST_F(className, 'OfficialBuild' || 'All', () => {
+      mocha.grep('AboutPageTest_OfficialBuild').run();
+    });
+    GEN('#endif');
+  } else {
+    TEST_F(className, caseName || 'All', () => mocha.run());
+  }
 }

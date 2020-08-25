@@ -538,8 +538,7 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
                           MenuAnchorPosition::kTopLeft, source_type);
 }
 
-BEGIN_METADATA(EditableCombobox)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(EditableCombobox, View)
 END_METADATA()
 
 }  // namespace views

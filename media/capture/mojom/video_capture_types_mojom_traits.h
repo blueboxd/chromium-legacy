@@ -5,7 +5,9 @@
 #ifndef MEDIA_CAPTURE_MOJOM_VIDEO_CAPTURE_TYPES_MOJOM_TRAITS_H_
 #define MEDIA_CAPTURE_MOJOM_VIDEO_CAPTURE_TYPES_MOJOM_TRAITS_H_
 
+#include "base/optional.h"
 #include "media/base/video_facing.h"
+#include "media/base/video_frame_feedback.h"
 #include "media/capture/mojom/video_capture_types.mojom-shared.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video/video_capture_device_info.h"
@@ -214,6 +216,36 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 
   static bool Read(media::mojom::VideoCaptureDeviceInfoDataView data,
                    media::VideoCaptureDeviceInfo* output);
+};
+
+template <>
+struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
+    StructTraits<media::mojom::VideoFrameFeedbackDataView,
+                 media::VideoFrameFeedback> {
+  static bool has_resource_utilization(
+      const media::VideoFrameFeedback& feedback) {
+    return feedback.resource_utilization.has_value();
+  }
+
+  static double resource_utilization(
+      const media::VideoFrameFeedback& feedback) {
+    return feedback.resource_utilization.value_or(-1.0);
+  }
+
+  static float max_framerate_fps(const media::VideoFrameFeedback& feedback) {
+    return feedback.max_framerate_fps;
+  }
+
+  static int max_pixels(const media::VideoFrameFeedback& feedback) {
+    return feedback.max_pixels.value_or(0);
+  }
+
+  static bool has_max_pixels(const media::VideoFrameFeedback& feedback) {
+    return feedback.max_pixels.has_value();
+  }
+
+  static bool Read(media::mojom::VideoFrameFeedbackDataView data,
+                   media::VideoFrameFeedback* output);
 };
 }  // namespace mojo
 

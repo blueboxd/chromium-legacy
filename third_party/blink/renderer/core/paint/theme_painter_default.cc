@@ -507,15 +507,26 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
       cancel_button_size, cancel_button_size);
   IntRect painting_rect = ConvertToPaintingRect(
       input_layout_box, cancel_button_object, cancel_button_rect, r);
-
+  WebColorScheme color_scheme =
+      cancel_button_object.StyleRef().UsedColorScheme();
   DEFINE_STATIC_REF(Image, cancel_image,
                     (Image::LoadPlatformResource(IDR_SEARCH_CANCEL)));
   DEFINE_STATIC_REF(Image, cancel_pressed_image,
                     (Image::LoadPlatformResource(IDR_SEARCH_CANCEL_PRESSED)));
+  DEFINE_STATIC_REF(Image, cancel_image_dark_mode,
+                    (Image::LoadPlatformResource(IDR_SEARCH_CANCEL_DARK_MODE)));
+  DEFINE_STATIC_REF(
+      Image, cancel_pressed_image_dark_mode,
+      (Image::LoadPlatformResource(IDR_SEARCH_CANCEL_PRESSED_DARK_MODE)));
+  Image* color_scheme_adjusted_cancel_image =
+      color_scheme == kLight ? cancel_image : cancel_image_dark_mode;
+  Image* color_scheme_adjusted_cancel_pressed_image =
+      color_scheme == kLight ? cancel_pressed_image
+                             : cancel_pressed_image_dark_mode;
   paint_info.context.DrawImage(
       LayoutTheme::IsPressed(cancel_button_object.GetNode())
-          ? cancel_pressed_image
-          : cancel_image,
+          ? color_scheme_adjusted_cancel_pressed_image
+          : color_scheme_adjusted_cancel_image,
       Image::kSyncDecode, FloatRect(painting_rect));
   return false;
 }

@@ -105,6 +105,5 @@ base::string16 DownloadInProgressDialogView::GetWindowTitle() const {
                                           download_count_);
 }
 
-BEGIN_METADATA(DownloadInProgressDialogView)
-METADATA_PARENT_CLASS(views::DialogDelegateView);
+BEGIN_METADATA(DownloadInProgressDialogView, views::DialogDelegateView)
 END_METADATA()

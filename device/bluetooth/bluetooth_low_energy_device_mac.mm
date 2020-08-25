@@ -72,6 +72,12 @@ std::string BluetoothLowEnergyDeviceMac::GetAddress() const {
   return hash_address_;
 }
 
+BluetoothDevice::AddressType BluetoothLowEnergyDeviceMac::GetAddressType()
+    const {
+  NOTIMPLEMENTED();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 BluetoothDevice::VendorIDSource BluetoothLowEnergyDeviceMac::GetVendorIDSource()
     const {
   return VENDOR_ID_UNKNOWN;

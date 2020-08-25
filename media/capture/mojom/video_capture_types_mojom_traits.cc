@@ -1703,4 +1703,22 @@ bool StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
   return true;
 }
 
+// static
+bool StructTraits<media::mojom::VideoFrameFeedbackDataView,
+                  media::VideoFrameFeedback>::
+    Read(media::mojom::VideoFrameFeedbackDataView data,
+         media::VideoFrameFeedback* output) {
+  output->max_framerate_fps = data.max_framerate_fps();
+
+  if (data.has_max_pixels()) {
+    output->max_pixels = data.max_pixels();
+  }
+
+  if (data.has_resource_utilization()) {
+    output->resource_utilization = data.resource_utilization();
+  }
+
+  return true;
+}
+
 }  // namespace mojo

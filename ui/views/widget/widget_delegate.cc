@@ -334,8 +334,7 @@ views::View* WidgetDelegateView::GetContentsView() {
   return this;
 }
 
-BEGIN_METADATA(WidgetDelegateView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(WidgetDelegateView, View)
 END_METADATA()
 
 }  // namespace views

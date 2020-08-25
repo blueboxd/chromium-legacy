@@ -149,6 +149,15 @@ bool DrmOverlayManager::CanHandleCandidate(
   if (!gfx::IsNearestRectWithinDistance(candidate.display_rect, 0.01f))
     return false;
 
+  // DRM supposedly supports subpixel source crop. However, according to
+  // drm_plane_funcs.update_plane, devices which don't support that are
+  // free to ignore the fractional part, and every device seems to do that as
+  // of 5.4. So reject candidates that require subpixel source crop.
+  gfx::RectF crop(candidate.crop_rect);
+  crop.Scale(candidate.buffer_size.width(), candidate.buffer_size.height());
+  if (!gfx::IsNearestRectWithinDistance(crop, 0.01f))
+    return false;
+
   if (candidate.is_clipped && !candidate.clip_rect.Contains(
                                   gfx::ToNearestRect(candidate.display_rect))) {
     return false;

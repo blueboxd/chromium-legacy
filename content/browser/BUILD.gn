@@ -1518,7 +1518,6 @@ source_set("browser") {
     "renderer_host/input/web_input_event_builders_android.h",
     "renderer_host/input/web_input_event_builders_mac.h",
     "renderer_host/input/web_input_event_builders_mac.mm",
-    "renderer_host/input_event_shim.h",
     "renderer_host/legacy_render_widget_host_win.cc",
     "renderer_host/legacy_render_widget_host_win.h",
     "renderer_host/media/aec_dump_manager_impl.cc",
@@ -2362,7 +2361,7 @@ source_set("browser") {
     # Ozone/Linux, but requires to use pangocairo. We probably want to continue
     # using pango on Linux and switch to something else for other systems that
     # use Ozone.
-    if (use_ozone && !is_desktop_linux) {
+    if (use_ozone && (!is_desktop_linux || !use_pangocairo)) {
       sources += [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
     } else if (use_pangocairo) {
       sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]

@@ -234,6 +234,9 @@ constexpr const char kDNREnabledStaticRulesetIDs[] = "dnr_enabled_ruleset_ids";
 constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
     "dnr_use_action_count_as_badge_text";
 
+// A boolean that indicates if a ruleset should be ignored.
+constexpr const char kDNRIgnoreRulesetKey[] = "ignore_ruleset";
+
 // The default value to use for permission withholding when setting the pref on
 // installation or for extensions where the pref has not been set.
 constexpr bool kDefaultWithholdingBehavior = false;
@@ -1350,7 +1353,7 @@ void ExtensionPrefs::OnExtensionInstalled(
     const syncer::StringOrdinal& page_ordinal,
     int install_flags,
     const std::string& install_parameter,
-    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
+    const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs) {
   // If the extension was previously an external extension that was uninstalled,
   // clear the external uninstall bit.
   // TODO(devlin): We previously did this because we indicated external
@@ -1369,7 +1372,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   const base::Time install_time = clock_->Now();
   PopulateExtensionInfoPrefs(extension, install_time, initial_state,
                              install_flags, install_parameter,
-                             ruleset_checksums, extension_dict.get());
+                             ruleset_install_prefs, extension_dict.get());
 
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(), page_ordinal,
@@ -1578,12 +1581,12 @@ void ExtensionPrefs::SetDelayedInstallInfo(
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter,
-    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
+    const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs) {
   ScopedDictionaryUpdate update(this, extension->id(), kDelayedInstallInfo);
   auto extension_dict = update.Create();
   PopulateExtensionInfoPrefs(extension, clock_->Now(), initial_state,
                              install_flags, install_parameter,
-                             ruleset_checksums, extension_dict.get());
+                             ruleset_install_prefs, extension_dict.get());
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
@@ -2156,6 +2159,15 @@ void ExtensionPrefs::SetDNRUseActionCountAsBadgeText(
       std::make_unique<base::Value>(use_action_count_as_badge_text));
 }
 
+bool ExtensionPrefs::ShouldIgnoreDNRRuleset(
+    const ExtensionId& extension_id,
+    declarative_net_request::RulesetID ruleset_id) const {
+  std::string pref = JoinPrefs({kDNRStaticRulesetPref,
+                                base::NumberToString(ruleset_id.value()),
+                                kDNRIgnoreRulesetKey});
+  return ReadPrefAsBooleanAndReturn(extension_id, pref);
+}
+
 // static
 void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
   g_run_alerts_in_first_run_for_testing = true;
@@ -2307,7 +2319,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     Extension::State initial_state,
     int install_flags,
     const std::string& install_parameter,
-    const declarative_net_request::RulesetChecksums& ruleset_checksums,
+    const declarative_net_request::RulesetInstallPrefs& ruleset_install_prefs,
     prefs::DictionaryValueUpdate* extension_dict) const {
   extension_dict->SetInteger(kPrefState, initial_state);
   extension_dict->SetInteger(kPrefLocation, extension->location());
@@ -2323,20 +2335,23 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (install_flags & kInstallFlagIsBlocklistedForMalware)
     extension_dict->SetBoolean(kPrefBlocklist, true);
 
-  // If |ruleset_checksums| is empty, explicitly remove the
-  // |kDNRStaticRulesetPref| entry to ensure any remaining old entries from the
-  // previous install are cleared up in case of an update. Else just set the
+  // If |ruleset_install_prefs| is empty, explicitly remove
+  // the |kDNRStaticRulesetPref| entry to ensure any remaining old entries from
+  // the previous install are cleared up in case of an update. Else just set the
   // entry (which will overwrite any existing value).
-  if (ruleset_checksums.empty()) {
+  if (ruleset_install_prefs.empty()) {
     extension_dict->Remove(kDNRStaticRulesetPref, nullptr /* out_value */);
   } else {
     auto ruleset_prefs = std::make_unique<base::DictionaryValue>();
-    for (const declarative_net_request::RulesetChecksum& checksum :
-         ruleset_checksums) {
+    for (const declarative_net_request::RulesetInstallPref& install_pref :
+         ruleset_install_prefs) {
       auto ruleset_dict = std::make_unique<base::DictionaryValue>();
-      ruleset_dict->SetIntKey(kDNRChecksumKey, checksum.checksum);
+      if (install_pref.checksum)
+        ruleset_dict->SetIntKey(kDNRChecksumKey, *install_pref.checksum);
 
-      std::string id_key = base::NumberToString(checksum.ruleset_id.value());
+      ruleset_dict->SetBoolean(kDNRIgnoreRulesetKey, install_pref.ignored);
+      std::string id_key =
+          base::NumberToString(install_pref.ruleset_id.value());
       DCHECK(!ruleset_prefs->FindKey(id_key));
       ruleset_prefs->SetDictionary(id_key, std::move(ruleset_dict));
     }

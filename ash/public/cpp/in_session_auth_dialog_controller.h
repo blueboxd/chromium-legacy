@@ -41,6 +41,10 @@ class ASH_PUBLIC_EXPORT InSessionAuthDialogController {
       const std::string& password,
       OnAuthenticateCallback callback) = 0;
 
+  // Requests ChromeOS to report fingerprint scan result through |callback|.
+  virtual void AuthenticateUserWithFingerprint(
+      base::OnceCallback<void(bool, FingerprintState)> callback) = 0;
+
   // Cancels all operations and destroys the dialog.
   virtual void Cancel() = 0;
 

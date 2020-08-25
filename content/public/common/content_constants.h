@@ -65,7 +65,7 @@ CONTENT_EXPORT extern const int kDefaultDetachableCancelDelayMs;
 CONTENT_EXPORT extern const char kCorsExemptPurposeHeaderName[];
 CONTENT_EXPORT extern const char kCorsExemptRequestedWithHeaderName[];
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // The OOM score adj constants
 // The highest and lowest assigned OOM score adjustment (oom_score_adj) for
 // renderers and extensions used by the OomPriority Manager.

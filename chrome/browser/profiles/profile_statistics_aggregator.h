@@ -25,7 +25,9 @@ class ProfileStatisticsAggregator {
  public:
   ProfileStatisticsAggregator(Profile* profile,
                               const base::Closure& done_callback);
-
+  ProfileStatisticsAggregator(const ProfileStatisticsAggregator&) = delete;
+  ProfileStatisticsAggregator& operator=(const ProfileStatisticsAggregator&) =
+      delete;
   ~ProfileStatisticsAggregator();
 
   void AddCallbackAndStartAggregator(
@@ -59,8 +61,6 @@ class ProfileStatisticsAggregator {
   base::Closure done_callback_;
 
   std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileStatisticsAggregator);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_STATISTICS_AGGREGATOR_H_

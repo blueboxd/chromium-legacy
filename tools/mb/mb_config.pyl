@@ -960,6 +960,7 @@
       'ios-simulator-cronet': 'ios_cronet_xctest',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_partial_instrumentation_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
+      'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window_xctest',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',

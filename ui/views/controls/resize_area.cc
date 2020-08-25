@@ -77,8 +77,7 @@ void ResizeArea::SetInitialPosition(int event_x) {
   initial_position_ = point.x();
 }
 
-BEGIN_METADATA(ResizeArea)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(ResizeArea, View)
 END_METADATA()
 
 }  // namespace views

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -61,7 +60,9 @@ namespace {
 // Notifies the main thread after all history backend thread tasks have run.
 class WaitForHistoryTask : public history::HistoryDBTask {
  public:
-  WaitForHistoryTask() {}
+  WaitForHistoryTask() = default;
+  WaitForHistoryTask(const WaitForHistoryTask&) = delete;
+  WaitForHistoryTask& operator=(const WaitForHistoryTask&) = delete;
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
@@ -73,9 +74,7 @@ class WaitForHistoryTask : public history::HistoryDBTask {
   }
 
  private:
-  ~WaitForHistoryTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
+  ~WaitForHistoryTask() override = default;
 };
 
 void WaitForHistoryBackendToRun(Profile* profile) {
@@ -116,13 +115,12 @@ base::FilePath CreateTestingProfile(const std::string& name,
 
 class ProfileWindowBrowserTest : public InProcessBrowserTest {
  public:
-  ProfileWindowBrowserTest() {}
-  ~ProfileWindowBrowserTest() override {}
+  ProfileWindowBrowserTest() = default;
+  ProfileWindowBrowserTest(const ProfileWindowBrowserTest&) = delete;
+  ProfileWindowBrowserTest& operator=(const ProfileWindowBrowserTest&) = delete;
+  ~ProfileWindowBrowserTest() override = default;
 
   Browser* OpenGuestBrowser();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileWindowBrowserTest);
 };
 
 Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {

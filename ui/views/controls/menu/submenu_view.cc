@@ -554,8 +554,7 @@ bool SubmenuView::OnScroll(float dx, float dy) {
   return false;
 }
 
-BEGIN_METADATA(SubmenuView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(SubmenuView, View)
 END_METADATA()
 
 }  // namespace views

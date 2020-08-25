@@ -87,6 +87,10 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
+bool IOSSecurityInterstitialPage::ShouldDisplayURL() const {
+  return true;
+}
+
 base::string16 IOSSecurityInterstitialPage::GetFormattedHostName() const {
   return security_interstitials::common_string_util::GetFormattedHostName(
       request_url_);

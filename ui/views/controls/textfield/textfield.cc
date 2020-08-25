@@ -2538,8 +2538,7 @@ void Textfield::OnEnabledChanged() {
     GetInputMethod()->OnTextInputTypeChanged(this);
 }
 
-BEGIN_METADATA(Textfield)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Textfield, View)
 ADD_PROPERTY_METADATA(Textfield, bool, ReadOnly)
 ADD_PROPERTY_METADATA(Textfield, base::string16, Text)
 ADD_PROPERTY_METADATA(Textfield, ui::TextInputType, TextInputType)

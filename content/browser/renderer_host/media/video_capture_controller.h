@@ -105,7 +105,7 @@ class CONTENT_EXPORT VideoCaptureController
   void ReturnBuffer(const VideoCaptureControllerID& id,
                     VideoCaptureControllerEventHandler* event_handler,
                     int buffer_id,
-                    double consumer_resource_utilization);
+                    const media::VideoFrameFeedback& feedback);
 
   const base::Optional<media::VideoCaptureFormat> GetVideoCaptureFormat() const;
 
@@ -191,7 +191,7 @@ class CONTENT_EXPORT VideoCaptureController
             buffer_read_permission) {
       buffer_read_permission_ = std::move(buffer_read_permission);
     }
-    void RecordConsumerUtilization(double utilization);
+    void RecordConsumerUtilization(const media::VideoFrameFeedback& feedback);
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool HasConsumers() const { return consumer_hold_count_ > 0; }
@@ -204,7 +204,8 @@ class CONTENT_EXPORT VideoCaptureController
     int frame_feedback_id_;
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
     media::mojom::VideoBufferHandlePtr buffer_handle_;
-    double max_consumer_utilization_;
+    media::VideoFrameFeedback combined_consumer_feedback_;
+
     int consumer_hold_count_;
     std::unique_ptr<
         media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
@@ -237,9 +238,10 @@ class CONTENT_EXPORT VideoCaptureController
   std::vector<BufferContext>::iterator FindUnretiredBufferContextFromBufferId(
       int buffer_id);
 
-  void OnClientFinishedConsumingBuffer(ControllerClient* client,
-                                       int buffer_id,
-                                       double consumer_resource_utilization);
+  void OnClientFinishedConsumingBuffer(
+      ControllerClient* client,
+      int buffer_id,
+      const media::VideoFrameFeedback& feedback);
   void ReleaseBufferContext(
       const std::vector<BufferContext>::iterator& buffer_state_iter);
 

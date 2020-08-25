@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/install_warning.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -36,7 +36,7 @@ class IndexHelper : public base::RefCountedThreadSafe<IndexHelper> {
     // Valid if |error| is base::nullopt. Clients should not use these fields in
     // case of a failure since these may be partially populated.
     std::vector<InstallWarning> warnings;
-    std::vector<RulesetChecksum> ruleset_checksums;
+    std::vector<RulesetInstallPref> ruleset_install_prefs;
   };
 
   // Starts indexing rulesets. Must be called on a sequence which supports file

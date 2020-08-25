@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '36b86aff6b714bd738cd92de726387de420f5486',
+  'skia_revision': 'bcca52ab84dff0d1b1813d999a9472a186363e64',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '86e14dbacc8561de7d8fab20b2db58ce119999df',
+  'v8_revision': 'bccf9d557196688f8cc91c00db6526f8f493124c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '490961030b55067d50c87e2125c631f5078332a0',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e95b5d6ad52be5b149cecf274905e1aa9ea59a6f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '746445da75a40eac88af9b710e9144e6a26eaee6',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'cd8de1d295b4bedf5b0b00a6655575881df8696a',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d989a67c59d5537c6b434acb6c9b22041c4a7437',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@25e9f126d8c331c5a72893d07c11f95a23acae3b',
     'condition': 'checkout_src_internal',
   },
 

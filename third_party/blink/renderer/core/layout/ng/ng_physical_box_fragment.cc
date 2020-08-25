@@ -264,7 +264,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
     return ScrollableOverflowFromChildren(height_type);
   }
   if (layout_object->IsBox()) {
-    if (HasOverflowClip())
+    if (HasNonVisibleOverflow())
       return PhysicalRect({}, Size());
     // Legacy is the source of truth for overflow
     return PhysicalRect(ToLayoutBox(layout_object)->LayoutOverflowRect());
@@ -312,9 +312,9 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
 
       // End and under padding are added to scroll overflow of inline children.
       // https://github.com/w3c/csswg-drafts/issues/129
-      DCHECK_EQ(container.HasOverflowClip(),
-                container.GetLayoutObject()->HasOverflowClip());
-      if (container.HasOverflowClip()) {
+      DCHECK_EQ(container.HasNonVisibleOverflow(),
+                container.GetLayoutObject()->HasNonVisibleOverflow());
+      if (container.HasNonVisibleOverflow()) {
         const LayoutBox* layout_object =
             ToLayoutBox(container.GetLayoutObject());
         padding_strut = NGBoxStrut(LayoutUnit(), layout_object->PaddingEnd(),
@@ -523,7 +523,7 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
 
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
-      !HasOverflowClip() && !HasControlClip(*this)) {
+      !HasNonVisibleOverflow() && !HasControlClip(*this)) {
     // Tricky code ahead: we pass a 0,0 additional_offset to
     // AddOutlineRectsForNormalChildren, and add it in after the call.
     // This is necessary because AddOutlineRectsForNormalChildren expects

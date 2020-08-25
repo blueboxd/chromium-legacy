@@ -58,26 +58,16 @@ bool ChromePrerenderManagerDelegate::IsPredictionEnabled(Origin origin) {
          chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
 
-bool ChromePrerenderManagerDelegate::IsPredictionDisabledDueToNetwork(
-    Origin origin) {
-  return GetPredictionStatusForOrigin(origin) ==
-         chrome_browser_net::NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK;
-}
-
 bool ChromePrerenderManagerDelegate::IsPredictionEnabled() {
   return GetPredictionStatus() ==
          chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
 
 std::string ChromePrerenderManagerDelegate::GetReasonForDisablingPrediction() {
-  std::string disabled_note;
-  if (GetPredictionStatus() ==
-      chrome_browser_net::NetworkPredictionStatus::DISABLED_ALWAYS)
-    disabled_note = "Disabled by user setting";
-  if (GetPredictionStatus() ==
-      chrome_browser_net::NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK)
-    disabled_note = "Disabled on cellular connection by default";
-  return disabled_note;
+  return (GetPredictionStatus() ==
+          chrome_browser_net::NetworkPredictionStatus::DISABLED_ALWAYS)
+             ? "Disabled by user setting"
+             : "";
 }
 
 chrome_browser_net::NetworkPredictionStatus
@@ -105,11 +95,6 @@ ChromePrerenderManagerDelegate::GetPredictionStatusForOrigin(
   // the DISABLED_ALWAYS selected via privacy settings.
   chrome_browser_net::NetworkPredictionStatus prediction_status =
       chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-  if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER &&
-      prediction_status == chrome_browser_net::NetworkPredictionStatus::
-                               DISABLED_DUE_TO_NETWORK) {
-    return chrome_browser_net::NetworkPredictionStatus::ENABLED;
-  }
   return prediction_status;
 }
 

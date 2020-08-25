@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 class ProfileManager;
@@ -20,6 +19,8 @@ class CommandLine;
 
 class ProfileShortcutManager {
  public:
+  ProfileShortcutManager(const ProfileShortcutManager&) = delete;
+  ProfileShortcutManager& operator=(const ProfileShortcutManager&) = delete;
   virtual ~ProfileShortcutManager();
 
   // Create a profile icon for the profile with path |profile_path|.
@@ -63,9 +64,6 @@ class ProfileShortcutManager {
 
  protected:
   ProfileShortcutManager();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManager);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_

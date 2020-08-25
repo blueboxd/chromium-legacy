@@ -56,7 +56,7 @@
 
 namespace blink {
 
-static bool HasOverflowClip(const PaintLayer& layer) {
+static bool HasNonVisibleOverflow(const PaintLayer& layer) {
   if (!layer.GetLayoutObject().IsBox())
     return false;
   const LayoutBox& box = ToLayoutBox(layer.GetLayoutObject());
@@ -400,7 +400,7 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
 
   // Computing paint offset is expensive, skip the computation if the object
   // is known to have no clip. This check is redundant otherwise.
-  if (HasOverflowClip(layer_) || layout_object.HasClip()) {
+  if (HasNonVisibleOverflow(layer_) || layout_object.HasClip()) {
     // This offset cannot use convertToLayerCoords, because sometimes our
     // rootLayer may be across some transformed layer boundary, for example, in
     // the PaintLayerCompositor overlapMap, where clipRects are needed in view
@@ -467,7 +467,7 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // rects, so we should add methods to GeometryMapper that guarantee there
   // are tight results, or else signal an error.
   if ((should_apply_self_overflow_clip == kRespectOverflowClip) &&
-      HasOverflowClip(layer_)) {
+      HasNonVisibleOverflow(layer_)) {
     // Implement the following special case: if computing clip rects with
     // respect to the root, don't exclude overlay scrollbars for the background
     // rect if layer_ is the same as the root.
@@ -580,7 +580,7 @@ bool PaintLayerClipper::ShouldClipOverflow(
   // painting child mask layers. We do not have access to paint phases here,
   // so always claim to clip and ignore it later when painting the foreground
   // phases.
-  return HasOverflowClip(layer_) ||
+  return HasNonVisibleOverflow(layer_) ||
          (layer_.GetLayoutObject().IsLayoutEmbeddedContent() &&
           layer_.GetLayoutObject().StyleRef().HasBorderRadius());
 }

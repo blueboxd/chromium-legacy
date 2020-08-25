@@ -43,6 +43,7 @@ GEN('#include "content/public/test/browser_test.h"');
 
 [
   ['BasePage', 'cellular_setup/base_page_test.js', []],
+  ['ButtonBar', 'cellular_setup/button_bar_test.js',[]],
   ['FinalPage', 'cellular_setup/final_page_test.js', []],
   ['ProvisioningPage', 'cellular_setup/provisioning_page_test.js',[]],
   ['SimDetectPage', 'cellular_setup/sim_detect_page_test.js', []],

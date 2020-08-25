@@ -44,8 +44,7 @@ void BaseScrollBarButton::RepeaterNotifyClick() {
   Button::NotifyClick(event);
 }
 
-BEGIN_METADATA(BaseScrollBarButton)
-METADATA_PARENT_CLASS(Button)
+BEGIN_METADATA(BaseScrollBarButton, Button)
 END_METADATA()
 
 }  // namespace views

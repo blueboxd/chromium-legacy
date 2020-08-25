@@ -1173,7 +1173,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasClip() const {
     return IsOutOfFlowPositioned() && !StyleRef().HasAutoClip();
   }
-  bool HasOverflowClip() const { return bitfields_.HasOverflowClip(); }
+  bool HasNonVisibleOverflow() const {
+    return bitfields_.HasNonVisibleOverflow();
+  }
   bool ShouldClipOverflow() const { return bitfields_.ShouldClipOverflow(); }
   bool HasClipRelatedProperty() const;
 
@@ -1495,8 +1497,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetHorizontalWritingMode(bool has_horizontal_writing_mode) {
     bitfields_.SetHorizontalWritingMode(has_horizontal_writing_mode);
   }
-  void SetHasOverflowClip(bool has_overflow_clip) {
-    bitfields_.SetHasOverflowClip(has_overflow_clip);
+  void SetHasNonVisibleOverflow(bool has_non_visible_overflow) {
+    bitfields_.SetHasNonVisibleOverflow(has_non_visible_overflow);
   }
   void SetShouldClipOverflow(bool should_clip_overflow) {
     bitfields_.SetShouldClipOverflow(should_clip_overflow);
@@ -2966,7 +2968,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_atomic_inline_level_(false),
           horizontal_writing_mode_(true),
           has_layer_(false),
-          has_overflow_clip_(false),
+          has_non_visible_overflow_(false),
           should_clip_overflow_(false),
           has_transform_related_property_(false),
           has_reflection_(false),
@@ -3161,7 +3163,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // This means that this object may need an overflow clip to be applied
     // at paint time to its visual overflow (see OverflowModel for more
     // details). Only set for LayoutBoxes and descendants.
-    ADD_BOOLEAN_BITFIELD(has_overflow_clip_, HasOverflowClip);
+    ADD_BOOLEAN_BITFIELD(has_non_visible_overflow_, HasNonVisibleOverflow);
 
     // Returns whether content which overflows should be clipped. This is not
     // just because of overflow clip, but other types of clip as well, such as

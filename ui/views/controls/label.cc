@@ -1132,8 +1132,7 @@ void Label::BuildContextMenuContents() {
                                              IDS_APP_SELECT_ALL);
 }
 
-BEGIN_METADATA(Label)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Label, View)
 ADD_PROPERTY_METADATA(Label, base::string16, Text)
 ADD_PROPERTY_METADATA(Label, int, TextStyle)
 ADD_PROPERTY_METADATA(Label, bool, AutoColorReadabilityEnabled)

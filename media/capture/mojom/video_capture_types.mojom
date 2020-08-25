@@ -267,6 +267,27 @@ struct VideoCaptureParams {
   bool enable_face_detection;
 };
 
+// |resource_utilization| reports that the frame incurred some fractional
+// utilization of the downstream pipeline's per-frame processing capacity.
+// See code comments in media::base::VideoFrameMetadata for a discussion of
+// how utilization is interpreted. The capturer uses this information to
+// auto-adjust the capture resolution based on performance variances in the
+// live system environment.
+//
+// |max_framerate_fps| reports requested maximum frame-rate
+// flat::inifinty used to signal no limit.
+//
+// |max_pixels| reports requested maximum resolution (in sense of image area).
+struct VideoFrameFeedback {
+  bool has_resource_utilization;
+  double resource_utilization;
+
+  float max_framerate_fps;
+
+  bool has_max_pixels;
+  int32 max_pixels;
+};
+
 // Contains one stride value per image plane. Stride means the number of bytes
 // per row. If the image format uses fewer than kMaxPlanes planes, the values
 // for higher plane indices are ignored. For example, for a YUV format, plane

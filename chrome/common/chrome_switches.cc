@@ -207,10 +207,6 @@ const char kDisableComponentUpdate[]        = "disable-component-update";
 // automated testing.
 const char kDisableDefaultApps[]            = "disable-default-apps";
 
-// Disables device discovery notifications.
-const char kDisableDeviceDiscoveryNotifications[] =
-    "disable-device-discovery-notifications";
-
 // Disables Domain Reliability Monitoring.
 const char kDisableDomainReliability[]      = "disable-domain-reliability";
 

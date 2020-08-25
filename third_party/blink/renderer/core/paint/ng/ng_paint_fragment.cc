@@ -533,7 +533,7 @@ PhysicalRect NGPaintFragment::InkOverflow() const {
   if (!ink_overflow_)
     return fragment.LocalRect();
 
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     return ink_overflow_->ink_overflow;
 
   PhysicalRect rect = ink_overflow_->ink_overflow;

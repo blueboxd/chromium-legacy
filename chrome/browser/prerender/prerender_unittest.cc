@@ -1301,37 +1301,11 @@ TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
   ASSERT_EQ(prerender_contents, entry.get());
 }
 
-// Verify that the external prerender requests are not allowed on cellular
-// connection when kPredictivePrefetchingAllowedOnAllConnectionTypes feature is
-// not enabled.
-TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
-  EnablePrerender();
-  std::unique_ptr<net::NetworkChangeNotifier> mock(
-      new MockNetworkChangeNotifier4G);
-  EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
-      net::NetworkChangeNotifier::GetConnectionType()));
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, base::nullopt, ORIGIN_EXTERNAL_REQUEST,
-          FINAL_STATUS_PROFILE_DESTROYED);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderFromExternalRequest(
-          url, content::Referrer(), nullptr, gfx::Rect(kDefaultViewSize)));
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  histogram_tester().ExpectTotalCount("Prerender.FinalStatus", 0);
-}
-
-// Verify that the external prerender requests are allowed on cellular
-// connection when kPredictivePrefetchingAllowedOnAllConnectionTypes feature is
-// enabled.
+// Verify that the external prerender requests are allowed on cellular networks.
 TEST_F(
     PrerenderTest,
     PrerenderAllowedOnCellularWithExternalOrigin_PredictivePrefetchingAllowedOnAllConnectionTypes) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPredictivePrefetchingAllowedOnAllConnectionTypes);
   EnablePrerender();
   std::unique_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);

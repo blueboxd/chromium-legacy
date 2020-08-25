@@ -42,6 +42,17 @@ namespace autotestPrivate {
     Borealis
   };
 
+  // A mapping of apps::mojom::InstallSource
+  enum AppInstallSource {
+    Unknown,
+    System,
+    Policy,
+    Oem,
+    Default,
+    Sync,
+    User
+  };
+
   // A mapping of apps::mojom::Readiness
   enum AppReadiness {
     Ready,
@@ -308,6 +319,7 @@ namespace autotestPrivate {
     DOMString name;
     DOMString shortName;
     AppType? type;
+    AppInstallSource? installSource;
     AppReadiness? readiness;
     DOMString[] additionalSearchTerms;
     boolean? showInLauncher;

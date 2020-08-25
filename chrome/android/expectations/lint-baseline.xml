@@ -52,7 +52,7 @@
         errorLine2="                       ~~">
         <location
             file="../../chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/CriticalPersistedTabData.java"
-            line="229"
+            line="281"
             column="24"/>
     </issue>
 
@@ -252,6 +252,380 @@
             file="../../chrome/android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java"
             line="200"
             column="45"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="15"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="22"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="28"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="38"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="44"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="50"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="55"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/bookmark_action_bar_menu.xml"
+            line="59"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/menu/download_manager_menu.xml"
+            line="16"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/menu/download_manager_menu.xml"
+            line="23"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/menu/download_manager_menu.xml"
+            line="29"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/menu/download_manager_menu.xml"
+            line="39"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/menu/download_manager_menu.xml"
+            line="45"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="16"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="22"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="28"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="38"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="43"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="47"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/history_manager_menu.xml"
+            line="51"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;always&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/languages_action_bar_menu.xml"
+            line="12"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:actionViewClass` when not using the appcompat library"
+        errorLine1="        app:actionViewClass=&quot;androidx.appcompat.widget.SearchView&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/languages_action_bar_menu.xml"
+            line="13"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;always&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/password_check/android/java/res/menu/password_check_editor_action_bar_menu.xml"
+            line="12"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;always&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/password_entry_editor_action_bar_menu.xml"
+            line="12"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/password_entry_viewer_action_bar_menu.xml"
+            line="15"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/password_entry_viewer_action_bar_menu.xml"
+            line="23"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/prefeditor_editor_menu.xml"
+            line="13"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot; />"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/prefeditor_editor_menu.xml"
+            line="20"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;always&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/save_password_preferences_action_bar_menu.xml"
+            line="13"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:actionViewClass` when not using the appcompat library"
+        errorLine1="        app:actionViewClass=&quot;androidx.appcompat.widget.SearchView&quot; />"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/save_password_preferences_action_bar_menu.xml"
+            line="14"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/save_password_preferences_action_bar_menu.xml"
+            line="20"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;never&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/menu/save_password_preferences_action_bar_menu.xml"
+            line="26"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="          app:showAsAction=&quot;always&quot;"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/site_settings/android/java/res/menu/website_preferences_menu.xml"
+            line="10"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:actionViewClass` when not using the appcompat library"
+        errorLine1="          app:actionViewClass=&quot;androidx.appcompat.widget.SearchView&quot; />"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/site_settings/android/java/res/menu/website_preferences_menu.xml"
+            line="11"
+            column="11"/>
     </issue>
 
     <issue
@@ -756,7 +1130,7 @@
         errorLine2="                                                                                   ~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
-            line="359"
+            line="356"
             column="84"/>
     </issue>
 
@@ -767,7 +1141,7 @@
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
-            line="752"
+            line="723"
             column="23"/>
     </issue>
 
@@ -789,7 +1163,7 @@
         errorLine2="                                                                  ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java"
-            line="825"
+            line="779"
             column="67"/>
     </issue>
 
@@ -1000,17 +1374,6 @@
             file="../../weblayer/browser/java/org/chromium/weblayer_private/MediaSessionManager.java"
             line="79"
             column="40"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        save();"
-        errorLine2="        ~~~~">
-        <location
-            file="../../chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/MockPersistedTabData.java"
-            line="65"
-            column="9"/>
     </issue>
 
     <issue
@@ -1251,7 +1614,7 @@
         errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/cards/SignInPromo.java"
-            line="106"
+            line="111"
             column="48"/>
     </issue>
 
@@ -1262,7 +1625,7 @@
         errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/cards/SignInPromo.java"
-            line="120"
+            line="125"
             column="40"/>
     </issue>
 
@@ -1273,7 +1636,7 @@
         errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/cards/SignInPromo.java"
-            line="127"
+            line="132"
             column="48"/>
     </issue>
 
@@ -1509,6 +1872,17 @@
     </issue>
 
     <issue
+        id="UseSparseArrays"
+        message="Use `new SparseBooleanArray(...)` instead for better performance"
+        errorLine1="        mGroupsCollapsedState = new SparseArray&lt;>();"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListManager.java"
+            line="34"
+            column="33"/>
+    </issue>
+
+    <issue
         id="Autofill"
         message="Missing `autofillHints` attribute"
         errorLine1="        &lt;EditText"
@@ -1550,6 +1924,732 @@
             file="../../chrome/browser/password_check/android/java/res/layout/password_check_edit_fragment.xml"
             line="74"
             column="10"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `AccessibilityTabModelListItem` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent e) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/accessibility_tab_switcher/AccessibilityTabModelListItem.java"
+            line="453"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``SurfaceView`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="            mSurfaceView.setOnTouchListener(ArImmersiveOverlay.this);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/vr/ArImmersiveOverlay.java"
+            line="176"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`ArImmersiveOverlay#onTouch` should call `View#performClick` when a click is detected"
+        errorLine1="    public boolean onTouch(View v, MotionEvent ev) {"
+        errorLine2="                   ~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/vr/ArImmersiveOverlay.java"
+            line="222"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="            row.setDragHandleOnTouchListener((v, event) -> {"
+        errorLine2="                                             ^">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkItemsAdapter.java"
+            line="213"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageView`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        mDragHandle.setOnTouchListener(l);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkRow.java"
+            line="270"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `BottomSheet` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent e) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/android/bottomsheet/internal/java/src/org/chromium/components/browser_ui/bottomsheet/BottomSheet.java"
+            line="251"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `BrowsingModeBottomToolbarLinearLayout` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarLinearLayout.java"
+            line="48"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``TextView`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="                textView.setOnTouchListener(new ChunkedTextTouchListener(spannable));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/piet/ChunkedTextElementAdapter.java"
+            line="159"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`ChunkedTextTouchListener#onTouch` should call `View#performClick` when a click is detected"
+        errorLine1="        public boolean onTouch(View widget, MotionEvent event) {"
+        errorLine2="                       ~~~~~~~">
+        <location
+            file="../../chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/piet/ChunkedTextElementAdapter.java"
+            line="383"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``TextView`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        textView.setOnTouchListener((View v, MotionEvent event) -> {"
+        errorLine2="        ^">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/browsing_data/ClearBrowsingDataCheckBoxPreference.java"
+            line="54"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="        textView.setOnTouchListener((View v, MotionEvent event) -> {"
+        errorLine2="                                    ^">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/browsing_data/ClearBrowsingDataCheckBoxPreference.java"
+            line="54"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `CompositorViewHolder` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent e) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/compositor/CompositorViewHolder.java"
+            line="635"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `ContentView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/embedder_support/android/java/src/org/chromium/components/embedder_support/view/ContentView.java"
+            line="333"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `InterceptTouchLayout` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="        public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                       ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/CustomTabToolbar.java"
+            line="125"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageButton`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        menuBtn.setOnTouchListener(menuPopupButtonHelper);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/ui/tablet/emptybackground/EmptyBackgroundViewTablet.java"
+            line="98"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `FirstRunViewPager` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunViewPager.java"
+            line="21"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``EditText`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="            editText.setOnTouchListener((View v, MotionEvent event) -> {"
+        errorLine2="            ^">
+        <location
+            file="../../android_webview/nonembedded/java/src/org/chromium/android_webview/devui/FlagsFragment.java"
+            line="165"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="            editText.setOnTouchListener((View v, MotionEvent event) -> {"
+        errorLine2="                                        ^">
+        <location
+            file="../../android_webview/nonembedded/java/src/org/chromium/android_webview/devui/FlagsFragment.java"
+            line="165"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``EditText`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="            editText.setOnTouchListener(null);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../android_webview/nonembedded/java/src/org/chromium/android_webview/devui/FlagsFragment.java"
+            line="180"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `FullScreenView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(final MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../android_webview/java/src/org/chromium/android_webview/FullScreenView.java"
+            line="91"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `InfoBarMessageView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/infobars/android/java/src/org/chromium/components/infobars/InfoBarMessageView.java"
+            line="32"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageView`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        holder.mStartIcon.setOnTouchListener((v, event) -> {"
+        errorLine2="        ^">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/language/settings/LanguageListBaseAdapter.java"
+            line="173"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="        holder.mStartIcon.setOnTouchListener((v, event) -> {"
+        errorLine2="                                             ^">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/language/settings/LanguageListBaseAdapter.java"
+            line="173"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `LocationBarTablet` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/omnibox/LocationBarTablet.java"
+            line="112"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageButton`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        mMenuImageButton.setOnTouchListener(mAppMenuButtonHelper);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java"
+            line="78"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="        View.OnTouchListener onTouchListener = (View v, MotionEvent ev) -> {"
+        errorLine2="                                               ^">
+        <location
+            file="../../components/browser_ui/modaldialog/android/java/src/org/chromium/components/browser_ui/modaldialog/ModalDialogView.java"
+            line="206"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``Button`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        positiveButton.setOnTouchListener(onTouchListener);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/modaldialog/android/java/src/org/chromium/components/browser_ui/modaldialog/ModalDialogView.java"
+            line="236"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``Button`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        negativeButton.setOnTouchListener(onTouchListener);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/modaldialog/android/java/src/org/chromium/components/browser_ui/modaldialog/ModalDialogView.java"
+            line="238"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `NoSwipeViewPager` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/features/keyboard_accessory/internal/java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/NoSwipeViewPager.java"
+            line="24"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` should call `View#performClick` when a click is detected"
+        errorLine1="            public boolean onTouch(View v, MotionEvent event) {"
+        errorLine2="                           ~~~~~~~">
+        <location
+            file="../../components/browser_ui/photo_picker/android/java/src/org/chromium/components/browser_ui/photo_picker/PickerVideoPlayer.java"
+            line="230"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `PlayerFrameView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/paint_preview/player/android/java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameView.java"
+            line="108"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `ScrimView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent e) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/scrim/ScrimView.java"
+            line="79"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `ScrollingBottomViewResourceFrameLayout` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/bottom/ScrollingBottomViewResourceFrameLayout.java"
+            line="63"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="        mEmptyViewWrapper.setOnTouchListener((v, event) -> true);"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectableListLayout.java"
+            line="243"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageButton`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        mMenuButton.getImageButton().setOnTouchListener(appMenuButtonHelper);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/StartSurfaceToolbarView.java"
+            line="96"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageButton`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="        mMenuButton.getImageButton().setOnTouchListener(appMenuButtonHelper);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/TabSwitcherModeTTPhone.java"
+            line="190"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `TextEditorHandleView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../clank/browser/image_editor/internal/java/src/org/chromium/chrome/browser/image_editor/text/TextEditorHandleView.java"
+            line="142"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `ToolbarControlContainer` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarControlContainer.java"
+            line="249"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``ImageButton`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="                menuButton.setOnTouchListener(appMenuButtonHelper);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarLayout.java"
+            line="134"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `ToolbarPhone` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent ev) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java"
+            line="518"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `TouchRestrictingFrameLayout` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                   ~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/android/bottomsheet/internal/java/src/org/chromium/components/browser_ui/bottomsheet/TouchRestrictingFrameLayout.java"
+            line="46"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` should call `View#performClick` when a click is detected"
+        errorLine1="            public boolean onTouch(View view, MotionEvent event) {"
+        errorLine2="                           ~~~~~~~">
+        <location
+            file="../../weblayer/browser/java/org/chromium/weblayer_private/WebContentsGestureStateTracker.java"
+            line="48"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/features/autofill_assistant/java/res/layout/autofill_assistant_bottom_sheet_content.xml"
+            line="8"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/bottom_toolbar_menu_button.xml"
+            line="12"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot; >"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/bottom_toolbar_tab_switcher.xml"
+            line="15"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="                android:clickable=&quot;true&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/contacts_list_item_view.xml"
+            line="48"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="                android:clickable=&quot;true&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/contacts_list_item_view.xml"
+            line="72"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="                android:clickable=&quot;true&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/contacts_list_item_view.xml"
+            line="96"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_card_footer.xml"
+            line="14"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_generic_item.xml"
+            line="14"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_image_item.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_in_progress_image_item.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_in_progress_item.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_in_progress_video_item.xml"
+            line="12"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_prefetch_article.xml"
+            line="14"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/browser/download/android/java/res/layout/download_manager_video_item.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="        android:clickable=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/languages_preference.xml"
+            line="32"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="        android:clickable=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../clank/browser/image_editor/internal/java/res/layout/line_tool_color_item.xml"
+            line="16"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="        android:clickable=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/photo_picker/android/java/res/layout/photo_picker_dialog.xml"
+            line="36"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="            android:clickable=&quot;true&quot; >"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/search_activity.xml"
+            line="28"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/share_sheet_item.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/start_top_toolbar.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="    android:clickable=&quot;true&quot; >"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../chrome/android/java/res/layout/tab_switcher_toolbar.xml"
+            line="12"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="        android:clickable=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/photo_picker/android/java/res/layout/video_player.xml"
+            line="37"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="                android:clickable=&quot;true&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/photo_picker/android/java/res/layout/video_player.xml"
+            line="99"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="                android:clickable=&quot;true&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../components/browser_ui/photo_picker/android/java/res/layout/video_player.xml"
+            line="124"
+            column="17"/>
     </issue>
 
 </issues>

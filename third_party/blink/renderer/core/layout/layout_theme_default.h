@@ -107,8 +107,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   static const RGBA32 kDefaultTapHighlightColor = 0x2e000000;  // 18% black.
 
-  static base::TimeDelta caret_blink_interval_;
-
   static Color active_selection_background_color_;
   static Color active_selection_foreground_color_;
   static Color inactive_selection_background_color_;

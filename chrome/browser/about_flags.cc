@@ -2749,8 +2749,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"device-discovery-notifications",
      flag_descriptions::kDeviceDiscoveryNotificationsName,
      flag_descriptions::kDeviceDiscoveryNotificationsDescription, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
-                               switches::kDisableDeviceDiscoveryNotifications)},
+     SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"force-enable-devices-page",
      flag_descriptions::kForceEnableDevicesPageName,
@@ -5215,6 +5214,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"print-save-to-drive", flag_descriptions::kPrintSaveToDriveName,
      flag_descriptions::kPrintSaveToDriveDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintSaveToDrive)},
+
+    {"diagnostics-app", flag_descriptions::kDiagnosticsAppName,
+     flag_descriptions::kDiagnosticsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDiagnosticsApp)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

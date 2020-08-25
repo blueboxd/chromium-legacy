@@ -20,7 +20,7 @@
 
 namespace media {
 class VideoFrame;
-struct VideoFrameMetadata;
+struct VideoFrameFeedback;
 }  // namespace media
 
 namespace mirroring {
@@ -62,15 +62,15 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
 
  private:
   using BufferFinishedCallback =
-      base::OnceCallback<void(double consumer_resource_utilization)>;
+      base::OnceCallback<void(media::VideoFrameFeedback)>;
   // Called by the VideoFrame destructor.
-  static void DidFinishConsumingFrame(const media::VideoFrameMetadata* metadata,
+  static void DidFinishConsumingFrame(const media::VideoFrameFeedback* feedback,
                                       BufferFinishedCallback callback);
 
   // Reports the utilization, unmaps the shared memory, and returns the buffer.
   void OnClientBufferFinished(int buffer_id,
                               base::ReadOnlySharedMemoryMapping mapping,
-                              double consumer_resource_utilization);
+                              media::VideoFrameFeedback feedback);
 
   const media::VideoCaptureParams params_;
   const mojo::Remote<media::mojom::VideoCaptureHost> video_capture_host_;

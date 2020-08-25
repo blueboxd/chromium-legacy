@@ -18,18 +18,20 @@ namespace viz {
 class VIZ_SERVICE_EXPORT InFlightFrameDelivery
     : public mojom::FrameSinkVideoConsumerFrameCallbacks {
  public:
-  InFlightFrameDelivery(base::OnceClosure post_delivery_callback,
-                        base::OnceCallback<void(double)> feedback_callback);
+  InFlightFrameDelivery(
+      base::OnceClosure post_delivery_callback,
+      base::OnceCallback<void(const media::VideoFrameFeedback&)>
+          feedback_callback);
 
   ~InFlightFrameDelivery() final;
 
   // mojom::FrameSinkVideoConsumerFrameCallbacks implementation:
   void Done() final;
-  void ProvideFeedback(double utilization) final;
+  void ProvideFeedback(const media::VideoFrameFeedback&) final;
 
  private:
   base::OnceClosure post_delivery_callback_;
-  base::OnceCallback<void(double)> feedback_callback_;
+  base::OnceCallback<void(const media::VideoFrameFeedback&)> feedback_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightFrameDelivery);
 };

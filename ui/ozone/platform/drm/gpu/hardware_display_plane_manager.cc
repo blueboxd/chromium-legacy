@@ -12,17 +12,13 @@
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
 namespace ui {
-namespace {
-
-constexpr float kFixedPointScaleValue = 1 << 16;
-
-}  // namespace
 
 HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
   atomic_property_set.reset(drmModeAtomicAlloc());
@@ -184,18 +180,14 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     gfx::Rect fixed_point_rect;
     if (hw_plane->type() != HardwareDisplayPlane::kDummy) {
       const gfx::Size& size = plane.buffer->size();
-      gfx::RectF crop_rect = plane.crop_rect;
-      crop_rect.Scale(size.width(), size.height());
-
-      // This returns a number in 16.16 fixed point, required by the DRM overlay
-      // APIs.
-      auto to_fixed_point = [](double v) -> uint32_t {
-        return v * kFixedPointScaleValue;
-      };
-      fixed_point_rect = gfx::Rect(to_fixed_point(crop_rect.x()),
-                                   to_fixed_point(crop_rect.y()),
-                                   to_fixed_point(crop_rect.width()),
-                                   to_fixed_point(crop_rect.height()));
+      gfx::RectF crop_rectf = plane.crop_rect;
+      crop_rectf.Scale(size.width(), size.height());
+      // DrmOverlayManager::CanHandleCandidate guarantees this is safe.
+      gfx::Rect crop_rect = gfx::ToNearestRect(crop_rectf);
+      // Convert to 16.16 fixed point required by the DRM overlay APIs.
+      fixed_point_rect =
+          gfx::Rect(crop_rect.x() << 16, crop_rect.y() << 16,
+                    crop_rect.width() << 16, crop_rect.height() << 16);
     }
 
     if (!SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect)) {

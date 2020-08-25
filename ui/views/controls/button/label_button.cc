@@ -603,8 +603,7 @@ Button::ButtonState LabelButton::ImageStateForState(
                                                          : for_state;
 }
 
-BEGIN_METADATA(LabelButton)
-METADATA_PARENT_CLASS(Button)
+BEGIN_METADATA(LabelButton, Button)
 ADD_PROPERTY_METADATA(LabelButton, base::string16, Text)
 ADD_PROPERTY_METADATA(LabelButton,
                       gfx::HorizontalAlignment,

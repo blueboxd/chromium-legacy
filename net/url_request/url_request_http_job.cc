@@ -575,7 +575,10 @@ void URLRequestHttpJob::AddExtraHeaders() {
 
 void URLRequestHttpJob::AddCookieHeaderAndStart() {
   CookieStore* cookie_store = request_->context()->cookie_store();
-  if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
+  // Read cookies whenever allow_credentials() is true, even if the PrivacyMode
+  // is being overridden by NetworkDelegate and will eventually block them, as
+  // blocked cookies still need to be logged in that case.
+  if (cookie_store && request_->allow_credentials()) {
     CookieOptions options;
     options.set_return_excluded_cookies();
     options.set_include_httponly();
@@ -606,16 +609,14 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieAccessResultList& excluded_list) {
   DCHECK(request_->maybe_sent_cookies().empty());
 
-  bool can_get_cookies = CanGetCookies();
+  bool can_get_cookies =
+      (request_info_.privacy_mode == PRIVACY_MODE_DISABLED && CanGetCookies());
   if (!cookies_with_access_result_list.empty() && can_get_cookies) {
     std::string cookie_line =
         CanonicalCookie::BuildCookieLine(cookies_with_access_result_list);
     UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
                                           cookie_line);
-
-    // Disable privacy mode as we are sending cookies anyway.
-    request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
 
     // TODO(crbug.com/1031664): Reduce the number of times the cookie list is
     // iterated over. Get metrics for every cookie which is included.

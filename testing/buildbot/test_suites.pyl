@@ -3397,6 +3397,7 @@
           'shards': 10,
         },
       },
+      'components_unittests': {},
       'interactive_ui_tests': {
         'swarming': {
           'shards': 3,

@@ -147,10 +147,6 @@ void LocalDiscoveryUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kLocalDiscoveryEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kLocalDiscoveryNotificationsEnabled,
-#if defined(OS_WIN)
       false,
-#else
-      true,
-#endif
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }

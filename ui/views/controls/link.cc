@@ -218,8 +218,7 @@ void Link::ConfigureFocus() {
   }
 }
 
-BEGIN_METADATA(Link)
-METADATA_PARENT_CLASS(Label)
+BEGIN_METADATA(Link, Label)
 ADD_READONLY_PROPERTY_METADATA(Link, SkColor, Color)
 END_METADATA()
 

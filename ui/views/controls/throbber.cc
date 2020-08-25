@@ -89,8 +89,7 @@ bool Throbber::IsRunning() const {
   return timer_.IsRunning();
 }
 
-BEGIN_METADATA(Throbber)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Throbber, View)
 ADD_PROPERTY_METADATA(Throbber, bool, Checked)
 END_METADATA()
 
@@ -150,8 +149,7 @@ void SmoothedThrobber::StopDelayOver() {
   Throbber::Stop();
 }
 
-BEGIN_METADATA(SmoothedThrobber)
-METADATA_PARENT_CLASS(Throbber)
+BEGIN_METADATA(SmoothedThrobber, Throbber)
 ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StartDelay)
 ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StopDelay)
 END_METADATA()

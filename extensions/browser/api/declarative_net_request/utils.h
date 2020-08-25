@@ -99,7 +99,7 @@ std::string GetPublicRulesetID(const Extension& extension,
 std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
                                              const CompositeMatcher& matcher);
 
-// Returns the per-extension static rule limit.
+// Returns the maximum number of rules a valid static ruleset can have.
 int GetStaticRuleLimit();
 
 // Returns the per-extension dynamic rule limit.
@@ -113,6 +113,8 @@ int GetRegexRuleLimit();
 // in scope.
 using ScopedRuleLimitOverride = base::AutoReset<int>;
 ScopedRuleLimitOverride CreateScopedStaticRuleLimitOverrideForTesting(
+    int limit);
+ScopedRuleLimitOverride CreateScopedGlobalStaticRuleLimitOverrideForTesting(
     int limit);
 ScopedRuleLimitOverride CreateScopedRegexRuleLimitOverrideForTesting(int limit);
 

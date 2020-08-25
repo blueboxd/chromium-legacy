@@ -474,7 +474,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   // We paint scrollbars after we painted other things, so that the scrollbars
   // will sit above them.
   info.phase = original_phase;
-  if (box_fragment_.HasOverflowClip()) {
+  if (box_fragment_.HasNonVisibleOverflow()) {
     ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
         .PaintOverflowControls(info, RoundedIntPoint(paint_offset));
   }
@@ -828,7 +828,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     if (!child_container || !child_container->HasFloatingDescendantsForPaint())
       continue;
 
-    if (child_container->HasOverflowClip()) {
+    if (child_container->HasNonVisibleOverflow()) {
       // We need to properly visit this fragment for painting, rather than
       // jumping directly to its children (which is what we normally do when
       // looking for floats), in order to set up the clip rectangle.
@@ -1821,7 +1821,7 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   return BoxPainterBase::FillLayerInfo(
       fragment.GetLayoutObject()->GetDocument(), fragment.Style(),
-      fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
+      fragment.HasNonVisibleOverflow(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(fragment.GetLayoutObject()),
       box_fragment_.SidesToInclude(),
       fragment.GetLayoutObject()->IsLayoutInline(),
@@ -1864,7 +1864,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
 
   bool hit_test_self = fragment.IsInSelfHitTestingPhase(hit_test.action);
 
-  if (hit_test_self && box_fragment_.HasOverflowClip() &&
+  if (hit_test_self && box_fragment_.HasNonVisibleOverflow() &&
       HitTestOverflowControl(hit_test, physical_offset))
     return true;
 
@@ -1890,7 +1890,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   }
 
   if (!skip_children) {
-    if (!box_fragment_.HasOverflowClip()) {
+    if (!box_fragment_.HasNonVisibleOverflow()) {
       if (HitTestChildren(hit_test, physical_offset))
         return true;
     } else {
@@ -2454,7 +2454,7 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     if (!child_container->HasFloatingDescendantsForPaint())
       continue;
 
-    if (child_container->HasOverflowClip()) {
+    if (child_container->HasNonVisibleOverflow()) {
       // We need to properly visit this fragment for hit-testing, rather than
       // jumping directly to its children (which is what we normally do when
       // looking for floats), in order to set up the clip rectangle.

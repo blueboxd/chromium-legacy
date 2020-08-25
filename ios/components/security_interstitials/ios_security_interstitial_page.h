@@ -38,6 +38,10 @@ class IOSSecurityInterstitialPage : public web::WebInterstitialDelegate {
   // web::WebInterstitialDelegate implementation.
   std::string GetHtmlContents() const override;
 
+  // Whether a URL should be displayed on this interstitial page. This is
+  // respected by committed interstitials only.
+  virtual bool ShouldDisplayURL() const;
+
   // Handles JS commands from the interstitial page. Overridden in subclasses
   // to handle actions specific to the type of interstitial.
   virtual void HandleScriptCommand(const base::DictionaryValue& message,

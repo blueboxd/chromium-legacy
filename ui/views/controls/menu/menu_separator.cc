@@ -100,8 +100,7 @@ void MenuSeparator::SetType(ui::MenuSeparatorType type) {
   OnPropertyChanged(&type_, kPropertyEffectsPreferredSizeChanged);
 }
 
-BEGIN_METADATA(MenuSeparator)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(MenuSeparator, View)
 ADD_PROPERTY_METADATA(MenuSeparator, ui::MenuSeparatorType, Type)
 END_METADATA()
 

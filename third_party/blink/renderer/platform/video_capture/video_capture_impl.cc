@@ -505,7 +505,8 @@ void VideoCaptureImpl::OnBufferReady(
   if (!consume_buffer) {
     OnFrameDropped(
         media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         media::VideoFrameFeedback());
     return;
   }
 
@@ -656,12 +657,13 @@ void VideoCaptureImpl::OnVideoFrameReady(
   if (!frame) {
     OnFrameDropped(media::VideoCaptureFrameDropReason::
                        kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         media::VideoFrameFeedback());
     return;
   }
 
   frame->AddDestructionObserver(base::BindOnce(
-      &VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
+      &VideoCaptureImpl::DidFinishConsumingFrame, frame->feedback(),
       media::BindToCurrentLoop(base::BindOnce(
           &VideoCaptureImpl::OnAllClientsFinishedConsumingFrame,
           weak_factory_.GetWeakPtr(), buffer_id, std::move(buffer_context)))));
@@ -692,7 +694,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
 void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
     int buffer_id,
     scoped_refptr<BufferContext> buffer_context,
-    double consumer_resource_utilization) {
+    const media::VideoFrameFeedback feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
 // Subtle race note: It's important that the |buffer_context| argument be
@@ -714,8 +716,7 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
   buffer_context = nullptr;
 #endif
 
-  GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
-                                       consumer_resource_utilization);
+  GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, feedback);
 }
 
 void VideoCaptureImpl::StopDevice() {
@@ -796,12 +797,11 @@ media::mojom::blink::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
 
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(
-    const media::VideoFrameMetadata* metadata,
+    const media::VideoFrameFeedback* feedback,
     BufferFinishedCallback callback_to_io_thread) {
   // Note: This function may be called on any thread by the VideoFrame
   // destructor.  |metadata| is still valid for read-access at this point.
-  std::move(callback_to_io_thread)
-      .Run(metadata->resource_utilization.value_or(-1.0));
+  std::move(callback_to_io_thread).Run(*feedback);
 }
 
 }  // namespace blink

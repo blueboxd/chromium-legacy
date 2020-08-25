@@ -21,18 +21,10 @@ namespace task_manager {
 
 class ExtensionTagsTest : public extensions::ExtensionBrowserTest {
  public:
-  ExtensionTagsTest() {}
-  ~ExtensionTagsTest() override {}
+  ExtensionTagsTest() = default;
+  ~ExtensionTagsTest() override = default;
 
  protected:
-  // extensions::ExtensionBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-
-    // Do not launch device discovery process.
-    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
-  }
-
   // If no extension task was found, a nullptr will be returned.
   Task* FindAndGetExtensionTask(
       const MockWebContentsTaskManager& task_manager) {

@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_
 #define UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_
 
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -48,11 +49,12 @@
     DISALLOW_COPY_AND_ASSIGN(METADATA_CLASS_NAME_INTERNAL(class_name));  \
   }
 
-#define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
-                                        property_name)             \
-  views::metadata::ClassPropertyMetaData<                          \
-      class_name, property_type, &class_name::Set##property_name,  \
-      decltype(std::declval<class_name>().Get##property_name()),   \
+#define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type,          \
+                                        property_name)                      \
+  views::metadata::ClassPropertyMetaData<                                   \
+      class_name, property_type, decltype(&class_name::Set##property_name), \
+      &class_name::Set##property_name,                                      \
+      decltype(std::declval<class_name>().Get##property_name()),            \
       &class_name::Get##property_name>
 
 #define METADATA_READONLY_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
@@ -61,5 +63,32 @@
       class_name, property_type,                                            \
       decltype(std::declval<class_name>().Get##property_name()),            \
       &class_name::Get##property_name>
+
+#define BEGIN_METADATA_INTERNAL(class_name)                                 \
+  views::metadata::ClassMetaData* class_name::METADATA_CLASS_NAME_INTERNAL( \
+      class_name)::meta_data_ = nullptr;                                    \
+                                                                            \
+  views::metadata::ClassMetaData* class_name::MetaData() {                  \
+    if (!METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_)              \
+      METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_ =                \
+          views::metadata::MakeAndRegisterClassInfo<                        \
+              METADATA_CLASS_NAME_INTERNAL(class_name)>();                  \
+    return METADATA_CLASS_NAME_INTERNAL(class_name)::meta_data_;            \
+  }                                                                         \
+                                                                            \
+  views::metadata::ClassMetaData* class_name::GetClassMetaData() {          \
+    return MetaData();                                                      \
+  }                                                                         \
+                                                                            \
+  const char* class_name::GetClassName() const {                            \
+    return class_name::kViewClassName;                                      \
+  }                                                                         \
+  const char class_name::kViewClassName[] = #class_name;                    \
+                                                                            \
+  void METADATA_FUNCTION_PREFIX_INTERNAL(class_name)::BuildMetaData() {     \
+    SetTypeName(std::string(#class_name));
+
+#define METADATA_PARENT_CLASS_INTERNAL(parent_class_name) \
+  SetParentClassMetaData(parent_class_name::MetaData());
 
 #endif  // UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_

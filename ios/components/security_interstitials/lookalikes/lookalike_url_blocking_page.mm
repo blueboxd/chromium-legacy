@@ -70,6 +70,10 @@ void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
                                           request_url());
 }
 
+bool LookalikeUrlBlockingPage::ShouldDisplayURL() const {
+  return false;
+}
+
 void LookalikeUrlBlockingPage::HandleScriptCommand(
     const base::DictionaryValue& message,
     const GURL& origin_url,

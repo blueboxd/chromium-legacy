@@ -147,7 +147,7 @@ class MockFrameSinkVideoConsumerFrameCallbacks
   }
 
   MOCK_METHOD0(Done, void());
-  MOCK_METHOD1(ProvideFeedback, void(double utilization));
+  MOCK_METHOD1(ProvideFeedback, void(const media::VideoFrameFeedback&));
 
  private:
   mojo::Receiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> receiver_{
@@ -493,15 +493,17 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, CapturesAndDeliversFrames) {
         MockFrameSinkVideoConsumerFrameCallbacks& callbacks =
             callbackses[frame_number - first_frame_number];
 
-        const double fake_utilization =
-            static_cast<double>(frame_number) / kNumFramesToDeliver;
-        EXPECT_CALL(callbacks, ProvideFeedback(fake_utilization));
+        const media::VideoFrameFeedback fake_feedback =
+            media::VideoFrameFeedback(
+                static_cast<double>(frame_number) / kNumFramesToDeliver,
+                std::numeric_limits<float>::infinity(), base::nullopt);
+        EXPECT_CALL(callbacks, ProvideFeedback(fake_feedback));
         EXPECT_CALL(callbacks, Done());
         EXPECT_CALL(*receiver, OnBufferRetired(buffer_id));
 
         const int feedback_id = receiver->TakeFeedbackId(buffer_id);
         POST_DEVICE_METHOD_CALL(OnUtilizationReport, feedback_id,
-                                fake_utilization);
+                                fake_feedback);
         receiver->ReleaseAccessPermission(buffer_id);
         WAIT_FOR_DEVICE_TASKS();
       }

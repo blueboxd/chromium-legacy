@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "components/viz/common/vertical_scroll_direction.h"
-#include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"

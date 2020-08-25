@@ -475,6 +475,22 @@ BUILDERS = {
             'device_os_flavor': 'google',
         },
     },
+    'android-pixel4a_power-perf': {
+        'tests': [{
+            'isolate': 'performance_test_suite',
+            'extra_args': [
+                '--experimental-tbmv3-metrics',
+            ],
+        }],
+        'platform': 'android-chrome',
+        'dimension': {
+            'pool': 'chrome.tests.pinpoint', # Sharing Pinpoint pool
+            'os': 'Android',
+            'device_type': 'sunfish',
+            'device_os': 'QD4A.200102.001.A1',
+            'device_os_flavor': 'google',
+        },
+    },
     'win-10_laptop_low_end-perf': {
         'tests': [
             {

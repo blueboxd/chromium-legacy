@@ -846,6 +846,12 @@
         },
       },
       # https://crbug.com/1111979,
+      'linux-lacros-rel': {
+        'args': [
+          '--gtest_filter=-NetExportFileWriterTest*',
+        ],
+      },
+      # https://crbug.com/1111979,
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },

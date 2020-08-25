@@ -471,6 +471,7 @@ var defaultTests = [
         chrome.test.assertEq(chromium.showInLauncher, true);
         chrome.test.assertEq(chromium.showInSearch, true);
         chrome.test.assertEq(chromium.type, 'Extension');
+        chrome.test.assertEq(chromium.installSource, 'System');
     }));
   },
   // This test verifies that only Chromium is available by default.

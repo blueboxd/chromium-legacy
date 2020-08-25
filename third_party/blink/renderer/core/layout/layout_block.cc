@@ -244,8 +244,8 @@ void LayoutBlock::UpdateFromStyle() {
   LayoutBox::UpdateFromStyle();
 
   bool should_clip_overflow =
-      !StyleRef().IsOverflowVisible() && AllowsOverflowClip();
-  if (should_clip_overflow != HasOverflowClip()) {
+      !StyleRef().IsOverflowVisible() && AllowsNonVisibleOverflow();
+  if (should_clip_overflow != HasNonVisibleOverflow()) {
     if (!should_clip_overflow)
       GetScrollableArea()->InvalidateAllStickyConstraints();
     // The overflow clip paint property depends on whether overflow clip is
@@ -254,10 +254,10 @@ void LayoutBlock::UpdateFromStyle() {
     if (Layer())
       Layer()->SetNeedsCompositingInputsUpdate();
   }
-  SetHasOverflowClip(should_clip_overflow);
+  SetHasNonVisibleOverflow(should_clip_overflow);
 }
 
-bool LayoutBlock::AllowsOverflowClip() const {
+bool LayoutBlock::AllowsNonVisibleOverflow() const {
   // If overflow has been propagated to the viewport, it has no effect here.
   return GetNode() != GetDocument().ViewportDefiningElement();
 }
@@ -394,7 +394,8 @@ void LayoutBlock::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   bool needs_scroll_anchoring =
-      HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
+      HasNonVisibleOverflow() &&
+      GetScrollableArea()->ShouldPerformScrollAnchoring();
   if (needs_scroll_anchoring)
     GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
 
@@ -493,7 +494,7 @@ void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
   AddLayoutOverflowFromChildren();
   AddLayoutOverflowFromPositionedObjects();
 
-  if (HasOverflowClip()) {
+  if (HasNonVisibleOverflow()) {
     // When we have overflow clip, propagate the original spillout since it will
     // include collapsed bottom margins and bottom padding. Set the axis we
     // don't care about to be 1, since we want this overflow to always be
@@ -1217,7 +1218,7 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
 
   DCHECK(!ChildrenInline());
   PhysicalOffset scrolled_offset = accumulated_offset;
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
   HitTestAction child_hit_test = hit_test_action;
   if (hit_test_action == kHitTestChildBlockBackgrounds)
@@ -1404,7 +1405,7 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
 }
 
 void LayoutBlock::OffsetForContents(PhysicalOffset& offset) const {
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     offset += PhysicalOffset(PixelSnappedScrolledContentOffset());
 }
 
@@ -1958,7 +1959,7 @@ void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
     rects.emplace_back(additional_offset, Size());
 
   if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
-      !HasOverflowClip() && !HasControlClip()) {
+      !HasNonVisibleOverflow() && !HasControlClip()) {
     AddOutlineRectsForNormalChildren(rects, additional_offset,
                                      include_block_overflows);
     if (TrackedLayoutBoxListHashSet* positioned_objects = PositionedObjects()) {
@@ -2217,10 +2218,10 @@ bool LayoutBlock::RecalcSelfLayoutOverflow() {
 
   LayoutUnit old_client_after_edge = LayoutClientAfterEdge();
   ComputeLayoutOverflow(old_client_after_edge, true);
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     Layer()->GetScrollableArea()->UpdateAfterOverflowRecalc();
 
-  return !HasOverflowClip() || self_needs_layout_overflow_recalc;
+  return !HasNonVisibleOverflow() || self_needs_layout_overflow_recalc;
 }
 
 void LayoutBlock::RecalcSelfVisualOverflow() {

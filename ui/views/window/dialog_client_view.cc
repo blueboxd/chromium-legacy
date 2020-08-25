@@ -417,8 +417,7 @@ void DialogClientView::SetupViews() {
     extra_view_->SetGroup(kButtonGroup);
 }
 
-BEGIN_METADATA(DialogClientView)
-METADATA_PARENT_CLASS(ClientView)
+BEGIN_METADATA(DialogClientView, ClientView)
 END_METADATA()
 
 }  // namespace views

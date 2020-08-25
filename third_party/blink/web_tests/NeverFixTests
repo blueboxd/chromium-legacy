@@ -2177,3 +2177,9 @@ crbug.com/626703 [ Win ] external/wpt/html/webappapis/system-state-and-capabilit
 crbug.com/626703 [ Linux ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
 crbug.com/626703 [ Win ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
+
+# Remove from virtual tests when FontAccess is turned on by default.
+external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
+virtual/font-access/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Pass ]
+virtual/font-access/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Pass ]

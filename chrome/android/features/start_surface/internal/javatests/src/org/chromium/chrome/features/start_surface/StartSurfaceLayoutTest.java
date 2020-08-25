@@ -1205,6 +1205,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
+    @DisabledTest(message = "http://crbug/1119527 - Flaky on bots.")
     public void testThumbnailFetchingResult_changingAspectRatio() throws Exception {
         prepareTabs(2, 0, mUrl);
         int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
@@ -1529,6 +1530,7 @@ public class StartSurfaceLayoutTest {
     // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
+    @DisabledTest(message = "http://crbug/1120822 - Flaky on bots.")
     public void testSearchTermChip_withChip() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
         // Make sure we support RTL and CJKV languages.

@@ -8991,8 +8991,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
 
     request_.url = GURL("https://mail.example.org/");
     // Ensure that proxy authentication is attempted even
-    // when the no authentication data flag is set.
-    request_.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
+    // when privacy mode is enabled.
+    request_.privacy_mode = PRIVACY_MODE_ENABLED;
     {
       HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
       RunTransaction(&trans);

@@ -33,6 +33,7 @@ class LookalikeUrlBlockingPage
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) const override;
+  bool ShouldDisplayURL() const override;
 
  private:
   void HandleScriptCommand(const base::DictionaryValue& message,

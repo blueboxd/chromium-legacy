@@ -795,8 +795,7 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
   return details;
 }
 
-BEGIN_METADATA(RootView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(RootView, View)
 END_METADATA()
 }  // namespace internal
 }  // namespace views

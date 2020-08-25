@@ -33,10 +33,7 @@ class Governor : public AudioPostProcessor2 {
   // AudioPostProcessor2 implementation:
   bool SetConfig(const Config& config) override;
   const Status& GetStatus() override;
-  void ProcessFrames(float* data,
-                     int frames,
-                     float cast_volume,
-                     float volume_dbfs) override;
+  void ProcessFrames(float* data, int frames, Metadata* metadata) override;
   bool UpdateParameters(const std::string& message) override;
 
   void SetSlewTimeMsForTest(int slew_time_ms);

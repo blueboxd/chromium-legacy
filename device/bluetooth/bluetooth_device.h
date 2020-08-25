@@ -60,6 +60,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     VENDOR_ID_MAX_VALUE = VENDOR_ID_USB
   };
 
+  // Possible values that may be returned by GetAddressType().
+  enum AddressType {
+    ADDR_TYPE_UNKNOWN,
+    ADDR_TYPE_PUBLIC,
+    ADDR_TYPE_RANDOM,
+  };
+
   // The value returned if the RSSI or transmit power cannot be read.
   static const int kUnknownPower = 127;
   // The value returned if the appearance is not present.
@@ -218,6 +225,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns the Bluetooth of address the device. This should be used as
   // a unique key to identify the device and copied where needed.
   virtual std::string GetAddress() const = 0;
+
+  // Returns the Bluetooth address type of the device. Currently available on
+  // Linux and Chrome OS.
+  virtual AddressType GetAddressType() const = 0;
 
   // Returns the allocation source of the identifier returned by GetVendorID(),
   // where available, or VENDOR_ID_UNKNOWN where not.

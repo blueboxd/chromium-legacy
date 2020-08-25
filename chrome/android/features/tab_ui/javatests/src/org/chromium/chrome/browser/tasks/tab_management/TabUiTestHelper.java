@@ -23,7 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
-import static org.chromium.chrome.test.util.browser.RecyclerViewTestUtils.waitForStableRecyclerView;
+import static org.chromium.components.browser_ui.widget.RecyclerViewTestUtils.waitForStableRecyclerView;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 

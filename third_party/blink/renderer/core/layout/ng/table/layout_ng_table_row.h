@@ -51,7 +51,7 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
     return false;
   }
 
-  bool AllowsOverflowClip() const override { return false; }
+  bool AllowsNonVisibleOverflow() const override { return false; }
 
   // LayoutBlock methods end.
 

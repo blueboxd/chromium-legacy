@@ -222,7 +222,11 @@ void RulesMonitorService::OnExtensionLoaded(
       bool enabled = prefs_enabled_rulesets
                          ? base::Contains(*prefs_enabled_rulesets, source.id())
                          : source.enabled_by_default();
-      if (!enabled)
+
+      bool ignored =
+          prefs_->ShouldIgnoreDNRRuleset(extension->id(), source.id());
+
+      if (!enabled || ignored)
         continue;
 
       if (!prefs_->GetDNRStaticRulesetChecksum(extension->id(), source.id(),

@@ -24,7 +24,7 @@
 #include "sandbox/policy/sandbox.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "content/utility/speech/speech_recognition_sandbox_hook_linux.h"
 #include "sandbox/policy/linux/sandbox_linux.h"
 #include "services/audio/audio_sandbox_hook_linux.h"
@@ -82,7 +82,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   if (parameters.command_line.HasSwitch(switches::kUtilityStartupDialog))
     WaitForDebugger("Utility");
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Initializes the sandbox before any threads are created.
   // TODO(jorgelo): move this after GTK initialization when we enable a strict
   // Seccomp-BPF policy.

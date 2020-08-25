@@ -428,14 +428,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   GREYAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested],
                  @"Unable to load custom WebKit");
 
-  // TODO(crbug.com/1103822): Investigate why this is causing EG2 tests to spin
-  // on iOS14.
-  if (base::ios::IsRunningOnIOS14OrLater()) {
-    [[GREYConfiguration sharedConfiguration]
-            setValue:@0
-        forConfigKey:kGREYConfigKeyDispatchAfterMaxTrackableDelay];
-  }
-
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];
 

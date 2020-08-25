@@ -92,7 +92,7 @@ void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
 
 void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
     int frame_feedback_id,
-    double utilization) {
+    media::VideoFrameFeedback feedback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // Nothing to do here. The video capture service does not support utilization
   // reporting.

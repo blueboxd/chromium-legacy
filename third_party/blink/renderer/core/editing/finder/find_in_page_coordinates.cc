@@ -54,7 +54,7 @@ static const LayoutBlock* EnclosingScrollableAncestor(
   // Trace up the containingBlocks until we reach either the layoutObject view
   // or a scrollable object.
   const LayoutBlock* container = layout_object->ContainingBlock();
-  while (!container->HasOverflowClip() && !IsA<LayoutView>(container))
+  while (!container->HasNonVisibleOverflow() && !IsA<LayoutView>(container))
     container = container->ContainingBlock();
   return container;
 }
@@ -76,7 +76,7 @@ static FloatRect ToNormalizedRect(const FloatRect& absolute_rect,
 
   // For overflow:scroll we need to get where the actual origin is independently
   // of the scroll.
-  if (container->HasOverflowClip())
+  if (container->HasNonVisibleOverflow())
     overflow_rect.Move(-PhysicalOffset(container->ScrolledContentOffset()));
 
   FloatRect container_rect(container->LocalToAbsoluteRect(overflow_rect));

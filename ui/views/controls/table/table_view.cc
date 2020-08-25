@@ -1529,8 +1529,7 @@ DEFINE_ENUM_CONVERTERS(TableTypes,
                        {TableTypes::ICON_AND_TEXT,
                         base::ASCIIToUTF16("ICON_AND_TEXT")})
 
-BEGIN_METADATA(TableView)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(TableView, View)
 ADD_READONLY_PROPERTY_METADATA(TableView, int, RowCount)
 ADD_READONLY_PROPERTY_METADATA(TableView, int, FirstSelectedRow)
 ADD_READONLY_PROPERTY_METADATA(TableView, bool, HasFocusIndicator)

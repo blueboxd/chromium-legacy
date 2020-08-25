@@ -761,7 +761,8 @@ const base::Feature kWebAssemblyThreads {
 };
 
 // Enable WebAssembly trap handler.
-#if (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)) && \
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+     defined(OS_MAC)) &&                                             \
     defined(ARCH_CPU_X86_64)
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

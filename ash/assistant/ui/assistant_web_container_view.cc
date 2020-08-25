@@ -159,8 +159,7 @@ void AssistantWebContainerView::RemoveContents() {
   contents_view_ptr_ = nullptr;
 }
 
-BEGIN_METADATA(AssistantWebContainerView)
-METADATA_PARENT_CLASS(views::WidgetDelegateView)
+BEGIN_METADATA(AssistantWebContainerView, views::WidgetDelegateView)
 END_METADATA()
 
 }  // namespace ash

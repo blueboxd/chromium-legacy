@@ -718,6 +718,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisabledTest(message = "http://crbug/1120698 - NoInstant_Return version is flaky on bots.")
     public void testSearchInIncognitoSingleSurface() {
         if (!mImmediateReturn) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());

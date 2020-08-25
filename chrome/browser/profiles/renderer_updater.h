@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/common/renderer_configuration.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -36,6 +35,8 @@ class RendererUpdater : public KeyedService,
                         public signin::IdentityManager::Observer {
  public:
   explicit RendererUpdater(Profile* profile);
+  RendererUpdater(const RendererUpdater&) = delete;
+  RendererUpdater& operator=(const RendererUpdater&) = delete;
   ~RendererUpdater() override;
 
   // KeyedService:
@@ -87,8 +88,6 @@ class RendererUpdater : public KeyedService,
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
   signin::IdentityManager* identity_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererUpdater);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_RENDERER_UPDATER_H_

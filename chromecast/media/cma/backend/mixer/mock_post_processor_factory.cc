@@ -21,7 +21,7 @@ MockPostProcessor::MockPostProcessor(MockPostProcessorFactory* factory,
   DCHECK(factory_);
   CHECK(factory_->instances.insert({name_, this}).second);
 
-  ON_CALL(*this, ProcessFrames(_, _, _, _))
+  ON_CALL(*this, ProcessFrames(_, _, _, _, _))
       .WillByDefault(
           testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
 

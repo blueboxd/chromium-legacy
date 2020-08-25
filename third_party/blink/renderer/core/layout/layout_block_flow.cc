@@ -4044,7 +4044,7 @@ bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
                                       const PhysicalOffset& accumulated_offset,
                                       HitTestAction hit_test_action) {
   PhysicalOffset scrolled_offset = accumulated_offset;
-  if (HasOverflowClip())
+  if (HasNonVisibleOverflow())
     scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
 
   if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
@@ -4329,10 +4329,11 @@ void LayoutBlockFlow::PositionSpannerDescendant(
 
 DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
-  if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
-      IsFlexItemIncludingDeprecatedAndNG() || IsCustomItem() ||
-      IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
-      IsMathItem() || StyleRef().Display() == EDisplay::kFlowRoot ||
+  if (IsInline() || IsFloatingOrOutOfFlowPositioned() ||
+      HasNonVisibleOverflow() || IsFlexItemIncludingDeprecatedAndNG() ||
+      IsCustomItem() || IsDocumentElement() || IsGridItem() ||
+      IsWritingModeRoot() || IsMathItem() ||
+      StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       StyleRef().IsDeprecatedWebkitBoxWithVerticalLineClamp() ||
       StyleRef().SpecifiesColumns() ||
@@ -4565,7 +4566,7 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   // For inline children, the offset is relative to its containing
   // |LayoutBlockFlow|. If this is scrolling, convert the content offset to the
   // offset of this |LayoutBlockFlow|.
-  if (HasOverflowClip()) {
+  if (HasNonVisibleOverflow()) {
     PhysicalOffset offset_in_this = offset;
     offset_in_this -= PhysicalOffset(PixelSnappedScrolledContentOffset());
     return PositionForPoint(offset_in_this);
@@ -4770,7 +4771,7 @@ void LayoutBlockFlow::AddOutlineRects(
                                include_block_overflows);
 
   if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
-      !HasOverflowClip() && !HasControlClip()) {
+      !HasNonVisibleOverflow() && !HasControlClip()) {
     for (RootInlineBox* curr = FirstRootBox(); curr;
          curr = curr->NextRootBox()) {
       LayoutUnit flipped_left = curr->X();

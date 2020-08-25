@@ -1814,7 +1814,7 @@ bool LayoutTableSection::NodeAtPoint(HitTestResult& result,
   if (!FirstRow())
     return false;
 
-  DCHECK(!HasOverflowClip());
+  DCHECK(!HasNonVisibleOverflow());
 
   // Table sections cannot ever be hit tested.  Effectively they do not exist.
   // Just forward to our children always.

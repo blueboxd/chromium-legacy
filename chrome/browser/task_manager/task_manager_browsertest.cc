@@ -83,8 +83,8 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 class TaskManagerBrowserTest : public extensions::ExtensionBrowserTest {
  public:
-  TaskManagerBrowserTest() {}
-  ~TaskManagerBrowserTest() override {}
+  TaskManagerBrowserTest() = default;
+  ~TaskManagerBrowserTest() override = default;
 
   task_manager::TaskManagerTester* model() { return model_.get(); }
 
@@ -120,13 +120,6 @@ class TaskManagerBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-
-    // Do not launch device discovery process.
-    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
-  }
-
   void TearDownOnMainThread() override {
     model_.reset();
     extensions::ExtensionBrowserTest::TearDownOnMainThread();

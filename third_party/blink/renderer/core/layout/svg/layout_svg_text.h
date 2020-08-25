@@ -65,7 +65,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   const char* GetName() const override { return "LayoutSVGText"; }
 
  private:
-  bool AllowsOverflowClip() const override { return false; }
+  bool AllowsNonVisibleOverflow() const override { return false; }
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGText || LayoutSVGBlock::IsOfType(type);

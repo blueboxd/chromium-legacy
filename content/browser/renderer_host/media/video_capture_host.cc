@@ -277,9 +277,10 @@ void VideoCaptureHost::RequestRefreshFrame(
   }
 }
 
-void VideoCaptureHost::ReleaseBuffer(const base::UnguessableToken& device_id,
-                                     int32_t buffer_id,
-                                     double consumer_resource_utilization) {
+void VideoCaptureHost::ReleaseBuffer(
+    const base::UnguessableToken& device_id,
+    int32_t buffer_id,
+    const media::VideoFrameFeedback& feedback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   VideoCaptureControllerID controller_id(device_id);
@@ -289,8 +290,7 @@ void VideoCaptureHost::ReleaseBuffer(const base::UnguessableToken& device_id,
 
   const base::WeakPtr<VideoCaptureController>& controller = it->second;
   if (controller) {
-    controller->ReturnBuffer(controller_id, this, buffer_id,
-                             consumer_resource_utilization);
+    controller->ReturnBuffer(controller_id, this, buffer_id, feedback);
   }
 }
 

@@ -37,7 +37,6 @@ void VideoFrameMetadata::MergeMetadataFrom(
   MERGE_FIELD(frame_rate, metadata_source);
   MERGE_FIELD(interactive_content, metadata_source);
   MERGE_FIELD(reference_time, metadata_source);
-  MERGE_FIELD(resource_utilization, metadata_source);
   MERGE_FIELD(read_lock_fences_enabled, metadata_source);
   MERGE_FIELD(rotation, metadata_source);
   MERGE_FIELD(texture_owner, metadata_source);

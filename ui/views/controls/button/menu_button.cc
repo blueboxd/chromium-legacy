@@ -37,8 +37,7 @@ void MenuButton::NotifyClick(const ui::Event& event) {
   button_controller()->Activate(&event);
 }
 
-BEGIN_METADATA(MenuButton)
-METADATA_PARENT_CLASS(LabelButton)
+BEGIN_METADATA(MenuButton, LabelButton)
 END_METADATA()
 
 }  // namespace views

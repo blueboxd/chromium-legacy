@@ -57,16 +57,13 @@ const AudioPostProcessor2::Status& Governor::GetStatus() {
   return status_;
 }
 
-void Governor::ProcessFrames(float* data,
-                             int frames,
-                             float volume,
-                             float volume_dbfs) {
+void Governor::ProcessFrames(float* data, int frames, Metadata* metadata) {
   DCHECK(data);
   status_.output_buffer = data;
 
   // If the volume has changed.
-  if (!base::IsApproximatelyEqual(volume, volume_, kEpsilon)) {
-    volume_ = volume;
+  if (!base::IsApproximatelyEqual(metadata->system_volume, volume_, kEpsilon)) {
+    volume_ = metadata->system_volume;
     slew_volume_.SetVolume(GetGovernorMultiplier());
   }
 

@@ -16,7 +16,12 @@ import './os_people_page/account_manager.m.js';
 import './os_people_page/kerberos_accounts.m.js';
 import './parental_controls_page/parental_controls_page.m.js';
 import './os_people_page/os_people_page.m.js';
+import './os_about_page/os_about_page.m.js';
+import './os_about_page/channel_switcher_dialog.m.js';
+import './os_about_page/detailed_build_info.m.js';
+import './os_about_page/update_warning_dialog.m.js';
 
+export {AboutPageBrowserProxyImpl, BrowserChannel, UpdateStatus} from '../about_page/about_page_browser_proxy.m.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
 export {dataUsageStringToEnum, NearbyShareDataUsage} from '../nearby_share_page/types.m.js';
 export {pageVisibility} from '../page_visibility.js';

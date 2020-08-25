@@ -705,8 +705,7 @@ PrefixSelector* Combobox::GetPrefixSelector() {
   return selector_.get();
 }
 
-BEGIN_METADATA(Combobox)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(Combobox, View)
 ADD_PROPERTY_METADATA(Combobox, int, SelectedIndex)
 ADD_PROPERTY_METADATA(Combobox, bool, Invalid)
 ADD_PROPERTY_METADATA(Combobox, base::string16, AccessibleName)

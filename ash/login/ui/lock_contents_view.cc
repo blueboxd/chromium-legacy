@@ -2245,8 +2245,7 @@ void LockContentsView::OnBottomStatusIndicatorTapped() {
   management_bubble_->Show();
 }
 
-BEGIN_METADATA(LockContentsView)
-METADATA_PARENT_CLASS(NonAccessibleView)
+BEGIN_METADATA(LockContentsView, NonAccessibleView)
 END_METADATA()
 
 }  // namespace ash

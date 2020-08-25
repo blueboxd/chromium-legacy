@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -66,6 +67,15 @@ bool LocationBarModelDelegateIOS::GetURL(GURL* url) const {
 }
 
 bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
+  if (web::WebState* web_state = GetActiveWebState()) {
+    security_interstitials::IOSBlockingPageTabHelper* tab_helper =
+        security_interstitials::IOSBlockingPageTabHelper::FromWebState(
+            web_state);
+    if (tab_helper && tab_helper->GetCurrentBlockingPage()) {
+      return tab_helper->ShouldDisplayURL();
+    }
+  }
+
   web::NavigationItem* item = GetNavigationItem();
   if (item) {
     GURL url = item->GetURL();

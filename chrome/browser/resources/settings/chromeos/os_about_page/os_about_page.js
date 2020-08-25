@@ -400,6 +400,7 @@ Polymer({
         return 'cr:error';
       case UpdateStatus.UPDATED:
       case UpdateStatus.NEARLY_UPDATED:
+        // TODO(crbug.com/986596): Don't use browser icons here. Fork them.
         return 'settings:check-circle';
       default:
         return null;
@@ -464,6 +465,7 @@ Polymer({
         return this.i18nAdvanced('aboutRelaunch');
       }
     }
+    return '';
   },
 
   /** @private */

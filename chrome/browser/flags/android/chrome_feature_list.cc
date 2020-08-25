@@ -86,7 +86,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kInstallableAmbientBadgeInfoBar,
     &features::kNetworkServiceInProcess,
     &features::kOverscrollHistoryNavigation,
-    &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrivacyElevatedAndroid,
     &features::kPrivacyReorderedAndroid,
     &features::kPrioritizeBootstrapTasks,

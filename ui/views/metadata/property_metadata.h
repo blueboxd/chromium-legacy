@@ -49,7 +49,8 @@ class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
 // (so it will trigger things like property changed notifications).
 template <typename TClass,
           typename TValue,
-          void (TClass::*Set)(ArgType<TValue>),
+          typename TSig,
+          TSig Set,
           typename TRet,
           TRet (TClass::*Get)() const>
 class ClassPropertyMetaData

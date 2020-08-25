@@ -28,7 +28,6 @@ enum NetworkPredictionOptions {
 enum class NetworkPredictionStatus {
   ENABLED,
   DISABLED_ALWAYS,
-  DISABLED_DUE_TO_NETWORK,
 };
 
 void RegisterPredictionOptionsProfilePrefs(

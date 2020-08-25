@@ -3004,7 +3004,7 @@ DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
 
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
-BEGIN_METADATA(View)
+BEGIN_METADATA_BASE(View)
 ADD_READONLY_PROPERTY_METADATA(View, const char*, ClassName)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
 ADD_PROPERTY_METADATA(View, View::FocusBehavior, FocusBehavior)

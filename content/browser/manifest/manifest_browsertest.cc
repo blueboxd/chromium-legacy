@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_frame_host.h"
@@ -24,12 +25,22 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 
 namespace content {
+
+namespace {
+
+using ::testing::Contains;
+using ::testing::HasSubstr;
+
+}  // namespace
 
 class ManifestBrowserTest;
 
@@ -57,8 +68,9 @@ class ManifestBrowserTest : public ContentBrowserTest,
  protected:
   friend MockWebContentsDelegate;
 
-  ManifestBrowserTest() : console_error_count_(0) {
-    cors_embedded_test_server_.reset(new net::EmbeddedTestServer);
+  ManifestBrowserTest()
+      : cors_embedded_test_server_(
+            std::make_unique<net::EmbeddedTestServer>()) {
     cors_embedded_test_server_->ServeFilesFromSourceDirectory(
         GetTestDataFilePath());
   }
@@ -108,11 +120,15 @@ class ManifestBrowserTest : public ContentBrowserTest,
         ->GetRemoteAssociatedInterfaces()
         ->GetInterface(&remote);
     remote.FlushForTesting();
-    return console_error_count_;
+    return console_errors_.size();
   }
 
-  void OnReceivedConsoleError() {
-    console_error_count_++;
+  const std::vector<std::string>& console_errors() const {
+    return console_errors_;
+  }
+
+  void OnReceivedConsoleError(base::StringPiece16 message) {
+    console_errors_.push_back(base::UTF16ToUTF8(message));
   }
 
   net::EmbeddedTestServer* cors_embedded_test_server() const {
@@ -155,7 +171,7 @@ class ManifestBrowserTest : public ContentBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> cors_embedded_test_server_;
   GURL manifest_url_;
   blink::Manifest manifest_;
-  int console_error_count_;
+  std::vector<std::string> console_errors_;
   std::vector<GURL> reported_manifest_urls_;
   std::vector<size_t> manifests_reported_when_favicon_url_updated_;
 
@@ -174,7 +190,7 @@ bool MockWebContentsDelegate::DidAddMessageToConsole(
 
   if (log_level == blink::mojom::ConsoleMessageLevel::kError ||
       log_level == blink::mojom::ConsoleMessageLevel::kWarning)
-    test_->OnReceivedConsoleError();
+    test_->OnReceivedConsoleError(message);
   return false;
 }
 
@@ -361,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  // 1 error for CORS violation
+  EXPECT_THAT(console_errors(), Contains(HasSubstr("CORS")));
   EXPECT_EQ(1, GetConsoleErrorCount());
   expected_manifest_urls.push_back(manifest_url());
   EXPECT_EQ(expected_manifest_urls, reported_manifest_urls());
@@ -411,26 +427,28 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifestWithAcessControls) {
 // If a page's manifest is in an insecure origin while the page is in a secure
 // origin, requesting the manifest should return the empty manifest.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
+  ASSERT_TRUE(cors_embedded_test_server()->Start());
   std::unique_ptr<net::EmbeddedTestServer> https_server(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
   https_server->ServeFilesFromSourceDirectory(GetTestDataFilePath());
 
   ASSERT_TRUE(https_server->Start());
 
-  GURL test_url =
-      embedded_test_server()->GetURL("/manifest/dynamic-manifest.html");
+  GURL test_url = https_server->GetURL("/manifest/dynamic-manifest.html");
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
-  std::string manifest_link =
-      https_server->GetURL("/manifest/dummy-manifest.json").spec();
-  ASSERT_TRUE(ExecuteScript(shell(), "setManifestTo('" + manifest_link + "')"));
+  GURL manifest_link = cors_embedded_test_server()->GetURL(
+      "insecure.example", "/manifest/manifest-cors.json");
+  // Ensure the manifest really is mixed content:
+  ASSERT_FALSE(network::IsUrlPotentiallyTrustworthy(manifest_link));
+  ASSERT_TRUE(
+      ExecuteScript(shell(), JsReplace("setManifestTo($1)", manifest_link)));
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  // 1 error for mixed-content check violation
-  EXPECT_EQ(1, GetConsoleErrorCount());
+  EXPECT_THAT(console_errors(), Contains(HasSubstr("Mixed Content")));
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
   ASSERT_EQ(1u, manifests_reported_when_favicon_url_updated().size());

@@ -381,6 +381,8 @@ _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_mobile', True),
     _GetBenchmarkConfig('system_health.memory_mobile', True),
     _GetBenchmarkConfig('startup.mobile')])
+_ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('power.mobile')])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = PerfSuite([
     # Running a sample benchmark to help testing out the work on
     # trace_processor_shell: crbug.com/1028612
@@ -481,6 +483,12 @@ ANDROID_PIXEL2_WEBLAYER = PerfPlatform(
     'android-pixel2_weblayer-perf', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS, 4, 'android',
     run_reference_build=False)
+ANDROID_PIXEL4A_POWER = PerfPlatform('android-pixel4a_power-perf',
+                              'Android QD4A.200102.001.A1',
+                              _ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS,
+                              1,
+                              'android',
+                              run_reference_build=False)
 # FYI bots
 WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(
     'win-10_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',

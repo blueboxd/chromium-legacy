@@ -4205,6 +4205,21 @@
       },
       {
         "args": [
+          "--gtest_filter=-NetExportFileWriterTest*"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.interactive_ui_tests.filter"
         ],
         "merge": {

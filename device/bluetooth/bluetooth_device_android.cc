@@ -67,6 +67,11 @@ std::string BluetoothDeviceAndroid::GetAddress() const {
       Java_ChromeBluetoothDevice_getAddress(AttachCurrentThread(), j_device_));
 }
 
+BluetoothDevice::AddressType BluetoothDeviceAndroid::GetAddressType() const {
+  NOTIMPLEMENTED();
+  return ADDR_TYPE_UNKNOWN;
+}
+
 BluetoothDevice::VendorIDSource BluetoothDeviceAndroid::GetVendorIDSource()
     const {
   // Android API does not provide Vendor ID.

@@ -43,10 +43,4 @@
     <integer name="download_infobar_bar_start_offset">800</integer>
     <integer name="download_infobar_bar_fill_in_delay">400</integer>
     <integer name="download_infobar_bar_fill_out_delay">200</integer>
-
-    <!-- Bottom navigation bar styling. -->
-    <bool name="window_light_navigation_bar">true</bool>
-
-    <!-- Status bar icon styling. -->
-    <bool name="window_light_status_bar">true</bool>
 </resources>

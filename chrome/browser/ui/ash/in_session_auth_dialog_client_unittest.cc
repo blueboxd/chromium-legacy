@@ -45,6 +45,9 @@ class FakeInSessionAuthDialogController
   void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       OnAuthenticateCallback callback) override {}
+  void AuthenticateUserWithFingerprint(
+      base::OnceCallback<void(bool, ash::FingerprintState)> callback) override {
+  }
   void Cancel() override {}
 };
 

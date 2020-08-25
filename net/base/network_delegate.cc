@@ -103,7 +103,7 @@ void NetworkDelegate::NotifyPACScriptError(int line_number,
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
                                     bool allowed_from_caller) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!(request.load_flags() & LOAD_DO_NOT_SEND_COOKIES));
+  DCHECK_EQ(PrivacyMode::PRIVACY_MODE_DISABLED, request.privacy_mode());
   return OnCanGetCookies(request, allowed_from_caller);
 }
 

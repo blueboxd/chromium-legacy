@@ -7,8 +7,7 @@
 namespace ash {
 namespace hud_display {
 
-BEGIN_METADATA(GraphPageViewBase)
-METADATA_PARENT_CLASS(View)
+BEGIN_METADATA(GraphPageViewBase, View)
 END_METADATA()
 
 GraphPageViewBase::GraphPageViewBase() {

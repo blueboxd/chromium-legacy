@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_connections.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
@@ -339,7 +340,8 @@ class NearbyConnectionsManagerImplTest : public testing::Test {
     run_loop.Run();
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingProfile profile_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
       net::test::MockNetworkChangeNotifier::Create();
@@ -801,6 +803,60 @@ TEST_F(NearbyConnectionsManagerImplTest, ConnectCancelPayload) {
   nearby_connections_manager_.Cancel(kPayloadId);
   payload_run_loop.Run();
   cancel_run_loop.Run();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, ConnectTimeout) {
+  mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
+  testing::NiceMock<MockDiscoveryListener> discovery_listener;
+  StartDiscovery(discovery_listener_remote, discovery_listener);
+
+  // RequestConnection will time out.
+  const std::vector<uint8_t> local_endpoint_info(std::begin(kEndpointInfo),
+                                                 std::end(kEndpointInfo));
+
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  NearbyConnectionsMojom::RequestConnectionCallback connect_callback;
+  EXPECT_CALL(nearby_connections_, RequestConnection)
+      .WillOnce(
+          [&](const std::vector<uint8_t>& endpoint_info,
+              const std::string& endpoint_id,
+              mojo::PendingRemote<ConnectionLifecycleListener> listener,
+              NearbyConnectionsMojom::RequestConnectionCallback callback) {
+            EXPECT_EQ(local_endpoint_info, endpoint_info);
+            EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+
+            connection_listener_remote.Bind(std::move(listener));
+            // Do not call callback until connection timed out.
+            connect_callback = std::move(callback);
+          });
+
+  // Timing out should call disconnect.
+  EXPECT_CALL(nearby_connections_, DisconnectFromEndpoint)
+      .WillOnce(
+          [&](const std::string& endpoint_id,
+              NearbyConnectionsMojom::DisconnectFromEndpointCallback callback) {
+            EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+            std::move(callback).Run(Status::kSuccess);
+          });
+
+  base::RunLoop run_loop;
+  NearbyConnection* nearby_connection = nullptr;
+  nearby_connections_manager_.Connect(
+      local_endpoint_info, kRemoteEndpointId,
+      /*bluetooth_mac_address=*/base::nullopt, DataUsage::kOffline,
+      base::BindLambdaForTesting([&](NearbyConnection* connection) {
+        nearby_connection = connection;
+        run_loop.Quit();
+      }));
+  // Simulate time passing until timeout is reached.
+  task_environment_.FastForwardBy(kInitiateNearbyConnectionTimeout);
+  run_loop.Run();
+
+  // Expect callback to be called with null connection.
+  EXPECT_FALSE(nearby_connection);
+
+  // Resolving the connect callback after timeout should do nothing.
+  std::move(connect_callback).Run(Status::kSuccess);
 }
 
 TEST_F(NearbyConnectionsManagerImplTest, StartAdvertising) {

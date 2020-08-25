@@ -37,7 +37,7 @@ struct VideoEncoderClientConfig {
   static constexpr uint32_t kDefaultBitrate = 200000;
   VideoEncoderClientConfig(const Video* video,
                            VideoCodecProfile output_profile,
-                           uint32_t bitrate = kDefaultBitrate);
+                           uint32_t bitrate);
   VideoEncoderClientConfig(const VideoEncoderClientConfig&);
 
   // The output output profile to be used.

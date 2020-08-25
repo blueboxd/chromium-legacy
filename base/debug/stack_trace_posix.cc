@@ -35,7 +35,7 @@
 #include <AvailabilityMacros.h>
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/debug/proc_maps_linux.h"
 #endif
 
@@ -344,7 +344,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 
   debug::StackTrace().Print();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #if ARCH_CPU_X86_FAMILY
   ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
   const struct {
@@ -415,7 +415,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   }
   PrintToStderr("\n");
 #endif  // ARCH_CPU_X86_FAMILY
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   PrintToStderr("[end of stack trace]\n");
 
@@ -800,9 +800,9 @@ bool EnableInProcessStackDumping() {
   success &= (sigaction(SIGBUS, &action, nullptr) == 0);
   success &= (sigaction(SIGSEGV, &action, nullptr) == 0);
 // On Linux, SIGSYS is reserved by the kernel for seccomp-bpf sandboxing.
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
   success &= (sigaction(SIGSYS, &action, nullptr) == 0);
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   return success;
 }

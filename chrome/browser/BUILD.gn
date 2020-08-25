@@ -1415,6 +1415,8 @@ static_library("browser") {
     "push_messaging/push_messaging_service_factory.h",
     "push_messaging/push_messaging_service_impl.cc",
     "push_messaging/push_messaging_service_impl.h",
+    "push_messaging/push_messaging_utils.cc",
+    "push_messaging/push_messaging_utils.h",
     "query_tiles/tile_background_task.cc",
     "query_tiles/tile_background_task.h",
     "query_tiles/tile_service_factory.cc",
@@ -2947,7 +2949,7 @@ static_library("browser") {
       "updates/update_notification_client.h",
       "updates/update_notification_service_bridge_android.cc",
       "updates/update_notification_service_bridge_android.h",
-      "video_tutorials/internal/android/video_tutorial_service_bridge_factory.cc",
+      "video_tutorials/android/video_tutorial_service_bridge_factory.cc",
       "webauthn/android/cable_module_android.cc",
     ]
     public_deps += [

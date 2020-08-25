@@ -66,7 +66,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <linux/fs.h>
 #endif
 
@@ -1603,7 +1603,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
              File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
   ASSERT_TRUE(PathExists(file_name3));
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // On Windows, holding the file open in sufficient to make it un-deletable.
   // The POSIX code is verifiable on Linux by creating an "immutable" file but
   // this is best-effort because it's not supported by all file systems. Both
@@ -1624,7 +1624,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
   DeletePathRecursively(test_subdir);
   EXPECT_FALSE(PathExists(file_name2));
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Make sure that the test can clean up after itself.
   if (file_attrs_supported) {
     flags &= ~FS_IMMUTABLE_FL;
@@ -1634,7 +1634,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 #endif
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // This test will validate that files which would block when read result in a
 // failure on a call to ReadFileToStringNonBlocking. To accomplish this we will
 // use a named pipe because it appears as a file on disk and we can control how
@@ -1667,7 +1667,7 @@ TEST_F(FileUtilTest, TestNonBlockingFileReadLinux) {
   ASSERT_EQ(result.size(), 1u);
   EXPECT_EQ(result[0], 'a');
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 TEST_F(FileUtilTest, MoveFileNew) {
   // Create a file

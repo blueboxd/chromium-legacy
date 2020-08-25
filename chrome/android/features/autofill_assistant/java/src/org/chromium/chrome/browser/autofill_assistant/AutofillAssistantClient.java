@@ -191,7 +191,7 @@ class AutofillAssistantClient {
      *
      * @param actionId id of the action
      * @param experimentIds comma-separated set of experiments to use while running the flow
-     * @param arguments report these as autobot parameters while performing this specific action
+     * @param arguments report these as script parameters while performing this specific action
      * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      * @return true if the action was found started, false otherwise. The action can still fail

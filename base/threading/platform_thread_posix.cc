@@ -28,7 +28,7 @@
 #include "base/posix/can_lower_nice_to.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <sys/syscall.h>
 #endif
 
@@ -135,7 +135,7 @@ bool CreateThread(size_t stack_size,
   return success;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // Store the thread ids in local storage since calling the SWI can
 // expensive and PlatformThread::CurrentId is used liberally. Clear
@@ -153,11 +153,11 @@ class InitAtFork {
   InitAtFork() { pthread_atfork(nullptr, nullptr, internal::ClearTidCache); }
 };
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 namespace internal {
 
@@ -167,7 +167,7 @@ void ClearTidCache() {
 
 }  // namespace internal
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // static
 PlatformThreadId PlatformThread::CurrentId() {
@@ -175,7 +175,7 @@ PlatformThreadId PlatformThread::CurrentId() {
   // into the kernel.
 #if defined(OS_APPLE)
   return pthread_mach_thread_np(pthread_self());
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   static NoDestructor<InitAtFork> init_at_fork;
   if (g_thread_id == -1) {
     g_thread_id = syscall(__NR_gettid);

@@ -35,6 +35,7 @@ ShutdownConfirmationDialog::ShutdownConfirmationDialog(
     base::OnceClosure on_cancel_callback) {
   SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
   SetShowCloseButton(false);
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
 
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -65,10 +66,6 @@ ShutdownConfirmationDialog::ShutdownConfirmationDialog(
 }
 
 ShutdownConfirmationDialog::~ShutdownConfirmationDialog() = default;
-
-ui::ModalType ShutdownConfirmationDialog::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
 
 gfx::Size ShutdownConfirmationDialog::CalculatePreferredSize() const {
   return gfx::Size(

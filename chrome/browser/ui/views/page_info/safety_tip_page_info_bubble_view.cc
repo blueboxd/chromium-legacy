@@ -94,7 +94,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       kSizeDeltaInPixels, gfx::Font::FontStyle::NORMAL,
       gfx::Font::Weight::NORMAL);
 
-  auto new_title = std::make_unique<views::StyledLabel>(title_text, nullptr);
+  auto new_title = std::make_unique<views::StyledLabel>();
+  new_title->SetText(title_text);
   new_title->AddStyleRange(gfx::Range(0, title_text.length()), name_style);
   GetBubbleFrameView()->SetTitleView(std::move(new_title));
 
@@ -171,7 +172,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   // More info button.
   auto info_text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_MORE_INFO_LINK);
-  auto info_link = std::make_unique<views::StyledLabel>(info_text, this);
+  auto info_link = std::make_unique<views::StyledLabel>(this);
+  info_link->SetText(info_text);
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   gfx::Range details_range(0, info_text.length());

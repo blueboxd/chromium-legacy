@@ -257,8 +257,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
 
   open_button_ = AddChildView(std::make_unique<TransparentButton>(this));
 
-  file_name_label_ = AddChildView(
-      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  file_name_label_ = AddChildView(std::make_unique<views::StyledLabel>());
   file_name_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   file_name_label_->GetViewAccessibility().OverrideIsIgnored(true);
   const base::string16 filename = ElidedFilename(*file_name_label_);
@@ -270,13 +269,11 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
       base::string16(), CONTEXT_DOWNLOAD_SHELF_STATUS));
   status_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  warning_label_ = AddChildView(
-      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  warning_label_ = AddChildView(std::make_unique<views::StyledLabel>());
   warning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   warning_label_->set_can_process_events_within_subtree(false);
 
-  deep_scanning_label_ = AddChildView(
-      std::make_unique<views::StyledLabel>(base::string16(), nullptr));
+  deep_scanning_label_ = AddChildView(std::make_unique<views::StyledLabel>());
   deep_scanning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   deep_scanning_label_->set_can_process_events_within_subtree(false);
 

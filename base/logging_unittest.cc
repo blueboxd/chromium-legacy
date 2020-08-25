@@ -28,7 +28,7 @@
 #include "base/posix/eintr_wrapper.h"
 #endif  // OS_POSIX
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include <ucontext.h>
 #endif
 

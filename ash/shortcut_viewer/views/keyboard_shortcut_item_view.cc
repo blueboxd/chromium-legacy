@@ -58,8 +58,10 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     const KeyboardShortcutItem& item,
     ShortcutCategory category)
     : shortcut_item_(&item), category_(category) {
-  description_label_view_ = AddChildView(std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringUTF16(item.description_message_id), nullptr));
+  description_label_view_ =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  description_label_view_->SetText(
+      l10n_util::GetStringUTF16(item.description_message_id));
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |description_label_view_| always
   // align to left.
@@ -111,8 +113,8 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     accessible_string = l10n_util::GetStringFUTF16(
         item.shortcut_message_id, accessible_names, /*offsets=*/nullptr);
   }
-  shortcut_label_view_ = AddChildView(
-      std::make_unique<views::StyledLabel>(shortcut_string, nullptr));
+  shortcut_label_view_ = AddChildView(std::make_unique<views::StyledLabel>());
+  shortcut_label_view_->SetText(shortcut_string);
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |shortcut_label_view_| always
   // align to right.

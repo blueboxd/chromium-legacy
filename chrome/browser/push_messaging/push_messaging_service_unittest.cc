@@ -24,6 +24,7 @@
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
+#include "chrome/browser/push_messaging/push_messaging_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/gcm_driver/crypto/gcm_crypto_test_helpers.h"
@@ -301,15 +302,15 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
 
   // NIST P-256 public keys in uncompressed format will be encoded using the
   // URL-safe base64 encoding by the normalization function.
-  EXPECT_EQ(kTestEncodedP256Key, push_service->NormalizeSenderInfo(p256dh));
+  EXPECT_EQ(kTestEncodedP256Key, push_messaging::NormalizeSenderInfo(p256dh));
 
   // Any other value, binary or not, will be passed through as-is.
-  EXPECT_EQ("1234567890", push_service->NormalizeSenderInfo("1234567890"));
-  EXPECT_EQ("foo@bar.com", push_service->NormalizeSenderInfo("foo@bar.com"));
+  EXPECT_EQ("1234567890", push_messaging::NormalizeSenderInfo("1234567890"));
+  EXPECT_EQ("foo@bar.com", push_messaging::NormalizeSenderInfo("foo@bar.com"));
 
   p256dh[0] = 0x05;  // invalidate |p256dh| as a public key.
 
-  EXPECT_EQ(p256dh, push_service->NormalizeSenderInfo(p256dh));
+  EXPECT_EQ(p256dh, push_messaging::NormalizeSenderInfo(p256dh));
 }
 
 TEST_F(PushMessagingServiceTest, RemoveExpiredSubscriptions) {

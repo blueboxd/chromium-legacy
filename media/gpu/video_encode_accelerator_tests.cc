@@ -252,8 +252,9 @@ TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
 
 // Encode video from start to end. Multiple buffer encodes will be queued in the
 // encoder, without waiting for the result of the previous encode requests.
-TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
-  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleOutstandingEncodes) {
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile(),
+                                  g_env->Bitrate());
   config.max_outstanding_encode_requests = 4;
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 

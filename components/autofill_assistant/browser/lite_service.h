@@ -68,9 +68,9 @@ class LiteService : public Service {
                     bool result,
                     const std::string& response);
 
-  // Stops the script and closes autobot without showing an error message.
-  // This is done by running an explicit stop action, followed by an empty
-  // response in |GetNextActions|.
+  // Stops the script and closes autofill assistant without showing an error
+  // message. This is done by running an explicit stop action, followed by an
+  // empty response in |GetNextActions|.
   void StopWithoutErrorMessage(ResponseCallback callback,
                                Metrics::LiteScriptFinishedState state);
 

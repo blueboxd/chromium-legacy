@@ -37,10 +37,6 @@ void MultiprofilesIntroDialog::Show(OnAcceptCallback on_accept) {
   widget->Show();
 }
 
-ui::ModalType MultiprofilesIntroDialog::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
-
 gfx::Size MultiprofilesIntroDialog::CalculatePreferredSize() const {
   return gfx::Size(
       kDefaultWidth,
@@ -52,6 +48,7 @@ MultiprofilesIntroDialog::MultiprofilesIntroDialog(OnAcceptCallback on_accept)
           l10n_util::GetStringUTF16(IDS_ASH_DIALOG_DONT_SHOW_AGAIN))),
       on_accept_(std::move(on_accept)) {
   never_show_again_checkbox_->SetChecked(true);
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
   SetTitle(l10n_util::GetStringUTF16(IDS_ASH_MULTIPROFILES_INTRO_HEADLINE));
   SetShowCloseButton(false);
   SetAcceptCallback(base::BindOnce(

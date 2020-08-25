@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -19,8 +20,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-
-enum class EnableThirdPartyCookieBlocking { kEnable, kDisable };
 
 // A simple fixture used for testing dedicated workers and shared workers. The
 // fixture stashes the HTTP request to the worker script for inspecting the
@@ -47,15 +46,13 @@ class ChromeWorkerBrowserTest : public InProcessBrowserTest {
   // third-party cookie blocking configuration.
   // This is the regression test for https://crbug.com/933287.
   void TestWorkerScriptFetchWithThirdPartyCookieBlocking(
-      EnableThirdPartyCookieBlocking enable_third_party_cookie_blocking,
+      content_settings::CookieControlsMode cookie_controls_mode,
       const std::string& test_url) {
     const std::string kCookie = "foo=bar";
 
     // Set up third-party cookie blocking.
-    browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kBlockThirdPartyCookies,
-        enable_third_party_cookie_blocking ==
-            EnableThirdPartyCookieBlocking::kEnable);
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kCookieControlsMode, static_cast<int>(cookie_controls_mode));
 
     // Make sure cookies are not set.
     ASSERT_TRUE(
@@ -112,27 +109,27 @@ class ChromeWorkerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeWorkerBrowserTest,
                        DedicatedWorkerScriptFetchWithThirdPartyBlocking) {
   TestWorkerScriptFetchWithThirdPartyCookieBlocking(
-      EnableThirdPartyCookieBlocking::kEnable,
+      content_settings::CookieControlsMode::kBlockThirdParty,
       "/workers/create_dedicated_worker.html?worker_url=/capture");
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWorkerBrowserTest,
                        DedicatedWorkerScriptFetchWithoutThirdPartyBlocking) {
   TestWorkerScriptFetchWithThirdPartyCookieBlocking(
-      EnableThirdPartyCookieBlocking::kDisable,
+      content_settings::CookieControlsMode::kOff,
       "/workers/create_dedicated_worker.html?worker_url=/capture");
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWorkerBrowserTest,
                        SharedWorkerScriptFetchWithThirdPartyBlocking) {
   TestWorkerScriptFetchWithThirdPartyCookieBlocking(
-      EnableThirdPartyCookieBlocking::kEnable,
+      content_settings::CookieControlsMode::kBlockThirdParty,
       "/workers/create_shared_worker.html?worker_url=/capture");
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWorkerBrowserTest,
                        SharedWorkerScriptFetchWithoutThirdPartyBlocking) {
   TestWorkerScriptFetchWithThirdPartyCookieBlocking(
-      EnableThirdPartyCookieBlocking::kDisable,
+      content_settings::CookieControlsMode::kOff,
       "/workers/create_shared_worker.html?worker_url=/capture");
 }

@@ -40,10 +40,6 @@ CookieSettings::CookieSettings(
   content_settings_observer_.Add(host_content_settings_map_.get());
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
-      prefs::kBlockThirdPartyCookies,
-      base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
       base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
                           base::Unretained(this)));
@@ -245,12 +241,6 @@ void CookieSettings::GetCookieSettingInternal(
 CookieSettings::~CookieSettings() = default;
 
 bool CookieSettings::IsCookieControlsEnabled() {
-#if !defined(OS_IOS)
-  if (pref_change_registrar_.prefs()->GetBoolean(
-          prefs::kBlockThirdPartyCookies)) {
-    return true;
-  }
-#endif
 #if defined(OS_IOS)
   if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
     return false;
@@ -285,8 +275,6 @@ void CookieSettings::OnCookiePreferencesChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool new_block_third_party_cookies =
-      pref_change_registrar_.prefs()->GetBoolean(
-          prefs::kBlockThirdPartyCookies) ||
       IsCookieControlsEnabled();
 
   // Safe to read |block_third_party_cookies_| without locking here because the

@@ -104,7 +104,7 @@ void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
 #elif defined(OS_ANDROID) || defined(OS_APPLE)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {}, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetHardwareInfoSync),
       std::move(callback));

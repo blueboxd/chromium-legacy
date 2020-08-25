@@ -68,7 +68,10 @@ bool AllRootWindowsHaveModalBackgrounds() {
 
 class TestWindow : public views::WidgetDelegateView {
  public:
-  explicit TestWindow(bool modal) : modal_(modal) {}
+  explicit TestWindow(bool modal) {
+    SetModalType(modal ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
+    SetPreferredSize(gfx::Size(50, 50));
+  }
   ~TestWindow() override = default;
 
   // The window needs be closed from widget in order for
@@ -77,19 +80,7 @@ class TestWindow : public views::WidgetDelegateView {
     views::Widget::GetWidgetForNativeWindow(window)->Close();
   }
 
-  // Overridden from views::View:
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(50, 50);
-  }
-
-  // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override {
-    return modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
-  }
-
  private:
-  bool modal_;
-
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
 

@@ -34,22 +34,24 @@ using CredentialPasswordsMap =
 // Transparent comparator that can compare CompromisedCredentials and
 // autofill::PasswordForm.
 struct CredentialWithoutPasswordLess {
-  static std::tuple<const std::string&, const base::string16&>
-  CredentialOriginAndUsername(const autofill::PasswordForm& form) {
-    return std::tie(form.signon_realm, form.username_value);
-  }
-
-  static std::tuple<const std::string&, const base::string16&>
-  CredentialOriginAndUsername(const CompromisedCredentials& c) {
-    return std::tie(c.signon_realm, c.username);
-  }
-
   template <typename T, typename U>
   bool operator()(const T& lhs, const U& rhs) const {
-    return CredentialOriginAndUsername(lhs) < CredentialOriginAndUsername(rhs);
+    return CredentialOriginAndUsernameAndStore(lhs) <
+           CredentialOriginAndUsernameAndStore(rhs);
   }
 
   using is_transparent = void;
+
+ private:
+  static auto CredentialOriginAndUsernameAndStore(
+      const autofill::PasswordForm& form) {
+    return std::tie(form.signon_realm, form.username_value, form.in_store);
+  }
+
+  static auto CredentialOriginAndUsernameAndStore(
+      const CompromisedCredentials& c) {
+    return std::tie(c.signon_realm, c.username, c.in_store);
+  }
 };
 
 CompromiseTypeFlags ConvertCompromiseType(CompromiseType type) {
@@ -184,11 +186,14 @@ CredentialWithPassword& CredentialWithPassword::operator=(
     CredentialWithPassword&& other) = default;
 
 CompromisedCredentialsManager::CompromisedCredentialsManager(
-    scoped_refptr<PasswordStore> store,
-    SavedPasswordsPresenter* presenter)
-    : store_(std::move(store)),
-      presenter_(presenter),
-      compromised_credentials_reader_(store_.get()) {
+    SavedPasswordsPresenter* presenter,
+    scoped_refptr<PasswordStore> profile_store,
+    scoped_refptr<PasswordStore> account_store)
+    : presenter_(presenter),
+      profile_store_(std::move(profile_store)),
+      account_store_(std::move(account_store)),
+      compromised_credentials_reader_(profile_store_.get(),
+                                      account_store_.get()) {
   observed_compromised_credentials_reader_.Add(
       &compromised_credentials_reader_);
   observed_saved_password_presenter_.Add(presenter_);
@@ -211,7 +216,7 @@ void CompromisedCredentialsManager::SaveCompromisedCredential(
     if (saved_password.password_value == credential.password() &&
         CanonicalizeUsername(saved_password.username_value) ==
             canonicalized_username) {
-      store_->AddCompromisedCredentials({
+      profile_store_->AddCompromisedCredentials({
           .signon_realm = saved_password.signon_realm,
           .username = saved_password.username_value,
           .create_time = base::Time::Now(),
@@ -235,7 +240,7 @@ bool CompromisedCredentialsManager::UpdateCompromisedCredentials(
     return false;
 
   for (size_t i = 1; i < forms.size(); ++i)
-    store_->RemoveLogin(forms[i]);
+    profile_store_->RemoveLogin(forms[i]);
 
   // Note: We Invoke EditPassword on the presenter rather than UpdateLogin() on
   // the store, so that observers of the presenter get notified of this event.
@@ -252,7 +257,7 @@ bool CompromisedCredentialsManager::RemoveCompromisedCredential(
   // credentials were deleted.
   const auto& saved_passwords = it->second.forms;
   for (const autofill::PasswordForm& saved_password : saved_passwords)
-    store_->RemoveLogin(saved_password);
+    profile_store_->RemoveLogin(saved_password);
 
   return !saved_passwords.empty();
 }

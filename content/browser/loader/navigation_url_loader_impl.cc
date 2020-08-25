@@ -49,7 +49,6 @@
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
-#include "content/common/net/record_load_histograms.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,6 +88,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/loader/record_load_histograms.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
@@ -309,9 +309,9 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
   // request. The net::OK check may not be necessary - the case where OK is
   // received without receiving any headers looks broken, anyways.
   if (!received_response_ && (!status_ || status_->error_code != net::OK)) {
-    RecordLoadHistograms(url::Origin::Create(url_),
-                         resource_request_->destination,
-                         status_ ? status_->error_code : net::ERR_ABORTED);
+    blink::RecordLoadHistograms(
+        url::Origin::Create(url_), resource_request_->destination,
+        status_ ? status_->error_code : net::ERR_ABORTED);
   }
 }
 

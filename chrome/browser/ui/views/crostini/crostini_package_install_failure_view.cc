@@ -52,11 +52,10 @@ CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
   set_margins(provider->GetDialogInsetsForContentType(
       views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
-  views::StyledLabel* message_label = new views::StyledLabel(
-      l10n_util::GetStringUTF16(
-          IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_MESSAGE),
-      nullptr);
-  AddChildView(message_label);
+  views::StyledLabel* message_label =
+      AddChildView(std::make_unique<views::StyledLabel>());
+  message_label->SetText(l10n_util::GetStringUTF16(
+      IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_MESSAGE));
 
   views::MessageBoxView* error_box =
       new views::MessageBoxView(base::UTF8ToUTF16(error_message));

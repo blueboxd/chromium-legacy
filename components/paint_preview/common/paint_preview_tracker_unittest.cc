@@ -4,12 +4,14 @@
 
 #include "components/paint_preview/common/paint_preview_tracker.h"
 
+#include "base/containers/flat_map.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/serial_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,6 +23,36 @@ namespace {
 struct TestContext {
   const gfx::Rect* rect;
   bool was_called;
+};
+
+// A test canvas for checking that the pictures drawn to it have the cull rect
+// we expect them to.
+class ExpectSubframeCanvas : public SkCanvas {
+ public:
+  void onDrawPicture(const SkPicture* picture,
+                     const SkMatrix*,
+                     const SkPaint*) override {
+    drawn_pictures_.insert({picture->uniqueID(), picture->cullRect()});
+  }
+
+  void ExpectHasPicture(uint32_t expected_picture_id,
+                        const gfx::Rect& expected_bounds) {
+    auto it = drawn_pictures_.find(expected_picture_id);
+    if (it == drawn_pictures_.end()) {
+      ADD_FAILURE() << "Picture ID was not recorded.";
+      return;
+    }
+
+    SkIRect rect = it->second.round();
+    EXPECT_EQ(rect.x(), expected_bounds.x());
+    EXPECT_EQ(rect.y(), expected_bounds.y());
+    EXPECT_EQ(rect.width(), expected_bounds.width());
+    EXPECT_EQ(rect.height(), expected_bounds.height());
+  }
+
+ private:
+  // Map of picture id to expected bounds of pictures drawn into this canvas.
+  base::flat_map<uint32_t, SkRect> drawn_pictures_;
 };
 
 }  // namespace
@@ -52,42 +84,10 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
   EXPECT_EQ(context->content_id_to_embedding_token[content_id],
             kEmbeddingTokenChild);
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(100, 100);
-  tracker.CustomDataToSkPictureCallback(canvas, content_id);
-  sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
+  ExpectSubframeCanvas canvas;
+  tracker.CustomDataToSkPictureCallback(&canvas, content_id);
 
-  // TODO(crbug/1009552): find a good way to check that a filler picture was
-  // actually inserted into |pic|. This is difficult without using the
-  // underlying private picture record.
-}
-
-TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPictureWithScroll) {
-  const base::UnguessableToken kDocToken = base::UnguessableToken::Create();
-  const base::UnguessableToken kEmbeddingToken =
-      base::UnguessableToken::Create();
-  PaintPreviewTracker tracker(kDocToken, kEmbeddingToken, true);
-  tracker.SetScrollForFrame(SkISize::Make(10, 20));
-
-  const base::UnguessableToken kEmbeddingTokenChild =
-      base::UnguessableToken::Create();
-  gfx::Rect rect(50, 40, 30, 20);
-  uint32_t content_id =
-      tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
-  PictureSerializationContext* context =
-      tracker.GetPictureSerializationContext();
-  EXPECT_TRUE(context->content_id_to_embedding_token.count(content_id));
-  EXPECT_EQ(context->content_id_to_embedding_token[content_id],
-            kEmbeddingTokenChild);
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(100, 100);
-  tracker.CustomDataToSkPictureCallback(canvas, content_id);
-  sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
-
-  // TODO(crbug/1009552): find a good way to check that a filler picture was
-  // actually inserted into |pic|. This is difficult without using the
-  // underlying private picture record.
+  canvas.ExpectHasPicture(content_id, rect);
 }
 
 TEST(PaintPreviewTrackerTest, TestGlyphRunList) {

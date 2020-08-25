@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "crypto/random.h"
@@ -152,7 +153,6 @@ void NearbyConnectionsManagerImpl::Connect(
     base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
     DataUsage data_usage,
     NearbyConnectionCallback callback) {
-  // TOOD(crbug/1076008): Implement.
   if (!nearby_connections_) {
     std::move(callback).Run(nullptr);
     return;
@@ -162,37 +162,42 @@ void NearbyConnectionsManagerImpl::Connect(
   connection_lifecycle_listeners_.Add(
       this, lifecycle_listener.InitWithNewPipeAndPassReceiver());
 
+  auto result =
+      pending_outgoing_connections_.emplace(endpoint_id, std::move(callback));
+  DCHECK(result.second);
+
+  auto timeout_timer = std::make_unique<base::OneShotTimer>();
+  timeout_timer->Start(
+      FROM_HERE, kInitiateNearbyConnectionTimeout,
+      base::BindOnce(&NearbyConnectionsManagerImpl::OnConnectionTimedOut,
+                     weak_ptr_factory_.GetWeakPtr(), endpoint_id));
+  connect_timeout_timers_.emplace(endpoint_id, std::move(timeout_timer));
+
   // TODO(crbug/10706008): Add MediumSelector and bluetooth_mac_address.
   nearby_connections_->RequestConnection(
       endpoint_info, endpoint_id, std::move(lifecycle_listener),
       base::BindOnce(&NearbyConnectionsManagerImpl::OnConnectionRequested,
-                     weak_ptr_factory_.GetWeakPtr(), endpoint_id,
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), endpoint_id));
+}
+
+void NearbyConnectionsManagerImpl::OnConnectionTimedOut(
+    const std::string& endpoint_id) {
+  NS_LOG(ERROR) << "Failed to connect to the remote shareTarget: Timed out.";
+  Disconnect(endpoint_id);
 }
 
 void NearbyConnectionsManagerImpl::OnConnectionRequested(
     const std::string& endpoint_id,
-    NearbyConnectionCallback callback,
     ConnectionsStatus status) {
+  auto it = pending_outgoing_connections_.find(endpoint_id);
+  if (it == pending_outgoing_connections_.end())
+    return;
+
   if (status != ConnectionsStatus::kSuccess) {
     NS_LOG(ERROR) << "Failed to connect to the remote shareTarget: " << status;
-    nearby_connections_->DisconnectFromEndpoint(
-        endpoint_id,
-        base::BindOnce(
-            [](const std::string& endpoint_id, ConnectionsStatus status) {
-              NS_LOG(VERBOSE)
-                  << __func__ << ": Disconnecting from endpoint " << endpoint_id
-                  << " attempted over Nearby Connections with result "
-                  << status;
-            },
-            endpoint_id));
-    std::move(callback).Run(nullptr);
+    Disconnect(endpoint_id);
     return;
   }
-
-  auto result =
-      pending_outgoing_connections_.emplace(endpoint_id, std::move(callback));
-  DCHECK(result.second);
 
   // TODO(crbug/1111458): Support TransferManager.
 }
@@ -450,6 +455,7 @@ void NearbyConnectionsManagerImpl::OnConnectionAccepted(
     DCHECK(result.second);
     std::move(it->second).Run(result.first->second.get());
     pending_outgoing_connections_.erase(it);
+    connect_timeout_timers_.erase(endpoint_id);
   }
 }
 
@@ -462,6 +468,7 @@ void NearbyConnectionsManagerImpl::OnConnectionRejected(
   if (it != pending_outgoing_connections_.end()) {
     std::move(it->second).Run(nullptr);
     pending_outgoing_connections_.erase(it);
+    connect_timeout_timers_.erase(endpoint_id);
   }
 
   // TODO(crbug/1111458): Support TransferManager.
@@ -475,6 +482,7 @@ void NearbyConnectionsManagerImpl::OnDisconnected(
   if (it != pending_outgoing_connections_.end()) {
     std::move(it->second).Run(nullptr);
     pending_outgoing_connections_.erase(it);
+    connect_timeout_timers_.erase(endpoint_id);
   }
 
   connections_.erase(endpoint_id);
@@ -562,7 +570,6 @@ void NearbyConnectionsManagerImpl::Reset() {
   }
   nearby_connections_ = nullptr;
   discovered_endpoints_.clear();
-  pending_outgoing_connections_.clear();
   payload_status_listeners_.clear();
   ClearIncomingPayloads();
   connections_.clear();
@@ -570,4 +577,10 @@ void NearbyConnectionsManagerImpl::Reset() {
   discovery_listener_ = nullptr;
   incoming_connection_listener_ = nullptr;
   endpoint_discovery_listener_.reset();
+  connect_timeout_timers_.clear();
+
+  for (auto& entry : pending_outgoing_connections_)
+    std::move(entry.second).Run(/*connection=*/nullptr);
+
+  pending_outgoing_connections_.clear();
 }

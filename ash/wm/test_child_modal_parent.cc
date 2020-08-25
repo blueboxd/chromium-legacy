@@ -43,33 +43,22 @@ const int kTextfieldHeight = 35;
 const SkColor kModalParentColor = SK_ColorBLUE;
 const SkColor kChildColor = SK_ColorWHITE;
 
+views::WidgetDelegateView* CreateChildModalWindow() {
+  auto child = std::make_unique<views::WidgetDelegateView>();
+  child->SetModalType(ui::MODAL_TYPE_CHILD);
+  child->SetTitle(base::ASCIIToUTF16("Examples: Child Modal Window"));
+  child->SetBackground(views::CreateSolidBackground(kChildColor));
+  child->SetPreferredSize(gfx::Size(kChildWindowWidth, kChildWindowHeight));
+
+  auto textfield = std::make_unique<views::Textfield>();
+  textfield->SetBounds(kTextfieldLeft, kTextfieldTop, kTextfieldWidth,
+                       kTextfieldHeight);
+  textfield->SetPlaceholderText(base::ASCIIToUTF16("modal child window"));
+  child->AddChildView(std::move(textfield));
+  return child.release();
+}
+
 }  // namespace
-
-class ChildModalWindow : public views::WidgetDelegateView {
- public:
-  ChildModalWindow() {
-    SetTitle(base::ASCIIToUTF16("Examples: Child Modal Window"));
-    SetBackground(views::CreateSolidBackground(kChildColor));
-    views::Textfield* modal_child_textfield = new views::Textfield;
-    AddChildView(modal_child_textfield);
-    modal_child_textfield->SetBounds(kTextfieldLeft, kTextfieldTop,
-                                     kTextfieldWidth, kTextfieldHeight);
-    modal_child_textfield->SetPlaceholderText(
-        base::ASCIIToUTF16("modal child window"));
-  }
-  ~ChildModalWindow() override = default;
-
- private:
-  // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kChildWindowWidth, kChildWindowHeight);
-  }
-
-  // Overridden from WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
-
-  DISALLOW_COPY_AND_ASSIGN(ChildModalWindow);
-};
 
 // static
 TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
@@ -119,7 +108,7 @@ aura::Window* TestChildModalParent::GetModalParent() const {
 
 aura::Window* TestChildModalParent::ShowModalChild() {
   DCHECK(!modal_child_);
-  modal_child_ = Widget::CreateWindowWithParent(new ChildModalWindow(),
+  modal_child_ = Widget::CreateWindowWithParent(CreateChildModalWindow(),
                                                 GetWidget()->GetNativeView());
   wm::SetModalParent(modal_child_->GetNativeView(),
                      modal_parent_->GetNativeView());

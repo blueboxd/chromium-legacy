@@ -216,7 +216,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (self) {
     _sceneState = sceneState;
     [_sceneState addObserver:self];
-    [_sceneState.appState addObserver:self];
     // The window is necessary very early in the app/scene lifecycle, so it
     // should be created right away.
     // When multiwindow is supported, the window is created by SceneDelegate,
@@ -503,6 +502,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [self startUpChromeUI];
   }
 
+  [self.sceneState.appState addObserver:self];
+
   self.hasInitializedUI = YES;
 }
 
@@ -676,6 +677,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   self.browserViewWrangler = nil;
 
   self.hasInitializedUI = NO;
+
+  [self.sceneState.appState removeObserver:self];
 }
 
 #pragma mark - First Run

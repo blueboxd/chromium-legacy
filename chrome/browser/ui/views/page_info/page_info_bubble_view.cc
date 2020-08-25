@@ -220,8 +220,8 @@ BubbleHeaderView::BubbleHeaderView(
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
 
-  auto security_details_label = std::make_unique<views::StyledLabel>(
-      base::string16(), styled_label_listener);
+  auto security_details_label =
+      std::make_unique<views::StyledLabel>(styled_label_listener);
   security_details_label->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS);
   security_details_label_ =
@@ -280,8 +280,10 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 
   base::string16 text = base::ReplaceStringPlaceholders(
       base::ASCIIToUTF16("$1 $2"), subst, &offsets);
-  auto reset_cert_decisions_label =
-      std::make_unique<views::StyledLabel>(text, styled_label_listener_);
+  views::StyledLabel* reset_cert_decisions_label =
+      reset_decisions_label_container_->AddChildView(
+          std::make_unique<views::StyledLabel>(styled_label_listener_));
+  reset_cert_decisions_label->SetText(text);
   reset_cert_decisions_label->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS);
   gfx::Range link_range(offsets[1], text.length());
@@ -293,8 +295,6 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
   reset_cert_decisions_label->AddStyleRange(link_range, link_style);
   // Fit the styled label to occupy available width.
   reset_cert_decisions_label->SizeToFit(0);
-  reset_decisions_label_container_->AddChildView(
-      std::move(reset_cert_decisions_label));
 
   // Now that it contains a label, the container needs padding at the top.
   reset_decisions_label_container_->SetBorder(views::CreateEmptyBorder(

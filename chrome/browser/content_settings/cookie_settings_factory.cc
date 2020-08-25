@@ -60,22 +60,14 @@ CookieSettingsFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   PrefService* prefs = profile->GetPrefs();
 
-  // Migrate BlockThirdPartyCookies to CookieControlsMode pref.
-  if (prefs->IsUserModifiablePreference(prefs::kBlockThirdPartyCookies) &&
-      prefs->GetBoolean(prefs::kBlockThirdPartyCookies) &&
-      prefs->GetInteger(prefs::kCookieControlsMode) !=
-          static_cast<int>(CookieControlsMode::kBlockThirdParty)) {
-    prefs->SetInteger(prefs::kCookieControlsMode,
-                      static_cast<int>(CookieControlsMode::kBlockThirdParty));
-  }
-
   // Record cookie setting histograms.
-  base::UmaHistogramBoolean("Privacy.ThirdPartyCookieBlockingSetting",
-                            prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
-  base::UmaHistogramEnumeration(
-      "Privacy.CookieControlsSetting",
-      static_cast<CookieControlsMode>(
-          prefs->GetInteger(prefs::kCookieControlsMode)));
+  auto cookie_controls_mode = static_cast<CookieControlsMode>(
+      prefs->GetInteger(prefs::kCookieControlsMode));
+  base::UmaHistogramBoolean(
+      "Privacy.ThirdPartyCookieBlockingSetting",
+      cookie_controls_mode == CookieControlsMode::kBlockThirdParty);
+  base::UmaHistogramEnumeration("Privacy.CookieControlsSetting",
+                                cookie_controls_mode);
   // The DNT setting is only vaguely cookie-related. However, there is currently
   // no DNT-related code that is executed once per Profile lifetime, and
   // creating a new BrowserContextKeyedService to record this metric would be

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
-import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
 import android.content.Context;
 import android.content.Intent;
@@ -252,7 +252,7 @@ public class SiteSettingsTest {
             Assert.assertEquals(
                     "Third Party Cookie Blocking should be " + (expected ? "managed" : "unmanaged"),
                     UserPrefs.get(Profile.getLastUsedRegularProfile())
-                            .isManagedPreference(BLOCK_THIRD_PARTY_COOKIES),
+                            .isManagedPreference(COOKIE_CONTROLS_MODE),
                     expected);
         });
     }

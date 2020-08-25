@@ -1630,26 +1630,6 @@ BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetFromID(
   return ToBrowserAccessibilityComWin(Manager()->GetFromID(id));
 }
 
-bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
-  if (!owner()->PlatformGetParent())
-    return false;
-
-  ax::mojom::Role role = owner()->GetRole();
-  ax::mojom::Role parent_role = owner()->PlatformGetParent()->GetRole();
-
-  if (role == ax::mojom::Role::kListBoxOption &&
-      parent_role == ax::mojom::Role::kListBox) {
-    return true;
-  }
-
-  if (role == ax::mojom::Role::kMenuListOption &&
-      parent_role == ax::mojom::Role::kMenuListPopup) {
-    return true;
-  }
-
-  return false;
-}
-
 void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
   // We only allow events on descendants of a platform leaf when that platform
   // leaf is a popup button parent of a menu list popup. On Windows, the menu

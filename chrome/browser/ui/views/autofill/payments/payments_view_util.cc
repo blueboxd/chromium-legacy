@@ -145,8 +145,8 @@ std::unique_ptr<views::StyledLabel>
 LegalMessageView::CreateLegalMessageLineLabel(
     const LegalMessageLine& line,
     views::StyledLabelListener* listener) {
-  std::unique_ptr<views::StyledLabel> label =
-      std::make_unique<views::StyledLabel>(line.text(), listener);
+  auto label = std::make_unique<views::StyledLabel>(listener);
+  label->SetText(line.text());
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
   label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   for (const LegalMessageLine::Link& link : line.links()) {

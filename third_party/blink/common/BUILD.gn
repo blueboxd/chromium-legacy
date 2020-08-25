@@ -108,6 +108,7 @@ source_set("common") {
     "loader/mime_sniffing_throttle.cc",
     "loader/mime_sniffing_url_loader.cc",
     "loader/network_utils.cc",
+    "loader/record_load_histograms.cc",
     "loader/referrer_utils.cc",
     "loader/resource_type_util.cc",
     "loader/throttling_url_loader.cc",

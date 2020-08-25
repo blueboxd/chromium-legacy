@@ -259,28 +259,32 @@ bool DiscardableSharedMemoryHeap::OnMemoryDump(
   auto* total_dump = pmd->CreateAllocatorDump(base::StringPrintf(
       "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this)));
   const size_t freelist_size = GetSizeOfFreeLists();
-  const size_t total_size = GetSize();
   total_dump->AddScalar("freelist_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         freelist_size);
-  total_dump->AddScalar("virtual_size",
-                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        total_size);
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    // These metrics (size and virtual size) are also reported by each
+    // individual segment. If we report both, then the counts are artificially
+    // inflated in detailed dumps, depending on aggregation (for instance, in
+    // about:tracing's UI).
+    const size_t total_size = GetSize();
     total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           total_size - freelist_size);
-    return true;
+    total_dump->AddScalar("virtual_size",
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          total_size);
+  } else {
+    // This iterates over all the memory allocated by the heap, and calls
+    // |OnMemoryDump| for each. It does not contain any information about the
+    // DiscardableSharedMemoryHeap itself.
+    std::for_each(memory_segments_.begin(), memory_segments_.end(),
+                  [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
+                    segment->OnMemoryDump(pmd);
+                  });
   }
 
-  // This iterates over all the memory allocated by the heap, and calls
-  // |OnMemoryDump| for each. It does not contain any information about the
-  // DiscardableSharedMemoryHeap itself.
-  std::for_each(memory_segments_.begin(), memory_segments_.end(),
-                [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
-                  segment->OnMemoryDump(pmd);
-                });
   return true;
 }
 

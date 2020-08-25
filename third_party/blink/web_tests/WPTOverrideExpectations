@@ -946,11 +946,6 @@ external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass ] # 
 external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/paint-timing/sibling-painting-first-image.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/payment-request/payment-is-showing.https.html [ Failure ] # wpt_subtest_failure
-external/wpt/payment-request/payment-request-canmakepayment-method-protection.https.html [ Pass ] # wpt_subtest_failure
-external/wpt/payment-request/payment-request-canmakepayment-method.https.html [ Failure ]
-external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure ] # wpt_subtest_failure
-external/wpt/payment-request/payment-request-show-method.https.html [ Failure ]
 external/wpt/picture-in-picture/css-selector.html [ Pass ] # wpt_subtest_failure
 external/wpt/picture-in-picture/disable-picture-in-picture.html [ Pass ] # wpt_subtest_failure
 external/wpt/picture-in-picture/enter-picture-in-picture.html [ Pass ] # wpt_subtest_failure

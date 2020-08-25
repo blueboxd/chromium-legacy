@@ -649,7 +649,7 @@ TEST_F(NearbyConnectionsTest, OnPayloadTransferUpdate) {
   payload_progress_run_loop.Run();
 }
 
-// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+// TODO(crbug/1076008): Re-enable test after upprev NearbyConnections.
 TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayload) {
   const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                               std::end(kPayload));
@@ -693,7 +693,7 @@ TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayload) {
   send_payload_run_loop.Run();
 }
 
-// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+// TODO(crbug/1076008): Re-enable test after upprev NearbyConnections.
 TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayloadCancelled) {
   const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                               std::end(kPayload));
@@ -751,7 +751,7 @@ TEST_F(NearbyConnectionsTest, DISABLED_SendBytesPayloadCancelled) {
   cancel_payload_run_loop.Run();
 }
 
-// TOOD(crbug/1076008): Re-enable test after upprev NearbyConnections.
+// TODO(crbug/1076008): Re-enable test after upprev NearbyConnections.
 TEST_F(NearbyConnectionsTest, DISABLED_SendFilePayload) {
   const std::vector<uint8_t> expected_payload(std::begin(kPayload),
                                               std::end(kPayload));

@@ -25,9 +25,6 @@ class AccessibilityFeatureDisableDialog : public views::DialogDelegateView {
                                     base::OnceClosure on_cancel_callback);
   ~AccessibilityFeatureDisableDialog() override;
 
-  // views::DialogDelegateView:
-  ui::ModalType GetModalType() const override;
-
   base::WeakPtr<AccessibilityFeatureDisableDialog> GetWeakPtr();
 
   // views::View:

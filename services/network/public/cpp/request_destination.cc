@@ -10,7 +10,7 @@ const char* RequestDestinationToString(
     network::mojom::RequestDestination dest) {
   switch (dest) {
     case network::mojom::RequestDestination::kEmpty:
-      return "empty";
+      return "";
     case network::mojom::RequestDestination::kAudio:
       return "audio";
     case network::mojom::RequestDestination::kAudioWorklet:

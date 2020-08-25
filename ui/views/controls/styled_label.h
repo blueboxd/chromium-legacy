@@ -105,18 +105,18 @@ class VIEWS_EXPORT StyledLabel : public View {
     // smaller width than this will force a recomputation.
     gfx::Size total_size;
 
-    // The sizes of each line of child views.  |size| can be computed directly
-    // from these values and is kept separately just for convenience.
+    // The sizes of each line of child views.  |total_size| can be computed
+    // directly from these values and is kept separately just for convenience.
     std::vector<gfx::Size> line_sizes;
   };
 
-  // Note that any trailing whitespace in |text| will be trimmed.
-  StyledLabel(const base::string16& text, StyledLabelListener* listener);
+  explicit StyledLabel(StyledLabelListener* listener = nullptr);
   ~StyledLabel() override;
 
-  // Sets the text to be displayed, and clears any previous styling.
+  // Sets the text to be displayed, and clears any previous styling.  Trailing
+  // whitespace is trimmed from the text.
   const base::string16& GetText() const;
-  void SetText(const base::string16& text);
+  void SetText(base::string16 text);
 
   // Returns the FontList that should be used. |style_info| is an optional
   // argument that takes precedence over the default values.

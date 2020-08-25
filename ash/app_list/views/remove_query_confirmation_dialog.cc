@@ -27,6 +27,7 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
     const base::string16& query,
     RemovalConfirmationCallback confirm_callback)
     : confirm_callback_(std::move(confirm_callback)) {
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetTitle(l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE));
   SetShowCloseButton(false);
 
@@ -65,10 +66,6 @@ const char* RemoveQueryConfirmationDialog::GetClassName() const {
 gfx::Size RemoveQueryConfirmationDialog::CalculatePreferredSize() const {
   const int default_width = kDialogWidth;
   return gfx::Size(default_width, GetHeightForWidth(default_width));
-}
-
-ui::ModalType RemoveQueryConfirmationDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
 }
 
 }  // namespace ash

@@ -12,16 +12,14 @@ class PrefValueMap;
 
 namespace content_settings {
 
-// A ConfigurationPolicyHandler which forces kCookieControlsEnabled to false
-// when BlockThirdPartyCookies is set by policy.
-class CookieSettingsPolicyHandler : public policy::ConfigurationPolicyHandler {
+// A ConfigurationPolicyHandler which sets kCookieControlsEnabled to
+// kOff/kBlockThirdParty based on the BlockThirdPartyCookies policy.
+class CookieSettingsPolicyHandler : public policy::TypeCheckingPolicyHandler {
  public:
   CookieSettingsPolicyHandler();
   ~CookieSettingsPolicyHandler() override;
 
-  // ConfigurationPolicyHandler:
-  bool CheckPolicySettings(const policy::PolicyMap& policies,
-                           policy::PolicyErrorMap* errors) override;
+  // TypeCheckingPolicyHandler:
   void ApplyPolicySettings(const policy::PolicyMap& policies,
                            PrefValueMap* prefs) override;
 

@@ -83,7 +83,8 @@ void EchoDialogView::InitForEnabledEcho(const base::string16& service_name,
   base::string16 text = l10n_util::GetStringFUTF16(IDS_ECHO_CONSENT_DIALOG_TEXT,
                                                    service_name, &offset);
 
-  auto label = std::make_unique<views::StyledLabel>(text, nullptr);
+  auto label = std::make_unique<views::StyledLabel>();
+  label->SetText(text);
 
   views::StyledLabel::RangeStyleInfo service_name_style;
   gfx::FontList font_list = label->GetFontList();

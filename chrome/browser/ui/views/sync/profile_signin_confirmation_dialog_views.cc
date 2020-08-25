@@ -153,7 +153,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT,
           domain, &offset);
-  auto prompt_label = std::make_unique<views::StyledLabel>(prompt_text, this);
+  auto prompt_label = std::make_unique<views::StyledLabel>(this);
+  prompt_label->SetText(prompt_text);
   prompt_label->SetDisplayedOnBackgroundColor(kPromptBarBackgroundColor);
 
   views::StyledLabel::RangeStyleInfo bold_style;
@@ -178,8 +179,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION :
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION,
           username, learn_more_text, &offsets);
-  auto explanation_label =
-      std::make_unique<views::StyledLabel>(signin_explanation_text, this);
+  auto explanation_label = std::make_unique<views::StyledLabel>(this);
+  explanation_label->SetText(signin_explanation_text);
   explanation_label->AddStyleRange(
       gfx::Range(offsets[1], offsets[1] + learn_more_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());

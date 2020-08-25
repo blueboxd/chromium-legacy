@@ -54,7 +54,8 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
   }
 
   void InitStyledLabel(const std::string& ascii_text) {
-    styled_ = std::make_unique<StyledLabel>(ASCIIToUTF16(ascii_text), this);
+    styled_ = std::make_unique<StyledLabel>(this);
+    styled_->SetText(ASCIIToUTF16(ascii_text));
     styled_->set_owned_by_client();
   }
 
@@ -330,7 +331,8 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
 
   // Sanity check that |bold_text| with normal font style would fit on a single
   // line in a styled label with width |styled_width|.
-  StyledLabel unstyled(ASCIIToUTF16(bold_text), this);
+  StyledLabel unstyled(this);
+  unstyled.SetText(ASCIIToUTF16(bold_text));
   unstyled.SetBounds(0, 0, styled_width, pref_height);
   unstyled.Layout();
   EXPECT_EQ(1u, unstyled.children().size());

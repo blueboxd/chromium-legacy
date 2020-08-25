@@ -157,7 +157,8 @@ DeviceChooserContentView::DeviceChooserContentView(
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, link_text, &offset);
-  auto adapter_off_help = std::make_unique<views::StyledLabel>(text, this);
+  auto adapter_off_help = std::make_unique<views::StyledLabel>(this);
+  adapter_off_help->SetText(text);
   adapter_off_help->AddStyleRange(
       gfx::Range(0, link_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());

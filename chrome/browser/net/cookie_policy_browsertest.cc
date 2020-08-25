@@ -62,8 +62,11 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   }
 
   void SetBlockThirdPartyCookies(bool value) {
-    browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
-                                                 value);
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(
+            value ? content_settings::CookieControlsMode::kBlockThirdParty
+                  : content_settings::CookieControlsMode::kOff));
   }
 
   void NavigateToPageWithFrame(const std::string& host) {

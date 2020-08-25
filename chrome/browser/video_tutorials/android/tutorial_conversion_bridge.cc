@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/video_tutorials/internal/android/tutorial_conversion_bridge.h"
+#include "chrome/browser/video_tutorials/android/tutorial_conversion_bridge.h"
 
 #include <memory>
 #include <string>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/video_tutorials/internal/jni_headers/TutorialConversionBridge_jni.h"
+#include "chrome/browser/video_tutorials/jni_headers/TutorialConversionBridge_jni.h"
 
 namespace video_tutorials {
 

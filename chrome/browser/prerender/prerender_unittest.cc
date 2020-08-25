@@ -34,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prerender/browser/prerender_contents.h"
@@ -503,7 +504,9 @@ TEST_F(PrerenderTest, RespectsThirdPartyCookiesPref) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(IsNoStatePrefetchEnabled());
 
-  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
   EXPECT_FALSE(AddSimplePrerender(url));
   histogram_tester().ExpectUniqueSample(
       "Prerender.FinalStatus", FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES, 1);

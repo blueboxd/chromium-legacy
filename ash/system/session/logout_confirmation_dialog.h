@@ -33,7 +33,6 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
   void ControllerGone();
 
   // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
   void WindowClosing() override;
 
   // views::View:

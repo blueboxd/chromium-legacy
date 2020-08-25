@@ -37,7 +37,7 @@ ProcessMetrics::~ProcessMetrics() = default;
 
 #if !defined(OS_FUCHSIA)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 static const rlim_t kSystemDefaultMaxFds = 8192;
 #elif defined(OS_APPLE)
 static const rlim_t kSystemDefaultMaxFds = 256;
@@ -119,7 +119,7 @@ size_t ProcessMetrics::GetMallocUsage() {
   malloc_statistics_t stats = {0};
   malloc_zone_statistics(nullptr, &stats);
   return stats.size_in_use;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   struct mallinfo minfo = mallinfo();
 #if BUILDFLAG(USE_TCMALLOC)
   return minfo.uordblks;

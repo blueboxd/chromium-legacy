@@ -400,10 +400,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // TODO(nektar): Rename this function to GetFromNodeID.
   BrowserAccessibilityComWin* GetFromID(int32_t id) const;
 
-  // Returns true if this is a list box option with a parent of type list box,
-  // or a menu list option with a parent of type menu list popup.
-  bool IsListBoxOptionOrMenuListOption();
-
   // Fire a Windows-specific accessibility event notification on this node.
   void FireNativeEvent(LONG win_event_type) const;
   struct WinAttributes {

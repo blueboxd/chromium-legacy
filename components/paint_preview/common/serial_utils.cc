@@ -18,10 +18,12 @@ namespace {
 #pragma pack(push, 1)
 struct SerializedRectData {
   uint32_t content_id;
-  int64_t x;
-  int64_t y;
-  int64_t width;
-  int64_t height;
+
+  // The size of the subframe in the local coordinates when it was drawn.
+  int64_t subframe_width;
+  int64_t subframe_height;
+
+  // The rect of the subframe in its parent frame's root coordinate system.
   int64_t transformed_x;
   int64_t transformed_y;
   int64_t transformed_width;
@@ -39,10 +41,10 @@ sk_sp<SkData> SerializePictureAsRectData(SkPicture* picture, void* ctx) {
   if (it == context->content_id_to_transformed_clip.end())
     return nullptr;
 
+  // This data originates from |PaintPreviewTracker|.
   const SkRect& transformed_cull_rect = it->second;
   SerializedRectData rect_data = {
-      picture->uniqueID(),           picture->cullRect().x(),
-      picture->cullRect().y(),       picture->cullRect().width(),
+      picture->uniqueID(),           picture->cullRect().width(),
       picture->cullRect().height(),  transformed_cull_rect.x(),
       transformed_cull_rect.y(),     transformed_cull_rect.width(),
       transformed_cull_rect.height()};
@@ -71,7 +73,7 @@ sk_sp<SkData> SerializeTypeface(SkTypeface* typeface, void* ctx) {
   return subset_data;
 }
 
-// Deserializies a clip rect for a subframe within the main SkPicture. These
+// Deserializes a clip rect for a subframe within the main SkPicture. These
 // represent subframes and require special decoding as they are custom data
 // rather than a valid SkPicture.
 // Precondition: the version of the SkPicture should be checked prior to
@@ -106,21 +108,19 @@ sk_sp<SkPicture> GetPictureFromDeserialContext(const void* data,
   memcpy(&rect_data, data, sizeof(rect_data));
   auto* context = reinterpret_cast<LoadedFramesDeserialContext*>(ctx);
 
-  auto it = context->subframes.find(rect_data.content_id);
-  if (it == context->subframes.end())
+  auto it = context->find(rect_data.content_id);
+  if (it == context->end())
     return MakeEmptyPicture();
 
   // Scroll and clip the subframe manually since the picture in |ctx| does not
   // encode this information.
-  SkRect subframe_bounds = SkRect::MakeWH(rect_data.width, rect_data.height);
-  subframe_bounds.offset(-context->scroll_offsets.width(),
-                         -context->scroll_offsets.height());
+  SkRect subframe_bounds =
+      SkRect::MakeWH(rect_data.subframe_width, rect_data.subframe_height);
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(subframe_bounds);
   canvas->clipRect(subframe_bounds);
   SkMatrix apply_scroll_offsets = SkMatrix::Translate(
-      -context->scroll_offsets.width() - it->second.scroll_offsets.width(),
-      -context->scroll_offsets.height() - it->second.scroll_offsets.height());
+      -it->second.scroll_offsets.width(), -it->second.scroll_offsets.height());
   canvas->drawPicture(it->second.picture, &apply_scroll_offsets, nullptr);
   return recorder.finishRecordingAsPicture();
 }
@@ -146,9 +146,6 @@ FrameAndScrollOffsets::FrameAndScrollOffsets(const FrameAndScrollOffsets&) =
     default;
 FrameAndScrollOffsets& FrameAndScrollOffsets::operator=(
     const FrameAndScrollOffsets&) = default;
-
-LoadedFramesDeserialContext::LoadedFramesDeserialContext() = default;
-LoadedFramesDeserialContext::~LoadedFramesDeserialContext() = default;
 
 sk_sp<SkPicture> MakeEmptyPicture() {
   // Effectively a no-op.

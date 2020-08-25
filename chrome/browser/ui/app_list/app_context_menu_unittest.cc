@@ -44,6 +44,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "extensions/common/manifest_constants.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/test/test_screen.h"
@@ -161,10 +162,7 @@ class AppContextMenuTest : public AppListTestBase,
     }
   }
 
-  ~AppContextMenuTest() override {
-    // Release profile file in order to keep right sequence.
-    profile_.reset();
-  }
+  ~AppContextMenuTest() override = default;
 
   void SetUp() override {
     AppListTestBase::SetUp();
@@ -334,8 +332,11 @@ class AppContextMenuTest : public AppListTestBase,
     ValidateMenuState(menu_model.get(), states);
   }
 
+  apps::AppServiceTest& app_service_test() { return app_service_test_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   display::test::TestScreen test_screen_;
   std::unique_ptr<KeyedService> menu_manager_;
   std::unique_ptr<FakeAppListControllerDelegate> controller_;
@@ -379,8 +380,7 @@ TEST_P(AppContextMenuTest, NonExistingExtensionApp) {
 }
 
 TEST_P(AppContextMenuTest, ArcMenu) {
-  apps::AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
+  app_service_test().SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -389,7 +389,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
 
   std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
 
@@ -412,7 +412,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
 
   menu->ActivatedAt(0);
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
 
   const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
       launch_requests = arc_test.app_instance()->launch_requests();
@@ -449,7 +449,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   // Test launching app shortcut item.
   EXPECT_EQ(0, arc_test.app_instance()->launch_app_shortcut_item_count());
   menu->ActivatedAt(menu->GetItemCount() - 1);
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
   EXPECT_EQ(1, arc_test.app_instance()->launch_app_shortcut_item_count());
 
   // This makes all apps non-ready.
@@ -484,7 +484,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   // Uninstall all apps.
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
   controller()->SetAppOpen(app_id, false);
 
   // No app available case.
@@ -493,8 +493,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
 }
 
 TEST_P(AppContextMenuTest, ArcMenuShortcut) {
-  apps::AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
+  app_service_test().SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -503,7 +502,7 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
   arc_test.app_instance()->SendInstallShortcuts(arc_test.fake_shortcuts());
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
 
   std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
 
@@ -558,13 +557,12 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
 }
 
 TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
-  apps::AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
+  app_service_test().SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
 
   {
     // Verify menu of store

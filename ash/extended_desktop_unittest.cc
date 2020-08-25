@@ -47,18 +47,6 @@ void SetSecondaryDisplayLayout(display::DisplayPlacement::Position position) {
       std::move(layout));
 }
 
-class ModalWidgetDelegate : public views::WidgetDelegateView {
- public:
-  ModalWidgetDelegate() = default;
-  ~ModalWidgetDelegate() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
-};
-
 // An event handler which moves the target window to the secondary root window
 // at pre-handle phase of a mouse release event.
 class MoveWindowByClickEventHandler : public ui::EventHandler {
@@ -234,8 +222,10 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
 
   // Open system modal. Make sure it's on 2nd root window and active.
+  auto delegate = std::make_unique<views::WidgetDelegateView>();
+  delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
   views::Widget* modal_widget = views::Widget::CreateWindowWithContext(
-      new ModalWidgetDelegate(), GetContext(), gfx::Rect(1200, 100, 100, 100));
+      delegate.release(), GetContext(), gfx::Rect(1200, 100, 100, 100));
   modal_widget->Show();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());

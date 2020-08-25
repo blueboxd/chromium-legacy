@@ -19,6 +19,7 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents_stub.h"
 #include "components/offline_pages/core/background/load_termination_listener.h"
@@ -373,7 +374,9 @@ TEST_F(BackgroundLoaderOfflinerTest,
   SavePageRequest request(kRequestId, HttpUrl(), custom_tabs_client_id,
                           creation_time, kUserRequested);
 
-  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
   EXPECT_FALSE(offliner()->LoadAndSave(request, completion_callback(),
                                        progress_callback()));
 }

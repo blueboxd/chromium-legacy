@@ -228,8 +228,8 @@ class PasswordCheckManager
 
   // Used to obtain the list of compromised credentials.
   password_manager::CompromisedCredentialsManager
-      compromised_credentials_manager_{password_store_,
-                                       &saved_passwords_presenter_};
+      compromised_credentials_manager_{&saved_passwords_presenter_,
+                                       password_store_};
 
   // Adapter used to start, monitor and stop a bulk leak check.
   password_manager::BulkLeakCheckServiceAdapter

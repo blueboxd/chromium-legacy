@@ -394,7 +394,8 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
   // ChromeTypographyProvider::GetLineHeight(), which is body text.
   EXPECT_EQ(kBodyLineHeight,
             views::style::GetLineHeight(views::style::CONTEXT_LABEL, kStyle));
-  views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);
+  views::StyledLabel styled_label;
+  styled_label.SetText(base::ASCIIToUTF16("test"));
   constexpr int kStyledLabelWidth = 200;  // Enough to avoid wrapping.
   styled_label.SizeToFit(kStyledLabelWidth);
   EXPECT_EQ(kBodyLineHeight, styled_label.height());

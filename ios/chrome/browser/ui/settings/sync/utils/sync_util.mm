@@ -26,14 +26,17 @@ namespace {
 // to the user. This was added for crbug/265352 to quantify how often this
 // bug shows up in the wild. The logged histogram count should be interpreted
 // as a ratio of the number of active sync users.
-enum ErrorState {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum InfobarSyncError {
   SYNC_SIGN_IN_NEEDS_UPDATE = 1,
-  SYNC_SERVICE_UNAVAILABLE,
-  SYNC_NEEDS_PASSPHRASE,
-  SYNC_UNRECOVERABLE_ERROR,
-  SYNC_SYNC_SETTINGS_NOT_CONFIRMED,
-  SYNC_NEEDS_TRUSTED_VAULT_KEY,
-  SYNC_ERROR_COUNT
+  // DEPRECATED. No longer recorded.
+  // SYNC_SERVICE_UNAVAILABLE = 2
+  SYNC_NEEDS_PASSPHRASE = 3,
+  SYNC_UNRECOVERABLE_ERROR = 4,
+  SYNC_SYNC_SETTINGS_NOT_CONFIRMED = 5,
+  SYNC_NEEDS_TRUSTED_VAULT_KEY = 6,
+  kMaxValue = SYNC_NEEDS_TRUSTED_VAULT_KEY,
 };
 
 }  // namespace
@@ -179,11 +182,12 @@ bool DisplaySyncErrors(ChromeBrowserState* browser_state,
     return false;
 
   // Logs when an infobar is shown to user. See crbug/265352.
-  ErrorState loggedErrorState = SYNC_ERROR_COUNT;
+  InfobarSyncError loggedErrorState;
   switch (errorState) {
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:
+      loggedErrorState = kMaxValue;
       NOTREACHED();
       break;
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
@@ -202,8 +206,7 @@ bool DisplaySyncErrors(ChromeBrowserState* browser_state,
       loggedErrorState = SYNC_SYNC_SETTINGS_NOT_CONFIRMED;
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState,
-                            SYNC_ERROR_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState);
 
   DCHECK(web_state);
   infobars::InfoBarManager* infoBarManager =

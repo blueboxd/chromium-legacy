@@ -1084,8 +1084,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         params.blockThirdPartyCookies = prefService.getBoolean(BLOCK_THIRD_PARTY_COOKIES);
         params.cookieControlsMode = prefService.getInteger(COOKIE_CONTROLS_MODE);
         params.cookiesContentSettingEnforced = mCategory.isManaged();
-        params.thirdPartyBlockingEnforced =
-                prefService.isManagedPreference(BLOCK_THIRD_PARTY_COOKIES);
+        params.cookieControlsModeEnforced = prefService.isManagedPreference(COOKIE_CONTROLS_MODE);
         fourStateCookieToggle.setState(params);
     }
 

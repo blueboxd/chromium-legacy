@@ -68,13 +68,13 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::StyledLabel* dialog_label =
-      new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
+      AddChildView(std::make_unique<views::StyledLabel>());
+  dialog_label->SetText(controller_->GetMainText());
   dialog_label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
   dialog_label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   views::StyledLabel::RangeStyleInfo url_style;
   url_style.text_style = STYLE_EMPHASIZED_SECONDARY;
   dialog_label->AddStyleRange(controller_->GetMainTextUrlRange(), url_style);
-  AddChildView(dialog_label);
 }
 
 SettingsResetPromptDialog::~SettingsResetPromptDialog() {

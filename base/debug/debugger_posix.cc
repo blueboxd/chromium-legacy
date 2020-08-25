@@ -153,7 +153,8 @@ void VerifyDebugger() {
 #endif
 }
 
-#elif defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_AIX)
 
 // We can look in /proc/self/status for TracerPid.  We are likely used in crash
 // handling, so we are careful not to use the heap or have side effects.

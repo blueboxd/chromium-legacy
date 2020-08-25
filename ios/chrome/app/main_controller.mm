@@ -652,7 +652,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (self.appState.foregroundActiveScene) {
     return self.appState.foregroundActiveScene.interfaceProvider;
   }
-  return self.appState.connectedScenes[0].interfaceProvider;
+  NSArray<SceneState*>* connectedScenes = self.appState.connectedScenes;
+
+  return connectedScenes.count == 0 ? nil
+                                    : connectedScenes[0].interfaceProvider;
 }
 
 - (BOOL)isFirstLaunchAfterUpgrade {

@@ -106,9 +106,10 @@ void HomePageUndoBubble::Init() {
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);
   std::vector<base::string16> message = {
       l10n_util::GetStringUTF16(IDS_TOOLBAR_INFORM_SET_HOME_PAGE), undo_string};
-  views::StyledLabel* label = new views::StyledLabel(
-      base::JoinString(message, base::StringPiece16(base::ASCIIToUTF16(" "))),
-      this);
+  views::StyledLabel* label =
+      AddChildView(std::make_unique<views::StyledLabel>(this));
+  label->SetText(
+      base::JoinString(message, base::StringPiece16(base::ASCIIToUTF16(" "))));
 
   gfx::Range undo_range(label->GetText().length() - undo_string.length(),
                         label->GetText().length());
@@ -117,7 +118,6 @@ void HomePageUndoBubble::Init() {
 
   // Ensure StyledLabel has a cached size to return in GetPreferredSize().
   label->SizeToFit(0);
-  AddChildView(label);
 }
 
 void HomePageUndoBubble::StyledLabelLinkClicked(views::StyledLabel* label,

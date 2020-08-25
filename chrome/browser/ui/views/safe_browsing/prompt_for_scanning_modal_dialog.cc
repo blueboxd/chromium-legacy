@@ -80,7 +80,8 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
       &offsets);
 
   // Add the message label.
-  auto label = std::make_unique<views::StyledLabel>(message_text, this);
+  auto label = std::make_unique<views::StyledLabel>(this);
+  label->SetText(message_text);
 
   gfx::Range learn_more_range(offsets[1], message_text.length());
   views::StyledLabel::RangeStyleInfo link_style =

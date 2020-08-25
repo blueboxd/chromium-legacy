@@ -114,10 +114,11 @@ void CloudServicesDialogView::Init() {
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.disable_line_wrapping = false;
 
-  views::StyledLabel* body_text = new views::StyledLabel(text, this);
+  views::StyledLabel* body_text =
+      AddChildView(std::make_unique<views::StyledLabel>(this));
+  body_text->SetText(text);
   body_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body_text->AddStyleRange(learn_more_range, link_style);
-  AddChildView(body_text);
 }
 
 void CloudServicesDialogView::WindowClosing() {

@@ -47,7 +47,7 @@ public class FourStateCookieSettingsPreference
         // Whether the cookies content setting is enforced.
         public boolean cookiesContentSettingEnforced;
         //  Whether third-party blocking is enforced.
-        public boolean thirdPartyBlockingEnforced;
+        public boolean cookieControlsModeEnforced;
     }
 
     // Keeps the params that are applied to the UI if the params are set before the UI is ready.
@@ -166,7 +166,7 @@ public class FourStateCookieSettingsPreference
             button.setEnabled(false);
         }
         mManagedView.setVisibility(
-                (params.cookiesContentSettingEnforced || params.thirdPartyBlockingEnforced)
+                (params.cookiesContentSettingEnforced || params.cookieControlsModeEnforced)
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -208,10 +208,10 @@ public class FourStateCookieSettingsPreference
      *         policy restrictions.
      */
     private RadioButtonWithDescription[] getEnforcedButtons(Params params) {
-        if (!params.cookiesContentSettingEnforced && !params.thirdPartyBlockingEnforced) {
+        if (!params.cookiesContentSettingEnforced && !params.cookieControlsModeEnforced) {
             return buttons();
         }
-        if (params.cookiesContentSettingEnforced && params.thirdPartyBlockingEnforced) {
+        if (params.cookiesContentSettingEnforced && params.cookieControlsModeEnforced) {
             return buttons(mAllowButton, mBlockThirdPartyIncognitoButton, mBlockThirdPartyButton,
                     mBlockButton);
         }
@@ -223,7 +223,8 @@ public class FourStateCookieSettingsPreference
                         mBlockThirdPartyButton, mBlockButton);
             }
         }
-        if (params.blockThirdPartyCookies) {
+        if (params.blockThirdPartyCookies
+                || params.cookieControlsMode == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return buttons(mAllowButton, mBlockThirdPartyIncognitoButton);
         } else {
             return buttons(mBlockThirdPartyIncognitoButton, mBlockThirdPartyButton);

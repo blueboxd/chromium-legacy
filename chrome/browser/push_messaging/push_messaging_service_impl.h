@@ -299,11 +299,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       blink::mojom::PushEventStatus status);
 
-  // Normalizes the |sender_info|. In most cases the |sender_info| will be
-  // passed through to the GCM Driver as-is, but NIST P-256 application server
-  // keys have to be encoded using the URL-safe variant of the base64 encoding.
-  std::string NormalizeSenderInfo(const std::string& sender_info) const;
-
   // Checks if a given origin is allowed to use Push.
   bool IsPermissionSet(const GURL& origin);
 
@@ -312,10 +307,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& app_id,
       const std::string& sender_id,
       gcm::GCMEncryptionProvider::EncryptionInfoCallback callback);
-
-  // Returns the URL used to send push messages to the subscription identified
-  // by |subscription_id|.
-  GURL CreateEndpoint(const std::string& subscription_id) const;
 
   gcm::GCMDriver* GetGCMDriver() const;
 

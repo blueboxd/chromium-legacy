@@ -981,6 +981,9 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   // BEGIN_LINK and END_LINK. Find the beginning of the link range and the
   // length of the "settings" part, then remove the BEGIN_LINK and END_LINK
   // parts and linkify "settings".
+  // TODO(pkasting): Remove these BEGIN/END_LINK tags and use a substitution for
+  // "Settings", allowing this code to use the offset-returning versions of the
+  // l10n getters.
   base::string16 begin_tag = base::UTF8ToUTF16("BEGIN_LINK");
   base::string16 end_tag = base::UTF8ToUTF16("END_LINK");
   size_t link_begin = data_source.find(begin_tag);
@@ -993,8 +996,8 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   data_source.erase(link_end, end_tag.size());
   data_source.erase(link_begin, begin_tag.size());
 
-  std::unique_ptr<views::StyledLabel> data_source_label =
-      std::make_unique<views::StyledLabel>(data_source, this);
+  auto data_source_label = std::make_unique<views::StyledLabel>(this);
+  data_source_label->SetText(data_source);
   data_source_label->SetBorder(views::CreateEmptyBorder(22, 0, 0, 0));
   data_source_label->SetID(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL));
   data_source_label->SetDefaultTextStyle(views::style::STYLE_DISABLED);

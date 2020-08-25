@@ -23,52 +23,6 @@ source_set("internal") {
     "//chrome/browser/video_tutorials/proto",
     "//components/leveldb_proto",
   ]
-
-  if (is_android) {
-    sources += [
-      "android/tutorial_conversion_bridge.cc",
-      "android/tutorial_conversion_bridge.h",
-      "android/video_tutorial_service_bridge.cc",
-      "android/video_tutorial_service_bridge.h",
-    ]
-
-    deps += [ ":jni_headers" ]
-  }
-}
-
-if (is_android) {
-  android_library("java") {
-    visibility = [
-      ":*",
-      "//chrome/android:chrome_all_java",
-    ]
-
-    sources = [
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceFactory.java",
-    ]
-
-    deps = [
-      "//base:base_java",
-      "//base:jni_java",
-      "//chrome/browser/profiles/android:java",
-      "//chrome/browser/video_tutorials:java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
-    ]
-
-    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  }
-
-  generate_jni("jni_headers") {
-    visibility = [ ":*" ]
-
-    sources = [
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceFactory.java",
-    ]
-  }
 }
 
 source_set("unit_tests") {

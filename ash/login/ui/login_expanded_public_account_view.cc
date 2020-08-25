@@ -320,7 +320,9 @@ class RightPaneView : public NonAccessibleView,
     size_t offset;
     const base::string16 text = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER, link, &offset);
-    learn_more_label_ = new views::StyledLabel(text, this);
+    learn_more_label_ =
+        labels_view_->AddChildView(std::make_unique<views::StyledLabel>(this));
+    learn_more_label_->SetText(text);
 
     views::StyledLabel::RangeStyleInfo style;
     style.custom_font = learn_more_label_->GetFontList().Derive(
@@ -334,8 +336,6 @@ class RightPaneView : public NonAccessibleView,
     learn_more_label_->AddStyleRange(gfx::Range(offset, offset + link.length()),
                                      link_style);
     learn_more_label_->SetAutoColorReadabilityEnabled(false);
-
-    labels_view_->AddChildView(learn_more_label_);
 
     // Create button to show/hide advanced view.
     advanced_view_button_ = new SelectionButtonView(

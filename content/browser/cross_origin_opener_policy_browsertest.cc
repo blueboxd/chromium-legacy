@@ -1015,6 +1015,60 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   }
 }
 
+// Try to host into the same cross-origin isolated process, two cross-origin
+// documents. The second's response sets CSP:sandbox, so its origin is opaque
+// and derived from the first.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedWithDifferentOrigin) {
+  GURL opener_url =
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp");
+  GURL openee_url =
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp&"
+                             "Content-Security-Policy: sandbox");
+
+  // Load the first window.
+  EXPECT_TRUE(NavigateToURL(shell(), opener_url));
+  RenderFrameHostImpl* opener_current_main_document = current_frame_host();
+
+  // Load the second window.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(
+      ExecJs(current_frame_host(), JsReplace("window.open($1)", openee_url)));
+  WebContents* popup = shell_observer.GetShell()->web_contents();
+  WaitForLoadStop(popup);
+
+  RenderFrameHostImpl* openee_current_main_document =
+      static_cast<WebContentsImpl*>(popup)
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+
+  // Those documents aren't error pages.
+  EXPECT_EQ(opener_current_main_document->GetLastCommittedURL(), opener_url);
+  EXPECT_EQ(openee_current_main_document->GetLastCommittedURL(), openee_url);
+  EXPECT_EQ(opener_current_main_document->last_http_status_code(), 200);
+  EXPECT_EQ(openee_current_main_document->last_http_status_code(), 200);
+
+  // We have two main documents in the same cross-origin isolated process from a
+  // different origin.
+  // TODO(https://crbug.com/1115426): Investigate what needs to be done.
+  EXPECT_NE(opener_current_main_document->GetLastCommittedOrigin(),
+            openee_current_main_document->GetLastCommittedOrigin());
+  EXPECT_EQ(opener_current_main_document->GetProcess(),
+            openee_current_main_document->GetProcess());
+  EXPECT_EQ(opener_current_main_document->GetSiteInstance(),
+            openee_current_main_document->GetSiteInstance());
+
+  // TODO(arthursonzogni): Check whether the processes are marked as
+  // cross-origin isolated or not.
+}
+
 // Navigate in between two documents. Check the virtual browsing context group
 // is properly updated.
 IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {

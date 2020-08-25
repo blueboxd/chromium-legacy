@@ -33,8 +33,6 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
   DisplayChangeDialog(const DisplayChangeDialog&) = delete;
   DisplayChangeDialog& operator=(const DisplayChangeDialog&) = delete;
 
-  ui::ModalType GetModalType() const override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 

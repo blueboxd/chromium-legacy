@@ -795,8 +795,12 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::test_server::RegisterDefaultHandlers(&https_server);
   ASSERT_TRUE(https_server.Start());
-  if (GetPrefService()->FindPreference(prefs::kBlockThirdPartyCookies))
-    GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  if (GetPrefService()->FindPreference(prefs::kCookieControlsMode)) {
+    GetPrefService()->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(
+            content_settings::CookieControlsMode::kBlockThirdParty));
+  }
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
             embedded_test_server());
 
@@ -849,7 +853,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   test_server.RegisterRequestHandler(base::BindRepeating(&EchoCookieHeader));
   ASSERT_TRUE(test_server.Start());
 
-  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  GetPrefService()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
             embedded_test_server());
 
@@ -1565,7 +1571,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   if (system)
     return;
 
-  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  GetPrefService()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
   SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
             https_server());
 
@@ -1584,33 +1592,19 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   if (system)
     return;
 
-  // The preference is expected to be reset in incognito mode.
-  if (is_incognito()) {
-    EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
-    EXPECT_EQ(
-        static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly),
-        GetPrefService()->GetInteger(prefs::kCookieControlsMode));
-    return;
-  }
-
-  // For regular sessions, the kBlockThirdpartyCookies preference gets migrated
-  // to kCookieControlsMode. Reset it so it doesn't interfere with the test.
+  // The third-party cookies pref should carry over to the next session.
   EXPECT_EQ(
       static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty),
       GetPrefService()->GetInteger(prefs::kCookieControlsMode));
-  GetPrefService()->SetInteger(
-      prefs::kCookieControlsMode,
-      static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly));
-
-  // The kBlockThirdPartyCookies pref should carry over to the next session.
-  EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
   SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
             https_server());
 
   EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 
   // Set pref to false, third party cookies should be allowed now.
-  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
+  GetPrefService()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOff));
   // Set a third-party cookie. It should actually get set this time.
   SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
             https_server());

@@ -10,7 +10,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.junit.Assert.assertNotNull;
 
-import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
 import android.os.Build;
 import android.view.View;
@@ -37,6 +37,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoFeatureList;
@@ -97,10 +98,10 @@ public class PageInfoViewTest {
         return view;
     }
 
-    private void setThirdPartyCookieBlocking(boolean value) {
+    private void setThirdPartyCookieBlocking(@CookieControlsMode int value) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             UserPrefs.get(Profile.getLastUsedRegularProfile())
-                    .setBoolean(BLOCK_THIRD_PARTY_COOKIES, value);
+                    .setInteger(COOKIE_CONTROLS_MODE, value);
         });
     }
 
@@ -214,7 +215,7 @@ public class PageInfoViewTest {
     @MediumTest
     @Feature({"RenderTest"})
     public void testShowWithCookieBlocking() throws IOException {
-        setThirdPartyCookieBlocking(true);
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_CookieBlocking");
     }
@@ -227,7 +228,7 @@ public class PageInfoViewTest {
     @Feature({"RenderTest"})
     public void testShowWithPermissionsAndCookieBlocking() throws IOException {
         addSomePermissions(mTestServerRule.getServer().getURL("/"));
-        setThirdPartyCookieBlocking(true);
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_PermissionsAndCookieBlocking");
     }
@@ -292,7 +293,7 @@ public class PageInfoViewTest {
     @Feature({"RenderTest"})
     @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
     public void testShowCookiesSubpage() throws IOException {
-        setThirdPartyCookieBlocking(true);
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         View dialog = (View) getPageInfoView().getParent();
         onView(withId(R.id.page_info_cookies_row)).perform(click());

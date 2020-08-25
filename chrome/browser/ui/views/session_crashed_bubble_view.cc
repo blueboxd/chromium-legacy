@@ -239,11 +239,12 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   size_t offset;
   base::string16 link_text =
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_UMA_LINK_TEXT);
+  auto uma_label = std::make_unique<views::StyledLabel>(this);
   base::string16 uma_text = l10n_util::GetStringFUTF16(
       IDS_SESSION_CRASHED_VIEW_UMA_OPTIN,
       link_text,
       &offset);
-  auto uma_label = std::make_unique<views::StyledLabel>(uma_text, this);
+  uma_label->SetText(uma_text);
   uma_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
                            views::StyledLabel::RangeStyleInfo::CreateForLink());
   views::StyledLabel::RangeStyleInfo uma_style;

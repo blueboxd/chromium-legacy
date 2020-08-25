@@ -47,9 +47,7 @@ std::unique_ptr<views::Label> CreateIndexLabel() {
 // Creates the suggestion label, and returns it (never returns nullptr).
 // The label text is not set in this function.
 std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
-  std::unique_ptr<views::StyledLabel> suggestion_label =
-      std::make_unique<views::StyledLabel>(base::EmptyString16(),
-                                           /*listener=*/nullptr);
+  auto suggestion_label = std::make_unique<views::StyledLabel>();
   suggestion_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   suggestion_label->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));

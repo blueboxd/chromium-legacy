@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/common/net/record_load_histograms.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "net/base/ip_endpoint.h"
@@ -15,6 +14,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
+#include "third_party/blink/public/common/loader/record_load_histograms.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
@@ -204,9 +204,9 @@ void NotifyResourceLoadCompleted(
     int render_frame_id,
     blink::mojom::ResourceLoadInfoPtr resource_load_info,
     const network::URLLoaderCompletionStatus& status) {
-  RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
-                       resource_load_info->request_destination,
-                       status.error_code);
+  blink::RecordLoadHistograms(
+      url::Origin::Create(resource_load_info->final_url),
+      resource_load_info->request_destination, status.error_code);
 
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
@@ -230,8 +230,9 @@ void NotifyResourceLoadCanceled(
     int render_frame_id,
     blink::mojom::ResourceLoadInfoPtr resource_load_info,
     int net_error) {
-  RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
-                       resource_load_info->request_destination, net_error);
+  blink::RecordLoadHistograms(
+      url::Origin::Create(resource_load_info->final_url),
+      resource_load_info->request_destination, net_error);
 
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)

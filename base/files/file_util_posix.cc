@@ -412,7 +412,7 @@ bool CreatePipe(ScopedFD* read_fd, ScopedFD* write_fd, bool non_blocking) {
 }
 
 bool CreateLocalNonBlockingPipe(int fds[2]) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   return pipe2(fds, O_CLOEXEC | O_NONBLOCK) == 0;
 #else
   int raw_fds[2];
@@ -940,7 +940,7 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
   // space. It can fail because the filesystem doesn't support it. In that case,
   // use the manual method below.
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (HANDLE_EINTR(fallocate(file->GetPlatformFile(), 0, offset, size)) != -1)
     return true;
   DPLOG(ERROR) << "fallocate";
@@ -1111,7 +1111,7 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 #if !defined(OS_ANDROID)
 // This is implemented in file_util_android.cc for that platform.
 bool GetShmemTempDir(bool executable, FilePath* path) {
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
   bool disable_dev_shm = false;
 #if !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
   disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1127,7 +1127,7 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
     *path = FilePath("/dev/shm");
     return true;
   }
-#endif  // defined(OS_LINUX) || defined(OS_AIX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
   return GetTempDir(path);
 }
 #endif  // !defined(OS_ANDROID)
@@ -1162,11 +1162,11 @@ PrefetchResult PreReadFile(const FilePath& file_path,
                            int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
-  // ChromeOS is also covered by OS_LINUX.
   // posix_fadvise() is only available in the Android NDK in API 21+. Older
   // versions may have the required kernel support, but don't have enough usage
   // to justify backporting.
-#if defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
   if (!file.IsValid())
     return PrefetchResult{PrefetchResultCode::kInvalidFile};
@@ -1186,7 +1186,8 @@ PrefetchResult PreReadFile(const FilePath& file_path,
   return internal::PreReadFileSlow(file_path, max_bytes)
              ? PrefetchResult{PrefetchResultCode::kSlowSuccess}
              : PrefetchResult{PrefetchResultCode::kSlowFailed};
-#endif  // defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || (defined(OS_ANDROID) &&
+        // __ANDROID_API__ >= 21)
 }
 
 // -----------------------------------------------------------------------------
@@ -1220,7 +1221,7 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
 
 #endif  // !defined(OS_NACL_NONSFI)
 
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
   bool result = false;
   FilePath tmp_file_path;
@@ -1241,6 +1242,6 @@ BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
   }
   return result;
 }
-#endif  // defined(OS_LINUX) || defined(OS_AIX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 
 }  // namespace base

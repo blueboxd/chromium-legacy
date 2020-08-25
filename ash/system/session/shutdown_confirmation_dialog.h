@@ -26,9 +26,6 @@ class ShutdownConfirmationDialog : public views::DialogDelegateView {
                              base::OnceClosure on_cancel_callback);
   ~ShutdownConfirmationDialog() override;
 
-  // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 

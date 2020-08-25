@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/record_load_histograms.h"
+#include "third_party/blink/public/common/loader/record_load_histograms.h"
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -11,7 +11,7 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 void RecordLoadHistograms(const url::Origin& origin,
                           network::mojom::RequestDestination destination,
@@ -40,4 +40,4 @@ void RecordLoadHistograms(const url::Origin& origin,
   }
 }
 
-}  // namespace content
+}  // namespace blink

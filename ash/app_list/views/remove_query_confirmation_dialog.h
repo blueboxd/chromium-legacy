@@ -29,9 +29,6 @@ class RemoveQueryConfirmationDialog : public views::DialogDelegateView {
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
 
-  // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
-
  private:
   RemovalConfirmationCallback confirm_callback_;
 

@@ -204,14 +204,13 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
                                     google_util::ALLOW_SUBDOMAIN)) {
     replacements.push_back(learn_more_text);
 
+    checkbox_label = std::make_unique<views::StyledLabel>(this);
     std::vector<size_t> offsets;
-    checkbox_label = std::make_unique<views::StyledLabel>(
-        l10n_util::GetStringFUTF16(
-            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE,
-            replacements, &offsets),
-        this);
+    checkbox_label->SetText(l10n_util::GetStringFUTF16(
+        IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE, replacements,
+        &offsets));
     DCHECK_EQ(replacements.size(), offsets.size());
-    offset = offsets[offsets.size() - 1];
+    offset = offsets.back();
   } else {
     auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
         app_launch_url,
@@ -222,14 +221,13 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
     replacements.push_back(base::ASCIIToUTF16(domain));
     replacements.push_back(learn_more_text);
 
+    checkbox_label = std::make_unique<views::StyledLabel>(this);
     std::vector<size_t> offsets;
-    checkbox_label = std::make_unique<views::StyledLabel>(
-        l10n_util::GetStringFUTF16(
-            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
-            replacements, &offsets),
-        this);
+    checkbox_label->SetText(l10n_util::GetStringFUTF16(
+        IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
+        replacements, &offsets));
     DCHECK_EQ(replacements.size(), offsets.size());
-    offset = offsets[offsets.size() - 1];
+    offset = offsets.back();
   }
 
   checkbox_label->AddStyleRange(

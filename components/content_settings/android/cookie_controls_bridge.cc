@@ -94,7 +94,7 @@ jboolean JNI_CookieControlsBridge_IsCookieControlsEnabled(
       browser_context::BrowserContextFromJavaHandle(jbrowser_context_handle);
   return permissions::PermissionsClient::Get()
       ->GetCookieSettings(context)
-      ->IsCookieControlsEnabled();
+      ->ShouldBlockThirdPartyCookies();
 }
 
 static jlong JNI_CookieControlsBridge_Init(

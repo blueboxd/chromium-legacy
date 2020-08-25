@@ -59,7 +59,7 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
 
 std::pair<CookieControlsStatus, CookieControlsEnforcement>
 CookieControlsController::GetStatus(content::WebContents* web_contents) {
-  if (!cookie_settings_->IsCookieControlsEnabled()) {
+  if (!cookie_settings_->ShouldBlockThirdPartyCookies()) {
     return {CookieControlsStatus::kDisabled,
             CookieControlsEnforcement::kNoEnforcement};
   }

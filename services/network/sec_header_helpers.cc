@@ -138,7 +138,12 @@ void SetSecFetchUserHeader(net::URLRequest* request, bool has_user_activation) {
 // Sec-Fetch-Dest
 void SetSecFetchDestHeader(net::URLRequest* request,
                            network::mojom::RequestDestination dest) {
-  std::string header_value = RequestDestinationToString(dest);
+  // https://w3c.github.io/webappsec-fetch-metadata/#abstract-opdef-set-dest
+  // If r's destination is the empty string, set header's value to the string
+  // "empty". Otherwise, set header's value to r's destination.
+  std::string header_value = dest == mojom::RequestDestination::kEmpty
+                                 ? "empty"
+                                 : RequestDestinationToString(dest);
   request->SetExtraRequestHeaderByName(kSecFetchDest, header_value, true);
 }
 

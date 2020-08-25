@@ -86,8 +86,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
 
 // Android does not have guest profiles.
 #if !defined(OS_ANDROID)
-// Tests that improved cookie controls are not available by default for guest
-// profiles.
+// Tests that cookie blocking is not enabled by default for guest profiles.
 TEST_F(CookieSettingsFactoryTest, GuestProfile) {
   TestingProfile::Builder guest_profile_builder;
   guest_profile_builder.SetGuestSession();
@@ -96,12 +95,12 @@ TEST_F(CookieSettingsFactoryTest, GuestProfile) {
   EXPECT_TRUE(otr_guest_profile->IsOffTheRecord());
   scoped_refptr<content_settings::CookieSettings> guest_settings =
       CookieSettingsFactory::GetForProfile(otr_guest_profile);
-  EXPECT_FALSE(guest_settings->IsCookieControlsEnabled());
+  EXPECT_FALSE(guest_settings->ShouldBlockThirdPartyCookies());
 
-  // OTOH, improved controls are available by default for an incognito profile.
+  // OTOH, cookie blocking is default for an incognito profile.
   EXPECT_TRUE(
       CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile())
-          ->IsCookieControlsEnabled());
+          ->ShouldBlockThirdPartyCookies());
 }
 #endif
 

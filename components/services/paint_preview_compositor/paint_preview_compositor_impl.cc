@@ -337,9 +337,6 @@ sk_sp<SkPicture> PaintPreviewCompositorImpl::DeserializeFrameRecursive(
   // before the current frame is loaded to ensure the order of loading is
   // topologically sorted.
   LoadedFramesDeserialContext deserial_context;
-  deserial_context.scroll_offsets = gfx::Size(
-      frame_proto.has_scroll_offset_x() ? frame_proto.scroll_offset_x() : 0,
-      frame_proto.has_scroll_offset_y() ? frame_proto.scroll_offset_y() : 0);
 
   *subframe_failed = false;
   for (const auto& id_pair : frame_proto.content_id_to_embedding_tokens()) {
@@ -396,7 +393,7 @@ sk_sp<SkPicture> PaintPreviewCompositorImpl::DeserializeFrameRecursive(
                                      subframe_proto_it->has_scroll_offset_y()
                                          ? subframe_proto_it->scroll_offset_y()
                                          : 0);
-    deserial_context.subframes.insert({id_pair.content_id(), frame});
+    deserial_context.insert({id_pair.content_id(), frame});
   }
 
   auto recording_it = recording_map->find(frame_guid);

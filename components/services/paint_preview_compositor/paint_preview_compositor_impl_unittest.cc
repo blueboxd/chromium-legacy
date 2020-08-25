@@ -208,10 +208,6 @@ void PopulateFrameProto(
   // observing it.
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), guid,
                               set_is_main_frame);
-  if (set_is_main_frame) {
-    tracker.SetScrollForFrame(
-        SkISize::Make(scroll_offsets.width(), scroll_offsets.height()));
-  }
   mojom::FrameDataPtr expected_frame_data = mojom::FrameData::New();
   expected_frame_data->scroll_extents = scroll_extents;
   expected_frame_data->scroll_offsets = scroll_offsets;

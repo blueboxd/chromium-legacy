@@ -60,7 +60,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
-#include "content/common/net/record_load_histograms.h"
 #include "content/common/page_messages.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -158,6 +157,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/loader/record_load_histograms.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -3063,9 +3063,9 @@ void RenderFrameImpl::NotifyResourceTransferSizeUpdated(
 void RenderFrameImpl::NotifyResourceLoadCompleted(
     blink::mojom::ResourceLoadInfoPtr resource_load_info,
     const network::URLLoaderCompletionStatus& status) {
-  RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
-                       resource_load_info->request_destination,
-                       status.error_code);
+  blink::RecordLoadHistograms(
+      url::Origin::Create(resource_load_info->final_url),
+      resource_load_info->request_destination, status.error_code);
   DidCompleteResponse(resource_load_info->request_id, status);
   GetFrameHost()->ResourceLoadComplete(std::move(resource_load_info));
 }

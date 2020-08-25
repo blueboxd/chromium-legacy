@@ -11,6 +11,10 @@
 constexpr base::TimeDelta kReadResponseFrameTimeout =
     base::TimeDelta::FromSeconds(60);
 
+// Timeout for initiating a connection to a remote device.
+constexpr base::TimeDelta kInitiateNearbyConnectionTimeout =
+    base::TimeDelta::FromSeconds(60);
+
 // The delay before the receiver will disconnect from the sender after rejecting
 // an incoming file. The sender is expected to disconnect immediately after
 // reading the rejection frame.

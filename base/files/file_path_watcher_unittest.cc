@@ -632,7 +632,7 @@ TEST_F(FilePathWatcherTest, FileAttributesChanged) {
   ASSERT_TRUE(WaitForEvents());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // Verify that creating a symlink is caught.
 TEST_F(FilePathWatcherTest, CreateLink) {
@@ -790,7 +790,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart3) {
   ASSERT_TRUE(WaitForEvents());
 }
 
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 enum Permission {
   Read,

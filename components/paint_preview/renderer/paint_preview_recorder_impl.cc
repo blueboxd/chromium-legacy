@@ -187,7 +187,6 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   auto tracker = std::make_unique<PaintPreviewTracker>(
       params->guid, frame->GetEmbeddingToken(), is_main_frame_);
   auto size = frame->GetScrollOffset();
-  tracker->SetScrollForFrame(SkISize::Make(size.width, size.height));
   response->scroll_offsets = gfx::Size(size.width, size.height);
 
   cc::PaintRecorder recorder;

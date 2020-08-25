@@ -48,6 +48,7 @@ DisplayChangeDialog::DisplayChangeDialog(
                                    base::Unretained(this)));
   SetCancelCallback(base::BindOnce(&DisplayChangeDialog::OnCancelButtonClicked,
                                    base::Unretained(this)));
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -80,10 +81,6 @@ void DisplayChangeDialog::OnCancelButtonClicked() {
   timer_.Stop();
   std::move(on_cancel_callback_).Run(/*display_was_removed=*/false);
   RecordDisplayChangeDialogHistogram(/*accepted=*/false);
-}
-
-ui::ModalType DisplayChangeDialog::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
 }
 
 gfx::Size DisplayChangeDialog::CalculatePreferredSize() const {

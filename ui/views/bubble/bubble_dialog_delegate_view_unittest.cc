@@ -75,7 +75,12 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     return should_show_close_button_;
   }
 
-  void set_title_view(View* title_view) { title_view_.reset(title_view); }
+  template <typename T>
+  T* set_title_view(std::unique_ptr<T> title_view) {
+    T* const ret = title_view.get();
+    title_view_ = std::move(title_view);
+    return ret;
+  }
   void show_close_button() { should_show_close_button_ = true; }
   void hide_buttons() {
     should_show_close_button_ = false;
@@ -404,8 +409,8 @@ TEST_F(BubbleDialogDelegateViewTest, CustomTitle) {
   TestBubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
   constexpr int kTitleHeight = 20;
-  View* title_view = new StaticSizedView(gfx::Size(10, kTitleHeight));
-  bubble_delegate->set_title_view(title_view);
+  View* title_view = bubble_delegate->set_title_view(
+      std::make_unique<StaticSizedView>(gfx::Size(10, kTitleHeight)));
   Widget* bubble_widget =
       BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
@@ -480,8 +485,9 @@ TEST_F(BubbleDialogDelegateViewTest, StyledLabelTitle) {
       CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
   TestBubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
-  StyledLabel* title_view = new StyledLabel(base::ASCIIToUTF16("123"), nullptr);
-  bubble_delegate->set_title_view(title_view);
+  StyledLabel* title_view =
+      bubble_delegate->set_title_view(std::make_unique<StyledLabel>());
+  title_view->SetText(base::ASCIIToUTF16("123"));
 
   Widget* bubble_widget =
       BubbleDialogDelegateView::CreateBubble(bubble_delegate);

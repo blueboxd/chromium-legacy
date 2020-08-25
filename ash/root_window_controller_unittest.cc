@@ -51,22 +51,6 @@ using views::Widget;
 namespace ash {
 namespace {
 
-class TestDelegate : public views::WidgetDelegateView {
- public:
-  explicit TestDelegate(bool system_modal) : system_modal_(system_modal) {}
-  ~TestDelegate() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override {
-    return system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
-  }
-
- private:
-  bool system_modal_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
-};
-
 class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
                              public aura::client::FocusChangeObserver {
  public:
@@ -115,9 +99,15 @@ class RootWindowControllerTest : public AshTestBase {
     return widget;
   }
 
+  views::WidgetDelegate* CreateModalWidgetDelegate() {
+    auto delegate = std::make_unique<views::WidgetDelegateView>();
+    delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+    return delegate.release();
+  }
+
   views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
-        new TestDelegate(true), GetContext());
+        CreateModalWidgetDelegate(), GetContext());
     // See the above comment.
     widget->SetBounds(bounds);
     widget->Show();
@@ -126,8 +116,8 @@ class RootWindowControllerTest : public AshTestBase {
 
   views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
                                              aura::Window* parent) {
-    views::Widget* widget =
-        views::Widget::CreateWindowWithParent(new TestDelegate(true), parent);
+    views::Widget* widget = views::Widget::CreateWindowWithParent(
+        CreateModalWidgetDelegate(), parent);
     // See the above comment.
     widget->SetBounds(bounds);
     widget->Show();

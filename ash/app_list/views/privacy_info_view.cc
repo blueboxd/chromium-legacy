@@ -245,11 +245,12 @@ void PrivacyInfoView::InitText() {
   size_t offset;
   const base::string16 text =
       l10n_util::GetStringFUTF16(info_string_id_, link, &offset);
-  auto text_view = std::make_unique<views::StyledLabel>(text, this);
+  text_view_ = AddChildView(std::make_unique<views::StyledLabel>(this));
+  text_view_->SetText(text);
 
   views::StyledLabel::RangeStyleInfo style;
   style.override_color = gfx::kGoogleGrey900;
-  text_view->AddStyleRange(gfx::Range(0, offset), style);
+  text_view_->AddStyleRange(gfx::Range(0, offset), style);
 
   // TODO(crbug.com/1114628): Remove the custom view once RangeStyleInfo
   // supports selected links.
@@ -259,13 +260,12 @@ void PrivacyInfoView::InitText() {
   custom_view->SetEnabledColor(gfx::kGoogleBlue700);
   link_style.custom_view = custom_view.get();
   link_view_ = custom_view.get();
-  text_view->AddCustomView(std::move(custom_view));
-  text_view->AddStyleRange(gfx::Range(offset, offset + link.length()),
-                           link_style);
+  text_view_->AddCustomView(std::move(custom_view));
+  text_view_->AddStyleRange(gfx::Range(offset, offset + link.length()),
+                            link_style);
 
-  text_view->SetFocusBehavior(FocusBehavior::ALWAYS);
-  text_view->SetAutoColorReadabilityEnabled(false);
-  text_view_ = AddChildView(std::move(text_view));
+  text_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  text_view_->SetAutoColorReadabilityEnabled(false);
 }
 
 void PrivacyInfoView::InitCloseButton() {

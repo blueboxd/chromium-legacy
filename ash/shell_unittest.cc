@@ -130,32 +130,13 @@ void ExpectAllContainers() {
   EXPECT_FALSE(Shell::GetContainer(root_window, kShellWindowId_PhantomWindow));
 }
 
-class ModalWindow : public views::WidgetDelegateView {
- public:
-  ModalWindow() { SetTitle(base::ASCIIToUTF16("Modal Window")); }
-  ~ModalWindow() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  bool CanResize() const override { return true; }
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModalWindow);
-};
-
-class WindowWithPreferredSize : public views::WidgetDelegateView {
- public:
-  WindowWithPreferredSize() = default;
-  ~WindowWithPreferredSize() override = default;
-
-  // views::WidgetDelegate:
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(400, 300);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowWithPreferredSize);
-};
+views::WidgetDelegateView* CreateModalWidgetDelegate() {
+  auto delegate = std::make_unique<views::WidgetDelegateView>();
+  delegate->SetCanResize(true);
+  delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+  delegate->SetTitle(base::ASCIIToUTF16("Modal Window"));
+  return delegate.release();
+}
 
 class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
@@ -264,7 +245,11 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   views::Widget::InitParams params;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Don't specify bounds, parent or context.
-  params.delegate = new WindowWithPreferredSize;
+  {
+    auto delegate = std::make_unique<views::WidgetDelegateView>();
+    delegate->SetPreferredSize(gfx::Size(400, 300));
+    params.delegate = delegate.release();
+  }
   views::Widget widget;
   params.context = GetContext();
   widget.Init(std::move(params));
@@ -321,7 +306,7 @@ TEST_F(ShellTest, CreateModalWindow) {
 
   // Create a modal window.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), widget->GetNativeView());
+      CreateModalWidgetDelegate(), widget->GetNativeView());
   modal_widget->Show();
 
   // It should be in modal container.
@@ -370,7 +355,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a modal window with a lock window as parent.
   views::Widget* lock_modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), lock_widget->GetNativeView());
+      CreateModalWidgetDelegate(), lock_widget->GetNativeView());
   lock_modal_widget->Show();
   EXPECT_TRUE(lock_modal_widget->GetNativeView()->HasFocus());
 
@@ -383,7 +368,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a modal window with a normal window as parent.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), widget->GetNativeView());
+      CreateModalWidgetDelegate(), widget->GetNativeView());
   modal_widget->Show();
   // Window on lock screen shouldn't lost focus.
   EXPECT_FALSE(modal_widget->GetNativeView()->HasFocus());

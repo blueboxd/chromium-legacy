@@ -1743,8 +1743,12 @@
     "can_be_recommended": true,
     "policy_pref_mapping_test": [
       {
+        "policies": { "BlockThirdPartyCookies": false },
+        "prefs": { "profile.cookie_controls_mode": { "value": 0} }
+      },
+      {
         "policies": { "BlockThirdPartyCookies": true },
-        "prefs": { "profile.block_third_party_cookies": {} }
+        "prefs": { "profile.cookie_controls_mode": { "value": 1} }
       }
     ]
   },

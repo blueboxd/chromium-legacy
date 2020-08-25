@@ -69,20 +69,11 @@ struct FrameAndScrollOffsets {
   gfx::Size scroll_offsets;
 };
 
-// Deserialization context for |MakeDeserialProcs| that contains the information
-// needed to embed a subframe within its parent frame.
-struct LoadedFramesDeserialContext {
-  LoadedFramesDeserialContext();
-  ~LoadedFramesDeserialContext();
-
-  // The scroll offsets for the current frame.
-  gfx::Size scroll_offsets;
-
-  // Maps a content ID to a frame's picture. A frame's subframes should be
-  // loaded into this context before |MakeDeserialProcs| is called to ensure
-  // that the resulting |SkPicture| contains all subframes.
-  base::flat_map<uint32_t, FrameAndScrollOffsets> subframes;
-};
+// Maps a content ID to a frame's picture. A frame's subframes should be
+// loaded into this context before |MakeDeserialProcs| is called to ensure
+// that the resulting |SkPicture| contains all subframes.
+using LoadedFramesDeserialContext =
+    base::flat_map<uint32_t, FrameAndScrollOffsets>;
 
 // Creates a no-op SkPicture.
 sk_sp<SkPicture> MakeEmptyPicture();

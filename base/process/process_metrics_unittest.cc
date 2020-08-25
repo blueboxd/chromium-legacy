@@ -34,7 +34,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "base/process/internal_linux.h"
 #endif
 
@@ -67,7 +67,7 @@ class SystemMetricsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SystemMetricsTest);
 };
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 TEST_F(SystemMetricsTest, IsValidDiskName) {
   const char invalid_input1[] = "";
   const char invalid_input2[] = "s";
@@ -329,7 +329,7 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
   const char empty_input[] = "";
   EXPECT_FALSE(ParseProcVmstat(empty_input, &vmstat));
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS) || \
     defined(OS_WIN)
@@ -426,7 +426,7 @@ TEST_F(SystemMetricsTest, ParseZramStat) {
 #endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
+    defined(OS_CHROMEOS) || defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   SystemMemoryInfoKB info;
   EXPECT_TRUE(GetSystemMemoryInfo(&info));
@@ -438,26 +438,26 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
 #else
   EXPECT_GT(info.free, 0);
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   EXPECT_GT(info.buffers, 0);
   EXPECT_GT(info.cached, 0);
   EXPECT_GT(info.active_anon + info.inactive_anon, 0);
   EXPECT_GT(info.active_file + info.inactive_file, 0);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   // All the values should be less than the total amount of memory.
 #if !defined(OS_WIN) && !defined(OS_IOS)
   // TODO(crbug.com/711450): re-enable the following assertion on iOS.
   EXPECT_LT(info.free, info.total);
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   EXPECT_LT(info.buffers, info.total);
   EXPECT_LT(info.cached, info.total);
   EXPECT_LT(info.active_anon, info.total);
   EXPECT_LT(info.inactive_anon, info.total);
   EXPECT_LT(info.active_file, info.total);
   EXPECT_LT(info.inactive_file, info.total);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 #if defined(OS_APPLE)
   EXPECT_GT(info.file_backed, 0);
@@ -472,9 +472,9 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
 #endif
 }
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
-        // defined(OS_ANDROID)
+        // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 TEST(ProcessMetricsTest, ParseProcStatCPU) {
   // /proc/self/stat for a process running "top".
   const char kTopStat[] = "960 (top) S 16230 960 16230 34818 960 "
@@ -581,11 +581,11 @@ TEST(ProcessMetricsTest, ParseProcTimeInState) {
                                     "invalid334 4\n",  // invalid header / line
                                     123, time_in_state));
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 // Disable on Android because base_unittests runs inside a Dalvik VM that
 // starts and stop threads (crbug.com/175563).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/396455
 TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
   const ProcessHandle current = GetCurrentProcessHandle();
@@ -603,9 +603,9 @@ TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
   // The Thread destructor will stop them.
   ASSERT_EQ(initial_threads, GetNumberOfThreads(current));
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
 namespace {
 
 // Keep these in sync so the GetChildOpenFdCount test can refer to correct test
@@ -729,9 +729,9 @@ TEST(ProcessMetricsTest, GetOpenFdCount) {
   EXPECT_EQ(new_fd_count, fd_count + 1);
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_MAC)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 TEST(ProcessMetricsTestLinux, GetPageFaultCounts) {
   std::unique_ptr<base::ProcessMetrics> process_metrics(
@@ -875,7 +875,7 @@ TEST(ProcessMetricsTestLinux, GetPerThreadCumulativeCPUTimeInState) {
   }
 }
 
-#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 TEST(ProcessMetricsTest, GetDiskUsageBytesPerSecond) {

@@ -62,6 +62,7 @@ class BulletView : public views::View {
 PublicAccountWarningDialog::PublicAccountWarningDialog(
     base::WeakPtr<LoginExpandedPublicAccountView> controller)
     : controller_(controller) {
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -128,10 +129,6 @@ void PublicAccountWarningDialog::AddedToWidget() {
   auto* frame_view = static_cast<views::BubbleFrameView*>(
       GetWidget()->non_client_view()->frame_view());
   frame_view->SetTitleView(std::move(title_label));
-}
-
-ui::ModalType PublicAccountWarningDialog::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
 }
 
 gfx::Size PublicAccountWarningDialog::CalculatePreferredSize() const {

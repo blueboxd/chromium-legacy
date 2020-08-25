@@ -27,9 +27,6 @@ class ASH_EXPORT PublicAccountWarningDialog : public views::DialogDelegateView {
   // views::DialogDelegate:
   void AddedToWidget() override;
 
-  // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 

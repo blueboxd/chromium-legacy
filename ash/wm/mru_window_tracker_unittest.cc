@@ -81,19 +81,6 @@ class MruWindowTrackerOrderTest : public MruWindowTrackerTest,
   }
 };
 
-namespace {
-
-class TestDelegate : public views::WidgetDelegateView {
- public:
-  TestDelegate() = default;
-  ~TestDelegate() override = default;
-
-  // views::WidgetDelegateView:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-};
-
-}  // namespace
-
 // Test basic functionalities of MruWindowTracker.
 TEST_P(MruWindowTrackerOrderTest, Basic) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
@@ -142,8 +129,10 @@ TEST_P(MruWindowTrackerOrderTest, Basic) {
   EXPECT_EQ(w5.get(), window_list[3]);
   EXPECT_EQ(w6.get(), window_list[4]);
 
+  auto delegate = std::make_unique<views::WidgetDelegateView>();
+  delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
   std::unique_ptr<views::Widget> modal =
-      CreateTestWidget(new TestDelegate(), kShellWindowId_Invalid);
+      CreateTestWidget(delegate.release(), kShellWindowId_Invalid);
   EXPECT_EQ(modal.get()->GetNativeView()->parent()->id(),
             kShellWindowId_SystemModalContainer);
 

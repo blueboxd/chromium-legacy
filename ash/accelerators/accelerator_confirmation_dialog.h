@@ -23,9 +23,6 @@ class AcceleratorConfirmationDialog : public views::DialogDelegateView {
                                 base::OnceClosure on_cancel_callback);
   ~AcceleratorConfirmationDialog() override;
 
-  // views::DialogDelegateView:
-  ui::ModalType GetModalType() const override;
-
   base::WeakPtr<AcceleratorConfirmationDialog> GetWeakPtr();
 
  private:

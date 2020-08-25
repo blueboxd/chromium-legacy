@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
@@ -371,8 +372,9 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(mContext, ServerCertificate.CERT_OK);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
-            prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
+            Assert.assertEquals(
+                    prefs.getInteger(COOKIE_CONTROLS_MODE), CookieControlsMode.INCOGNITO_ONLY);
+            prefs.setInteger(COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie;SameSite=none;Secure"));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -405,7 +407,8 @@ public class DetachedResourceRequestTest {
         // This isn't blocking third-party cookies by preferences.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
+            Assert.assertEquals(
+                    prefs.getInteger(COOKIE_CONTROLS_MODE), CookieControlsMode.INCOGNITO_ONLY);
         });
 
         // Of the three cookies, only one that's both SameSite=None and Secure
@@ -435,8 +438,9 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
-            prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
+            Assert.assertEquals(
+                    prefs.getInteger(COOKIE_CONTROLS_MODE), CookieControlsMode.INCOGNITO_ONLY);
+            prefs.setInteger(COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         final Uri origin = Uri.parse(Origin.create(url).toString());

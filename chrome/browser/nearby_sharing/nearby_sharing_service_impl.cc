@@ -767,7 +767,6 @@ void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
     NS_LOG(VERBOSE) << __func__ << ": Nearby sharing disabled!";
     StopAdvertising();
     StopScanning();
-    // TODO(crbug/1085067): Stop discovery.
     nearby_connections_manager_->Shutdown();
   }
   InvalidateSurfaceState();
@@ -1520,7 +1519,6 @@ void NearbySharingServiceImpl::OnCreatePayloads(
       settings_.GetDataUsage(), share_target);
 
   // TODO(crbug.com/1111458): Add preferred transfer type.
-  // TODO(crbug.com/1085067): Add timeout
   nearby_connections_manager_->Connect(
       std::move(endpoint_info), *info->endpoint_id(),
       std::move(bluetooth_mac_address), adjusted_data_usage,

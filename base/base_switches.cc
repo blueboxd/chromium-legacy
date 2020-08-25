@@ -152,7 +152,7 @@ const char kForceFieldTrialParams[] = "force-fieldtrial-params";
 
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Controls whether or not retired instruction counts are surfaced for threads
 // in trace events on Linux.
 //

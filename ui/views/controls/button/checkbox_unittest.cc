@@ -52,7 +52,8 @@ class CheckboxTest : public ViewsTestBase {
 
 TEST_F(CheckboxTest, AccessibilityTest) {
   const base::string16 label_text = base::ASCIIToUTF16("Some label");
-  StyledLabel label(label_text, nullptr);
+  StyledLabel label;
+  label.SetText(label_text);
   checkbox()->SetAssociatedLabel(&label);
 
   ui::AXNodeData ax_data;

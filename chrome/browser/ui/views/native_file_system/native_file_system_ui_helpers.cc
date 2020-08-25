@@ -20,9 +20,9 @@ std::unique_ptr<views::View> CreateOriginLabel(int message_id,
       url_formatter::FormatOriginForSecurityDisplay(
           origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   size_t offset;
-  auto label = std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringFUTF16(message_id, formatted_origin, &offset),
-      nullptr);
+  auto label = std::make_unique<views::StyledLabel>();
+  label->SetText(
+      l10n_util::GetStringFUTF16(message_id, formatted_origin, &offset));
   label->SetTextContext(text_context);
   label->SetDefaultTextStyle(show_emphasis ? views::style::STYLE_SECONDARY
                                            : views::style::STYLE_PRIMARY);
@@ -47,10 +47,9 @@ std::unique_ptr<views::View> CreateOriginPathLabel(int message_id,
           origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   base::string16 formatted_path = path.BaseName().LossyDisplayName();
   std::vector<size_t> offsets;
-  auto label = std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringFUTF16(message_id, formatted_origin, formatted_path,
-                                 &offsets),
-      nullptr);
+  auto label = std::make_unique<views::StyledLabel>();
+  label->SetText(l10n_util::GetStringFUTF16(message_id, formatted_origin,
+                                            formatted_path, &offsets));
   DCHECK_GE(offsets.size(), 2u);
 
   label->SetTextContext(text_context);

@@ -76,18 +76,23 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 
 #if defined(OS_FUCHSIA) || defined(OS_APPLE) || defined(ADDRESS_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER) ||                 \
-    BUILDFLAG(IS_HWASAN)
+    BUILDFLAG(IS_HWASAN) || BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow
 #endif
-// Test array[TooBig][X] and array[X][TooBig] allocations for int
-// overflows.  IOS doesn't honor nothrow, so disable the test there.
+// Test that array[TooBig][X] and array[X][TooBig] allocations fail and not
+// succeed with the wrong size allocation in case of size_t overflow.  This
+// test is disabled on environments that operator new (nothrow) crashes in
+// case of size_t overflow.
+//
+// - iOS doesn't honor nothrow.
+// - XSan aborts when operator new returns nullptr.
+// - PartitionAlloc crashes by design when size_t overflows.
+//
 // TODO(https://crbug.com/828229): Fuchsia SDK exports an incorrect
 // new[] that gets picked up in Debug/component builds, breaking this
-// test.  Disabled on Mac for the same reason.  Disabled under XSan
-// because asan aborts when new returns nullptr,
-// https://bugs.chromium.org/p/chromium/issues/detail?id=690271#c15
+// test.  Disabled on Mac for the same reason.
 TEST(SecurityTest, MAYBE_NewOverflow) {
   const size_t kArraySize = 4096;
   // We want something "dynamic" here, so that the compiler doesn't

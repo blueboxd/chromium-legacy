@@ -112,8 +112,10 @@ class CompromisedCredentialsManager
         CredentialsView credentials) = 0;
   };
 
-  explicit CompromisedCredentialsManager(scoped_refptr<PasswordStore> store,
-                                         SavedPasswordsPresenter* presenter);
+  CompromisedCredentialsManager(
+      SavedPasswordsPresenter* presenter,
+      scoped_refptr<PasswordStore> profile_store,
+      scoped_refptr<PasswordStore> account_store = nullptr);
   ~CompromisedCredentialsManager() override;
 
   void Init();
@@ -160,15 +162,16 @@ class CompromisedCredentialsManager
   void UpdateCachedDataAndNotifyObservers(
       SavedPasswordsPresenter::SavedPasswordsView saved_passwords);
 
-  // The password store containing the compromised credentials.
-  scoped_refptr<PasswordStore> store_;
-
   // A weak handle to the presenter used to join the list of compromised
   // credentials with saved passwords. Needs to outlive this instance.
   SavedPasswordsPresenter* presenter_ = nullptr;
 
+  // The password stores containing the compromised credentials.
+  scoped_refptr<PasswordStore> profile_store_;
+  scoped_refptr<PasswordStore> account_store_;
+
   // The reader used to read the compromised credentials from the password
-  // store.
+  // stores.
   CompromisedCredentialsReader compromised_credentials_reader_;
 
   // Cache of the most recently obtained compromised credentials.

@@ -237,4 +237,6 @@ void FakeScriptExecutorDelegate::ClearGenericUi() {}
 void FakeScriptExecutorDelegate::SetOverlayBehavior(
     ConfigureUiStateProto::OverlayBehavior overaly_behavior) {}
 
+void FakeScriptExecutorDelegate::SetBrowseModeInvisible(bool invisible) {}
+
 }  // namespace autofill_assistant

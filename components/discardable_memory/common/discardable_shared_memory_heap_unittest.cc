@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
@@ -405,6 +406,39 @@ TEST(DiscardableSharedMemoryHeapTest, OnMemoryDumpTest) {
     EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
     EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(virtual_size))));
   }
+}
+
+TEST(DiscardableSharedMemoryHeapTest, DetailedDumpsDontContainRedundantData) {
+  using testing::ByRef;
+  using testing::Contains;
+  using testing::Eq;
+  using testing::Not;
+  DiscardableSharedMemoryHeap heap;
+
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  size_t block_size = base::GetPageSize();
+
+  auto memory = std::make_unique<base::DiscardableSharedMemory>();
+  ASSERT_TRUE(memory->CreateAndMap(block_size));
+  auto span = heap.Grow(std::move(memory), block_size, 1, base::DoNothing());
+
+  base::trace_event::ProcessMemoryDump pmd(args);
+  heap.OnMemoryDump(args, &pmd);
+  auto* dump = pmd.GetAllocatorDump(base::StringPrintf(
+      "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(&heap)));
+  ASSERT_NE(nullptr, dump);
+
+  base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
+                                                         "bytes", 0);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+
+  // Detailed dumps do not contain virtual size.
+  base::trace_event::MemoryAllocatorDump::Entry virtual_size(
+      "virtual_size", "bytes", block_size);
+  EXPECT_THAT(dump->entries(), Not(Contains(Eq(ByRef(virtual_size)))));
+
+  heap.MergeIntoFreeLists(std::move(span));
 }
 
 }  // namespace

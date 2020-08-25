@@ -78,11 +78,7 @@ struct StyledLabel::LayoutViews {
   std::vector<std::unique_ptr<View>> owned_views;
 };
 
-StyledLabel::StyledLabel(const base::string16& text,
-                         StyledLabelListener* listener)
-    : listener_(listener) {
-  base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
-}
+StyledLabel::StyledLabel(StyledLabelListener* listener) : listener_(listener) {}
 
 StyledLabel::~StyledLabel() = default;
 
@@ -90,7 +86,11 @@ const base::string16& StyledLabel::GetText() const {
   return text_;
 }
 
-void StyledLabel::SetText(const base::string16& text) {
+void StyledLabel::SetText(base::string16 text) {
+  // Failing to trim trailing whitespace will cause later confusion when the
+  // text elider tries to do so internally. There's no obvious reason to
+  // preserve trailing whitespace anyway.
+  base::TrimWhitespace(std::move(text), base::TRIM_TRAILING, &text);
   if (text_ == text)
     return;
 

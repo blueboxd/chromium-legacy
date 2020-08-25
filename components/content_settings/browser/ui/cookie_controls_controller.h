@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "content/public/browser/web_contents.h"
 
 namespace content {
 class WebContents;

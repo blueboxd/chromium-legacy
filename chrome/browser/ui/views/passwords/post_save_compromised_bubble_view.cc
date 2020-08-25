@@ -32,8 +32,8 @@ PostSaveCompromisedBubbleView::PostSaveCompromisedBubbleView(
     SetButtonLabel(ui::DIALOG_BUTTON_OK, std::move(button));
   }
 
-  auto label =
-      std::make_unique<views::StyledLabel>(controller_.GetBody(), this);
+  auto label = std::make_unique<views::StyledLabel>(this);
+  label->SetText(controller_.GetBody());
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
   label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   gfx::Range range = controller_.GetSettingLinkRange();

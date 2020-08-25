@@ -16,7 +16,8 @@
 
 #include "base/stl_util.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_AIX)
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
@@ -29,7 +30,8 @@
 #include "base/threading/thread_restrictions.h"
 #endif
 
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
 #include "base/files/file_util.h"
 #endif
 
@@ -150,7 +152,8 @@ uint64_t xgetbv(uint32_t xcr) {
 
 #endif  // ARCH_CPU_X86_FAMILY
 
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
 std::string* CpuInfoBrand() {
   static std::string* brand = []() {
     // This function finds the value from /proc/cpuinfo under the key "model
@@ -180,7 +183,7 @@ std::string* CpuInfoBrand() {
   return brand;
 }
 #endif  // defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) ||
-        // defined(OS_LINUX))
+        // defined(OS_LINUX) || defined(OS_CHROMEOS))
 
 }  // namespace
 
@@ -302,7 +305,7 @@ void CPU::Initialize() {
     }
   }
 #elif defined(ARCH_CPU_ARM_FAMILY)
-#if (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   cpu_brand_ = *CpuInfoBrand();
 #elif defined(OS_WIN)
   // Windows makes high-resolution thread timing information available in
@@ -324,7 +327,8 @@ CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   return PENTIUM;
 }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+  defined(OS_AIX)
 namespace {
 
 constexpr char kTimeInStatePath[] =
@@ -520,6 +524,7 @@ bool CPU::GetTimeInState(TimeInState& time_in_state) {
 
   return true;
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) ||
+        // defined(OS_AIX)
 
 }  // namespace base

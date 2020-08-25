@@ -1979,7 +1979,8 @@ void LockContentsView::ShowAuthErrorMessage() {
     *bold_start += shortcut_offset_in_string;
   }
 
-  auto label = std::make_unique<views::StyledLabel>(error_text, this);
+  auto label = std::make_unique<views::StyledLabel>(this);
+  label->SetText(error_text);
   MakeSectionBold(label.get(), error_text, bold_start, bold_length);
   label->SetAutoColorReadabilityEnabled(false);
 

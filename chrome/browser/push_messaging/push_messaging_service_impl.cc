@@ -31,6 +31,7 @@
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -179,13 +180,6 @@ content::RenderFrameHost* GetMainFrameForRenderFrameHost(
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
   return web_contents ? web_contents->GetMainFrame() : nullptr;
-}
-
-bool IsVapidKey(const std::string& application_server_key) {
-  // VAPID keys are NIST P-256 public keys in uncompressed format (64 bytes),
-  // verified through its length and the 0x04 prefix.
-  return application_server_key.size() == 65 &&
-         application_server_key[0] == 0x04;
 }
 
 }  // namespace
@@ -730,7 +724,7 @@ void PushMessagingServiceImpl::DoSubscribe(
   // TODO(peter): Move this check to the renderer process & Mojo message
   // validation once the flag is always enabled, and remove the
   // |render_process_id| and |render_frame_id| parameters from this method.
-  if (!IsVapidKey(application_server_key_string)) {
+  if (!push_messaging::IsVapidKey(application_server_key_string)) {
     content::RenderFrameHost* render_frame_host =
         content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     content::RenderFrameHost* main_frame =
@@ -769,13 +763,14 @@ void PushMessagingServiceImpl::DoSubscribe(
 
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
-      ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
-                 ttl, std::map<std::string, std::string>() /* options */,
-                 {} /* flags */,
-                 base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
-                                weak_factory_.GetWeakPtr(), app_identifier,
-                                application_server_key_string,
-                                std::move(register_callback)));
+      ->GetToken(
+          push_messaging::NormalizeSenderInfo(application_server_key_string),
+          kGCMScope, ttl, std::map<std::string, std::string>() /* options */,
+          {} /* flags */,
+          base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
+                         weak_factory_.GetWeakPtr(), app_identifier,
+                         application_server_key_string,
+                         std::move(register_callback)));
 }
 
 void PushMessagingServiceImpl::SubscribeEnd(
@@ -813,7 +808,7 @@ void PushMessagingServiceImpl::DidSubscribe(
 
   switch (result) {
     case InstanceID::SUCCESS: {
-      const GURL endpoint = CreateEndpoint(subscription_id);
+      const GURL endpoint = push_messaging::CreateEndpoint(subscription_id);
 
       // Make sure that this subscription has associated encryption keys prior
       // to returning it to the developer - they'll need this information in
@@ -888,7 +883,7 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
     return;
   }
 
-  const GURL endpoint = CreateEndpoint(subscription_id);
+  const GURL endpoint = push_messaging::CreateEndpoint(subscription_id);
   const std::string& app_id = app_identifier.app_id();
   base::Optional<base::Time> expiration_time = app_identifier.expiration_time();
 
@@ -899,12 +894,12 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->ValidateToken(
-        NormalizeSenderInfo(sender_id), kGCMScope, subscription_id,
-        std::move(validate_cb));
+        push_messaging::NormalizeSenderInfo(sender_id), kGCMScope,
+        subscription_id, std::move(validate_cb));
   } else {
     GetGCMDriver()->ValidateRegistration(
-        app_id, {NormalizeSenderInfo(sender_id)}, subscription_id,
-        std::move(validate_cb));
+        app_id, {push_messaging::NormalizeSenderInfo(sender_id)},
+        subscription_id, std::move(validate_cb));
   }
 }
 
@@ -1041,9 +1036,9 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
     if (sender_id.empty()) {
       std::move(unregister_callback).Run(gcm::GCMClient::INVALID_PARAMETER);
     } else {
-      GetGCMDriver()->UnregisterWithSenderId(app_id,
-                                             NormalizeSenderInfo(sender_id),
-                                             std::move(unregister_callback));
+      GetGCMDriver()->UnregisterWithSenderId(
+          app_id, push_messaging::NormalizeSenderInfo(sender_id),
+          std::move(unregister_callback));
     }
 #else
     GetGCMDriver()->Unregister(app_id, std::move(unregister_callback));
@@ -1263,15 +1258,10 @@ void PushMessagingServiceImpl::GetPushSubscriptionFromAppIdentifierEnd(
     std::move(callback).Run(nullptr /* subscription */);
     return;
   }
-  // Currently |user_visible_only| is always true, once silent pushes are
-  // enabled, get this information from SW database.
-  auto options = blink::mojom::PushSubscriptionOptions::New();
-  options->user_visible_only = true;
-  options->application_server_key =
-      std::vector<uint8_t>(sender_id.begin(), sender_id.end());
 
   std::move(callback).Run(blink::mojom::PushSubscription::New(
-      endpoint, expiration_time, std::move(options), p256dh, auth));
+      endpoint, expiration_time, push_messaging::MakeOptions(sender_id), p256dh,
+      auth));
 }
 
 void PushMessagingServiceImpl::FirePushSubscriptionChange(
@@ -1353,19 +1343,6 @@ void PushMessagingServiceImpl::SetRemoveExpiredSubscriptionsCallbackForTesting(
   remove_expired_subscriptions_callback_for_testing_ = std::move(closure);
 }
 
-std::string PushMessagingServiceImpl::NormalizeSenderInfo(
-    const std::string& application_server_key) const {
-  if (!IsVapidKey(application_server_key))
-    return application_server_key;
-
-  std::string encoded_application_server_key;
-  base::Base64UrlEncode(application_server_key,
-                        base::Base64UrlEncodePolicy::OMIT_PADDING,
-                        &encoded_application_server_key);
-
-  return encoded_application_server_key;
-}
-
 // Assumes user_visible always since this is just meant to check
 // if the permission was previously granted and not revoked.
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
@@ -1379,17 +1356,10 @@ void PushMessagingServiceImpl::GetEncryptionInfoForAppId(
     gcm::GCMEncryptionProvider::EncryptionInfoCallback callback) {
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->GetEncryptionInfo(
-        NormalizeSenderInfo(sender_id), std::move(callback));
+        push_messaging::NormalizeSenderInfo(sender_id), std::move(callback));
   } else {
     GetGCMDriver()->GetEncryptionInfo(app_id, std::move(callback));
   }
-}
-
-GURL PushMessagingServiceImpl::CreateEndpoint(
-    const std::string& subscription_id) const {
-  const GURL endpoint(kPushMessagingGcmEndpoint + subscription_id);
-  DCHECK(endpoint.is_valid());
-  return endpoint;
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {

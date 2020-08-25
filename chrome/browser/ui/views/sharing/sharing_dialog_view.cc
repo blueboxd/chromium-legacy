@@ -126,10 +126,10 @@ std::unique_ptr<views::StyledLabel> CreateHelpText(
   DCHECK_NE(0, data.help_link_text_id);
   const base::string16 link = l10n_util::GetStringUTF16(data.help_link_text_id);
   size_t offset;
-  const base::string16 text =
-      show_origin ? PrepareHelpTextWithOrigin(data, link, &offset)
-                  : PrepareHelpTextWithoutOrigin(data, link, &offset);
-  auto label = std::make_unique<views::StyledLabel>(text, listener);
+  auto label = std::make_unique<views::StyledLabel>(listener);
+  label->SetText(show_origin
+                     ? PrepareHelpTextWithOrigin(data, link, &offset)
+                     : PrepareHelpTextWithoutOrigin(data, link, &offset));
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);

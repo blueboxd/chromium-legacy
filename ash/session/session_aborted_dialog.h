@@ -18,9 +18,6 @@ class SessionAbortedDialog : public views::DialogDelegateView {
  public:
   static void Show(const std::string& user_email);
 
-  // views::WidgetDelegate overrides.
-  ui::ModalType GetModalType() const override;
-
   // views::View overrides.
   gfx::Size CalculatePreferredSize() const override;
 

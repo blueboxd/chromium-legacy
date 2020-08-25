@@ -32,8 +32,8 @@ PasswordGenerationConfirmationView::PasswordGenerationConfirmationView(
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
-  auto label = std::make_unique<views::StyledLabel>(
-      controller_.save_confirmation_text(), this);
+  auto label = std::make_unique<views::StyledLabel>(this);
+  label->SetText(controller_.save_confirmation_text());
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
   label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   auto link_style = views::StyledLabel::RangeStyleInfo::CreateForLink();

@@ -208,7 +208,8 @@ void PasswordReuseModalWarningDialog::
 
   // Bold the domains in the message body label.
   views::StyledLabel* const styled_message_body_label =
-      new views::StyledLabel(message_body, nullptr);
+      content->AddChildView(std::make_unique<views::StyledLabel>());
+  styled_message_body_label->SetText(message_body);
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.text_style = STYLE_EMPHASIZED;
   for (size_t idx = 0; idx < placeholder_offsets.size(); idx++) {
@@ -218,7 +219,6 @@ void PasswordReuseModalWarningDialog::
         bold_style);
   }
   styled_message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  content->AddChildView(std::move(styled_message_body_label));
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }

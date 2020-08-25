@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/nearby_sharing/nearby_connection_impl.h"
 #include "chrome/browser/nearby_sharing/nearby_file_handler.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
@@ -122,8 +123,8 @@ class NearbyConnectionsManagerImpl
   void OnPayloadTransferUpdate(const std::string& endpoint_id,
                                PayloadTransferUpdatePtr update) override;
 
+  void OnConnectionTimedOut(const std::string& endpoint_id);
   void OnConnectionRequested(const std::string& endpoint_id,
-                             NearbyConnectionCallback callback,
                              ConnectionsStatus status);
   bool BindNearbyConnections();
   void Reset();
@@ -146,6 +147,9 @@ class NearbyConnectionsManagerImpl
   // A map of endpoint_id to NearbyConnection.
   base::flat_map<std::string, std::unique_ptr<NearbyConnectionImpl>>
       connections_;
+  // A map of endpoint_id to timers that timeout a connection request.
+  base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
+      connect_timeout_timers_;
   // A map of payload_id to PayloadStatusListener*.
   base::flat_map<int64_t, PayloadStatusListener*> payload_status_listeners_;
   // A map of payload_id to PayloadPtr.

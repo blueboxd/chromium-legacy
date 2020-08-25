@@ -95,8 +95,8 @@ IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
           browser_state,
           ServiceAccessType::EXPLICIT_ACCESS)),
       saved_passwords_presenter_(password_store_),
-      compromised_credentials_manager_(password_store_,
-                                       &saved_passwords_presenter_),
+      compromised_credentials_manager_(&saved_passwords_presenter_,
+                                       password_store_),
       bulk_leak_check_service_adapter_(
           &saved_passwords_presenter_,
           IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(

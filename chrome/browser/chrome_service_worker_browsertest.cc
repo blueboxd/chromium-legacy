@@ -28,6 +28,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -875,8 +876,9 @@ class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        TopFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
-                                               true);
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
 
   // Load a page that registers a service worker.
   ui_test_utils::NavigateToURL(
@@ -908,8 +910,9 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        SubFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
-                                               true);
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
 
   // Load a page that registers a service worker.
   ui_test_utils::NavigateToURL(

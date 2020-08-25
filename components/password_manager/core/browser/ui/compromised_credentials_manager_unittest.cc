@@ -27,6 +27,7 @@ constexpr char kUsername2[] = "bob";
 
 constexpr char kPassword1[] = "f00b4r";
 constexpr char kPassword2[] = "s3cr3t";
+constexpr char kPassword3[] = "484her";
 
 using autofill::PasswordForm;
 using ::testing::ElementsAre;
@@ -71,7 +72,7 @@ LeakCheckCredential MakeLeakCredential(base::StringPiece username,
                              base::ASCIIToUTF16(password));
 }
 
-CredentialWithPassword MakeComprmisedCredential(
+CredentialWithPassword MakeCompromisedCredential(
     PasswordForm form,
     CompromisedCredentials credential) {
   CredentialWithPassword credential_with_password((CredentialView(form)));
@@ -103,7 +104,7 @@ class CompromisedCredentialsManagerTest : public ::testing::Test {
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   SavedPasswordsPresenter presenter_{store_};
-  CompromisedCredentialsManager provider_{store_, &presenter_};
+  CompromisedCredentialsManager provider_{&presenter_, store_};
 };
 
 }  // namespace
@@ -249,7 +250,7 @@ TEST_F(CompromisedCredentialsManagerTest, JoinSingleCredentials) {
   RunUntilIdle();
 
   CredentialWithPassword expected =
-      MakeComprmisedCredential(password, credential);
+      MakeCompromisedCredential(password, credential);
   expected.password = password.password_value;
   EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
 }
@@ -269,7 +270,7 @@ TEST_F(CompromisedCredentialsManagerTest, JoinPhishedAndLeaked) {
   store().AddCompromisedCredentials(phished);
   RunUntilIdle();
 
-  CredentialWithPassword expected = MakeComprmisedCredential(password, leaked);
+  CredentialWithPassword expected = MakeCompromisedCredential(password, leaked);
   expected.password = password.password_value;
   expected.compromise_type = (CompromiseTypeFlags::kCredentialLeaked |
                               CompromiseTypeFlags::kCredentialPhished);
@@ -288,9 +289,9 @@ TEST_F(CompromisedCredentialsManagerTest, ReactToChangesInBothTables) {
       MakeCompromised(kExampleCom, kUsername1),
       MakeCompromised(kExampleCom, kUsername2)};
 
-  std::vector<CredentialWithPassword> expected;
-  expected.push_back(MakeComprmisedCredential(passwords[0], credentials[0]));
-  expected.push_back(MakeComprmisedCredential(passwords[1], credentials[1]));
+  std::vector<CredentialWithPassword> expected = {
+      MakeCompromisedCredential(passwords[0], credentials[0]),
+      MakeCompromisedCredential(passwords[1], credentials[1])};
 
   store().AddLogin(passwords[0]);
   RunUntilIdle();
@@ -336,9 +337,9 @@ TEST_F(CompromisedCredentialsManagerTest, JoinMultipleCredentials) {
   RunUntilIdle();
 
   CredentialWithPassword expected1 =
-      MakeComprmisedCredential(passwords[0], credentials[0]);
+      MakeCompromisedCredential(passwords[0], credentials[0]);
   CredentialWithPassword expected2 =
-      MakeComprmisedCredential(passwords[1], credentials[1]);
+      MakeCompromisedCredential(passwords[1], credentials[1]);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(),
               ElementsAre(expected1, expected2));
@@ -394,9 +395,9 @@ TEST_F(CompromisedCredentialsManagerTest, JoinWithMultipleDistinctPasswords) {
   RunUntilIdle();
 
   CredentialWithPassword expected1 =
-      MakeComprmisedCredential(passwords[0], credential);
+      MakeCompromisedCredential(passwords[0], credential);
   CredentialWithPassword expected2 =
-      MakeComprmisedCredential(passwords[1], credential);
+      MakeCompromisedCredential(passwords[1], credential);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(),
               ElementsAre(expected1, expected2));
@@ -417,7 +418,7 @@ TEST_F(CompromisedCredentialsManagerTest, JoinWithMultipleRepeatedPasswords) {
   RunUntilIdle();
 
   CredentialWithPassword expected =
-      MakeComprmisedCredential(passwords[0], credential);
+      MakeCompromisedCredential(passwords[0], credential);
 
   EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
 }
@@ -434,13 +435,10 @@ TEST_F(CompromisedCredentialsManagerTest, MapCompromisedPasswordsToPasswords) {
       MakeCompromised(kExampleCom, kUsername1),
       MakeCompromised(kExampleOrg, kUsername2)};
 
-  std::vector<CredentialWithPassword> credentuals_with_password;
-  credentuals_with_password.push_back(
-      MakeComprmisedCredential(passwords[0], credentials[0]));
-  credentuals_with_password.push_back(
-      MakeComprmisedCredential(passwords[1], credentials[0]));
-  credentuals_with_password.push_back(
-      MakeComprmisedCredential(passwords[2], credentials[1]));
+  std::vector<CredentialWithPassword> credentials_with_password = {
+      MakeCompromisedCredential(passwords[0], credentials[0]),
+      MakeCompromisedCredential(passwords[1], credentials[0]),
+      MakeCompromisedCredential(passwords[2], credentials[1])};
 
   store().AddLogin(passwords[0]);
   store().AddLogin(passwords[1]);
@@ -449,13 +447,13 @@ TEST_F(CompromisedCredentialsManagerTest, MapCompromisedPasswordsToPasswords) {
   store().AddCompromisedCredentials(credentials[1]);
 
   RunUntilIdle();
-  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[0]),
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentials_with_password[0]),
               ElementsAreArray(store().stored_passwords().at(kExampleCom)));
 
-  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[1]),
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentials_with_password[1]),
               ElementsAreArray(store().stored_passwords().at(kExampleCom)));
 
-  EXPECT_THAT(provider().GetSavedPasswordsFor(credentuals_with_password[2]),
+  EXPECT_THAT(provider().GetSavedPasswordsFor(credentials_with_password[2]),
               ElementsAreArray(store().stored_passwords().at(kExampleOrg)));
 }
 
@@ -472,7 +470,7 @@ TEST_F(CompromisedCredentialsManagerTest, SaveCompromisedPassword) {
   RunUntilIdle();
 
   CredentialWithPassword expected =
-      MakeComprmisedCredential(password_form, compromised_credential);
+      MakeCompromisedCredential(password_form, compromised_credential);
   expected.create_time = base::Time::Now();
 
   provider().SaveCompromisedCredential(credential);
@@ -493,7 +491,7 @@ TEST_F(CompromisedCredentialsManagerTest, UpdateCompromisedPassword) {
 
   RunUntilIdle();
   CredentialWithPassword expected =
-      MakeComprmisedCredential(password_form, credential);
+      MakeCompromisedCredential(password_form, credential);
 
   provider().UpdateCompromisedCredentials(expected, kPassword2);
   RunUntilIdle();
@@ -512,7 +510,7 @@ TEST_F(CompromisedCredentialsManagerTest, RemoveCompromisedCredential) {
   RunUntilIdle();
 
   CredentialWithPassword expected =
-      MakeComprmisedCredential(password, credential);
+      MakeCompromisedCredential(password, credential);
   expected.password = password.password_value;
 
   EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected));
@@ -522,4 +520,89 @@ TEST_F(CompromisedCredentialsManagerTest, RemoveCompromisedCredential) {
   EXPECT_THAT(provider().GetCompromisedCredentials(), IsEmpty());
 }
 
+namespace {
+class CompromisedCredentialsManagerWithTwoStoresTest : public ::testing::Test {
+ protected:
+  CompromisedCredentialsManagerWithTwoStoresTest() {
+    profile_store_->Init(/*prefs=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr);
+  }
+
+  ~CompromisedCredentialsManagerWithTwoStoresTest() override {
+    account_store_->ShutdownOnUIThread();
+    profile_store_->ShutdownOnUIThread();
+    task_env_.RunUntilIdle();
+  }
+
+  TestPasswordStore& profile_store() { return *profile_store_; }
+  TestPasswordStore& account_store() { return *account_store_; }
+  CompromisedCredentialsManager& provider() { return provider_; }
+
+  void RunUntilIdle() { task_env_.RunUntilIdle(); }
+
+ private:
+  base::test::SingleThreadTaskEnvironment task_env_;
+  scoped_refptr<TestPasswordStore> profile_store_ =
+      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/false);
+  scoped_refptr<TestPasswordStore> account_store_ =
+      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/true);
+  SavedPasswordsPresenter presenter_{profile_store_, account_store_};
+  CompromisedCredentialsManager provider_{&presenter_, profile_store_,
+                                          account_store_};
+};
+}  // namespace
+
+// Tests that verifies mapping compromised credentials to passwords works
+// correctly.
+TEST_F(CompromisedCredentialsManagerWithTwoStoresTest,
+       MapCompromisedPasswordsToPasswords) {
+  // Add credentials for both `kExampleCom` and `kExampleOrg` in both stores
+  // with the same username and difference passwords. For `kUsername1`, the
+  // `kPassword1` are `kPassword2` are compromised while
+  // `kPassword3` is safe.
+  std::vector<PasswordForm> profile_store_passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1),
+      MakeSavedPassword(kExampleOrg, kUsername1, kPassword3)};
+  for (const PasswordForm& profile_password : profile_store_passwords)
+    profile_store().AddLogin(profile_password);
+
+  std::vector<PasswordForm> account_store_passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword3),
+      MakeSavedPassword(kExampleOrg, kUsername1, kPassword2)};
+  for (const PasswordForm& account_password : account_store_passwords)
+    account_store().AddLogin(account_password);
+
+  // Mark `kPassword1` to be compromised in the profile store, and `kPassword2`
+  // to be compromised in the account store.
+  profile_store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1));
+  account_store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername1));
+
+  RunUntilIdle();
+
+  // Each password should be joined only with compromised credential from
+  // their store.
+  EXPECT_THAT(
+      provider().GetSavedPasswordsFor(
+          CredentialView(kExampleCom, GURL(), base::ASCIIToUTF16(kUsername1),
+                         base::ASCIIToUTF16(kPassword1))),
+      ElementsAreArray(profile_store().stored_passwords().at(kExampleCom)));
+
+  EXPECT_THAT(provider().GetSavedPasswordsFor(CredentialView(
+                  kExampleOrg, GURL(), base::ASCIIToUTF16(kUsername1),
+                  base::ASCIIToUTF16(kPassword3))),
+              IsEmpty());
+
+  EXPECT_THAT(provider().GetSavedPasswordsFor(CredentialView(
+                  kExampleCom, GURL(), base::ASCIIToUTF16(kUsername1),
+                  base::ASCIIToUTF16(kPassword3))),
+              IsEmpty());
+
+  EXPECT_THAT(
+      provider().GetSavedPasswordsFor(
+          CredentialView(kExampleOrg, GURL(), base::ASCIIToUTF16(kUsername1),
+                         base::ASCIIToUTF16(kPassword2))),
+      ElementsAreArray(account_store().stored_passwords().at(kExampleOrg)));
+}
 }  // namespace password_manager

@@ -258,9 +258,10 @@ CreditCardEditorViewController::CreateHeaderView() {
             .release());
 
     // "Edit" link.
+    auto edit_link = std::make_unique<views::StyledLabel>(this);
     base::string16 link_text =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT);
-    auto edit_link = std::make_unique<views::StyledLabel>(link_text, this);
+    edit_link->SetText(link_text);
     edit_link->SetID(
         static_cast<int>(DialogViewID::GOOGLE_PAYMENTS_EDIT_LINK_LABEL));
     edit_link->AddStyleRange(

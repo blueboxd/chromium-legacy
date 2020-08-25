@@ -49,10 +49,6 @@ void SessionAbortedDialog::Show(const std::string& user_email) {
   }
 }
 
-ui::ModalType SessionAbortedDialog::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
-
 gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
   return gfx::Size(
       kDefaultWidth,
@@ -60,6 +56,7 @@ gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
 }
 
 SessionAbortedDialog::SessionAbortedDialog() {
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
   SetTitle(
       l10n_util::GetStringUTF16(IDS_ASH_MULTIPROFILES_SESSION_ABORT_HEADLINE));
   SetShowCloseButton(false);

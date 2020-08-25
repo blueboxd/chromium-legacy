@@ -125,7 +125,7 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
   // creation time. However, other than on Mac & iOS where the actual file
   // creation time is included as st_birthtime, the rest of POSIX platforms have
   // no portable way to get the creation time.
-#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
   time_t last_modified_sec = stat_info.st_mtim.tv_sec;
   int64_t last_modified_nsec = stat_info.st_mtim.tv_nsec;
   time_t last_accessed_sec = stat_info.st_atim.tv_sec;
@@ -549,7 +549,7 @@ bool File::Flush() {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
   return true;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   return !HANDLE_EINTR(fdatasync(file_.get()));
 #elif defined(OS_APPLE)
   // On macOS and iOS, fsync() is guaranteed to send the file's data to the

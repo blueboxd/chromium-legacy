@@ -87,6 +87,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 // Stores the current content type in the clipboard. This is only valid if
 // |hasCopiedContent| is YES.
 @property(nonatomic, assign) ClipboardContentType copiedContentType;
+// Stores whether the cached clipboard state is currently being updated. See
+// |-updateCachedClipboardState| for more information.
+@property(nonatomic, assign) BOOL isUpdatingCachedClipboardState;
 
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
@@ -574,6 +577,14 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 }
 
 - (void)updateCachedClipboardState {
+  // Sometimes, checking the clipboard state itself causes the clipboard to
+  // emit a UIPasteboardChangedNotification, leading to an infinite loop. For
+  // now, just prevent re-checking the clipboard state, but hopefully this will
+  // be fixed in a future iOS version (see crbug.com/1049053 for crash details).
+  if (self.isUpdatingCachedClipboardState) {
+    return;
+  }
+  self.isUpdatingCachedClipboardState = YES;
   self.hasCopiedContent = NO;
   ClipboardRecentContent* clipboardRecentContent =
       ClipboardRecentContent::GetInstance();
@@ -597,6 +608,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                    matched_types.end()) {
           weakSelf.copiedContentType = ClipboardContentType::Text;
         }
+        weakSelf.isUpdatingCachedClipboardState = NO;
       }));
 }
 

@@ -73,7 +73,8 @@ class BASE_EXPORT CPU final {
   IntelMicroArchitecture GetIntelMicroArchitecture() const;
   const std::string& cpu_brand() const { return cpu_brand_; }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_AIX)
   enum class CoreType {
     kUnknown = 0,
     kOther,
@@ -113,7 +114,8 @@ class BASE_EXPORT CPU final {
   // NOTE: Currently only supported on Linux/Android, and only on kernels with
   // cpufreq-stats driver.
   static bool GetTimeInState(TimeInState&);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) ||
+        // defined(OS_AIX)
 
  private:
   // Query the processor for CPUID information.

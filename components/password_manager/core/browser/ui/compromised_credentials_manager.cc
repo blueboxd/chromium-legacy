@@ -216,7 +216,10 @@ void CompromisedCredentialsManager::SaveCompromisedCredential(
     if (saved_password.password_value == credential.password() &&
         CanonicalizeUsername(saved_password.username_value) ==
             canonicalized_username) {
-      profile_store_->AddCompromisedCredentials({
+      PasswordStore& store = saved_password.IsUsingAccountStore()
+                                 ? *account_store_
+                                 : *profile_store_;
+      store.AddCompromisedCredentials({
           .signon_realm = saved_password.signon_realm,
           .username = saved_password.username_value,
           .create_time = base::Time::Now(),

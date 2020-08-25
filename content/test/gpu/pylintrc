@@ -1,7 +1,8 @@
 [MESSAGES CONTROL]
 
 # Disable the message, report, category or checker with the given id(s).
-disable=duplicate-code,
+disable=abstract-class-little-used,
+        duplicate-code,
         fixme,
         invalid-name,
         locally-disabled,
@@ -14,6 +15,11 @@ disable=duplicate-code,
 # lines of disable= entries, nor does it allow multiple disable= lines, so
 # we can't comment inline about why any of the above can't be removed. Thus,
 # that information is here.
+
+# abstract-class-little-used
+# There is a bug in Pylint that prevents inline disables of this warning.
+# Supposedly https://www.logilab.org/ticket/111138 is a bug report for this.
+# See https://stackoverflow.com/q/11543992.
 
 # duplicate-code
 # There is a bug in Pylint that prevents duplicate-code from being disabled for

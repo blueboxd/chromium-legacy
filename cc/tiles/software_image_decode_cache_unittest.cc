@@ -1750,7 +1750,7 @@ TEST(SoftwareImageDecodeCacheTest, BitmapImageColorConverted) {
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   // Expect that we allocated a new image.
-  EXPECT_NE(decoded_draw_image.image().get(), paint_image.GetSkImage().get());
+  EXPECT_NE(decoded_draw_image.image().get(), paint_image.GetSwSkImage().get());
   // Expect that the image color space match the target color space.
   EXPECT_TRUE(decoded_draw_image.image()->colorSpace());
   EXPECT_TRUE(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),

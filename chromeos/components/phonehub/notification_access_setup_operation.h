@@ -27,7 +27,7 @@ namespace phonehub {
 class NotificationAccessSetupOperation {
  public:
   // Note: Numerical values should not be changed because they must stay in
-  // sync with values declared in JS.
+  // sync with multidevice_notification_access_setup_dialog.js.
   enum class Status {
     // Connecting to the phone in order to set up notification access.
     kConnecting = 0,

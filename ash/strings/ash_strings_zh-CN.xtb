@@ -184,7 +184,7 @@
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
 <translation id="3033545621352269033">已开启</translation>
-<translation id="3038571455154067151">若要登录，请输入您的 Family Link 家长访问码</translation>
+<translation id="3038571455154067151">如需登录，请输入您的 Family Link 家长访问码</translation>
 <translation id="3051128274746680507">您的受监管用户个人资料很快就会被移除。登录即可了解详情。</translation>
 <translation id="3055162170959710888">您今天的设备使用时长：<ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">状态栏，时间为 <ph name="TIME" />，
@@ -300,7 +300,6 @@
 <translation id="4212472694152630271">切换到 PIN 码</translation>
 <translation id="4215497585250573029">VPN 设置</translation>
 <translation id="4217571870635786043">语音输入</translation>
-<translation id="4229328187280698237">切换到平板电脑模式</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
@@ -706,7 +705,6 @@
 <translation id="890616557918890486">更改来源</translation>
 <translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8913384980486163186">带主题背景（默认值）</translation>
-<translation id="8918251165865262378">切换到笔记本电脑模式</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
 <translation id="8936501819958976551">已停用</translation>

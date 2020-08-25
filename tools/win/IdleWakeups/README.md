@@ -10,12 +10,14 @@ Open IdleWakeups.sln in Visual Studio and select Build > Build Solution (F7).
 IdleWakeups.exe can then be found in src/tools/win/IdleWakeups/x64/Debug/.
 
 # Usage
-"IdleWakeups.exe" to match all Chrome processes.
-"IdleWakeups.exe Firefox" to match all Firefox processes.
-"IdleWakeups.exe msedge" to match all Edge processes.
+`IdleWakeups.exe` to match all Chrome processes.
+
+`IdleWakeups.exe Firefox` to match all Firefox processes.
+
+`IdleWakeups.exe msedge` to match all Edge processes.
 
 The process matching the provided parameter is identified by case-sensitive
-string prefix, e.g., "some_process" and "some_process.exe" would both work.
+string prefix, e.g., `some_process` and `some_process.exe` would both work.
 
 When the tool starts it begins gathering and aggregating CPU usage, private
 working set size, number of context switches / sec, and power usage for all
@@ -25,5 +27,5 @@ median values over the entire measurement interval.
 CPU usage is normalized to one CPU core, with 100% meaning one CPU core is
 fully utilized.
 
-Intel Power Gadget is required to allow IdleWakeups tool to query power usage.
-https://software.intel.com/en-us/articles/intel-power-gadget-20
+[Intel Power Gadget](https://software.intel.com/en-us/articles/intel-power-gadget-20)
+is required to allow IdleWakeups tool to query power usage.

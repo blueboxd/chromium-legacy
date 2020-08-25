@@ -463,7 +463,8 @@ void InstallMethodInternal(v8::Isolate* isolate,
                            v8::Local<v8::FunctionTemplate> interface_template,
                            v8::Local<v8::Signature> signature,
                            const Configuration& method,
-                           const DOMWrapperWorld& world) {
+                           const DOMWrapperWorld& world,
+                           const v8::CFunction* v8_c_function = nullptr) {
   if (!WorldConfigurationApplies(method, world))
     return;
 
@@ -488,7 +489,7 @@ void InstallMethodInternal(v8::Isolate* isolate,
     v8::Local<v8::FunctionTemplate> function_template =
         v8::FunctionTemplate::New(
             isolate, callback, v8::Local<v8::Value>(), signature, method.length,
-            v8::ConstructorBehavior::kAllow, side_effect_type);
+            v8::ConstructorBehavior::kAllow, side_effect_type, v8_c_function);
     function_template->RemovePrototype();
     function_template->SetAcceptAnyReceiver(
         method.access_check_configuration ==
@@ -790,6 +791,22 @@ void V8DOMConfiguration::InstallMethods(
   for (size_t i = 0; i < method_count; ++i)
     InstallMethodInternal(isolate, instance_template, prototype_template,
                           interface_template, signature, methods[i], world);
+}
+
+void V8DOMConfiguration::InstallMethods(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::ObjectTemplate> instance_template,
+    v8::Local<v8::ObjectTemplate> prototype_template,
+    v8::Local<v8::FunctionTemplate> interface_template,
+    v8::Local<v8::Signature> signature,
+    const NoAllocDirectCallMethodConfiguration* methods,
+    size_t method_count) {
+  for (size_t i = 0; i < method_count; ++i) {
+    InstallMethodInternal(
+        isolate, instance_template, prototype_template, interface_template,
+        signature, methods[i].method_config, world, &methods[i].v8_c_function);
+  }
 }
 
 void V8DOMConfiguration::InstallMethod(

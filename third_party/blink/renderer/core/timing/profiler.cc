@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 
 namespace blink {
 
@@ -32,6 +33,9 @@ ScriptPromise Profiler::stop(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!stopped()) {
+    // Ensure that we don't synchronously invoke script when resolving
+    // (crbug.com/1119865).
+    ScriptForbiddenScope forbid_script;
     DCHECK(profiler_group_);
     profiler_group_->StopProfiler(script_state, this, resolver);
     profiler_group_ = nullptr;

@@ -83,7 +83,6 @@ bool IsClickable(const ax::mojom::Role role) {
     case ax::mojom::Role::kLink:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
@@ -152,7 +151,6 @@ bool IsControl(const ax::mojom::Role role) {
     case ax::mojom::Role::kListGrid:
     case ax::mojom::Role::kMenu:
     case ax::mojom::Role::kMenuBar:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
@@ -381,7 +379,6 @@ bool IsMenuRelated(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kMenu:
     case ax::mojom::Role::kMenuBar:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:

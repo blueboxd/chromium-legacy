@@ -31,12 +31,12 @@ namespace {
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {
+    SetOwnedByWidget(true);
     SetFocusTraversesOut(true);
   }
   ~LoginTestWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return true; }

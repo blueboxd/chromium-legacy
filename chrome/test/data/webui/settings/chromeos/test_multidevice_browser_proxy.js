@@ -56,6 +56,8 @@ cr.define('multidevice', function() {
         'setSmartLockSignInEnabled',
         'getSmartLockSignInAllowed',
         'getAndroidSmsInfo',
+        'attemptNotificationSetup',
+        'cancelNotificationSetup',
       ]);
       this.data = createFakePageContentData(
           settings.MultiDeviceSettingsMode.NO_HOST_SET);
@@ -112,6 +114,16 @@ cr.define('multidevice', function() {
     getAndroidSmsInfo() {
       this.methodCalled('getAndroidSmsInfo');
       return Promise.resolve(this.androidSmsInfo);
+    }
+
+    /** @override */
+    attemptNotificationSetup() {
+      this.methodCalled('attemptNotificationSetup');
+    }
+
+    /** @override */
+    cancelNotificationSetup() {
+      this.methodCalled('cancelNotificationSetup');
     }
   }
 

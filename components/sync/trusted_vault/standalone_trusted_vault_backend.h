@@ -64,9 +64,11 @@ class StandaloneTrustedVaultBackend
   // Removes all keys for all accounts from both memory and |file_path_|.
   void RemoveAllStoredKeys();
 
-  // Sets/resets |syncing_account_|.
-  void SetSyncingAccount(
-      const base::Optional<CoreAccountInfo>& syncing_account);
+  // Sets/resets |primary_account_|.
+  void SetPrimaryAccount(
+      const base::Optional<CoreAccountInfo>& primary_account);
+
+  base::Optional<CoreAccountInfo> GetPrimaryAccountForTesting() const;
 
   sync_pb::LocalDeviceRegistrationInfo GetDeviceRegistrationInfoForTesting(
       const std::string& gaia_id);
@@ -102,9 +104,9 @@ class StandaloneTrustedVaultBackend
 
   sync_pb::LocalTrustedVault data_;
 
-  // Only current |syncing_account_| can be used for communication with trusted
+  // Only current |primary_account_| can be used for communication with trusted
   // vault server.
-  base::Optional<CoreAccountInfo> syncing_account_;
+  base::Optional<CoreAccountInfo> primary_account_;
 
   // Used for communication with trusted vault server.
   std::unique_ptr<TrustedVaultConnection> connection_;

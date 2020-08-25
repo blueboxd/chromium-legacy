@@ -294,12 +294,7 @@ class CopyOutputScalingPixelTest
 // Parameters common to all test instantiations. These are tuples consisting of
 // {scale_from, scale_to, i420_format}.
 const auto kParameters =
-    testing::Combine(testing::Values(
-#if defined(ENABLE_VIZ_GL_TESTS)
-                         RendererType::kGL,
-                         RendererType::kSkiaGL,
-#endif
-                         RendererType::kSoftware),
+    testing::Combine(testing::ValuesIn(GetRendererTypesNoDawn()),
                      testing::Values(gfx::Vector2d(1, 1),
                                      gfx::Vector2d(2, 1),
                                      gfx::Vector2d(1, 2),

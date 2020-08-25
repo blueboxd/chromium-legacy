@@ -889,19 +889,11 @@ INSTANTIATE_TEST_SUITE_P(,
 
 // Test GLRenderer as well as SkiaRenderer.
 using GPURendererPixelTest = VizPixelTestWithParam;
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    GPURendererPixelTest,
-    // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
-    // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
-    testing::PrintToStringParamName());
-
-// TODO(kylechar): Enable in follow up CL for SkiaRenderer. The tests pass.
-using GLOnlyRendererPixelTest = VizPixelTestWithParam;
 INSTANTIATE_TEST_SUITE_P(,
-                         GLOnlyRendererPixelTest,
-                         testing::Values(RendererType::kGL),
+                         GPURendererPixelTest,
+                         // TODO(crbug.com/1021566): Enable these tests for
+                         // SkiaRenderer Dawn once video is supported.
+                         testing::ValuesIn(GetGpuRendererTypesNoDawn()),
                          testing::PrintToStringParamName());
 
 // Provides an exact comparator for GLRenderer and fuzzy comparator for Skia
@@ -1187,9 +1179,7 @@ TEST_P(GPURendererPixelTest, SolidColorBlend) {
       cc::FuzzyPixelOffByOneComparator(/*discard_alpha=*/true)));
 }
 
-// TODO(crbug.com/924369): SkiaRenderer should not ignore the color matrix on
-// the OutputSurface.
-TEST_P(GLOnlyRendererPixelTest, SolidColorWithTemperature) {
+TEST_P(GPURendererPixelTest, SolidColorWithTemperature) {
   gfx::Rect rect(this->device_viewport_size_);
 
   RenderPassId id{1};
@@ -1215,9 +1205,7 @@ TEST_P(GLOnlyRendererPixelTest, SolidColorWithTemperature) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(crbug.com/924369): SkiaRenderer should not ignore the color matrix on
-// the OutputSurface.
-TEST_P(GLOnlyRendererPixelTest, SolidColorWithTemperature_NonRootRenderPass) {
+TEST_P(GPURendererPixelTest, SolidColorWithTemperatureNonRootRenderPass) {
   // Create a root and a child passes with two different solid color quads.
   RenderPassList render_passes_in_draw_order;
   gfx::Rect viewport_rect(this->device_viewport_size_);
@@ -1388,13 +1376,12 @@ class IntersectingVideoQuadPixelTest : public IntersectingQuadPixelTest {
   std::unique_ptr<media::VideoResourceUpdater> video_resource_updater2_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    IntersectingVideoQuadPixelTest,
-    // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
-    // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
-    testing::PrintToStringParamName());
+INSTANTIATE_TEST_SUITE_P(,
+                         IntersectingVideoQuadPixelTest,
+                         // TODO(crbug.com/1021566): Enable these tests for
+                         // SkiaRenderer Dawn once video is supported.
+                         testing::ValuesIn(GetGpuRendererTypesNoDawn()),
+                         testing::PrintToStringParamName());
 
 class IntersectingQuadSoftwareTest : public IntersectingQuadPixelTest {};
 
@@ -1854,13 +1841,12 @@ class VideoRendererPixelTest
   VideoRendererPixelTest() : VideoRendererPixelTestBase(GetParam()) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    VideoRendererPixelTest,
-    // TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once
-    // video is supported.
-    testing::ValuesIn(GetGpuRendererTypes(/*include_dawn=*/false)),
-    testing::PrintToStringParamName());
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoRendererPixelTest,
+                         // TODO(crbug.com/1021566): Enable these tests for
+                         // SkiaRenderer Dawn once video is supported.
+                         testing::ValuesIn(GetGpuRendererTypesNoDawn()),
+                         testing::PrintToStringParamName());
 
 TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);

@@ -55,7 +55,7 @@ public class PaintPreviewDemoManager implements TabViewProvider {
                     PaintPreviewDemoManager.this::removePaintPreviewDemo,
                     PaintPreviewDemoManager.this::addPlayerView, null, null,
                     ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
-                    () -> {
+                    (status) -> {
                         Toast.makeText(mTab.getContext(),
                                      R.string.paint_preview_demo_playback_failure,
                                      Toast.LENGTH_LONG)

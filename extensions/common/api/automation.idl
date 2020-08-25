@@ -211,7 +211,6 @@
     math,
     menu,
     menuBar,
-    menuButton,
     menuItem,
     menuItemCheckBox,
     menuItemRadio,

@@ -24,7 +24,7 @@ class Textfield;
 // hosts a ui::DialogModel as a BubbleDialogDelegateView. This exposes
 // views-specific methods such as SetAnchorView(), SetArrow() and
 // SetHighlightedButton(). For methods that are reflected in ui::DialogModelHost
-// (such as ::Close()), preferusing the ui::DialogModelHost to avoid
+// (such as ::Close()), prefer using the ui::DialogModelHost to avoid
 // platform-specific code (GetWidget()->Close()) where unnecessary. For those
 // methods, note that this can be retrieved as a ui::DialogModelHost through
 // DialogModel::host(). This helps minimize platform-specific code from
@@ -60,6 +60,8 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   void OnPerformAction(views::Combobox* combobox) override;
 
  private:
+  void OnWindowClosing();
+
   GridLayout* GetGridLayout();
   void ConfigureGridLayout();
 

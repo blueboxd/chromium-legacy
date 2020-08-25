@@ -4618,12 +4618,12 @@ class TestWindowDelegateWithWidget : public views::WidgetDelegate {
   TestWindowDelegateWithWidget(bool can_resize) {
     SetCanMaximize(true);
     SetCanResize(can_resize);
+    SetOwnedByWidget(true);
     SetFocusTraversesOut(true);
   }
   ~TestWindowDelegateWithWidget() override = default;
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return true; }

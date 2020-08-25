@@ -23,6 +23,7 @@
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_behavior.html">
 <link rel="import" href="multidevice_feature_toggle.html">
+<link rel="import" href="multidevice_notification_access_setup_dialog.html">
 <link rel="import" href="multidevice_smartlock_subpage.html">
 <link rel="import" href="multidevice_subpage.html">
 
@@ -164,6 +165,11 @@
       <settings-password-prompt-dialog id="multidevicePasswordPrompt"
           on-token-obtained="onTokenObtained_">
       </settings-password-prompt-dialog>
+    </template>
+    <template is="dom-if" if="[[showNotificationAccessSetupDialog_]]" restamp>
+      <settings-multidevice-notification-access-setup-dialog
+          on-close="onHideNotificationSetupAccessDialog_">
+      </settings-multidevice-notification-access-setup-dialog>
     </template>
   </template>
   <script src="multidevice_page.js"></script>

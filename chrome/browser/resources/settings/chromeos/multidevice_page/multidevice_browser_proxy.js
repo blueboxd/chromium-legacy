@@ -74,6 +74,16 @@ cr.define('settings', function() {
      * @return {!Promise<!settings.AndroidSmsInfo>} Android SMS Info
      */
     getAndroidSmsInfo() {}
+
+    /**
+     * Attempts the phone hub notification access setup flow.
+     */
+    attemptNotificationSetup() {}
+
+    /**
+     * Cancels the phone hub notification access setup flow.
+     */
+    cancelNotificationSetup() {}
   }
 
   /**
@@ -129,6 +139,16 @@ cr.define('settings', function() {
     /** @override */
     getAndroidSmsInfo() {
       return cr.sendWithPromise('getAndroidSmsInfo');
+    }
+
+    /** @override */
+    attemptNotificationSetup() {
+      chrome.send('attemptNotificationSetup');
+    }
+
+    /** @override */
+    cancelNotificationSetup() {
+      chrome.send('cancelNotificationSetup');
     }
   }
 

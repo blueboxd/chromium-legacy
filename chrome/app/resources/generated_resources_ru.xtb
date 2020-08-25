@@ -965,7 +965,6 @@
 <translation id="2152281589789213846">Добавление принтеров в профиль</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> фото</translation>
 <translation id="2154484045852737596">Изменение данных карты</translation>
-<translation id="2154697841132053118">Распознавание речи…</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2155772377859296191">Выглядит как <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service worker: <ph name="SCRIPT_URL" /></translation>
@@ -2805,6 +2804,7 @@
 <translation id="4404136731284211429">Сканировать</translation>
 <translation id="4404843640767531781">Чтобы пользоваться приложением "<ph name="APP_NAME" />", требуется разрешение родителя.</translation>
 <translation id="4405117686468554883">*.JPEG, *.JPG, *.PNG</translation>
+<translation id="4406883609789734330">Автоматические субтитры</translation>
 <translation id="4408599188496843485">&amp;Справка</translation>
 <translation id="4409697491990005945">Поля</translation>
 <translation id="4410545552906060960">Для разблокировки устройства можно использовать PIN-код. Установите его сейчас или позже в "Настройках".</translation>
@@ -6157,7 +6157,7 @@
 <translation id="860909219589324847">Никогда не передавать данные по мобильному Интернету</translation>
 <translation id="8609465669617005112">Переместить вверх</translation>
 <translation id="8610103157987623234">Неверный формат. Повторите попытку.</translation>
-<translation id="8611682088849615761">Не предоставлять этому сайту полный контроль над устройствами MIDI</translation>
+<translation id="8611682088849615761">Предоставлять этому сайту полный контроль над устройствами MIDI</translation>
 <translation id="8613164732773110792">Можно использовать только строчные буквы, цифры, символы подчеркивания и тире.</translation>
 <translation id="8613786722548417558">Файл <ph name="FILE_NAME" /> слишком большой для проверки безопасности. Можно открывать файлы до 50 МБ.</translation>
 <translation id="8615618338313291042">Приложение в режиме инкогнито: <ph name="APP_NAME" /></translation>

@@ -144,6 +144,10 @@ xcode_cache = struct(
 
 _DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
 
+# Macs all have SSDs, so it doesn't make sense to use the default behavior of
+# setting ssd:0 dimension
+_EXCLUDE_BUILDERLESS_SSD_OS_CATEGORIES = [os_category.MAC]
+
 def _chromium_tests_property(*, bucketed_triggers, project_trigger_overrides):
     chromium_tests = {}
 
@@ -484,7 +488,10 @@ def builder(
 
     ssd = defaults.get_value("ssd", ssd)
     if ssd == args.COMPUTE:
-        ssd = False if builderless else None
+        ssd = None
+        if (builderless and os != None and
+            os.category not in _EXCLUDE_BUILDERLESS_SSD_OS_CATEGORIES):
+            ssd = False
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
 

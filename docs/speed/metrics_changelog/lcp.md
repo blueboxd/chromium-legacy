@@ -2,6 +2,8 @@
 
 This is a list of changes to [Largest Contentful Paint](https://web.dev/lcp).
 
+* Chrome 86
+  * Metric definition improvement: [Largest Contentful Paint ignores paints with opacity 0](2020_08_lcp.md)
 * Chrome 83
   * Metric definition improvement: [Largest Contentful Paint measurement stops at first input or scroll](2020_05_lcp.md)
   * Metric definition improvement: [Largest Contentful Paint properly accounts for visual size of background images](2020_05_lcp.md)

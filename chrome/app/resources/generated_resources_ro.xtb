@@ -970,7 +970,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2152281589789213846">Adaugă imprimante la profil</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> fotografii</translation>
 <translation id="2154484045852737596">Editează cardul</translation>
-<translation id="2154697841132053118">Se detectează vorbirea...</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service worker: <ph name="SCRIPT_URL" /></translation>
@@ -2817,6 +2816,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4404136731284211429">Verifică din nou</translation>
 <translation id="4404843640767531781">Aplicația <ph name="APP_NAME" /> a fost blocată de părintele tău. Solicită părintelui permisiunea de a folosi această aplicație.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Subtitrări live</translation>
 <translation id="4408599188496843485">&amp;Ajutor</translation>
 <translation id="4409697491990005945">Margini</translation>
 <translation id="4410545552906060960">Folosește un număr (PIN) în locul unei parole pentru a debloca dispozitivul. Pentru a-ți seta codul PIN mai târziu, accesează Setări.</translation>

@@ -120,7 +120,7 @@
 <translation id="1129850422003387628">အက်ပ်များကို စီမံရန်</translation>
 <translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> - <ph name="GROUP_NAME" /> အုပ်စု၏ တစ်စိတ်တစ်ဒေသ</translation>
 <translation id="1134009406053225289">ရုပ်ဖျက်ဝင်ဒိုးဖြင့် ဖွင့်ရန်</translation>
-<translation id="1136179794690960030"><ph name="EMOJI_NAME" />။ <ph name="EMOJI_COUNT" /> အနက်မှ <ph name="EMOJI_INDEX" /> ။</translation>
+<translation id="1136179794690960030"><ph name="EMOJI_NAME" />။ <ph name="EMOJI_COUNT" /> မှ <ph name="EMOJI_INDEX" /> ။</translation>
 <translation id="1136712381129578788">ပင်နံပါတ်အမှားကို အကြိမ်များစွာထည့်သဖြင့် လုံခြုံရေးကီးကို လော့ခ်ချလိုက်ပါသည်။ ၎င်းကိုဖွင့်ရန် ဖယ်ရှားပြီး ပြန်ထည့်သွင်းပါ။</translation>
 <translation id="1137673463384776352"><ph name="APP" /> တွင် လင့်ခ်ကို ဖွင့်ရန်</translation>
 <translation id="1139343347646843679">Linux ကို စီစဉ်သတ်မှတ်နေစဉ် အမှားအယွင်းရှိနေသည်။ သင်၏စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။</translation>
@@ -971,7 +971,6 @@
 <translation id="2152281589789213846">သင့်ပရိုဖိုင်သို့ ပုံနှိပ်စက်များ ထည့်ခြင်း</translation>
 <translation id="2152882202543497059">ဓာတ်ပုံ <ph name="NUMBER" /> ပုံ</translation>
 <translation id="2154484045852737596">ကတ်ကို တည်းဖြတ်ပါ</translation>
-<translation id="2154697841132053118">စကားသံကို ရှာဖွေနေသည်...</translation>
 <translation id="2154710561487035718">URL ကူးယူရန်</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ဟု ယူဆရပါသည်</translation>
 <translation id="2156294658807918600">ဝန်ဆောင်မှု ဆောင်ရွက်စနစ်− <ph name="SCRIPT_URL" /></translation>
@@ -1944,7 +1943,7 @@
 <translation id="3345886924813989455">ထောက်ပံ့ပေးနိုင်သည့် ဘရောက်စာမတွေ့ပါ</translation>
 <translation id="3347086966102161372">ပုံ၏ လိပ်စာကို မိ&amp;တ္တူ ကူးပါ</translation>
 <translation id="3348038390189153836">ဖြုတ်ရနိုင်သည့် ကိရိယာကို ရှာတွေ့ခဲ့</translation>
-<translation id="3348131053948466246">အကြံပြုထားသော အီမိုဂျီ။ သွားရန် အပေါ် သို့မဟုတ် အောက်ခလုတ် သို့မဟုတ် ထည့်သွင်းရန် enter နှိပ်ပါ။</translation>
+<translation id="3348131053948466246">အကြံပြုထားသော အီမိုဂျီ။ ရွှေ့ရန် အပေါ် သို့မဟုတ် အောက်ခလုတ်၊ ထည့်သွင်းရန် enter နှိပ်ပါ။</translation>
 <translation id="3349933790966648062">ဖြစ်စဉ်တွင် မှတ်ဉာဏ်အသုံးပြုမှု</translation>
 <translation id="3355936511340229503">ချိတ်ဆက်မှု မှားယွင်းခြင်း</translation>
 <translation id="3356580349448036450">ပြီးဆုံးပြီ</translation>
@@ -2522,7 +2521,7 @@
 <translation id="3984159763196946143">သရုပ်ပြမုဒ်ကို စတင်၍မရပါ</translation>
 <translation id="3984431586879874039">ဤဝဘ်ဆိုက်ကို သင့်လုံခြုံရေးကီး ကြည့်ခွင့်ပြုလိုသလား။</translation>
 <translation id="3986705137476756801">'တိုက်ရိုက်စာတန်း' ကို ယခု ပိတ်ရန်</translation>
-<translation id="3987544746655539083">သင့်တည်နေရာသုံးခွင့်ကို ဤဝဘ်ဆိုက်အား ဆက်ပိတ်ထားရန်</translation>
+<translation id="3987544746655539083">ဤဝဘ်ဆိုက်ကို သင့်တည်နေရာသုံးခွင့် ဆက်ပိတ်ထားရန်</translation>
 <translation id="3987938432087324095">မကြားလိုက်ပါ။</translation>
 <translation id="3988996860813292272">စံတော်ချိန်ကို ရွေးပါ</translation>
 <translation id="399179161741278232">တင်သွင်းပြီး</translation>
@@ -2817,6 +2816,7 @@
 <translation id="4404136731284211429">ထပ်ရှာရန်</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> ကို သင့်မိဘက ပိတ်ထားသည်။ ဤအက်ပ်အသုံးပြုရန် သင့်မိဘထံ ခွင့်တောင်းပါ။</translation>
 <translation id="4405117686468554883">*.jpeg၊ *.jpg၊ *.png</translation>
+<translation id="4406883609789734330">တိုက်ရိုက်စာတန်း</translation>
 <translation id="4408599188496843485">အကူညီ</translation>
 <translation id="4409697491990005945">မာဂျင်များ</translation>
 <translation id="4410545552906060960">သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ရန်အတွက် စကားဝှက်အစား နံပါတ် (ပင်နံပါတ်) ကို အသုံးပြုပါ။ နောက်ပိုင်းတွင် သင်၏ 'ပင်နံပါတ်' ကို စနစ်ထည့်သွင်းရန် 'ဆက်တင်များ' သို့ သွားပါ။</translation>
@@ -3617,7 +3617,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="543338862236136125">စကားဝှက်ကို တည်းဖြတ်ခြင်း</translation>
 <translation id="5434065355175441495">PKCS #1 RSA လျှို့ဝှက်ကုဒ်သွင်းမှု</translation>
-<translation id="5435779377906857208"><ph name="HOST" /> အား သင့်တည်နေရာကို အမြဲသုံးခွင့်ပြုရန်</translation>
+<translation id="5435779377906857208"><ph name="HOST" /> ကို သင့်တည်နေရာ အမြဲသုံးခွင့်ပြုရန်</translation>
 <translation id="5436492226391861498">မရောက်စီလိုင်း အားစောင့်နေ...</translation>
 <translation id="5436510242972373446">ရှာဖွေရန် <ph name="SITE_NAME" />:</translation>
 <translation id="543806387003274181">သင့်ဖိုင်များကို ယခုသိမ်းဆည်းပြီး အကောင့်အသစ်ပြုလုပ်ပါ။</translation>
@@ -3968,7 +3968,7 @@
 <translation id="5857090052475505287">အကန့်အသစ်</translation>
 <translation id="5857171483910641802">သင် မကြာခဏဝင်ကြည့်သည့် ဝဘ်ဆိုက်များအပေါ် အခြေခံပြီး ဖြတ်လမ်းလင့်ခ်များကို အကြံပြုထားသည်</translation>
 <translation id="5858490737742085133">စက်</translation>
-<translation id="5859603669299126575">အနုပညာပြခန်းခလုတ်</translation>
+<translation id="5859603669299126575">အနုပညာပြခန်း အယ်လ်ဘမ်</translation>
 <translation id="585979798156957858">ပြင်ပမက်တာ</translation>
 <translation id="5860033963881614850">ပိတ်ထား</translation>
 <translation id="5860491529813859533">ဖွင့်ရန်</translation>
@@ -4558,7 +4558,7 @@
 <translation id="6590458744723262880">ဖိုင်တွဲအမည်ကို ပြောင်းခြင်း</translation>
 <translation id="6592267180249644460">WebRTC ရိုက်ထားသည့် လော့<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">သင်၏လက်ဗွေကို ထည့်လိုက်ပါပြီ</translation>
-<translation id="6595187330192059106">MIDI ကိရိယာများအား အပြည့်အဝ ထိန်းချုပ်ခွင့်မှ <ph name="HOST" /> ကို အမြဲပိတ်ရန်။</translation>
+<translation id="6595187330192059106"><ph name="HOST" /> ကို MIDI ကိရိယာများ အပြည့်အဝထိန်းချုပ်ခွင့် အမြဲပိတ်ရန်။</translation>
 <translation id="6596325263575161958">လုံခြုံအောင်ပြုလုပ်ခြင်း ရွေးချယ်မှုများ</translation>
 <translation id="6596816719288285829">IP လိပ်စာ</translation>
 <translation id="6597017209724497268">နမူနာများ</translation>
@@ -5623,7 +5623,7 @@
 <translation id="790040513076446191">ကိုယ်ရေး−ဆိုင်ရာ ဆက်တင်များကို ကိုင်တွယ်ရန်</translation>
 <translation id="7903345046358933331">စာမျက်နှာသည် မတုံ့ပြန်တော့ပါ။ တုံ့ပြန်လာမှာကို စောင့်ပါ သို့မဟုတ် ၎င်းကို ပိတ်လိုက်ပါ။</translation>
 <translation id="7903742244674067440">ဤအသိအမှတ်ပြုလက်မှတ် အာဏာပိုင်များ၏ အထောက်အထားအဖြစ် အသိအမှတ်ပြုလက်မှတ်များ သင့်ထံတွင် ရှိပါသည်</translation>
-<translation id="7903859912536385558">တည်ငြိမ်သည် (ပြင်ပမှ စမ်းသပ်ပေးသူ)</translation>
+<translation id="7903859912536385558">အခြေကျပြီး (ပြင်ပမှ စမ်းသပ်ပေးသူ)</translation>
 <translation id="7903925330883316394">ဝန်ဆောင်မှုလုပ်ငန်းများ- <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904094684485781019">ဤ အကောင့်၏ စီမံခန့်ခွဲသူမှ လက်မှတ်ထိုးဝင်ရာက်မှုများကို ပိတ်ပင်ထားပါသည်။</translation>
 <translation id="7904526211178107182">သင့်ကွန်ရက်ရှိ အခြားစက်ပစ္စည်းများသည် Linux ပို့တ်များကို အသုံးပြုနိုင်အောင် ပြုလုပ်ပါ။</translation>
@@ -5749,7 +5749,7 @@
 <translation id="8049705080247101012">Google က "<ph name="EXTENSION_NAME" />" သည် အန္တရာယ်ရှိကြောင်း အလံပြကာ စနစ်ထည့်သွင်းမှုကို ရပ်တန့်ထားသည်</translation>
 <translation id="8049948037269924837">တာ့ချ်ပက် ပြောင်းပြန်ရွှေ့ရန်</translation>
 <translation id="8050038245906040378">Microsoft စီးပွားရေး ကုဒ်ဖြင့် လက်မှတ်ထိုးရန်</translation>
-<translation id="8051390370038326517"><ph name="HOST" /> အား MIDI ကိရိယာများကို အပြည့်အဝ ထိန်းချုပ်ခွင့် အမြဲပေးရန်</translation>
+<translation id="8051390370038326517"><ph name="HOST" /> ကို MIDI ကိရိယာများ အပြည့်အဝထိန်းချုပ်ခွင့် အမြဲပေးရန်</translation>
 <translation id="8053278772142718589">PKCS #12 ဖိုင်များ</translation>
 <translation id="8053390638574070785">ဒီစာမျက်နှာကို ပြန်တင်ရန်</translation>
 <translation id="8054517699425078995">ဒီပုံစံ ဖိုင်သည် သင်၏ ကွန်ပျူတာကို အန္တရာယ် ပြုနိုင်သည်။ ဘယ်လိုပဲဖြစ်ဖြစ် သင်သည် <ph name="FILE_NAME" /> ထားရှိလိုပါသလား?</translation>
@@ -6184,7 +6184,7 @@
 <translation id="860909219589324847">လွှဲပြောင်းရန် မည်သည့်အခါမျှ ဒေတာကို အသုံးမပြုပါနှင့်</translation>
 <translation id="8609465669617005112">အပေါ်ရွှေ့ပါ</translation>
 <translation id="8610103157987623234">ပုံစံ မမှန်ပါ၊ ထပ်စမ်းကြည့်ပါ</translation>
-<translation id="8611682088849615761">ဤဝဘ်ဆိုက်ကို MIDI စက်များ၏ ထိန်းချုပ်ခွင့်အပြည့်အဝ ဆက်လက်ခွင့်ပြုပေးရန်</translation>
+<translation id="8611682088849615761">ဤဝဘ်ဆိုက်ကို MIDI စက်များ၏ ထိန်းချုပ်ခွင့်အပြည့်အဝ ဆက်လက်ခွင့်ပြုရန်</translation>
 <translation id="8613164732773110792">အက္ခရာအသေးများ၊ ဂဏန်းများ၊ အောက်မျဉ်းများ သို့မဟုတ် မျဉ်းတိုများသာ</translation>
 <translation id="8613786722548417558"><ph name="FILE_NAME" /> က လုံခြုံရေး စစ်ဆေးရန် ကြီးလွန်းသည်။ ၅၀ MB အထိ ဖိုင်များကိုသာ ဖွင့်နိုင်သည်။</translation>
 <translation id="8615618338313291042">ရုပ်ဖျက် အက်ပ်: <ph name="APP_NAME" /></translation>

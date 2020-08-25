@@ -22,6 +22,13 @@
 
       拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
+<translation id="1021843807738753764"> 請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 89 版中移除。請改用 <ph name="MANAGED_GUEST_SESSION_PRIVACY_WARNINGS_POLICY_NAME" /> 來設定受管理訪客工作階段的隱私權警告訊息。
+
+      控管 <ph name="PRODUCT_OS_NAME" />上受管理訪客工作階段的自動啟動通知。
+
+      如果將這項政策設為 True，系統會在數秒後關閉隱私權警告通知。
+
+      如果將這項政策設為 False 或不予設定，系統會持續顯示隱私權警告通知，直到使用者關閉為止。</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
 <translation id="102492767056134033">設定螢幕小鍵盤在登入畫面中的預設狀態</translation>
 <translation id="1027000705181149370">指定是否要將登入時 SAML IdP 設定的驗證 Cookie 轉移到使用者的設定檔。
@@ -271,6 +278,20 @@
 如果啟用或不設定這項政策，系統會啟用透過網址將網頁捲動至特定文字片段的功能。
 
 如果停用這項政策，系統會停用透過網址將網頁捲動至特定文字片段的功能。</translation>
+<translation id="1469072784237350146">這項政策可控管是否允許不安全網站向更私密的網路端點傳送要求。
+
+          這項政策與 CORS-RFC1918 規格有關，詳情請參閱 https://wicg.github.io/cors-rfc1918。
+
+          當網路端點符合以下條件時，私密程度較高：
+          1) 其 IP 位址為 localhost，且其他網路端點的 IP 位址不是 localhost。
+          2) 其 IP 位址為私人位址，且其他網路端點的 IP 位址為公開位址。
+          根據未來的規格演進而定，這項政策可能會套用至所有導向私人 IP 或 localhost 的跨來源要求。
+
+          如果網站符合以下頁面中對於安全內容的定義，系統會將其視為安全網站：https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts。如果不符合定義，系統會將其視為不安全網站。
+
+          如果不設定這項政策或設為 False，從不安全網站向更私密的網路端點傳送要求的預設行為將取決於使用者對 <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" /> 功能的個人設定，使用者可以透過實際測試或指令列來進行設定。
+
+          如果將這項政策設為 True，不安全網站即可向任何網路端點傳送要求，並且需經過其他跨來源檢查。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">你可以透過這項政策來定義 USB 裝置清單，使用者可以從核心驅動程式中卸除這份清單中的 USB 裝置，並且直接透過 chrome.usb API 在網頁應用程式中使用。輸入項目為可識別特定硬體的 USB 供應商識別碼和產品識別碼組合。
@@ -951,22 +972,6 @@
 
       指定政策值時需以天為單位。</translation>
 <translation id="2466131534462628618">要求網頁認證入口的驗證機制忽略 Proxy 設定</translation>
-<translation id="2466697858869282874">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
-
-      你可以在 JSON 屬性中指定個別設定：
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，使用者可觸發 Powerwash 流程來安裝 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，使用者可叫用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新流程，這項流程會保留整個裝置的狀態 (包括企業註冊)，但會捨棄使用者資料。68 以上版本皆支援這項更新流程。
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控管如何針對具有安全漏洞的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體強制執行自動 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。所有流程均會保留本機裝置狀態。
-        如果設為 1 或不設定，系統不會強制執行 TPM 韌體更新。
-        如果設為 2，系統將在使用者同意更新後，於下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        如果設為 3，系統將在下次重新啟動時更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        如果設為 4，系統將在裝置完成註冊後，於使用者登入前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體。
-        75 以上版本皆支援這個選項。
-
-      如果未設定這項政策，則無法使用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能。</translation>
 <translation id="247658312644322296">「另存為 PDF」目的地</translation>
 <translation id="2480971699591919564">啟用「點選通話」功能，讓登入 Google 帳戶的使用者可以將電話號碼從 Chrome 桌面傳送到 Android 裝置。詳情請參閱說明中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-TW。
 
@@ -1279,6 +1284,7 @@
       指定是否要啟用 TLS 網域專屬憑證擴充功能。
 
       這項實驗性設定是用來啟用 TLS 網域專屬憑證擴充功能以供測試，我們將於日後移除。</translation>
+<translation id="2957047180944828740">指定是否允許不安全網站向更私密的網站端點傳送要求</translation>
 <translation id="2957506574938329824">不允許任何網站透過 Web Bluetooth API 要求存取藍牙裝置</translation>
 <translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> 驗證模式的帳戶類型</translation>
 <translation id="2959469725686993410">解析時區時一律將 Wi-Fi 存取點傳送至伺服器</translation>
@@ -1574,9 +1580,6 @@
 <translation id="3412937883532015092">如果將這項政策設為數值，<ph name="PRODUCT_NAME" /> 在開啟替代瀏覽器前會先顯示一則等待訊息，並依據該數值 (以毫秒為單位) 來設定這則訊息要顯示多久的時間。
 
       如果未設定這項政策或設為 0，當使用者前往指定網址時，系統會立即在替代瀏覽器中開啟該網址。</translation>
-<translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
-
-      這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="34160070798637152">控管裝置通用的網路設定。</translation>
 <translation id="3417130629744653218">允許網站查詢可用的付款方式。</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
@@ -1828,17 +1831,6 @@
 <translation id="382476126209906314">為遠端存取主機設定 TalkGadget 前置詞</translation>
 <translation id="3824972131618513497">控管電源管理和重新啟動的相關設定。</translation>
 <translation id="3826475866868158882">已啟用 Google 定位服務</translation>
-<translation id="383002993919016993">這項政策會禁止使用者載入網址已遭封鎖的網頁。封鎖清單會提供網址模式清單，用於指定要封鎖的網址。
-
-      網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的規定。
-
-      你可以在網址允許清單政策中定義例外狀況。這些政策中最多只能輸入 1000 個項目；超過的項目會遭到忽略。
-
-      建議你不要封鎖內部的「chrome://*」網址，以免發生非預期的錯誤。
-
-      你可以封鎖「javascript://*」網址。不過，這項設定只適用於在網址列 (或書籤小程式等) 中輸入的 JavaScript。請注意，網頁內的 JavaScript 網址只要是動態載入資料，一律不會受到這項政策影響。舉例來說，即使你封鎖了「example.com/abc」，example.com 這個網頁仍可透過 XMLHTTPRequest 載入「example.com/abc」。
-
-      如果不設定這項政策，瀏覽器不會封鎖任何網址。</translation>
 <translation id="3831376478177535007">啟用這項設定時，如果賽門鐵克公司的舊版 PKI 作業核發的憑證成功通過驗證並鏈結至已辨識的 CA 憑證，就會受到 <ph name="PRODUCT_NAME" /> 信任。
 
       請注意，這項政策的效力取決於作業系統是否仍可辨識來自賽門鐵克公司舊版基礎架構的憑證。如果作業系統更新變更了作業系統對這類憑證的處理方式，這項政策就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用舊版賽門鐵克公司憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
@@ -2106,9 +2098,6 @@
           設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用互動朗讀功能，但使用者隨時可以啟用。</translation>
-<translation id="4171331498167688968">如果將這項政策設為 False，第三方軟體將可在 Chrome 的處理程序中置入可執行的程式碼。如果將這項政策設為 True 或不設定，第三方軟體將無法在 Chrome 的處理程序中置入可執行的程式碼。
-
-      如果是已加入 <ph name="MS_AD_NAME" /> 網域的裝置，無論這項政策的值為何，目前瀏覽器都無法禁止第三方軟體在其處理程序中置入可執行的程式碼。</translation>
 <translation id="417956245902013347">在登入畫面上啟用插入點醒目顯示無障礙功能。
 
           如果將這項政策設為 True，系統將一律在登入畫面上啟用插入點醒目顯示功能。
@@ -2484,14 +2473,6 @@
       如果將這項政策設為「傳送使用者上傳及下載的內容以供掃描」，系統會依照「傳送使用者上傳內容以供掃描」以及「傳送使用者下載內容以供掃描」設定的規則執行作業。
 
       如要進一步瞭解使用者和管理員如何查看掃描結果，請參閱 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 和 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 政策。</translation>
-<translation id="4777805166623621364">
-      這項 SitePerProcess 設定可在系統預設為隔離所有網站時，禁止使用者停用這項行為。請注意，IsolateOrigins 政策也可用於隔離其他更精細的來源。
-      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
-      如果不設定或停用這項政策，使用者可以選擇停用網站隔離功能，例如：使用 chrome://flags 中的 Disable site isolation (停用網站隔離) 選項。即使將這項政策設為停用和/或不設定，也不會關閉網站隔離功能。
-      在 <ph name="PRODUCT_OS_NAME" /> 76 以下版本中，建議你將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設定為相同的值。如果兩個政策指定的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-
-      注意：這項政策不適用於 Android。如要在 Android 上啟用 SitePerProcess，請使用 SitePerProcessAndroid 政策設定。
-      </translation>
 <translation id="4787763197941188108">覆寫預設的列印頁面大小。
 
       <ph name="PAGE_SIZE_NAME" /> 應包含其中一個列出的格式或是「自訂」(如果清單未列出所需的紙張大小)。如果將值設為「自訂」，則需一併指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性，描述所需的高度和寬度 (以微米為單位)。否則，請勿指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。系統會忽略違反這些規則的政策。
@@ -2668,19 +2649,6 @@
 
           如果不設定這項政策，系統會強制使用 6 位數的 PIN 碼長度
           下限。這是建議使用的 PIN 碼長度下限。</translation>
-<translation id="5077993112092904096">這項政策已遭淘汰，請改用「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策。
-
-      這項政策會禁止使用者載入網址已遭封鎖的網頁。封鎖清單會提供網址模式清單，用於指定要封鎖的網址。
-
-      網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的規定。
-
-      你可以在網址允許清單政策中定義例外狀況。這些政策中最多只能輸入 1000 個項目；超過的項目會遭到忽略。
-
-      建議你不要封鎖內部的「chrome://*」網址，以免發生非預期的錯誤。
-
-      自 Chrome 73 版開始，你可以封鎖「javascript://*」網址。不過，這項設定只適用於在網址列 (或書籤小程式等) 中輸入的 JavaScript。請注意，網頁內的 JavaScript 網址只要是動態載入資料，一律不會受到這項政策影響。舉例來說，即使你封鎖了「example.com/abc」，example.com 這個網頁仍可透過 XMLHTTPRequest 載入「example.com/abc」。
-
-      如果不設定這項政策，瀏覽器不會封鎖任何網址。</translation>
 <translation id="5082572440690475059">允許這些網站透過 File System API 進行讀取</translation>
 <translation id="5085647276663819155">停用列印預覽</translation>
 <translation id="5090209345759901501">將 Flash 內容設定套用至所有內容</translation>
@@ -3093,9 +3061,6 @@
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="5561811616825571914">在登入畫面自動為這些網站選取用戶端憑證</translation>
-<translation id="5564865786900450806">在 Google 已停止支援的電腦或作業系統執行 <ph name="PRODUCT_NAME" /> 時，不顯示警告訊息。
-
-      如果將這項政策設為 False 或不予設定，不受支援的電腦或作業系統上將顯示警告訊息。</translation>
 <translation id="5565178130821694365">每兩天 (48 小時) 須輸入一次密碼</translation>
 <translation id="5566210228171064229">不論是否使用 PIN 碼，都允許列印</translation>
 <translation id="5572971233886879856">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。這項設定僅適用於 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策。
@@ -3177,6 +3142,9 @@
       如果未設定，系統會停用虛擬螢幕小鍵盤，但使用者可以變更這項設定。
 
        注意：系統可能會使用經驗法則判斷鍵盤顯示設定。</translation>
+<translation id="5657752663637568277">這項政策可控管是否要在列印預覽對話方塊或設定頁面中，向使用者顯示 <ph name="CLOUD_PRINT_NAME" />淘汰警告訊息。
+      如果將這項政策設為 True，系統會隱藏淘汰警告訊息。
+      如果將這項政策設為 False 或不設定，系統會顯示淘汰警告訊息。</translation>
 <translation id="5666457529647159548">允許使用者管理已安裝的用戶端憑證。</translation>
 <translation id="567377007899266033">如果將這項政策設為 Ture，系統會將政策觸發的主要擴充功能安裝事件報告傳送給 Google。如果將這項政策設為 False，則系統不會擷取任何事件。如果不設定這項政策，預設值為 True。</translation>
 <translation id="5676740747107495269">在登入畫面的系統匣選單中顯示無障礙選項</translation>
@@ -3260,9 +3228,6 @@
 <translation id="5815129011704381141">更新完成後自動重新啟動</translation>
 <translation id="582857022372205358">啟用短邊雙面列印</translation>
 <translation id="5832274826894536455">已淘汰的政策</translation>
-<translation id="5835124959204887277">指定在必須取得安全金鑰認證憑證的情況下不會顯示提示的網址和網域。此外，系統會傳送信號給安全金鑰，指出可能會使用個別認證。如未設定這項政策，當網站要求安全金鑰認證時，Chrome 65 以上版本的使用者會收到提示。
-
-      網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="5845686745936515940">允許你將所有 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。此外，這也會讓系統在評估兩個網站是否相同時，略過網址架構的比較。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
@@ -3401,6 +3366,12 @@
 
       停用這項政策會對 Chrome 的安全性和穩定性造成負面影響，因為這樣一來，Chrome 會允許轉譯器程序載入未知且可能具有惡意的程式碼。如要瞭解詳情，請參閱 https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies。</translation>
 <translation id="6048199181629830227">開啟用電尖峰轉移電源管理功能</translation>
+<translation id="6054485492411959335">指定可供使用的印表機。
+
+      只有在為 <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" /> 選擇 <ph name="PRINTERS_ALLOWLIST" /> 的情況下，系統才會使用這項政策。
+
+      如果使用這項政策，只有 ID 與這項政策的值相符的印表機可供使用。ID 必須和 <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> 指定檔案中的「id」或「guid」欄位相符。
+      </translation>
 <translation id="6066761914755798079">如果已啟用 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 政策，你可以設定 <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> 政策來指定搜尋引擎提供搜尋建議的網址。網址應包含字串 <ph name="SEARCH_TERM_MARKER" />，系統會在查詢中將其替換為使用者的搜尋字詞。
 
       你可以將 Google 的搜尋網址指定為：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。</translation>
@@ -3478,21 +3449,6 @@
 
       如果未設定這項政策，使用者可自行決定要啟用或停用這項功能。</translation>
 <translation id="6178075938488052838">這項政策可控管哪些使用者能夠啟動 <ph name="PRODUCT_OS_NAME" />工作階段，但不會禁止使用者在 Android 應用程式中登入其他 Google 帳戶。如要禁止使用者登入其他 Google 帳戶，你可以在 <ph name="ARC_POLICY_POLICY_NAME" /> 中設定 Android 專屬的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策。</translation>
-<translation id="6179255742934310885">這項政策已遭淘汰，請改用「<ph name="URL_ALLOWLIST_POLICY_NAME" />」政策。
-
-      這項政策會允許存取列出的網址，這些網址是網址封鎖清單的例外狀況。
-
-      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策說明，瞭解這份清單所含項目格式。
-
-      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
-
-      最精確的篩選器會判定系統要封鎖還是允許網址。允許清單的優先順序高於封鎖清單。
-
-      這項政策最多只能輸入 1000 個項目；超過的項目會遭到忽略。
-
-      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。如果是 macOS 執行個體，必須透過行動裝置管理 (MDM) 或利用 MCX 加入網域才能使用。
-
-      如果不設定這項政策，「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的封鎖清單不會有任何例外狀況。</translation>
 <translation id="6181618732396778048">不允許任何網站要求檔案和目錄的寫入權限。</translation>
 <translation id="6183327369896253878">你可以透過這項政策修正 <ph name="PRODUCT_OS_NAME" />在啟動器列中顯示為固定應用程式的應用程式 ID，且使用者無法進行變更。
 
@@ -3592,8 +3548,6 @@
 <translation id="631183702829488873">啟用這項功能後，你會在登入畫面和鎖定畫面上看到允許顯示密碼的按鈕。
           這個按鈕會在密碼文字欄位中顯示為眼睛圖示。如果停用這項功能，此按鈕就不會顯示。
       </translation>
-<translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
-      這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
 <translation id="6319198883324703402">設定第一次通知使用者重新啟動的時間</translation>
 <translation id="6330882599388782338">允許網站存取感應器</translation>
 <translation id="6331167725613770725">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
@@ -3951,6 +3905,7 @@
 <translation id="68798513449385583">延遲下載，直到系統取得掃描結果</translation>
 <translation id="6889123056995503704">使用者決定版本降級行為</translation>
 <translation id="6894178810167845842">新分頁網址</translation>
+<translation id="6897730193187922386">禁止顯示 <ph name="CLOUD_PRINT_NAME" />淘汰訊息</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
 <translation id="6902561336084511004">為可用的列印伺服器提供設定。
 
@@ -3980,16 +3935,6 @@
 <translation id="6907778402784621686">封鎖這些網站上的不安全內容</translation>
 <translation id="6908640907898649429">設定預設搜尋引擎。你可以指定使用者要使用的預設搜尋引擎或選擇停用預設搜尋。</translation>
 <translation id="6913068954484253496">允許 <ph name="PRODUCT_NAME" /> 連線至所有 IP 位址上的 Cast 裝置。</translation>
-<translation id="6916507170737609563">
-      為了盡可能減少隔離功能對使用者的影響，建議你先查看 IsolateOriginsAndroid 政策設定，瞭解如何使用 IsolateOriginsAndroid 設定需要隔離的網站清單。SitePerProcessAndroid 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOriginsAndroid 和 SitePerProcessAndroid 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果未設定這項政策，使用者將可以變更這項設定。
-
-      注意：在 Android 裝置上，網站隔離為實驗功能。我們會逐步提供更完善的支援，但這項功能目前可能會造成效能問題。
-
-      注意：這項政策僅適用於 Android 裝置上的 Chrome，而且裝置一定要有超過 1GB 的 RAM。如要在非 Android 平台上套用這項政策，請使用 SitePerProcess。
-      </translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="6923731550900440989">在登入畫面上啟用插入點醒目顯示功能</translation>
 <translation id="6924223708804692571">這項政策會強制停用指定語言的拼字檢查功能。系統會忽略該清單中無法辨識的語言。
@@ -5140,6 +5085,14 @@
       這項政策的用途是讓企業能自行遷移目前使用 HTTP/0.9 的伺服器，我們將於日後移除這項政策。
 
       如果不設定這項政策，則系統會在非預設通訊埠停用 HTTP/0.9。</translation>
+<translation id="8504725006737796967">指定可供使用的印表機。
+
+      只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，系統才會使用這項政策。
+
+          如果使用這項政策，只有 ID 與這項政策值相符的印表機可供使用。ID 必須與 <ph name="BULK_PRINTERS_POLICY_NAME" /> 政策中指定檔案的「id」或「guid」欄位相符。
+
+      這項政策已遭淘汰，請改用 <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" />。
+      </translation>
 <translation id="8507835864888987300">設定自動更新的目標版本。
 
       指定 <ph name="PRODUCT_OS_NAME" /> 應更新的目標版本前置碼。如果裝置執行的版本比指定的前置碼版本更舊，系統會自動更新至指定前置碼的最新版本。如果裝置使用的是最新版本，則這項政策的效果將取決於 <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> 的值。前置碼格式須按部分逐一指定，如下列範例所示：
@@ -5362,19 +5315,6 @@
 <translation id="8860342862142842017">不針對列出的 subjectPublicKeyInfo 雜湊強制執行憑證透明化政策</translation>
 <translation id="8864975621965365890">瀏覽使用 <ph name="PRODUCT_FRAME_NAME" />轉譯的網站時，隱藏停止支援提示。</translation>
 <translation id="886645881209114007">允許使用者在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="8867533754744915440">這項政策會允許存取列出的網址，這些網址是網址封鎖清單的例外狀況。
-
-      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策說明，瞭解這份清單所含項目格式。
-
-      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
-
-      最精確的篩選器會判定系統要封鎖還是允許網址。允許清單的優先順序高於封鎖清單。
-
-      這項政策最多只能輸入 1000 個項目；超過的項目會遭到忽略。
-
-      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。如果是 macOS 執行個體，必須透過行動裝置管理 (MDM) 或利用 MCX 加入網域才能使用。
-
-      如果不設定這項政策，「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的封鎖清單不會有任何例外狀況。</translation>
 <translation id="8871974300055371298">內容設定</translation>
 <translation id="8872402969096027761">在登入畫面上啟用自動點擊無障礙功能。
 

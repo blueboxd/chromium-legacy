@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">ファイルを開けません</translation>
 <translation id="2718352093833049315">Wi-Fi接続時のみ</translation>
 <translation id="2747003861858887689">前の項目</translation>
+<translation id="2764831210418622012">たった今</translation>
 <translation id="2773292004659987824">シークレット検索</translation>
 <translation id="277771892408211951">言語を選択</translation>
 <translation id="2780046210906776326">メールアカウントなし</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">タブを追加してページを切り替えることができます</translation>
 <translation id="4502566650163919158">今すぐ確認</translation>
+<translation id="4505980578794259603">最終確認日: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">国名</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6453018583485750254">一度も確認されていません。</translation>
 <translation id="6464071786529933911">新しいシークレット タブで開く</translation>
 <translation id="6464397691496239022">サイトは、Cookie を使用してブラウジングの利便性を改善することができます。たとえばログイン状態の維持や、ショッピング カートの中身の保存が可能になります。
 

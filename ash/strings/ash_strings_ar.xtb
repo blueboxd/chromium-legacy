@@ -67,7 +67,7 @@
 <translation id="1632985212731562677">يمكن إيقاف ميزة "الوصول عبر مفتاح التحويل" في "الإعدادات" &gt; "أدوات تمكين الوصول".</translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
 <translation id="1665244008632896072">تبديل الوضع المُعتِم. <ph name="STATE_TEXT" /></translation>
-<translation id="1667964833127753507">لا يستخدم وضع "الألوان المعتدلة" ألوانًا مُستخرَجة من الخلفية، ويستخدم بدلاً منها مجموعة من إضاءة معتدلة أو ألوان داكنة.</translation>
+<translation id="1667964833127753507">لا يستخدم وضع "الألوان المحايدة" ألوانًا مُستخرَجة من الخلفية، ويستخدم بدلاً منها مجموعة من إضاءة معتدلة أو ألوان داكنة.</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
 <translation id="1698080062160024910">مؤقت <ph name="TOTAL_TIME" />   <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">‏عنوان IPv6:‏ <ph name="ADDRESS" /></translation>
@@ -300,7 +300,6 @@
 <translation id="4212472694152630271">التبديل إلى رقم التعريف الشخصي</translation>
 <translation id="4215497585250573029">‏إعدادات الشبكة الافتراضية الخاصة (VPN)</translation>
 <translation id="4217571870635786043">إملاء</translation>
-<translation id="4229328187280698237">التبديل إلى وضع الجهاز اللوحي</translation>
 <translation id="4239069858505860023">‏شبكة GPRS</translation>
 <translation id="4261870227682513959">عرض إعدادات الإشعارات. تم إيقاف الإشعارات</translation>
 <translation id="4269883910223712419">يمتلك مشرف هذا الجهاز القدرة على ما يلي:</translation>
@@ -373,7 +372,7 @@
 <translation id="5035389544768382859">تأكيد ضبط شاشة العرض</translation>
 <translation id="5083553833479578423">‏الاستفادة من المزيد من ميزات "مساعد Google"</translation>
 <translation id="5114495209940374989">لقطات شاشة</translation>
-<translation id="5123162024343028706">العوم في الأعلى</translation>
+<translation id="5123162024343028706">Float on top</translation>
 <translation id="5136175204352732067">تم توصيل لوحة مفاتيح مختلفة</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
@@ -707,7 +706,6 @@
 <translation id="890616557918890486">تغيير المصدر</translation>
 <translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
 <translation id="8913384980486163186">المظهر (التلقائي)</translation>
-<translation id="8918251165865262378">التبديل إلى وضع الكمبيوتر المحمول</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8936501819958976551">غير مفعّلة</translation>

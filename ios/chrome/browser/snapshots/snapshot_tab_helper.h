@@ -78,6 +78,15 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // Instructs the helper not to snapshot content for the next page load event.
   void IgnoreNextLoad();
 
+  // Hint that the snapshot will likely be saved to disk when the application is
+  // backgrounded.  The snapshot is then saved in memory, so it does not need to
+  // be read off disk.
+  void WillBeSavedGreyWhenBackgrounding();
+
+  // Write a grey copy of the snapshot to disk, but if and only if a color
+  // version of the snapshot already exists in memory or on disk.
+  void SaveGreyInBackground();
+
  private:
   friend class web::WebStateUserData<SnapshotTabHelper>;
 
@@ -97,6 +106,7 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
   web::WebState* web_state_ = nullptr;
+  NSString* tab_id_ = nil;
   SnapshotGenerator* snapshot_generator_ = nil;
   infobars::InfoBarManager* infobar_manager_ = nullptr;
 

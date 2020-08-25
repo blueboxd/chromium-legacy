@@ -682,6 +682,8 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
         scroll_delta = GetScrollDeltaForAbsoluteJump();
         break;
       }
+      // TODO(savella) Use snapport length instead of viewport length to match
+      // main thread behaviour. See https://crbug.com/1098383.
       scroll_delta = GetViewportLength() * kMinFractionToStepWhenPaging;
       break;
     }

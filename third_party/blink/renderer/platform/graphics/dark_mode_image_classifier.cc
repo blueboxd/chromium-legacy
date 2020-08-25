@@ -149,7 +149,7 @@ bool DarkModeImageClassifier::GetBitmap(const PaintImage& paint_image,
 
   SkCanvas canvas(*bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
-  canvas.drawImageRect(paint_image.GetSkImage(), src, dst, nullptr);
+  canvas.drawImageRect(paint_image.GetSwSkImage(), src, dst, nullptr);
   return true;
 }
 

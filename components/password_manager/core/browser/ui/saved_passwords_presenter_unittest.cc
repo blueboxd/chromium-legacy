@@ -175,9 +175,9 @@ class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
  private:
   base::test::SingleThreadTaskEnvironment task_env_;
   scoped_refptr<TestPasswordStore> profile_store_ =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/false);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   scoped_refptr<TestPasswordStore> account_store_ =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/true);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
   SavedPasswordsPresenter presenter_{profile_store_, account_store_};
 };
 

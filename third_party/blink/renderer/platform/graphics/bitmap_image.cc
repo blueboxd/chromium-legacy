@@ -346,12 +346,15 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
 
   cached_frame_ = CreatePaintImage();
 
+  // BitmapImage should not be texture backed.
+  DCHECK(!cached_frame_.IsTextureBacked());
+
   // Create the SkImage backing for this PaintImage here to ensure that copies
   // of the PaintImage share the same SkImage. Skia's caching of the decoded
   // output of this image is tied to the lifetime of the SkImage. So we create
   // the SkImage here and cache the PaintImage to keep the decode alive in
   // skia's cache.
-  cached_frame_.GetSkImage();
+  cached_frame_.GetSwSkImage();
   NotifyMemoryChanged();
 
   return cached_frame_;

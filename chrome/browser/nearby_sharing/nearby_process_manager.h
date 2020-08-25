@@ -101,7 +101,7 @@ class NearbyProcessManager : public ProfileManagerObserver {
   // Nearby Connections library if it should not be used right now. This will
   // not change the active profile and can be used to temporarily stop the
   // process (e.g. on screen lock) while keeping the active profile.
-  void StopProcess(Profile* profile);
+  virtual void StopProcess(Profile* profile);
 
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;

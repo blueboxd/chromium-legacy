@@ -1,0 +1,26 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.scanning.mojom;
+
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// Represents a connected scanner.
+struct Scanner {
+  // The scanner's unique identifier.
+  mojo_base.mojom.UnguessableToken id;
+  // The scanner's display name.
+  mojo_base.mojom.String16 display_name;
+};
+
+// Interface used to obtain information about and interact with connected
+// scanners. It is implemented in the browser and exposed to the Scan app
+// (chrome://scanning).
+interface ScanService {
+  // Returns the connected scanners. Obtaining a scanner's capabilities is
+  // implemented in a separate method to minimize the amount of time clients
+  // must wait before receiving the scanners and displaying their display names.
+  GetScanners() => (array<Scanner> scanners);
+};

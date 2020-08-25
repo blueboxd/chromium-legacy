@@ -20,7 +20,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/test/test_ax_event_observer.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -151,10 +151,10 @@ TEST_P(ImageViewTest, ImageOriginForCustomViewBounds) {
 // Verifies setting the accessible name will be call NotifyAccessibilityEvent.
 TEST_P(ImageViewTest, SetAccessibleNameNotifiesAccessibilityEvent) {
   base::string16 test_tooltip_text = base::ASCIIToUTF16("Test Tooltip Text");
-  test::TestAXEventObserver observer;
-  EXPECT_EQ(0, observer.text_changed_event_count());
+  test::AXEventCounter counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
   image_view()->SetAccessibleName(test_tooltip_text);
-  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
   EXPECT_EQ(test_tooltip_text, image_view()->GetAccessibleName());
   ui::AXNodeData data;
   image_view()->GetAccessibleNodeData(&data);

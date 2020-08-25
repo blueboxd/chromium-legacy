@@ -158,7 +158,7 @@ class CORE_EXPORT NGPhysicalFragment
            layout_object_->IsRubyBase();
   }
 
-  bool IsTable() const { return IsBox() && layout_object_->IsTable(); }
+  bool IsTable() const { return layout_object_->IsTable(); }
 
   // Return true if this fragment is a container established by a fieldset
   // element. Such a fragment contains an optional rendered legend fragment and

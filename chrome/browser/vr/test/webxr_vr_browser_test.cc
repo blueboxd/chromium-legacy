@@ -122,6 +122,9 @@ gfx::Vector3dF WebXrVrOpenVrBrowserTestBase::GetControllerOffset() const {
 }
 
 WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  enable_features_.push_back(device::features::kWindowsMixedReality);
+#endif
 #if BUILDFLAG(ENABLE_OPENXR)
   disable_features_.push_back(device::features::kOpenXR);
 #endif
@@ -163,7 +166,6 @@ WebXrVrOpenVrBrowserTest::WebXrVrOpenVrBrowserTest() {
 }
 
 WebXrVrWmrBrowserTest::WebXrVrWmrBrowserTest() {
-  // WMR already enabled by default.
   runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
 }
 

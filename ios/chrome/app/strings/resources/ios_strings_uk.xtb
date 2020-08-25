@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">Не вдалося відкрити файл</translation>
 <translation id="2718352093833049315">Лише у Wi-Fi</translation>
 <translation id="2747003861858887689">Попереднє поле</translation>
+<translation id="2764831210418622012">щойно</translation>
 <translation id="2773292004659987824">Пошук у режимі інкогніто</translation>
 <translation id="277771892408211951">Виберіть мову</translation>
 <translation id="2780046210906776326">Немає облік. записів</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">Налаштування</translation>
 <translation id="4496373720959965247">Додавайте вкладки та переходьте між сторінками</translation>
 <translation id="4502566650163919158">Перевірити</translation>
+<translation id="4505980578794259603">Остання перевірка: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">Країна</translation>
 <translation id="6445981559479772097">Повідомлення надіслано.</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
+<translation id="6453018583485750254">Паролі ніколи не перевірялися.</translation>
 <translation id="6464071786529933911">Відкрити в анонімній вкладці</translation>
 <translation id="6464397691496239022">Сайти можуть використовувати файли cookie, щоб покращувати веб-перегляд, наприклад не виходити з облікового запису чи запам'ятовувати товари в кошику для покупок.
 

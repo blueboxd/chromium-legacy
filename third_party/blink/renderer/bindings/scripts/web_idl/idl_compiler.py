@@ -518,8 +518,8 @@ class IdlCompiler(object):
 
     def _propagate_extattrs_to_overload_group(self):
         ANY_OF = ('CrossOrigin', 'Custom', 'LegacyUnforgeable', 'LenientThis',
-                  'NotEnumerable', 'PerWorldBindings', 'SecureContext',
-                  'Unscopable')
+                  'NoAllocDirectCall', 'NotEnumerable', 'PerWorldBindings',
+                  'SecureContext', 'Unscopable')
 
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
                                             IRMap.IR.Kind.NAMESPACE)

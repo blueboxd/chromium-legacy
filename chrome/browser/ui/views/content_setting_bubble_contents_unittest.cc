@@ -62,7 +62,6 @@ TEST_F(ContentSettingBubbleContentsTest, NullDeref) {
   std::unique_ptr<views::Widget> widget(
       views::BubbleDialogDelegateView::CreateBubble(
           std::make_unique<TestContentSettingBubbleContents>(
-              web_contents.get(), parent_widget->GetNativeView())
-              .release()));
+              web_contents.get(), parent_widget->GetNativeView())));
   widget->Show();
 }

@@ -49,12 +49,14 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
-    GetContentClient()
-        ->browser()
-        ->GetSystemSharedURLLoaderFactory()
-        ->CreateLoaderAndStart(std::move(receiver), routing_id, request_id,
-                               options, url_request, std::move(client),
-                               traffic_annotation);
+    auto factory =
+        GetContentClient()->browser()->GetSystemSharedURLLoaderFactory();
+    if (!factory)
+      return;
+
+    factory->CreateLoaderAndStart(std::move(receiver), routing_id, request_id,
+                                  options, url_request, std::move(client),
+                                  traffic_annotation);
   }
 
   // SharedURLLoaderFactory implementation:

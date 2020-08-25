@@ -10,6 +10,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.components.paintpreview.player.CompositorStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +76,12 @@ public class TabbedPaintPreviewMetricsHelper {
     void onTabLoadFinished() {
         RecordHistogram.recordBooleanHistogram(
                 "Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad", mFirstPaintHappened);
+    }
+
+    void onCompositorFailure(@CompositorStatus int status) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Browser.PaintPreview.TabbedPlayer.CompositorFailureReason", status,
+                CompositorStatus.COUNT);
     }
 
     void recordExitMetrics(int exitCause, int snackbarShownCount) {

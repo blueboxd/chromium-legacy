@@ -36,6 +36,9 @@ class TabSearchButton : public NewTabButton,
   TabSearchButton& operator=(const TabSearchButton&) = delete;
   ~TabSearchButton() override;
 
+  // NewTabButton:
+  void FrameColorsChanged() override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

@@ -11,7 +11,7 @@ from gpu_tests import color_profile_manager
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
-from gpu_tests import skia_gold_integration_test_base
+from gpu_tests import expected_color_test
 
 from py_utils import cloud_storage
 from telemetry.util import image_util
@@ -25,9 +25,11 @@ _DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
 _TEST_NAME = 'Maps_maps'
 
 
-class MapsIntegrationTest(
-    skia_gold_integration_test_base.SkiaGoldIntegrationTestBase):
+class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
   """Google Maps pixel tests.
+
+  This is an expected color test instead of a regular pixel test because the
+  captured image is incredibly noisy.
 
   Note: this test uses the same WPR as the smoothness.maps benchmark
   in tools/perf/benchmarks. See src/tools/perf/page_sets/maps.py for
@@ -134,7 +136,7 @@ def _ReadPixelExpectations(expectations_file):
 
 
 def _GetMapsPageForUrl(url, expected_colors):
-  page = pixel_test_pages.PixelTestPage(
+  page = expected_color_test.ExpectedColorPixelTestPage(
       url=url,
       name=_TEST_NAME,
       # Exact test_rect is arbitrary, just needs to encapsulate all pixels

@@ -370,6 +370,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   METADATA_HEADER(BubbleDialogDelegateView);
 
   // Create and initialize the bubble Widget(s) with proper bounds.
+  static Widget* CreateBubble(
+      std::unique_ptr<BubbleDialogDelegateView> delegate);
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
   BubbleDialogDelegateView();
@@ -385,7 +387,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
 
   // BubbleDialogDelegate:
   View* GetContentsView() override;
-  void DeleteDelegate() override;
 
   // View:
   Widget* GetWidget() override;

@@ -272,6 +272,9 @@ class CC_PAINT_EXPORT PaintImage {
   }
   bool IsPaintWorklet() const { return !!paint_worklet_input_; }
   bool IsTextureBacked() const;
+  // Skia internally buffers commands and flushes them as necessary but there
+  // are some cases where we need to force a flush.
+  void FlushPendingSkiaOps();
   int width() const;
   int height() const;
   SkColorSpace* color_space() const {

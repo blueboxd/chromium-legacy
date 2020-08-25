@@ -86,145 +86,17 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
-import("//build/config/chrome_build.gni")
-import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
-import("//build/config/crypto.gni")
-import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
-import("//build/config/ui.gni")
 import("//build/toolchain/gcc_toolchain.gni")
+import("//tools/grit/grit_defines.gni")
 if (enable_resource_whitelist_generation) {
   assert(target_os == "android" || target_os == "win",
          "unsupported platform for resource whitelist generation")
   assert(
       symbol_level > 0 && !strip_debug_info && !is_component_build,
       "resource whitelist generation only works on non-component builds with debug info enabled.")
-}
-
-grit_defines = []
-
-if (is_mac || is_win || is_linux || is_chromeos || is_ios) {
-  grit_defines += [
-    "-D",
-    "scale_factors=2x",
-  ]
-}
-
-# Mac and iOS want Title Case strings.
-use_titlecase_in_grd_files = is_apple
-if (use_titlecase_in_grd_files) {
-  grit_defines += [
-    "-D",
-    "use_titlecase",
-  ]
-}
-
-if (is_chrome_branded) {
-  grit_defines += [
-    "-D",
-    "_google_chrome",
-    "-E",
-    "CHROMIUM_BUILD=google_chrome",
-  ]
-} else {
-  grit_defines += [
-    "-D",
-    "_chromium",
-    "-E",
-    "CHROMIUM_BUILD=chromium",
-  ]
-}
-
-if (is_chromeos) {
-  grit_defines += [
-    "-D",
-    "chromeos",
-  ]
-}
-
-if (chromeos_is_browser_only) {
-  grit_defines += [
-    "-D",
-    "lacros",
-  ]
-}
-
-if (is_desktop_linux) {
-  grit_defines += [
-    "-D",
-    "desktop_linux",
-  ]
-}
-
-if (toolkit_views) {
-  grit_defines += [
-    "-D",
-    "toolkit_views",
-  ]
-}
-
-if (use_aura) {
-  grit_defines += [
-    "-D",
-    "use_aura",
-  ]
-}
-
-if (use_nss_certs) {
-  grit_defines += [
-    "-D",
-    "use_nss_certs",
-  ]
-}
-
-if (use_ozone) {
-  grit_defines += [
-    "-D",
-    "use_ozone",
-  ]
-}
-
-if (is_android) {
-  grit_defines += [
-    "-E",
-    "ANDROID_JAVA_TAGGED_ONLY=true",
-  ]
-}
-
-# When cross-compiling, explicitly pass the target system to grit.
-if (current_toolchain != host_toolchain) {
-  if (is_android) {
-    grit_defines += [
-      "-t",
-      "android",
-    ]
-  }
-  if (is_ios) {
-    grit_defines += [
-      "-t",
-      "ios",
-    ]
-  }
-  if (is_linux || is_chromeos) {
-    grit_defines += [
-      "-t",
-      "linux2",
-    ]
-  }
-  if (is_mac) {
-    grit_defines += [
-      "-t",
-      "darwin",
-    ]
-  }
-  if (is_win) {
-    grit_defines += [
-      "-t",
-      "win32",
-    ]
-  }
 }
 
 _strip_resource_files = is_android && is_official_build

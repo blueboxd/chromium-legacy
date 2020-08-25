@@ -182,6 +182,8 @@ void WidgetDelegate::WindowClosing() {
 void WidgetDelegate::DeleteDelegate() {
   for (auto&& callback : delete_delegate_callbacks_)
     std::move(callback).Run();
+  if (params_.owned_by_widget)
+    delete this;
 }
 
 Widget* WidgetDelegate::GetWidget() {
@@ -243,6 +245,10 @@ void WidgetDelegate::SetCanMinimize(bool can_minimize) {
 
 void WidgetDelegate::SetCanResize(bool can_resize) {
   params_.can_resize = can_resize;
+}
+
+void WidgetDelegate::SetOwnedByWidget(bool owned) {
+  params_.owned_by_widget = owned;
 }
 
 void WidgetDelegate::SetFocusTraversesOut(bool focus_traverses_out) {
@@ -314,13 +320,10 @@ void WidgetDelegate::RegisterDeleteDelegateCallback(
 WidgetDelegateView::WidgetDelegateView() {
   // A WidgetDelegate should be deleted on DeleteDelegate.
   set_owned_by_client();
+  SetOwnedByWidget(true);
 }
 
 WidgetDelegateView::~WidgetDelegateView() = default;
-
-void WidgetDelegateView::DeleteDelegate() {
-  delete this;
-}
 
 Widget* WidgetDelegateView::GetWidget() {
   return View::GetWidget();

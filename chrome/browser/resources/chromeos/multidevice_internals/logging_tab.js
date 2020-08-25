@@ -39,7 +39,7 @@ function logToSavedString_(log) {
   // Reduce the file path to just the file name for logging simplification.
   const file = log.file.substring(log.file.lastIndexOf('/') + 1);
 
-  return `[${log.time} ${severity} ${file} (${log.line})] ${log.text}`;
+  return `[${log.time} ${severity} ${file} (${log.line})] ${log.text}\n`;
 }
 
 Polymer({
@@ -124,7 +124,9 @@ Polymer({
    * @return {!Array<string>}
    */
   getSerializedLogStrings_() {
-    return this.logList_.map(logToSavedString_);
+    // Reverse the logs so that the oldest logs appear first and the newest logs
+    // appear last.
+    return this.logList_.map(logToSavedString_).reverse();
   },
 
   /**

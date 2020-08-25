@@ -384,6 +384,13 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
         case WebGestureDevice::kTouchscreen:
           if (pressed_part_ != kThumbPart)
             return false;
+
+          // Prevent scrollbar fling by filtering gesture scroll updates that
+          // have the momentum bit set
+          if (evt.InertialPhase() ==
+              WebGestureEvent::InertialPhaseState::kMomentum) {
+            return true;
+          }
           scroll_pos_ += Orientation() == kHorizontalScrollbar
                              ? evt.DeltaXInRootFrame()
                              : evt.DeltaYInRootFrame();
@@ -435,7 +442,7 @@ bool Scrollbar::HandleTapGesture() {
   scroll_pos_ = 0;
   pressed_pos_ = 0;
   SetPressedPart(kNoPart, WebInputEvent::Type::kGestureTap);
-  return false;
+  return true;
 }
 
 void Scrollbar::MouseMoved(const WebMouseEvent& evt) {

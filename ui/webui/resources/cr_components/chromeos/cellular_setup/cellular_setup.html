@@ -2,7 +2,10 @@
 
 <link rel="import" href="button_bar.html">
 <link rel="import" href="psim_flow_ui.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="esim_flow_ui.html">
+<link rel="import" href="cellular_types.html">
+<link rel="import" href="setup_selection_flow.html">
+<link rel="import" href="../../../html/i18n_behavior.html">
 
 <dom-module id="cellular-setup">
   <template>
@@ -11,21 +14,26 @@
         flex: 1 1 auto;
         padding: 10px;
       }
-
-      iron-pages {
-        display: flex;
-        flex: 1 1 auto;
-      }
     </style>
-    <iron-pages attr-for-selected="is"
-        selected="[[selectedPageName_]]">
-      <!-- TODO(hsuregan): Implement <setup-flow-selection>. -->
-      <psim-flow-ui></psim-flow-ui>
-      <!-- TODO(hsuregan): Implement <esim-flow>. -->
+    <iron-pages
+        attr-for-selected="id"
+        selected="[[currentPageName_]]"
+        selected-item="{{currentPage_}}">
+      <setup-selection-flow
+          selected-page="{{selectedFlow_}}"
+          button-state="{{buttonState_}}"
+          id="setup-selection-flow">
+      </setup-selection-flow>
+      <template is="dom-if"
+          if="[[isPSimSelected_(currentPageName_)]]" restamp>
+        <psim-flow-ui button-state="{{buttonState_}}" id="psim-flow-ui"></psim-flow-ui>
+      </template>
+      <template is="dom-if"
+          if="[[isESimSelected_(currentPageName_)]]" restamp>
+        <esim-flow-ui button-state="{{buttonState_}}" id="esim-flow-ui"></esim-flow-ui>
+      </template>
     </iron-pages>
-    <button-bar show-try-again-button="[[showTryAgainButton_]]"
-        show-finish-button="[[showFinishButton_]]"
-        show-cancel-button="[[showCancelButton_]]">
+    <button-bar button-state="[[buttonState_]]">
     </button-bar>
   </template>
   <script src="cellular_setup.js">

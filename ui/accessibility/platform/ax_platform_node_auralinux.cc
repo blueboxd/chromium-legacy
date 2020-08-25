@@ -2854,8 +2854,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_MARQUEE;
     case ax::mojom::Role::kMenu:
       return ATK_ROLE_MENU;
-    case ax::mojom::Role::kMenuButton:
-      return ATK_ROLE_MENU_ITEM;
     case ax::mojom::Role::kMenuBar:
       return ATK_ROLE_MENU_BAR;
     case ax::mojom::Role::kMenuItem:

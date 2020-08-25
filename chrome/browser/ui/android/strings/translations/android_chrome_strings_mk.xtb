@@ -80,7 +80,6 @@
 <translation id="1571304935088121812">Копирај го корисничкото име</translation>
 <translation id="1592864538817356322">Стандардна заштита:</translation>
 <translation id="1612196535745283361">На Chrome му треба пристап до локацијата за да скенира уреди. Пристапот до локацијата е <ph name="BEGIN_LINK" />исклучен за овој уред<ph name="END_LINK" />.</translation>
-<translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Отстрани 1 избрана ставка}one{Отстрани # избрана ставка}other{Отстрани # избрани ставки}}</translation>
 <translation id="1641113438599504367">Безбедно прелистување</translation>
 <translation id="164269334534774161">Гледате офлајн копија на страницата од <ph name="CREATION_TIME" /></translation>
@@ -95,7 +94,6 @@
 <translation id="1749561566933687563">Синхронизирајте ги обележувачите</translation>
 <translation id="17513872634828108">Отворени јазичиња</translation>
 <translation id="1754404134430936718">Текстот е копиран</translation>
-<translation id="1779089405699405702">Декодер на слики</translation>
 <translation id="1782483593938241562">Датум на завршување: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Инсталирано</translation>
 <translation id="1792959175193046959">Променете ја стандардната локација за преземање во секое време</translation>
@@ -104,6 +102,7 @@
 <translation id="1810845389119482123">Првичното поставување на синхронизацијата не е завршено</translation>
 <translation id="1821253160463689938">Користи колачиња за да ги запамети вашите поставки, дури и ако не ги посетувате тие страници</translation>
 <translation id="1829244130665387512">Најди на страница</translation>
+<translation id="1843805151597803366">За да добивате подобри преводи, дозволете „Пребарување на Google“ да ја користи тековната страница</translation>
 <translation id="1853692000353488670">Нова картичка „Инкогнито“</translation>
 <translation id="1856325424225101786">Дали да се ресетира „Лесниот режим“?</translation>
 <translation id="1868024384445905608">Отсега Chrome побрзо презема датотеки</translation>
@@ -125,7 +124,6 @@
 <translation id="1984705450038014246">Синхронизирајте ги податоците од Chrome</translation>
 <translation id="1986685561493779662">Името веќе постои</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> копче</translation>
-<translation id="1989112275319619282">Прелистувај</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> сака да се спари</translation>
 <translation id="2000419248597011803">Испраќа колачиња и пребарувања од лентата за адреси и полето за пребарување во вашиот стандарден пребарувач</translation>
 <translation id="2002537628803770967">Кредитни картички и адреси преку Google Pay</translation>
@@ -266,7 +264,6 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> обележувач}one{<ph name="BOOKMARKS_COUNT_MANY" /> обележувач}other{<ph name="BOOKMARKS_COUNT_MANY" /> обележувачи}}</translation>
 <translation id="3062802207422175757">Статии за она што ве интересира на Chrome</translation>
 <translation id="3089395242580810162">Отвори во инкогнито картичка</translation>
-<translation id="3114012059975132928">Видеоплеер</translation>
 <translation id="3114507951000454849">Прочитајте ги денешните вести <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Соопштенија</translation>
 <translation id="3137521801621304719">Напушти го инкогнито-режимот</translation>
@@ -331,7 +328,6 @@
 <translation id="3568688522516854065">За да ги добиете вашите картички од другите уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="3587482841069643663">Сите</translation>
 <translation id="3587596251841506391">Подобра безбедноста на интернет</translation>
-<translation id="3594780231884063836">Исклучете звук на видео</translation>
 <translation id="3599863153486145794">Ја чисти историјата од сите најавени уреди. Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3631987586758005671">Се споделува на <ph name="DEVICE_NAME" /></translation>
@@ -347,7 +343,6 @@
 <translation id="3738139272394829648">Допри за пребарување</translation>
 <translation id="3739899004075612870">Обележано во <ph name="PRODUCT_NAME" /></translation>
 <translation id="3749259744154402564">Неподдржано</translation>
-<translation id="3763247130972274048">Допрете двапати на видеото лево или десно за да прескокнете 10 секунди</translation>
 <translation id="3771001275138982843">Не можеше да се преземе ажурирањето</translation>
 <translation id="3771033907050503522">Инкогнито картички</translation>
 <translation id="3771290962915251154">Поставкава е оневозможена бидејќи се вклучени родителските контроли</translation>
@@ -483,6 +478,7 @@
 
 За да ја промените поставкава, <ph name="BEGIN_LINK" />ресетирајте ја синхронизацијата<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Име на картичка</translation>
+<translation id="4818017973810341238">Потврдувањето на линковите за дигитална потврда не успеа на <ph name="VIOLATED_URL" /></translation>
 <translation id="4824958205181053313">Да се откаже синхронизацијата?</translation>
 <translation id="4835385943915508971">Chrome нема пристап до бараниот ресурс.</translation>
 <translation id="4837753911714442426">Отворете опции за печатење страница</translation>
@@ -572,7 +568,6 @@
 <translation id="5456381639095306749">Преземете ја страницата</translation>
 <translation id="548278423535722844">Отвори во апликацијата „Карти“</translation>
 <translation id="5487521232677179737">Избриши податоци</translation>
-<translation id="5489227211564503167">Изминато време: <ph name="ELAPSED_TIME" /> од <ph name="TOTAL_TIME" />.</translation>
 <translation id="5500777121964041360">Можеби не е достапно во вашата локација</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> управува со оваа сметка.</translation>
 <translation id="5514904542973294328">Оневозможено од администраторот на уредов</translation>
@@ -637,7 +632,6 @@
 <translation id="5864419784173784555">Се чека друго преземање…</translation>
 <translation id="5865733239029070421">Автоматски испраќа статистика на користењето и извештаи за падовите до Google.</translation>
 <translation id="5869522115854928033">Зачувани лозинки</translation>
-<translation id="5876056640971328065">Паузирајте го видеото</translation>
 <translation id="5884076754568147479">За да ви помогне да завршувате задачи, Google ќе ги добива URL-адресите и содржините на сајтовите на кои го користите „Помошникот“, како и податоците што ги испраќате преку „Помошникот“</translation>
 <translation id="5919204609460789179">Ажурирајте го <ph name="PRODUCT_NAME" /> за да започнете со синхронизирање</translation>
 <translation id="5937580074298050696">Заштедено: <ph name="AMOUNT" /></translation>
@@ -704,7 +698,6 @@
 <translation id="6381421346744604172">Затемнете ги веб-сајтовите</translation>
 <translation id="6395288395575013217">ЛИНК</translation>
 <translation id="6397616442223433927">Повторно сте онлајн</translation>
-<translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6402652558933147609"><ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
@@ -817,7 +810,6 @@
 <translation id="7187993566681480880">Ја чува вашата безбедност на Chrome и може да се користи за да ја подобри безбедноста на други апликации на Google кога сте најавени.</translation>
 <translation id="7189372733857464326">Се чека да заврши ажурирањето на „Услугите на Google Play“</translation>
 <translation id="7191430249889272776">Отворена е картичка во заднина.</translation>
-<translation id="723171743924126238">Изберете слики</translation>
 <translation id="7233236755231902816">За да го гледате интернетот на вашиот јазик, преземете ја најновата верзија на Chrome</translation>
 <translation id="7248069434667874558">Проверете дали синхронизацијата во Chrome е вклучена за <ph name="TARGET_DEVICE_NAME" /></translation>
 <translation id="7274013316676448362">Блокиран сајт</translation>
@@ -900,7 +892,6 @@
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7810647596859435254">Отвори со…</translation>
 <translation id="7821588508402923572">Заштедата на сообраќајот ќе се појави тука</translation>
-<translation id="783819812427904514">Вклучете звук на видео</translation>
 <translation id="7846296061357476882">Услуги на Google</translation>
 <translation id="784934925303690534">Временски период</translation>
 <translation id="7851858861565204677">Други уреди</translation>
@@ -922,6 +913,7 @@
 <translation id="7981313251711023384">Претходно вчитувај страници за побрзо прелистување и пребарување</translation>
 <translation id="79859296434321399">За да прегледувате содржини во проширена реалност, инсталирајте го ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
+<translation id="799806351373751710">Откажи поставување синхронизација</translation>
 <translation id="7998918019931843664">Повторно отвори ја затворената картичка</translation>
 <translation id="8004582292198964060">Прелистувач</translation>
 <translation id="8013372441983637696">Избришете ги и вашите податоци на Chrome од уредов</translation>
@@ -937,7 +929,6 @@
 <translation id="8058746566562539958">Отвори во нова Chrome картичка</translation>
 <translation id="8063895661287329888">Не успеа да се додаде обележувачот.</translation>
 <translation id="806745655614357130">Не поврзувај ги податоците</translation>
-<translation id="8067883171444229417">Пушти го видеото</translation>
 <translation id="8073388330009372546">Отвори слика во нова картичка</translation>
 <translation id="8076492880354921740">Картички</translation>
 <translation id="8084114998886531721">Зачувана лозинка</translation>
@@ -998,7 +989,6 @@
 <translation id="8514577642972634246">Влези во инкогнито-режим</translation>
 <translation id="8516012719330875537">Уредувач на слики</translation>
 <translation id="8523928698583292556">Избриши ја зачуваната лозинка</translation>
-<translation id="8525306231823319788">Цел екран</translation>
 <translation id="8540136935098276800">Внесете правилно форматирана URL-адреса</translation>
 <translation id="854522910157234410">Отвори ја страницава</translation>
 <translation id="8555836665334561807">Преку Wi-Fi</translation>
@@ -1025,7 +1015,6 @@
 <translation id="8712637175834984815">Сфатив</translation>
 <translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8748850008226585750">Содржината е скриена</translation>
-<translation id="8751914237388039244">Изберете слика</translation>
 <translation id="8758557275681689734">Видете ги сите отворени картички</translation>
 <translation id="8788265440806329501">Историјата на навигација е затворена</translation>
 <translation id="8788968922598763114">Повторно отворете ја последната затворена картичка</translation>
@@ -1040,7 +1029,6 @@
 <translation id="8909135823018751308">Сподели…</translation>
 <translation id="8912362522468806198">Сметка на Google</translation>
 <translation id="8920114477895755567">Се чекаат детали за родителите.</translation>
-<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Преземете ги страниците преку копчето „Повеќе опции“ за да ги користите офлајн</translation>
 <translation id="8937772741022875483">Да се отстрани вашата активност на Chrome од „Дигитална благосостојба“?</translation>
 <translation id="8942627711005830162">Отвори во друг прозорец</translation>

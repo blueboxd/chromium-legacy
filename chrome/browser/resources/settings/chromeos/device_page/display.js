@@ -39,6 +39,7 @@ cr.define('settings.display', function() {
     is: 'settings-display',
 
     behaviors: [
+      DeepLinkingBehavior,
       I18nBehavior,
       PrefsBehavior,
       settings.RouteObserverBehavior,
@@ -213,6 +214,38 @@ cr.define('settings.display', function() {
 
       /** @private */
       selectedTab_: Number,
+
+      /**
+       * Contains the settingId of any deep link that wasn't able to be shown,
+       * null otherwise.
+       * @private {?chromeos.settings.mojom.Setting}
+       */
+      pendingSettingId_: {
+        type: Number,
+        value: null,
+      },
+
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set([
+          chromeos.settings.mojom.Setting.kDisplaySize,
+          chromeos.settings.mojom.Setting.kNightLight,
+          chromeos.settings.mojom.Setting.kDisplayOrientation,
+          chromeos.settings.mojom.Setting.kDisplayArrangement,
+          chromeos.settings.mojom.Setting.kDisplayResolution,
+          chromeos.settings.mojom.Setting.kDisplayRefreshRate,
+          chromeos.settings.mojom.Setting.kDisplayMirroring,
+          chromeos.settings.mojom.Setting.kAllowWindowsToSpanDisplays,
+          chromeos.settings.mojom.Setting.kAmbientColors,
+          chromeos.settings.mojom.Setting.kTouchscreenCalibration,
+          chromeos.settings.mojom.Setting.kNightLightColorTemperature,
+          chromeos.settings.mojom.Setting.kDisplayOverscan,
+        ]),
+      },
     },
 
     observers: [
@@ -302,6 +335,23 @@ cr.define('settings.display', function() {
     },
 
     /**
+     * Overridden from DeepLinkingBehavior.
+     * @param {!chromeos.settings.mojom.Setting} settingId
+     * @return {boolean}
+     */
+    beforeDeepLinkAttempt(settingId) {
+      if (!this.displays) {
+        // On initial page load, displays will not be loaded and deep link
+        // attempt will fail. Suppress warnings by exiting early and try again
+        // in updateDisplayInfo_.
+        return false;
+      }
+
+      // Continue with deep link attempt.
+      return true;
+    },
+
+    /**
      * @param {!settings.Route|undefined} opt_newRoute
      * @param {!settings.Route|undefined} opt_oldRoute
      */
@@ -318,6 +368,20 @@ cr.define('settings.display', function() {
         this.browserProxy_.highlightDisplay(this.invalidDisplayId_);
         return;
       }
+
+      // Does not apply to this page.
+      if (opt_newRoute !== settings.routes.DISPLAY) {
+        this.pendingSettingId_ = null;
+        return;
+      }
+
+      this.attemptDeepLink().then(result => {
+        if (!result.deepLinkShown && result.pendingSettingId) {
+          // Store any deep link settingId that wasn't shown so we can try again
+          // in updateDisplayInfo_.
+          this.pendingSettingId_ = result.pendingSettingId;
+        }
+      });
     },
 
     /**
@@ -1339,6 +1403,17 @@ cr.define('settings.display', function() {
       this.setSelectedDisplay_(selectedDisplay);
 
       this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
+
+      // Check if we have yet to focus a deep-linked element.
+      if (!this.pendingSettingId_) {
+        return;
+      }
+
+      this.showDeepLink(this.pendingSettingId_).then(result => {
+        if (result.deepLinkShown) {
+          this.pendingSettingId_ = null;
+        }
+      });
     },
 
     /** @private */

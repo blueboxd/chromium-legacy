@@ -3340,6 +3340,8 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="M_TO_P"/>
   <int value="5" label="N_TO_P"/>
   <int value="6" label="P_TO_Q"/>
+  <int value="7" label="N_TO_R"/>
+  <int value="8" label="P_TO_R"/>
 </enum>
 
 <enum name="ArcShareFilesOnExit">
@@ -16996,6 +16998,8 @@ Called by update_document_policy_enum.py.-->
   <int value="6" label="OversizedImages"/>
   <int value="7" label="UnsizedMedia"/>
   <int value="8" label="LayoutAnimations"/>
+  <int value="9" label="DocumentWrite"/>
+  <int value="10" label="SyncScript"/>
 </enum>
 
 <enum name="DocumentScanSaneBackend">
@@ -28923,6 +28927,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3452" label="RTCPeerConnectionSetLocalDescription"/>
   <int value="3453" label="RTCPeerConnectionCreateOffer"/>
   <int value="3454" label="RTCPeerConnectionCreateAnswer"/>
+  <int value="3455"
+      label="V8AuthenticatorAttestationResponse_GetTransports_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -69305,6 +69311,17 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Not loaded on creation"/>
 </enum>
 
+<enum name="TabbedPaintPreviewCompositorFailureReason">
+  <int value="0" label="OK"/>
+  <int value="1" label="URL Mismatch"/>
+  <int value="2" label="Compositor Service Disconnected"/>
+  <int value="3" label="Compositor Client Disconnected"/>
+  <int value="4" label="Protobuf Deserialization Error"/>
+  <int value="5" label="Compositor Deserialization Error"/>
+  <int value="6" label="Invalid Root Frame SKP"/>
+  <int value="7" label="Invalid Request"/>
+</enum>
+
 <enum name="TabbedPaintPreviewExitCause">
   <int value="0" label="Pull to Refresh"/>
   <int value="1" label="Actionbar Action"/>
@@ -75052,6 +75069,20 @@ Called by update_scheduler_enums.py.-->
   <int value="11" label="Content"/>
   <int value="12" label="Intent"/>
   <int value="13" label="android_asset or android_res"/>
+</enum>
+
+<enum name="WebViewUserAgentType">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Invalid - contains one or more nulls"/>
+  <int value="2"
+      label="Invalid - but could be extra headers (with correct line endings)"/>
+  <int value="3"
+      label="Invalid - but could be extra headers (but with wrong line
+             endings)"/>
+  <int value="4"
+      label="Invalid - but could be attempting to terminate headers"/>
+  <int value="5"
+      label="Invalid - none of the above; random garbage or an unknown case"/>
 </enum>
 
 <enum name="WebViewVisibility">

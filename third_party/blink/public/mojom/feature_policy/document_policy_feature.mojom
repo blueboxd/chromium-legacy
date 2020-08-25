@@ -26,6 +26,12 @@ enum DocumentPolicyFeature {
   kUnsizedMedia = 7,
   // Restricts the usage of layout-causing animations in a document.
   kLayoutAnimations = 8,
+  // Controls the ability of the document to use several dynamic markup API
+  // which interfere with document's input stream (document.write(),
+  // document.close(), etc.).
+  kDocumentWrite = 9,
+  // Controls whether synchronous script elements will run.
+  kSyncScript = 10,
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_document_policy_enum.py in

@@ -1044,6 +1044,8 @@ static_library("ui") {
       "media_router/media_cast_mode.h",
       "media_router/media_router_file_dialog.cc",
       "media_router/media_router_file_dialog.h",
+      "media_router/media_router_ui.cc",
+      "media_router/media_router_ui.h",
       "media_router/media_router_ui_helper.cc",
       "media_router/media_router_ui_helper.h",
       "media_router/media_router_ui_service.cc",
@@ -1956,6 +1958,8 @@ static_library("ui") {
       "ash/login_screen_client.h",
       "ash/media_client_impl.cc",
       "ash/media_client_impl.h",
+      "ash/media_notification_provider_impl.cc",
+      "ash/media_notification_provider_impl.h",
       "ash/multi_user/multi_profile_support.cc",
       "ash/multi_user/multi_profile_support.h",
       "ash/multi_user/multi_user_context_menu.h",
@@ -2525,6 +2529,8 @@ static_library("ui") {
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",
       "//chromeos/components/account_manager",
+      "//chromeos/components/bloom/public/cpp",
+      "//chromeos/components/bloom/public/cpp:bloom_controller_factory",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/help_app_ui",
       "//chromeos/components/local_search_service:local_search_service",
@@ -3162,13 +3168,7 @@ static_library("ui") {
     }
 
     if (use_x11) {
-      sources += [
-        "views/frame/native_browser_frame_factory_aurax11.cc",
-        "views/javascript_app_modal_dialog_views_x11.cc",
-        "views/javascript_app_modal_dialog_views_x11.h",
-        "views/javascript_app_modal_event_blocker_x11.cc",
-        "views/javascript_app_modal_event_blocker_x11.h",
-      ]
+      sources += [ "views/frame/native_browser_frame_factory_aurax11.cc" ]
       deps += [
         "//ui/events/devices",
         "//ui/events/devices/x11",
@@ -3575,6 +3575,8 @@ static_library("ui") {
       "views/location_bar/permission_chip.h",
       "views/location_bar/selected_keyword_view.cc",
       "views/location_bar/selected_keyword_view.h",
+      "views/location_bar/star_menu_model.cc",
+      "views/location_bar/star_menu_model.h",
       "views/location_bar/star_view.cc",
       "views/location_bar/star_view.h",
       "views/location_bar/zoom_bubble_view.cc",
@@ -3602,8 +3604,6 @@ static_library("ui") {
       "views/media_router/media_remoting_dialog_view.h",
       "views/media_router/media_router_dialog_controller_views.cc",
       "views/media_router/media_router_dialog_controller_views.h",
-      "views/media_router/media_router_views_ui.cc",
-      "views/media_router/media_router_views_ui.h",
       "views/media_router/presentation_receiver_window_factory.cc",
       "views/media_router/presentation_receiver_window_frame.cc",
       "views/media_router/presentation_receiver_window_frame.h",
@@ -4305,7 +4305,11 @@ static_library("ui") {
       deps += [ "//apps/ui/views" ]
     }
     if (use_aura) {
-      sources += [ "views/chrome_javascript_app_modal_view_factory_views.cc" ]
+      sources += [
+        "views/chrome_javascript_app_modal_view_factory_views.cc",
+        "views/javascript_app_modal_event_blocker_x11.cc",
+        "views/javascript_app_modal_event_blocker_x11.h",
+      ]
       deps += [ "//ui/wm/public" ]
     }
   }

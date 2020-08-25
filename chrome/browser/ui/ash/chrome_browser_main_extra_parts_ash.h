@@ -39,6 +39,7 @@ class SystemTrayClient;
 class TabletModePageBehavior;
 class VpnListForwarder;
 class WallpaperControllerClient;
+class MediaNotificationProviderImpl;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 class ExoParts;
@@ -70,6 +71,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
   std::unique_ptr<CastConfigControllerMediaRouter>
       cast_config_controller_media_router_;
+  std::unique_ptr<MediaNotificationProviderImpl> media_notification_provider_;
 
   // Initialized in PreProfileInit if ash config != MASH:
   std::unique_ptr<AshShellInit> ash_shell_init_;

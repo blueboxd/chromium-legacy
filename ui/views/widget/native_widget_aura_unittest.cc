@@ -316,23 +316,6 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
   DISALLOW_COPY_AND_ASSIGN(PropertyTestLayoutManager);
 };
 
-class PropertyTestWidgetDelegate : public WidgetDelegate {
- public:
-  explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {
-    SetHasWindowSizeControls(true);
-  }
-  ~PropertyTestWidgetDelegate() override = default;
-
- private:
-  // WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-
-  Widget* widget_;
-  DISALLOW_COPY_AND_ASSIGN(PropertyTestWidgetDelegate);
-};
-
 // Verifies the resize behavior when added to the layout manager.
 TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
@@ -341,7 +324,9 @@ TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = new PropertyTestWidgetDelegate(widget.get());
+  params.delegate = new WidgetDelegate();
+  params.delegate->SetOwnedByWidget(true);
+  params.delegate->SetHasWindowSizeControls(true);
   params.parent = nullptr;
   params.context = root_window();
   widget->Init(std::move(params));
@@ -677,9 +662,7 @@ TEST_F(NativeWidgetAuraTest, TransientChildModalWindowVisibility) {
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent.GetNativeWindow();
   child_params.delegate = new WidgetDelegate;
-  child_params.delegate->RegisterDeleteDelegateCallback(
-      base::BindOnce(&base::DeletePointer<WidgetDelegate>,
-                     base::Unretained(child_params.delegate)));
+  child_params.delegate->SetOwnedByWidget(true);
   child_params.delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
   child.Init(std::move(child_params));
   child.SetBounds(gfx::Rect(0, 0, 200, 200));

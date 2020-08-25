@@ -37,7 +37,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/test/test_ax_event_observer.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
@@ -962,10 +962,10 @@ TEST_F(ButtonTest, SetStateNotifiesObserver) {
 // Verifies setting the tooltip text will call NotifyAccessibilityEvent.
 TEST_F(ButtonTest, SetTooltipTextNotifiesAccessibilityEvent) {
   base::string16 test_tooltip_text = base::ASCIIToUTF16("Test Tooltip Text");
-  test::TestAXEventObserver observer;
-  EXPECT_EQ(0, observer.text_changed_event_count());
+  test::AXEventCounter counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
   button()->SetTooltipText(test_tooltip_text);
-  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
   EXPECT_EQ(test_tooltip_text, button()->GetTooltipText(gfx::Point()));
   ui::AXNodeData data;
   button()->GetAccessibleNodeData(&data);

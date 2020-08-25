@@ -636,6 +636,10 @@ bool IsViewBasedMultiprofileLoginEnabled() {
   return base::FeatureList::IsEnabled(kViewBasedMultiprofileLogin);
 }
 
+bool IsWifiSyncAndroidEnabled() {
+  return base::FeatureList::IsEnabled(kWifiSyncAndroid);
+}
+
 bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
 }

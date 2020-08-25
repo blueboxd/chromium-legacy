@@ -28,6 +28,7 @@ class ChromePrerenderManagerDelegate : public PrerenderManagerDelegate {
       override;
   bool IsPredictionEnabled(Origin origin) override;
   bool IsPredictionEnabled() override;
+  bool IsPredictionDisabledDueToNetwork(Origin origin) override;
   std::string GetReasonForDisablingPrediction() override;
 
  private:

@@ -102,6 +102,7 @@ void NativeViewHostAura::AttachNativeView() {
   original_transform_changed_ = false;
   AddClippingWindow();
   InstallMask();
+  ApplyRoundedCorners();
 }
 
 void NativeViewHostAura::SetParentAccessible(
@@ -158,6 +159,13 @@ void NativeViewHostAura::RemovedFromWidget() {
       host_->native_view()->parent()->RemoveChild(host_->native_view());
     RemoveClippingWindow();
   }
+}
+
+bool NativeViewHostAura::SetCornerRadii(
+    const gfx::RoundedCornersF& corner_radii) {
+  corner_radii_ = corner_radii;
+  ApplyRoundedCorners();
+  return true;
 }
 
 bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
@@ -325,6 +333,17 @@ void NativeViewHostAura::RemoveClippingWindow() {
   }
   if (clipping_window_->parent())
     clipping_window_->parent()->RemoveChild(clipping_window_.get());
+}
+
+void NativeViewHostAura::ApplyRoundedCorners() {
+  if (!host_->native_view())
+    return;
+
+  ui::Layer* layer = host_->native_view()->layer();
+  if (layer->rounded_corner_radii() != corner_radii_) {
+    layer->SetRoundedCornerRadius(corner_radii_);
+    layer->SetIsFastRoundedCorner(true);
+  }
 }
 
 void NativeViewHostAura::InstallMask() {

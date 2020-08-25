@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.paint_preview;
 
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
@@ -161,7 +162,10 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 () -> mMetricsHelper.onFirstPaint(activityCreationTimestampMs, wasBackgrounded),
                 () -> mHasUserInteraction = true,
                 ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
-                () -> removePaintPreview(ExitCause.COMPOSITOR_FAILURE),
+                (status) -> {
+                    mMetricsHelper.onCompositorFailure(status);
+                    removePaintPreview(ExitCause.COMPOSITOR_FAILURE);
+                },
                 /*ignoreInitialScrollOffset=*/false);
         mPlayerManager.setUserFrustrationCallback(this::showSnackbar);
         mOnDismissed = onDismissed;
@@ -177,6 +181,11 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mOnDismissed = null;
         mInitializing = false;
         if (mTab == null || mPlayerManager == null) return;
+
+        Point scrollPosition = mPlayerManager.getScrollPosition();
+        if (mTab.getWebContents() != null && scrollPosition != null) {
+            mTab.getWebContents().getEventForwarder().scrollTo(scrollPosition.x, scrollPosition.y);
+        }
 
         mTab.getTabViewManager().removeTabViewProvider(this);
         mPlayerManager.destroy();

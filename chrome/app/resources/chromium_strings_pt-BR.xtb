@@ -3,10 +3,12 @@
 <translationbundle lang="pt-BR">
 <translation id="1060499346270045814">{NUM_HOURS,plural, =1{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: 1 hora atrás.}one{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: {NUM_HOURS} hora atrás.}other{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: {NUM_HOURS} horas atrás.}}</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
+<translation id="107513968719897256">Para separar a navegação pessoal da navegação de <ph name="NEW_USER" />, crie um perfil novo no Chromium</translation>
 <translation id="1098170124587656448">O Chromium pode ajudar a proteger você de violações de dados, extensões maliciosas e muito mais</translation>
 <translation id="1104942323762546749">O Chromium quer exportar suas senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="113122355610423240">O Chromium é seu navegador padrão</translation>
 <translation id="1185134272377778587">Sobre o Chromium</translation>
+<translation id="1315551408014407711">Configure seu novo perfil do Chromium</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
@@ -42,6 +44,7 @@
 <translation id="2797461000988640326">{NUM_MINS,plural, =1{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: 1 minuto atrás.}one{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: {NUM_MINS} minuto atrás.}other{O Chromium verifica se há softwares indesejados uma vez por semana. Última verificação: {NUM_MINS} minutos atrás.}}</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
+<translation id="2853765747879685679">Perguntar ao abrir o Chromium</translation>
 <translation id="2885378588091291677">Gerenciador de tarefas</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
 <translation id="2977470724722393594">O Chromium está atualizado</translation>
@@ -100,9 +103,11 @@
 <translation id="4788777615168560705">Não foi possível verificar suas senhas. Tente novamente em 24 horas ou <ph name="BEGIN_LINK" />verifique-as na sua Conta do Google<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Esta opção usa o mesmo corretor ortográfico usado na Pesquisa Google. O texto digitado no navegador é enviado para o Google. É possível alterar esse comportamento nas configurações a qualquer momento.</translation>
 <translation id="4888717733111232871">Regra interna para que o Chromium permita tráfego mDNS.</translation>
+<translation id="4893632094755846570">Isso excluirá permanentemente os dados de navegação deste dispositivo. Para recuperá-los, faça login no Chromium como</translation>
 <translation id="4943838377383847465">O Chromium está em modo de segundo plano.</translation>
 <translation id="4987820182225656817">Convidados podem usar o Chromium sem deixar nada para trás.</translation>
 <translation id="4994636714258228724">Cadastrar-se no Chromium</translation>
+<translation id="5080135079858647714">Criar seu próprio perfil no Chromium?</translation>
 <translation id="5224391634244552924">Nenhuma senha salva. O Chromium poderá verificar suas senhas quando elas forem salvas.</translation>
 <translation id="5277894862589591112">Para que as alterações sejam aplicadas, reinicie o Chromium</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
@@ -159,6 +164,7 @@
 <translation id="6717134281241384636">Seu perfil não pode ser usado porque é de uma versão mais recente do Chromium. Alguns recursos podem não estar disponíveis. Especifique outro diretório de perfil ou use uma versão mais recente do Chromium.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="6734291798041940871">O Chromium já está instalado para todos os usuários do seu computador.</translation>
+<translation id="6762551859069255163">Use perfis diferentes no Chromium para separar a navegação pessoal da navegação de trabalho ou para pessoas diferentes que usam este dispositivo</translation>
 <translation id="6774082503108938489">Seu pai/mãe desativou "Permissões para sites, apps e extensões" no Chromium. Não é permitido ativar <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">O Chromium avisa se suas senhas forem comprometidas</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
@@ -244,5 +250,6 @@
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com o Windows XP ou Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Chromium OS.</translation>
+<translation id="965162752251293939">Quem está usando o Chromium?</translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 </translationbundle>

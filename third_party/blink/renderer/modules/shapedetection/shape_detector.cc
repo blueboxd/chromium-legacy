@@ -165,8 +165,10 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
     return promise;
   }
 
+  // The call to asLegacyBitmap() below forces a readback so getting SwSkImage
+  // here doesn't readback unnecessarily
   const sk_sp<SkImage> sk_image =
-      blink_image->PaintImageForCurrentFrame().GetSkImage();
+      blink_image->PaintImageForCurrentFrame().GetSwSkImage();
   DCHECK_EQ(img->naturalWidth(), static_cast<unsigned>(sk_image->width()));
   DCHECK_EQ(img->naturalHeight(), static_cast<unsigned>(sk_image->height()));
 

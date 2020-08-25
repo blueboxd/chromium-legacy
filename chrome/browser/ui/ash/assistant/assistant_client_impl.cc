@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -18,6 +19,8 @@
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/conversation_starters_client_impl.h"
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate_impl.h"
+#include "chromeos/components/bloom/public/cpp/bloom_controller.h"
+#include "chromeos/components/bloom/public/cpp/bloom_controller_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -84,6 +87,13 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
   if (chromeos::assistant::features::IsConversationStartersV2Enabled()) {
     conversation_starters_client_ =
         std::make_unique<ConversationStartersClientImpl>(profile_);
+  }
+
+  if (chromeos::assistant::features::IsBloomEnabled()) {
+    bloom_controller_ = chromeos::bloom::BloomControllerFactory::Create(
+        profile->GetURLLoaderFactory(),
+        IdentityManagerFactory::GetForProfile(profile),
+        ash::AssistantInteractionController::Get());
   }
 }
 

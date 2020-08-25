@@ -23,7 +23,7 @@ def _FindHistogramsXmlFiles():
           os.path.join(dirName, filename), PATH_TO_HISTOGRAMS_XML_DIR)
         file_list.append(
             os.path.join('tools/metrics/histograms/histograms_xml', file_path))
-  return file_list
+  return sorted(file_list)
 
 
 ENUMS_XML_RELATIVE = 'tools/metrics/histograms/enums.xml'

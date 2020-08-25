@@ -22,4 +22,24 @@ TEST(DefaultNetReferrerPolicyTest, FeatureOnly) {
             net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN);
 }
 
+TEST(DefaultReferrerPolicyTest, SetAndGetForceLegacy) {
+  EXPECT_FALSE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
+  blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_TRUE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
+}
+
+TEST(DefaultReferrerPolicyTest, ForceLegacyOnly) {
+  blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
+            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+}
+
+TEST(DefaultReferrerPolicyTest, FeatureAndForceLegacy) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kReducedReferrerGranularity);
+  blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
+            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+}
+
 }  // namespace blink

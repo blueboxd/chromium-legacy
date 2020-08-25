@@ -136,6 +136,7 @@ EyeDropperWin::EyeDropperWin(content::RenderFrameHost* frame,
       listener_(listener),
       view_position_handler_(std::make_unique<ViewPositionHandler>(this)),
       screen_capturer_(std::make_unique<ScreenCapturer>()) {
+  SetOwnedByWidget(false);
   SetPreferredSize(gfx::Size(100, 100));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -243,10 +244,6 @@ void EyeDropperWin::WindowClosing() {
   aura::client::GetCursorClient(GetWidget()->GetNativeWindow()->GetRootWindow())
       ->UnlockCursor();
   pre_dispatch_handler_.reset();
-}
-
-void EyeDropperWin::DeleteDelegate() {
-  // EyeDropperWin is not owned by its widget, so don't delete here.
 }
 
 ui::ModalType EyeDropperWin::GetModalType() const {

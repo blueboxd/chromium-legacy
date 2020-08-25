@@ -5,6 +5,7 @@
 #include <atk/atk.h>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -53,7 +54,7 @@ static KeySnoopFuncMap& GetActiveKeySnoopFunctions() {
   return *active_key_snoop_functions;
 }
 
-using AXPlatformNodeSet = std::unordered_set<ui::AXPlatformNodeAuraLinux*>;
+using AXPlatformNodeSet = std::set<ui::AXPlatformNodeAuraLinux*>;
 static AXPlatformNodeSet& GetNodesWithPostponedEvents() {
   static base::NoDestructor<AXPlatformNodeSet> nodes_with_postponed_events_list;
   return *nodes_with_postponed_events_list;

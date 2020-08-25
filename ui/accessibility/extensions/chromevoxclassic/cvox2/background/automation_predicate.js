@@ -86,7 +86,6 @@ AutomationPredicate.formField = function(node) {
     case 'details':
     case 'disclosureTriangle':
     case 'form':
-    case 'menuButton':
     case 'menuListPopup':
     case 'popUpButton':
     case 'radioButton':

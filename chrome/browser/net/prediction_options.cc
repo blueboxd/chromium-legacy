@@ -23,7 +23,13 @@ NetworkPredictionStatus CanPrefetchAndPrerender(
   switch (network_prediction_options) {
     case NETWORK_PREDICTION_ALWAYS:
     case NETWORK_PREDICTION_WIFI_ONLY:
+      if (base::FeatureList::IsEnabled(
+              features::kPredictivePrefetchingAllowedOnAllConnectionTypes) ||
+          !net::NetworkChangeNotifier::IsConnectionCellular(
+              net::NetworkChangeNotifier::GetConnectionType())) {
         return NetworkPredictionStatus::ENABLED;
+      }
+      return NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK;
     default:
       DCHECK_EQ(NETWORK_PREDICTION_NEVER, network_prediction_options);
       return NetworkPredictionStatus::DISABLED_ALWAYS;

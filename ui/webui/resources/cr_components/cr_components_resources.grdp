@@ -140,6 +140,18 @@
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_PSIM_FLOW_JS"
                file="cr_components/chromeos/cellular_setup/psim_flow_ui.js"
                type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_ESIM_FLOW_HTML"
+               file="cr_components/chromeos/cellular_setup/esim_flow_ui.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_ESIM_FLOW_JS"
+               file="cr_components/chromeos/cellular_setup/esim_flow_ui.js"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_TYPES_JS"
+               file="cr_components/chromeos/cellular_setup/cellular_types.js"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_TYPES_HTML"
+               file="cr_components/chromeos/cellular_setup/cellular_types.html"
+               type="chrome_html" />
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_MOJO_INTERFACE_PROVIDER_HTML"
                file="cr_components/chromeos/cellular_setup/mojo_interface_provider.html"
                type="chrome_html" />
@@ -181,6 +193,18 @@
                type="chrome_html" />
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_JS"
                file="cr_components/chromeos/cellular_setup/webview_post_util.js"
+               type="chrome_html" />
+     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_SELECTION_FLOW_HTML"
+               file="cr_components/chromeos/cellular_setup/setup_selection_flow.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_SELECTION_FLOW_JS"
+               file="cr_components/chromeos/cellular_setup/setup_selection_flow.js"
+               type="chrome_html" />
+     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SUBFLOW_BEHAVIOR_HTML"
+               file="cr_components/chromeos/cellular_setup/subflow_behavior.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SUBFLOW_BEHAVIOR_JS"
+               file="cr_components/chromeos/cellular_setup/subflow_behavior.js"
                type="chrome_html" />
 
     <!-- Shared between MultiDevice setup flow and OOBE. -->

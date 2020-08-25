@@ -149,6 +149,26 @@ const tests = [
     zoomField.dispatchEvent(new CustomEvent('input'));
   },
 
+  // Test that the overflow menu closes when an action is triggered.
+  function testOverflowMenuCloses() {
+    const toolbar = createToolbar();
+    const menu = toolbar.shadowRoot.querySelector('cr-action-menu');
+    chrome.test.assertFalse(menu.open);
+
+    const more = toolbar.shadowRoot.querySelector('#more');
+    const buttons = menu.querySelectorAll('.dropdown-item');
+    chrome.test.assertTrue(buttons.length > 0);
+
+    for (const button of buttons) {
+      // Open overflow menu.
+      more.click();
+      chrome.test.assertTrue(menu.open);
+      button.click();
+      chrome.test.assertFalse(menu.open);
+    }
+    chrome.test.succeed();
+  },
+
   function testSinglePageView() {
     const toolbar = createToolbar();
     const singlePageViewButton =

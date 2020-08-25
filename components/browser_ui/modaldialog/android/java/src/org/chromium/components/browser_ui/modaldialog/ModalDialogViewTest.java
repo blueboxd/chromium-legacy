@@ -159,7 +159,7 @@ public class ModalDialogViewTest extends DummyUiActivityTestCase {
     public void testTitleIcon() {
         // Verify that the icon set from builder is displayed.
         PropertyModel model = createModel(mModelBuilder.with(
-                ModalDialogProperties.TITLE_ICON, getActivity(), R.drawable.ic_add));
+                ModalDialogProperties.TITLE_ICON, getActivity(), R.drawable.ic_business));
         onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
                 .check(matches(not(isDisplayed())));
         onView(allOf(withId(R.id.title_icon), withParent(withId(R.id.title_container))))

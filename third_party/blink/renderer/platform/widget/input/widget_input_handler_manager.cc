@@ -708,11 +708,15 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
                                     attribution, std::move(handled_event));
     return;
   }
+
   if (callback) {
     std::move(callback).Run(
         mojom::blink::InputEventResultSource::kCompositorThread,
         event->latency_info(), ack_state,
-        ToDidOverscrollParams(overscroll_params.get()), nullptr);
+        ToDidOverscrollParams(overscroll_params.get()),
+        allowed_touch_action_ ? mojom::blink::TouchActionOptional::New(
+                                    allowed_touch_action_.value())
+                              : nullptr);
   }
 }
 

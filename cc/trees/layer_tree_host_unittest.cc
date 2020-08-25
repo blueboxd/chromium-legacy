@@ -4106,8 +4106,9 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
   OnDrawLayerTreeFrameSink* layer_tree_frame_sink_ = nullptr;
 };
 
-MULTI_THREAD_TEST_F(
-    LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
+// TODO(crbug.com/1121690): Test is flaky.
+// MULTI_THREAD_TEST_F(
+//    LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
 
 class LayerTreeHostTestSynchronousCompositorActivateWithoutDraw
     : public LayerTreeHostTest {

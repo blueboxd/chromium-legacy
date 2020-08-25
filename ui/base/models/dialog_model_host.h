@@ -14,9 +14,9 @@ class DialogModel;
 // Platform-agnostic interface for toolkit integrations.
 class COMPONENT_EXPORT(UI_BASE) DialogModelHost {
  public:
-  // TODO(pbos): Try to get Close semantically synchronous (guarantee
-  // synchronous destruction of model), so it cannot be observed as
-  // asynchronous even if GetWidget()->Close() under Views is async.
+  // Immediately closes the DialogModelHost. Calling Close() destroys the
+  // DialogModel and no subsequent calls should be made into either DialogModel
+  // or DialogModelHost.
   virtual void Close() = 0;
 
   // Selects all text of a textfield.

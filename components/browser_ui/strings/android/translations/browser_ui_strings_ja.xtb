@@ -26,11 +26,13 @@
 <translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
 <translation id="1743802530341753419">サイトがデバイスに接続する前に確認する（推奨）</translation>
+<translation id="1779089405699405702">画像デコーダー</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" /> に AR の使用を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="1887786770086287077">位置情報へのアクセスがデバイスでオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1984937141057606926">サードパーティを除いて許可する</translation>
+<translation id="1989112275319619282">閲覧</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
 <translation id="2025115093177348061">拡張現実（AR）</translation>
 <translation id="2030769033451695672">タップして <ph name="URL_OF_THE_CURRENT_TAB" /> に戻る</translation>
@@ -69,6 +71,7 @@
 <translation id="2968755619301702150">証明書ビューア</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> のデータをすべて削除します。</translation>
 <translation id="301521992641321250">自動ブロックされました</translation>
+<translation id="3114012059975132928">動画プレーヤー</translation>
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
@@ -81,9 +84,11 @@
 <translation id="3538390592868664640">サイトによる周囲の 3D マップの作成またはカメラ位置の追跡をブロックします</translation>
 <translation id="3586500876634962664">カメラとマイクの使用</translation>
 <translation id="358794129225322306">複数ファイルの自動ダウンロードをサイトに許可します。</translation>
+<translation id="3594780231884063836">動画をミュート</translation>
 <translation id="3596414637720633074">シークレット モードでサードパーティの Cookie をブロックする</translation>
 <translation id="3600792891314830896">音声が再生されるサイトをミュートする</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
+<translation id="3763247130972274048">動画の左または右をダブルタップすると 10 秒スキップします</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3955193568934677022">保護されたコンテンツの再生をサイトに許可する（推奨）</translation>
@@ -129,6 +134,7 @@
 <translation id="5354152178998424783">サイトにより保存された <ph name="DATASIZE" /> のデータと Cookie が削除されます。</translation>
 <translation id="5384883051496921101">このサイトの情報がシークレット モードの外部のアプリに共有されようとしています。</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" /> のうち <ph name="ELAPSED_TIME" /> 経過しました。</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
 <translation id="5505264765875738116">通知を送信するかどうかの確認をサイトに許可しない</translation>
 <translation id="5516455585884385570">通知設定を開く</translation>
@@ -143,6 +149,7 @@
 <translation id="5719847187258001597"><ph name="ORIGIN" /> またはホーム画面の同アプリにより保存されたすべてのデータおよび Cookie が削除されます。</translation>
 <translation id="5804241973901381774">権限</translation>
 <translation id="5860033963881614850">オフ</translation>
+<translation id="5876056640971328065">動画を一時停止</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5922853908706496913">画面を共有しています</translation>
 <translation id="5939518447894949180">リセット</translation>
@@ -161,6 +168,7 @@
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="6320088164292336938">バイブレーション</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
+<translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="6423924377271166037">Cookie を消去</translation>
 <translation id="6439114592976064011">サイトによるバーチャル リアリティ デバイスとデータの使用をブロックする</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -192,6 +200,7 @@
 <translation id="7128222689758636196">現在の検索エンジンに対して許可</translation>
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="723171743924126238">画像を選択</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7302486331832100261">通知はデフォルトでブロックされています。許可するには [詳細] をタップしてください。</translation>
@@ -211,6 +220,7 @@
 <translation id="7817023149356982970">このサイトからログアウトします。</translation>
 <translation id="7828557259026017104">Cookie は、アクセスしたサイトによって作成されるファイルです。サイトではこのファイルを使用して各ユーザーが行なった設定が記憶されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまり現在ウェブページに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
 <translation id="7835852323729233924">再生中のメディア</translation>
+<translation id="783819812427904514">動画のミュートを解除</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="7846621471902887024">すべてのサイトからログアウトします。</translation>
 <translation id="7882806643839505685">特定のサイトに対して音声の再生を許可します。</translation>
@@ -218,6 +228,7 @@
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を削除して、このウェブサイトに指定したすべての権限をリセットしてもよろしいですか？</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
+<translation id="8067883171444229417">動画を再生します</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
 <translation id="8116925261070264013">ミュート中</translation>
@@ -239,6 +250,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 個の Cookie が使用中です}other{# 個の Cookie が使用中です}}</translation>
 <translation id="8463851957836045671">サイトは高速です</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>
+<translation id="8525306231823319788">全画面表示</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8609465669617005112">上に移動</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
@@ -247,9 +259,11 @@
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8737217482364735741"><ph name="ORIGIN" /> により保存されたすべてのデータと Cookie が削除されます。</translation>
+<translation id="8751914237388039244">画像を選択</translation>
 <translation id="8801436777607969138">特定のサイトで JavaScript をブロックします。</translation>
 <translation id="8816026460808729765">サイトによるセンサーへのアクセスをブロックする</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">このデバイスでは NFC がオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="8929372349074745002">このサイトは、ほとんどの環境ですばやく表示され応答しています</translation>
 <translation id="8941729603749328384">www.example.com</translation>

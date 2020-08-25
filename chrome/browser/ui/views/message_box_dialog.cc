@@ -180,10 +180,6 @@ base::string16 MessageBoxDialog::GetWindowTitle() const {
   return window_title_;
 }
 
-void MessageBoxDialog::DeleteDelegate() {
-  delete this;
-}
-
 ui::ModalType MessageBoxDialog::GetModalType() const {
   return is_system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW;
 }
@@ -228,6 +224,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
   SetCloseCallback(base::BindOnce(&MessageBoxDialog::Done,
                                   base::Unretained(this),
                                   chrome::MESSAGE_BOX_RESULT_NO));
+  SetOwnedByWidget(true);
 
   base::string16 ok_text = yes_text;
   if (ok_text.empty()) {

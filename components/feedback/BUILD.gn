@@ -61,6 +61,7 @@ source_set("unit_tests") {
   deps = [
     ":feedback",
     "//base",
+    "//build:lacros_buildflags",
     "//components/feedback/proto",
     "//components/keyed_service/core",
     "//components/prefs:test_support",

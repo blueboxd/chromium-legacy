@@ -40,7 +40,8 @@
 
     <settings-toggle-button id="enableStylusToolsToggle"
         pref="{{prefs.settings.enable_stylus_tools}}"
-        label="$i18n{stylusEnableStylusTools}">
+        label="$i18n{stylusEnableStylusTools}"
+        deep-link-focus-id$="[[Setting.kStylusToolsInShelf]]">
     </settings-toggle-button>
 
     <template is="dom-if" if="[[hasInternalStylus_]]">
@@ -71,7 +72,8 @@
       <select id="selectApp" class="md-select"
           on-change="onSelectedAppChanged_"
           aria-labelledby="stylusNoteTakingAppLabel"
-          hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]">
+          hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]"
+          deep-link-focus-id$="[[Setting.kStylusNoteTakingApp]]">
         <template is="dom-repeat" items="[[appChoices_]]">
           <option value="[[item.value]]" selected="[[item.preferred]]">
             [[item.name]]
@@ -106,7 +108,8 @@
               aria-labelledby="lock-screen-toggle-label"
               disabled="[[disallowedOnLockScreenByPolicy_(selectedApp_)]]"
               checked="[[lockScreenSupportEnabled_(selectedApp_)]]"
-              on-change="toggleLockScreenSupport_">
+              on-change="toggleLockScreenSupport_"
+              deep-link-focus-id$="[[Setting.kStylusNoteTakingFromLockScreen]]">
           </cr-toggle>
         </div>
 
@@ -114,7 +117,8 @@
           <settings-toggle-button id="keep-last-note-on-lock-screen-toggle"
               class="hr"
               pref="{{prefs.settings.restore_last_lock_screen_note}}"
-              label="$i18n{stylusNoteTakingAppKeepsLastNoteOnLockScreen}">
+              label="$i18n{stylusNoteTakingAppKeepsLastNoteOnLockScreen}"
+              deep-link-focus-id$="[[Setting.kStylusLatestNoteOnLockScreen]]">
           </settings-toggle-button>
         </template>
       </div>

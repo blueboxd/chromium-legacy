@@ -8,7 +8,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
-#include "content/public/common/referrer.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 
 namespace policy {
 
@@ -24,7 +24,7 @@ void ReferrerPolicyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       policies.GetValue(key::kForceLegacyDefaultReferrerPolicy);
   if (value) {
     DCHECK(value->is_bool());
-    content::Referrer::SetForceLegacyDefaultReferrerPolicy(value->GetBool());
+    blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(value->GetBool());
   }
 }
 

@@ -429,7 +429,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
                "has handlers", has_handlers);
   // The has_touch_event_handler_ is default to false which is why we have the
   // "&&" condition here, to ensure that touch actions will be set if there is
-  // no touch event handler on a page.
+  // no touch event consumers.
   if (has_handlers && has_touch_event_handler_ == has_handlers)
     return;
   has_touch_event_handler_ = has_handlers;

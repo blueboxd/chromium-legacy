@@ -1263,9 +1263,7 @@ TEST_F('ChromeVoxBackgroundTest', 'InPageLinks', function() {
       });
 });
 
-// Timeout on ChromeOS with LayoutNG & Viz.
-// https://crbug.com/959261
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ListItem', function() {
+TEST_F('ChromeVoxBackgroundTest', 'ListItem', function() {
   this.resetContextualOutput();
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(

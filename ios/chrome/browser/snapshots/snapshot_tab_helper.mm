@@ -11,6 +11,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -101,7 +102,6 @@ UIImage* SnapshotTabHelper::GenerateSnapshotWithoutOverlays() {
 }
 
 void SnapshotTabHelper::RemoveSnapshot() {
-  DCHECK(web_state_);
   [snapshot_generator_ removeSnapshot];
 }
 
@@ -109,13 +109,24 @@ void SnapshotTabHelper::IgnoreNextLoad() {
   ignore_next_load_ = true;
 }
 
+void SnapshotTabHelper::WillBeSavedGreyWhenBackgrounding() {
+  [snapshot_generator_.snapshotCache willBeSavedGreyWhenBackgrounding:tab_id_];
+}
+
+void SnapshotTabHelper::SaveGreyInBackground() {
+  [snapshot_generator_.snapshotCache saveGreyInBackgroundForSnapshotID:tab_id_];
+}
+
 SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state, NSString* tab_id)
     : web_state_(web_state),
+      tab_id_([tab_id copy]),
       web_state_observer_(this),
       infobar_observer_(this),
       weak_ptr_factory_(this) {
+  DCHECK(web_state_);
+  DCHECK(tab_id_.length > 0);
   snapshot_generator_ = [[SnapshotGenerator alloc] initWithWebState:web_state_
-                                                              tabID:tab_id];
+                                                              tabID:tab_id_];
   web_state_observer_.Add(web_state_);
 
   // Supports missing InfoBarManager to make testing easier.
@@ -180,6 +191,7 @@ void SnapshotTabHelper::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
   web_state_observer_.Remove(web_state);
   web_state_ = nullptr;
+  tab_id_ = nil;
 }
 
 void SnapshotTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {

@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -736,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 // These tests assume a default policy of no-referrer-when-downgrade.
 struct ReferrerOverrideParams {
   base::Optional<base::Feature> feature_to_enable;
-  // If true, calls content::Referrer::SetForceLegacyDefaultReferrerPolicy()
+  // If true, calls blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy()
   // to pin the default policy to no-referrer-when-downgrade.
   bool force_no_referrer_when_downgrade_default;
   network::mojom::ReferrerPolicy baseline_policy;
@@ -832,7 +833,7 @@ class ReferrerOverrideTest
   ReferrerOverrideTest() {
     if (GetParam().feature_to_enable)
       scoped_feature_list_.InitAndEnableFeature(*GetParam().feature_to_enable);
-    content::Referrer::SetForceLegacyDefaultReferrerPolicy(
+    blink::ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(
         GetParam().force_no_referrer_when_downgrade_default);
   }
 

@@ -634,7 +634,7 @@ TEST_F(BubbleDialogDelegateClientLayerTest, WithClientLayerTest) {
   bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
 
   WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble_delegate.release()));
+      BubbleDialogDelegateView::CreateBubble(std::move(bubble_delegate)));
 
   EXPECT_NE(nullptr, bubble_widget->client_view()->layer());
 }
@@ -648,7 +648,7 @@ TEST_F(BubbleDialogDelegateClientLayerTest, WithoutClientLayerTest) {
   bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
 
   WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble_delegate.release()));
+      BubbleDialogDelegateView::CreateBubble(std::move(bubble_delegate)));
 
   EXPECT_EQ(nullptr, bubble_widget->client_view()->layer());
 }

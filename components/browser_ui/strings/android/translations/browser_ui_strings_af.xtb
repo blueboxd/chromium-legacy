@@ -26,11 +26,13 @@
 <translation id="169515064810179024">Blokkeer werwe om toegang tot bewegingsensors te kry</translation>
 <translation id="1717218214683051432">Bewegingsensors</translation>
 <translation id="1743802530341753419">Vra voordat werwe toegelaat word om aan 'n toestel te koppel (aanbeveel)</translation>
+<translation id="1779089405699405702">Prentdekodeerder</translation>
 <translation id="1818308510395330587">Om <ph name="APP_NAME" /> AR te laat gebruik, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="1887786770086287077">Liggingtoegang is af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="1919345977826869612">Advertensies</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1984937141057606926">Toegelaat, buiten van derde party af</translation>
+<translation id="1989112275319619282">Blaai deur</translation>
 <translation id="1994173015038366702">Werf-URL</translation>
 <translation id="2025115093177348061">Aangevulde realiteit</translation>
 <translation id="2030769033451695672">Tik om na <ph name="URL_OF_THE_CURRENT_TAB" /> terug te keer</translation>
@@ -69,6 +71,7 @@
 <translation id="2968755619301702150">Sertifikaatbekyker</translation>
 <translation id="300526633675317032">Dit sal al <ph name="SIZE_IN_KB" /> se webwerfberging uitvee.</translation>
 <translation id="301521992641321250">Outomaties geblokkeer</translation>
+<translation id="3114012059975132928">Videospeler</translation>
 <translation id="3115898365077584848">Wys inligting</translation>
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gestoorde data</translation>
@@ -81,9 +84,11 @@
 <translation id="3538390592868664640">Verhoed werwe om 'n 3D-kaart van jou omgewing te skep of kameraposisie na te spoor</translation>
 <translation id="3586500876634962664">Kamera- en mikrofoongebruik</translation>
 <translation id="358794129225322306">Laat 'n werf toe om outomaties veelvuldige lêers af te laai</translation>
+<translation id="3594780231884063836">Demp video</translation>
 <translation id="3596414637720633074">Blokkeer derdepartywebkoekies in Incognito</translation>
 <translation id="3600792891314830896">Demp werwe wat klank speel</translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
+<translation id="3763247130972274048">Dubbeltik links of regs op video om 10 s. oor te slaan</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3859306556332390985">Soek vorentoe</translation>
 <translation id="3955193568934677022">Laat werwe toe om beskermde inhoud te speel (aanbeveel)</translation>
@@ -129,6 +134,7 @@
 <translation id="5354152178998424783">Dit sal <ph name="DATASIZE" /> se data en webkoekies uitvee wat deur werwe geberg is.</translation>
 <translation id="5384883051496921101">Hierdie werf is op die punt om inligting met 'n program buite incognitomodus te deel.</translation>
 <translation id="5391532827096253100">Jou verbinding aan hierdie werf is nie veilig nie. Werfinligting</translation>
+<translation id="5489227211564503167">Tyd verstreke is <ph name="ELAPSED_TIME" /> van <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blokkeer advertensies op werwe wat indringerige of misleidende advertensies wys</translation>
 <translation id="5505264765875738116">Werwe kan nie vra om kennisgewings te stuur nie</translation>
 <translation id="5516455585884385570">Maak kennisgewinginstellings oop</translation>
@@ -143,6 +149,7 @@
 <translation id="5719847187258001597">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> of deur sy program op jou tuisskerm geberg is.</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
 <translation id="5860033963881614850">Af</translation>
+<translation id="5876056640971328065">Onderbreek video</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5922853908706496913">Deel tans jou skerm</translation>
 <translation id="5939518447894949180">Stel terug</translation>
@@ -161,6 +168,7 @@
 <translation id="6295158916970320988">Alle werwe</translation>
 <translation id="6320088164292336938">Vibreer</translation>
 <translation id="6388207532828177975">Vee uit en stel terug</translation>
+<translation id="6398765197997659313">Gaan by volskerm uit</translation>
 <translation id="6423924377271166037">Vee webkoekies uit</translation>
 <translation id="6439114592976064011">Keer werwe om jou virtuelerealiteittoestel en -data te gebruik</translation>
 <translation id="6447842834002726250">Webkoekies</translation>
@@ -192,6 +200,7 @@
 <translation id="7128222689758636196">Laat vir huidige soekenjin toe</translation>
 <translation id="7141896414559753902">Verhinder werwe om opspringers en herleidings te wys (aanbeveel)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="723171743924126238">Kies prente</translation>
 <translation id="7243308994586599757">Opsies is naby die onderkant van die skerm beskikbaar</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> gekies</translation>
 <translation id="7302486331832100261">Jy blokkeer gewoonlik kennisgewings. Tik op Besonderhede om toe te laat.</translation>
@@ -211,6 +220,7 @@
 <translation id="7817023149356982970">Jy sal op hierdie werf afgemeld word.</translation>
 <translation id="7828557259026017104">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Werwe kan hulle gebruik om jou voorkeure te onthou. Derdepartywebkoekies word deur ander werwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webbladsy wat jy besoek.</translation>
 <translation id="7835852323729233924">Speel tans media</translation>
+<translation id="783819812427904514">Ontdemp video</translation>
 <translation id="7846076177841592234">Kanselleer keuse</translation>
 <translation id="7846621471902887024">Jy sal op alle werwe afgemeld word.</translation>
 <translation id="7882806643839505685">Laat klank toe vir 'n spesifieke werf.</translation>
@@ -218,6 +228,7 @@
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>
 <translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
 <translation id="802154636333426148">Kon nie aflaai nie</translation>
+<translation id="8067883171444229417">Speel video</translation>
 <translation id="8068648041423924542">Kan nie sertifikaat kies nie.</translation>
 <translation id="8087000398470557479">Hierdie inhoud kom van <ph name="DOMAIN_NAME" /> af, afgelewer deur Google.</translation>
 <translation id="8116925261070264013">Gedemp</translation>
@@ -239,6 +250,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 webkoekie word tans gebruik}other{# webkoekies word tans gebruik}}</translation>
 <translation id="8463851957836045671">Werf is vinnig</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>
+<translation id="8525306231823319788">Volskerm</translation>
 <translation id="857943718398505171">Toegelaat (aanbeveel)</translation>
 <translation id="8609465669617005112">Skuif op</translation>
 <translation id="8676374126336081632">Vee invoer uit</translation>
@@ -247,9 +259,11 @@
 <translation id="8725066075913043281">Probeer weer</translation>
 <translation id="8730621377337864115">Gedoen</translation>
 <translation id="8737217482364735741">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> geberg is.</translation>
+<translation id="8751914237388039244">Kies 'n prent</translation>
 <translation id="8801436777607969138">Blokkeer JavaScript vir 'n spesifieke werf.</translation>
 <translation id="8816026460808729765">Blokkeer werwe om toegang tot sensors kry</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC is af vir hierdie toestel. Skakel dit aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Hierdie werf maak vinnig oop en reageer vinnig vir die meeste mense</translation>
 <translation id="8941729603749328384">www.voorbeeld.com</translation>

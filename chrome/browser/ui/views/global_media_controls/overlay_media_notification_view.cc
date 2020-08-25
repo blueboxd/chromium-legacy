@@ -52,6 +52,7 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
   explicit OverlayMediaNotificationWidgetDelegate(
       OverlayMediaNotificationView* widget)
       : widget_(widget) {
+    SetOwnedByWidget(true);
     DCHECK(widget_);
   }
   OverlayMediaNotificationWidgetDelegate(
@@ -68,7 +69,6 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
       views::Widget* widget) override {
     return std::make_unique<OverlayMediaNotificationFrameView>();
   }
-  void DeleteDelegate() override { delete this; }
 
  private:
   // Owns OverlayMediaNotificationWidgetDelegate.

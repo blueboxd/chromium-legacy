@@ -36,6 +36,7 @@
 #include "content/test/mock_widget_input_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -409,8 +410,12 @@ class InputRouterImplTestBase : public testing::Test {
 
   bool HasPendingEvents() const { return input_router_->HasPendingEvents(); }
 
-  void OnHasTouchEventHandlers(bool has_handlers) {
-    input_router_->OnHasTouchEventHandlers(has_handlers);
+  bool HasTouchEventHandlers(bool has_handlers) { return has_handlers; }
+  bool HasHitTestableScrollbar(bool has_scrollbar) { return has_scrollbar; }
+
+  void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) {
+    input_router_->OnHasTouchEventConsumers(std::move(consumers));
   }
 
   void CancelTouchTimeout() {
@@ -495,7 +500,9 @@ class InputRouterImplTestBase : public testing::Test {
       blink::mojom::InputEventResultState ack_state,
       base::Optional<cc::TouchAction> expected_touch_action,
       base::Optional<cc::TouchAction> expected_allowed_touch_action) {
-    input_router_->OnHasTouchEventHandlers(true);
+    auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+        HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+    input_router_->OnHasTouchEventConsumers(std::move(touch_event_consumers));
     EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
     PressTouchPoint(1, 1);
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
@@ -780,7 +787,9 @@ TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
 
 // Tests that touch-events are sent properly.
 TEST_F(InputRouterImplTest, TouchEventQueue) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
@@ -821,7 +830,9 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 // Tests that the touch-queue is emptied after a page stops listening for touch
 // events and the outstanding ack is received.
 TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_TRUE(TouchEventQueueEmpty());
 
@@ -837,7 +848,9 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
 
   // The page stops listening for touch-events. Note that flushing is deferred
   // until the outstanding ack is received.
-  OnHasTouchEventHandlers(false);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_FALSE(TouchEventQueueEmpty());
 
@@ -916,7 +929,9 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 }
 
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   // Only acks for TouchCancel should always be ignored.
   ASSERT_TRUE(ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::Type::kTouchStart)));
@@ -1304,7 +1319,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 
   // TouchAction::kNone (and no other touch-action) should disable the timeout.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   DispatchedMessages touch_press_event2 = GetAndResetDispatchedMessages();
@@ -1355,7 +1372,9 @@ TEST_F(InputRouterImplTest,
   const int kMobileTimeoutMs = 2;
   SetUpForTouchAckTimeoutTest(kDesktopTimeoutMs, kMobileTimeoutMs);
   ASSERT_TRUE(TouchEventTimeoutEnabled());
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Start a touch sequence.
   PressTouchPoint(1, 1);
@@ -1415,7 +1434,9 @@ TEST_F(InputRouterImplTest,
 // Test that TouchActionFilter::ResetTouchAction is called before the
 // first touch event for a touch sequence reaches the renderer.
 TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -1501,7 +1522,9 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 // Test that TouchActionFilter::ResetTouchAction is called when a new touch
 // sequence has no consumer.
 TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -1576,7 +1599,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
 // handler is removed.
 TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   // Touch sequence with touch handler.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
@@ -1614,7 +1639,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
   // Sequence without a touch handler. Note that in this case, the view may not
   // necessarily forward touches to the router (as no touch handler exists).
-  OnHasTouchEventHandlers(false);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Ensure touch action has been set to auto, as the touch handler has been
   // removed.
@@ -1632,7 +1659,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
 // Tests that async touch-moves are ack'd from the browser side.
 TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
@@ -1714,7 +1743,9 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 // Test that the double tap gesture depends on the touch action of the first
 // tap.
 TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Sequence 1.
   PressTouchPoint(1, 1);
@@ -2115,7 +2146,9 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
 // out. See https://crbug.com/581231 for details.
 TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   // Touch sequence with touch handler.
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   PressTouchPoint(1, 1);
   SendTouchEvent();
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
@@ -2150,7 +2183,9 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
 }
 
 TEST_F(InputRouterImplTest, TouchActionInCallback) {
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // Send a touchstart
   PressTouchPoint(1, 1);
@@ -2175,7 +2210,9 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
 TEST_F(InputRouterImplTest,
        DISABLED_TimeoutMonitorStopWithMainThreadTouchAction) {
   SetUpForTouchAckTimeoutTest(1, 1);
-  OnHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  OnHasTouchEventConsumers(std::move(touch_event_consumers));
   StopTimeoutMonitorTest();
 }
 

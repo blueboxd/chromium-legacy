@@ -40,9 +40,7 @@ class PixelTestPage(object):
       url,
       name,
       test_rect,
-      tolerance=2,
       browser_args=None,
-      expected_colors=None,
       gpu_process_disabled=False,
       optional_action=None,
       restart_browser_after_test=False,
@@ -54,15 +52,7 @@ class PixelTestPage(object):
     self.url = url
     self.name = name
     self.test_rect = test_rect
-    # The tolerance when comparing against the reference image.
-    self.tolerance = tolerance
     self.browser_args = browser_args
-    # The expected colors can be specified as a list of dictionaries,
-    # in which case these specific pixels will be sampled instead of
-    # comparing the entire image snapshot. The format is only defined
-    # by contract with _CompareScreenshotSamples in
-    # cloud_storage_integration_test_base.py.
-    self.expected_colors = expected_colors
     # Only a couple of tests run with the GPU process completely
     # disabled. To prevent regressions, only allow the GPU information
     # to be incomplete in these cases.
@@ -99,14 +89,13 @@ class PixelTestPage(object):
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(self.url, self.name + suffix, self.test_rect,
-                         self.tolerance, browser_args, self.expected_colors)
+                         browser_args)
 
   def CopyWithNewBrowserArgsAndPrefix(self, browser_args, prefix):
     # Assuming the test name is 'Pixel'.
     split = self.name.split('_', 1)
     return PixelTestPage(self.url, split[0] + '_' + prefix + split[1],
-                         self.test_rect, self.tolerance, browser_args,
-                         self.expected_colors)
+                         self.test_rect, browser_args)
 
 
 def CopyPagesWithNewBrowserArgsAndSuffix(pages, browser_args, suffix):
@@ -119,44 +108,6 @@ def CopyPagesWithNewBrowserArgsAndPrefix(pages, browser_args, prefix):
   return [
       p.CopyWithNewBrowserArgsAndPrefix(browser_args, prefix) for p in pages
   ]
-
-
-# TODO(kbr): consider refactoring this into pixel_integration_test.py.
-SCALE_FACTOR_OVERRIDES = {
-    "comment":
-    "scale factor overrides",
-    "scale_factor_overrides": [
-        {
-            "device_type": "Nexus 5",
-            "scale_factor": 1.105
-        },
-        {
-            "device_type": "Nexus 5X",
-            "scale_factor": 1.105
-        },
-        {
-            "device_type": "Nexus 6",
-            "scale_factor": 1.47436
-        },
-        {
-            "device_type": "Nexus 6P",
-            "scale_factor": 1.472
-        },
-        {
-            "device_type": "Nexus 9",
-            "scale_factor": 1.566
-        },
-        {
-            "comment": "NVIDIA Shield",
-            "device_type": "sb_na_wf",
-            "scale_factor": 1.226
-        },
-        {
-            "device_type": "Pixel 2",
-            "scale_factor": 1.1067
-        },
-    ]
-}
 
 
 class PixelTestPages(object):
@@ -639,7 +590,6 @@ class PixelTestPages(object):
         PixelTestPage('filter_effects.html',
                       base_name + '_CSSFilterEffects_NoOverlays',
                       test_rect=[0, 0, 300, 300],
-                      tolerance=10,
                       browser_args=no_overlays_args,
                       matching_algorithm=filter_effect_fuzzy_algo),
 

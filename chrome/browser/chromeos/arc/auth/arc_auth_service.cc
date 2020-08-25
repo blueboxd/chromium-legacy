@@ -129,9 +129,6 @@ mojom::ArcSignInResultPtr ConvertArcSignInStatusToArcSignInResult(
       MAP_GMS_ERROR(GMS_SIGN_IN_INTERNAL_ERROR);
 #undef MAP_GMS_ERROR
 
-    case mojom::ArcSignInStatus::DEPRECATED_CLOUD_PROVISION_FLOW_FAILED:
-    case mojom::ArcSignInStatus::DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
-    case mojom::ArcSignInStatus::DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT:
     default:
       NOTREACHED() << "unknown sign result";
       break;
@@ -538,27 +535,6 @@ void ArcAuthService::ReportSupervisionChangeStatus(
     case mojom::SupervisionChangeStatus::INVALID_SUPERVISION_STATE:
       NOTREACHED() << "Invalid status of child transition: " << status;
   }
-}
-
-void ArcAuthService::OnAccountInfoReadyDeprecated(
-    mojom::ArcSignInStatus status,
-    mojom::AccountInfoPtr account_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
-                                               OnAccountInfoReadyDeprecated);
-  if (!instance)
-    return;
-
-  instance->OnAccountInfoReadyDeprecated(std::move(account_info), status);
-}
-
-void ArcAuthService::RequestAccountInfoDeprecated(bool initial_signin) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  FetchPrimaryAccountInfo(
-      initial_signin,
-      base::BindOnce(&ArcAuthService::OnAccountInfoReadyDeprecated,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAuthService::RequestPrimaryAccountInfo(

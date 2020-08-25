@@ -156,6 +156,7 @@ Los sitios web no pueden usar cookies para ver tu actividad de navegación en ot
 <translation id="2712127207578915686">No se puede abrir archivo</translation>
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
+<translation id="2764831210418622012">justo ahora</translation>
 <translation id="2773292004659987824">Búsqueda en modo de incógnito</translation>
 <translation id="277771892408211951">Seleccionar idioma</translation>
 <translation id="2780046210906776326">No hay cuentas de correo</translation>
@@ -301,6 +302,7 @@ Mientras estás en modo de incógnito, los sitios web no pueden usar cookies par
 <translation id="4476574785019001431">Configuración</translation>
 <translation id="4496373720959965247">Añade pestañas y cambia de una página a otra</translation>
 <translation id="4502566650163919158">Comprobar ahora</translation>
+<translation id="4505980578794259603">Última comprobación: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Cierra el inicio de sesión en la promoción</translation>
 <translation id="4526249700380860531">Consulta y gestiona las contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prueba a iniciar sesión de nuevo.</translation>
@@ -482,6 +484,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="6453018583485750254">Comprobación no ejecutada.</translation>
 <translation id="6464071786529933911">Abrir en pestaña incógnito</translation>
 <translation id="6464397691496239022">Los sitios web pueden usar cookies para mejorar tu experiencia de navegación; por ejemplo, para mantener tu sesión iniciada o recordar los artículos de tu carrito de la compra.
 

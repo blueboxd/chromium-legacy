@@ -36,7 +36,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
 
     PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, GURL url,
             String directoryKey, @NonNull CompositorListener compositorListener,
-            Runnable compositorErrorCallback) {
+            Callback<Integer> compositorErrorCallback) {
         mCompositorListener = compositorListener;
         if (service != null && service.getNativeService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(this,
@@ -130,7 +130,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @NativeMethods
     interface Natives {
         long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
-                String urlSpec, String directoryKey, Runnable compositorErrorCallback);
+                String urlSpec, String directoryKey, Callback<Integer> compositorErrorCallback);
         void destroy(long nativePlayerCompositorDelegateAndroid);
         void requestBitmap(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,

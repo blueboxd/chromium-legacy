@@ -96,10 +96,6 @@ class DragWindowController::DragWindowDetails {
                                       window->parent(), &bounds);
     window->SetBounds(bounds);
     window->SetTransform(original_window->transform());
-    window->layer()->SetClipRect(original_window->layer()->clip_rect());
-    window->layer()->SetRoundedCornerRadius(
-        original_window->layer()->rounded_corner_radii());
-    window->layer()->SetIsFastRoundedCorner(true);
     widget_->SetOpacity(opacity);
   }
 

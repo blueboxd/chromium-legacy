@@ -120,7 +120,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                       const GURL& frame_origin,
                       const url::Origin& frame_security_origin,
                       PaymentRequestSpec* spec,
-                      Delegate* delegate,
+                      base::WeakPtr<Delegate> delegate,
                       const std::string& app_locale,
                       autofill::PersonalDataManager* personal_data_manager,
                       ContentPaymentRequestDelegate* payment_request_delegate,
@@ -277,7 +277,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   autofill::PersonalDataManager* GetPersonalDataManager();
   autofill::RegionDataLoader* GetRegionDataLoader();
 
-  Delegate* delegate() { return delegate_; }
+  base::WeakPtr<Delegate> delegate() { return delegate_; }
 
   PaymentsProfileComparator* profile_comparator() {
     return &profile_comparator_;
@@ -388,7 +388,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   // Not owned. Never null. Will outlive this object.
   PaymentRequestSpec* spec_;
-  Delegate* delegate_;
+  base::WeakPtr<Delegate> delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
 

@@ -4,6 +4,10 @@
 
 import("//build/config/android/rules.gni")
 
+java_cpp_enum("compositor_status_generated_enum") {
+  sources = [ "//components/paint_preview/player/compositor_status.h" ]
+}
+
 source_set("android") {
   sources = [
     "player_compositor_delegate_android.cc",
@@ -73,6 +77,8 @@ android_library("java") {
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewport.java",
   ]
+
+  srcjar_deps = [ ":compositor_status_generated_enum" ]
 
   deps = [
     "//base:base_java",

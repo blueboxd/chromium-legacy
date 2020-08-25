@@ -15,7 +15,7 @@ android_library("location_java") {
   deps = [
     "//base:base_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   sources = [ "java/src/org/chromium/components/location/LocationUtils.java" ]
   srcjar_deps = [ ":location_settings_dialog_enums_java" ]
@@ -26,7 +26,7 @@ android_library("settings_java") {
     ":location_java",
     "//base:base_java",
     "//base:jni_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   sources =
       [ "java/src/org/chromium/components/location/LocationSettings.java" ]

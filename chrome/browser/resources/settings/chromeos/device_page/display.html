@@ -13,6 +13,7 @@
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
 <link rel="import" href="night_light_slider.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../../controls/settings_dropdown_menu.html">
 <link rel="import" href="../../controls/settings_slider.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
@@ -88,15 +89,18 @@
         </div>
         <display-layout id="displayLayout"
             selected-display="[[selectedDisplay]]"
-            on-select-display="onSelectDisplay_">
+            on-select-display="onSelectDisplay_"
+            deep-link-focus-id$="[[Setting.kDisplayArrangement]]">
         </display-layout>
 
         <template is="dom-if"
             if="[[showMirror_(unifiedDesktopMode_, displays)]]" restamp>
           <div class="secondary self-start">
-            <cr-checkbox checked="[[isMirrored_(displays)]]"
+            <cr-checkbox id="displayMirrorCheckbox"
+                checked="[[isMirrored_(displays)]]"
                 on-click="onMirroredTap_"
-                aria-label="[[getDisplayMirrorText_(displays)]]">
+                aria-label="[[getDisplayMirrorText_(displays)]]"
+                deep-link-focus-id$="[[Setting.kDisplayMirroring]]">
               <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
             </cr-checkbox>
           </div>
@@ -127,7 +131,8 @@
           </div>
           <cr-toggle checked="[[unifiedDesktopMode_]]"
               on-click="onUnifiedDesktopTap_"
-              aria-labelledby="displayUnifiedDesktopCheckboxLabel">
+              aria-labelledby="displayUnifiedDesktopCheckboxLabel"
+              deep-link-focus-id$="[[Setting.kAllowWindowsToSpanDisplays]]">
           </cr-toggle>
         </div>
       </template>
@@ -179,7 +184,8 @@
                 selectedDisplay,
                 prefs.cros.device_display_resolution)]]"
             on-cr-slider-value-changed="onDisplaySizeSliderDrag_"
-            aria-describedby="displayZoomSublabel logicalResolutionText">
+            aria-describedby="displayZoomSublabel logicalResolutionText"
+            deep-link-focus-id$="[[Setting.kDisplaySize]]">
         </settings-slider>
       </div>
 
@@ -206,7 +212,8 @@
                   prefs.cros.device_display_resolution)]]"
               label="$i18n{displayResolutionTitle}"
               aria-describedby="displayResolutionSublabel"
-              menu-options="[[displayModeList_]]">
+              menu-options="[[displayModeList_]]"
+              deep-link-focus-id$="[[Setting.kDisplayResolution]]">
           </settings-dropdown-menu>
         </div>
       </template>
@@ -234,7 +241,8 @@
                   prefs.cros.device_display_resolution)]]"
               label="Refresh Rate Menu"
               aria-describedby="displayRefreshRateSublabel"
-              menu-options="[[refreshRateList_]]">
+              menu-options="[[refreshRateList_]]"
+              deep-link-focus-id$="[[Setting.kDisplayRefreshRate]]">
           </settings-dropdown-menu>
         </div>
       </template>
@@ -256,7 +264,8 @@
           <select class="md-select"
               value="[[selectedDisplay.rotation]]"
               aria-labelledby="displayOrientation"
-              on-change="onOrientationChange_">
+              on-change="onOrientationChange_"
+              deep-link-focus-id$="[[Setting.kDisplayOrientation]]">
             <option value="-1"
                 hidden$="[[!showAutoRotateOption_(selectedDisplay)]]">
               $i18n{displayOrientationAutoRotate}
@@ -275,14 +284,16 @@
             class="indented hr"
             pref="{{prefs.ash.ambient_color.enabled}}"
             label="$i18n{displayAmbientColorTitle}"
-            sub-label="$i18n{displayAmbientColorSubtitle}">
+            sub-label="$i18n{displayAmbientColorSubtitle}"
+            deep-link-focus-id$="[[Setting.kAmbientColors]]">
         </settings-toggle-button>
       </template>
 
       <cr-link-row class="indented hr" id="overscan"
           label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
-          hidden$="[[!showOverscanSetting_(selectedDisplay)]]" embedded>
+          hidden$="[[!showOverscanSetting_(selectedDisplay)]]" embedded
+          deep-link-focus-id$="[[Setting.kDisplayOverscan]]">
       </cr-link-row>
 
       <settings-display-overscan-dialog id="displayOverscan"
@@ -295,7 +306,8 @@
           label="$i18n{displayTouchCalibrationTitle}"
           sub-label="$i18n{displayTouchCalibrationText}"
           on-click="onTouchCalibrationTap_"
-          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]" embedded>
+          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]" embedded
+          deep-link-focus-id$="[[Setting.kTouchscreenCalibration]]">
       </cr-link-row>
     </div>
 
@@ -305,7 +317,8 @@
         class="hr"
         label="$i18n{displayNightLightLabel}"
         pref="{{prefs.ash.night_light.enabled}}"
-        sub-label="$i18n{displayNightLightText}">
+        sub-label="$i18n{displayNightLightText}"
+        deep-link-focus-id$="[[Setting.kNightLight]]">
     </settings-toggle-button>
 
     <div id="nightLightSettingsDiv"
@@ -321,7 +334,8 @@
             aria-labelledby="colorTemperatureLabel" min="0" max="100"
             scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
             label-max="$i18n{displayNightLightTempSliderMaxLabel}"
-            pref="{{prefs.ash.night_light.color_temperature}}">
+            pref="{{prefs.ash.night_light.color_temperature}}"
+            deep-link-focus-id$="[[Setting.kNightLightColorTemperature]]">
         </settings-slider>
       </div>
       <!-- Schedule settings -->

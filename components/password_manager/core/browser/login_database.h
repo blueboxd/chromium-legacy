@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
-#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/field_info_table.h"
@@ -43,8 +42,6 @@ class SQLTableBuilder;
 
 extern const int kCurrentVersionNumber;
 extern const int kCompatibleVersionNumber;
-
-using IsAccountStore = util::StrongAlias<class IsAccountStoreTag, bool>;
 
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of

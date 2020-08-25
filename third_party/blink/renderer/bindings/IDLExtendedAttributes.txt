@@ -77,6 +77,7 @@ LenientThis
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
 NewObject
+NoAllocDirectCall
 Measure
 MeasureAs=*
 NamedConstructor=*

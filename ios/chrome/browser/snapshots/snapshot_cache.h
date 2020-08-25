@@ -50,22 +50,11 @@ class Time;
 
 - (void)setImage:(UIImage*)image withSnapshotID:(NSString*)snapshotID;
 
-// Removes the image from both the LRU and disk cache, unless it is marked for
-// deferred deletion. Images marked for deferred deletion can only be removed by
-// calling |-removeMarkedImages|.
+// Removes the image from both the LRU and disk.
 - (void)removeImageWithSnapshotID:(NSString*)snapshotID;
 
-// Marks an image for deferred deletion. The image will not be immediately
-// deleted when |-removeImageWithSnapshotID:| is called. Images marked for
-// deferred deletion can only be removed by calling |-removeMarkedImages|.
-- (void)markImageWithSnapshotID:(NSString*)snapshotID;
-
-// Removes all marked images from both the LRU and disk cache.
-- (void)removeMarkedImages;
-
-// Unmarks all images, so they remain in the cache. They are no longer marked
-// for deferred deletion.
-- (void)unmarkAllImages;
+// Removes all images from the LRU and disk.
+- (void)removeAllImages;
 
 // Moves all images for |snapshotIDs| from |sourcePath| to the current storage
 // path of this snapshot cache. Deletes the folder |sourcePath| after migration,
@@ -78,6 +67,7 @@ class Time;
 // background thread.
 - (void)purgeCacheOlderThan:(const base::Time&)date
                     keeping:(NSSet*)liveSnapshotIDs;
+
 // Hint that the snapshot for |snapshotID| will likely be saved to disk when the
 // application is backgrounded.  The snapshot is then saved in memory, so it
 // does not need to be read off disk.

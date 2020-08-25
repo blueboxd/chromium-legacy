@@ -14,6 +14,7 @@ namespace {
 class LockScreenWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit LockScreenWidgetDelegate(views::Widget* widget) : widget_(widget) {
+    SetOwnedByWidget(true);
     DCHECK(widget_);
   }
   ~LockScreenWidgetDelegate() override = default;
@@ -24,7 +25,6 @@ class LockScreenWidgetDelegate : public views::WidgetDelegate {
   }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
-  void DeleteDelegate() override { delete this; }
 
  private:
   views::Widget* widget_;

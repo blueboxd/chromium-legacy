@@ -68,6 +68,11 @@ class VIEWS_EXPORT WidgetDelegate {
     // all on Mac.
     ui::ModalType modal_type = ui::MODAL_TYPE_NONE;
 
+    // Whether this WidgetDelegate should delete itself when the Widget for
+    // which it is the delegate is about to be destroyed.
+    // See https://crbug.com/1119898 for more details.
+    bool owned_by_widget = false;
+
     // Whether to show a close button in the widget frame.
     bool show_close_button = true;
 
@@ -197,10 +202,15 @@ class VIEWS_EXPORT WidgetDelegate {
   // Important note: for OS-initiated window closes, steps 1 and 2 don't happen
   // - i.e, WindowWillClose() is never invoked.
   //
-  // The default implementations of these methods simply call the corresponding
-  // callbacks; see Set*Callback() below. If you override these it is not
-  // necessary to call the base implementations.
+  // The default implementations of both of these call the callbacks described
+  // below. It is better to use those callback mechanisms than to override one
+  // of these methods.
   virtual void WindowClosing();
+
+  // It should not be necessary to override this method in new code; instead,
+  // consider using either SetOwnedByWidget() if you need that ownership
+  // behavior, or RegisterDeleteDelegateCallback() if you need to attach
+  // behavior before deletion but want the default deletion behavior.
   virtual void DeleteDelegate();
 
   // Called when the user begins/ends to change the bounds of the window.
@@ -273,6 +283,7 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetFocusTraversesOut(bool focus_traverses_out);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetModalType(ui::ModalType modal_type);
+  void SetOwnedByWidget(bool delete_self);
   void SetShowCloseButton(bool show_close_button);
   void SetShowIcon(bool show_icon);
   void SetShowTitle(bool show_title);
@@ -335,7 +346,6 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
   ~WidgetDelegateView() override;
 
   // WidgetDelegate:
-  void DeleteDelegate() override;
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
   View* GetContentsView() override;

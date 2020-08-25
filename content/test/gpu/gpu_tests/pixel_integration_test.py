@@ -159,11 +159,6 @@ class PixelIntegrationTest(
                                    int(page.test_rect[2] * dpr),
                                    int(page.test_rect[3] * dpr))
 
-    # Compare images against approved images/colors.
-    if page.expected_colors:
-      # Use expected colors instead of hash comparison for validation.
-      self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr)
-      return
     image_name = self._UrlToImageName(page.name)
     self._UploadTestResultToSkiaGold(image_name, screenshot, page)
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/phonehub/notification_access_manager.h"
 #include "chromeos/components/phonehub/notification_access_setup_operation.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
@@ -37,6 +38,7 @@ class MultideviceHandler
       public multidevice_setup::MultiDeviceSetupClient::Observer,
       public multidevice_setup::AndroidSmsPairingStateTracker::Observer,
       public android_sms::AndroidSmsAppManager::Observer,
+      public phonehub::NotificationAccessManager::Observer,
       public phonehub::NotificationAccessSetupOperation::Delegate {
  public:
   MultideviceHandler(
@@ -68,6 +70,9 @@ class MultideviceHandler
   // NotificationAccessSetupOperation::Delegate:
   void OnStatusChange(
       phonehub::NotificationAccessSetupOperation::Status new_status) override;
+
+  // phonehub::NotificationAccessManager::Observer:
+  void OnNotificationAccessChanged() override;
 
   // multidevice_setup::AndroidSmsPairingStateTracker::Observer:
   void OnPairingStateChanged() override;
@@ -141,6 +146,9 @@ class MultideviceHandler
   ScopedObserver<android_sms::AndroidSmsAppManager,
                  android_sms::AndroidSmsAppManager::Observer>
       android_sms_app_manager_observer_;
+  ScopedObserver<phonehub::NotificationAccessManager,
+                 phonehub::NotificationAccessManager::Observer>
+      notification_access_manager_observer_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_{this};

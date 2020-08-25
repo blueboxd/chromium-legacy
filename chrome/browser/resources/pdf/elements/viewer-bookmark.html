@@ -5,6 +5,7 @@
         display: flex;
         height: 30px;
         position: relative;
+        transition: background-color 100ms ease-out;
       }
 
       :host-context([pdf-viewer-update-enabled]) #item {
@@ -15,14 +16,12 @@
         background-color: var(--cr-menu-background-focus-color);
       }
 
-      paper-ripple {
-        /* Allowing the ripple to capture pointer events prevents a focus
-         * rectangle for showing up for clicks, while still allowing it with
-         * tab-navigation. This undoes a paper-ripple bug fix aimed at
-         * non-Chrome browsers. TODO(tsergeant): Improve focus in
-         * viewer-bookmark so this can be removed (https://crbug.com/5448190).
-         */
-        pointer-events: auto;
+      #item:active {
+        background-color: rgba(var(--google-grey-900-rgb), 0.25);
+      }
+
+      :host-context([pdf-viewer-update-enabled]) #item:active {
+        background-color: rgba(255, 255, 255, 0.25);
       }
 
       #title {
@@ -52,7 +51,6 @@
       }
     </style>
     <div id="item" on-click="onClick_">
-      <paper-ripple></paper-ripple>
       <cr-icon-button id="expand" iron-icon="cr:chevron-right"
           on-click="toggleChildren_"></cr-icon-button>
       <span id="title" tabindex="0">[[bookmark.title]]</span>

@@ -153,7 +153,7 @@ Polymer({
   },
 
   /**
-   * Handler for tapping the Keyboard settings menu item.
+   * Handler for tapping the Stylus settings menu item.
    * @private
    */
   onStylusTap_() {

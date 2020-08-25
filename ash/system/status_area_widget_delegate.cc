@@ -79,7 +79,8 @@ class OverflowGradientBackground : public views::Background {
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
   DCHECK(shelf_);
-  set_owned_by_client();  // Deleted by DeleteDelegate().
+  set_owned_by_client();
+  SetOwnedByWidget(true);
 
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
@@ -156,10 +157,6 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
                                         ? focus_cycler_for_testing_
                                         : Shell::Get()->focus_cycler();
   return focus_cycler->widget_activating() == GetWidget();
-}
-
-void StatusAreaWidgetDelegate::DeleteDelegate() {
-  delete this;
 }
 
 void StatusAreaWidgetDelegate::CalculateTargetBounds() {

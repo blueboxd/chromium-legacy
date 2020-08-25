@@ -717,6 +717,10 @@ void WebRuntimeFeatures::EnableRestrictGamepadAccess(bool enable) {
   RuntimeEnabledFeatures::SetRestrictGamepadAccessEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCompositeSVG(bool enable) {
+  RuntimeEnabledFeatures::SetCompositeSVGEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCompositingOptimizations(bool enable) {
   RuntimeEnabledFeatures::SetCompositingOptimizationsEnabled(enable);
 }

@@ -26,11 +26,13 @@
 <translation id="169515064810179024">Sekat tapak daripada mengakses penderia gerakan</translation>
 <translation id="1717218214683051432">Penderia gerakan</translation>
 <translation id="1743802530341753419">Tanya sebelum membenarkan tapak menyambung ke peranti (disyorkan)</translation>
+<translation id="1779089405699405702">Penyahkod imej</translation>
 <translation id="1818308510395330587">Untuk membolehkan <ph name="APP_NAME" /> menggunakan AR, hidupkan juga kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1984937141057606926">Dibenarkan, kecuali pihak ketiga</translation>
+<translation id="1989112275319619282">Semak Imbas</translation>
 <translation id="1994173015038366702">URL tapak</translation>
 <translation id="2025115093177348061">Realiti tambahan</translation>
 <translation id="2030769033451695672">Ketik untuk kembali kepada <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -69,6 +71,7 @@
 <translation id="2968755619301702150">Pemapar sijil</translation>
 <translation id="300526633675317032">Tindakan ini akan menghapuskan semua <ph name="SIZE_IN_KB" /> daripada storan tapak web.</translation>
 <translation id="301521992641321250">Disekat secara automatik</translation>
+<translation id="3114012059975132928">Pemain video</translation>
 <translation id="3115898365077584848">Tunjukkan Maklumat</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data disimpan</translation>
@@ -81,9 +84,11 @@
 <translation id="3538390592868664640">Sekat tapak daripada membuat peta 3D bagi persekitaran anda atau menjejaki kedudukan kamera</translation>
 <translation id="3586500876634962664">Penggunaan kamera dan mikrofon</translation>
 <translation id="358794129225322306">Benarkan tapak memuat turun berbilang fail secara automatik.</translation>
+<translation id="3594780231884063836">Redam video</translation>
 <translation id="3596414637720633074">Sekat kuki pihak ketiga dalam Inkognito</translation>
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
+<translation id="3763247130972274048">Dwiketik video di sebelah kiri atau kanan untuk melangkau 10s</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3859306556332390985">Cari ke hadapan</translation>
 <translation id="3955193568934677022">Benarkan tapak untuk memainkan kandungan yang dilindungi (disyorkan)</translation>
@@ -129,6 +134,7 @@
 <translation id="5354152178998424783">Tindakan ini akan mengosongkan <ph name="DATASIZE" /> data dan kuki yang disimpan oleh tapak.</translation>
 <translation id="5384883051496921101">Tapak ini akan berkongsi maklumat dengan apl di luar daripada mod inkognito.</translation>
 <translation id="5391532827096253100">Sambungan anda ke tapak web ini tidak selamat. Maklumat tapak</translation>
+<translation id="5489227211564503167"><ph name="ELAPSED_TIME" /> masa berlalu daripada <ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5505264765875738116">Tapak tidak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
 <translation id="5516455585884385570">Buka tetapan pemberitahuan</translation>
@@ -143,6 +149,7 @@
 <translation id="5719847187258001597">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN" /> atau oleh aplnya pada Skrin utama anda.</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
+<translation id="5876056640971328065">Jeda video</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5922853908706496913">Berkongsi skrin anda</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
@@ -161,6 +168,7 @@
 <translation id="6295158916970320988">Semua tapak</translation>
 <translation id="6320088164292336938">Getar</translation>
 <translation id="6388207532828177975">Kosongkan &amp; tetapkan semula</translation>
+<translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
 <translation id="6423924377271166037">Padam kuki</translation>
 <translation id="6439114592976064011">Sekat tapak daripada menggunakan peranti dan data realiti maya anda</translation>
 <translation id="6447842834002726250">Kuki</translation>
@@ -192,6 +200,7 @@
 <translation id="7128222689758636196">Benarkan untuk enjin carian semasa</translation>
 <translation id="7141896414559753902">Sekat tapak daripada memaparkan tetingkap timbul dan ubah hala (disyorkan)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="723171743924126238">Pilih imej</translation>
 <translation id="7243308994586599757">Pilihan tersedia berhampiran bahagian bawah skrin</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan pemberitahuan, ketik Butiran.</translation>
@@ -211,6 +220,7 @@
 <translation id="7817023149356982970">Anda akan dilog keluar daripada tapak ini.</translation>
 <translation id="7828557259026017104">Kuki ialah fail yang dibuat oleh tapak web yang anda lawati. Tapak menggunakan kuki untuk mengingat pilihan anda. Kuki pihak ketiga dibuat oleh tapak lain. Tapak ini memiliki sebahagian daripada kandungan, seperti iklan atau imej, yang anda lihat dalam halaman web yang anda lawati.</translation>
 <translation id="7835852323729233924">Memainkan media</translation>
+<translation id="783819812427904514">Nyahredam video</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7846621471902887024">Anda akan dilog keluar daripada semua tapak.</translation>
 <translation id="7882806643839505685">Benarkan bunyi untuk tapak tertentu.</translation>
@@ -218,6 +228,7 @@
 <translation id="7999064672810608036">Anda pasti ingin mengosongkan semua data setempat, termasuk kuki dan menetapkan semula semua kebenaran untuk tapak web ini?</translation>
 <translation id="8007176423574883786">Dimatikan untuk peranti ini</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>
+<translation id="8067883171444229417">Mainkan video</translation>
 <translation id="8068648041423924542">Tidak dapat memilih sijil.</translation>
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
 <translation id="8116925261070264013">Diredam</translation>
@@ -239,6 +250,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 kuki sedang digunakan}other{# kuki sedang digunakan}}</translation>
 <translation id="8463851957836045671">Tapak laju</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
+<translation id="8525306231823319788">Skrin penuh</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>
 <translation id="8609465669617005112">Alihkan ke atas</translation>
 <translation id="8676374126336081632">Kosongkan input</translation>
@@ -247,9 +259,11 @@
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
 <translation id="8737217482364735741">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN" />.</translation>
+<translation id="8751914237388039244">Pilih imej</translation>
 <translation id="8801436777607969138">Sekat JavaScript untuk tapak tertentu.</translation>
 <translation id="8816026460808729765">Sekat tapak daripada mengakses penderia</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC dimatikan untuk peranti ini. Hidupkan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Tapak ini dibuka dan memberikan respons dengan pantas untuk kebanyakan orang</translation>
 <translation id="8941729603749328384">www.example.com</translation>

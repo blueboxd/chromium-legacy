@@ -314,18 +314,11 @@ ImageData* ImageData::Create(const IntSize& size,
   return MakeGarbageCollected<ImageData>(size, data_array, color_settings);
 }
 
-static SkImageInfo GetImageInfo(scoped_refptr<StaticBitmapImage> image) {
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  return SkImageInfo::Make(skia_image->width(), skia_image->height(),
-                           skia_image->colorType(), skia_image->alphaType(),
-                           skia_image->refColorSpace());
-}
-
 ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
                              AlphaDisposition alpha_disposition) {
   PaintImage paint_image = image->PaintImageForCurrentFrame();
   DCHECK(paint_image);
-  SkImageInfo image_info = GetImageInfo(image);
+  SkImageInfo image_info = image->PaintImageForCurrentFrame().GetSkImageInfo();
   CanvasColorParams color_params(image_info);
   if (image_info.alphaType() != kOpaque_SkAlphaType) {
     if (alpha_disposition == kPremultiplyAlpha) {

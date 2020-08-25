@@ -10,6 +10,28 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 
+namespace {
+
+// Using an atomic is necessary because this code is called from both the
+// browser and the renderer (so that access is not on a single sequence when in
+// single-process mode), and because it is called from multiple threads within
+// the renderer.
+bool ReadModifyWriteForceLegacyPolicyFlag(
+    base::Optional<bool> maybe_new_value) {
+  // Default to false in the browser process (it is not expected
+  // that the browser will be provided this switch).
+  // The value is propagated to other processes through the command line.
+  DCHECK(base::CommandLine::InitializedForCurrentProcess());
+  static std::atomic<bool> value(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          blink::switches::kForceLegacyDefaultReferrerPolicy));
+  if (!maybe_new_value.has_value())
+    return value;
+  return value.exchange(*maybe_new_value);
+}
+
+}  // namespace
+
 namespace blink {
 
 network::mojom::ReferrerPolicy ReferrerUtils::NetToMojoReferrerPolicy(
@@ -48,30 +70,18 @@ net::ReferrerPolicy ReferrerUtils::GetDefaultNetReferrerPolicy() {
   if (!base::FeatureList::IsEnabled(features::kReducedReferrerGranularity))
     return net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 
-  bool should_force_legacy_default_referrer_policy =
-      ReadModifyWriteForceLegacyPolicyFlag(base::nullopt);
-  return should_force_legacy_default_referrer_policy
+  return ShouldForceLegacyDefaultReferrerPolicy()
              ? net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE
              : net::ReferrerPolicy::
                    REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
 }
 
-// Using an atomic is necessary because this code is called from both the
-// browser and the renderer (so that access is not on a single sequence when in
-// single-process mode), and because it is called from multiple threads within
-// the renderer.
-bool ReferrerUtils::ReadModifyWriteForceLegacyPolicyFlag(
-    base::Optional<bool> maybe_new_value) {
-  // Default to false in the browser process (it is not expected
-  // that the browser will be provided this switch).
-  // The value is propagated to other processes through the command line.
-  DCHECK(base::CommandLine::InitializedForCurrentProcess());
-  static std::atomic<bool> value(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceLegacyDefaultReferrerPolicy));
-  if (!maybe_new_value.has_value())
-    return value;
-  return value.exchange(*maybe_new_value);
+void ReferrerUtils::SetForceLegacyDefaultReferrerPolicy(bool force) {
+  ReadModifyWriteForceLegacyPolicyFlag(force);
+}
+
+bool ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy() {
+  return ReadModifyWriteForceLegacyPolicyFlag(base::nullopt);
 }
 
 }  // namespace blink

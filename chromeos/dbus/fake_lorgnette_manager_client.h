@@ -26,7 +26,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
 
   void ListScanners(
       DBusMethodCallback<lorgnette::ListScannersResponse> callback) override;
-
+  void GetScannerCapabilities(
+      const std::string& device_name,
+      DBusMethodCallback<lorgnette::ScannerCapabilities> callback) override;
   void StartScan(std::string device_name,
                  const ScanProperties& properties,
                  DBusMethodCallback<std::string> completion_callback,
@@ -38,11 +40,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
       const base::Optional<lorgnette::ListScannersResponse>&
           list_scanners_response);
 
+  // Sets the response returned by GetScannerCapabilities().
+  void SetScannerCapabilitiesResponse(
+      const base::Optional<lorgnette::ScannerCapabilities>&
+          capabilities_response);
+
   // Sets the response returned by ScanImageToString() and StartScan().
   void SetScanResponse(const base::Optional<std::string>& scan_image_response);
 
  private:
   base::Optional<lorgnette::ListScannersResponse> list_scanners_response_;
+  base::Optional<lorgnette::ScannerCapabilities> capabilities_response_;
   base::Optional<std::string> scan_image_response_;
 };
 

@@ -122,9 +122,9 @@ TEST_P(StoreMetricsReporterTestWithParams, StoreDependentMetrics) {
 // StoreMetricsReporter directly.
 TEST_F(StoreMetricsReporterTest, MultiStoreMetrics) {
   auto profile_store =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/false);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   auto account_store =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/true);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
   profile_store->Init(&prefs_);
   account_store->Init(&prefs_);
 

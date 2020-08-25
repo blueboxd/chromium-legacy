@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
@@ -62,23 +63,6 @@
 namespace ui {
 
 namespace {
-
-constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
-    // Supporting server-side decorations requires a support of
-    // xdg-decorations. But this protocol has been accepted into the upstream
-    // recently, and it will take time before it is taken by compositors. For
-    // now, always use custom frames and disallow switching to server-side
-    // frames.
-    // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
-    .custom_frame_pref_default = true,
-
-    // Wayland doesn't provide clients with global screen coordinates. Instead,
-    // it forces clients to position windows relative to their top level windows
-    // if the have child-parent relationship. In case of toplevel windows,
-    // clients simply don't know their position on screens and always assume
-    // they are located at some arbitrary position.
-    .ignore_screen_bounds_for_menus = true,
-};
 
 constexpr OzonePlatform::InitializedHostProperties
     kWaylandInitializedHostProperties = {
@@ -232,7 +216,29 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   const PlatformProperties& GetPlatformProperties() override {
-    return kWaylandPlatformProperties;
+    static base::NoDestructor<OzonePlatform::PlatformProperties> properties;
+    static bool initialised = false;
+    if (!initialised) {
+      // Supporting server-side decorations requires a support of
+      // xdg-decorations. But this protocol has been accepted into the upstream
+      // recently, and it will take time before it is taken by compositors. For
+      // now, always use custom frames and disallow switching to server-side
+      // frames.
+      // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
+      properties->custom_frame_pref_default = true;
+
+      // Wayland doesn't provide clients with global screen coordinates.
+      // Instead, it forces clients to position windows relative to their top
+      // level windows if the have child-parent relationship. In case of
+      // toplevel windows, clients simply don't know their position on screens
+      // and always assume they are located at some arbitrary position.
+      properties->ignore_screen_bounds_for_menus = true;
+      properties->app_modal_dialogs_use_event_blocker = true;
+
+      initialised = true;
+    }
+
+    return *properties;
   }
 
   const InitializedHostProperties& GetInitializedHostProperties() override {

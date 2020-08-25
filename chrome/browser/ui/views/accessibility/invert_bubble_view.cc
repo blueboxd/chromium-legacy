@@ -170,6 +170,7 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view) {
 }
 
 void ShowInvertBubbleView(Browser* browser, views::View* anchor) {
-  InvertBubbleView* delegate = new InvertBubbleView(browser, anchor);
-  views::BubbleDialogDelegateView::CreateBubble(delegate)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(
+      std::make_unique<InvertBubbleView>(browser, anchor))
+      ->Show();
 }

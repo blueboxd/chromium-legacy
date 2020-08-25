@@ -97,7 +97,9 @@ TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {
           chromeos::multidevice::SoftwareFeature::kMessagesForWebHost,
           chromeos::multidevice::SoftwareFeature::kMessagesForWebClient,
           chromeos::multidevice::SoftwareFeature::kPhoneHubHost,
-          chromeos::multidevice::SoftwareFeature::kPhoneHubClient};
+          chromeos::multidevice::SoftwareFeature::kPhoneHubClient,
+          chromeos::multidevice::SoftwareFeature::kWifiSyncHost,
+          chromeos::multidevice::SoftwareFeature::kWifiSyncClient};
 
   for (auto feature_in : kTestSoftwareFeatures) {
     chromeos::multidevice::SoftwareFeature feature_out;

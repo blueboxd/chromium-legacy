@@ -183,7 +183,7 @@ void CanvasCaptureHandler::SendNewFrame(
 
   if (!image->IsTextureBacked()) {
     // Initially try accessing pixels directly if they are in memory.
-    sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+    sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSwSkImage();
     SkPixmap pixmap;
     if (sk_image->peekPixels(&pixmap) &&
         (pixmap.colorType() == kRGBA_8888_SkColorType ||

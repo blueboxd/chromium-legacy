@@ -83,9 +83,9 @@ class PaymentRequestStateTest : public testing::Test,
         /*web_contents=*/nullptr,
         /*render_frame_host=*/nullptr, GURL("https://example.com"),
         GURL("https://example.com/pay"),
-        url::Origin::Create(GURL("https://example.com")), spec_.get(), this,
-        "en-US", &test_personal_data_manager_, &test_payment_request_delegate_,
-        &journey_logger_);
+        url::Origin::Create(GURL("https://example.com")), spec_.get(),
+        weak_ptr_factory_.GetWeakPtr(), "en-US", &test_personal_data_manager_,
+        &test_payment_request_delegate_, &journey_logger_);
     state_->AddObserver(this);
   }
 
@@ -148,6 +148,7 @@ class PaymentRequestStateTest : public testing::Test,
   // Test data.
   autofill::AutofillProfile address_;
   autofill::CreditCard credit_card_visa_;
+  base::WeakPtrFactory<PaymentRequestStateTest> weak_ptr_factory_{this};
 };
 
 TEST_F(PaymentRequestStateTest, CanMakePayment) {

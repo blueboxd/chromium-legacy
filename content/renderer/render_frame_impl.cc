@@ -109,7 +109,6 @@
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/mhtml_handle_writer.h"
@@ -188,6 +187,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/modules/media/audio/web_audio_output_ipc_factory.h"
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -2040,8 +2040,8 @@ void RenderFrameImpl::Initialize() {
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
 
-  // AudioOutputIPCFactory may be null in tests.
-  if (auto* factory = AudioOutputIPCFactory::get())
+  // blink::WebAudioOutputIPCFactory may be null in tests.
+  if (auto* factory = blink::WebAudioOutputIPCFactory::get())
     factory->RegisterRemoteFactory(GetWebFrame()->GetFrameToken(),
                                    GetBrowserInterfaceBroker());
 
@@ -4160,7 +4160,7 @@ void RenderFrameImpl::WillDetach() {
   for (auto& observer : observers_)
     observer.WillDetach();
 
-  if (auto* factory = AudioOutputIPCFactory::get())
+  if (auto* factory = blink::WebAudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetWebFrame()->GetFrameToken());
 
   // Send a state update before the frame is detached.
@@ -4417,8 +4417,8 @@ void RenderFrameImpl::DidCommitNavigation(
     // RenderFrameHostImpl.
     browser_interface_broker_receiver = browser_interface_broker_proxy_.Reset();
 
-    // AudioOutputIPCFactory may be null in tests.
-    if (auto* factory = AudioOutputIPCFactory::get()) {
+    // blink::WebAudioOutputIPCFactory may be null in tests.
+    if (auto* factory = blink::WebAudioOutputIPCFactory::get()) {
       // The RendererAudioOutputStreamFactory must be readily accessible on the
       // IO thread when it's needed, because the main thread may block while
       // waiting for the factory call to finish on the IO thread, so if we tried

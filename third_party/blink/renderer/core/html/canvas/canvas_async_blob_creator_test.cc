@@ -316,7 +316,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
               source_bitmap_image->ConvertToColorSpace(expected_color_space,
                                                        expected_color_type);
           sk_sp<SkImage> ref_image =
-              ref_bitmap->PaintImageForCurrentFrame().GetSkImage();
+              ref_bitmap->PaintImageForCurrentFrame().GetSwSkImage();
 
           // Jpeg does not support transparent images.
           bool compare_alpha = (blob_mime_type != "image/jpeg");

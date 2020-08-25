@@ -28,7 +28,6 @@ class EyeDropperWin : public content::EyeDropper,
   // views::WidgetDelegateView:
   void OnPaint(gfx::Canvas* canvas) override;
   void WindowClosing() override;
-  void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   void OnWidgetMove() override;
 

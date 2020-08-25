@@ -22,6 +22,13 @@
 
       Actualmente, los idiomas compatibles son los siguientes: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
+<translation id="1021843807738753764"> Ten en cuenta que esta política es obsoleta y se quitará en la versión 89 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="MANAGED_GUEST_SESSION_PRIVACY_WARNINGS_POLICY_NAME" /> para configurar las advertencias de privacidad de las sesiones de invitado administradas.
+
+      Controla las notificaciones de inicio automático de la sesión de invitado administrada en <ph name="PRODUCT_OS_NAME" />.
+
+      Si estableces esta política como verdadera, se cerrará la notificación de advertencia de privacidad después de unos segundos.
+
+      Si la estableces como falsa o no la estableces, se fijará la notificación de advertencia de privacidad hasta que el usuario la descarte.</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
 <translation id="102492767056134033">Establecer el estado predeterminado del teclado en pantalla en la pantalla de acceso</translation>
 <translation id="1027000705181149370">Especifica si las cookies de autenticación que establece un IdP de SAML durante el acceso se deben transferir al perfil del usuario.
@@ -271,6 +278,20 @@
 Si habilitas o no configuras esta política, se habilitará el desplazamiento de la página web a fragmentos de texto específicos mediante la URL.
 
 Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragmentos de texto específicos mediante la URL.</translation>
+<translation id="1469072784237350146">Controla si los sitios web no seguros pueden enviar solicitudes a extremos de red más privados.
+
+          Esta política está relacionada con la especificación CORS-RFC1918. Para obtener más información, consulta https://wicg.github.io/cors-rfc1918.
+
+          Un extremo de red es más privado que otro en los siguientes casos:
+          1) Si su dirección IP es localhost y la otra no lo es
+          2) Si su dirección IP es privada y la otra es pública
+          En el futuro, en función de la evolución de las especificaciones, es posible que se aplique esta política a todas las solicitudes de origen cruzado dirigidas a IP privadas o localhost.
+
+          Un sitio web se considera seguro si cumple con la definición de contexto seguro descrita en https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts. De lo contrario, se lo considerará como no seguro.
+
+          Si se establece esta política como falsa o no se establece, el comportamiento predeterminado para las solicitudes que se envíen desde contextos no seguros a extremos de red más privados dependerá de la configuración personal del usuario con respecto a la función <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, la cual se puede establecer en una prueba de campo o en la línea de comandos.
+
+          Si estableces esta política como verdadera, los sitios web no seguros podrán enviar solicitudes a cualquier extremo de red, sujeto a otras verificaciones de origen cruzado.</translation>
 <translation id="1474273443907024088">Inhabilitar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">Si estableces la política, se definirá la lista de dispositivos USB que el usuario puede desconectar del controlador de kernel para usarlos a través de la API chrome.usb directamente en una aplicación web. Las entradas son pares formados por el identificador del producto y del proveedor USB que permiten reconocer un hardware específico.
@@ -977,22 +998,6 @@ Si habilitas la política, Limpiar Chrome podrá enviar los metadatos de anális
 
       El valor de la política deberá especificarse en días.</translation>
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
-<translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar la función de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de la empresa), pero pierde los datos del usuario. Esta función de actualización está disponible a partir de la versión 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos las funciones conservan el estado del dispositivo local.
-        Si se establece como 1 o no se establece, no se aplicarán las actualizaciones del firmware TPM.
-        Si se establece como 2, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio después de que el usuario reconozca la actualización.
-        Si se establece como 3, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio.
-        Si se establece como 4, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> después de la inscripción, antes del acceso del usuario.
-        Esta opción está disponible a partir de la versión 75.
-
-      Si no se establece la política, no estará disponible la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="247658312644322296">El destino "Guardar como PDF"</translation>
 <translation id="2480971699591919564">Habilita la función Llamar con un clic, que permite que los usuarios envíen números de teléfono desde computadoras de escritorio con Chrome hacia dispositivos Android donde el usuario accedió a su cuenta. Para obtener más información, consulta el artículo del Centro de ayuda: https://support.google.com/chrome/answer/9430554?hl=en.
 
@@ -1308,6 +1313,7 @@ Si habilitas la política, Limpiar Chrome podrá enviar los metadatos de anális
       Especifica si debe habilitarse la extensión TLS de certificados vinculados al dominio.
 
       Esta configuración se utiliza para habilitar la extensión TLS de certificados vinculados al dominio para realizar pruebas. Es una configuración experimental que se eliminará en el futuro.</translation>
+<translation id="2957047180944828740">Especifica si se permite que los sitios web no seguros envíen solicitudes a extremos de red más privados</translation>
 <translation id="2957506574938329824">No permitir que ningún sitio solicite acceso a dispositivos Bluetooth mediante la API de Bluetooth web</translation>
 <translation id="2957513448235202597">Tipo de cuenta para la autenticación <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959469725686993410">Enviar siempre puntos de acceso de Wi-Fi al servidor mientras se determina la zona horaria</translation>
@@ -1607,9 +1613,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="3412937883532015092">Si asignas un número a la política, <ph name="PRODUCT_NAME" /> mostrará un mensaje durante esa cantidad de milisegundos y, luego, abrirá un navegador alternativo.
 
       Si no estableces la política o la estableces con el valor "0", la navegación a una URL desginada la abrirá de inmediato en un navegador alternativo.</translation>
-<translation id="3414260318408232239">Si no se configura esta política, <ph name="PRODUCT_NAME" /> usará la versión mínima predeterminada, que es TLS 1.0.
-
-      De lo contrario, se podrá establecer en uno de los siguientes valores: "tls1", "tls1.1" o "tls1.2". De esta manera, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS anteriores a la versión especificada. Se ignorarán los valores que no se reconozcan.</translation>
 <translation id="34160070798637152">Controla la configuración de red en todo el dispositivo.</translation>
 <translation id="3417130629744653218">Permite que los sitios web consulten las formas de pago disponibles.</translation>
 <translation id="3417418267404583991">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no requieren contraseña.
@@ -1760,17 +1763,17 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si no la estableces, la función estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3591527072193107424">Habilitar la función "Compatibilidad con navegadores heredados"</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
-<translation id="3603469950773500315">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />, lo que permite que las extensiones mantengan su compatibilidad y que <ph name="PRODUCT_NAME" /> envíe encabezados específicos sin la necesidad de comprobaciones de <ph name="CORS" />.
+<translation id="3603469950773500315">Habilita las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />, lo que permite que las extensiones mantengan su compatibilidad y que <ph name="PRODUCT_NAME" /> envíe encabezados específicos sin las comprobaciones de <ph name="CORS" />.
 
-      Si se establece esta lista como vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> para <ph name="PRODUCT_NAME" /> 79, como se explica en el <ph name="WEB_REQUEST_API_MANUAL" />.
+      Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> para <ph name="PRODUCT_NAME" /> 79, como se explica en el <ph name="WEB_REQUEST_API_MANUAL" />.
 
-      Si se establece que en esta lista <ph name="HTTP" /> solicita nombres de encabezado, la inspección de <ph name="CORS" /> ignorará los encabezados enumerados y habilitará la mitigación para las extensiones.
+      Si se incluyen en esta lista nombres de encabezados de solicitud <ph name="HTTP" />, la inspección de <ph name="CORS" /> ignorará los encabezados enumerados y habilitará la mitigación para las extensiones.
 
-      Si no se establece, no se aplicarán las mitigaciones que explicaron anteriormente.
+      Si no se establece la lista, no se aplicarán las mitigaciones que se explicaron anteriormente.
 
       Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
 
-      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero se quitó en la versión 84.</translation>
+      Ten en cuenta que se anunció que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero se quitó en la versión 84.</translation>
 <translation id="3624515566460517364">Revisar las cargas y descargar para detectar si se infringen las normas relacionadas con la protección de datos sensibles</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3628480121685794414">Permitir impresión simple</translation>
@@ -1863,17 +1866,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
 <translation id="3824972131618513497">Controla la configuración relacionada con el reinicio y la administración de energía.</translation>
 <translation id="3826475866868158882">Se habilitaron los Servicios de ubicación de Google</translation>
-<translation id="383002993919016993">Esta política evita que el usuario cargue páginas web a partir de URL bloqueadas. La lista de elementos bloqueados proporciona una lista de patrones de URL que especifican las URL que se bloquearán.
-
-      El patrón de una URL debe presentar un formato conforme a lo especificado en https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Se pueden definir excepciones en la política de la lista de URL permitidas. Puede haber hasta 1,000 entradas de políticas como máximo; se ignorarán las entradas posteriores.
-
-      Ten en cuenta que no se recomienda bloquear las URL internas "chrome://*", dado que se pueden generar errores inesperados.
-
-      Puedes bloquear las URL "javascript://*". Sin embargo, la política solo afectará al lenguaje JavaScript escrito en la barra de direcciones (o, por ejemplo, bookmarklets). Esta política no se aplica a las URL de JavaScript en páginas (siempre que sean datos cargados dinámicamente). Por ejemplo, si bloqueas "example.com/abc", la página "example.com" podrá seguir cargando "example.com/abc" mediante XMLHTTPRequest.
-
-      Si no se establece esta política, no se incluirá ninguna URL en la lista de elementos bloqueados del navegador.</translation>
 <translation id="3831376478177535007">Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> permite que los certificados emitidos mediante las operaciones del PKI heredado de Symantec Corporation se consideren de confianza cuando reciben la validación correcta de un certificado de CA reconocido y se vinculan a este.
 
       Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo certificados de la infraestructura heredada de Symantec. Si una actualización del sistema operativo cambia la forma en la que este maneja dichos certificados, esta política ya no tendrá efecto. Además, se trata de una solución temporal para que las empresas tengan más tiempo para dejar de usar los certificados heredados de Symantec. Esta política se quitará el 1 de enero de 2019 o cerca de esta fecha.
@@ -2142,9 +2134,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si estableces esta política, los usuarios no podrán cambiar ni anular la configuración.
 
           Si no la estableces, los comentarios por voz estarán inicialmente inhabilitados en la pantalla de acceso, pero el usuario podrá habilitarlos en cualquier momento.</translation>
-<translation id="4171331498167688968">Si la política se establece como falsa, se permitirá que el software de terceros introduzca código ejecutable en los procesos de Chrome. Si la política no se establece o se establece como verdadera, el software de terceros no podrá introducir código ejecutable en los procesos de Chrome.
-
-      Más allá del valor de esta política, el navegador por el momento no impedirá que software de terceros introduzca código ejecutable en los procesos en una máquina que se una a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="417956245902013347">Habilita la función de accesibilidad para resaltar el signo de intercalación en la pantalla de acceso.
 
           Si se establece esta política como verdadera, la función para resaltar el signo de intercalación estará siempre habilitada en la pantalla de acceso.
@@ -2518,12 +2507,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se le asigna el valor "Analizar las cargas y descargas del usuario", se comportará conforme a las reglas que se describen en "Analizar las descargas del usuario" y "Analizar las cargas del usuario".
 
       Consulta las políticas <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> y <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> para obtener información sobre la forma en que el usuario y el administrador ven los resultados del análisis.</translation>
-<translation id="4777805166623621364">Esta configuración, SitePerProcess, se puede usar para impedir que los usuarios rechacen el comportamiento predeterminado del aislamiento de todos los sitios. Ten en cuenta que la política IsolateOrigins también puede ser útil para aislar orígenes adicionales indicados con mayor precisión.
-      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
-      Si no se configura o se inhabilita la política, el usuario podrá rechazar el aislamiento de sitios (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).  Si se inhabilita la política o no se configura, no se desactivará el aislamiento de sitios.
-      En <ph name="PRODUCT_OS_NAME" /> 76 y versiones anteriores, se recomienda también establecer la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> en el mismo valor. Si los valores que especifican las dos políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
-
-      NOTA: Esta política no se aplica en Android. Para habilitar SitePerProcess en Android, usa la configuración de la política SitePerProcessAndroid.</translation>
 <translation id="4787763197941188108">Anula el tamaño predeterminado para la página de impresión.
 
       <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
@@ -2696,19 +2679,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5075834892754086022">Si se configura la política, se aplicará la extensión mínima de PIN configurada. (El valor absoluto de la extensión mínima del PIN es 1; los valores menores que 1 se considerarán como 1).
 
           Si no se configura la política, se aplicará una extensión mínima del PIN de 6 dígitos. Esta es la extensión mínima recomendada.</translation>
-<translation id="5077993112092904096">Esta política dejó de estar disponible. En su lugar, utiliza la política "<ph name="URL_BLOCKLIST_POLICY_NAME" />".
-
-      Esta política evita que el usuario cargue páginas web a partir de URL bloqueadas. La lista de elementos bloqueados proporciona una lista de patrones de URL que especifican las URL que se bloquearán.
-
-      El patrón de una URL debe presentar un formato conforme a lo especificado en https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Se pueden definir excepciones en la política de la lista de URL permitidas. Puede haber hasta 1,000 entradas de políticas como máximo; se ignorarán las entradas posteriores.
-
-      Ten en cuenta que no se recomienda bloquear las URL internas "chrome://*", dado que se pueden generar errores inesperados.
-
-      A partir de Chrome 73, podrás bloquear las URL "javascript://*". Sin embargo, la política solo afectará al lenguaje JavaScript escrito en la barra de direcciones (o, por ejemplo, bookmarklets). Esta política no se aplica a las URL de JavaScript en páginas (siempre que sean datos cargados dinámicamente). Por ejemplo, si bloqueas "example.com/abc", la página "example.com" podrá seguir cargando "example.com/abc" mediante XMLHTTPRequest.
-
-      Si no se establece esta política, no se incluirá ninguna URL en la lista de elementos bloqueados del navegador.</translation>
 <translation id="5082572440690475059">Permite el acceso de lectura a través de la API de File System en estos sitios</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5090209345759901501">Extender la configuración del contenido Flash a todo el contenido</translation>
@@ -3124,9 +3094,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si no se especifica, no se modificará la URL del valor de inicialización de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente para estos sitios en la pantalla de acceso</translation>
-<translation id="5564865786900450806">Quita la advertencia que aparece cuando se ejecuta <ph name="PRODUCT_NAME" /> en una computadora o sistema operativo que ya no son compatibles.
-
-      Si se establece como falsa o no se establece, desaparecerán las advertencias en este tipo de computadoras o sistemas operativos.</translation>
 <translation id="5565178130821694365">Se requiere el ingreso de la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permite la impresión con y sin PIN</translation>
 <translation id="5572971233886879856">Especifica el subconjunto de servidores de impresión que se consultará para las impresoras de servidor. Esta acción solo se aplicará en la política <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" />.
@@ -3208,6 +3175,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si no estableces la política, se desactivará el teclado, pero los usuarios podrán cambiar esta configuración.
 
        Nota: Es posible que también se incluyan reglas heurísticas para la forma en que se muestra el teclado.</translation>
+<translation id="5657752663637568277">Esta política controla si se muestran las advertencias de baja de <ph name="CLOUD_PRINT_NAME" /> a los usuarios en el diálogo de la vista previa de impresión o en las páginas de configuración.
+      Si estableces esta política como verdadera, se ocultarán las advertencias de baja.
+      Si la estableces como falsa o no la estableces, se mostrarán las advertencias de baja.</translation>
 <translation id="5666457529647159548">Permite que los usuarios administren los certificados instalados</translation>
 <translation id="567377007899266033">Si estableces la política como verdadera, se enviarán a Google los informes sobre los eventos clave de instalación de extensiones que activan la política. Si la estableces como falsa, no se capturará ningún evento. Si no la estableces, se establecerá el valor predeterminado como verdadero.</translation>
 <translation id="5676740747107495269">Muestra las opciones de accesibilidad en el menú de la bandeja del sistema de la pantalla de acceso</translation>
@@ -3291,9 +3261,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5815129011704381141">Reinicia automáticamente después de la actualización.</translation>
 <translation id="582857022372205358">Habilitar la impresión doble con bordes cortos</translation>
 <translation id="5832274826894536455">Políticas obsoletas</translation>
-<translation id="5835124959204887277">Especifica los dominios y URL para los cuales no se mostrarán mensajes cuando se solicitan certificados de atestación de las llaves de seguridad. Además, se enviará una señal a la llave de seguridad para indicar que se puede usar la atestación individual. Sin esto, se mostrará un mensaje a los usuarios con Chrome 65 y versiones posteriores cuando los sitios soliciten atestaciones de llaves de seguridad.
-
-      Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5845686745936515940">Permite revertir el comportamiento de todas las cookies conforme al atributo heredado <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si se revierte el comportamiento conforme al atributo heredado, las cookies que no tengan un atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> especificado se tratarán según el atributo "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />", las cookies con el atributo "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" ya no necesitarán el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />", y se omitirá la comparación de esquemas cuando se evalúa si dos sitios son el mismo sitio. Para obtener la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
@@ -3301,9 +3268,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="585270638818921943">Impide que el usuario use apps para Android de fuentes no confiables</translation>
 <translation id="585671885349598586">Especifica las impresoras que no puede utilizar el usuario.
 
-      Utilizarás esta política solo si eliges <ph name="PRINTERS_BLOCKLIST" /> para <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
+      Solo se usará esta política si estableces <ph name="PRINTERS_BLOCKLIST" /> en <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
 
-      Si utilizas esta política, el usuario podrá acceder a todas las impresoras, excepto para los ID mencionados en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+      Si se usa esta política, el usuario podrá acceder a todas las impresoras, excepto para los ID mencionados aquí. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
       </translation>
 <translation id="5859344336338527083">Si estableces esta política, se especificarán las URL que pueden instalar extensiones, apps y temas. Antes de la versión <ph name="PRODUCT_NAME" /> 21, los usuarios podían hacer clic en un vínculo que los dirigía a un archivo *.crx y <ph name="PRODUCT_NAME" /> ofrecía instalar el archivo después de unas advertencias. A partir de esa versión, este tipo de archivos debe descargarse y arrastrarse a la página de configuración de <ph name="PRODUCT_NAME" />. Esta configuración permite especificar las URL que tendrán el flujo de instalación anterior, que es más sencillo.
 
@@ -3433,6 +3400,12 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Inhabilitar esta política reduce la estabilidad y la seguridad de Chrome, ya que se permitirá cargar código desconocido y potencialmente hostil en los procesos del renderizador de Chrome. Para obtener más información, consulta el siguiente vínculo: https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="6048199181629830227">Habilita la administración de carga fuera del horario pico</translation>
+<translation id="6054485492411959335">Especifica las impresoras que puede utilizar el usuario.
+
+      Esta política solo se usa si se elige <ph name="PRINTERS_ALLOWLIST" /> para <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />.
+
+      Si se usa esta política, el usuario solo podrá acceder a las impresoras con ID que coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.
+      </translation>
 <translation id="6066761914755798079">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> especificará la URL del motor de búsqueda para proporcionar sugerencias de búsqueda. La URL debe incluir la string <ph name="SEARCH_TERM_MARKER" />, que se reemplazará en la búsqueda por los términos del usuario.
 
       Puedes especificar la URL de búsqueda de Google de la siguiente manera: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
@@ -3509,21 +3482,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Si no la estableces, los usuarios podrán activar o desactivar esta función.</translation>
 <translation id="6178075938488052838">Esta política controla quién puede iniciar una sesión en <ph name="PRODUCT_OS_NAME" />, pero no impide que los usuarios accedan a otras cuentas de Google en Android. Si quieres impedirlo, configura la política <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> específica de Android como parte de la política <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
-<translation id="6179255742934310885">Esta política dejó de estar disponible. En su lugar, utiliza la política "<ph name="URL_ALLOWLIST_POLICY_NAME" />".
-
-      Permite el acceso a las URL de la lista, como excepciones a la lista de URL bloqueadas.
-
-      Consulta la descripción de la política "<ph name="URL_BLOCKLIST_POLICY_NAME" />" para conocer el formato de las entradas de esta lista.
-
-      Puedes usar esta política para abrir excepciones a las listas restringidas de elementos bloqueados. Por ejemplo, puedes usar "*" para bloquear todas las solicitudes. Además, esta política puede permitir el acceso a una lista limitada de URL y abrir las excepciones a determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
-
-      El filtro más específico determinará si una URL está en la lista de elementos bloqueados o permitidos. La lista de elementos permitidos tiene prioridad sobre la de elementos bloqueados.
-
-      Esta política está limitada a 1,000 entradas; se omitirán las entradas subsiguientes.
-
-      Esta política también puede permitir que el navegador invoque de forma automática aplicaciones externas registradas como controladores de los protocolos que se encuentran en la lista de elementos permitidos, p. ej., "tel:" o "ssh:". Esta funcionalidad solo está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o en instancias de Windows 10 Pro o Enterprise inscritas para la administración de dispositivos, además de instancias de macOS administradas mediante MDM o vinculadas a un dominio a través de MCX.
-
-      Si no estableces esta política, no habrá excepciones para la lista de elementos bloqueados de la política "<ph name="URL_BLOCKLIST_POLICY_NAME" />".</translation>
 <translation id="6181618732396778048">No permite que ningún sitio solicite acceso de escritura a archivos ni directorios</translation>
 <translation id="6183327369896253878">Si estableces la política, se determinarán los identificadores de apps que el <ph name="PRODUCT_OS_NAME" /> mostrará como apps fijas en la barra del Selector; los usuarios no podrán cambiarlos.
 
@@ -3615,7 +3573,7 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Para obtener más información sobre <ph name="CORS" />, visita la siguiente página web: <ph name="CORS_HELP_URL" />.
 
-      Ten en cuenta que se había anunciado que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero se quitó en la versión 84.</translation>
+      Ten en cuenta que se anunció que esta política se quitaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero se quitó en la versión 84.</translation>
 <translation id="6281043242780654992">Permite configurar las políticas de mensajería nativa. A menos que se incluyan en la lista blanca, los hosts de mensajería nativa incluidos en la lista negra estarán bloqueados.</translation>
 <translation id="6282799760374509080">Permitir o rechazar la captura de audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -3627,8 +3585,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 <translation id="631183702829488873">Cuando esta función está habilitada, muestra un botón en la página acceso o de bloqueo que permite mostrar la contraseña.
           Se representa con el ícono de un ojo en el campo de texto de contraseñas. Cuando la función está inhabilitada, el botón no aparece.
       </translation>
-<translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
-      Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
 <translation id="6319198883324703402">Establece la hora de la primera notificación de reinicio del usuario</translation>
 <translation id="6330882599388782338">Permite que los sitios accedan a los sensores</translation>
 <translation id="6331167725613770725">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
@@ -3992,6 +3948,7 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 <translation id="68798513449385583">Demorar las descargas hasta conocer el resultado del análisis</translation>
 <translation id="6889123056995503704">El usuario elige el comportamiento del cambio a una versión inferior del canal</translation>
 <translation id="6894178810167845842">URL de la página Nueva pestaña</translation>
+<translation id="6897730193187922386">Se suprimen los mensajes de baja de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="6899705656741990703">Configuración de proxy de detección automática</translation>
 <translation id="6902561336084511004">Ofrece opciones de configuración de servidores de impresión disponibles.
 
@@ -4020,16 +3977,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 <translation id="6907778402784621686">Bloquea el contenido no seguro de estos sitios</translation>
 <translation id="6908640907898649429">Configura el proveedor de búsqueda predeterminado. Se puede especificar el proveedor de búsqueda predeterminado que el usuario usará u optar por inhabilitar la búsqueda predeterminada.</translation>
 <translation id="6913068954484253496">Permitir que <ph name="PRODUCT_NAME" /> se conecte a los dispositivos de transmisión en todas las direcciones IP</translation>
-<translation id="6916507170737609563">
-      Para revisar la configuración de la política IsolateOriginsAndroid a fin de aprovechar el aislamiento y reducir el impacto que puedan sufrir los usuarios, utiliza IsolateOriginsAndroid con una lista de los sitios que quieras aislar. La configuración SitePerProcessAndroid aísla todos los sitios.
-      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
-      Si se inhabilita, no se aplicará el aislamiento explícito de sitios, y se inhabilitarán las pruebas de campo de IsolateOriginsAndroid y SitePerProcessAndroid. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
-      Si no se establece, el usuario podrá cambiar esta configuración.
-
-      NOTA: En Android, el aislamiento de sitios es experimental. La compatibilidad mejorará con el tiempo, pero por el momento es posible que se presenten problemas de rendimiento.
-
-      NOTA: Esta política se aplica solo a Chrome en dispositivos Android únicamente con más de 1 GB de RAM. Para aplicar la política en otras plataformas, usa SitePerProcess.
-      </translation>
 <translation id="6922884955650325312">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923731550900440989">Habilita la función para resaltar el signo de intercalación en la pantalla de acceso</translation>
 <translation id="6924223708804692571">Permite forzar la habilitación del corrector ortográfico de idiomas. Se omitirán los idiomas que no se reconozcan en esa lista.
@@ -4348,7 +4295,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Ya no son compatibles la búsqueda automática ni la instalación de complementos faltantes.</translation>
 <translation id="7267809745244694722">Teclas multimedia predeterminadas para teclas de funciones</translation>
 <translation id="7271085005502526897">Importar la página principal del navegador predeterminado en la primera ejecución</translation>
-<translation id="7271181393214180342">Si habilitas esta política, la autenticación HTTP respetará la aprobación de la política de KDC, es decir, <ph name="PRODUCT_NAME" /> delegará las credenciales de usuario para el servicio al que se accede si KDC establece <ph name="OK_AS_DELEGATE" /> en el ticket de servicio. Consulta RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). La política <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> debe permitir este servicio.
+<translation id="7271181393214180342">Si habilitas esta política, la autenticación HTTP respetará la aprobación de la política de KDC, es decir, <ph name="PRODUCT_NAME" /> delegará las credenciales de usuario para el servicio al que se accede si KDC establece <ph name="OK_AS_DELEGATE" /> en el ticket de servicio. Consulta la RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). La política <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> debe permitir este servicio.
 
       Si inhabilitas la política o no la estableces, se ignorará la política de KDC en las plataformas admitidas y solo se respetará la política <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
 
@@ -4402,22 +4349,22 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo adicional "id" o "guid" obligatorio por impresora para la lista de elementos permitidos o bloqueados.
 
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON.  Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras.  El hash criptográfico se usa para verificar la integridad de la descarga.
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON  (se estima que un archivo de ese tamaño contiene aproximadamente 21,000 impresoras).  Se usa el hash criptográfico para verificar la integridad de la descarga.
 
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
+      Se descarga y almacena en caché el archivo, y cada vez que cambie la URL o el hash, se volverá a descargar la imagen.
 
       Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />, <ph name="BULK_PRINTERS_WHITELIST" /> y <ph name="BULK_PRINTERS_BLACKLIST" />.
 
       Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales.  Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales,  y su objetivo es complementar la configuración de impresoras a cargo de los usuarios.
 
       Esta política dejó de estar disponible; usa la política <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> en su lugar.</translation>
 <translation id="7355640439776250098">Especifica las impresoras que no puede utilizar el usuario.
 
-      Utilizarás esta política solo si eliges <ph name="PRINTERS_BLACKLIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
+      Solo se usará esta política si estableces <ph name="PRINTERS_BLACKLIST" /> en <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
 
-      Si utilizas esta política, el usuario podrá acceder a todas las impresoras, excepto para los ID mencionados en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY_NAME" />.
+      Si se usa esta política, el usuario podrá acceder a todas las impresoras, excepto para los ID mencionados aquí. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY_NAME" />.
 
       Esta política dejó de estar disponible; usa la política <ph name="PRINTERS_BULK_BLOCKLIST" /> en su lugar.
       </translation>
@@ -5211,6 +5158,14 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Esta política permite que las empresas migren servidores existentes fuera de HTTP/0.9, y se eliminará en el futuro.
 
       Si no se establece, se inhabilitará HTTP/0.9 en los puertos no predeterminados.</translation>
+<translation id="8504725006737796967">Especifica las impresoras que puede utilizar el usuario.
+
+      Utilizarás esta política solo si eliges <ph name="PRINTERS_WHITELIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />.
+
+      Si usas esta política, el usuario solo podrá acceder a las impresoras cuyos ID coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY_NAME" />.
+
+      Esta política es obsoleta; usa la política <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> en su lugar.
+      </translation>
 <translation id="8507835864888987300">Establece una versión objetivo para las actualizaciones automáticas.
 
       Especifica el prefijo de la versión objetivo a la que debe actualizarse <ph name="PRODUCT_OS_NAME" />. Si el dispositivo ejecuta una versión anterior al prefijo indicado, se actualizará a la versión más reciente con dicho prefijo. Si el dispositivo ya cuenta con una versión posterior, los efectos dependerán del valor de <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. El formato del prefijo funciona en relación con el componente, como se demuestra en el siguiente ejemplo:
@@ -5356,15 +5311,15 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Esta política permite proporcionar configuraciones de impresoras a dispositivos con <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario <ph name="PRINTERS_POLICY_NAME" />, con un campo adicional "id" o "guid" obligatorio por impresora para permitir o bloquear las impresiones.
 
-      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON. Se estima que un archivo con un tamaño de 5 MB contiene aproximadamente 21,000 impresoras. El hash criptográfico se usa para verificar la integridad de la descarga.
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON (se estima que un archivo de ese tamaño contiene aproximadamente 21,000 impresoras). Se usa el hash criptográfico para verificar la integridad de la descarga.
 
-      El archivo se descarga y almacena en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
+      Se descarga y almacena en caché el archivo, y cada vez que cambie la URL o el hash, se volverá a descargar la imagen.
 
       Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y hará que las impresoras estén disponibles según las políticas <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME" />, <ph name="PRINTERS_BULK_ALLOWLIST" /> y <ph name="PRINTERS_BULK_BLOCKLIST" />.
 
       Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
-      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.</translation>
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales, y su objetivo es complementar la configuración de impresoras a cargo de los usuarios.</translation>
 <translation id="8764477907716150749">Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="877185520360032968">Si estableces la política, se modificará el directorio predeterminado donde Chrome descarga los archivos; los usuarios podrán cambiar el directorio.
 
@@ -5433,19 +5388,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8860342862142842017">Inhabilitar la aplicación del Certificado de transparencia para una lista de hash de subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="886645881209114007">Permite que los usuarios utilicen <ph name="PLUGIN_VM_NAME" /> en <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="8867533754744915440">Permite el acceso a las URL de la lista, como excepciones a la lista de URL bloqueadas.
-
-      Consulta la descripción de la política "<ph name="URL_BLOCKLIST_POLICY_NAME" />" para conocer el formato de las entradas de esta lista.
-
-      Puedes usar esta política para abrir excepciones a las listas restringidas de elementos bloqueados. Por ejemplo, puedes usar "*" para bloquear todas las solicitudes. Además, esta política puede permitir el acceso a una lista limitada de URL y abrir las excepciones a determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
-
-      El filtro más específico determinará si una URL está en la lista de elementos bloqueados o permitidos. La lista de elementos permitidos tiene prioridad sobre la de elementos bloqueados.
-
-      Esta política está limitada a 1,000 entradas; se omitirán las entradas subsiguientes.
-
-      Esta política también puede permitir que el navegador invoque de forma automática aplicaciones externas registradas como controladores de los protocolos que se encuentran en la lista de elementos permitidos, p. ej., "tel:" o "ssh:". Esta funcionalidad solo está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o en instancias de Windows 10 Pro o Enterprise inscritas para la administración de dispositivos, además de instancias de macOS administradas mediante MDM o vinculadas a un dominio a través de MCX.
-
-      Si no estableces esta política, no habrá excepciones para la lista de elementos bloqueados de la política "<ph name="URL_BLOCKLIST_POLICY_NAME" />".</translation>
 <translation id="8871974300055371298">Configuración de contenido</translation>
 <translation id="8872402969096027761">Habilita la función de accesibilidad de clic automático en la pantalla de acceso.
 

@@ -130,9 +130,8 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(web_contents);
   // There may not always be a ZoomController, e.g. in tests.
-  if (zoom_controller) {
+  if (zoom_controller)
     zoom_controller->AddObserver(this);
-  }
 #endif  // !defined(OS_ANDROID)
 
   help_text_ = l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
@@ -143,9 +142,8 @@ PasswordGenerationPopupControllerImpl::
 #if !defined(OS_ANDROID)
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(web_contents());
-  if (zoom_controller) {
+  if (zoom_controller)
     zoom_controller->RemoveObserver(this);
-  }
 #endif  // !defined(OS_ANDROID)
 }
 

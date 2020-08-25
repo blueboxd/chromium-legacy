@@ -15,6 +15,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 
 namespace content {
 
@@ -99,7 +100,8 @@ class InputRouter {
 
   // Called when the renderer notifies a change in whether or not it has touch
   // event handlers registered.
-  virtual void OnHasTouchEventHandlers(bool has_handlers) = 0;
+  virtual void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) = 0;
 
   // Will resolve the given callback once all prior input has been fully
   // propagated through the system such that subsequent input will be subject

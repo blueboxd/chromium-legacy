@@ -68,6 +68,9 @@ constexpr char kExtensionsListKey[] = "extensions";
 constexpr char kPowerApiListKey[] = "chrome.power extensions";
 constexpr char kDataReductionProxyKey[] = "data_reduction_proxy";
 constexpr char kChromeVersionTag[] = "CHROME VERSION";
+#if BUILDFLAG(IS_LACROS)
+constexpr char kLacrosChromeVersionPrefix[] = "Lacros ";
+#endif
 #if defined(OS_CHROMEOS)
 constexpr char kArcPolicyComplianceReportKey[] =
     "CHROMEOS_ARC_POLICY_COMPLIANCE_REPORT";
@@ -266,7 +269,14 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 
   auto response = std::make_unique<SystemLogsResponse>();
 
+#if BUILDFLAG(IS_LACROS)
+  // Add a Lacros prefix string in the chrome version string to
+  // differentiate lacros chrome vs ash chrome in the feedback report.
+  response->emplace(kChromeVersionTag,
+                    kLacrosChromeVersionPrefix + chrome::GetVersionString());
+#else
   response->emplace(kChromeVersionTag, chrome::GetVersionString());
+#endif
 
 #if defined(OS_CHROMEOS)
   response->emplace(kChromeEnrollmentTag, GetEnrollmentStatusString());

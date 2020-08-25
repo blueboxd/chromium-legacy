@@ -227,7 +227,7 @@ scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(
 base::Optional<SkBitmap> ToSkBitmap(
     const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image) {
   const sk_sp<SkImage> image =
-      static_bitmap_image->PaintImageForCurrentFrame().GetSkImage();
+      static_bitmap_image->PaintImageForCurrentFrame().GetSwSkImage();
   SkBitmap result;
   if (image && image->asLegacyBitmap(
                    &result, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {

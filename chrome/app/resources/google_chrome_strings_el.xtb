@@ -8,13 +8,16 @@
 <translation id="1088300314857992706">Η διεύθυνση <ph name="USER_EMAIL_ADDRESS" /> χρησιμοποιούσε το Chrome στο παρελθόν</translation>
 <translation id="1097330777386562916">Διαγραφή cookie και δεδομένων ιστοτόπου κατά τον τερματισμό του Chrome.</translation>
 <translation id="110877069173485804">Ορίστε το δικό σας Chrome</translation>
+<translation id="1125124144982679672">Ποιος χρησιμοποιεί το Chrome;</translation>
 <translation id="1142745911746664600">Δεν είναι δυνατή η ενημέρωση του Chrome</translation>
 <translation id="1154147086299354128">&amp;Άνοιγμα στο Chrome</translation>
 <translation id="123620459398936149">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="1302523850133262269">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chrome.</translation>
+<translation id="1355000804395496115">Χρησιμοποιήστε διαφορετικά προφίλ στο Chrome για να διαχωρίσετε την περιήγηση εργασίας από την προσωπική περιήγηση ή για διαφορετικά άτομα που χρησιμοποιούν αυτήν τη συσκευή.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
+<translation id="1513277449617685876">Για να διαχωρίσετε την προσωπική περιήγηση από την περιήγηση του χρήστη <ph name="NEW_USER" />, δημιουργήστε ένα νέο προφίλ στο Chrome.</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1587223624401073077">Το Google Chrome χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
@@ -104,6 +107,7 @@
 <translation id="3889417619312448367">Απεγκατάσταση Google Chrome</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="4053720452172726777">Προσαρμογή και έλεγχος του Google Chrome</translation>
+<translation id="4110895483821904099">Ρυθμίστε το νέο σας προφίλ στο Chrome</translation>
 <translation id="4143243756087420366">Όνομα και εικόνα στο Chrome</translation>
 <translation id="4147555960264124640">Είστε συνδεδεμένοι με έναν διαχειριζόμενο λογαριασμό και παραχωρείτε στο διαχειριστή του τον έλεγχο του προφίλ σας στο Google Chrome. Τα δεδομένα σας στο Chrome, όπως οι εφαρμογές, οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συνδεθούν μόνιμα με το όνομα χρήστη <ph name="USER_NAME" />. Θα έχετε τη δυνατότητα να διαγράψετε αυτά τα δεδομένα μέσω του Πίνακα ελέγχου των Λογαριασμών Google, αλλά δεν θα μπορείτε να τα συσχετίσετε με άλλο λογαριασμό. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κατεβάστε το Google Chrome ξανά.</translation>
@@ -155,6 +159,7 @@
 <translation id="5430073640787465221">Το αρχείο προτιμήσεών σας είναι κατεστραμμένο ή μη έγκυρο.Το Google Chrome δεν μπορεί να ανακτήσει τις ρυθμίσεις σας.</translation>
 <translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5633355459292055250">Να γίνεται ερώτηση όταν ανοίγω το Chrome</translation>
 <translation id="5657226924540934362">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, αναζητήστε την στις <ph name="LINK_BEGIN" />
       ρυθμίσεις του Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Το αρχείο <ph name="FILE_NAME" /> μπορεί να είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
@@ -208,6 +213,7 @@
 <translation id="7398801000654795464">Συνδεθήκατε στο Chrome ως <ph name="USER_EMAIL_ADDRESS" />. Χρησιμοποιήστε τον ίδιο λογαριασμό για να συνδεθείτε ξανά.</translation>
 <translation id="7408085963519505752">Όροι Chrome OS</translation>
 <translation id="7419046106786626209">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας, επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
+<translation id="7423733001651488593">Με αυτήν την ενέργεια θα διαγραφούν οριστικά τα δεδομένα περιήγησής σας από αυτήν τη συσκευή. Για να επαναφέρετε τα δεδομένα, συνδεθείτε στο Chrome ως</translation>
 <translation id="7486227612705979895">Το Chrome θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Για να διαπιστώσετε εάν η συσκευή σας είναι ενημερωμένη, μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις του Chrome OS<ph name="LINK_END" /></translation>
@@ -255,6 +261,7 @@
 <translation id="8681614230122836773">To Chrome εντόπισε επιβλαβές λογισμικό στον υπολογιστή σας</translation>
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="873133009373065397">Το Google Chrome δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
+<translation id="8748242232968346981">Δημιουργία του δικού σας προφίλ στο Chrome;</translation>
 <translation id="8823341990149967727">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="8834965163890861871">Το Google Chrome προσπαθεί να επεξεργαστεί κωδικούς πρόσβασης. Για να επιτρέψετε αυτήν την ενέργεια, πληκτρολογήστε τον κωδικό πρόσβασης των Windows.</translation>
 <translation id="884296878221830158">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>

@@ -213,7 +213,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       image_ = image_->ConvertToColorSpace(
           SkColorSpace::MakeSRGB(),
           GetColorTypeForConversion(skia_image->colorType()));
-      skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
+      skia_image = image_->PaintImageForCurrentFrame().GetSwSkImage();
     }
 
     if (skia_image->peekPixels(&src_data_)) {
@@ -241,7 +241,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     if (needs_color_space_conversion) {
       image_ = UnacceleratedStaticBitmapImage::Create(skia_image);
       image_ = image_->ConvertToColorSpace(blob_color_space, target_color_type);
-      skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
+      skia_image = image_->PaintImageForCurrentFrame().GetSwSkImage();
     } else if (skia_image->colorType() != target_color_type) {
       size_t data_length = skia_image->width() * skia_image->height() *
                            SkColorTypeBytesPerPixel(target_color_type);

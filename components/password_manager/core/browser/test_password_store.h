@@ -35,7 +35,11 @@ MATCHER_P(MatchesFormExceptStore, expected, "") {
 // for testing have been implemented.
 class TestPasswordStore : public PasswordStore {
  public:
-  explicit TestPasswordStore(bool is_account_store = false);
+  // We need to qualify password_manager::IsAccountStore with the full
+  // namespace, otherwise, it's confused with the method
+  // PasswordStoreSync::IsAccountStore().
+  explicit TestPasswordStore(password_manager::IsAccountStore is_account_store =
+                                 password_manager::IsAccountStore(false));
 
   using PasswordMap = std::map<std::string /* signon_realm */,
                                std::vector<autofill::PasswordForm>,
@@ -150,7 +154,7 @@ class TestPasswordStore : public PasswordStore {
   bool DeleteAndRecreateDatabaseFile() override;
 
  private:
-  const bool is_account_store_;
+  const password_manager::IsAccountStore is_account_store_;
 
   PasswordMap stored_passwords_;
   CompromisedCredentialsStorage compromised_credentials_;

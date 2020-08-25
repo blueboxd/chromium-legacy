@@ -36,6 +36,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) LorgnetteManagerClient
   virtual void ListScanners(
       DBusMethodCallback<lorgnette::ListScannersResponse> callback) = 0;
 
+  // Gets the capabilities of the scanner corresponding to |device_name| and
+  // returns them using the provided |callback|.
+  virtual void GetScannerCapabilities(
+      const std::string& device_name,
+      DBusMethodCallback<lorgnette::ScannerCapabilities> callback) = 0;
+
   // Request a scanned image using lorgnette's StartScan API and calls
   // |completion_callback| when completed with a string pointing at the scanned
   // image data. Image data will be stored in the .png format.

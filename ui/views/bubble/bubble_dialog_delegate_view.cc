@@ -333,6 +333,10 @@ Widget* BubbleDialogDelegate::CreateBubble(
   return bubble_widget;
 }
 
+Widget* BubbleDialogDelegateView::CreateBubble(
+    std::unique_ptr<BubbleDialogDelegateView> delegate) {
+  return CreateBubble(delegate.release());
+}
 Widget* BubbleDialogDelegateView::CreateBubble(BubbleDialogDelegateView* view) {
   return BubbleDialogDelegate::CreateBubble(view);
 }
@@ -345,6 +349,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Shadow shadow)
     : BubbleDialogDelegate(anchor_view, arrow, shadow) {
   set_owned_by_client();
+  SetOwnedByWidget(true);
   WidgetDelegate::SetShowCloseButton(false);
 
   SetArrow(arrow);
@@ -432,10 +437,6 @@ void BubbleDialogDelegateView::AddedToWidget() {
 
 View* BubbleDialogDelegateView::GetContentsView() {
   return this;
-}
-
-void BubbleDialogDelegateView::DeleteDelegate() {
-  delete this;
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetClosing() {

@@ -18,6 +18,10 @@ class LayerOwner;
 class ViewsHostableView;
 }  // namespace ui
 
+namespace gfx {
+class RoundedCornersF;
+}  // namespace gfx
+
 namespace views {
 
 class NativeWidgetMacNSWindowHost;
@@ -41,6 +45,7 @@ class NativeViewHostMac : public NativeViewHostWrapper,
   void NativeViewDetaching(bool destroyed) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  bool SetCornerRadii(const gfx::RoundedCornersF& corner_radii) override;
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
   void SetHitTestTopInset(int top_inset) override;
   int GetHitTestTopInset() const override;

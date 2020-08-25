@@ -61,7 +61,7 @@ def GetValidateHistogramsError(input_api, output_api, cwd, results):
   if exit_code != 0:
     error_msg = (
         'Histograms index file is not up-to-date. Please run '
-        '%s/histogram_path.py to update it' % cwd)
+        '%s/histogram_paths.py to update it' % cwd)
     results.append(output_api.PresubmitError(error_msg))
 
 

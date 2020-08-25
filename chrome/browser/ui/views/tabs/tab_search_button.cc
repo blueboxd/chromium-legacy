@@ -41,6 +41,16 @@ TabSearchButton::TabSearchButton(TabStrip* tab_strip,
 
 TabSearchButton::~TabSearchButton() = default;
 
+void TabSearchButton::FrameColorsChanged() {
+  NewTabButton::FrameColorsChanged();
+  // Icon color needs to be updated here as this is called when the hosting
+  // window switches between active and inactive states. In each state the
+  // foreground color of the tab controls is expected to change.
+  SetImage(
+      Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kCaretDownIcon, kIconSize, GetForegroundColor()));
+}
+
 void TabSearchButton::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   if (bubble_)
@@ -64,11 +74,7 @@ void TabSearchButton::OnWidgetClosing(views::Widget* widget) {
 }
 
 void TabSearchButton::PaintIcon(gfx::Canvas* canvas) {
-  // Icon color needs to be updated here as this is called when the hosting
-  // window switches between active and incactive states. In each state the
-  // foreground color of the tab controls is expected to change.
-  SetImage(
-      Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kCaretDownIcon, kIconSize, GetForegroundColor()));
+  // Call ImageButton::PaintButtonContents() to paint the TabSearchButton's
+  // VectorIcon.
   views::ImageButton::PaintButtonContents(canvas);
 }

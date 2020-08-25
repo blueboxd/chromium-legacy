@@ -105,7 +105,7 @@ android_library("content_view_java") {
     "//base:base_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   sources = [
     "java/src/org/chromium/components/embedder_support/view/ContentView.java",
@@ -117,7 +117,7 @@ android_library("view_java") {
     "//base:base_java",
     "//base:jni_java",
     "//content/public/android:content_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [ "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java" ]
@@ -181,7 +181,7 @@ android_library("web_contents_delegate_java") {
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   resources_package = "org.chromium.components.embedder_support.delegate"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -229,7 +229,7 @@ android_library("context_menu_java") {
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/blink/public:blink_headers_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [ "java/src/org/chromium/components/embedder_support/contextmenu/ContextMenuParams.java" ]

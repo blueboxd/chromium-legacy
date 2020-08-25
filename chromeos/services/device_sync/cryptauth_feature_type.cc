@@ -30,6 +30,8 @@ const char kSmsConnectHostSupportedString[] = "SMS_CONNECT_HOST_SUPPORTED";
 const char kSmsConnectClientSupportedString[] = "SMS_CONNECT_CLIENT_SUPPORTED";
 const char kPhoneHubHostSupportedString[] = "PHONE_HUB_HOST_SUPPORTED";
 const char kPhoneHubClientSupportedString[] = "PHONE_HUB_CLIENT_SUPPORTED";
+const char kWifiSyncHostSupportedString[] = "WIFI_SYNC_HOST_SUPPORTED";
+const char kWifiSyncClientSupportedString[] = "WIFI_SYNC_CLIENT_SUPPORTED";
 
 const char kBetterTogetherHostEnabledString[] = "BETTER_TOGETHER_HOST";
 const char kBetterTogetherClientEnabledString[] = "BETTER_TOGETHER_CLIENT";
@@ -41,6 +43,8 @@ const char kSmsConnectHostEnabledString[] = "SMS_CONNECT_HOST";
 const char kSmsConnectClientEnabledString[] = "SMS_CONNECT_CLIENT";
 const char kPhoneHubHostEnabledString[] = "PHONE_HUB_HOST";
 const char kPhoneHubClientEnabledString[] = "PHONE_HUB_CLIENT";
+const char kWifiSyncHostEnabledString[] = "WIFI_SYNC_HOST";
+const char kWifiSyncClientEnabledString[] = "WIFI_SYNC_CLIENT";
 
 }  // namespace
 
@@ -70,6 +74,12 @@ const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes() {
           feature_set.insert(CryptAuthFeatureType::kPhoneHubHostSupported);
           feature_set.insert(CryptAuthFeatureType::kPhoneHubHostEnabled);
         }
+        if (features::IsWifiSyncAndroidEnabled()) {
+          feature_set.insert(CryptAuthFeatureType::kWifiSyncClientSupported);
+          feature_set.insert(CryptAuthFeatureType::kWifiSyncClientEnabled);
+          feature_set.insert(CryptAuthFeatureType::kWifiSyncHostSupported);
+          feature_set.insert(CryptAuthFeatureType::kWifiSyncHostEnabled);
+        }
         return feature_set;
       }());
 
@@ -93,6 +103,10 @@ GetSupportedCryptAuthFeatureTypes() {
           supported_set.insert(CryptAuthFeatureType::kPhoneHubHostSupported);
           supported_set.insert(CryptAuthFeatureType::kPhoneHubClientSupported);
         }
+        if (features::IsWifiSyncAndroidEnabled()) {
+          supported_set.insert(CryptAuthFeatureType::kWifiSyncHostSupported);
+          supported_set.insert(CryptAuthFeatureType::kWifiSyncClientSupported);
+        }
         return supported_set;
       }());
 
@@ -114,6 +128,10 @@ const base::flat_set<CryptAuthFeatureType>& GetEnabledCryptAuthFeatureTypes() {
         if (features::IsPhoneHubEnabled()) {
           enabled_set.insert(CryptAuthFeatureType::kPhoneHubHostEnabled);
           enabled_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
+        }
+        if (features::IsWifiSyncAndroidEnabled()) {
+          enabled_set.insert(CryptAuthFeatureType::kWifiSyncHostEnabled);
+          enabled_set.insert(CryptAuthFeatureType::kWifiSyncClientEnabled);
         }
         return enabled_set;
       }());
@@ -175,6 +193,14 @@ const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type) {
       return kPhoneHubClientSupportedString;
     case CryptAuthFeatureType::kPhoneHubClientEnabled:
       return kPhoneHubClientEnabledString;
+    case CryptAuthFeatureType::kWifiSyncHostSupported:
+      return kWifiSyncHostSupportedString;
+    case CryptAuthFeatureType::kWifiSyncHostEnabled:
+      return kWifiSyncHostEnabledString;
+    case CryptAuthFeatureType::kWifiSyncClientSupported:
+      return kWifiSyncClientSupportedString;
+    case CryptAuthFeatureType::kWifiSyncClientEnabled:
+      return kWifiSyncClientEnabledString;
   }
 }
 
@@ -220,6 +246,14 @@ base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     return CryptAuthFeatureType::kPhoneHubClientSupported;
   if (feature_type_string == kPhoneHubClientEnabledString)
     return CryptAuthFeatureType::kPhoneHubClientEnabled;
+  if (feature_type_string == kWifiSyncHostSupportedString)
+    return CryptAuthFeatureType::kWifiSyncHostSupported;
+  if (feature_type_string == kWifiSyncHostEnabledString)
+    return CryptAuthFeatureType::kWifiSyncHostEnabled;
+  if (feature_type_string == kWifiSyncClientSupportedString)
+    return CryptAuthFeatureType::kWifiSyncClientSupported;
+  if (feature_type_string == kWifiSyncClientEnabledString)
+    return CryptAuthFeatureType::kWifiSyncClientEnabled;
 
   return base::nullopt;
 }
@@ -315,6 +349,16 @@ multidevice::SoftwareFeature CryptAuthFeatureTypeToSoftwareFeature(
       FALLTHROUGH;
     case CryptAuthFeatureType::kPhoneHubClientEnabled:
       return multidevice::SoftwareFeature::kPhoneHubClient;
+
+    case CryptAuthFeatureType::kWifiSyncHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kWifiSyncHostEnabled:
+      return multidevice::SoftwareFeature::kWifiSyncHost;
+
+    case CryptAuthFeatureType::kWifiSyncClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kWifiSyncClientEnabled:
+      return multidevice::SoftwareFeature::kWifiSyncClient;
   }
 }
 
@@ -341,6 +385,10 @@ CryptAuthFeatureType CryptAuthFeatureTypeFromSoftwareFeature(
       return CryptAuthFeatureType::kPhoneHubHostEnabled;
     case multidevice::SoftwareFeature::kPhoneHubClient:
       return CryptAuthFeatureType::kPhoneHubClientEnabled;
+    case multidevice::SoftwareFeature::kWifiSyncHost:
+      return CryptAuthFeatureType::kWifiSyncHostEnabled;
+    case multidevice::SoftwareFeature::kWifiSyncClient:
+      return CryptAuthFeatureType::kWifiSyncClientEnabled;
   }
 }
 

@@ -16,7 +16,7 @@
 <translation id="1335095011850992622">ເຄຣດິດ</translation>
 <translation id="1342835525016946179">ບົດ​ຄວາມ</translation>
 <translation id="1359897965706325498">ປ້າຍ​ໂຄ​ສະ​ນາ</translation>
-<translation id="1480676835519562650">ເລືອກໄດ້ຫຼາຍລາຍການ, ເລືອກ <ph name="SELECTED" /> ຈາກທັງໝົດ <ph name="COUNT" /> ແລ້ວ</translation>
+<translation id="1480676835519562650">ເລືອກໄດ້ຫຼາຍລາຍການ, ເລືອກ <ph name="SELECTED" /> ຈາກທັງໝົດ <ph name="COUNT" /> ແລ້ວ.</translation>
 <translation id="1589122976691792535">ພາກພື້ນ</translation>
 <translation id="1591562245178063882">ເດືອນ​ນີ້</translation>
 <translation id="1637811476055996098">ເລືອກ​ໄຟລ​໌</translation>
@@ -52,7 +52,7 @@
 <translation id="248395913932153421">ວັນ</translation>
 <translation id="2507943997699731163">ກະລຸນາຕື່ມຂໍ້ມູນໃສ່ປ່ອງນີ້.</translation>
 <translation id="2508569020611168319">ລາຍການແຖບ</translation>
-<translation id="2530182415807757784">ເລືອກໄດ້ຫຼາຍລາຍການ, ບໍ່ໄດ້ເລືອກລາຍການໃດເລີຍ</translation>
+<translation id="2530182415807757784">ເລືອກໄດ້ຫຼາຍລາຍການ, ບໍ່ໄດ້ເລືອກລາຍການໃດເລີຍ.</translation>
 <translation id="2561842179657104141">ສະແດງການຄວບຄຸມສື່ເພີ່ມເຕີມ</translation>
 <translation id="2572483411312390101">ຫຼິ້ນ</translation>
 <translation id="2613802280814924224">ກະ​ລຸ​ນາ​ປ້ອນຄ່າທີ່ໃຊ້ໄດ້ເຂົ້າໄປ​. ຄ່າໃຊ້ໄດ້ໃກ້ທີ່ສຸດແມ່ນ <ph name="VALID_VALUE" />.</translation>

@@ -746,11 +746,14 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   transform.Scale(2, 1);
   transform.Translate(10, 5);
 
+  gfx::Rect clip_rect(1, 1, 2, 2);
+
   layer->SetTransform(transform);
   layer->SetColor(SK_ColorRED);
   layer->SetLayerInverted(true);
   layer->AddCacheRenderSurfaceRequest();
   layer->AddTrilinearFilteringRequest();
+  layer->SetClipRect(clip_rect);
   layer->SetRoundedCornerRadius({1, 2, 4, 5});
   layer->SetIsFastRoundedCorner(true);
 
@@ -767,12 +770,14 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   // Cloning should not preserve trilinear_filtering flag.
   EXPECT_NE(layer->cc_layer_for_testing()->trilinear_filtering(),
             clone->cc_layer_for_testing()->trilinear_filtering());
+  EXPECT_EQ(clip_rect, clone->clip_rect());
   EXPECT_EQ(layer->rounded_corner_radii(), clone->rounded_corner_radii());
   EXPECT_EQ(layer->is_fast_rounded_corner(), clone->is_fast_rounded_corner());
 
   layer->SetTransform(gfx::Transform());
   layer->SetColor(SK_ColorGREEN);
   layer->SetLayerInverted(false);
+  layer->SetClipRect(gfx::Rect(10, 10, 10, 10));
   layer->SetIsFastRoundedCorner(false);
   layer->SetRoundedCornerRadius({3, 6, 9, 12});
 
@@ -781,6 +786,7 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   EXPECT_EQ(SK_ColorRED, clone->background_color());
   EXPECT_EQ(SK_ColorRED, clone->GetTargetColor());
   EXPECT_TRUE(clone->layer_inverted());
+  EXPECT_EQ(clip_rect, clone->clip_rect());
   EXPECT_FALSE(layer->is_fast_rounded_corner());
   EXPECT_TRUE(clone->is_fast_rounded_corner());
   EXPECT_NE(layer->rounded_corner_radii(), clone->rounded_corner_radii());

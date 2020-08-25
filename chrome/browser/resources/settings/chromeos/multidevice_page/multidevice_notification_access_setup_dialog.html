@@ -1,0 +1,48 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="multidevice_browser_proxy.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="settings-multidevice-notification-access-setup-dialog">
+  <template>
+    <style include="cr-shared-style settings-shared">
+      cr-dialog::part(dialog) {
+        width: 320px;
+      }
+
+      div[slot='body'] {
+        height: 100px;
+      }
+    </style>
+    <cr-dialog id="dialog" close-text="$i18n{close}">
+      <div id="dialogTitle" slot="title">[[title_]]</div>
+      <div id="dialogBody" slot="body">[[description_]]</div>
+      <div id="buttonContainer" slot="button-container">
+        <template is="dom-if" if="[[showCancelButton_(setupState_)]]" restamp>
+          <cr-button id="cancelButton" class="cancel-button"
+              on-click="onCancelClicked_">
+            $i18n{cancel}
+          </cr-button>
+        </template>
+        <template is="dom-if" if="[[showOkButton_(setupState_)]]" restamp>
+          <cr-button id="okButton" on-click="onOkayButtonClicked_">
+            $i18n{ok}
+          </cr-button>
+        </template>
+        <template is="dom-if" if="[[!setupState_]]" restamp>
+          <cr-button id="confirmButton" class="action-button"
+              on-click="onConfirmButtonClicked_">
+            $i18n{confirm}
+          </cr-button>
+        </template>
+      </div>
+    </cr-dialog>
+  </template>
+  <script src="multidevice_notification_access_setup_dialog.js"></script>
+</dom-module>

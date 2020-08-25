@@ -91,6 +91,12 @@ std::ostream& operator<<(std::ostream& stream,
     case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
       stream << "[Phone Hub client]";
       break;
+    case cryptauth::SoftwareFeature::WIFI_SYNC_HOST:
+      stream << "[Wifi Sync host]";
+      break;
+    case cryptauth::SoftwareFeature::WIFI_SYNC_CLIENT:
+      stream << "[Wifi Sync client]";
+      break;
     default:
       stream << "[unknown software feature]";
       break;
@@ -120,6 +126,10 @@ cryptauth::SoftwareFeature SoftwareFeatureStringToEnum(
     return cryptauth::SoftwareFeature::PHONE_HUB_HOST;
   if (software_feature_as_string == "phoneHubClient")
     return cryptauth::SoftwareFeature::PHONE_HUB_CLIENT;
+  if (software_feature_as_string == "wifiSyncHost")
+    return cryptauth::SoftwareFeature::WIFI_SYNC_HOST;
+  if (software_feature_as_string == "wifiSyncClient")
+    return cryptauth::SoftwareFeature::WIFI_SYNC_CLIENT;
 
   return cryptauth::SoftwareFeature::UNKNOWN_FEATURE;
 }
@@ -147,6 +157,10 @@ std::string SoftwareFeatureEnumToString(
       return "phoneHubHost";
     case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
       return "phoneHubClient";
+    case cryptauth::SoftwareFeature::WIFI_SYNC_HOST:
+      return "wifiSyncHost";
+    case cryptauth::SoftwareFeature::WIFI_SYNC_CLIENT:
+      return "wifiSyncClient";
     default:
       return "unknownFeature";
   }
@@ -175,6 +189,10 @@ std::string SoftwareFeatureEnumToStringAllCaps(
       return "PHONE_HUB_HOST";
     case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
       return "PHONE_HUB_CLIENT";
+    case cryptauth::SoftwareFeature::WIFI_SYNC_HOST:
+      return "WIFI_SYNC_HOST";
+    case cryptauth::SoftwareFeature::WIFI_SYNC_CLIENT:
+      return "WIFI_SYNC_CLIENT";
     default:
       return "UNKNOWN_FEATURE";
   }

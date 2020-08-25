@@ -26,7 +26,7 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
       const base::android::JavaParamRef<jobject>& j_compositor_error_callback);
 
   void OnCompositorReady(
-      mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+      CompositorStatus compositor_status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response) override;
 
   // Called from Java when there is a request for a new bitmap. When the bitmap

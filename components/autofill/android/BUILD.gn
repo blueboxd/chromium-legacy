@@ -40,10 +40,10 @@ android_library("autofill_java") {
     ":autofill_java_resources",
     "//base:base_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
-    "//ui/android:ui_java",
+    "//third_party/android_deps:androidx_core_core_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   sources = [
     "java/src/org/chromium/components/autofill/AutofillDelegate.java",

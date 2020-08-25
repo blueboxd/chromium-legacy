@@ -5,6 +5,7 @@
 #include "components/feedback/feedback_common.h"
 
 #include "base/bind.h"
+#include "build/lacros_buildflags.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/proto/common.pb.h"
 #include "components/feedback/proto/dom.pb.h"
@@ -22,8 +23,8 @@ constexpr char kLongLog[] = TEN_LINES TEN_LINES TEN_LINES TEN_LINES TEN_LINES;
 constexpr char kLogsAttachmentName[] = "system_logs.zip";
 constexpr int kTestProductId = 3490;
 
-#if defined(OS_CHROMEOS)
-constexpr int kDefaultProductId = 208;  // ChromeOS default product ID.
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+constexpr int kDefaultProductId = 208;  // ChromeOS & Lacros default product ID.
 #else
 constexpr int kDefaultProductId = 237;  // Chrome default product ID.
 #endif  // defined(OS_CHROMEOS)

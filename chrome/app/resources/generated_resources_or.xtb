@@ -960,7 +960,6 @@
 <translation id="2152281589789213846">ଆପଣଙ୍କର ପ୍ରୋଫାଇଲ୍‍‍ରେ ପ୍ରିଣ୍ଟର୍‍ଗୁଡ଼ିକ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" />ଟି ଫଟୋ</translation>
 <translation id="2154484045852737596">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
-<translation id="2154697841132053118">ସ୍ପିଚ୍ ଚିହ୍ନଟ କରାଯାଉଛି...</translation>
 <translation id="2154710561487035718">URL କପି କରନ୍ତୁ</translation>
 <translation id="2155772377859296191">ଏପରି ଜଣାଯାଉଛି <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">ସର୍ଭିସ୍ ୱାର୍କର୍: <ph name="SCRIPT_URL" /></translation>
@@ -1225,7 +1224,7 @@
 <translation id="247051149076336810">ଫାଇଲ୍ ସେୟାର୍ URL</translation>
 <translation id="2470702053775288986">ଅସମର୍ଥିତ ଏକ୍ସଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକ ଅକ୍ଷମ ଅଛି</translation>
 <translation id="2471469610750100598">କଳା (ଡିଫଲ୍ଟ)</translation>
-<translation id="2471506181342525583">ଲୋକେସନ୍ ଆକ୍ସେସର ଅନୁମତି ଦିଆଯାଇନାହିଁ</translation>
+<translation id="2471506181342525583">ଲୋକେସନ୍ ଆକ୍ସେସର ଅନୁମତି ଦିଆଯାଇଛି</translation>
 <translation id="2473195200299095979">ଏହି ପୃଷ୍ଠା ଅନୁବାଦ କରନ୍ତୁ</translation>
 <translation id="2475982808118771221">ଏକ ତ୍ରୁଟି ଦେଖାଦେଲା</translation>
 <translation id="2476578072172137802">ସାଇଟ୍‍ ସେଟିଂସ୍‌</translation>
@@ -1931,7 +1930,7 @@
 <translation id="3345886924813989455">କୌଣସି ସମର୍ଥିତ ବ୍ରାଉଜର୍ ମିଳିଲା ନାହିଁ</translation>
 <translation id="3347086966102161372">ଛବି ଠିକଣା &amp;କପି କରନ୍ତୁ</translation>
 <translation id="3348038390189153836">କାଢ଼ିବା ଯୋଗ୍ୟ ଡିଭାଇସ୍ ଚିହ୍ନଟ ହୋଇଛି</translation>
-<translation id="3348131053948466246">ପ୍ରସ୍ତାବିତ ଇମୋଜି। ନାଭିଗେଟ୍ କରିବାକୁ ଅପ୍ କିମ୍ବା ଡାଉନ୍ ତୀରଚିହ୍ନ କୀ ଏବଂ ଭର୍ତ୍ତି କରିବାକୁ Enter ଦବାନ୍ତୁ।</translation>
+<translation id="3348131053948466246">ପ୍ରସ୍ତାବିତ ଇମୋଜି। ନାଭିଗେଟ୍ କରିବାକୁ ଅପ୍ କିମ୍ବା ଡାଉନ୍ କୀ ଦବାଇ ଇନସାର୍ଟ୍ କରିବାକୁ Enter ଦବାନ୍ତୁ।</translation>
 <translation id="3349933790966648062">ମେମୋରୀ ଫୁଟ୍‍ପ୍ରିଣ୍ଟ</translation>
 <translation id="3355936511340229503">ସଂଯୋଗରେ ତ୍ରୁଟି</translation>
 <translation id="3356580349448036450">ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</translation>
@@ -2752,7 +2751,7 @@
 <translation id="4348766275249686434">ତ୍ରୁଟିଗୁଡ଼ିକ ସଂଗ୍ରହ କରନ୍ତୁ</translation>
 <translation id="4349828822184870497">ସାହାଯ୍ୟକାରୀ</translation>
 <translation id="4350019051035968019">ଏହି ଡିଭାଇସ୍‌କୁ ସେହି ଡୋମେନ୍‌ରେ ନାମାଙ୍କିତ କରାଯାଇପାରିବ ନାହିଁ ଯାହା ସହିତ ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ସମ୍ବନ୍ଧିତ ଅଛି କାରଣ ଡିଭାଇସ୍‌କୁ ଅଲଗା ଡୋମେନ୍‌ ଦ୍ୱାରା ପରିଚାଳନା କରିବାକୁ ଚିହ୍ନଟ କରାଯାଇଛି।</translation>
-<translation id="4350230709416545141">ଆପଣଙ୍କ ଲୋକେସନ୍ ଆକ୍ସେସ୍ କରିବାରୁ <ph name="HOST" />ଙ୍କୁ ସର୍ବଦା ବ୍ଲକ୍ କରନ୍ତୁ</translation>
+<translation id="4350230709416545141">ଆପଣଙ୍କ ଲୋକେସନ୍ ଆକ୍ସେସ୍ କରିବାରୁ <ph name="HOST" />କୁ ସର୍ବଦା ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> ଆଖପାଖର ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ସ୍କାନ୍ କରିବାକୁ ଚାହୁଁଛି। ନିମ୍ନୋକ୍ତ ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ମିଳିଛି:</translation>
 <translation id="4354073718307267720">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ଚାହିଁଲେ ପଚାରନ୍ତୁ</translation>
@@ -2799,6 +2798,7 @@
 <translation id="4404136731284211429">ପୁଣି ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> ଆପଣଙ୍କ ବାପାମାଙ୍କ ଦ୍ୱାରା ବ୍ଲକ୍ କରାଯାଇଛି। ଏହି ଆପ୍ ବ୍ୟବହାର କରିବା ପାଇଁ ଅନୁମତି ଦେବାକୁ ଆପଣଙ୍କ ବାପାମାଙ୍କୁ କୁହନ୍ତୁ।</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">ଲାଇଭ୍ କ୍ୟାପସନ୍</translation>
 <translation id="4408599188496843485">ସହାୟତା</translation>
 <translation id="4409697491990005945">ମାର୍ଜିନ୍</translation>
 <translation id="4410545552906060960">ଆପଣଙ୍କର ଡିଭାଇସ୍ ଅନ୍‌ଲକ୍ କରିବା ପାଇଁ ଏକ ପାସ୍‌ୱର୍ଡ ବଦଳରେ ଏକ ନମ୍ବର (PIN) ବ୍ୟବହାର କରନ୍ତୁ। ପରେ ଆପଣଙ୍କ PIN ସେଟ୍ କରିବା ପାଇଁ, ସେଟିଂସ୍‌କୁ ଯାଆନ୍ତୁ।</translation>
@@ -5596,7 +5596,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="790040513076446191">ଗୋପନୀୟତା-ସମ୍ବନ୍ଧିତ ସେଟିଂସ୍ କୁଶଳ ଭାବରେ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="7903345046358933331">ପୃଷ୍ଠାଟି ପ୍ରତିକ୍ରିୟାରହିତ ହୋ‍ଇଛି ଆପଣ ଏହାର ପ୍ରତିକ୍ରିୟା ଦେବା ପର୍ଯ୍ୟନ୍ତ ଅପେକ୍ଷା କରିପାରିବେ କିମ୍ବା ଏହାକୁ ବନ୍ଦ କରିପାରିବେ।</translation>
 <translation id="7903742244674067440">ଫାଇଲ୍‌ରେ ଆପଣଙ୍କର ସାର୍ଟିଫିକେଟ୍‌ ଅଛି ଯାହା ଏହି ସାର୍ଟିଫିକେଟ୍‌ଗୁଡ଼ିକର ପ୍ରାଧିକରଣ ଚିହ୍ନଟ କରିଥାଏ</translation>
-<translation id="7903859912536385558">ସ୍ଥିର (ବିଶ୍ବସ୍ତ ପରୀକ୍ଷକ)</translation>
+<translation id="7903859912536385558">ସ୍ଥିର (ବିଶ୍ୱସ୍ତ ପରୀକ୍ଷକ)</translation>
 <translation id="7903925330883316394">ଉପଯୋଗିତାଗୁଡିକ: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904094684485781019">ଏହି ଆକାଉଣ୍ଟର ବ୍ୟବସ୍ଥାପକ ଏକାଧିକ ସାଇନ୍‌ ଇନ୍‌ ପାଇଁ ଅନୁମତି ଦେଇନାହାନ୍ତି।</translation>
 <translation id="7904526211178107182">ଆପଣଙ୍କ ନେଟୱାର୍କରେ ଅନ୍ୟ ଡିଭାଇସଗୁଡ଼ିକ ପାଇଁ Linux ପୋର୍ଟଗୁଡ଼ିକ ଉପଲବ୍ଧ କରାନ୍ତୁ।</translation>
@@ -5720,7 +5720,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8049705080247101012">Google "<ph name="EXTENSION_NAME" />"କୁ କ୍ଷତିକାରକ ରୂପେ ଫ୍ଲାଗ୍ କରିଛି ଏବଂ ଇନ୍‌ଷ୍ଟଲେସନ୍ ବାଧିତ ହୋଇଛି</translation>
 <translation id="8049948037269924837">ଟଚପ୍ୟାଡ୍ ରିଭର୍ସ ସ୍କ୍ରୋଲିଂ</translation>
 <translation id="8050038245906040378">Microsoft ବାଣିଜ୍ୟ କୋଡ୍‌ ସ୍ୱାକ୍ଷର</translation>
-<translation id="8051390370038326517">MIDI ଡିଭାଇସଗୁଡ଼ିକର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ ନେବାକୁ <ph name="HOST" />କୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
+<translation id="8051390370038326517">MIDI ଡିଭାଇସଗୁଡ଼ିକର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ କରିବାକୁ <ph name="HOST" />କୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="8053278772142718589">PKCS #12ଟି ଫାଇଲ୍</translation>
 <translation id="8053390638574070785">ଏହି ପୃଷ୍ଠାକୁ ରିଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="8054517699425078995">ଏହି ପ୍ରକାର ଫାଇଲ୍ ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟରର କ୍ଷତି କରିପାରେ। ଯେକୌଣସି ମତେ ଆପଣ <ph name="FILE_NAME" /> ରଖିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
@@ -6151,7 +6151,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="860909219589324847">ସ୍ଥାନାନ୍ତର କରିବାକୁ କେବେ ବି ଡାଟା ବ୍ୟବହାର କରନ୍ତୁ ନାହିଁ</translation>
 <translation id="8609465669617005112">ଉପରକୁ ଚଳନ କରନ୍ତୁ</translation>
 <translation id="8610103157987623234">ଭୁଲ ଫର୍ମାଟ୍, ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
-<translation id="8611682088849615761">MIDI ଡିଭାଇସଗୁଡ଼ିକର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ ନେବାକୁ ଏହି ସାଇଟକୁ ଅନୁମତି ଦେବା ଜାରି ରଖନ୍ତୁ</translation>
+<translation id="8611682088849615761">MIDI ଡିଭାଇସଗୁଡ଼ିକର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଏହି ସାଇଟକୁ ଅନୁମତି ଦେବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="8613164732773110792">କେବଳ ସାନ ଅକ୍ଷର, ଅଙ୍କ, ଅଣ୍ଡରସ୍କୋର୍ କିମ୍ବା ଡ୍ୟାସଗୁଡ଼ିକ</translation>
 <translation id="8613786722548417558">ସୁରକ୍ଷା ଯାଞ୍ଚ ପାଇଁ <ph name="FILE_NAME" /> ବହୁତ ବଡ଼ ଅଟେ। ଆପଣ 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ଖୋଲି ପାରିବେ।</translation>
 <translation id="8615618338313291042">ଇନ୍‌କଗ୍ନିଟୋ ଆପ୍: <ph name="APP_NAME" /></translation>
@@ -6294,7 +6294,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8761945298804995673">ଏହି ଉପଯୋଗକର୍ତ୍ତା ପୂର୍ବରୁ ବିଦ୍ୟମାନ ଅଛନ୍ତି</translation>
 <translation id="8762886931014513155">ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଏକ ଅପ୍‌ଡେଟ୍ ଆବଶ୍ୟକ କରୁଛି</translation>
 <translation id="8763927697961133303">USB ଡିଭାଇସ୍</translation>
-<translation id="87646919272181953">Google Photos album</translation>
+<translation id="87646919272181953">Google Photos ଆଲବମ</translation>
 <translation id="8767621466733104912">ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ପାଇଁ ସ୍ୱଚାଳିତ ଭାବେ Chrome ଅପ୍‌ଡେଟ୍‌ କରେ</translation>
 <translation id="8770406935328356739">ଏକ୍ସଣ୍ଟେନ୍‌ସନ୍ ରୁଟ୍ ଡିରେକ୍ଟୋରୀ</translation>
 <translation id="8770507190024617908">ଲୋକମାନଙ୍କୁ ପରିଚାଳନା କରନ୍ତୁ</translation>

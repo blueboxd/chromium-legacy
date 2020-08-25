@@ -1722,26 +1722,23 @@ namespace {
 class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
  public:
   explicit RemoveFocusChangeListenerDelegate(Widget* widget)
-      : widget_(widget), listener_(nullptr) {}
+      : listener_(nullptr) {
+    RegisterDeleteDelegateCallback(base::BindOnce(
+        [](Widget* widget, RemoveFocusChangeListenerDelegate* delegate) {
+          widget->GetFocusManager()->RemoveFocusChangeListener(
+              delegate->listener_);
+        },
+        base::Unretained(widget), base::Unretained(this)));
+  }
   ~RemoveFocusChangeListenerDelegate() override = default;
-
-  // WidgetDelegate:
-  void DeleteDelegate() override;
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
 
   void SetFocusChangeListener(FocusChangeListener* listener);
 
  private:
-  Widget* widget_;
   FocusChangeListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveFocusChangeListenerDelegate);
 };
-
-void RemoveFocusChangeListenerDelegate::DeleteDelegate() {
-  widget_->GetFocusManager()->RemoveFocusChangeListener(listener_);
-}
 
 void RemoveFocusChangeListenerDelegate::SetFocusChangeListener(
     FocusChangeListener* listener) {

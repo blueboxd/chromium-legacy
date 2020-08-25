@@ -72,6 +72,11 @@ Polymer({
     'updateSelected_(menuOptions, pref.value.*, prefKey)',
   ],
 
+  /** @override */
+  focus() {
+    this.$.dropdownMenu.focus();
+  },
+
   /**
    * Pass the selection change to the pref value.
    * @private

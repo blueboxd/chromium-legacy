@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/hit_tester.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
+#include "components/paint_preview/player/compositor_status.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
@@ -32,7 +33,7 @@ class PlayerCompositorDelegate {
   PlayerCompositorDelegate(PaintPreviewBaseService* paint_preview_service,
                            const GURL& url,
                            const DirectoryKey& key,
-                           base::OnceClosure compositor_error,
+                           base::OnceCallback<void(int)> compositor_error,
                            bool skip_service_launch = false);
   virtual ~PlayerCompositorDelegate();
 
@@ -42,7 +43,7 @@ class PlayerCompositorDelegate {
   void SetCompressOnClose(bool compress) { compress_on_close_ = compress; }
 
   virtual void OnCompositorReady(
-      mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+      CompositorStatus compositor_status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {}
 
   // Called when there is a request for a new bitmap. When the bitmap
@@ -59,9 +60,13 @@ class PlayerCompositorDelegate {
                                    const gfx::Rect& rect);
 
  protected:
-  base::OnceClosure compositor_error_;
+  base::OnceCallback<void(int)> compositor_error_;
 
  private:
+  void OnCompositorReadyStatusAdapter(
+      mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+      mojom::PaintPreviewBeginCompositeResponsePtr composite_response);
+
   void OnCompositorServiceDisconnected();
 
   void OnCompositorClientCreated(const GURL& expected_url,

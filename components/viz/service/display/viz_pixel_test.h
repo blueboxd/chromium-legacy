@@ -17,11 +17,14 @@ enum class RendererType { kSoftware, kGL, kSkiaGL, kSkiaVulkan, kSkiaDawn };
 // Provides gtest with a string for RendererType to be used for test suffixes.
 void PrintTo(RendererType type, std::ostream* os);
 
-// Return a list containing all RendererTypes.
+// Returns a list containing all RendererTypes applicable to the platform.
 std::vector<RendererType> GetRendererTypes();
+std::vector<RendererType> GetRendererTypesNoDawn();
 
-// Return a list containing all GPU accelerated RendererTypes.
-std::vector<RendererType> GetGpuRendererTypes(bool include_dawn = true);
+// Returns a list containing all RendererTypes, except SoftwareRenderer,
+// applicable to the platform.
+std::vector<RendererType> GetGpuRendererTypes();
+std::vector<RendererType> GetGpuRendererTypesNoDawn();
 
 // Viz pixel test base class. When SetUp() is called the appropriate
 // DirectRenderer implementation is initialized based on RendererType

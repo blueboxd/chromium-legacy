@@ -1274,6 +1274,12 @@
       <structure name="IDR_OS_SETTINGS_MULTIDEVICE_PAGE_JS"
                  file="chromeos/multidevice_page/multidevice_page.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_MULTIDEVICE_NOTIFICATIONS_ACCESS_SETUP_DIALOG_HTML"
+                 file="chromeos/multidevice_page/multidevice_notification_access_setup_dialog.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_MULTIDEVICE_NOTIFICATIONS_ACCESS_SETUP_DIALOG_JS"
+                 file="chromeos/multidevice_page/multidevice_notification_access_setup_dialog.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MULTIDEVICE_RADIO_BUTTON_HTML"
                  file="chromeos/multidevice_page/multidevice_radio_button.html"
                  compress="false" type="chrome_html" />

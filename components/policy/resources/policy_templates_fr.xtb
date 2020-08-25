@@ -987,22 +987,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
       La valeur de cette règle doit être indiquée en jours.</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
-<translation id="2466697858869282874">Permet de configurer la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, les utilisateurs peuvent déclencher le flux Powerwash pour installer une mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, les utilisateurs peuvent appeler le flux de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> qui préserve l'état au niveau de l'appareil (y compris l'inscription d'entreprise), mais perd les informations sur l'utilisateur. Ce flux de mise à jour est disponible à partir de la version 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" /> : contrôle l'application des mises à jour automatiques du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> pour les micrologiciels <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnérables. Tous les flux préservent l'état de l'appareil local.
-        Si vous définissez cette règle sur 1 ou que vous ne la définissez pas, les mises à jour du micrologiciel TPM ne sont pas appliquées.
-        Si vous définissez cette règle sur 2, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour lors du prochain redémarrage, une fois que l'utilisateur aura pris connaissance de la mise à jour.
-        Si vous définissez cette règle sur 3, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour lors du prochain redémarrage.
-        Si vous définissez cette règle sur 4, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour après l'inscription, avant que l'utilisateur se connecte.
-        Cette option est disponible à partir de la version 75.
-
-      Si cette règle n'est pas définie, la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> n'est pas disponible.</translation>
 <translation id="247658312644322296">Destination "Enregistrer au format PDF"</translation>
 <translation id="2480971699591919564">Cette règle active la fonctionnalité Click to Call, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
 
@@ -1617,9 +1601,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3412937883532015092">Si cette règle est définie sur un nombre, <ph name="PRODUCT_NAME" /> affiche un message pendant le nombre de millisecondes défini, puis ouvre un navigateur secondaire.
 
       Si cette règle n'est pas configurée ou qu'elle est définie sur 0, l'URL sélectionnée s'ouvre automatiquement dans un navigateur secondaire.</translation>
-<translation id="3414260318408232239">Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui est TLS 1.0.
-
-      Sinon, l'une des valeurs suivantes peut être définie : "tls1", "tls1.1" ou "tls1.2". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS antérieures à la version précisée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="34160070798637152">Contrôle la configuration réseau au niveau de l'appareil.</translation>
 <translation id="3417130629744653218">Autoriser les sites Web à vérifier si des modes de paiement sont disponibles.</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
@@ -1873,17 +1854,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="382476126209906314">Configurer le préfixe TalkGadget pour les hôtes d'accès à distance</translation>
 <translation id="3824972131618513497">Paramètres de commande de la gestion de l'alimentation et du redémarrage.</translation>
 <translation id="3826475866868158882">Services de localisation Google activés</translation>
-<translation id="383002993919016993">Permet d'empêcher l'utilisateur de charger des pages Web à partir d'URL bloquées. La liste de blocage concernée répertorie les formats d'URL indiquant quelles URL sont bloquées.
-
-      Un format d'URL doit respecter les conditions énoncées sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Vous pouvez définir des exceptions dans la règle URLAllowlist. Ces règles sont limitées à 1 000 entrées (les entrées suivantes seront donc ignorées).
-
-      Notez qu'il est déconseillé de bloquer les URL internes chrome://*, car cela peut provoquer des erreurs inattendues.
-
-      Vous pouvez bloquer les URL javascript://*. Toutefois, cela ne concerne que le code JavaScript saisi dans la barre d'adresse (ou, par exemple, les favoris intelligents). Sachez que cette règle ne s'applique pas aux URL JavaScript intégrées dans les pages si les données sont chargées dynamiquement. Par exemple, si vous bloquez "example.com/abc", la page "example.com" pourra quand même charger "example.com/abc" via une requête XMLHTTPRequest.
-
-      Si cette règle n'est pas configurée, aucune URL n'est bloquée dans le navigateur.</translation>
 <translation id="3831376478177535007">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> accepte de faire confiance aux certificats émis par l'ancienne infrastructure PKI de Symantec Corporation s'ils sont correctement validés et que leur chaîne de confiance renvoie à un certificat CA reconnu.
 
       Notez que cette règle dépend de la reconnaissance des certificats de l'ancienne infrastructure de Symantec par le système d'exploitation. Si une mise à jour du système d'exploitation modifie sa gestion de ces certificats, cette règle n'aura plus d'effet. En outre, cette règle n'est qu'une solution temporaire destinée à laisser suffisamment de temps aux entreprises pour cesser d'utiliser les anciens certificats Symantec. Elle sera supprimée aux alentours du 1er janvier 2019.
@@ -2151,9 +2121,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
           Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
 
           Si cette règle n'est pas configurée, les commentaires audio sont initialement désactivés sur l'écran de connexion, mais les utilisateurs peuvent les activer à tout moment.</translation>
-<translation id="4171331498167688968">Si cette règle est définie sur "false", les logiciel tiers seront autorisés à injecter du code exécutable dans les processus de Chrome. Si elle est définie sur "true" ou si elle n'est pas configurée, les logiciels tiers ne pourront pas injecter de code exécutable dans les processus de Chrome.
-
-      Quelle que soit la valeur de cette règle, le navigateur n'empêchera pas les logiciels tiers d'injecter du code exécutable dans ses processus sur une machine associée à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="417956245902013347">Permet d'activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie sur l'écran de connexion.
 
           Si cette règle est définie sur "True", la mise en surbrillance du curseur de saisie est toujours activée sur l'écran de connexion.
@@ -2535,15 +2502,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si cette règle est définie sur "Envoyer les importations et les téléchargements des utilisateurs pour analyse", le produit se comporte conformément aux règles indiquées sous "Envoyer les importations des utilisateurs pour analyse" et "Envoyer les téléchargements des utilisateurs pour analyse".
 
       Pour savoir comment les utilisateurs et les administrateurs peuvent consulter les résultats de l'analyse, reportez-vous aux règles <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> et <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />.</translation>
-<translation id="4777805166623621364">
-      La règle SitePerProcess peut être employée pour empêcher les utilisateurs de désactiver le comportement par défaut qui isole tous les sites. Notez que la règle IsolateOrigins peut également servir à isoler d'autres origines plus précises.
-      Si la règle est activée, les utilisateurs ne peuvent pas désactiver le comportement par défaut, dans lequel chaque site exécute son propre processus.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent désactiver l'isolation de sites
-      (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).  Le fait de désactiver cette règle, ou de ne pas la configurer, ne désactive pas l'isolation de sites.
-      Pour <ph name="PRODUCT_OS_NAME" /> 76 ou version antérieure, nous vous recommandons d'attribuer la même valeur à la règle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relative aux appareils. Si les valeurs ne sont pas identiques pour les deux règles, la règle relative aux utilisateurs s'applique. Cela peut ralentir l'ouverture de la session utilisateur.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer la règle SitePerProcess sur Android, utilisez le paramètre SitePerProcessAndroid.
-      </translation>
 <translation id="4787763197941188108">Cette règle permet d'ignorer le format de la page d'impression par défaut.
 
       La propriété <ph name="PAGE_SIZE_NAME" /> doit contenir l'un des formats répertoriés ou être définie sur "Personnalisé" si le format du papier requis ne figure pas dans la liste. Si elle est définie sur "Personnalisé", il est obligatoire de spécifier également la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" />. La hauteur et la largeur souhaitées sont exprimées en micromètres. Dans le cas contraire, la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" /> ne doit pas être renseignée. Toute règle qui ne respecte pas ces consignes sera ignorée.
@@ -2717,19 +2675,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="5075834892754086022">Si cette règle est définie, le nombre minimal de caractères que peut contenir un code ayant été configuré est appliqué. (Un code doit contenir au minimum 1 caractère ; les valeurs inférieures à 1 sont considérées comme égales à 1.)
 
           Si cette règle n'est pas définie, la longueur du code ne pourra pas être inférieure à six chiffres. C'est la longueur minimale conseillée.</translation>
-<translation id="5077993112092904096">Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="URL_BLOCKLIST_POLICY_NAME" />.
-
-      Celle-ci permet d'empêcher l'utilisateur de charger des pages Web à partir d'URL bloquées. La liste de blocage concernée répertorie les formats d'URL indiquant quelles URL sont bloquées.
-
-      Un format d'URL doit respecter les conditions énoncées sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Vous pouvez définir des exceptions dans la règle URLAllowlist. Ces règles sont limitées à 1 000 entrées (les entrées suivantes seront donc ignorées).
-
-      Notez qu'il est déconseillé de bloquer les URL internes chrome://*, car cela peut provoquer des erreurs inattendues.
-
-      À compter de la version Chrome 73, vous pouvez bloquer les URL javascript://*. Toutefois, cela ne concerne que le code JavaScript saisi dans la barre d'adresse (ou, par exemple, les favoris intelligents). Sachez que cette règle ne s'applique pas aux URL JavaScript intégrées dans les pages si les données sont chargées dynamiquement. Par exemple, si vous bloquez "example.com/abc", la page "example.com" pourra quand même charger "example.com/abc" via une requête XMLHTTPRequest.
-
-      Si cette règle n'est pas configurée, aucune URL n'est bloquée dans le navigateur.</translation>
 <translation id="5082572440690475059">Autoriser l'accès en lecture via l'API File System pour ces sites</translation>
 <translation id="5085647276663819155">Désactiver l'aperçu avant impression</translation>
 <translation id="5090209345759901501">Appliquer le paramètre de contenu Flash à tous les contenus</translation>
@@ -3148,9 +3093,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
 <translation id="5561811616825571914">Sélectionner automatiquement des certificats client pour ces sites sur l'écran de connexion</translation>
-<translation id="5564865786900450806">Supprime l'avertissement qui s'affiche lorsque <ph name="PRODUCT_NAME" /> s'exécute sur un ordinateur ou un système d'exploitation qui n'est plus accepté.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas définie, les avertissements s'affichent sur les ordinateurs ou les systèmes d'exploitation non pris en charge.</translation>
 <translation id="5565178130821694365">Le mot de passe doit obligatoirement être saisi tous les deux jours (48 heures)</translation>
 <translation id="5566210228171064229">Autoriser l'impression avec et sans code</translation>
 <translation id="5572971233886879856">Permet de spécifier le sous-ensemble des serveurs d'impression qui sont interrogés pour accéder aux imprimantes disponibles qui y sont associées. Cette règle ne s'applique qu'à la règle <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" />.
@@ -3315,9 +3257,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5815129011704381141">Redémarrer automatiquement après une mise à jour</translation>
 <translation id="582857022372205358">Activer l'impression recto verso bord court</translation>
 <translation id="5832274826894536455">Règles obsolètes</translation>
-<translation id="5835124959204887277">Précise les URL et les domaines pour lesquels aucune boîte de dialogue ne s'affiche lorsque les certificats d'attestation de la clé de sécurité sont demandés. Un signal est également envoyé à la clé de sécurité pour indiquer qu'une attestation individuelle peut être utilisée. Dans les autres cas, les utilisateurs sont avertis dans Chrome 65 et versions ultérieures lorsque des sites demandent une attestation des clés de sécurité.
-
-      Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="5845686745936515940">Permet de rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour tous les cookies. Si vous rétablissez l'ancien comportement, les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée sont traités comme si la valeur "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" était définie. De plus, ceux dont l'attribut a pour valeur "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" n'exigent plus que la valeur de l'attribut "<ph name="ATTRIBUTE_SECURE_NAME" />" soit spécifiée. Enfin, les schémas ne sont pas non plus comparés pour déterminer si deux sites sont identiques ou non. Pour obtenir une description complète, consultez la page https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
@@ -3533,21 +3472,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle n'est pas configurée, les utilisateurs peuvent choisir d'activer ou de désactiver la fonctionnalité.</translation>
 <translation id="6178075938488052838">Cette règle permet de contrôler les utilisateurs autorisés à démarrer une session <ph name="PRODUCT_OS_NAME" />. Elle n'empêche pas les utilisateurs de se connecter à un autre compte Google sur un appareil Android. Pour ce faire, configurez la règle <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> propre à Android via <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
-<translation id="6179255742934310885">Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="URL_ALLOWLIST_POLICY_NAME" />.
-
-      Celle-ci permet d'autoriser l'accès aux URL répertoriées comme exceptions à la liste des URL bloquées.
-
-      Consultez la description de la règle <ph name="URL_BLOCKLIST_POLICY_NAME" /> pour connaître le format des entrées de cette liste.
-
-      Cette règle permet d'ouvrir des exceptions à des listes de blocage restrictives. Par exemple, vous pouvez ajouter le caractère "*" pour bloquer toutes les requêtes, et appliquer cette règle pour autoriser l'accès à un nombre limité d'URL bien définies. Celle-ci peut être utilisée pour ouvrir des exceptions à certains schémas, ports, chemins d'accès spécifiques ou sous-domaines d'autres domaines.
-
-      Le filtre le plus spécifique déterminera si une URL est bloquée ou non. Sachez également que la liste d'autorisation prévaut sur la liste de blocage.
-
-      Cette règle est limitée à 1 000 entrées (les entrées suivantes seront donc ignorées).
-
-      Elle permet également d'autoriser ou non le navigateur d'une application externe enregistrée comme gestionnaire de protocoles à appeler automatiquement les protocoles répertoriés tels que "tel:" ou "ssh:". Cette fonctionnalité n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.
-
-      Si cette règle n'est pas configurée, il n'y a alors aucune exception à la liste de blocage définie dans la règle <ph name="URL_BLOCKLIST_POLICY_NAME" />.</translation>
 <translation id="6181618732396778048">Interdire à tous les sites de demander l'accès en écriture aux fichiers et répertoires</translation>
 <translation id="6183327369896253878">Permet de définir quels identifiants d'application <ph name="PRODUCT_OS_NAME" /> affiche en tant qu'applications épinglées dans la barre du Lanceur d'applications. Notez que les utilisateurs ne peuvent pas les modifier.
 
@@ -3648,8 +3572,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="631183702829488873">Lorsque cette règle est activée, elle permet d'afficher le mot de passe via un clic sur un bouton situé sur l'écran de connexion et de verrouillage.
           Son icône représente un œil et se trouve dans le champ du mot de passe. Le bouton n'est pas affiché lorsque cette fonctionnalité est désactivée.
       </translation>
-<translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
-      Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
 <translation id="6319198883324703402">Définir l'heure de la première notification de redémarrage adressée à l'utilisateur</translation>
 <translation id="6330882599388782338">Autoriser les sites à accéder aux capteurs</translation>
 <translation id="6331167725613770725">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
@@ -4040,16 +3962,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6907778402784621686">Bloquer le contenu non sécurisé sur ces sites</translation>
 <translation id="6908640907898649429">Configure le moteur de recherche par défaut. Vous pouvez définir le moteur de recherche par défaut dont se servira l'utilisateur ou choisir de désactiver le moteur de recherche par défaut.</translation>
 <translation id="6913068954484253496">Autoriser <ph name="PRODUCT_NAME" /> à se connecter aux appareils Cast sur toutes les adresses IP.</translation>
-<translation id="6916507170737609563">
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOriginsAndroid pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOriginsAndroid avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcessAndroid isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOriginsAndroid et de SitePerProcessAndroid sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-
-      REMARQUE : Pour Android, l'isolation de sites est une fonctionnalité expérimentale. Nous allons améliorer sa compatibilité au fil du temps. Toutefois, elle peut actuellement entraîner des problèmes de performances.
-
-      REMARQUE : Cette règle ne s'applique qu'à Chrome sur les appareils Android possédant plus de 1 Go de RAM. Pour l'appliquer sur d'autres plates-formes, utilisez SitePerProcess.
-      </translation>
 <translation id="6922884955650325312">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />"</translation>
 <translation id="6923731550900440989">Activer la mise en surbrillance du curseur de saisie sur l'écran de connexion</translation>
 <translation id="6924223708804692571">Force la désactivation de la vérification orthographique pour certaines langues. Les langues non reconnues dans cette liste seront ignorées.
@@ -5436,19 +5348,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 <translation id="8860342862142842017">Désactiver l'application des règles de transparence des certificats pour une liste de hachages subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="886645881209114007">Autoriser les utilisateurs à utiliser <ph name="PLUGIN_VM_NAME" /> dans <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="8867533754744915440">Permet d'autoriser l'accès aux URL répertoriées comme exceptions à la liste des URL bloquées.
-
-      Consultez la description de la règle <ph name="URL_BLOCKLIST_POLICY_NAME" /> pour connaître le format des entrées de cette liste.
-
-      La présente règle permet d'ouvrir des exceptions à des listes de blocage restrictives. Par exemple, vous pouvez ajouter le caractère "*" pour bloquer toutes les requêtes, et appliquer cette règle pour autoriser l'accès à un nombre limité d'URL bien définies. Celle-ci peut être utilisée pour ouvrir des exceptions à certains schémas, ports, chemins d'accès spécifiques ou sous-domaines d'autres domaines.
-
-      Le filtre le plus spécifique déterminera si une URL est bloquée ou non. Sachez également que la liste d'autorisation prévaut sur la liste de blocage.
-
-      Cette règle est limitée à 1 000 entrées (les entrées suivantes seront donc ignorées).
-
-      Elle permet également d'autoriser ou non le navigateur d'une application externe enregistrée comme gestionnaire de protocoles à appeler automatiquement les protocoles répertoriés tels que "tel:" ou "ssh:". Cette fonctionnalité n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.
-
-      Si cette règle n'est pas configurée, il n'y a alors aucune exception à la liste de blocage définie dans la règle <ph name="URL_BLOCKLIST_POLICY_NAME" />.</translation>
 <translation id="8871974300055371298">Paramètres du contenu</translation>
 <translation id="8872402969096027761">Permet d'activer la fonctionnalité d'accessibilité de clic automatique sur l'écran de connexion.
 

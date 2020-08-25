@@ -34,6 +34,9 @@ class SnapshotBrowserAgent : BrowserObserver,
   // performing any necessary migrations.
   void PerformStorageMaintenance();
 
+  // Permanently removes all snapshots.
+  void RemoveAllSnapshots();
+
   SnapshotCache* snapshot_cache() { return snapshot_cache_; }
 
  private:

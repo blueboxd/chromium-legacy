@@ -11,6 +11,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1056775291175587022">Nav tīklu</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Mobilais tālrunis: <ph name="ADDRESS" /></translation>
+<translation id="1087110696012418426">Labdien, <ph name="GIVEN_NAME" />!</translation>
 <translation id="109942774857561566">Man ir garlaicīgi</translation>
 <translation id="1104084341931202936">Rādīt pieejamības iestatījumus</translation>
 <translation id="1104621072296271835">Kopā jūsu ierīces darbojas vēl labāk</translation>
@@ -71,6 +72,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> taimeris · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 adrese: <ph name="ADDRESS" /></translation>
+<translation id="1708345662127501511">Darbvieta: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Tīkla iestatījumi</translation>
 <translation id="1743570585616704562">Nav atpazīts</translation>
 <translation id="1746730358044914197">Administrators konfigurē ievades metodes.</translation>
@@ -107,6 +109,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2018630726571919839">Pastāstīt joku</translation>
 <translation id="2050339315714019657">Portrets</translation>
 <translation id="2067602449040652523">Tastatūras spilgtums</translation>
+<translation id="2083190527011054446">Arlabunakti, <ph name="GIVEN_NAME" />!</translation>
 <translation id="209965399369889474">Nav savienojuma ar tīklu</translation>
 <translation id="2126242104232412123">Jauna darbvieta</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
@@ -185,6 +188,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="3009178788565917040">Izvade</translation>
 <translation id="3033545621352269033">Ieslēgts</translation>
 <translation id="3038571455154067151">Lai pierakstītos, ievadiet Family Link vecāku piekļuves kodu</translation>
+<translation id="3045488863354895414">Labdien!</translation>
 <translation id="3051128274746680507">Drīzumā tiks noņems jūsu uzraudzītais lietotāja profils. Pierakstieties, lai uzzinātu vairāk.</translation>
 <translation id="3055162170959710888">Šodien jūs izmantojāt šo ierīci: <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Statusa josla, laiks: <ph name="TIME" />,
@@ -300,11 +304,11 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="4212472694152630271">Izmantot PIN kodu</translation>
 <translation id="4215497585250573029">VPN iestatījumi</translation>
 <translation id="4217571870635786043">Diktēšana</translation>
-<translation id="4229328187280698237">Pārslēgties uz planšetdatora režīmu</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti</translation>
 <translation id="4269883910223712419">Ierīces administrators var veikt šādas darbības:</translation>
 <translation id="4279490309300973883">Spoguļošana</translation>
+<translation id="4294319844246081198">Labrīt, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4296136865091727875">Notīrīt visus paziņojumus (kopā <ph name="COUNT" />)</translation>
 <translation id="4303223480529385476">Izvērst statusa apgabalu</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -321,6 +325,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
+<translation id="445864333228800152">Labvakar!</translation>
 <translation id="4458688154122353284">Apturēt ekrāna ierakstīšanu</translation>
 <translation id="4477350412780666475">Nākamais ieraksts</translation>
 <translation id="4477892968187500306">Iespējams, šajā ierīcē ir lietotnes, ko uzņēmums Google nav verificējis.</translation>
@@ -431,6 +436,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="5887866489674258948">Tumšais režīms</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5909862606227538307">Neaktīva darbvieta.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5920710855273935292">Mikrofons ir izslēgts.</translation>
@@ -562,6 +568,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="7405710164030118432">Lai atbloķētu šo ierīci, ievadiet Family Link vecāku piekļuves kodu.</translation>
 <translation id="741244894080940828">izteikšana citās mērvienībās</translation>
 <translation id="742594950370306541">Kamera tiek lietota.</translation>
+<translation id="742608627846767349">Labrīt!</translation>
 <translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
 <translation id="7466449121337984263">Lūdzu, pieskarieties sensoram.</translation>
 <translation id="7497767806359279797">Izvēlēties valodu un tastatūru</translation>
@@ -648,11 +655,13 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="8351131234907093545">Izveidot piezīmi</translation>
 <translation id="8371779926711439835">Pāriet uz priekšu pa burtam</translation>
 <translation id="8375916635258623388">Tiks automātiski izveidots šīs ierīces <ph name="DEVICE_NAME" /> un jūsu tālruņa savienojums</translation>
+<translation id="8380784334203145311">Arlabunakti!</translation>
 <translation id="8388750414311082622">Pēdējo darbvietu nevar noņemt.</translation>
 <translation id="8392451568018454956">Opciju izvēlne kontam <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Jūsu vecāki bloķēja šo ierīci</translation>
 <translation id="8412677897383510995">Rādīt displeja iestatījumus</translation>
 <translation id="8425213833346101688">Mainīt</translation>
+<translation id="8426708595819210923">Labvakar, <ph name="GIVEN_NAME" />!</translation>
 <translation id="8427213022735114808">Diktēšanas funkcija nosūta jūsu balss datus Google serveriem, lai atļautu rakstīšanu ar balsi jebkurā teksta laukā.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8433186206711564395">Tīkla iestatījumi</translation>
@@ -706,7 +715,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="890616557918890486">Mainīt avotu</translation>
 <translation id="8909138438987180327">Akumulatora uzlādes līmenis:<ph name="PERCENTAGE" />.</translation>
 <translation id="8913384980486163186">Motīva (noklusējuma)</translation>
-<translation id="8918251165865262378">Pārslēgties uz klēpjdatora režīmu</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
 <translation id="8936501819958976551">deaktivizēta</translation>

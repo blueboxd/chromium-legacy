@@ -141,33 +141,33 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 
   ASSERT_EQ(image_bitmap_no_crop->BitmapImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage(),
+                .GetSwSkImage(),
             image_element->CachedImage()
                 ->GetImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage());
+                .GetSwSkImage());
   ASSERT_NE(image_bitmap_interior_crop->BitmapImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage(),
+                .GetSwSkImage(),
             image_element->CachedImage()
                 ->GetImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage());
+                .GetSwSkImage());
   ASSERT_EQ(image_bitmap_exterior_crop->BitmapImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage(),
+                .GetSwSkImage(),
             image_element->CachedImage()
                 ->GetImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage());
+                .GetSwSkImage());
 
   scoped_refptr<StaticBitmapImage> empty_image =
       image_bitmap_outside_crop->BitmapImage();
-  ASSERT_NE(empty_image->PaintImageForCurrentFrame().GetSkImage(),
+  ASSERT_NE(empty_image->PaintImageForCurrentFrame().GetSwSkImage(),
             image_element->CachedImage()
                 ->GetImage()
                 ->PaintImageForCurrentFrame()
-                .GetSkImage());
+                .GetSwSkImage());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
@@ -192,10 +192,10 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
       MakeGarbageCollected<ImageBitmap>(image, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap);
   ASSERT_EQ(
-      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSwSkImage(),
       original_image_content->GetImage()
           ->PaintImageForCurrentFrame()
-          .GetSkImage());
+          .GetSwSkImage());
 
   ImageResourceContent* new_image_content = ImageResourceContent::CreateLoaded(
       UnacceleratedStaticBitmapImage::Create(image2_).get());
@@ -203,18 +203,18 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
 
   {
     ASSERT_EQ(
-        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSwSkImage(),
         original_image_content->GetImage()
             ->PaintImageForCurrentFrame()
-            .GetSkImage());
+            .GetSwSkImage());
     SkImage* image1 = image_bitmap->BitmapImage()
                           ->PaintImageForCurrentFrame()
-                          .GetSkImage()
+                          .GetSwSkImage()
                           .get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 = original_image_content->GetImage()
                           ->PaintImageForCurrentFrame()
-                          .GetSkImage()
+                          .GetSwSkImage()
                           .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_EQ(image1, image2);
@@ -222,18 +222,18 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
 
   {
     ASSERT_NE(
-        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSwSkImage(),
         new_image_content->GetImage()
             ->PaintImageForCurrentFrame()
-            .GetSkImage());
+            .GetSwSkImage());
     SkImage* image1 = image_bitmap->BitmapImage()
                           ->PaintImageForCurrentFrame()
-                          .GetSkImage()
+                          .GetSwSkImage()
                           .get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 = new_image_content->GetImage()
                           ->PaintImageForCurrentFrame()
-                          .GetSkImage()
+                          .GetSwSkImage()
                           .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
@@ -322,7 +322,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
 
   ASSERT_TRUE(image_bitmap);
   sk_sp<SkImage> sk_image_internal =
-      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSwSkImage();
   ASSERT_EQ(kN32_SkColorType, sk_image_internal->colorType());
 
   // source: uint8, bitmap pixel format: uint8
@@ -332,7 +332,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   ASSERT_TRUE(image_bitmap_8888);
   sk_sp<SkImage> sk_image_internal_8888 = image_bitmap_8888->BitmapImage()
                                               ->PaintImageForCurrentFrame()
-                                              .GetSkImage();
+                                              .GetSwSkImage();
   ASSERT_EQ(kN32_SkColorType, sk_image_internal_8888->colorType());
 
   // Since there is no conversion from uint8 to default for image bitmap pixel
@@ -354,8 +354,9 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   auto* image_bitmap_f16 = MakeGarbageCollected<ImageBitmap>(
       bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
   ASSERT_TRUE(image_bitmap_f16);
-  sk_sp<SkImage> sk_image_internal_f16 =
-      image_bitmap_f16->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  sk_sp<SkImage> sk_image_internal_f16 = image_bitmap_f16->BitmapImage()
+                                             ->PaintImageForCurrentFrame()
+                                             .GetSwSkImage();
   ASSERT_EQ(kRGBA_F16_SkColorType, sk_image_internal_f16->colorType());
 
   // source: f16, bitmap pixel format: uint8
@@ -366,7 +367,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   sk_sp<SkImage> sk_image_internal_f16_8888 =
       image_bitmap_f16_8888->BitmapImage()
           ->PaintImageForCurrentFrame()
-          .GetSkImage();
+          .GetSwSkImage();
   ASSERT_EQ(kN32_SkColorType, sk_image_internal_f16_8888->colorType());
 }
 

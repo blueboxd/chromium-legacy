@@ -42,6 +42,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
                                    base::Unretained(delegate_.get())));
   SetCloseCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Close,
                                   base::Unretained(delegate_.get())));
+  SetOwnedByWidget(true);
 
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
@@ -84,10 +85,6 @@ views::Widget* TabModalConfirmDialogViews::GetWidget() {
 
 const views::Widget* TabModalConfirmDialogViews::GetWidget() const {
   return message_box_view_->GetWidget();
-}
-
-void TabModalConfirmDialogViews::DeleteDelegate() {
-  delete this;
 }
 
 ui::ModalType TabModalConfirmDialogViews::GetModalType() const {

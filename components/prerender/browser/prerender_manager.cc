@@ -542,8 +542,11 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
   }
 
   if (!delegate_->IsPredictionEnabled(origin)) {
-    SkipPrerenderContentsAndMaybePreconnect(url, origin,
-                                            FINAL_STATUS_PRERENDERING_DISABLED);
+    FinalStatus final_status =
+        delegate_->IsPredictionDisabledDueToNetwork(origin)
+            ? FINAL_STATUS_CELLULAR_NETWORK
+            : FINAL_STATUS_PRERENDERING_DISABLED;
+    SkipPrerenderContentsAndMaybePreconnect(url, origin, final_status);
     return nullptr;
   }
 
@@ -954,6 +957,7 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   }
 
   if (final_status == FINAL_STATUS_LOW_END_DEVICE ||
+      final_status == FINAL_STATUS_CELLULAR_NETWORK ||
       final_status == FINAL_STATUS_DUPLICATE ||
       final_status == FINAL_STATUS_TOO_MANY_PROCESSES) {
     MaybePreconnect(origin, url);

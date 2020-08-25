@@ -21,6 +21,7 @@
 #include "base/hash/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -157,7 +158,10 @@ Status StorageQueue::Init() {
 
 Status StorageQueue::EnumerateDataFiles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
-  first_seq_number_ = 0;
+  // We need to set first_seq_number_ to 0 if this is the initialization
+  // of an empty StorageQueue, and to the lowest seq number among all
+  // existing files, if it was already used.
+  base::Optional<uint64_t> first_seq_number;
   base::FileEnumerator dir_enum(
       options_.directory(),
       /*recursive=*/false, base::FileEnumerator::FILES,
@@ -170,7 +174,7 @@ Status StorageQueue::EnumerateDataFiles() {
                     base::StrCat({"File has no extension: '",
                                   full_name.MaybeAsASCII(), "'"}));
     }
-    uint64_t seq_number;
+    uint64_t seq_number = 0;
     bool success = base::StringToUint64(
         dir_enum.GetInfo().GetName().Extension().substr(1), &seq_number);
     if (!success) {
@@ -186,10 +190,16 @@ Status StorageQueue::EnumerateDataFiles() {
                     base::StrCat({"Sequencing duplicated: '",
                                   full_name.MaybeAsASCII(), "'"}));
     }
-    if (first_seq_number_ > seq_number) {
-      first_seq_number_ = seq_number;  // Records with this number exist.
+    if (!first_seq_number.has_value() ||
+        first_seq_number.value() > seq_number) {
+      first_seq_number = seq_number;
     }
   }
+  // first_seq_number.has_value() is true only if we found some files.
+  // Otherwise it is false, the StorageQueue is being initialized for the
+  // first time, and we need to set first_seq_number_ to 0.
+  first_seq_number_ =
+      first_seq_number.has_value() ? first_seq_number.value() : 0;
   return Status::StatusOK();
 }
 

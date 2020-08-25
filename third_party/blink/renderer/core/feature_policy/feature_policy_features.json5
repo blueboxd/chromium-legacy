@@ -152,12 +152,6 @@
       feature_default: "EnableForAll",
     },
     {
-      name: "DocumentWrite",
-      feature_policy_name: "document-write",
-      feature_default: "EnableForAll",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
       name: "Downloads",
       feature_policy_name: "downloads",
       feature_default: "EnableForAll",
@@ -302,12 +296,6 @@
       feature_default: "EnableForAll",
       feature_policy_name: "storage-access-api",
       depends_on: ["StorageAccessAPI"],
-    },
-    {
-      name: "SyncScript",
-      feature_policy_name: "sync-script",
-      feature_default: "EnableForAll",
-      depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "SyncXHR",

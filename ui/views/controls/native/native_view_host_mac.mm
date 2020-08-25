@@ -153,6 +153,12 @@ void NativeViewHostMac::RemovedFromWidget() {
   NativeViewDetaching(false);
 }
 
+bool NativeViewHostMac::SetCornerRadii(
+    const gfx::RoundedCornersF& corner_radii) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool NativeViewHostMac::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
   NOTIMPLEMENTED();
   return false;

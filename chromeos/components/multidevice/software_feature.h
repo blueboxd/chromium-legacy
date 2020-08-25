@@ -47,7 +47,12 @@ enum class SoftwareFeature {
   // Phone Hub, which allows users to view phone metadata and send commands to
   // their phone directly from the Chrome OS UI.
   kPhoneHubHost = 9,
-  kPhoneHubClient = 10
+  kPhoneHubClient = 10,
+
+  // Wifi Sync with Android, which allows users to sync wifi network
+  // configurations between Chrome OS devices and a connected Android phone
+  kWifiSyncHost = 11,
+  kWifiSyncClient = 12
 };
 
 SoftwareFeature FromCryptAuthFeature(

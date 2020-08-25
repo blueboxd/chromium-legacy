@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/fill_layout.h"
@@ -69,7 +70,7 @@ void ExtensionPopup::AddedToWidget() {
   BubbleDialogDelegateView::AddedToWidget();
   const int radius = GetBubbleFrameView()->corner_radius();
   const bool contents_has_rounded_corners =
-      extension_view_->holder()->SetCornerRadius(radius);
+      extension_view_->holder()->SetCornerRadii(gfx::RoundedCornersF(radius));
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(contents_has_rounded_corners ? 0 : radius, 0)));
 }

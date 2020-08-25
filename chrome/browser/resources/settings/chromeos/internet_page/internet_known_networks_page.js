@@ -58,7 +58,7 @@ Polymer({
      * @private {?chromeos.settings.mojom.Setting}
      */
     pendingSettingId_: {
-      type: chromeos.settings.mojom.Setting,
+      type: Number,
       value: null,
     },
 

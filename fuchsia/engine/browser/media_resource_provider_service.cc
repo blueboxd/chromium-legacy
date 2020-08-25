@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/fuchsia/process_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"
@@ -169,7 +170,12 @@ std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
                      std::make_unique<PlayreadyHandler>());
   }
 
-  return std::make_unique<media::FuchsiaCdmManager>(std::move(handlers));
+  std::string cdm_data_directory =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kCdmDataDirectory);
+
+  return std::make_unique<media::FuchsiaCdmManager>(
+      std::move(handlers), base::FilePath(cdm_data_directory));
 }
 
 }  // namespace

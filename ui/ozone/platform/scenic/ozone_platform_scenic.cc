@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/task/current_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -42,14 +43,6 @@
 namespace ui {
 
 namespace {
-
-constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
-    .needs_view_token = true,
-    .custom_frame_pref_default = false,
-    .use_system_title_bar = false,
-    .message_pump_type_for_gpu = base::MessagePumpType::IO,
-    .supports_vulkan_swap_chain = true,
-};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
@@ -105,7 +98,17 @@ class OzonePlatformScenic : public OzonePlatform,
   }
 
   const PlatformProperties& GetPlatformProperties() override {
-    return kScenicPlatformProperties;
+    static base::NoDestructor<OzonePlatform::PlatformProperties> properties;
+    static bool initialised = false;
+    if (!initialised) {
+      properties->needs_view_token = true;
+      properties->message_pump_type_for_gpu = base::MessagePumpType::IO;
+      properties->supports_vulkan_swap_chain = true;
+
+      initialised = true;
+    }
+
+    return *properties;
   }
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()

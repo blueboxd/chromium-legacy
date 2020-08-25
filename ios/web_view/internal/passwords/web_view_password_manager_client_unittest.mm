@@ -46,7 +46,7 @@ class WebViewPasswordManagerClientTest : public PlatformTest {
             base::MakeRefCounted<password_manager::TestPasswordStore>()),
         account_store_(
             base::MakeRefCounted<password_manager::TestPasswordStore>(
-                /*is_account_store=*/true)) {
+                password_manager::IsAccountStore(true))) {
     scoped_feature.InitAndEnableFeature(
         password_manager::features::kEnablePasswordsAccountStorage);
 

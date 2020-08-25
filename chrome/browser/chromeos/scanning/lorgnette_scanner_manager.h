@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -24,6 +25,8 @@ class LorgnetteScannerManager : public KeyedService {
  public:
   using GetScannerNamesCallback =
       base::OnceCallback<void(std::vector<std::string> scanner_names)>;
+  using GetScannerCapabilitiesCallback = base::OnceCallback<void(
+      base::Optional<lorgnette::ScannerCapabilities> capabilities)>;
   using ScanCallback =
       base::OnceCallback<void(base::Optional<std::string> scan_data)>;
 
@@ -34,6 +37,13 @@ class LorgnetteScannerManager : public KeyedService {
 
   // Returns the names of all available, deduplicated scanners.
   virtual void GetScannerNames(GetScannerNamesCallback callback) = 0;
+
+  // Returns the capabilities of the scanner specified by |scanner_name|. If
+  // |scanner_name| does not correspond to a known scanner, base::nullopt is
+  // returned in the callback.
+  virtual void GetScannerCapabilities(
+      const std::string& scanner_name,
+      GetScannerCapabilitiesCallback callback) = 0;
 
   // Performs a scan with the scanner specified by |scanner_name| using the
   // given |scan_properties|. If |scanner_name| does not correspond to a known

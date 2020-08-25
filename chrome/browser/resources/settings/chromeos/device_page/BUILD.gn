@@ -39,6 +39,9 @@ js_library("device_page_browser_proxy") {
 js_library("pointers") {
   deps = [
     ":device_page_browser_proxy",
+    "..:deep_linking_behavior",
+    "..:os_route",
+    "../..:router",
     "../../controls:settings_toggle_button",
     "../localized_link:localized_link",
   ]
@@ -47,6 +50,7 @@ js_library("pointers") {
 js_library("keyboard") {
   deps = [
     ":device_page_browser_proxy",
+    "..:deep_linking_behavior",
     "..:os_route",
     "../..:router",
     "../../controls:settings_dropdown_menu",
@@ -61,6 +65,7 @@ js_library("keyboard") {
 js_library("stylus") {
   deps = [
     ":device_page_browser_proxy",
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
     "../../prefs:prefs_types",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
@@ -72,6 +77,7 @@ js_library("stylus") {
 js_library("display") {
   deps = [
     ":display_layout",
+    "..:deep_linking_behavior",
     "../..:router",
     "../../controls:settings_dropdown_menu",
     "../../controls:settings_slider",
@@ -129,6 +135,7 @@ js_library("night_light_slider") {
 js_library("power") {
   deps = [
     ":device_page_browser_proxy",
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
     "../..:router",
     "../../prefs:prefs_types",

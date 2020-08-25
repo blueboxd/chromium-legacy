@@ -35,10 +35,8 @@
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
@@ -133,9 +131,6 @@ void RecordInterfaceOrientationMetric() {
   // Weak reference to the session restoration agent.
   SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
 
-  // Used for saving gray images.
-  SnapshotBrowserAgent* _snapshotBrowserAgent;
-
   // Used to ensure thread-safety of the certificate policy management code.
   base::CancelableTaskTracker _clearPoliciesTaskTracker;
 
@@ -179,8 +174,6 @@ void RecordInterfaceOrientationMetric() {
     _sessionRestorationBrowserAgent =
         SessionRestorationBrowserAgent::FromBrowser(browser);
     _webEnabler = WebUsageEnablerBrowserAgent::FromBrowser(browser);
-
-    _snapshotBrowserAgent = SnapshotBrowserAgent::FromBrowser(browser);
 
     _webStateListObservers.push_back(std::make_unique<TabParentingObserver>());
 
@@ -239,12 +232,8 @@ void RecordInterfaceOrientationMetric() {
 // TODO(crbug.com/1115611): Move to SceneController.
 - (void)willResignActive:(NSNotification*)notify {
   if (_webEnabler->IsWebUsageEnabled() && _webStateList->GetActiveWebState()) {
-    NSString* tabId =
-        TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
-            ->tab_id();
-
-    [_snapshotBrowserAgent->snapshot_cache()
-        willBeSavedGreyWhenBackgrounding:tabId];
+    SnapshotTabHelper::FromWebState(_webStateList->GetActiveWebState())
+        ->WillBeSavedGreyWhenBackgrounding();
   }
 }
 
@@ -268,12 +257,8 @@ void RecordInterfaceOrientationMetric() {
 
   // Write out a grey version of the current website to disk.
   if (_webEnabler->IsWebUsageEnabled() && _webStateList->GetActiveWebState()) {
-    NSString* tabId =
-        TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
-            ->tab_id();
-
-    [_snapshotBrowserAgent->snapshot_cache()
-        saveGreyInBackgroundForSnapshotID:tabId];
+    SnapshotTabHelper::FromWebState(_webStateList->GetActiveWebState())
+        ->SaveGreyInBackground();
   }
 }
 

@@ -16,7 +16,7 @@
 <translation id="1335095011850992622">קרדיטים</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">מודעת באנר</translation>
-<translation id="1480676835519562650">אפשרות בחירה מרובה, נבחרו <ph name="SELECTED" /> מתוך <ph name="COUNT" />.</translation>
+<translation id="1480676835519562650">ניתן לבחור יותר מאפשרות אחת, נבחרו <ph name="SELECTED" /> מתוך <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">אזור</translation>
 <translation id="1591562245178063882">החודש</translation>
 <translation id="1637811476055996098">בחר קבצים</translation>
@@ -52,7 +52,7 @@
 <translation id="248395913932153421">יום</translation>
 <translation id="2507943997699731163">זהו שדה חובה.</translation>
 <translation id="2508569020611168319">רשימת כרטיסיות</translation>
-<translation id="2530182415807757784">אפשרות בחירה מרובה, לא נבחרה אף אפשרות.</translation>
+<translation id="2530182415807757784">ניתן לבחור יותר מאפשרות אחת, לא נבחרה אף אפשרות.</translation>
 <translation id="2561842179657104141">הצג עוד פקדי מדיה</translation>
 <translation id="2572483411312390101">הפעל</translation>
 <translation id="2613802280814924224">הזן ערך חוקי. הערך החוקי הקרוב ביותר הוא <ph name="VALID_VALUE" /></translation>

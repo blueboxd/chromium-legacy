@@ -50,6 +50,18 @@ const char kVidPrefix[] = "vid_";  // Also contains '\0'.
 const char kPidPrefix[] = "pid_";  // Also contains '\0'.
 const size_t kVidPidSize = 4;
 
+// AQS device selector string to filter enumerated DeviceInformation objects to
+// KSCATEGORY_SENSOR_CAMERA (Class GUID 24e552d7-6523-47F7-a647-d3465bf1f5ca)
+// OR KSCATEGORY_VIDEO_CAMERA (Class GUID e5323777-f976-4f5b-9b55-b94699c46e44).
+const wchar_t* kVideoAndSensorCamerasAqsString =
+    L"(System.Devices.InterfaceClassGuid:="
+    L"\"{e5323777-f976-4f5b-9b55-b94699c46e44}\" AND "
+    L"(System.Devices.WinPhone8CameraFlags:=[] OR "
+    L"System.Devices.WinPhone8CameraFlags:<4096)) OR "
+    L"System.Devices.InterfaceClassGuid:="
+    L"\"{24e552d7-6523-47f7-a647-d3465bf1f5ca}\" AND "
+    L"System.Devices.InterfaceEnabled:=System.StructuredQueryType.Boolean#True";
+
 // Avoid enumerating and/or using certain devices due to they provoking crashes
 // or any other reason (http://crbug.com/378494). This enum is defined for the
 // purposes of UMA collection. Existing entries cannot be removed.
@@ -542,8 +554,9 @@ void VideoCaptureDeviceFactoryWin::EnumerateDevicesUWP(
   }
 
   IAsyncOperation<DeviceInformationCollection*>* async_op;
-  hr = dev_info_statics->FindAllAsyncDeviceClass(
-      ABI::Windows::Devices::Enumeration::DeviceClass_VideoCapture, &async_op);
+  ScopedHString aqs_filter =
+      ScopedHString::Create(kVideoAndSensorCamerasAqsString);
+  hr = dev_info_statics->FindAllAsyncAqsFilter(aqs_filter.get(), &async_op);
   if (FAILED(hr)) {
     UWP_ENUM_ERROR_HANDLER(hr, "Find all devices asynchronously failed: ");
     return;

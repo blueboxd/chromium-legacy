@@ -963,7 +963,6 @@
 <translation id="2152281589789213846">将打印机添加到您的个人资料中</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> 张照片</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
-<translation id="2154697841132053118">正在检测语音…</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2155772377859296191">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service Worker：<ph name="SCRIPT_URL" /></translation>
@@ -2755,7 +2754,7 @@
 <translation id="4348766275249686434">收集各项错误</translation>
 <translation id="4349828822184870497">有用</translation>
 <translation id="4350019051035968019">该设备无法注册到您的帐号所属的网域，因为它已标记为受其他网域管理。</translation>
-<translation id="4350230709416545141">一律禁止 <ph name="HOST" /> 使用您的位置信息</translation>
+<translation id="4350230709416545141">始终禁止 <ph name="HOST" /> 使用您的位置信息</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> 想搜索附近的蓝牙设备，并发现了以下设备：</translation>
 <translation id="4354073718307267720">在网站想为您的周边环境创建 3D 地图或跟踪摄像头位置时询问您</translation>
@@ -2802,6 +2801,7 @@
 <translation id="4404136731284211429">重新扫描</translation>
 <translation id="4404843640767531781">“<ph name="APP_NAME" />”已被您的家长禁用。请让您的家长授权您使用此应用。</translation>
 <translation id="4405117686468554883">*.jpeg、*.jpg、*.png</translation>
+<translation id="4406883609789734330">实时字幕</translation>
 <translation id="4408599188496843485">帮助(&amp;E)</translation>
 <translation id="4409697491990005945">边距</translation>
 <translation id="4410545552906060960">使用数字（PIN 码）代替密码来解锁设备。若想在晚些时候设置 PIN 码，请前往“设置”。</translation>
@@ -3596,7 +3596,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="543338862236136125">修改密码</translation>
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
-<translation id="5435779377906857208">一律允许 <ph name="HOST" /> 使用您的位置信息</translation>
+<translation id="5435779377906857208">始终允许 <ph name="HOST" /> 使用您的位置信息</translation>
 <translation id="5436492226391861498">正在等待代理隧道的响应...</translation>
 <translation id="5436510242972373446">用 <ph name="SITE_NAME" /> 搜索：</translation>
 <translation id="543806387003274181">请立即保存您的文件并创建一个新帐号。</translation>
@@ -4535,7 +4535,7 @@
 <translation id="6590458744723262880">重命名文件夹</translation>
 <translation id="6592267180249644460">WebRTC日志记录时间：<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">已捕获您的指纹</translation>
-<translation id="6595187330192059106">一律禁止 <ph name="HOST" /> 全面控制 MIDI 设备。</translation>
+<translation id="6595187330192059106">始终禁止 <ph name="HOST" /> 全面控制 MIDI 设备。</translation>
 <translation id="6596325263575161958">加密选项</translation>
 <translation id="6596816719288285829">IP 地址</translation>
 <translation id="6597017209724497268">个样本的平均值</translation>
@@ -5723,7 +5723,7 @@
 <translation id="8049705080247101012">Google 已将“<ph name="EXTENSION_NAME" />”标记为恶意扩展程序并已阻止系统安装它</translation>
 <translation id="8049948037269924837">触控板反向滚动</translation>
 <translation id="8050038245906040378">Microsoft 商业代码签名</translation>
-<translation id="8051390370038326517">一律允许 <ph name="HOST" /> 全面控制 MIDI 设备</translation>
+<translation id="8051390370038326517">始终允许 <ph name="HOST" /> 全面控制 MIDI 设备</translation>
 <translation id="8053278772142718589">PKCS #12 文件</translation>
 <translation id="8053390638574070785">重新加载此页</translation>
 <translation id="8054517699425078995">此类型的文件可能会危害您的设备。仍要保留 <ph name="FILE_NAME" /> 吗？</translation>
@@ -6614,7 +6614,7 @@
 <translation id="9147392381910171771">选项(&amp;O)</translation>
 <translation id="9148058034647219655">退出</translation>
 <translation id="9148126808321036104">重新登录</translation>
-<translation id="9148963623915467028">此网站已能使用您的位置信息。</translation>
+<translation id="9148963623915467028">此网站可以使用您的位置信息。</translation>
 <translation id="9149866541089851383">编辑...</translation>
 <translation id="9150045010208374699">使用您的摄像头</translation>
 <translation id="9153934054460603056">保存身份信息和密码</translation>

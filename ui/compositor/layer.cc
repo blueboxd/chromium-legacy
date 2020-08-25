@@ -273,6 +273,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetMasksToBounds(GetMasksToBounds());
   clone->SetOpacity(GetTargetOpacity());
   clone->SetVisible(GetTargetVisibility());
+  clone->SetClipRect(GetTargetClipRect());
   clone->SetAcceptEvents(accept_events());
   clone->SetFillsBoundsOpaquely(fills_bounds_opaquely_);
   clone->SetFillsBoundsCompletely(fills_bounds_completely_);
@@ -495,6 +496,14 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
 
 bool Layer::GetMasksToBounds() const {
   return cc_layer_->masks_to_bounds();
+}
+
+gfx::Rect Layer::GetTargetClipRect() const {
+  if (animator_ &&
+      animator_->IsAnimatingProperty(LayerAnimationElement::CLIP)) {
+    return animator_->GetTargetClipRect();
+  }
+  return clip_rect();
 }
 
 void Layer::SetClipRect(const gfx::Rect& clip_rect) {

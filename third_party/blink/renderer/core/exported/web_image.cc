@@ -101,8 +101,10 @@ SkBitmap WebImage::DecodeSVG(const WebData& data, const WebSize& desired_size) {
     container_size = svg_image->ConcreteObjectSize(FloatSize());
   scoped_refptr<Image> svg_container =
       SVGImageForContainer::Create(svg_image.get(), container_size, 1, KURL());
-  if (PaintImage image = svg_container->PaintImageForCurrentFrame())
-    image.GetSkImage()->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode);
+  if (PaintImage image = svg_container->PaintImageForCurrentFrame()) {
+    image.GetSwSkImage()->asLegacyBitmap(&bitmap,
+                                         SkImage::kRO_LegacyBitmapMode);
+  }
   return bitmap;
 }
 

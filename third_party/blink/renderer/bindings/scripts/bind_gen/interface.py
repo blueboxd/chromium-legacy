@@ -95,7 +95,8 @@ def backward_compatible_api_func(cg_context):
 
 def callback_function_name(cg_context,
                            overload_index=None,
-                           for_cross_origin=False):
+                           for_cross_origin=False,
+                           no_alloc_direct_call=False):
     assert isinstance(cg_context, CodeGenContext)
 
     def _cxx_name(name):
@@ -150,6 +151,8 @@ def callback_function_name(cg_context,
         suffix = "CrossOrigin"
     elif overload_index is not None:
         suffix = "Overload{}".format(overload_index + 1)
+    elif no_alloc_direct_call:
+        suffix = "NoAllocDirectCallback"
     else:
         suffix = "Callback"
 
@@ -2114,6 +2117,54 @@ v8_private_named_constructor.Set(${v8_receiver}, v8_value);
     return SequenceNode([named_ctor_def, EmptyNode(), func_def])
 
 
+def make_no_alloc_direct_call_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    assert cg_context.operation_group and len(cg_context.operation_group) == 1
+
+    func_like = cg_context.operation_group[0]
+
+    return_type = ("void" if func_like.return_type.is_void else
+                   blink_type_info(func_like.return_type).value_t)
+    arg_type_and_names = [(blink_type_info(arg.idl_type).value_t,
+                           name_style.arg_f("arg{}_{}", index + 1,
+                                            arg.identifier))
+                          for index, arg in enumerate(func_like.arguments)]
+    arg_decls = ["v8::ApiObject arg0_receiver"] + [
+        "{} {}".format(arg_type, arg_name)
+        for arg_type, arg_name in arg_type_and_names
+    ]
+    func_def = CxxFuncDefNode(name=function_name,
+                              arg_decls=arg_decls,
+                              return_type=return_type)
+    body = func_def.body
+
+    pattern = """\
+ThreadState::NoAllocationScope no_alloc_scope(ThreadState::Current());
+v8::Object* v8_receiver = reinterpret_cast<v8::Object*>(&arg0_receiver);
+v8::Isolate* isolate = v8_receiver->GetIsolate();
+v8::Isolate::DisallowJavascriptExecutionScope no_js_exec_scope(
+    isolate,
+    v8::Isolate::DisallowJavascriptExecutionScope::CRASH_ON_FAILURE);
+{blink_class}* blink_receiver =
+    ToScriptWrappable(v8_receiver)->ToImpl<{blink_class}>();
+return blink_receiver->{member_func}({blink_arguments});\
+"""
+    blink_class = blink_class_name(cg_context.interface)
+    member_func = backward_compatible_api_func(cg_context)
+    blink_arguments = ", ".join(
+        [arg_name for arg_type, arg_name in arg_type_and_names])
+    body.append(
+        TextNode(
+            _format(pattern,
+                    blink_class=blink_class,
+                    member_func=member_func,
+                    blink_arguments=blink_arguments)))
+
+    return func_def
+
+
 def make_operation_entry(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -2163,7 +2214,9 @@ def make_operation_function_def(cg_context, function_name):
     return func_def
 
 
-def make_operation_callback_def(cg_context, function_name):
+def make_operation_callback_def(cg_context,
+                                function_name,
+                                no_alloc_direct_callback_name=None):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
 
@@ -2171,6 +2224,19 @@ def make_operation_callback_def(cg_context, function_name):
 
     assert (not ("Custom" in operation_group.extended_attributes)
             or len(operation_group) == 1)
+    assert (not ("NoAllocDirectCall" in operation_group.extended_attributes)
+            or len(operation_group) == 1)
+
+    if "NoAllocDirectCall" in operation_group.extended_attributes:
+        return ListNode([
+            make_operation_function_def(
+                cg_context.make_copy(operation=operation_group[0]),
+                function_name),
+            EmptyNode(),
+            make_no_alloc_direct_call_callback_def(
+                cg_context.make_copy(operation=operation_group[0]),
+                no_alloc_direct_callback_name),
+        ])
 
     if len(operation_group) == 1:
         return make_operation_function_def(
@@ -4278,49 +4344,6 @@ def _make_property_entry_cached_accessor(property_):
     return "V8PrivateProperty::CachedAccessor::{}".format(value or "kNone")
 
 
-def _make_property_entry_v8_property_attribute(property_):
-    values = []
-    if "NotEnumerable" in property_.extended_attributes:
-        values.append("v8::DontEnum")
-    if "LegacyUnforgeable" in property_.extended_attributes:
-        if not isinstance(property_, web_idl.Attribute):
-            values.append("v8::ReadOnly")
-        values.append("v8::DontDelete")
-    if not values:
-        values.append("v8::None")
-    if len(values) == 1:
-        return values[0]
-    else:
-        return "static_cast<v8::PropertyAttribute>({})".format(
-            " | ".join(values))
-
-
-def _make_property_entry_on_which_object(property_):
-    ON_INSTANCE = "V8DOMConfiguration::kOnInstance"
-    ON_PROTOTYPE = "V8DOMConfiguration::kOnPrototype"
-    ON_INTERFACE = "V8DOMConfiguration::kOnInterface"
-    if isinstance(property_, web_idl.Constant):
-        return ON_INTERFACE
-    if hasattr(property_, "is_static") and property_.is_static:
-        return ON_INTERFACE
-    if "Global" in property_.owner.extended_attributes:
-        return ON_INSTANCE
-    if "LegacyUnforgeable" in property_.extended_attributes:
-        return ON_INSTANCE
-    return ON_PROTOTYPE
-
-
-def _make_property_entry_check_receiver(property_):
-    if ("LenientThis" in property_.extended_attributes
-            or (isinstance(property_, web_idl.Attribute)
-                and property_.idl_type.unwrap().is_promise)
-            or (isinstance(property_, web_idl.OverloadGroup)
-                and property_[0].return_type.unwrap().is_promise)):
-        return "V8DOMConfiguration::kDoNotCheckHolder"
-    else:
-        return "V8DOMConfiguration::kCheckHolder"
-
-
 def _make_property_entry_check_cross_origin_access(property_,
                                                    is_get=False,
                                                    is_set=False):
@@ -4339,21 +4362,15 @@ def _make_property_entry_check_cross_origin_access(property_,
         return constants[True]
 
 
-def _make_property_entry_has_side_effect(property_):
-    if property_.extended_attributes.value_of("Affects") == "Nothing":
-        return "V8DOMConfiguration::kHasNoSideEffect"
+def _make_property_entry_check_receiver(property_):
+    if ("LenientThis" in property_.extended_attributes
+            or (isinstance(property_, web_idl.Attribute)
+                and property_.idl_type.unwrap().is_promise)
+            or (isinstance(property_, web_idl.OverloadGroup)
+                and property_[0].return_type.unwrap().is_promise)):
+        return "V8DOMConfiguration::kDoNotCheckHolder"
     else:
-        return "V8DOMConfiguration::kHasSideEffect"
-
-
-def _make_property_entry_world(world):
-    if world == CodeGenContext.MAIN_WORLD:
-        return "V8DOMConfiguration::kMainWorld"
-    if world == CodeGenContext.NON_MAIN_WORLDS:
-        return "V8DOMConfiguration::kNonMainWorlds"
-    if world == CodeGenContext.ALL_WORLDS:
-        return "V8DOMConfiguration::kAllWorlds"
-    assert False
+        return "V8DOMConfiguration::kCheckHolder"
 
 
 def _make_property_entry_constant_type_and_value_format(property_):
@@ -4371,6 +4388,62 @@ def _make_property_entry_constant_type_and_value_format(property_):
         return ("V8DOMConfiguration::kConstantTypeDouble",
                 "static_cast<double>({value})")
     assert False, "Unsupported type: {}".format(idl_type.syntactic_form)
+
+
+def _make_property_entry_has_side_effect(property_):
+    if property_.extended_attributes.value_of("Affects") == "Nothing":
+        return "V8DOMConfiguration::kHasNoSideEffect"
+    else:
+        return "V8DOMConfiguration::kHasSideEffect"
+
+
+def _make_property_entry_on_which_object(property_):
+    ON_INSTANCE = "V8DOMConfiguration::kOnInstance"
+    ON_PROTOTYPE = "V8DOMConfiguration::kOnPrototype"
+    ON_INTERFACE = "V8DOMConfiguration::kOnInterface"
+    if isinstance(property_, web_idl.Constant):
+        return ON_INTERFACE
+    if hasattr(property_, "is_static") and property_.is_static:
+        return ON_INTERFACE
+    if "Global" in property_.owner.extended_attributes:
+        return ON_INSTANCE
+    if "LegacyUnforgeable" in property_.extended_attributes:
+        return ON_INSTANCE
+    return ON_PROTOTYPE
+
+
+def _make_property_entry_v8_c_function(entry):
+    if entry.no_alloc_direct_callback_name is None:
+        return None
+    return "v8::CFunction::Make({})".format(
+        entry.no_alloc_direct_callback_name)
+
+
+def _make_property_entry_v8_property_attribute(property_):
+    values = []
+    if "NotEnumerable" in property_.extended_attributes:
+        values.append("v8::DontEnum")
+    if "LegacyUnforgeable" in property_.extended_attributes:
+        if not isinstance(property_, web_idl.Attribute):
+            values.append("v8::ReadOnly")
+        values.append("v8::DontDelete")
+    if not values:
+        values.append("v8::None")
+    if len(values) == 1:
+        return values[0]
+    else:
+        return "static_cast<v8::PropertyAttribute>({})".format(
+            " | ".join(values))
+
+
+def _make_property_entry_world(world):
+    if world == CodeGenContext.MAIN_WORLD:
+        return "V8DOMConfiguration::kMainWorld"
+    if world == CodeGenContext.NON_MAIN_WORLDS:
+        return "V8DOMConfiguration::kNonMainWorlds"
+    if world == CodeGenContext.ALL_WORLDS:
+        return "V8DOMConfiguration::kAllWorlds"
+    assert False
 
 
 def _make_attribute_registration_table(table_name, attribute_entries):
@@ -4421,7 +4494,7 @@ def _make_attribute_registration_table(table_name, attribute_entries):
         entry_nodes.append(T(text))
 
     return ListNode([
-        T("static constexpr V8DOMConfiguration::AccessorConfiguration " +
+        T("static constexpr const V8DOMConfiguration::AccessorConfiguration " +
           table_name + "[] = {"),
         ListNode(entry_nodes),
         T("};"),
@@ -4448,8 +4521,9 @@ def _make_constant_callback_registration_table(table_name, constant_entries):
         entry_nodes.append(T(text))
 
     return ListNode([
-        T("static constexpr V8DOMConfiguration::ConstantCallbackConfiguration "
-          + table_name + "[] = {"),
+        T("static constexpr const "
+          "V8DOMConfiguration::ConstantCallbackConfiguration " + table_name +
+          "[] = {"),
         ListNode(entry_nodes),
         T("};"),
     ])
@@ -4484,7 +4558,7 @@ def _make_constant_value_registration_table(table_name, constant_entries):
         entry_nodes.append(T(text))
 
     return ListNode([
-        T("static constexpr V8DOMConfiguration::ConstantConfiguration " +
+        T("static constexpr const V8DOMConfiguration::ConstantConfiguration " +
           table_name + "[] = {"),
         ListNode(entry_nodes),
         T("};"),
@@ -4522,8 +4596,8 @@ def _make_exposed_construct_registration_table(table_name,
         entry_nodes.append(T(text))
 
     return ListNode([
-        T("static constexpr V8DOMConfiguration::AttributeConfiguration " +
-          table_name + "[] = {"),
+        T("static constexpr const V8DOMConfiguration::AttributeConfiguration "
+          + table_name + "[] = {"),
         ListNode(entry_nodes),
         T("};"),
     ])
@@ -4538,6 +4612,14 @@ def _make_operation_registration_table(table_name, operation_entries):
 
     T = TextNode
 
+    no_alloc_direct_call_count = 0
+    for entry in operation_entries:
+        if entry.no_alloc_direct_callback_name:
+            no_alloc_direct_call_count += 1
+    assert (no_alloc_direct_call_count == 0
+            or no_alloc_direct_call_count == len(operation_entries))
+    no_alloc_direct_call_enabled = no_alloc_direct_call_count > 0
+
     entry_nodes = []
     for entry in operation_entries:
         pattern = ("{{"
@@ -4551,6 +4633,8 @@ def _make_operation_registration_table(table_name, operation_entries):
                    "{has_side_effect}, "
                    "{world}"
                    "}}, ")
+        if no_alloc_direct_call_enabled:
+            pattern = "{{" + pattern + "{v8_c_function}}}, "
         text = _format(
             pattern,
             property_name=entry.property_.identifier,
@@ -4567,12 +4651,17 @@ def _make_operation_registration_table(table_name, operation_entries):
                     entry.property_)),
             has_side_effect=_make_property_entry_has_side_effect(
                 entry.property_),
-            world=_make_property_entry_world(entry.world))
+            world=_make_property_entry_world(entry.world),
+            v8_c_function=_make_property_entry_v8_c_function(entry))
         entry_nodes.append(T(text))
 
+    table_decl_before_name = (
+        "static constexpr const V8DOMConfiguration::MethodConfiguration")
+    if no_alloc_direct_call_enabled:
+        table_decl_before_name = ("static const V8DOMConfiguration::"
+                                  "NoAllocDirectCallMethodConfiguration")
     return ListNode([
-        T("static constexpr V8DOMConfiguration::MethodConfiguration " +
-          table_name + "[] = {"),
+        T(table_decl_before_name + " " + table_name + "[] = {"),
         ListNode(entry_nodes),
         T("};"),
     ])
@@ -4637,8 +4726,14 @@ class _PropEntryExposedConstruct(_PropEntryBase):
 
 
 class _PropEntryOperationGroup(_PropEntryBase):
-    def __init__(self, is_context_dependent, exposure_conditional, world,
-                 operation_group, op_callback_name, op_func_length):
+    def __init__(self,
+                 is_context_dependent,
+                 exposure_conditional,
+                 world,
+                 operation_group,
+                 op_callback_name,
+                 op_func_length,
+                 no_alloc_direct_callback_name=None):
         assert isinstance(op_callback_name, str)
         assert isinstance(op_func_length, (int, long))
 
@@ -4646,6 +4741,7 @@ class _PropEntryOperationGroup(_PropEntryBase):
                                 exposure_conditional, world, operation_group)
         self.op_callback_name = op_callback_name
         self.op_func_length = op_func_length
+        self.no_alloc_direct_callback_name = no_alloc_direct_callback_name
 
 
 def _make_property_entries_and_callback_defs(
@@ -4839,7 +4935,14 @@ def _make_property_entries_and_callback_defs(
         cgc = cg_context.make_copy(
             operation_group=operation_group, for_world=world)
         op_callback_name = callback_function_name(cgc)
-        op_callback_node = make_operation_callback_def(cgc, op_callback_name)
+        no_alloc_direct_callback_name = (
+            callback_function_name(cgc, no_alloc_direct_call=True)
+            if "NoAllocDirectCall" in operation_group.extended_attributes else
+            None)
+        op_callback_node = make_operation_callback_def(
+            cgc,
+            op_callback_name,
+            no_alloc_direct_callback_name=no_alloc_direct_callback_name)
 
         callback_def_nodes.extend([
             op_callback_node,
@@ -4853,7 +4956,8 @@ def _make_property_entries_and_callback_defs(
                 world=world,
                 operation_group=operation_group,
                 op_callback_name=op_callback_name,
-                op_func_length=operation_group.min_num_of_required_arguments))
+                op_func_length=operation_group.min_num_of_required_arguments,
+                no_alloc_direct_callback_name=no_alloc_direct_callback_name))
 
     def process_stringifier(_, is_context_dependent, exposure_conditional,
                             world):
@@ -5538,8 +5642,14 @@ ${instance_object} = ${v8_context}->Global()->GetPrototype().As<v8::Object>();\
             "${instance_template}, ${prototype_template}, "
             "${interface_template}, ${signature}, "
             "kOperationTable, base::size(kOperationTable));")
-    install_properties(table_name, operation_entries,
-                       _make_operation_registration_table, installer_call_text)
+    entries = filter(lambda entry: not entry.no_alloc_direct_callback_name,
+                     operation_entries)
+    install_properties(table_name, entries, _make_operation_registration_table,
+                       installer_call_text)
+    entries = filter(lambda entry: entry.no_alloc_direct_callback_name,
+                     operation_entries)
+    install_properties(table_name, entries, _make_operation_registration_table,
+                       installer_call_text)
 
     return func_decl, func_def, trampoline_def
 

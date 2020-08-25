@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager.h"
+#include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
 namespace chromeos {
@@ -25,6 +26,8 @@ class FakeLorgnetteScannerManager final : public LorgnetteScannerManager {
 
   // LorgnetteScannerManager:
   void GetScannerNames(GetScannerNamesCallback callback) override;
+  void GetScannerCapabilities(const std::string& scanner_name,
+                              GetScannerCapabilitiesCallback callback) override;
   void Scan(const std::string& scanner_name,
             const LorgnetteManagerClient::ScanProperties& scan_properties,
             ScanCallback callback) override;
@@ -33,11 +36,17 @@ class FakeLorgnetteScannerManager final : public LorgnetteScannerManager {
   void SetGetScannerNamesResponse(
       const std::vector<std::string>& scanner_names);
 
+  // Sets the response returned by GetScannerCapabilities().
+  void SetGetScannerCapabilitiesResponse(
+      const base::Optional<lorgnette::ScannerCapabilities>&
+          scanner_capabilities);
+
   // Sets the response returned by Scan().
   void SetScanResponse(const base::Optional<std::string>& scan_data);
 
  private:
   std::vector<std::string> scanner_names_;
+  base::Optional<lorgnette::ScannerCapabilities> scanner_capabilities_;
   base::Optional<std::string> scan_data_;
 };
 

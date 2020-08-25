@@ -95,5 +95,19 @@
       default_value: "true",
       depends_on: ["ExperimentalProductivityFeatures"],
     },
+    {
+      name: "DocumentWrite",
+      document_policy_name: "document-write",
+      value_type: "Bool",
+      default_value: "true",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "SyncScript",
+      document_policy_name: "sync-script",
+      value_type: "Bool",
+      default_value: "true",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
   ],
 }

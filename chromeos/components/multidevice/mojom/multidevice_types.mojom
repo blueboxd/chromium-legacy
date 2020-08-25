@@ -37,7 +37,12 @@ enum SoftwareFeature {
   // Phone Hub allows users to view phone metadata and send commands to their
   // phone directly from the Chrome OS UI.
   PHONE_HUB_HOST = 9,
-  PHONE_HUB_CLIENT = 10
+  PHONE_HUB_CLIENT = 10,
+
+  // Wifi Sync with Android allows users to sync wifi network configurations
+  // between Chrome OS devices and a connected Android phone
+  WIFI_SYNC_HOST = 11,
+  WIFI_SYNC_CLIENT = 12
 };
 
 // Enumeration of what value a SoftwareFeature can be.

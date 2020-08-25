@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
-<translation id="1002108253973310084">Protokolo-bertsio ez bateragarri bat hauteman da. Ziurtatu softwarearen azken bertsioa instalatuta duzula bi ordenagailuetan eta saiatu berriro.</translation>
+<translation id="1002108253973310084">Protokolo-bertsio ez bateragarri bat hauteman da. Ziurtatu softwarearen azken bertsioa instalatuta daukazula bi ordenagailuetan eta saiatu berriro.</translation>
 <translation id="1008557486741366299">Ez une honetan</translation>
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1297009705180977556">Errore bat gertatu da <ph name="HOSTNAME" /> ostalarira konektatzean</translation>
@@ -49,7 +49,7 @@ Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia pantailare
 <translation id="3339299787263251426">Atzitu ordenagailua modu seguruan Internet bidez</translation>
 <translation id="3385242214819933234">Ez du balio ostalari-jabeak.</translation>
 <translation id="3423542133075182604">Segurtasun-giltza urrunetik exekutatzeko prozesua</translation>
-<translation id="3581045510967524389">Ezin izan da konektatu sarera. Egiaztatu gailua konektatuta duzula.</translation>
+<translation id="3581045510967524389">Ezin izan da konektatu sarera. Egiaztatu gailua konektatuta daukazula.</translation>
 <translation id="3596628256176442606">Chromoting bezeroen sarrera-konexioak gaitzen ditu zerbitzu honek.</translation>
 <translation id="369442766917958684">Konexiorik gabe.</translation>
 <translation id="3695446226812920698">Lortu argibideak</translation>
@@ -154,7 +154,7 @@ Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia pantailare
 <translation id="806699900641041263"><ph name="HOSTNAME" /> ostalarira konektatzen</translation>
 <translation id="8073845705237259513">Chrome-ren Urruneko pantaila erabili ahal izateko, Google-ko kontu bat gehitu beharko duzu gailuan.</translation>
 <translation id="809687642899217504">Nire ordenagailuak</translation>
-<translation id="8116630183974937060">Sareko errore bat gertatu da. Egiaztatu gailua konektatuta duzula eta saiatu berriro.</translation>
+<translation id="8116630183974937060">Sareko errore bat gertatu da. Egiaztatu gailua konektatuta daukazula eta saiatu berriro.</translation>
 <translation id="8187079423890319756">Copyright 2013, The Chromium Authors. Eskubide guztiak erreserbatuta.</translation>
 <translation id="8295077433896346116"><ph name="PRODUCT_NAME" /> erabiltzeko, erabilerraztasun-eginbideak atzitzeko baimena eman behar diozu, urruneko gailuko sarrerak Mac honetan aplika daitezen.
 

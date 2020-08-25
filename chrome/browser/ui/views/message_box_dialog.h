@@ -32,7 +32,6 @@ class MessageBoxDialog : public views::DialogDelegate,
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   bool ShouldShowCloseButton() const override;

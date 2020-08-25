@@ -202,6 +202,8 @@ class PLATFORM_EXPORT Character {
     return (c - (0x1C90 - 0x10D0));
   }
 
+  static bool IsVerticalMathCharacter(UChar32);
+
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);
   static bool IsHangulSlow(UChar32);

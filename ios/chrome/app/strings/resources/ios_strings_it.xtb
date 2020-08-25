@@ -63,7 +63,7 @@
 <translation id="1554477036522844996">Nuova finestra</translation>
 <translation id="1580783302095112590">Messaggio inviato.</translation>
 <translation id="1582732959743469162">Verrà interrotto l'avanzamento del tuo download attuale.</translation>
-<translation id="1605405588277479165">Off - Sconsigliato</translation>
+<translation id="1605405588277479165">Off - Sconsigliata</translation>
 <translation id="1605658421715042784">Copia immagine</translation>
 <translation id="1608337082864370066">Cerca l'immagine copiata</translation>
 <translation id="1612730193129642006">Mostra griglia schede</translation>
@@ -156,6 +156,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="2712127207578915686">Impossibile aprire il file</translation>
 <translation id="2718352093833049315">Solo su Wi-Fi</translation>
 <translation id="2747003861858887689">Campo precedente</translation>
+<translation id="2764831210418622012">un attimo fa</translation>
 <translation id="2773292004659987824">Ricerca in incognito</translation>
 <translation id="277771892408211951">Seleziona lingua</translation>
 <translation id="2780046210906776326">Nessun account email</translation>
@@ -301,6 +302,7 @@ In modalità di navigazione in incognito, i siti non possono utilizzare i cookie
 <translation id="4476574785019001431">Impostazioni</translation>
 <translation id="4496373720959965247">Aggiungi schede e spostati tra le pagine</translation>
 <translation id="4502566650163919158">Controlla ora</translation>
+<translation id="4505980578794259603">Ultima verifica: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Chiudi promo accesso</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prova ad accedere nuovamente.</translation>
@@ -482,6 +484,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6445051938772793705">Paese</translation>
 <translation id="6445981559479772097">Messaggio inviato.</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6453018583485750254">Controllo mai eseguito.</translation>
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
 <translation id="6464397691496239022">I siti possono utilizzare i cookie per migliorare la tua esperienza di navigazione, ad esempio per mantenere l'accesso o memorizzare gli articoli aggiunti al carrello.
 

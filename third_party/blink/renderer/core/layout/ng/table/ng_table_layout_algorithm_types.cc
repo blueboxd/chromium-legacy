@@ -22,13 +22,17 @@ namespace {
 inline void InlineSizesFromStyle(
     const ComputedStyle& style,
     LayoutUnit inline_border_padding,
+    bool is_parallel,
     base::Optional<LayoutUnit>* inline_size,
     base::Optional<LayoutUnit>* min_inline_size,
     base::Optional<LayoutUnit>* max_inline_size,
     base::Optional<float>* percentage_inline_size) {
-  const Length& length = style.LogicalWidth();
-  const Length& min_length = style.LogicalMinWidth();
-  const Length& max_length = style.LogicalMaxWidth();
+  const Length& length =
+      is_parallel ? style.LogicalWidth() : style.LogicalHeight();
+  const Length& min_length =
+      is_parallel ? style.LogicalMinWidth() : style.LogicalMinHeight();
+  const Length& max_length =
+      is_parallel ? style.LogicalMaxWidth() : style.LogicalMaxHeight();
   bool is_content_box = style.BoxSizing() == EBoxSizing::kContentBox;
   if (length.IsFixed()) {
     *inline_size = LayoutUnit(length.Value());
@@ -71,7 +75,8 @@ NGTableTypes::Column NGTableTypes::CreateColumn(
   base::Optional<LayoutUnit> min_inline_size;
   base::Optional<LayoutUnit> max_inline_size;
   base::Optional<float> percentage_inline_size;
-  InlineSizesFromStyle(style, LayoutUnit(), &inline_size, &min_inline_size,
+  InlineSizesFromStyle(style, /* inline_border_padding */ LayoutUnit(),
+                       /* is_parallel */ true, &inline_size, &min_inline_size,
                        &max_inline_size, &percentage_inline_size);
   if (!inline_size)
     inline_size = default_inline_size;
@@ -103,18 +108,18 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
   base::Optional<LayoutUnit> css_min_inline_size;
   base::Optional<LayoutUnit> css_max_inline_size;
   base::Optional<float> css_percentage_inline_size;
+  bool is_parallel =
+      IsParallelWritingMode(table_writing_mode, node.Style().GetWritingMode());
 
   // Algorithm:
   // - Compute cell's minmax sizes.
   // - Constrain by css inline-size/max-inline-size.
   InlineSizesFromStyle(node.Style(), (cell_border + cell_padding).InlineSum(),
-                       &css_inline_size, &css_min_inline_size,
+                       is_parallel, &css_inline_size, &css_min_inline_size,
                        &css_max_inline_size, &css_percentage_inline_size);
 
   MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kIntrinsic);
   MinMaxSizesResult min_max_size;
-  bool is_parallel =
-      IsParallelWritingMode(table_writing_mode, node.Style().GetWritingMode());
   bool need_constraint_space = is_collapsed || !is_parallel;
   if (need_constraint_space) {
     NGConstraintSpaceBuilder builder(table_writing_mode,

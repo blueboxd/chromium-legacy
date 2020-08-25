@@ -187,8 +187,9 @@ void PaymentRequest::Init(
   state_ = std::make_unique<PaymentRequestState>(
       web_contents_, initiator_frame, top_level_origin_, frame_origin_,
       frame_security_origin_, spec_.get(),
-      /*delegate=*/this, delegate_->GetApplicationLocale(),
-      delegate_->GetPersonalDataManager(), delegate_.get(), &journey_logger_);
+      /*delegate=*/weak_ptr_factory_.GetWeakPtr(),
+      delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
+      delegate_.get(), &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),

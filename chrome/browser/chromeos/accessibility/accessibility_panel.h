@@ -40,7 +40,6 @@ class AccessibilityPanel : public views::WidgetDelegate,
   // WidgetDelegate:
   const views::Widget* GetWidget() const override;
   views::Widget* GetWidget() override;
-  void DeleteDelegate() override;
   views::View* GetContentsView() override;
 
  protected:

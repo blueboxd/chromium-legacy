@@ -18,13 +18,17 @@ js_type_check("closure_compile") {
     ":mojo_interface_provider",
     ":provisioning_page",
     ":psim_flow_ui",
+    ":setup_selection_flow",
     ":sim_detect_page",
     ":webview_post_util",
   ]
 }
 
 js_library("button_bar") {
-  deps = [ "//ui/webui/resources/js:i18n_behavior" ]
+  deps = [
+    ":cellular_types",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("base_page") {
@@ -59,19 +63,52 @@ js_library("final_page") {
 
 js_library("psim_flow_ui") {
   deps = [
+    ":cellular_types",
     ":final_page",
     ":mojo_interface_provider",
     ":provisioning_page",
     ":sim_detect_page",
+    ":subflow_behavior",
     "//chromeos/services/cellular_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
+js_library("esim_flow_ui") {
+  deps = [
+    ":cellular_types",
+    ":subflow_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("setup_selection_flow") {
+  deps = [
+    ":cellular_types",
+    ":subflow_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("subflow_behavior") {
+  deps = [
+    ":cellular_types",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("cellular_types") {
+  deps = [ "//ui/webui/resources/js:cr" ]
+}
+
 js_library("cellular_setup") {
   deps = [
     ":button_bar",
+    ":cellular_types",
+    ":esim_flow_ui",
     ":psim_flow_ui",
+    ":setup_selection_flow",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
@@ -89,6 +126,7 @@ js_type_check("closure_compile_module") {
   deps = [
     ":base_page.m",
     ":button_bar.m",
+    ":cellular_types.m",
 
     # ":cellular_setup.m",
     ":final_page.m",
@@ -97,6 +135,8 @@ js_type_check("closure_compile_module") {
 
     # ":psim_flow_ui.m",
     ":sim_detect_page.m",
+
+    # ":setup_selection_flow.m",
     ":webview_post_util.m",
   ]
 }
@@ -165,8 +205,15 @@ js_library("button_bar.m") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
+    ":cellular_types.m",
   ]
   extra_deps = [ ":button_bar_module" ]
+}
+
+js_library("cellular_types.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/cellular_setup/cellular_types.m.js" ]
+   deps = []
+  extra_deps = [ ":modulize" ]
 }
 
 group("polymer3_elements") {
@@ -224,6 +271,7 @@ js_modulizer("modulize") {
   input_files = [
     "mojo_interface_provider.js",
     "webview_post_util.js",
+    "cellular_types.js"
   ]
   namespace_rewrites = cr_components_chromeos_namespace_rewrites
 }

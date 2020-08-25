@@ -1,0 +1,33 @@
+<link rel="import" href="../../../html/polymer.html">
+
+<link rel="import" href="../../../html/i18n_behavior.html">
+<link rel="import" href="cellular_types.html">
+<link rel="import" href="subflow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.html">
+
+<dom-module id="setup-selection-flow">
+  <template>
+    <style include="iron-flex">
+      #setup-flow-select-radio {
+        display: flex;
+        flex-direction: row;
+      }
+    </style>
+    <cr-radio-group
+        name="setup-flow-selection"
+        id="setup-flow-select-radio"
+        selected="{{setupFlowSelection_}}"
+        on-selected-changed="onSetupFlowRadioSelectedChange_">
+      <!-- TODO(crbug.com/1093185): Add icons for pSIM and eSIM-->
+      <cr-card-radio-button name="psim-flow-ui">
+        [[i18n('pSimFlowSetup')]]
+      </cr-card-radio-button>
+      <cr-card-radio-button name="esim-flow-ui" >
+        [[i18n('eSimFlowSetup')]]
+      </cr-card-radio-button>
+    </cr-radio-group>
+  </template>
+  <script src="setup_selection_flow.js">
+  </script>
+</dom-module>

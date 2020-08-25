@@ -543,6 +543,25 @@ function touchTapOn(xPosition, yPosition) {
   });
 }
 
+function touchDragTo(drag) {
+  const PREVENT_FLING_PAUSE = 40;
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'touch',
+         actions: [
+            { name: 'pointerDown', x: drag.start_x, y: drag.start_y },
+            { name: 'pause', duration: PREVENT_FLING_PAUSE },
+            { name: 'pointerMove', x: drag.end_x, y: drag.end_y},
+            { name: 'pause', duration: PREVENT_FLING_PAUSE },
+            { name: 'pointerUp', x: drag.end_x, y: drag.end_y }
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
 function doubleTapAt(xPosition, yPosition) {
   // This comes from config constants in gesture_detector.cc.
   const DOUBLE_TAP_MINIMUM_DURATION_MS = 40;

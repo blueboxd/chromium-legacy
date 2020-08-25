@@ -11,6 +11,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1056775291175587022">Nenhuma rede</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Celular: <ph name="ADDRESS" /></translation>
+<translation id="1087110696012418426">Boa tarde, <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Que tédio</translation>
 <translation id="1104084341931202936">Mostrar configurações de acessibilidade</translation>
 <translation id="1104621072296271835">Seus dispositivos funcionam ainda melhor juntos</translation>
@@ -71,6 +72,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698080062160024910">Timer de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1708345662127501511">Espaço de trabalho: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Configurações de rede</translation>
 <translation id="1743570585616704562">Não reconhecida</translation>
 <translation id="1746730358044914197">Os métodos de entrada são configurados pelo administrador.</translation>
@@ -107,6 +109,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2018630726571919839">Conte uma piada</translation>
 <translation id="2050339315714019657">Retrato</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
+<translation id="2083190527011054446">Boa noite, <ph name="GIVEN_NAME" />,</translation>
 <translation id="209965399369889474">Sem conexão com a rede</translation>
 <translation id="2126242104232412123">Novo espaço</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
@@ -185,6 +188,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3033545621352269033">Ativada</translation>
 <translation id="3038571455154067151">Para fazer login, insira seu código de acesso de pai/mãe do Family Link</translation>
+<translation id="3045488863354895414">Boa tarde,</translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
 <translation id="3055162170959710888">Você usou este dispositivo por <ph name="USED_TIME" /> hoje</translation>
 <translation id="3076778413190775903">Bandeja de status, horário <ph name="TIME" />,
@@ -300,11 +304,11 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4212472694152630271">Usar PIN</translation>
 <translation id="4215497585250573029">Configurações de VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
-<translation id="4229328187280698237">Alterne para o modo de tablet</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostrar configurações de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
+<translation id="4294319844246081198">Bom dia, <ph name="GIVEN_NAME" />,</translation>
 <translation id="4296136865091727875">Limpar todas as <ph name="COUNT" /> notificações</translation>
 <translation id="4303223480529385476">Expandir área de status</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -321,6 +325,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar novamente</translation>
+<translation id="445864333228800152">Boa noite,</translation>
 <translation id="4458688154122353284">Parar gravação da tela</translation>
 <translation id="4477350412780666475">Próxima faixa</translation>
 <translation id="4477892968187500306">O dispositivo pode conter apps que não foram verificados pelo Google.</translation>
@@ -431,6 +436,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5887866489674258948">Modo escuro</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5909862606227538307">Espaço de trabalho inativo.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5920710855273935292">O microfone está desativado.</translation>
@@ -563,6 +569,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7405710164030118432">Para desbloquear o dispositivo, insira seu código de acesso de pai/mãe do Family Link</translation>
 <translation id="741244894080940828">conversão</translation>
 <translation id="742594950370306541">A câmera está em uso.</translation>
+<translation id="742608627846767349">Bom dia,</translation>
 <translation id="743058460480092004">A câmera e o microfone estão em uso.</translation>
 <translation id="7466449121337984263">Toque no sensor</translation>
 <translation id="7497767806359279797">Escolher idioma e teclado</translation>
@@ -649,11 +656,13 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8371779926711439835">Avançar por letra</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e seu smartphone serão conectados automaticamente</translation>
+<translation id="8380784334203145311">Boa noite,</translation>
 <translation id="8388750414311082622">Não é possível remover o último espaço de trabalho.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Seu pai/mãe bloqueou o dispositivo</translation>
 <translation id="8412677897383510995">Mostrar configurações de tela</translation>
 <translation id="8425213833346101688">Alterar</translation>
+<translation id="8426708595819210923">Boa noite, <ph name="GIVEN_NAME" />,</translation>
 <translation id="8427213022735114808">O ditado envia sua voz para o Google e permite Digitação por Voz em qualquer campo de texto.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
@@ -707,7 +716,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="890616557918890486">Alterar origem</translation>
 <translation id="8909138438987180327">Bateria em <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8913384980486163186">Temático (padrão)</translation>
-<translation id="8918251165865262378">Alterne para o modo de laptop</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8936501819958976551">desativado</translation>

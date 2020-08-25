@@ -503,6 +503,11 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_MULTIDEVICE_NOTIFICATIONS_ACCESS_SETUP_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_notification_access_setup_dialog.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_MULTIDEVICE_SUBPAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_subpage.m.js"
            use_base_dir="false"

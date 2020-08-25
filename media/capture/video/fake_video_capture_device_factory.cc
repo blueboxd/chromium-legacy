@@ -208,7 +208,7 @@ void FakeVideoCaptureDeviceFactory::GetDevicesInfo(
   int entry_index = 0;
   for (const auto& entry : devices_config_) {
     VideoCaptureApi api =
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
         VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
 #elif defined(OS_MAC)
         VideoCaptureApi::MACOSX_AVFOUNDATION;

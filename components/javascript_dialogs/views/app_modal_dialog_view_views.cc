@@ -21,8 +21,10 @@ namespace javascript_dialogs {
 AppModalDialogViewViews::AppModalDialogViewViews(
     AppModalDialogController* controller)
     : controller_(controller) {
+  SetOwnedByWidget(true);
   message_box_view_ = new views::MessageBoxView(
       controller->message_text(), /* detect_directionality = */ true);
+
   if (controller->javascript_dialog_type() ==
       content::JAVASCRIPT_DIALOG_TYPE_PROMPT) {
     message_box_view_->SetPromptField(controller->default_prompt_text());
@@ -101,10 +103,6 @@ bool AppModalDialogViewViews::IsShowing() const {
 
 base::string16 AppModalDialogViewViews::GetWindowTitle() const {
   return controller_->title();
-}
-
-void AppModalDialogViewViews::DeleteDelegate() {
-  delete this;
 }
 
 ui::ModalType AppModalDialogViewViews::GetModalType() const {

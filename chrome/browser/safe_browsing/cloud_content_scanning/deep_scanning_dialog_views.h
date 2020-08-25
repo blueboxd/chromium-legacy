@@ -117,7 +117,6 @@ class DeepScanningDialogViews : public views::DialogDelegate,
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
-  void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
   // content::WebContentsObserver:

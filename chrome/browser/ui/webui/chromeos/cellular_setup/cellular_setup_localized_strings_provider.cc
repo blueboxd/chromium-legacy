@@ -20,6 +20,8 @@ namespace {
 constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"cancel", IDS_CANCEL},
     {"back", IDS_CELLULAR_SETUP_BACK_LABEL},
+    {"eSimFlowSetup", IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL},
+    {"next", IDS_CELLULAR_SETUP_NEXT_LABEL},
     {"finish", IDS_CELLULAR_SETUP_FINISH_LABEL},
     {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL},
     {"simDetectPageTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE},
@@ -34,11 +36,11 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_TITLE},
     {"provisioningPageErrorMessage",
      IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_MESSAGE},
+    {"pSimFlowSetup", IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_LABEL},
     {"finalPageTitle", IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE},
     {"finalPageMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_MESSAGE},
     {"finalPageErrorTitle", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_TITLE},
     {"finalPageErrorMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE}};
-
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {

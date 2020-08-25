@@ -14,7 +14,7 @@
 <translation id="109942774857561566">Зеригип жатам</translation>
 <translation id="1104084341931202936">Атайын мүмкүнчүлүктөрдүн жөндөөлөрүн көрсөтүү</translation>
 <translation id="1104621072296271835">Түзмөктөрүңүз бирге мындан да жакшы иштейт</translation>
-<translation id="1119348796022671382">Тема кошулган түстүү режим интерфейсти бир аз боё үчүн тушкагазыңыздагы түстөрдү колдонот.</translation>
+<translation id="1119348796022671382">Интерфейске бир аз боёк кошуу үчүн, тема кошулган түстүү режим тушкагазыңыздагы түстөрдү колдонот.</translation>
 <translation id="112308213915226829">Текчени авто-жашыруу</translation>
 <translation id="1153356358378277386">Жупташкан түзмөктөр</translation>
 <translation id="1175572348579024023">Сыдыруу</translation>
@@ -49,7 +49,7 @@
 <translation id="1391102559483454063">Күйүк</translation>
 <translation id="1419738280318246476">Билдирмедеги аракетти аткаруу үчүн түзмөктүн кулпусун ачыңыз</translation>
 <translation id="1420408895951708260">Түнкү жарыкты күйгүзүү же өчүрүү. <ph name="STATE_TEXT" /></translation>
-<translation id="1420527829902822813">Скриншот тартылып алынды да алмашуу буферине сакталды</translation>
+<translation id="1420527829902822813">Скриншот тартылып, алмашуу буферине сакталды</translation>
 <translation id="1426410128494586442">Ооба</translation>
 <translation id="1455242230282523554">Тил жөндөөлөрүн көрсөтүү</translation>
 <translation id="1460620680449458626">Үнү өчүрүлгөн.</translation>
@@ -281,7 +281,7 @@
 <translation id="397105322502079400">Эсептелүүдө…</translation>
 <translation id="3977512764614765090">Батареянын деңгээли – <ph name="PERCENTAGE" /> %, кубатталууда.</translation>
 <translation id="3995138139523574647">USB-C түзмөгү (оң жактагы арткы оюкча)</translation>
-<translation id="40062176907008878">Жазып киргизүү</translation>
+<translation id="40062176907008878">Кол жазма</translation>
 <translation id="4017989525502048489">Лазер көрсөткүчү</translation>
 <translation id="4021716437419160885">Ылдый сыдыруу</translation>
 <translation id="4028481283645788203">Коопсуздукту бекемдөө үчүн сырсөз талап кылынат</translation>
@@ -300,7 +300,6 @@
 <translation id="4212472694152630271">PIN кодго которулуу</translation>
 <translation id="4215497585250573029">VPN жөндөөлөрү</translation>
 <translation id="4217571870635786043">Үн менен жазуу</translation>
-<translation id="4229328187280698237">Планшет режимине которулуу</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Билдирмелердин жөндөөлөрүн көрсөтүү. Билдирмелер өчүк</translation>
 <translation id="4269883910223712419">Бул түзмөктүн администратору төмөнкүлөрдү аткара алат:</translation>
@@ -706,7 +705,6 @@
 <translation id="890616557918890486">Булагын өзгөртүү</translation>
 <translation id="8909138438987180327">Батареянын кубаты – <ph name="PERCENTAGE" /> пайыз.</translation>
 <translation id="8913384980486163186">Тема кошулган (демейки)</translation>
-<translation id="8918251165865262378">Ноутбук режимине которулуу</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Жардамчы бул тилде иштебейт.</translation>
 <translation id="8936501819958976551">өчүрүлдү</translation>

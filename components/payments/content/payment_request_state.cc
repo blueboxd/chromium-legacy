@@ -62,7 +62,7 @@ PaymentRequestState::PaymentRequestState(
     const GURL& frame_origin,
     const url::Origin& frame_security_origin,
     PaymentRequestSpec* spec,
-    Delegate* delegate,
+    base::WeakPtr<Delegate> delegate,
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
@@ -241,11 +241,17 @@ void PaymentRequestState::OnDoneCreatingPaymentApps() {
 
 void PaymentRequestState::OnPaymentResponseReady(
     mojom::PaymentResponsePtr payment_response) {
+  if (!delegate_)
+    return;
+
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
 }
 
 void PaymentRequestState::OnPaymentResponseError(
     const std::string& error_message) {
+  if (!delegate_)
+    return;
+
   delegate_->OnPaymentResponseError(error_message);
 }
 
@@ -459,9 +465,11 @@ void PaymentRequestState::SetSelectedShippingOption(
     const std::string& shipping_option_id) {
   spec_->StartWaitingForUpdateWith(
       PaymentRequestSpec::UpdateReason::SHIPPING_OPTION);
-  // This will inform the merchant and will lead to them calling updateWith with
-  // new PaymentDetails.
-  delegate_->OnShippingOptionIdSelected(shipping_option_id);
+  if (delegate_) {
+    // This will inform the merchant and will lead to them calling updateWith
+    // with new PaymentDetails.
+    delegate_->OnShippingOptionIdSelected(shipping_option_id);
+  }
 }
 
 void PaymentRequestState::SetSelectedShippingProfile(
@@ -499,7 +507,7 @@ void PaymentRequestState::SetSelectedContactProfile(
 
   UpdateIsReadyToPayAndNotifyObservers();
 
-  if (IsPaymentAppInvoked()) {
+  if (IsPaymentAppInvoked() && delegate_) {
     delegate_->OnPayerInfoSelected(
         response_helper_->GeneratePayerDetail(profile));
   }
@@ -734,6 +742,9 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
 void PaymentRequestState::OnAddressNormalized(
     bool success,
     const autofill::AutofillProfile& normalized_profile) {
+  if (!delegate_)
+    return;
+
   delegate_->OnShippingAddressSelected(
       data_util::GetPaymentAddressFromAutofillProfile(normalized_profile,
                                                       app_locale_));

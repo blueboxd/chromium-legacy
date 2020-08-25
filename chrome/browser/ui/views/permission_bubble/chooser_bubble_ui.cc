@@ -197,7 +197,7 @@ base::OnceClosure ShowDeviceChooserDialog(
 
   base::OnceClosure close_closure = bubble->MakeCloseClosure();
   views::Widget* widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble.release());
+      views::BubbleDialogDelegateView::CreateBubble(std::move(bubble));
   if (browser->window()->IsActive())
     widget->Show();
   else

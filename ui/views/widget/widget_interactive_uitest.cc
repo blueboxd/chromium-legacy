@@ -362,7 +362,7 @@ TEST_F(DesktopWidgetTestInteractive, FocusChangesOnBubble) {
   owned_bubble_delegate_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   BubbleDialogDelegateView* bubble_delegate_view =
       owned_bubble_delegate_view.get();
-  BubbleDialogDelegateView::CreateBubble(owned_bubble_delegate_view.release())
+  BubbleDialogDelegateView::CreateBubble(std::move(owned_bubble_delegate_view))
       ->Show();
   bubble_delegate_view->RequestFocus();
 

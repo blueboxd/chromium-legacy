@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">Файлът не може да се отвори</translation>
 <translation id="2718352093833049315">Само при Wi-Fi</translation>
 <translation id="2747003861858887689">Предишното поле</translation>
+<translation id="2764831210418622012">току-що</translation>
 <translation id="2773292004659987824">Търсене в режим „инкогнито“</translation>
 <translation id="277771892408211951">Избиране на език</translation>
 <translation id="2780046210906776326">Няма имейл адреси</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">Настройки</translation>
 <translation id="4496373720959965247">Добавяне на раздели и превключване между страници</translation>
 <translation id="4502566650163919158">Проверка сега</translation>
+<translation id="4505980578794259603">Последна проверка: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">Държава</translation>
 <translation id="6445981559479772097">Съобщ. е изпратено.</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
+<translation id="6453018583485750254">Проверката не се е изпълнявала.</translation>
 <translation id="6464071786529933911">Отв. в нов раздел „инкогнито“</translation>
 <translation id="6464397691496239022">Сайтовете могат да използват „бисквитки“ с цел по-добро сърфиране, например за да оставате в профила си или за да запомнят артикулите в пазарската ви кошница.
 

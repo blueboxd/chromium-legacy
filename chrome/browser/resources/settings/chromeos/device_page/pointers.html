@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../controls/settings_radio_group.html">
 <link rel="import" href="../../controls/settings_slider.html">
@@ -44,13 +45,15 @@
             label="$i18n{mouseSwapButtons}"
             on-settings-boolean-control-change="onMouseSwapButtonsChange_"
             on-down="onMouseSwapButtonsDown_" on-up="onMouseSwapButtonsUp_"
+            deep-link-focus-id$="[[Setting.kMouseSwapPrimaryButtons]]"
             no-set-pref>
         </settings-toggle-button>
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="mouseAcceleration"
               class="hr"
               pref="{{prefs.settings.mouse.acceleration}}"
-              label="$i18n{mouseAccelerationLabel}">
+              label="$i18n{mouseAccelerationLabel}"
+              deep-link-focus-id$="[[Setting.kMouseAcceleration]]">
           </settings-toggle-button>
         </template>
         <div class="settings-box">
@@ -61,14 +64,16 @@
               ticks="[[sensitivityValues_]]"
               label-aria="$i18n{mouseSpeed}"
               label-min="$i18n{pointerSlow}"
-              label-max="$i18n{pointerFast}">
+              label-max="$i18n{pointerFast}"
+              deep-link-focus-id$="[[Setting.kMouseSpeed]]">
           </settings-slider>
         </div>
         <template is="dom-if" if="[[allowScrollSettings_]]">
           <settings-toggle-button id="mouseScrollAcceleration"
               class="hr"
               pref="{{prefs.settings.mouse.scroll_acceleration}}"
-              label="$i18n{mouseScrollAccelerationLabel}">
+              label="$i18n{mouseScrollAccelerationLabel}"
+              deep-link-focus-id$="[[Setting.kMouseScrollAcceleration]]">
           </settings-toggle-button>
           <div class="settings-box">
             <div class="start" id="mouseScrollSpeedLabel" aria-hidden="true">
@@ -85,7 +90,8 @@
         <settings-toggle-button id="mouseReverseScroll"
             class="hr"
             pref="{{prefs.settings.mouse.reverse_scroll}}"
-            label="$i18n{mouseReverseScroll}">
+            label="$i18n{mouseReverseScroll}"
+            deep-link-focus-id$="[[Setting.kMouseReverseScrolling]]">
         </settings-toggle-button>
       </div>
     </div>
@@ -95,18 +101,21 @@
       <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
         <settings-toggle-button id="enableTapToClick"
             pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
-            label="$i18n{touchpadTapToClickEnabledLabel}">
+            label="$i18n{touchpadTapToClickEnabledLabel}"
+            deep-link-focus-id$="[[Setting.kTouchpadTapToClick]]">
         </settings-toggle-button>
         <settings-toggle-button id="enableTapDragging"
             class="hr"
             pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
-            label="$i18n{tapDraggingLabel}">
+            label="$i18n{tapDraggingLabel}"
+            deep-link-focus-id$="[[Setting.kTouchpadTapDragging]]">
         </settings-toggle-button>
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="touchpadAcceleration"
               class="hr"
               pref="{{prefs.settings.touchpad.acceleration}}"
-              label="$i18n{touchpadAccelerationLabel}">
+              label="$i18n{touchpadAccelerationLabel}"
+              deep-link-focus-id$="[[Setting.kTouchpadAcceleration]]">
           </settings-toggle-button>
         </template>
         <div class="settings-box">
@@ -118,14 +127,16 @@
                 ticks="[[sensitivityValues_]]"
                 label-aria="$i18n{touchpadSpeed}"
                 label-min="$i18n{pointerSlow}"
-                label-max="$i18n{pointerFast}">
+                label-max="$i18n{pointerFast}"
+                deep-link-focus-id$="[[Setting.kTouchpadSpeed]]">
             </settings-slider>
         </div>
         <template is="dom-if" if="[[allowScrollSettings_]]">
           <settings-toggle-button id="touchpadScrollAcceleration"
               class="hr"
               pref="{{prefs.settings.touchpad.scroll_acceleration}}"
-              label="$i18n{touchpadScrollAccelerationLabel}">
+              label="$i18n{touchpadScrollAccelerationLabel}"
+              deep-link-focus-id$="[[Setting.kTouchpadScrollAcceleration]]">
           </settings-toggle-button>
           <div class="settings-box">
             <div class="start" id="touchpadScrollSpeedLabel" aria-hidden="true">
@@ -152,7 +163,8 @@
           </div>
           <cr-toggle id="enableReverseScrollingToggle"
               checked="{{prefs.settings.touchpad.natural_scroll.value}}"
-              aria-labelledby="enableReverseScrollingLabel">
+              aria-labelledby="enableReverseScrollingLabel"
+              deep-link-focus-id$="[[Setting.kTouchpadReverseScrolling]]">
           </cr-toggle>
         </div>
       </div>

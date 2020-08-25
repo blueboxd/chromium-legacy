@@ -89,7 +89,8 @@ cr.define('settings', function() {
    *   phoneHubNotificationsState: !settings.MultiDeviceFeatureState,
    *   phoneHubNotificationBadgeState: !settings.MultiDeviceFeatureState,
    *   phoneHubTaskContinuationState: !settings.MultiDeviceFeatureState,
-   *   isAndroidSmsPairingComplete: boolean
+   *   isAndroidSmsPairingComplete: boolean,
+   *   isNotificationAccessGranted: boolean
    * }}
    */
   /* #export */ let MultiDevicePageContentData;

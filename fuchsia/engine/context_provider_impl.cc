@@ -272,10 +272,11 @@ void ContextProviderImpl::Create(
       {kContextRequestHandleId, context_request.channel().get()});
 
   // Bind |data_directory| to /data directory, if provided.
+  zx::channel data_directory_channel;
   if (params.has_data_directory()) {
-    zx::channel data_directory_channel = ValidateDirectoryAndTakeChannel(
+    data_directory_channel = ValidateDirectoryAndTakeChannel(
         std::move(*params.mutable_data_directory()));
-    if (data_directory_channel.get() == ZX_HANDLE_INVALID) {
+    if (!data_directory_channel) {
       DLOG(ERROR)
           << "Invalid argument |data_directory| in CreateContextParams.";
       context_request.Close(ZX_ERR_INVALID_ARGS);
@@ -361,6 +362,13 @@ void ContextProviderImpl::Create(
     context_request.Close(ZX_ERR_NOT_SUPPORTED);
     return;
   }
+  if ((enable_widevine || enable_playready) &&
+      !params.has_cdm_data_directory()) {
+    LOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require a "
+                  "|cdm_data_directory|.";
+    context_request.Close(ZX_ERR_NOT_SUPPORTED);
+    return;
+  }
 
   // If the system doesn't actually support DRM then disable it. This may result
   // in the Context being able to run without using protected buffers.
@@ -437,6 +445,26 @@ void ContextProviderImpl::Create(
     }
     launch_command.AppendSwitchNative(switches::kPlayreadyKeySystem,
                                       key_system);
+  }
+
+  zx::channel cdm_data_directory_channel;
+  if (enable_widevine || enable_playready) {
+    DCHECK(params.has_cdm_data_directory());
+    const char kCdmDataPath[] = "/cdm_data";
+
+    cdm_data_directory_channel = ValidateDirectoryAndTakeChannel(
+        std::move(*params.mutable_cdm_data_directory()));
+    if (!cdm_data_directory_channel) {
+      LOG(ERROR)
+          << "Invalid argument |cdm_data_directory| in CreateContextParams.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+
+    launch_command.AppendSwitchNative(switches::kCdmDataDirectory,
+                                      kCdmDataPath);
+    launch_options.paths_to_transfer.push_back(base::PathToTransfer{
+        base::FilePath(kCdmDataPath), cdm_data_directory_channel.get()});
   }
 
   bool disable_software_video_decoder =
@@ -531,11 +559,13 @@ void ContextProviderImpl::Create(
     ZX_CHECK(ZX_OK == result, result) << "zx_job_set_critical";
   }
 
-  // |context_request| and any DevTools channels were transferred (not copied)
-  // to the Context process.
+  // |context_request|, any DevTools channels and data directory channels were
+  // transferred (not copied) to the Context process.
   ignore_result(context_request.TakeChannel().release());
   for (auto& channel : devtools_listener_channels)
     ignore_result(channel.release());
+  ignore_result(data_directory_channel.release());
+  ignore_result(cdm_data_directory_channel.release());
 }
 
 void ContextProviderImpl::SetLaunchCallbackForTest(

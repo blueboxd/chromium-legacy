@@ -383,7 +383,6 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::blink::Role::kMarquee, "Marquee"},
     {ax::mojom::blink::Role::kMath, "Math"},
     {ax::mojom::blink::Role::kMenuBar, "MenuBar"},
-    {ax::mojom::blink::Role::kMenuButton, "MenuButton"},
     {ax::mojom::blink::Role::kMenuItem, "MenuItem"},
     {ax::mojom::blink::Role::kMenuItemCheckBox, "MenuItemCheckBox"},
     {ax::mojom::blink::Role::kMenuItemRadio, "MenuItemRadio"},
@@ -459,7 +458,6 @@ const RoleEntry kReverseRoles[] = {
     {"button", ax::mojom::blink::Role::kToggleButton},
     {"combobox", ax::mojom::blink::Role::kPopUpButton},
     {"contentinfo", ax::mojom::blink::Role::kFooter},
-    {"menuitem", ax::mojom::blink::Role::kMenuButton},
     {"menuitem", ax::mojom::blink::Role::kMenuListOption},
     {"progressbar", ax::mojom::blink::Role::kMeter},
     {"region", ax::mojom::blink::Role::kSection},
@@ -974,10 +972,6 @@ bool AXObject::IsImageMapLink() const {
 
 bool AXObject::IsMenu() const {
   return RoleValue() == ax::mojom::blink::Role::kMenu;
-}
-
-bool AXObject::IsMenuButton() const {
-  return RoleValue() == ax::mojom::blink::Role::kMenuButton;
 }
 
 bool AXObject::IsCheckable() const {
@@ -2365,7 +2359,6 @@ bool AXObject::SupportsARIAExpanded() const {
     case ax::mojom::blink::Role::kListBox:
     case ax::mojom::blink::Role::kLink:
     case ax::mojom::blink::Role::kPopUpButton:
-    case ax::mojom::blink::Role::kMenuButton:
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:
     case ax::mojom::blink::Role::kMenuItemRadio:
@@ -2621,11 +2614,6 @@ ax::mojom::blink::Role AXObject::RemapAriaRoleDueToParent(
     if (role == ax::mojom::blink::Role::kListBoxOption &&
         parent_aria_role == ax::mojom::blink::Role::kMenu)
       return ax::mojom::blink::Role::kMenuItem;
-    // An aria "menuitem" may map to MenuButton or MenuItem depending on its
-    // parent.
-    if (role == ax::mojom::blink::Role::kMenuItem &&
-        parent_aria_role == ax::mojom::blink::Role::kGroup)
-      return ax::mojom::blink::Role::kMenuButton;
 
     // If the parent had a different role, then we don't need to continue
     // searching up the chain.
@@ -3997,7 +3985,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kLineBreak:
     case ax::mojom::blink::Role::kLink:
     case ax::mojom::blink::Role::kListBoxOption:
-    case ax::mojom::blink::Role::kMenuButton:
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:
     case ax::mojom::blink::Role::kMenuItemRadio:

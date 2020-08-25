@@ -53,6 +53,19 @@ standalone_system_webview_apk_tmpl("system_webview_apk") {
 standalone_system_webview_apk_tmpl("system_webview_no_weblayer_apk") {
   exclude_weblayer_java = true
   apk_name = "SystemWebViewNoWebLayer"
+
+  # Adding deps on recycler view in the base WebView APK will end up keeping the
+  # Java in the base APK instead of the WebLayer DFM, even though it is not
+  # needed in the base APK.
+  #
+  # If you hit this check and are adding a dep to //ui/android:ui_java, use
+  # //ui/android:ui_no_recycler_view instead. If you hit this check because you
+  # are adding //third_party/android_deps:android_support_*, use the androidx
+  # version of the dep instead.
+  # TODO(b/165810905): Use per-feature -keep rules in R8 once supported, then
+  # this can be removed.
+  assert_no_deps =
+      [ "//third_party/android_deps:androidx_recyclerview_recyclerview_java" ]
 }
 
 if (enable_webview_bundles) {
@@ -571,7 +584,7 @@ android_library("browser_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/blink/public:blink_headers_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
     "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

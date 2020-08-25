@@ -253,6 +253,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableConversionMeasurementInfraSupport(
       bool);
 
+  BLINK_PLATFORM_EXPORT static void EnableCompositeSVG(bool);
   BLINK_PLATFORM_EXPORT static void EnableCompositingOptimizations(bool);
 
  private:

@@ -67,7 +67,10 @@ cr.define('cellularSetup', function() {
 Polymer({
   is: 'psim-flow-ui',
 
-  behaviors: [I18nBehavior],
+  behaviors: [
+    I18nBehavior,
+    SubflowBehavior,
+  ],
 
   properties: {
     /** @private {!cellularSetup.PSimUIState} */
@@ -166,11 +169,6 @@ Polymer({
         cellular_setup.MojoInterfaceProviderImpl.getInstance();
   },
 
-  /** @override */
-  ready() {
-    this.state_ = cellularSetup.PSimUIState.STARTING_ACTIVATION;
-  },
-
   /**
    * Overrides chromeos.cellularSetup.mojom.ActivationDelegateInterface.
    * @param {!chromeos.cellularSetup.mojom.CellularMetadata} metadata
@@ -180,6 +178,17 @@ Polymer({
     this.clearTimer_();
     this.cellularMetadata_ = metadata;
     this.state_ = cellularSetup.PSimUIState.WAITING_FOR_PORTAL_TO_LOAD;
+  },
+
+  initSubflow() {
+    this.state_ = cellularSetup.PSimUIState.STARTING_ACTIVATION;
+    this.set('buttonState', {
+      backward: cellularSetup.ButtonState.HIDDEN,
+      cancel: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
+      finish: cellularSetup.ButtonState.HIDDEN,
+      next: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
+      tryAgain: cellularSetup.ButtonState.HIDDEN
+    });
   },
 
   /**

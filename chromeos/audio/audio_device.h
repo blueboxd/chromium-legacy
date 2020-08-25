@@ -33,6 +33,7 @@ enum AudioDeviceType {
   AUDIO_TYPE_LINEOUT,
   AUDIO_TYPE_POST_MIX_LOOPBACK,
   AUDIO_TYPE_POST_DSP_LOOPBACK,
+  AUDIO_TYPE_ALSA_LOOPBACK,
   AUDIO_TYPE_OTHER,
 };
 
@@ -51,6 +52,8 @@ struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
   // playback or recording for user. In contrast, audio device such as
   // loopback, always on keyword recognition (HOTWORD), and keyboard mic are
   // not for simple usage.
+  // One special case is ALSA loopback device, which will only exist under
+  // testing, and we want it visible to users for e2e tests.
   bool is_for_simple_usage() const {
     return (type == AUDIO_TYPE_HEADPHONE ||
             type == AUDIO_TYPE_INTERNAL_MIC ||
@@ -62,7 +65,8 @@ struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
             type == AUDIO_TYPE_BLUETOOTH_NB_MIC ||
             type == AUDIO_TYPE_HDMI ||
             type == AUDIO_TYPE_INTERNAL_SPEAKER ||
-            type == AUDIO_TYPE_LINEOUT);
+            type == AUDIO_TYPE_LINEOUT ||
+            type == AUDIO_TYPE_ALSA_LOOPBACK);
   }
 
   bool IsExternalDevice() const;

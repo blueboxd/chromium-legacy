@@ -16,6 +16,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_worklet_input.h"
 #include "cc/paint/skia_paint_image_generator.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -291,6 +292,15 @@ bool PaintImage::IsTextureBacked() const {
   if (cached_sk_image_)
     return cached_sk_image_->isTextureBacked();
   return false;
+}
+
+void PaintImage::FlushPendingSkiaOps() {
+  if (!texture_backing_)
+    return;
+
+  auto image = texture_backing_->GetAcceleratedSkImage();
+  if (image)
+    image->getBackendTexture(true);
 }
 
 int PaintImage::width() const {

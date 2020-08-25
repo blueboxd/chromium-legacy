@@ -100,7 +100,11 @@ class CONTENT_EXPORT InputRouterImpl
                         bool privileged,
                         bool unadjusted_movement,
                         RequestMouseLockCallback response) override;
-  void OnHasTouchEventHandlers(bool has_handlers) override;
+  // Notifies touch action filter and touch event queue whether there are
+  // JavaScript touch event handlers or not, or whether the platform has
+  // hit-testable scrollbars.
+  void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override;
   void FlushTouchEventQueue() override;
 

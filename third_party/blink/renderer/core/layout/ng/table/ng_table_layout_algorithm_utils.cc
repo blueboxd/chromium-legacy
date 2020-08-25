@@ -57,6 +57,17 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
                                      /* is_new_fc */ true);
     builder.SetTextDirection(cell.Style().Direction());
     builder.SetTableCellBorders(cell_borders);
+    if (!IsParallelWritingMode(table_writing_direction.GetWritingMode(),
+                               cell.Style().GetWritingMode())) {
+      PhysicalSize icb_size = cell.InitialContainingBlockSize();
+      builder.SetOrthogonalFallbackInlineSize(
+          IsHorizontalWritingMode(table_writing_direction.GetWritingMode())
+              ? icb_size.height
+              : icb_size.width);
+
+      builder.SetIsShrinkToFit(cell.Style().LogicalWidth().IsAuto());
+    }
+
     builder.SetAvailableSize(LogicalSize(cell_inline_size, kIndefiniteSize));
     // Standard:
     // https://www.w3.org/TR/css-tables-3/#computing-the-table-height "the
@@ -98,13 +109,16 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
         table_writing_direction.GetWritingMode(),
         table_writing_direction.Direction(),
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
-
+    bool is_parallel =
+        IsParallelWritingMode(table_writing_direction.GetWritingMode(),
+                              cell.Style().GetWritingMode());
     LayoutUnit baseline;
     // https://www.w3.org/TR/css-tables-3/#row-layout "If there is no such
     // line box or table-row, the baseline is the bottom of content edge of
     // the cell box."
     // Only baseline-aligned cells contribute to row baseline.
-    if (NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign())) {
+    if (is_parallel &&
+        NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign())) {
       if (layout_result->HasDescendantThatDependsOnPercentageBlockSize())
         baseline_depends_on_percentage_block_size_descendant = true;
       baseline = fragment.FirstBaselineOrSynthesize();
@@ -123,7 +137,8 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     // Compute cell's css block size.
     base::Optional<LayoutUnit> cell_css_block_size;
     base::Optional<float> cell_css_percent;
-    const Length& cell_specified_block_length = cell_style.LogicalHeight();
+    const Length& cell_specified_block_length =
+        is_parallel ? cell_style.LogicalHeight() : cell_style.LogicalWidth();
 
     // TODO(1105272) Handle cell_specified_block_length.IsCalculated()
     if (cell_specified_block_length.IsPercent()) {

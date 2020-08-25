@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":multidevice_feature_behavior",
     ":multidevice_feature_item",
     ":multidevice_feature_toggle",
+    ":multidevice_notification_access_setup_dialog",
     ":multidevice_page",
     ":multidevice_smartlock_subpage",
     ":multidevice_subpage",
@@ -62,6 +63,7 @@ js_library("multidevice_page") {
     ":multidevice_browser_proxy",
     ":multidevice_constants",
     ":multidevice_feature_behavior",
+    ":multidevice_notification_access_setup_dialog",
     "..:metrics_recorder",
     "..:os_route",
     "../..:router",
@@ -72,6 +74,13 @@ js_library("multidevice_page") {
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
+}
+
+js_library("multidevice_notification_access_setup_dialog") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
 }
 
 js_library("multidevice_radio_button") {
@@ -91,8 +100,8 @@ js_library("multidevice_smartlock_subpage") {
     "..:os_settings_routes",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
@@ -130,6 +139,7 @@ js_type_check("closure_compile_module") {
     ":multidevice_feature_behavior.m",
     ":multidevice_feature_item.m",
     ":multidevice_feature_toggle.m",
+    ":multidevice_notification_access_setup_dialog.m",
     ":multidevice_page.m",
     ":multidevice_radio_button.m",
     ":multidevice_smartlock_subpage.m",
@@ -140,7 +150,7 @@ js_type_check("closure_compile_module") {
 
 js_library("multidevice_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_browser_proxy.m.js" ]
-  deps = [ 
+  deps = [
     ":multidevice_constants.m",
     "//ui/webui/resources/js:cr.m",
   ]
@@ -157,8 +167,8 @@ js_library("multidevice_feature_behavior.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_feature_behavior.m.js" ]
   deps = [
     ":multidevice_constants.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -193,17 +203,27 @@ js_library("multidevice_page.m") {
     ":multidevice_browser_proxy.m",
     ":multidevice_constants.m",
     ":multidevice_feature_behavior.m",
+    ":multidevice_notification_access_setup_dialog.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
     "../..:router.m",
     "../../controls:password_prompt_dialog.m",
     "../../prefs:prefs_behavior.m",
     "../localized_link:localized_link.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
-    "//ui/webui/resources/js:assert.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":multidevice_page_module" ]
+}
+
+js_library("multidevice_notification_access_setup_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_notification_access_setup_dialog.m.js" ]
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+  extra_deps = [ ":multidevice_notification_access_setup_dialog_module" ]
 }
 
 js_library("multidevice_radio_button.m") {
@@ -225,9 +245,9 @@ js_library("multidevice_smartlock_subpage.m") {
     "..:os_route.m",
     "..:os_settings_routes.m",
     "../../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":multidevice_smartlock_subpage_module" ]
   externs_list = [ "$externs_path/quick_unlock_private.js" ]
@@ -240,12 +260,10 @@ js_library("multidevice_subpage.m") {
     ":multidevice_constants.m",
     "..:os_route.m",
     "..:os_settings_routes.m",
-    "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior.m",
   ]
-  extra_deps = [
-    ":multidevice_subpage_module"
-  ]
+  extra_deps = [ ":multidevice_subpage_module" ]
 }
 
 js_library("multidevice_tether_item.m") {
@@ -254,10 +272,10 @@ js_library("multidevice_tether_item.m") {
     ":multidevice_feature_behavior.m",
     "..:os_route.m",
     "..:os_settings_routes.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider.m",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior.m",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":multidevice_tether_item_module" ]
 }
@@ -267,6 +285,7 @@ group("polymer3_elements") {
     ":modulize",
     ":multidevice_feature_item_module",
     ":multidevice_feature_toggle_module",
+    ":multidevice_notification_access_setup_dialog_module",
     ":multidevice_page_module",
     ":multidevice_radio_button_module",
     ":multidevice_smartlock_subpage_module",
@@ -299,10 +318,20 @@ polymer_modulizer("multidevice_page") {
   html_type = "dom-module"
   migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
-  auto_imports = os_settings_auto_imports + [
-    "ui/webui/resources/html/polymer.html|Polymer,html,beforeNextRender",
-    "ui/webui/resources/html/assert.html|assert",
-  ]
+  auto_imports =
+      os_settings_auto_imports + [
+        "ui/webui/resources/html/polymer.html|Polymer,html,beforeNextRender",
+        "ui/webui/resources/html/assert.html|assert",
+      ]
+}
+
+polymer_modulizer("multidevice_notification_access_setup_dialog") {
+  js_file = "multidevice_notification_access_setup_dialog.js"
+  html_file = "multidevice_notification_access_setup_dialog.html"
+  html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
 }
 
 polymer_modulizer("multidevice_radio_button") {

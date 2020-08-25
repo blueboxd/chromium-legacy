@@ -5,6 +5,7 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Size;
 import android.view.View;
@@ -63,6 +64,14 @@ public class PlayerFrameCoordinator {
         PropertyModelChangeProcessor.create(model, mView, PlayerFrameViewBinder::bind);
     }
 
+    public Point getScrollPosition() {
+        Rect viewPortRect = mMediator.getViewport().asRect();
+        float scaleFactor = mMediator.getViewport().getScale();
+        if (scaleFactor == 0) scaleFactor = 1;
+        return new Point(
+                (int) (viewPortRect.left / scaleFactor), (int) (viewPortRect.top / scaleFactor));
+    }
+
     /**
      * Adds a child {@link PlayerFrameCoordinator} to this class.
      * @param subFrame The sub-frame's {@link PlayerFrameCoordinator}.
@@ -76,7 +85,7 @@ public class PlayerFrameCoordinator {
     /**
      * @return The mediator associated with this component.
      */
-    public PlayerFrameMediator getMediator() {
+    private PlayerFrameMediator getMediator() {
         return mMediator;
     }
 

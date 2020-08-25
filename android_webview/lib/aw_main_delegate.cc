@@ -248,6 +248,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.EnableIfNotSet(
         metrics::UnsentLogStoreMetrics::kRecordLastUnsentLogMetadataMetrics);
+
+    features.DisableIfNotSet(::features::kPeriodicBackgroundSync);
   }
 
   android_webview::RegisterPathProvider();

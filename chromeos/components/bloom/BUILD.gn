@@ -1,0 +1,18 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("bloom") {
+  sources = [
+    "bloom_controller_impl.cc",
+    "bloom_controller_impl.h",
+  ]
+
+  deps = [
+    "//ash/public/cpp",
+    "//base",
+    "//chromeos/components/bloom/public/cpp",
+    "//components/signin/public/identity_manager",
+    "//services/network/public/cpp",
+  ]
+}

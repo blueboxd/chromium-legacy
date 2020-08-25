@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
 #include "base/check.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
@@ -91,6 +92,13 @@
   // By not passing the event to AppKit, we do lose out on the brief
   // highlighting of the NSMenu.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
+  // Ignore new tab/window events if |event| is a key repeat to prevent
+  // users from accidentally opening too many empty tabs or windows.
+  if (event.isARepeat && (result.chrome_command == IDC_NEW_TAB ||
+                          result.chrome_command == IDC_NEW_WINDOW)) {
+    return ui::PerformKeyEquivalentResult::kDrop;
+  }
+
   if (result.found()) {
     auto* bridge =
         remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);

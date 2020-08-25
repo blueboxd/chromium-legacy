@@ -50,6 +50,9 @@ extern const char kCorsExemptHeaders[];
 // way of enabling this feature.
 extern const char kEnableCastStreamingReceiver[];
 
+// Data directory to be used for CDM user data.
+extern const char kCdmDataDirectory[];
+
 }  // namespace switches
 
 #endif  // FUCHSIA_ENGINE_SWITCHES_H_

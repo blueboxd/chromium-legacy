@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -82,8 +83,6 @@ class ReportQueue {
 
   StatusOr<reporting::WrappedRecord> WrapRecord(base::StringPiece record_data);
   StatusOr<std::string> GetLastRecordDigest();
-  StatusOr<reporting::EncryptedRecord> EncryptRecord(
-      reporting::WrappedRecord wrapped_record);
 
   std::unique_ptr<ReportQueueConfiguration> config_;
   scoped_refptr<StorageModule> storage_;

@@ -258,6 +258,9 @@
   <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
     Try again
   </message>
+  <message name="IDS_CELLULAR_SETUP_NEXT_LABEL" desc="Label for button that advances to next step during cellular setup">
+    Next
+  </message>
   <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup.">
     Preparing to setup your cellular device...
   </message>
@@ -290,6 +293,12 @@
   </message>
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE" desc="Message displayed under title in final screen of cellular setup when ChromeOS encountered an error completing activation.">
     An error occured during activation.
+  </message>
+   <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_PSIM_LABEL" desc="Label for physical SIM (pSIM) setup flow card radio select button during cellular setup">
+    Physical SIM
+  </message>
+   <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL" desc="Label for electronic SIM (eSIM) setup flow card radio select button during cellular setup">
+    eSim setup
   </message>
 
   <!-- Upgrade notifications -->
@@ -4087,9 +4096,6 @@
   </message>
   <message name="IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR" desc="Android sign-in error because of GMS services are unavailable">
     Couldn’t connect with Google services
-  </message>
-  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR" desc="Android sign-in error because of cloud provision flow failed">
-    Provisioning flow was interrupted. Please try again or contact your device owner or administrator.
   </message>
   <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
     Provisioning failed because your account details could not be retrieved. Please try again. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.

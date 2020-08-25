@@ -13,6 +13,7 @@
 
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
@@ -183,6 +184,17 @@ int main(int argc, char** argv) {
   create_context_params.set_features(features);
   if (remote_debugging_port)
     create_context_params.set_remote_debugging_port(*remote_debugging_port);
+
+  // DRM services require cdm_data_directory to be populated, so create a
+  // directory under /data and use that as the cdm_data_directory.
+  base::FilePath cdm_data_path =
+      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)
+          .Append("cdm_data");
+  base::File::Error error;
+  CHECK(base::CreateDirectoryAndGetError(cdm_data_path, &error)) << error;
+  create_context_params.set_cdm_data_directory(
+      base::fuchsia::OpenDirectory(cdm_data_path));
+  CHECK(create_context_params.cdm_data_directory());
 
   base::RunLoop run_loop;
 

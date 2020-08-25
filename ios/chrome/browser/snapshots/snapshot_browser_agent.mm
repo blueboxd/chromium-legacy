@@ -97,6 +97,10 @@ void SnapshotBrowserAgent::PerformStorageMaintenance() {
   PurgeUnusedSnapshots();
 }
 
+void SnapshotBrowserAgent::RemoveAllSnapshots() {
+  [snapshot_cache_ removeAllImages];
+}
+
 void SnapshotBrowserAgent::MigrateStorageIfNecessary() {
   DCHECK(snapshot_cache_);
   base::FilePath legacy_directory;

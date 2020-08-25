@@ -176,8 +176,6 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
     case ArcSupportHost::Error::
         SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID:
       return os << "SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID";
-    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
-      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR";
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR:
       return os << "SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR";
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR:
@@ -372,11 +370,6 @@ void ArcSupportHost::ShowError(Error error,
         SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID:
       message = l10n_util::GetStringFUTF16(
           IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID,
-          base::NumberToString16(error_code));
-      break;
-    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
-      message = l10n_util::GetStringFUTF16(
-          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR,
           base::NumberToString16(error_code));
       break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR:

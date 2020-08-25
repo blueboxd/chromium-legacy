@@ -159,7 +159,6 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kMath, NSAccessibilityGroupRole},
       {ax::mojom::Role::kMenu, NSAccessibilityMenuRole},
       {ax::mojom::Role::kMenuBar, NSAccessibilityMenuBarRole},
-      {ax::mojom::Role::kMenuButton, NSAccessibilityMenuButtonRole},
       {ax::mojom::Role::kMenuItem, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuItemCheckBox, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuItemRadio, NSAccessibilityMenuItemRole},

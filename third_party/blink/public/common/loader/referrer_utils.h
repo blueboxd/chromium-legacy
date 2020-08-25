@@ -19,8 +19,13 @@ class ReferrerUtils {
 
   static BLINK_COMMON_EXPORT net::ReferrerPolicy GetDefaultNetReferrerPolicy();
 
-  static BLINK_COMMON_EXPORT bool ReadModifyWriteForceLegacyPolicyFlag(
-      base::Optional<bool> maybe_new_value);
+  // Configures retaining the pre-M80 default referrer
+  // policy of no-referrer-when-downgrade.
+  // TODO(crbug.com/1016541): After M88, remove when the corresponding
+  // enterprise policy has been deleted.
+  static BLINK_COMMON_EXPORT void SetForceLegacyDefaultReferrerPolicy(
+      bool force);
+  static BLINK_COMMON_EXPORT bool ShouldForceLegacyDefaultReferrerPolicy();
 };
 
 }  // namespace blink

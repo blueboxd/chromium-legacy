@@ -221,9 +221,16 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
 #if defined(OS_ANDROID)
   trusted_vault_client_ = std::make_unique<TrustedVaultClientAndroid>();
 #else
+  // TODO(crbug.com/1113597): consider destroying/notifying
+  // |trusted_vault_client_| upon IdentityManager shutdown, to avoid its usages
+  // afterwards. This can be done by tranferring |trusted_vault_client_|
+  // ownership to ProfileSyncService and acting on
+  // ProfileSyncService::Shutdown() or by handling
+  // IdentityManagerFactory::Observer::IdentityManagerShutdown().
   trusted_vault_client_ =
       std::make_unique<syncer::StandaloneTrustedVaultClient>(
-          profile_->GetPath().Append(kTrustedVaultFilename));
+          profile_->GetPath().Append(kTrustedVaultFilename),
+          IdentityManagerFactory::GetForProfile(profile_));
 #endif  // defined(OS_ANDROID)
 }
 

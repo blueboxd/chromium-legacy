@@ -48,8 +48,6 @@
 @interface SnapshotCache ()
 // List of observers to be notified of changes to the snapshot cache.
 @property(nonatomic, strong) SnapshotCacheObservers* observers;
-// Marked set of identifiers for which images should not be immediately deleted.
-@property(nonatomic, strong) NSMutableSet<NSString*>* markedIDs;
 @end
 
 namespace {
@@ -252,7 +250,6 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
     [self createStorageIfNecessary];
 
     _observers = [SnapshotCacheObservers observers];
-    _markedIDs = [[NSMutableSet alloc] init];
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -351,9 +348,6 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
 
 - (void)removeImageWithSnapshotID:(NSString*)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  // Do not immediately delete if the ID is marked.
-  if ([self.markedIDs containsObject:snapshotID])
-    return;
 
   [_lruCache removeObjectForKey:snapshotID];
 
@@ -375,20 +369,29 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
       }));
 }
 
-- (void)markImageWithSnapshotID:(NSString*)snapshotID {
-  [self.markedIDs addObject:snapshotID];
-}
+- (void)removeAllImages {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
 
-- (void)removeMarkedImages {
-  while (self.markedIDs.count > 0) {
-    NSString* snapshotID = [self.markedIDs anyObject];
-    [self.markedIDs removeObject:snapshotID];
-    [self removeImageWithSnapshotID:snapshotID];
-  }
-}
+  [_lruCache removeAllObjects];
 
-- (void)unmarkAllImages {
-  [self.markedIDs removeAllObjects];
+  if (!_taskRunner)
+    return;
+  // Copy ivars used by the block so that it does not reference |self|.
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  _taskRunner->PostTask(
+      FROM_HERE, base::BindOnce(^{
+        if (cacheDirectory.empty() || !base::DirectoryExists(cacheDirectory)) {
+          return;
+        }
+        if (!base::DeletePathRecursively(cacheDirectory)) {
+          DLOG(ERROR) << "Error deleting snapshots storage. "
+                      << cacheDirectory.AsUTF8Unsafe();
+        }
+        if (!base::CreateDirectory(cacheDirectory)) {
+          DLOG(ERROR) << "Error creating snapshot storage "
+                      << cacheDirectory.AsUTF8Unsafe();
+        }
+      }));
 }
 
 - (base::FilePath)imagePathForSnapshotID:(NSString*)snapshotID {

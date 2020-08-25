@@ -126,6 +126,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/caption.mojom.h"
 #include "chrome/common/webui_url_constants.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif
 
@@ -372,7 +373,8 @@ void BindSpeechRecognitionContextHandler(
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
+      base::FeatureList::IsEnabled(media::kLiveCaption)) {
     SpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
         std::move(receiver));
   }
@@ -384,7 +386,8 @@ void BindCaptionContextHandler(
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
+      base::FeatureList::IsEnabled(media::kLiveCaption)) {
     captions::CaptionHostImpl::Create(frame_host, std::move(receiver));
   }
 }

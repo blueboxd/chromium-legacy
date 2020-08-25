@@ -237,8 +237,11 @@ TEST_F(ReportQueueTest, CallSuccessCallbackFailure) {
 // has been scheduled. The callback should fail, indicating that encryption was
 // unsuccessful.
 TEST_F(ReportQueueTest, EnqueueSuccessEncryptFailure) {
-  EXPECT_CALL(*test_encryption_module(), EncryptRecord(_))
-      .WillOnce(Return(Status(error::UNKNOWN, "Failing for tests")));
+  EXPECT_CALL(*test_encryption_module(), EncryptRecord(_, _))
+      .WillOnce(WithArg<1>(
+          Invoke([](base::OnceCallback<void(StatusOr<EncryptedRecord>)> cb) {
+            std::move(cb).Run(Status(error::UNKNOWN, "Failing for tests"));
+          })));
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
   TestEvent<Status> a;

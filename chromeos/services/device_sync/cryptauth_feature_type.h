@@ -74,8 +74,15 @@ enum class CryptAuthFeatureType {
   kPhoneHubClientSupported = 18,
   kPhoneHubClientEnabled = 19,
 
+  // Wifi Sync with Android, which allows users to sync wifi network
+  // configurations between Chrome OS devices and a connected  Android phone
+  kWifiSyncHostSupported = 20,
+  kWifiSyncHostEnabled = 21,
+  kWifiSyncClientSupported = 22,
+  kWifiSyncClientEnabled = 23,
+
   // Used for UMA logs.
-  kMaxValue = kPhoneHubClientEnabled
+  kMaxValue = kWifiSyncClientEnabled
 };
 
 const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes();

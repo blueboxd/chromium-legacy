@@ -110,7 +110,8 @@ bool TestPasswordSyncMetadataStore::HasUnsyncedDeletions() {
 
 }  // namespace
 
-TestPasswordStore::TestPasswordStore(bool is_account_store)
+TestPasswordStore::TestPasswordStore(
+    password_manager::IsAccountStore is_account_store)
     : is_account_store_(is_account_store),
       metadata_store_(std::make_unique<TestPasswordSyncMetadataStore>()) {}
 
@@ -159,7 +160,7 @@ PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     changes.emplace_back(PasswordStoreChange::REMOVE, *iter);
     changes.emplace_back(PasswordStoreChange::ADD, form);
     *iter = form;
-    iter->in_store = is_account_store_
+    iter->in_store = IsAccountStore()
                          ? autofill::PasswordForm::Store::kAccountStore
                          : autofill::PasswordForm::Store::kProfileStore;
     return changes;
@@ -168,8 +169,8 @@ PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
   changes.emplace_back(PasswordStoreChange::ADD, form);
   passwords_for_signon_realm.push_back(form);
   passwords_for_signon_realm.back().in_store =
-      is_account_store_ ? autofill::PasswordForm::Store::kAccountStore
-                        : autofill::PasswordForm::Store::kProfileStore;
+      IsAccountStore() ? autofill::PasswordForm::Store::kAccountStore
+                       : autofill::PasswordForm::Store::kProfileStore;
   return changes;
 }
 
@@ -185,7 +186,7 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
   for (auto& stored_form : forms) {
     if (ArePasswordFormUniqueKeysEqual(form, stored_form)) {
       stored_form = form;
-      stored_form.in_store = is_account_store_
+      stored_form.in_store = IsAccountStore()
                                  ? autofill::PasswordForm::Store::kAccountStore
                                  : autofill::PasswordForm::Store::kProfileStore;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
@@ -338,7 +339,7 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
 bool TestPasswordStore::AddCompromisedCredentialsImpl(
     const CompromisedCredentials& compromised_credentials) {
   CompromisedCredentials cred = compromised_credentials;
-  cred.in_store = is_account_store_
+  cred.in_store = IsAccountStore()
                       ? autofill::PasswordForm::Store::kAccountStore
                       : autofill::PasswordForm::Store::kProfileStore;
   return compromised_credentials_.insert(std::move(cred)).second;
@@ -452,7 +453,7 @@ PasswordStoreSync::MetadataStore* TestPasswordStore::GetMetadataStore() {
 }
 
 bool TestPasswordStore::IsAccountStore() const {
-  return is_account_store_;
+  return is_account_store_.value();
 }
 
 bool TestPasswordStore::DeleteAndRecreateDatabaseFile() {

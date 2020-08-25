@@ -361,12 +361,18 @@ class MultideviceHandlerTest : public testing::Test {
     fake_notification_access_manager()->SetNotificationSetupOperationStatus(
         status);
 
+    bool completed_successfully = status ==
+                                  phonehub::NotificationAccessSetupOperation::
+                                      Status::kCompletedSuccessfully;
+    if (completed_successfully)
+      call_data_count_before_call++;
+
     EXPECT_EQ(call_data_count_before_call + 1u,
               test_web_ui()->call_data().size());
     const content::TestWebUI::CallData& call_data =
         CallDataAtIndex(call_data_count_before_call);
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
-    EXPECT_EQ("notification-access-setup-operation-status-changed",
+    EXPECT_EQ("settings.onNotificationAccessSetupStatusChanged",
               call_data.arg1()->GetString());
     EXPECT_EQ(call_data.arg2()->GetInt(), static_cast<int32_t>(status));
   }

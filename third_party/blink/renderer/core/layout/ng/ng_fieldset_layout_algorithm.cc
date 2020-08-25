@@ -126,9 +126,9 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   container_builder_.SetIsFieldsetContainer();
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    FinishFragmentation(
-        Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
-        FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
+    FinishFragmentation(Node(), ConstraintSpace(), BreakToken(), borders_,
+                        FragmentainerSpaceAtBfcStart(ConstraintSpace()),
+                        &container_builder_);
   }
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -158,11 +158,13 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   }
 
   NGBlockNode legend = Node().GetRenderedLegend();
-  if (legend && !IsResumingLayout(BreakToken())) {
-    LayoutLegend(legend);
+  if (legend) {
+    if (!IsResumingLayout(BreakToken()))
+      LayoutLegend(legend);
     // The legend may eat from the available content box block size. Calculate
     // the minimum block size needed to encompass the legend.
-    if (!Node().ShouldApplySizeContainment()) {
+    if (!Node().ShouldApplySizeContainment() &&
+        !IsResumingLayout(content_break_token.get())) {
       minimum_border_box_block_size_ =
           intrinsic_block_size_ + padding_.BlockSum() + borders_.block_end;
     }

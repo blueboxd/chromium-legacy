@@ -6,26 +6,44 @@
 Polymer({
   is: 'button-bar',
 
-  behaviors: [I18nBehavior],
+  behaviors: [
+    I18nBehavior,
+  ],
 
   properties: {
-    /** When set, displays the Try Again action button. */
-    showTryAgainButton: {
-      type: Boolean,
-      value: false,
-    },
+    /**
+     * Sets the states of all buttons
+     * @type {!cellularSetup.ButtonBarState}
+     */
+    buttonState: {type: Object, value: {}},
 
-    /** When set, displays the Finish action button. */
-    showFinishButton: {
-      type: Boolean,
-      value: false,
+    /**
+     * @type {!cellularSetup.Button}
+     */
+    Button: {
+      type: Object,
+      value: cellularSetup.Button,
     },
+  },
 
-    /** When set, displays a cancel button instead of back. */
-    showCancelButton: {
-      type: Boolean,
-      value: false,
-    },
+  /**
+   * @param {!cellularSetup.Button} buttonName
+   * @return {boolean}
+   * @private
+   */
+  isButtonHidden_(buttonName) {
+    const state = this.getButtonBarState_(buttonName);
+    return state === cellularSetup.ButtonState.HIDDEN;
+  },
+
+  /**
+   * @param {!cellularSetup.Button} buttonName
+   * @return {boolean}
+   * @private
+   */
+  isButtonDisabled_(buttonName) {
+    const state = this.getButtonBarState_(buttonName);
+    return state === cellularSetup.ButtonState.SHOWN_BUT_DISABLED;
   },
 
   /** @private */
@@ -42,4 +60,33 @@ Polymer({
   onFinishButtonClicked_() {
     this.fire('complete-flow-requested');
   },
+
+  /** @private */
+  onNextButtonClicked_() {
+    this.fire('forward-nav-requested');
+  },
+
+  /**
+   * @param {!cellularSetup.Button} button
+   * @returns {!cellularSetup.ButtonState|undefined}
+   * @private
+   */
+  getButtonBarState_(button) {
+    assert(this.buttonState);
+    switch (button) {
+      case cellularSetup.Button.BACKWARD:
+        return this.buttonState.backward;
+      case cellularSetup.Button.CANCEL:
+        return this.buttonState.cancel;
+      case cellularSetup.Button.FINISH:
+        return this.buttonState.finish;
+      case cellularSetup.Button.NEXT:
+        return this.buttonState.next;
+      case cellularSetup.Button.TRY_AGAIN:
+        return this.buttonState.tryAgain;
+      default:
+        assertNotReached();
+        return cellularSetup.ButtonState.SHOWN_AND_ENABLED;
+    }
+  }
 });

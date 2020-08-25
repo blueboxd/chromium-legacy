@@ -110,6 +110,15 @@ fuchsia::web::CreateContextParams BuildCreateContextParams() {
   return output;
 }
 
+fidl::InterfaceHandle<fuchsia::io::Directory> OpenCacheDirectory() {
+  fidl::InterfaceHandle<fuchsia::io::Directory> cache_handle;
+  zx_status_t result =
+      fdio_service_connect(base::fuchsia::kPersistedCacheDirectoryPath,
+                           cache_handle.NewRequest().TakeChannel().release());
+  ZX_CHECK(result == ZX_OK, result) << "Failed to open /cache";
+  return cache_handle;
+}
+
 }  // namespace
 
 class ContextProviderImplTest : public base::MultiProcessTest {
@@ -254,6 +263,7 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
         BuildCreateContextParams();
     *create_params.mutable_features() =
         fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {
@@ -269,6 +279,7 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
     fuchsia::web::CreateContextParams create_params =
         BuildCreateContextParams();
     create_params.set_playready_key_system("foo");
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {
@@ -286,6 +297,7 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
     *create_params.mutable_features() =
         fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM |
         fuchsia::web::ContextFeatureFlags::HEADLESS;
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {

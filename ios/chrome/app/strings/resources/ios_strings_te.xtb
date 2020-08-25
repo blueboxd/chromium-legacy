@@ -120,7 +120,7 @@
 <translation id="2302742851632557585">వెబ్‌సైట్‌లో పాస్‌వర్డ్‌ను మార్చండి</translation>
 <translation id="2316709634732130529">సూచించిన పాస్‌వర్డ్‌ని ఉపయోగించు</translation>
 <translation id="2320166752086256636">కీబోర్డ్‌ను దాచు</translation>
-<translation id="2339560363438331454">సింక్ మరియు Google సేవలు</translation>
+<translation id="2339560363438331454">సింక్, Google సర్వీసులు</translation>
 <translation id="2351097562818989364">మీ అనువాద సెట్టింగ్‌లు రీసెట్ చేయబడ్డాయి.</translation>
 <translation id="2359043044084662842">అనువదించు</translation>
 <translation id="2359808026110333948">కొనసాగించు</translation>
@@ -138,7 +138,7 @@
 <translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
 <translation id="2562041823070056534"><ph name="DEVICE_NAME" />కు పంపుతోంది...</translation>
-<translation id="2570206273416014374">అడ్రస్ బార్, శోధన బాక్స్‌లలో చేసే శోధనలు, కొన్ని కుక్కీలను మీ డిఫాల్ట్ శోధన ఇంజిన్‌కు పంపుతుంది</translation>
+<translation id="2570206273416014374">అడ్రస్ బార్, సెర్చ్ బాక్స్‌లలో చేసే సెర్చ్‌లు, కొన్ని కుక్కీలను మీరు ఆటోమేటిక్ ఆప్షన్‌గా సెట్ చేసిన సెర్చ్ ఇంజిన్‌కు పంపుతుంది</translation>
 <translation id="2578571896248130439">వెబ్‌పేజీని పంపండి</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు…</translation>
 <translation id="2600682495497606169">సైట్ కుక్కీలను క్లియర్ చేయి</translation>
@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">ఫైల్‌ను తెరవలేకపోయింది</translation>
 <translation id="2718352093833049315">Wi-Fiలో మాత్రమే</translation>
 <translation id="2747003861858887689">మునుపటి ఫీల్డ్</translation>
+<translation id="2764831210418622012">ఇప్పుడే</translation>
 <translation id="2773292004659987824">అజ్ఞాత శోధన</translation>
 <translation id="277771892408211951">భాషను ఎంచుకోండి</translation>
 <translation id="2780046210906776326">ఇమెయిల్ ఖాతాలు లేవు</translation>
@@ -173,7 +174,7 @@
 <translation id="2876369937070532032">మీ భద్రతకు ప్రమాదం పొంచి ఉన్నప్పుడు, మీరు సందర్శించే కొన్ని పేజీల URLలను Googleకు పంపుతుంది</translation>
 <translation id="288655811176831528">ట్యాబ్‌ని మూసివేయి</translation>
 <translation id="2898963176829412617">కొత్త ఫోల్డర్…</translation>
-<translation id="2916171785467530738">స్వయంపూర్తి శోధనలు మరియు URLలు</translation>
+<translation id="2916171785467530738">ఆటో-ఫిల్ సెర్చ్‌లు, URLలు</translation>
 <translation id="291754862089661335">QR కోడ్ లేదా బార్‌కోడ్‌ను ఈ ఫ్రేమ్‌లో ఉంచండి</translation>
 <translation id="2921219216347069551">పేజీ భాగస్వామ్యం సాధ్యపడలేదు</translation>
 <translation id="2923448633003185837">పేస్ట్ చేసి, ముందుకు వెళ్ళండి</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">సెట్టింగ్‌లు</translation>
 <translation id="4496373720959965247">ట్యాబ్‌లను జోడించండి మరియు పేజీల మధ్య మారండి</translation>
 <translation id="4502566650163919158">ఇప్పుడే తనిఖీ చేయి</translation>
+<translation id="4505980578794259603">చివరగా చెక్ చేసినది <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">సైన్ ఇన్ ప్రోమోను మూసివేయండి</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />లో సేవ్ చేసిన పాస్‌వర్డ్‌లను వీక్షించండి. నిర్వహించండి</translation>
 <translation id="4536418791685807335">మళ్లీ సైన్ ఇన్ చేయడానికి ప్రయత్నించండి.</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">దేశం</translation>
 <translation id="6445981559479772097">సందేశం పంపబడింది.</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
+<translation id="6453018583485750254">ఎప్పటికీ చెక్ రన్ చేయవద్దు.</translation>
 <translation id="6464071786529933911">కొత్త అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="6464397691496239022">సైట్‌లు మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి కుక్కీలను ఉపయోగిస్తాయి, ఉదాహరణకు, మిమ్మల్ని సైన్ ఇన్ చేసి ఉంచడం లేదా మీ షాపింగ్ కార్ట్‌లోని ఐటెమ్‌లను గుర్తు చేయడం లాంటివి.
 
@@ -627,7 +630,7 @@
 <translation id="8065292699993359127">Chromeలోని అజ్ఞాత మోడ్‌లో URLలను తెరవండి</translation>
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
 <translation id="8073670137947914548">డౌన్‌లోడ్ పూర్తయింది</translation>
-<translation id="8073872304774253879">శోధనలు మరియు బ్రౌజింగ్‌ను మరింత మెరుగుపరచండి</translation>
+<translation id="8073872304774253879">సెర్చ్‌లను, బ్రౌజింగ్‌ను మెరుగుపరచండి</translation>
 <translation id="8076014560081431679">సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8105368624971345109">ఆఫ్ చేయి</translation>
 <translation id="8114753159095730575">ఫైల్ డౌన్‌లోడ్ అందుబాటులో ఉంది. ఎంపికలు స్క్రీన్ దిగువ భాగంలో అందుబాటులో ఉంటాయి.</translation>

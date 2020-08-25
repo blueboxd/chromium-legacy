@@ -51,7 +51,7 @@
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/test/test_ax_event_observer.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -3474,10 +3474,10 @@ TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
 TEST_F(TextfieldTest, SetAccessibleNameNotifiesAccessibilityEvent) {
   InitTextfield();
   base::string16 test_tooltip_text = ASCIIToUTF16("Test Accessible Name");
-  test::TestAXEventObserver observer;
-  EXPECT_EQ(0, observer.text_changed_event_count());
+  test::AXEventCounter counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
   textfield_->SetAccessibleName(test_tooltip_text);
-  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
   EXPECT_EQ(test_tooltip_text, textfield_->GetAccessibleName());
   ui::AXNodeData data;
   textfield_->GetAccessibleNodeData(&data);

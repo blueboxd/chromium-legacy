@@ -75,13 +75,10 @@ android_resources("java_test_resources") {
   testonly = true
 
   create_srcjar = false
-  sources = [
-    "test/java/res/drawable/ic_add.xml",
-    "test/java/res/values/ids.xml",
-    "test/java/res/values/strings.xml",
-  ]
+  sources = [ "test/java/res/values/ids.xml" ]
   deps = [
     ":java_resources",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//ui/android:ui_java_resources",
   ]
 }

@@ -930,6 +930,31 @@ TEST_F('OSSettingsMultideviceFeatureItemTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the multidevice Notification access dialog flow.
+// eslint-disable-next-line no-var
+var OSSettingsMultideviceNotificationAccessDialogTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/multidevice_page/' +
+        'multidevice_notification_access_setup_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'test_multidevice_browser_proxy.js',
+      'multidevice_notification_access_setup_dialog_tests.js',
+    ]);
+  }
+};
+
+TEST_F(
+    'OSSettingsMultideviceNotificationAccessDialogTest', 'AllJsTests', () => {
+      mocha.run();
+    });
+
 // Test fixture for the multidevice settings subpage feature toggle.
 // eslint-disable-next-line no-var
 var OSSettingsMultideviceFeatureToggleTest =

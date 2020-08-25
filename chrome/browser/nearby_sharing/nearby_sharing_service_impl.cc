@@ -255,12 +255,6 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
 
   nearby_process_observer_.Add(process_manager_);
 
-  if (process_manager_->IsActiveProfile(profile_)) {
-    // TODO(crbug.com/1084576): Initialize NearbyConnectionsManager with
-    // NearbyConnectionsMojom from |process_manager|:
-    // process_manager_->GetOrStartNearbyConnections(profile_)
-  }
-
   settings_.AddSettingsObserver(settings_receiver_.BindNewPipeAndPassRemote());
 
   GetBluetoothAdapter();
@@ -284,12 +278,6 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::RegisterSendSurface(
   DCHECK(transfer_callback);
   DCHECK(discovery_callback);
   DCHECK_NE(state, SendSurfaceState::kUnknown);
-
-  if (!process_manager_->IsActiveProfile(profile_)) {
-    NS_LOG(VERBOSE) << __func__
-                    << ": RegisterSendSurface failed, since profile not active";
-    return StatusCodes::kError;
-  }
 
   if (foreground_send_transfer_callbacks_.HasObserver(transfer_callback) ||
       background_send_transfer_callbacks_.HasObserver(transfer_callback)) {
@@ -397,13 +385,6 @@ NearbySharingServiceImpl::RegisterReceiveSurface(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(transfer_callback);
   DCHECK_NE(state, ReceiveSurfaceState::kUnknown);
-
-  if (!process_manager_->IsActiveProfile(profile_)) {
-    NS_LOG(VERBOSE)
-        << __func__
-        << ": registerReceiveSurface failed, since profile not active";
-    return StatusCodes::kError;
-  }
 
   if (is_sending_files_) {
     UnregisterReceiveSurface(transfer_callback);
@@ -586,6 +567,7 @@ void NearbySharingServiceImpl::OnNearbyProfileChanged(Profile* profile) {
   // TODO(crbug.com/1084576): Notify UI about the new active profile.
   NS_LOG(VERBOSE) << __func__ << ": Nearby profile changed to "
                   << process_manager_->IsActiveProfile(profile_);
+  InvalidateSurfaceState();
 }
 
 void NearbySharingServiceImpl::OnNearbyProcessStarted() {
@@ -594,10 +576,9 @@ void NearbySharingServiceImpl::OnNearbyProcessStarted() {
 }
 
 void NearbySharingServiceImpl::OnNearbyProcessStopped() {
-  if (process_manager_->IsActiveProfile(profile_)) {
-    // TODO(crbug.com/1084576): Check if process should be running and restart
-    // it after a delay.
-  }
+  InvalidateSurfaceState();
+  if (process_manager_->IsActiveProfile(profile_))
+    NS_LOG(VERBOSE) << __func__ << ": Nearby process stopped!";
 }
 
 void NearbySharingServiceImpl::OnIncomingConnection(
@@ -971,6 +952,35 @@ void NearbySharingServiceImpl::AdapterPoweredChanged(
 void NearbySharingServiceImpl::InvalidateSurfaceState() {
   InvalidateSendSurfaceState();
   InvalidateReceiveSurfaceState();
+  if (ShouldStopNearbyProcess()) {
+    NS_LOG(VERBOSE) << __func__ << ": Stopping process because it's not in use";
+    process_manager_->StopProcess(profile_);
+  }
+}
+
+bool NearbySharingServiceImpl::ShouldStopNearbyProcess() {
+  // Cannot stop process without being the active profile.
+  if (!process_manager_->IsActiveProfile(profile_))
+    return false;
+
+  // We're currently advertising.
+  if (advertising_power_level_ != PowerLevel::kUnknown)
+    return false;
+
+  // We're currently discovering.
+  if (is_scanning_)
+    return false;
+
+  // We're currently attempting to connect to a remote device.
+  if (is_connecting_)
+    return false;
+
+  // We're currently sending or receiving a file.
+  if (is_transferring_)
+    return false;
+
+  // We're not using NearbyConnections, should stop the process.
+  return true;
 }
 
 void NearbySharingServiceImpl::InvalidateReceiveSurfaceState() {
@@ -979,6 +989,13 @@ void NearbySharingServiceImpl::InvalidateReceiveSurfaceState() {
 }
 
 void NearbySharingServiceImpl::InvalidateAdvertisingState() {
+  if (!process_manager_->IsActiveProfile(profile_)) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping advertising because profile not active";
+    StopAdvertising();
+    return;
+  }
+
   // Screen is off. Do no work.
   if (ui::CheckIdleStateIsLocked()) {
     StopAdvertising();
@@ -1123,6 +1140,13 @@ void NearbySharingServiceImpl::InvalidateSendSurfaceState() {
 }
 
 void NearbySharingServiceImpl::InvalidateScanningState() {
+  if (!process_manager_->IsActiveProfile(profile_)) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping discovery because profile not active";
+    StopScanning();
+    return;
+  }
+
   // Screen is off. Do no work.
   if (ui::CheckIdleStateIsLocked()) {
     StopScanning();

@@ -72,17 +72,6 @@ net::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
 }
 
 // static
-void Referrer::SetForceLegacyDefaultReferrerPolicy(bool force) {
-  blink::ReferrerUtils::ReadModifyWriteForceLegacyPolicyFlag(force);
-}
-
-// static
-bool Referrer::ShouldForceLegacyDefaultReferrerPolicy() {
-  return blink::ReferrerUtils::ReadModifyWriteForceLegacyPolicyFlag(
-      base::nullopt);
-}
-
-// static
 network::mojom::ReferrerPolicy Referrer::ConvertToPolicy(int32_t policy) {
   return mojo::ConvertIntToMojoEnum<network::mojom::ReferrerPolicy>(policy)
       .value_or(network::mojom::ReferrerPolicy::kDefault);

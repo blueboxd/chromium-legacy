@@ -323,6 +323,8 @@ source_set("unit_tests") {
     "manifest/manifest_manager_unittest.cc",
     "manifest/manifest_parser_unittest.cc",
     "manifest/manifest_type_converters_unittest.cc",
+    "media/audio/mojo_audio_output_ipc_test.cc",
+    "media/audio/web_audio_output_ipc_factory_test.cc",
     "media/webmediaplayer_util_unittest.cc",
     "media_capabilities/media_capabilities_test.cc",
     "media_controls/elements/media_control_animated_arrow_container_element_test.cc",

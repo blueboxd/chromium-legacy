@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -98,7 +99,7 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
     PaintPreviewBaseService* paint_preview_service,
     const GURL& expected_url,
     const DirectoryKey& key,
-    base::OnceClosure compositor_error,
+    base::OnceCallback<void(int)> compositor_error,
     bool skip_service_launch)
     : compositor_error_(std::move(compositor_error)),
       paint_preview_service_(paint_preview_service),
@@ -139,10 +140,35 @@ PlayerCompositorDelegate::~PlayerCompositorDelegate() {
   }
 }
 
+void PlayerCompositorDelegate::OnCompositorReadyStatusAdapter(
+    mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+    mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
+  CompositorStatus new_status;
+  switch (status) {
+    // falltrhough
+    case mojom::PaintPreviewCompositor::BeginCompositeStatus::kSuccess:
+    case mojom::PaintPreviewCompositor::BeginCompositeStatus::kPartialSuccess:
+      new_status = CompositorStatus::OK;
+      break;
+    case mojom::PaintPreviewCompositor::BeginCompositeStatus::
+        kDeserializingFailure:
+      new_status = CompositorStatus::COMPOSITOR_DESERIALIZATION_ERROR;
+      break;
+    case mojom::PaintPreviewCompositor::BeginCompositeStatus::
+        kCompositingFailure:
+      new_status = CompositorStatus::INVALID_ROOT_FRAME_SKP;
+      break;
+    default:
+      NOTREACHED();
+  }
+  OnCompositorReady(new_status, std::move(composite_response));
+}
+
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
   LOG(ERROR) << "Compositor service disconnected.";
   if (compositor_error_)
-    std::move(compositor_error_).Run();
+    std::move(compositor_error_)
+        .Run(static_cast<int>(CompositorStatus::COMPOSITOR_SERVICE_DISCONNECT));
 }
 
 void PlayerCompositorDelegate::OnCompositorClientCreated(
@@ -161,26 +187,21 @@ void PlayerCompositorDelegate::OnProtoAvailable(
     std::unique_ptr<PaintPreviewProto> proto) {
   if (!proto || !proto->IsInitialized()) {
     // TODO(crbug.com/1021590): Handle initialization errors.
-    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
-                          kCompositingFailure,
+    OnCompositorReady(CompositorStatus::PROTOBUF_DESERIALIZATION_ERROR,
                       nullptr);
     return;
   }
 
   auto proto_url = GURL(proto->metadata().url());
   if (expected_url != proto_url) {
-    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
-                          kDeserializingFailure,
-                      nullptr);
+    OnCompositorReady(CompositorStatus::URL_MISMATCH, nullptr);
     return;
   }
 
   hit_testers_ = BuildHitTesters(*proto);
 
   if (!paint_preview_compositor_client_) {
-    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
-                          kCompositingFailure,
-                      nullptr);
+    OnCompositorReady(CompositorStatus::COMPOSITOR_CLIENT_DISCONNECT, nullptr);
     return;
   }
 
@@ -197,22 +218,21 @@ void PlayerCompositorDelegate::SendCompositeRequest(
     mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request) {
   // TODO(crbug.com/1021590): Handle initialization errors.
   if (!begin_composite_request) {
-    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
-                          kCompositingFailure,
-                      nullptr);
+    OnCompositorReady(CompositorStatus::INVALID_REQUEST, nullptr);
     return;
   }
 
   paint_preview_compositor_client_->BeginSeparatedFrameComposite(
       std::move(begin_composite_request),
-      base::BindOnce(&PlayerCompositorDelegate::OnCompositorReady,
+      base::BindOnce(&PlayerCompositorDelegate::OnCompositorReadyStatusAdapter,
                      weak_factory_.GetWeakPtr()));
 }
 
 void PlayerCompositorDelegate::OnCompositorClientDisconnected() {
   LOG(ERROR) << "Compositor client disconnected.";
   if (compositor_error_)
-    std::move(compositor_error_).Run();
+    std::move(compositor_error_)
+        .Run(static_cast<int>(CompositorStatus::COMPOSITOR_CLIENT_DISCONNECT));
 }
 
 void PlayerCompositorDelegate::RequestBitmap(

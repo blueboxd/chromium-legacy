@@ -67,6 +67,10 @@ class CONTENT_EXPORT TouchActionFilter {
     return compositor_allowed_touch_action_;
   }
 
+  bool has_touch_event_handler_for_testing() const {
+    return has_touch_event_handler_;
+  }
+
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
 
   void OnHasTouchEventHandlers(bool has_handlers);
@@ -117,6 +121,8 @@ class CONTENT_EXPORT TouchActionFilter {
   // InputRouterImpl::OnHasTouchEventHandlers. Default to false because one
   // could not scroll anyways when there is no content, and this is consistent
   // with the default state committed after DocumentLoader::DidCommitNavigation.
+  // TODO(savella): Split touch_event_handler into touch_event_handler and
+  // non_auto_touch_action.
   bool has_touch_event_handler_ = false;
 
   // True if an active gesture sequence is in progress. i.e. after GTD and

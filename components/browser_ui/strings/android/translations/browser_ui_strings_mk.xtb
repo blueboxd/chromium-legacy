@@ -26,11 +26,13 @@
 <translation id="169515064810179024">Блокирајте го пристапот до сензорите за движење за сајтовите</translation>
 <translation id="1717218214683051432">Сензори за движење</translation>
 <translation id="1743802530341753419">Прашај пред да дозволиш сајтовите да се поврзуваат со уред (се препорачува)</translation>
+<translation id="1779089405699405702">Декодер на слики</translation>
 <translation id="1818308510395330587">За да овозможите <ph name="APP_NAME" /> да користи AR, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Пристапот до локацијата е исклучен за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1984937141057606926">Се дозволува, освен од трети лица</translation>
+<translation id="1989112275319619282">Прелистувај</translation>
 <translation id="1994173015038366702">URL на локацијата</translation>
 <translation id="2025115093177348061">Проширена реалност</translation>
 <translation id="2030769033451695672">Допрете за да се вратите на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -69,6 +71,7 @@
 <translation id="2968755619301702150">Прикажувач на сертификат</translation>
 <translation id="300526633675317032">Ова ќе ги избрише сите <ph name="SIZE_IN_KB" /> од просторот на веб-сајтот.</translation>
 <translation id="301521992641321250">Автоматски блокирана</translation>
+<translation id="3114012059975132928">Видеоплеер</translation>
 <translation id="3115898365077584848">Прикажи ги информациите</translation>
 <translation id="3123473560110926937">Блокирано на некои сајтови</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> складирани податоци</translation>
@@ -81,9 +84,11 @@
 <translation id="3538390592868664640">Не дозволувај им на сајтовите да создаваат 3D-карта на опкружувањето или да ја следат позицијата на камерата</translation>
 <translation id="3586500876634962664">Користење камера и микрофон</translation>
 <translation id="358794129225322306">Дозволете сајтот автоматски да презема повеќе датотеки.</translation>
+<translation id="3594780231884063836">Исклучете звук на видео</translation>
 <translation id="3596414637720633074">Блокирај колачиња од трети страни во „Инкогнито“</translation>
 <translation id="3600792891314830896">Исклучи го звукот на сајтовите што пуштаат звук</translation>
 <translation id="3744111561329211289">Синхронизација во заднина</translation>
+<translation id="3763247130972274048">Допрете двапати на видеото лево или десно за да прескокнете 10 секунди</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Барај понапред</translation>
 <translation id="3955193568934677022">Дозволете сајтовите да пуштаат заштитени содржини (се препорачува)</translation>
@@ -129,6 +134,7 @@
 <translation id="5354152178998424783">Ова ќе избрише <ph name="DATASIZE" /> податоци и колачиња складирани од сајтовите.</translation>
 <translation id="5384883051496921101">Сајтов ќе сподели информации со една апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5391532827096253100">Врската со сајтов не е безбедна. Информации за сајтот</translation>
+<translation id="5489227211564503167">Изминато време: <ph name="ELAPSED_TIME" /> од <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Блокирај ги рекламите на сајтови што прикажуваат нападни или лажни реклами</translation>
 <translation id="5505264765875738116">Сајтовите не можат да прашуваат дали да испраќаат известувања</translation>
 <translation id="5516455585884385570">Отвори ги поставките за известувања</translation>
@@ -143,6 +149,7 @@
 <translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" /> или од неговата апликација на почетниот екран.</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5860033963881614850">Исклучено</translation>
+<translation id="5876056640971328065">Паузирајте го видеото</translation>
 <translation id="5916664084637901428">Вклучено</translation>
 <translation id="5922853908706496913">Се споделува екранот</translation>
 <translation id="5939518447894949180">Ресетирај</translation>
@@ -161,6 +168,7 @@
 <translation id="6295158916970320988">Сите локации</translation>
 <translation id="6320088164292336938">Вибрации</translation>
 <translation id="6388207532828177975">Исчисти и ресетирај</translation>
+<translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6423924377271166037">Избриши ги колачињата</translation>
 <translation id="6439114592976064011">Не дозволувај сајтовите да ги користат уредот и податоците за виртуелна реалност</translation>
 <translation id="6447842834002726250">Колачиња</translation>
@@ -192,6 +200,7 @@
 <translation id="7128222689758636196">Дозволи за тековниот пребарувач</translation>
 <translation id="7141896414559753902">Блокирај го прикажувањето скокачки прозорци и пренасочувања на сајтовите (се препорачува)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="723171743924126238">Изберете слики</translation>
 <translation id="7243308994586599757">Достапни се опции на дното на екранот</translation>
 <translation id="7250468141469952378">Избрани ставки: <ph name="ITEM_COUNT" /></translation>
 <translation id="7302486331832100261">Вообичаено ги блокирате известувањата. За да ги дозволите, допрете „Детали“.</translation>
@@ -211,6 +220,7 @@
 <translation id="7817023149356982970">Ќе ве одјавиме од сајтов.</translation>
 <translation id="7828557259026017104">Колачињата се датотеки создадени од веб-сајтовите што ги посетувате. Сајтовите ги користат за да ги запомнат вашите поставки. Колачињата од трети страни се создадени од други сајтови. Овие сајтови се сопственици на дел од содржините, како рекламите или сликите што ги гледате на веб-страницата што ја посетувате.</translation>
 <translation id="7835852323729233924">Пуштање аудиовизуелни содржини</translation>
+<translation id="783819812427904514">Вклучете звук на видео</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
 <translation id="7846621471902887024">Ќе ве одјавиме од сите сајтови.</translation>
 <translation id="7882806643839505685">Дозволете го звукот за одреден сајт.</translation>
@@ -218,6 +228,7 @@
 <translation id="7999064672810608036">Дали сте сигурни дека сакате да ги исчистите сите локални податоци, вклучувајќи ги колачињата, и да ги ресетирате сите дозволи за веб-локацијата?</translation>
 <translation id="8007176423574883786">Исклучена за овој уред</translation>
 <translation id="802154636333426148">Неуспешно преземање</translation>
+<translation id="8067883171444229417">Пушти го видеото</translation>
 <translation id="8068648041423924542">Сертификатот не може да се избере.</translation>
 <translation id="8087000398470557479">Оваа содржина е од <ph name="DOMAIN_NAME" />, овозможена од Google.</translation>
 <translation id="8116925261070264013">Со исклучен звук</translation>
@@ -239,6 +250,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Се користи 1 колаче}one{Се користи # колаче}other{Се користат # колачиња}}</translation>
 <translation id="8463851957836045671">Сајтот е брз</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>
+<translation id="8525306231823319788">Цел екран</translation>
 <translation id="857943718398505171">Дозволено (препорачано)</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8676374126336081632">Јасно внесување</translation>
@@ -247,9 +259,11 @@
 <translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737217482364735741">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" />.</translation>
+<translation id="8751914237388039244">Изберете слика</translation>
 <translation id="8801436777607969138">Блокирај JavaScript за одреден сајт.</translation>
 <translation id="8816026460808729765">Блокирајте го пристапот до сензорите за сајтовите</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC е исклучена за уредов. Вклучете ја во <ph name="BEGIN_LINK" />„Поставки за Android“<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Сајтов се отвора и реагира брзо за повеќето луѓе</translation>
 <translation id="8941729603749328384">www.primer.com</translation>

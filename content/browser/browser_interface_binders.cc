@@ -321,8 +321,7 @@ void BindTextSuggestionHostForFrame(
     content::RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::TextSuggestionHost> receiver) {
   auto* view = static_cast<RenderWidgetHostViewAndroid*>(host->GetView());
-  DCHECK(view);
-  if (!view->text_suggestion_host())
+  if (!view || !view->text_suggestion_host())
     return;
 
   view->text_suggestion_host()->BindTextSuggestionHost(std::move(receiver));

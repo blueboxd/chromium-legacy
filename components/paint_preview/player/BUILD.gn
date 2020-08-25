@@ -4,6 +4,7 @@
 
 source_set("player") {
   sources = [
+    "compositor_status.h",
     "player_compositor_delegate.cc",
     "player_compositor_delegate.h",
   ]

@@ -970,7 +970,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2152281589789213846">Pridanie tlačiarní do vášho profilu</translation>
 <translation id="2152882202543497059">Počet fotiek: <ph name="NUMBER" /></translation>
 <translation id="2154484045852737596">Úprava karty</translation>
-<translation id="2154697841132053118">Rozpoznáva sa reč…</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2155772377859296191">Vyzerá ako <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Obsluha: <ph name="SCRIPT_URL" /></translation>
@@ -2816,6 +2815,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4404136731284211429">Znova skontrolovať</translation>
 <translation id="4404843640767531781">Aplikáciu <ph name="APP_NAME" /> zablokoval tvoj rodič. Ak chceš používať túto aplikáciu, požiadaj rodiča o povolenie.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Živý prepis</translation>
 <translation id="4408599188496843485">P&amp;omocník</translation>
 <translation id="4409697491990005945">Okraje</translation>
 <translation id="4410545552906060960">Na odomknutie zariadenia použite namiesto hesla číslo (PIN). PIN si môžete nastaviť neskôr v Nastaveniach.</translation>

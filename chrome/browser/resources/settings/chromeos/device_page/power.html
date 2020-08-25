@@ -10,6 +10,7 @@
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../metrics_recorder.html">
 
 <dom-module id="settings-power">
@@ -29,7 +30,8 @@
       <select id="powerSource" class="md-select"
           hidden$="[[!showPowerSourceDropdown_]]"
           aria-labelledby="powerSourceLabelDiv"
-          on-change="onPowerSourceChange_">
+          on-change="onPowerSourceChange_"
+          deep-link-focus-id$="[[Setting.kPowerSource]]">
         <option value="" selected="[[isEqual_('', selectedPowerSourceId_)]]">
           $i18n{powerSourceBattery}
         </option>
@@ -63,7 +65,8 @@
       <select id="acIdleSelect" class="md-select"
           on-change="onAcIdleSelectChange_"
           disabled="[[shouldAcIdleSelectBeDisabled_]]"
-          aria-label="$i18n{powerIdleWhileChargingAriaLabel}">
+          aria-label="$i18n{powerIdleWhileChargingAriaLabel}"
+          deep-link-focus-id$="[[Setting.kPowerIdleBehaviorWhileCharging]]">
         <template is="dom-repeat" items="[[acIdleOptions_]]">
           <option value="[[item.value]]" selected="[[item.selected]]">
             [[item.name]]
@@ -86,7 +89,8 @@
         <select id="batteryIdleSelect" class="md-select"
             on-change="onBatteryIdleSelectChange_"
             disabled="[[shouldBatteryIdleSelectBeDisabled_]]"
-            aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}">
+            aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}"
+            deep-link-focus-id$="[[Setting.kPowerIdleBehaviorWhileOnBattery]]">
           <template is="dom-repeat" items="[[batteryIdleOptions_]]">
             <option value="[[item.value]]" selected="[[item.selected]]">
               [[item.name]]
@@ -98,7 +102,8 @@
 
     <settings-toggle-button hidden$="[[!hasLid_]]" id="lidClosedToggle"
       pref="[[lidClosedPref_]]" label="[[lidClosedLabel_]]"
-      on-settings-boolean-control-change="onLidClosedToggleChange_" no-set-pref>
+      on-settings-boolean-control-change="onLidClosedToggleChange_" no-set-pref
+      deep-link-focus-id$="[[Setting.kSleepWhenLaptopLidClosed]]">
     </settings-toggle-button>
   </template>
   <script src="power.js"></script>

@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">파일을 열 수 없음</translation>
 <translation id="2718352093833049315">Wi-Fi 연결 시</translation>
 <translation id="2747003861858887689">이전 필드</translation>
+<translation id="2764831210418622012">방금</translation>
 <translation id="2773292004659987824">시크릿 검색</translation>
 <translation id="277771892408211951">언어 선택</translation>
 <translation id="2780046210906776326">이메일 계정이 없음</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">설정</translation>
 <translation id="4496373720959965247">탭 추가 및 페이지 간에 전환</translation>
 <translation id="4502566650163919158">지금 확인</translation>
+<translation id="4505980578794259603"><ph name="TIME" />에 마지막으로 확인함</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="4536418791685807335">다시 로그인해 주세요.</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
 <translation id="6447842834002726250">쿠키</translation>
+<translation id="6453018583485750254">확인한 적이 없음</translation>
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6464397691496239022">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하는 데 쿠키를 사용할 수 있습니다.
 

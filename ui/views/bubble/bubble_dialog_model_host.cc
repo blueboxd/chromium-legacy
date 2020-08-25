@@ -48,6 +48,9 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
   ConfigureGridLayout();
 
+  // Dialog callbacks can safely refer to |model_|, they can't be called after
+  // Widget::Close() calls WidgetWillClose() synchronously so there shouldn't
+  // be any dangling references after model removal.
   SetAcceptCallback(base::BindOnce(&ui::DialogModel::OnDialogAccepted,
                                    base::Unretained(model_.get()),
                                    GetPassKey()));
@@ -57,9 +60,13 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   SetCloseCallback(base::BindOnce(&ui::DialogModel::OnDialogClosed,
                                   base::Unretained(model_.get()),
                                   GetPassKey()));
-  RegisterWindowClosingCallback(
-      base::BindOnce(&ui::DialogModel::OnWindowClosing,
-                     base::Unretained(model_.get()), GetPassKey()));
+
+  // WindowClosingCallback happens on native widget destruction which is after
+  // |model_| reset. Hence routing this callback through |this| so that we only
+  // forward the call to DialogModel::OnWindowClosing if we haven't already been
+  // closed.
+  RegisterWindowClosingCallback(base::BindOnce(
+      &BubbleDialogModelHost::OnWindowClosing, base::Unretained(this)));
 
   int button_mask = ui::DIALOG_BUTTON_NONE;
   auto* ok_button = model_->ok_button(GetPassKey());
@@ -127,9 +134,21 @@ gfx::Size BubbleDialogModelHost::CalculatePreferredSize() const {
 }
 
 void BubbleDialogModelHost::Close() {
-  // TODO(pbos): Synchronously destroy model here, as-if closing immediately.
+  DCHECK(model_);
   DCHECK(GetWidget());
   GetWidget()->Close();
+
+  // Synchronously destroy |model_|. Widget::Close() being asynchronous should
+  // not be observable by the model.
+
+  // Notify the model of window closing before destroying it (as if
+  // Widget::Close)
+  model_->OnWindowClosing(GetPassKey());
+
+  // TODO(pbos): Consider turning this into for-each-field remove field.
+  RemoveAllChildViews(true);
+  view_to_field_.clear();
+  model_.reset();
 }
 
 void BubbleDialogModelHost::SelectAllText(int unique_id) {
@@ -190,6 +209,14 @@ void BubbleDialogModelHost::AddInitialFields() {
 
   set_margins(LayoutProvider::Get()->GetDialogInsetsForContentType(
       first_field_content_type, last_field_content_type));
+}
+
+void BubbleDialogModelHost::OnWindowClosing() {
+  // If the model has been removed we have already notified it of closing on the
+  // ::Close() stack.
+  if (!model_)
+    return;
+  model_->OnWindowClosing(GetPassKey());
 }
 
 GridLayout* BubbleDialogModelHost::GetGridLayout() {

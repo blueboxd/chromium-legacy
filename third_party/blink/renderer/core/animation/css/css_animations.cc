@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -51,13 +52,10 @@
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
-#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
-#include "third_party/blink/renderer/core/css/css_id_selector_value.h"
-#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -428,109 +426,15 @@ AnimationTimeDelta IterationElapsedTime(const AnimationEffect& effect,
   return iteration_duration * (iteration_boundary - iteration_start);
 }
 
-bool IsIdentifier(const CSSValue* value, CSSValueID value_id) {
-  if (const auto* ident = DynamicTo<CSSIdentifierValue>(value))
-    return ident->GetValueID() == value_id;
-  return false;
-}
-
-bool IsAuto(const CSSValue* value) {
-  return IsIdentifier(value, CSSValueID::kAuto);
-}
-
-bool IsNone(const CSSValue* value) {
-  return IsIdentifier(value, CSSValueID::kNone);
-}
-
-const cssvalue::CSSIdSelectorValue* GetIdSelectorValue(const CSSValue* value) {
-  if (const auto* selector = DynamicTo<CSSFunctionValue>(value)) {
-    if (selector->FunctionType() != CSSValueID::kSelector)
-      return nullptr;
-    DCHECK_EQ(selector->length(), 1u);
-    return DynamicTo<cssvalue::CSSIdSelectorValue>(selector->Item(0));
-  }
-  return nullptr;
-}
-
-Element* ComputeScrollSource(Element* element, const CSSValue* value) {
-  if (const auto* id = GetIdSelectorValue(value))
-    return element->GetDocument().getElementById(id->Id());
-  if (IsNone(value))
-    return nullptr;
-  DCHECK(!value || IsAuto(value));
-  return element->GetDocument().scrollingElement();
-}
-
-ScrollTimeline::ScrollDirection ComputeScrollDirection(const CSSValue* value) {
-  CSSValueID value_id = CSSValueID::kAuto;
-
-  if (const auto* identifier = DynamicTo<CSSIdentifierValue>(value))
-    value_id = identifier->GetValueID();
-
-  switch (value_id) {
-    case CSSValueID::kInline:
-      return ScrollTimeline::Inline;
-    case CSSValueID::kHorizontal:
-      return ScrollTimeline::Horizontal;
-    case CSSValueID::kVertical:
-      return ScrollTimeline::Vertical;
-    case CSSValueID::kAuto:
-    case CSSValueID::kBlock:
-    default:
-      return ScrollTimeline::Block;
-  }
-}
-
-ScrollTimelineOffset* ComputeScrollOffset(const CSSValue* value) {
-  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
-    return MakeGarbageCollected<ScrollTimelineOffset>(primitive_value);
-  DCHECK(!value || IsAuto(value));
-  return MakeGarbageCollected<ScrollTimelineOffset>();
-}
-
-HeapVector<Member<ScrollTimelineOffset>>* ComputeScrollOffsets(
-    const CSSValue* start,
-    const CSSValue* end) {
-  auto* offsets =
-      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
-  offsets->push_back(ComputeScrollOffset(start));
-  offsets->push_back(ComputeScrollOffset(end));
-  return offsets;
-}
-
-base::Optional<double> ComputeTimeRange(const CSSValue* value) {
-  if (auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
-    return primitive->ComputeSeconds() * 1000.0;
-  // TODO(crbug.com/1097041): Support 'auto' value.
-  return base::nullopt;
-}
-
-struct CSSScrollTimelineOptions {
-  STACK_ALLOCATED();
-
- public:
-  CSSScrollTimelineOptions(Element* element, StyleRuleScrollTimeline& rule)
-      : source(ComputeScrollSource(element, rule.GetSource())),
-        direction(ComputeScrollDirection(rule.GetOrientation())),
-        offsets(ComputeScrollOffsets(rule.GetStart(), rule.GetEnd())),
-        time_range(ComputeTimeRange(rule.GetTimeRange())) {}
-
-  Element* source;
-  ScrollTimeline::ScrollDirection direction;
-  HeapVector<Member<ScrollTimelineOffset>>* offsets;
-  base::Optional<double> time_range;
-};
-
-ScrollTimeline* CreateScrollTimeline(Element* element,
-                                     StyleRuleScrollTimeline* rule) {
+CSSScrollTimeline* CreateCSSScrollTimeline(Element* element,
+                                           StyleRuleScrollTimeline* rule) {
   if (!rule)
     return nullptr;
-  CSSScrollTimelineOptions options(element, *rule);
-  if (!options.time_range)
+  CSSScrollTimeline::Options options(element, *rule);
+  if (!options.IsValid())
     return nullptr;
-  auto* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      &element->GetDocument(), options.source, options.direction,
-      options.offsets, *options.time_range);
+  auto* scroll_timeline =
+      MakeGarbageCollected<CSSScrollTimeline>(&element->GetDocument(), options);
   // It's is not allowed for a style resolve to create timelines that
   // needs timing updates (i.e. AnimationTimeline::NeedsAnimationTimingUpdate()
   // must return false). Servicing animations after creation preserves this
@@ -550,7 +454,7 @@ AnimationTimeline* ComputeTimeline(Element* element,
     return nullptr;
   }
   if (rule) {
-    if (auto* timeline = CreateScrollTimeline(element, rule))
+    if (auto* timeline = CreateCSSScrollTimeline(element, rule))
       return timeline;
   }
   return nullptr;
@@ -714,9 +618,6 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       StyleRuleScrollTimeline* scroll_timeline_rule =
           FindScrollTimelineRule(element.GetDocument(), timeline_name);
 
-      AnimationTimeline* timeline =
-          ComputeTimeline(&element, timeline_name, scroll_timeline_rule);
-
       const RunningAnimation* existing_animation = nullptr;
       wtf_size_t existing_animation_index = 0;
 
@@ -778,6 +679,8 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         }
       } else {
         DCHECK(!is_animation_style_change);
+        AnimationTimeline* timeline =
+            ComputeTimeline(&element, timeline_name, scroll_timeline_rule);
         base::Optional<TimelinePhase> inherited_phase;
         base::Optional<double> inherited_time;
         if (timeline) {

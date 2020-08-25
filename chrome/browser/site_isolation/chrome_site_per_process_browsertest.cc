@@ -1254,8 +1254,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // Tests that a same-site iframe runs its beforeunload handler when closing a
 // tab.  Same as the test above, but for a same-site rather than cross-site
 // iframe.  See https://crbug.com/1010456.
-// Flaky on Linux and ChromeOS (crbug.com/1033002)
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Flaky on Linux, ChromeOS and Windows (crbug.com/1033002)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_TabCloseWithSameSiteBeforeUnloadIframe \
   DISABLED_TabCloseWithSameSiteBeforeUnloadIframe
 #else

@@ -154,7 +154,7 @@ void ExtensionInstalledBubbleView::Show(
       std::make_unique<ExtensionInstalledBubbleView>(browser, std::move(model));
   auto* weak_delegate = delegate.get();
   views::Widget* const widget =
-      views::BubbleDialogDelegateView::CreateBubble(delegate.release());
+      views::BubbleDialogDelegateView::CreateBubble(std::move(delegate));
   // When the extension is installed to the ExtensionsToolbarContainer, use the
   // container to pop out the extension icon and show the widget. Otherwise show
   // the widget directly.

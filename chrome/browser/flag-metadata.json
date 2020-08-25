@@ -4235,18 +4235,18 @@
   },
   {
     "name": "tab-groups",
-    "owners": [ "chrome-desktop-ui-seattle@google.com", "bsep" ],
-    "expiry_milestone": 86
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "connily" ],
+    "expiry_milestone": 88
   },
   {
     "name": "tab-groups-collapse",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 89
   },
   {
     "name": "tab-groups-collapse-freezing",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "tab-groups-feedback",

@@ -2564,28 +2564,6 @@ TEST_F(TabletModeDesksTest, HotSeatStateAfterMovingAWindowToAnotherDesk) {
   }
 }
 
-namespace {
-
-// A client view that returns a given minimum size to be used on the widget's
-// native window.
-class TestClientView : public views::ClientView {
- public:
-  TestClientView(views::Widget* widget, const gfx::Size& minimum_size)
-      : views::ClientView(widget, widget->widget_delegate()->GetContentsView()),
-        minimum_size_(minimum_size) {}
-  ~TestClientView() override = default;
-
-  // views::ClientView:
-  gfx::Size GetMinimumSize() const override { return minimum_size_; }
-
- private:
-  const gfx::Size minimum_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClientView);
-};
-
-}  // namespace
-
 TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   UpdateDisplay("600x400");
   display::test::DisplayManagerTestApi(display_manager())
@@ -2595,8 +2573,8 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   // can be snapped in portrait orientation.
   auto window = CreateAppWindow(gfx::Rect(350, 350));
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window.get());
-  widget->non_client_view()->set_client_view(
-      new TestClientView(widget, gfx::Size(350, 100)));
+  widget->widget_delegate()->GetContentsView()->SetPreferredSize(
+      gfx::Size(350, 100));
   EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
 
   // Change to a portrait orientation and expect it's possible to snap the

@@ -137,7 +137,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void ShowOpaqueBackground();
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
@@ -222,7 +221,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget, Shelf* shelf)
   animating_background_.Add(&animating_drag_handle_);
 
   DCHECK(shelf_widget_);
-  set_owned_by_client();  // Deleted by DeleteDelegate().
+  set_owned_by_client();
+  SetOwnedByWidget(true);
 
   set_allow_deactivate_on_esc(true);
 

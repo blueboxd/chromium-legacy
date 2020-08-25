@@ -62,6 +62,12 @@ Polymer({
       value: false,
     },
 
+    /** @private {boolean} */
+    showNotificationAccessSetupDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * The value of the Nearby Share feature flag which controls if the
      * Nearby Share settings and subpage are accessible.
@@ -309,19 +315,27 @@ Polymer({
     const feature = event.detail.feature;
     const enabled = event.detail.enabled;
 
-    // Disabling any feature does not require authentication, and enable some
-    // features does not require authentication.
-    if (!enabled || !this.isAuthenticationRequiredToEnable_(feature)) {
-      this.browserProxy_.setFeatureEnabledState(feature, enabled);
-      settings.recordSettingChange();
-      return;
-    }
-
     // If the feature required authentication to be enabled, open the password
     // prompt dialog. This is required every time the user enables a security-
     // sensitive feature (i.e., use of stale auth tokens is not acceptable).
-    this.featureToBeEnabledOnceAuthenticated_ = feature;
-    this.openPasswordPromptDialog_();
+    if (enabled && this.isAuthenticationRequiredToEnable_(feature)) {
+      this.featureToBeEnabledOnceAuthenticated_ = feature;
+      this.openPasswordPromptDialog_();
+      return;
+    }
+
+    // If the feature to enable is Phone Hub Notifications, notification access
+    // must have been granted before the feature can be enabled.
+    if (feature === settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS &&
+        enabled && !this.pageContentData.isNotificationAccessGranted) {
+      this.showNotificationAccessSetupDialog_ = true;
+      return;
+    }
+
+    // Disabling any feature does not require authentication, and enable some
+    // features does not require authentication.
+    this.browserProxy_.setFeatureEnabledState(feature, enabled);
+    settings.recordSettingChange();
   },
 
   /**
@@ -435,5 +449,10 @@ Polymer({
       // Navigate to Nearby Share subpage.
       settings.Router.getInstance().navigateTo(settings.routes.NEARBY_SHARE);
     }
+  },
+
+  /** @private */
+  onHideNotificationSetupAccessDialog_() {
+    this.showNotificationAccessSetupDialog_ = false;
   },
 });

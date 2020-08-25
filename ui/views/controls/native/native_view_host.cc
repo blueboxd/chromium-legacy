@@ -57,10 +57,8 @@ void NativeViewHost::SetParentAccessible(gfx::NativeViewAccessible accessible) {
   native_wrapper_->SetParentAccessible(accessible);
 }
 
-bool NativeViewHost::SetCornerRadius(int corner_radius) {
-  return SetCustomMask(views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                  corner_radius)));
+bool NativeViewHost::SetCornerRadii(const gfx::RoundedCornersF& corner_radii) {
+  return native_wrapper_->SetCornerRadii(corner_radii);
 }
 
 bool NativeViewHost::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {

@@ -41,7 +41,6 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
-  void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
  private:

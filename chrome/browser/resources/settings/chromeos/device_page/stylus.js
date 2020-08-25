@@ -13,6 +13,11 @@ const FIND_MORE_APPS_URL = 'https://play.google.com/store/apps/' +
 Polymer({
   is: 'settings-stylus',
 
+  behaviors: [
+    DeepLinkingBehavior,
+    settings.RouteObserverBehavior,
+  ],
+
   properties: {
     /** Preferences state. */
     prefs: {
@@ -72,6 +77,33 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kStylusToolsInShelf,
+        chromeos.settings.mojom.Setting.kStylusNoteTakingApp,
+        chromeos.settings.mojom.Setting.kStylusNoteTakingFromLockScreen,
+        chromeos.settings.mojom.Setting.kStylusLatestNoteOnLockScreen,
+      ]),
+    },
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.STYLUS) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**

@@ -70,6 +70,11 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
   // Struct used to indicate platform properties.
   struct PlatformProperties {
+    PlatformProperties();
+    PlatformProperties(const PlatformProperties& other) = delete;
+    PlatformProperties& operator=(const PlatformProperties& other) = delete;
+    ~PlatformProperties();
+
     // Fuchsia only: set to true when the platforms requires |view_token| field
     // in PlatformWindowInitProperties when creating a window.
     bool needs_view_token = false;
@@ -105,6 +110,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Linux only, but see a TODO in BrowserDesktopWindowTreeHostLinux.
     // Determines whether the platform supports the global application menu.
     bool supports_global_application_menus = false;
+
+    // Determines if the application modal dialogs should use the event blocker
+    // to allow the only browser window receiving UI events.
+    bool app_modal_dialogs_use_event_blocker = false;
   };
 
   // Properties available in the host process after initialization.

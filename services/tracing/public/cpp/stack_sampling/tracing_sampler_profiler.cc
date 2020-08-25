@@ -510,13 +510,13 @@ void TracingSamplerProfiler::TracingProfileBuilder::SampleLoaderLock() {
   // ProcessDescriptor is currently not being collected correctly. See the full
   // discussion in the linked crbug.
   if (loader_lock_now_held && !loader_lock_is_held_) {
-    TRACE_EVENT_ASYNC_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-                             TracingSamplerProfiler::kLoaderLockHeldEventName,
-                             this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+        TracingSamplerProfiler::kLoaderLockHeldEventName, TRACE_ID_LOCAL(this));
   } else if (!loader_lock_now_held && loader_lock_is_held_) {
-    TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-                           TracingSamplerProfiler::kLoaderLockHeldEventName,
-                           this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+        TracingSamplerProfiler::kLoaderLockHeldEventName, TRACE_ID_LOCAL(this));
   }
   loader_lock_is_held_ = loader_lock_now_held;
 }

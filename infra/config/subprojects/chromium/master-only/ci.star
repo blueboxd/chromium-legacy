@@ -1624,7 +1624,6 @@ ci.fyi_builder(
     os = os.MAC_ANY,
     cpu = cpu.X86_64,
     builderless = True,
-    ssd = None,
     cores = None,
 )
 
@@ -1747,7 +1746,6 @@ ci.fyi_builder(
     os = os.MAC_DEFAULT,
     schedule = "with 3h interval",
     triggered_by = [],
-    ssd = None,
 )
 
 ci.fyi_builder(

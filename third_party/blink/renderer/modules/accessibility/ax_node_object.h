@@ -74,8 +74,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   bool HasContentEditableAttributeSet() const;
   bool IsTextControl() const override;
-  AXObject* MenuButtonForMenu() const;
-  AXObject* MenuButtonForMenuIfExists() const;
   Element* MenuItemElementForMenu() const;
   Element* MouseButtonListener() const;
   bool IsNativeCheckboxOrRadio() const;

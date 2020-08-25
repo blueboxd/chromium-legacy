@@ -1,0 +1,19 @@
+include_rules = [
+    # TODO(https://crbug.com/787252): Remove this include when WTF::HashMap.
+    # is used instead.
+    "+base/containers/flat_map.h",
+
+    "+media/audio",
+    "+media/base/audio_parameters.h",
+    "+media/mojo",
+]
+
+specific_include_rules = {
+    ".*test\.cc" : [
+        "+base/message_loop/message_pump_type.h",
+        "+base/run_loop.h",
+        "+base/test/bind_test_util.h",
+        "+base/test/gtest_util.h",
+        "+base/threading/thread.h",
+    ],
+}

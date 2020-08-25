@@ -257,12 +257,12 @@ network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
   return network::mojom::CredentialsMode::kOmit;
 }
 
-// https://github.com/WICG/feature-policy/issues/135
-bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
-                                           mojom::ScriptType script_type,
-                                           bool parser_inserted) {
+// https://github.com/w3c/webappsec-permissions-policy/issues/135
+bool ShouldBlockSyncScriptForDocumentPolicy(const ScriptElementBase* element,
+                                            mojom::ScriptType script_type,
+                                            bool parser_inserted) {
   if (element->GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kSyncScript)) {
+          mojom::blink::DocumentPolicyFeature::kSyncScript)) {
     return false;
   }
 
@@ -409,13 +409,13 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!IsScriptForEventSupported())
     return false;
 
-  // This FeaturePolicy is still in the process of being added to the spec.
-  if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
-                                            parser_inserted_)) {
+  // This Document Policy is still in the process of being added to the spec.
+  if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
+                                             parser_inserted_)) {
     element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
-        "Synchronous script execution is disabled by Feature Policy"));
+        "Synchronous script execution is disabled by Document Policy"));
     return false;
   }
 

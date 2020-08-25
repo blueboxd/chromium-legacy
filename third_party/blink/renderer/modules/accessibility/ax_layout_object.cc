@@ -1768,14 +1768,6 @@ AXObject* AXLayoutObject::ComputeParent() const {
   if (AriaRoleAttribute() == ax::mojom::blink::Role::kMenuBar)
     return AXObjectCache().GetOrCreate(layout_object_->Parent());
 
-  // menuButton and its corresponding menu are DOM siblings, but Accessibility
-  // needs them to be parent/child.
-  if (AriaRoleAttribute() == ax::mojom::blink::Role::kMenu) {
-    AXObject* parent = MenuButtonForMenu();
-    if (parent)
-      return parent;
-  }
-
   if (GetNode())
     return AXNodeObject::ComputeParent();
 
@@ -1798,14 +1790,6 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
 
   if (AriaRoleAttribute() == ax::mojom::blink::Role::kMenuBar)
     return AXObjectCache().Get(layout_object_->Parent());
-
-  // menuButton and its corresponding menu are DOM siblings, but Accessibility
-  // needs them to be parent/child.
-  if (AriaRoleAttribute() == ax::mojom::blink::Role::kMenu) {
-    AXObject* parent = MenuButtonForMenuIfExists();
-    if (parent)
-      return parent;
-  }
 
   if (GetNode())
     return AXNodeObject::ComputeParentIfExists();

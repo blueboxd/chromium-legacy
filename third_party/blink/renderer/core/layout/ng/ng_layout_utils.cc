@@ -314,6 +314,13 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   if (style.MayHavePadding() && fragment_geometry.padding != fragment.Padding())
     return NGLayoutCacheStatus::kNeedsLayout;
 
+  // Table-cells with vertical alignment might shift their contents if their
+  // block-size changes.
+  if (new_space.IsTableCell() && !is_block_size_equal &&
+      style.VerticalAlign() !=
+          ComputedStyleInitialValues::InitialVerticalAlign())
+    return NGLayoutCacheStatus::kNeedsLayout;
+
   // If we've reached here we know that we can potentially "stretch"/"shrink"
   // ourselves without affecting any of our children.
   // In that case we may be able to perform "simplified" layout.

@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "media/base/media_switches.h"
 
 using content::BrowserThread;
 
@@ -133,17 +134,18 @@ void RegisterSODAComponent(ComponentUpdateService* cus,
                            PrefService* prefs,
                            base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
+    return;
+
 #if BUILDFLAG(ENABLE_SODA)
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SODAComponentInstallerPolicy>(base::BindRepeating(
           [](ComponentUpdateService* cus, PrefService* prefs,
              const base::FilePath& install_dir) {
-            if (prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
               content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
                   ->PostTask(FROM_HERE,
                              base::BindOnce(&UpdateSODAInstallDirPref, prefs,
                                             install_dir));
-            }
           },
           cus, prefs)));
 

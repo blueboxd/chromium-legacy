@@ -151,7 +151,7 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
         .set_directory(
             base::FilePath(location_.GetPath()).Append(FILE_PATH_LITERAL("D1")))
         .set_file_prefix(FILE_PATH_LITERAL("F0001"))
-        .set_total_size(GetParam());
+        .set_single_file_size(GetParam());
   }
 
   StorageQueue::Options BuildStorageQueueOptionsPeriodic(
@@ -398,6 +398,82 @@ TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmations) {
   EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
       .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
         MockUploadClient::SetUp(mock_upload_client)
+            .Required(blobs[2])
+            .Required(more_blobs[0])
+            .Required(more_blobs[1])
+            .Required(more_blobs[2]);
+      }));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Confirm #2 and forward time again, removing blob #2
+  ConfirmOrDie(/*seq_number=*/2);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client)
+            .Required(more_blobs[0])
+            .Required(more_blobs[1])
+            .Required(more_blobs[2]);
+      }));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmationsAndReopen) {
+  CreateStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
+
+  WriteStringOrDie(blobs[0]);
+  WriteStringOrDie(blobs[1]);
+  WriteStringOrDie(blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client)
+            .Required(blobs[0])
+            .Required(blobs[1])
+            .Required(blobs[2]);
+      }));
+
+  // Forward time to trigger upload
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Confirm #0 and forward time again, removing blob #0
+  ConfirmOrDie(/*seq_number=*/0);
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client)
+            .Required(blobs[1])
+            .Required(blobs[2]);
+      }));
+  // Forward time to trigger upload
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Confirm #1 and forward time again, removing blob #1
+  ConfirmOrDie(/*seq_number=*/1);
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client).Required(blobs[2]);
+      }));
+  // Forward time to trigger upload
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  storage_queue_.reset();
+  CreateStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
+
+  // Add more records and verify that #2 and new records are returned.
+  WriteStringOrDie(more_blobs[0]);
+  WriteStringOrDie(more_blobs[1]);
+  WriteStringOrDie(more_blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client)
+            .Possible(blobs[0])
+            .Possible(blobs[1])
             .Required(blobs[2])
             .Required(more_blobs[0])
             .Required(more_blobs[1])

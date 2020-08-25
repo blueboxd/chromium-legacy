@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
@@ -35,6 +36,7 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   void NativeViewDetaching(bool destroyed) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  bool SetCornerRadii(const gfx::RoundedCornersF& corner_radii) override;
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
   void SetHitTestTopInset(int top_inset) override;
   int GetHitTestTopInset() const override;
@@ -73,6 +75,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   // undoes it.
   void RemoveClippingWindow();
 
+  // Sets or updates the |corner_radii_| on the native view's layer.
+  void ApplyRoundedCorners();
+
   // Sets or updates the mask layer on the native view's layer.
   void InstallMask();
 
@@ -95,6 +100,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
 
   // This mask exists for the sake of SetCornerRadius().
   std::unique_ptr<ui::LayerOwner> mask_;
+
+  // Holds the corner_radii to be applied.
+  gfx::RoundedCornersF corner_radii_;
 
   // Set when AttachNativeView() is called. This is the original transform of
   // the NativeView's layer. The NativeView's layer may be modified to scale

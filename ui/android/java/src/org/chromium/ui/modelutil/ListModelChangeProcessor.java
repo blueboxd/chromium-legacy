@@ -5,15 +5,14 @@
 package org.chromium.ui.modelutil;
 
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * A model change processor for use with a {@link ListObservable} model. The
  * {@link ListModelChangeProcessor} should be registered as a list observer of the model.
  * Internally uses a view binder to bind model properties to a view like a TabLayout.
  *
- * Do not use this class to fill {@link RecyclerView}s - consider using the
- * {@link SimpleRecyclerViewMcp} which was specifically designed for that use case!
+ * Do not use this class to fill {@link androidx.recyclerview.widget.RecyclerView}s - consider using
+ * the {@link SimpleRecyclerViewMcp} which was specifically designed for that use case!
  *
  * @param <M> The {@link ListObservable} model.
  * @param <V> The view object that is changing.

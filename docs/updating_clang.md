@@ -7,7 +7,9 @@ describes how to build a package at a newer revision and update Chromium to it.
 An archive of all packages built so far is at https://is.gd/chromeclang
 
 1.  Check that https://ci.chromium.org/p/chromium/g/chromium.clang/console
-    looks reasonably green.
+    looks reasonably green. Red bots with seemingly normal test failures are
+    usually ok, that likely means the test is broken with the stable Clang as
+    well.
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
     changes.
 1.  Run [go/chrome-push-clang-to-goma](https://goto.google.com/chrome-push-clang-to-goma).
@@ -18,6 +20,12 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     https://crbug.com/1034081). Then it will push the packages to goma. If you
     do not have the necessary credentials to do the upload, ask
     clang@chromium.org to find someone who does.
+    *   Alternatively, to create your own roll CL, you can manually run
+	`tools/clang/scripts/upload_revision.py` with a recent upstream LLVM
+	commit hash as the argument. After the `*_upload_clang` trybots are
+	successfully finished, run
+	[go/chrome-promote-clang](https://goto.google.com/chrome-promote-clang)
+	on the new Clang package name.
 1.  Run an exhaustive set of try jobs to test the new compiler. The CL
     description created previously by upload_revision.py includes
     `Cq-Include-Trybots:` lines for all needed bots, so it's sufficient to just

@@ -13,8 +13,8 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
-#include "content/public/common/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 
 namespace policy {
 
@@ -69,13 +69,13 @@ TEST_F(ReferrerPolicyPolicyHandlerTest, ValueTrue) {
   SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy, base::Value(true));
 
   CheckAndApplyPolicySettings();
-  EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  EXPECT_TRUE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 }
 
 TEST_F(ReferrerPolicyPolicyHandlerTest, ValueFalse) {
   SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy, base::Value(false));
 
   CheckAndApplyPolicySettings();
-  EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  EXPECT_FALSE(blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 }
 }  // namespace policy

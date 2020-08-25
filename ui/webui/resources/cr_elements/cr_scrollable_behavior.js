@@ -110,7 +110,10 @@
           const ironList = /** @type {!IronListElement} */ (node);
           ironList.notifyResize();
         }
-        if (scrollHeight <= 1) {
+
+        // TODO(crbug.com/1121679): Add UI Test for this behavior.
+        if (scrollHeight <= 1 &&
+            window.getComputedStyle(node.parentNode).display !== 'none') {
           checkAgain.push({
             node: node,
             lastScrollHeight: scrollHeight,

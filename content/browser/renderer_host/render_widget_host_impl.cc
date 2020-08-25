@@ -3453,7 +3453,7 @@ void RenderWidgetHostImpl::ZoomToFindInPageRectInMainFrame(
 
 void RenderWidgetHostImpl::SetHasTouchEventConsumers(
     blink::mojom::TouchEventConsumersPtr consumers) {
-  input_router_->OnHasTouchEventHandlers(consumers->has_touch_event_handlers);
+  input_router_->OnHasTouchEventConsumers(std::move(consumers));
 }
 
 void RenderWidgetHostImpl::IntrinsicSizingInfoChanged(

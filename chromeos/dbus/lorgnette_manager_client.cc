@@ -50,6 +50,20 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetScannerCapabilities(
+      const std::string& device_name,
+      DBusMethodCallback<lorgnette::ScannerCapabilities> callback) override {
+    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
+                                 lorgnette::kGetScannerCapabilitiesMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(device_name);
+    lorgnette_daemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &LorgnetteManagerClientImpl::OnScannerCapabilitiesResponse,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   // LorgnetteManagerClient override.
   void StartScan(std::string device_name,
                  const ScanProperties& properties,
@@ -202,6 +216,27 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
       LOG(ERROR) << "Failed to read ListScannersResponse";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(std::move(response_proto));
+  }
+
+  // Handles the response received after calling GetScannerCapabilities().
+  void OnScannerCapabilitiesResponse(
+      DBusMethodCallback<lorgnette::ScannerCapabilities> callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain ScannerCapabilities";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    lorgnette::ScannerCapabilities response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to read ScannerCapabilities";
       std::move(callback).Run(base::nullopt);
       return;
     }

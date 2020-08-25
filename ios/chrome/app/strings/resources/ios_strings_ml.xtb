@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">ഫയൽ തുറക്കാനാവുന്നില്ല</translation>
 <translation id="2718352093833049315">Wi-Fi യിൽ മാത്രം</translation>
 <translation id="2747003861858887689">മുൻ ഫീൽഡ്</translation>
+<translation id="2764831210418622012">ഇപ്പോൾ</translation>
 <translation id="2773292004659987824">അദൃശ്യ തിരയൽ</translation>
 <translation id="277771892408211951">ഭാഷ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="2780046210906776326">ഇമെയിൽ അക്കൗണ്ടുകളൊന്നും ഇല്ല</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">ക്രമീകരണം</translation>
 <translation id="4496373720959965247">ടാബുകൾ ചേർക്കുക, പേജുകൾക്കിടയിൽ മാറുക</translation>
 <translation id="4502566650163919158">ഇപ്പോൾ പരിശോധിക്കുക</translation>
+<translation id="4505980578794259603">അവസാനം പരിശോധിച്ചത് <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
@@ -482,6 +484,7 @@
 <translation id="6445051938772793705">രാജ്യം</translation>
 <translation id="6445981559479772097">സന്ദേശം അയച്ചു.</translation>
 <translation id="6447842834002726250">കുക്കികള്‍</translation>
+<translation id="6453018583485750254">പരിശോധന ഒരിക്കലും നടന്നില്ല.</translation>
 <translation id="6464071786529933911">പുതിയ അദൃശ്യ ടാബിൽ തുറക്കുക</translation>
 <translation id="6464397691496239022">നിങ്ങളുടെ ബ്രൗസിംഗ് അനുഭവം മെച്ചപ്പെടുത്താൻ സൈറ്റുകൾക്ക് കുക്കികൾ ഉപയോഗിക്കാവുന്നതാണ്, ഉദാഹരണത്തിന്, സൈൻ ഇൻ ചെയ്‌ത നിലയിൽ തുടരാനോ ഷോപ്പിംഗ് കാർട്ടിലെ ഇനങ്ങൾ ഓർമ്മിക്കാനോ.
 
@@ -497,7 +500,7 @@
 <translation id="6624219055418309072">അദൃശ്യ മോഡിൽ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6628106477656132239">കാലഹരണപ്പെടുന്ന തീയതി അസാധുവാണ്</translation>
 <translation id="6638511529934826365">ടെക്‌സ്‌റ്റ് സൂം ചെയ്യുക…</translation>
-<translation id="6639730758971422557">സുരക്ഷിത ബ്രൗസിംഗ് ഓണാക്കാൻ, <ph name="BEGIN_LINK" />Google സേവനങ്ങൾ സമന്വയിപ്പിക്കുക<ph name="END_LINK" />, തുടർന്ന് സുരക്ഷിത ബ്രൗസിംഗ് ടാപ്പ് ചെയ്യുക.</translation>
+<translation id="6639730758971422557">സുരക്ഷിത ബ്രൗസിംഗ് ഓണാക്കാൻ, <ph name="BEGIN_LINK" />സമന്വയവും Google സേവനങ്ങളും<ph name="END_LINK" /> തുറക്കുക, തുടർന്ന് സുരക്ഷിത ബ്രൗസിംഗ് ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="6642362222295953972">നിലവിലുള്ള ടാബിലേക്ക് മാറുക</translation>
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="6645899968535965230">QR കോഡ്: <ph name="PAGE_TITLE" /></translation>

@@ -112,6 +112,15 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
     this.zoomTimeout_ = null;
   }
 
+  /**
+   * @return {!CrActionMenuElement}
+   * @private
+   */
+  getMenu_() {
+    return /** @type {!CrActionMenuElement} */ (
+        this.shadowRoot.querySelector('cr-action-menu'));
+  }
+
   /** @private */
   onSidenavToggleClick_() {
     this.dispatchEvent(new CustomEvent('sidenav-toggle-click'));
@@ -173,6 +182,7 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
     this.displayAnnotations_ = !this.displayAnnotations_;
     this.dispatchEvent(new CustomEvent(
         'display-annotations-changed', {detail: this.displayAnnotations_}));
+    this.getMenu_().close();
 
     // <if expr="chromeos">
     if (!this.displayAnnotations_ && this.annotationMode) {
@@ -209,12 +219,14 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   onSinglePageViewClick_() {
     this.twoUpViewEnabled_ = false;
     this.dispatchEvent(new CustomEvent('two-up-view-changed', {detail: false}));
+    this.getMenu_().close();
   }
 
   /** @private */
   onTwoPageViewClick_() {
     this.twoUpViewEnabled_ = true;
     this.dispatchEvent(new CustomEvent('two-up-view-changed', {detail: true}));
+    this.getMenu_().close();
   }
 
   /** @private */
@@ -298,8 +310,9 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
   /** @private */
   onMoreClick_() {
-    const menu = this.shadowRoot.querySelector('cr-action-menu');
-    menu.showAt(this.shadowRoot.querySelector('#more'), {
+    const anchor =
+        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#more'));
+    this.getMenu_().showAt(anchor, {
       anchorAlignmentX: AnchorAlignment.CENTER,
       anchorAlignmentY: AnchorAlignment.AFTER_END,
       noOffset: true,

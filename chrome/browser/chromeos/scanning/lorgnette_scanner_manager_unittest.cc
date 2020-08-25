@@ -149,6 +149,15 @@ class LorgnetteScannerManagerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
+  // Calls LorgnetteScannerManager::GetScannerCapabilities() and binds a
+  // callback to process the result.
+  void GetScannerCapabilities(const std::string& scanner_name) {
+    lorgnette_scanner_manager_->GetScannerCapabilities(
+        scanner_name,
+        base::Bind(&LorgnetteScannerManagerTest::GetScannerCapabilitiesCallback,
+                   base::Unretained(this)));
+  }
+
   // Calls LorgnetteScannerManager::Scan() and binds a callback to process the
   // result.
   void Scan(const std::string& scanner_name,
@@ -176,12 +185,22 @@ class LorgnetteScannerManagerTest : public testing::Test {
     return scanner_names_;
   }
 
+  base::Optional<lorgnette::ScannerCapabilities> scanner_capabilities() const {
+    return scanner_capabilities_;
+  }
+
   base::Optional<std::string> scan_data() const { return scan_data_; }
 
  private:
   // Handles the result of calling LorgnetteScannerManager::GetScannerNames().
   void GetScannerNamesCallback(std::vector<std::string> scanner_names) {
     scanner_names_ = scanner_names;
+    run_loop_->Quit();
+  }
+
+  void GetScannerCapabilitiesCallback(
+      base::Optional<lorgnette::ScannerCapabilities> scanner_capabilities) {
+    scanner_capabilities_ = scanner_capabilities;
     run_loop_->Quit();
   }
 
@@ -200,6 +219,7 @@ class LorgnetteScannerManagerTest : public testing::Test {
   std::unique_ptr<LorgnetteScannerManager> lorgnette_scanner_manager_;
 
   std::vector<std::string> scanner_names_;
+  base::Optional<lorgnette::ScannerCapabilities> scanner_capabilities_;
   base::Optional<std::string> scan_data_;
 };
 
@@ -302,6 +322,73 @@ TEST_F(LorgnetteScannerManagerTest, RemoveScanner) {
   GetScannerNames();
   WaitForResult();
   EXPECT_TRUE(scanner_names().empty());
+}
+
+// Test that getting capabilities fails when GetScannerNames() has never been
+// called.
+TEST_F(LorgnetteScannerManagerTest, GetCapsNoScanner) {
+  GetScannerCapabilities(kUnknownScannerName);
+  WaitForResult();
+  EXPECT_FALSE(scanner_capabilities());
+}
+
+// Test that getting capabilities fails when the scanner name does not
+// correspond to a known scanner.
+TEST_F(LorgnetteScannerManagerTest, GetCapsUnknownScanner) {
+  fake_zeroconf_scanner_detector()->AddDetections({CreateZeroconfScanner()});
+  CompleteTasks();
+  GetScannerNames();
+  WaitForResult();
+  GetScannerCapabilities(kUnknownScannerName);
+  WaitForResult();
+  EXPECT_FALSE(scanner_capabilities());
+}
+
+// Test that getting capabilities fails when there is no usable device name.
+TEST_F(LorgnetteScannerManagerTest, GetCapsNoUsableDeviceName) {
+  auto scanner = CreateZeroconfScanner(/*usable=*/false);
+  fake_zeroconf_scanner_detector()->AddDetections({scanner});
+  CompleteTasks();
+  GetScannerNames();
+  WaitForResult();
+  GetScannerCapabilities(scanner.display_name);
+  WaitForResult();
+  EXPECT_FALSE(scanner_capabilities());
+}
+
+// Test that failing to get capabilities from lorgnette returns no capabilities.
+TEST_F(LorgnetteScannerManagerTest, GetCapsFail) {
+  auto scanner = CreateZeroconfScanner();
+  fake_zeroconf_scanner_detector()->AddDetections({scanner});
+  CompleteTasks();
+  GetScannerNames();
+  WaitForResult();
+  GetLorgnetteManagerClient()->SetScannerCapabilitiesResponse(base::nullopt);
+  GetScannerCapabilities(scanner.display_name);
+  WaitForResult();
+  EXPECT_FALSE(scanner_capabilities());
+}
+
+// Test that getting capabilities succeeds with a valid scanner name.
+TEST_F(LorgnetteScannerManagerTest, GetCaps) {
+  auto scanner = CreateZeroconfScanner();
+  fake_zeroconf_scanner_detector()->AddDetections({scanner});
+  CompleteTasks();
+  GetScannerNames();
+  WaitForResult();
+  lorgnette::ScannerCapabilities capabilities;
+  capabilities.add_resolutions(300);
+  capabilities.add_color_modes(lorgnette::MODE_COLOR);
+  GetLorgnetteManagerClient()->SetScannerCapabilitiesResponse(capabilities);
+  GetScannerCapabilities(scanner.display_name);
+  WaitForResult();
+  ASSERT_TRUE(scanner_capabilities());
+  const auto caps = scanner_capabilities().value();
+  ASSERT_EQ(caps.resolutions_size(), 1);
+  EXPECT_EQ(caps.resolutions()[0], 300u);
+  EXPECT_EQ(caps.sources_size(), 0);
+  ASSERT_EQ(caps.color_modes_size(), 1);
+  EXPECT_EQ(caps.color_modes()[0], lorgnette::MODE_COLOR);
 }
 
 // Test that scanning fails when GetScannerNames() has never been called.

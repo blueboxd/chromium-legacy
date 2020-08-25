@@ -31,10 +31,10 @@ class CredentialManagerPendingPreventSilentAccessTaskTest
     : public ::testing::Test {
  public:
   CredentialManagerPendingPreventSilentAccessTaskTest() {
-    profile_store_ = new TestPasswordStore(/*is_account_store=*/false);
+    profile_store_ = new TestPasswordStore(IsAccountStore(false));
     profile_store_->Init(/*prefs=*/nullptr);
 
-    account_store_ = new TestPasswordStore(/*is_account_store=*/true);
+    account_store_ = new TestPasswordStore(IsAccountStore(true));
     account_store_->Init(/*prefs=*/nullptr);
   }
   ~CredentialManagerPendingPreventSilentAccessTaskTest() override = default;

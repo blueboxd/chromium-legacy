@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager.h"
 
+#include <array>
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,30 +29,18 @@ namespace chromeos {
 
 namespace {
 
+// A prioritized list of scan protocols. Protocols that appear earlier in the
+// list are preferred over those that appear later in the list when
+// communicating with a connected scanner.
+constexpr std::array<ScanProtocol, 4> kPrioritizedProtocols = {
+    ScanProtocol::kEscls, ScanProtocol::kEscl, ScanProtocol::kLegacyNetwork,
+    ScanProtocol::kLegacyUsb};
+
 // Returns a pointer to LorgnetteManagerClient, which is used to detect and
 // interact with scanners via the lorgnette D-Bus service.
 LorgnetteManagerClient* GetLorgnetteManagerClient() {
   DCHECK(DBusThreadManager::IsInitialized());
   return DBusThreadManager::Get()->GetLorgnetteManagerClient();
-}
-
-// Returns the first usable device name corresponding to the highest priority
-// protocol. Returns an empty string if no usable device name is found.
-std::string GetUsableDeviceName(const Scanner& scanner) {
-  const std::vector<ScanProtocol> prioritized_protocols{
-      ScanProtocol::kEscls, ScanProtocol::kEscl, ScanProtocol::kLegacyNetwork,
-      ScanProtocol::kLegacyUsb};
-  for (const auto& protocol : prioritized_protocols) {
-    const auto it = scanner.device_names.find(protocol);
-    if (it != scanner.device_names.end()) {
-      for (const ScannerDeviceName& device_name : it->second) {
-        if (device_name.usable)
-          return device_name.device_name;
-      }
-    }
-  }
-
-  return "";
 }
 
 class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
@@ -79,19 +68,31 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
   }
 
   // LorgnetteScannerManager:
-  void Scan(const std::string& scanner_name,
-            const LorgnetteManagerClient::ScanProperties& scan_properties,
-            ScanCallback callback) override {
-    const auto it = deduped_scanners_.find(scanner_name);
-    if (it == deduped_scanners_.end()) {
-      LOG(ERROR) << "Failed to find scanner with name " << scanner_name;
+  void GetScannerCapabilities(
+      const std::string& scanner_name,
+      GetScannerCapabilitiesCallback callback) override {
+    std::string device_name;
+    ScanProtocol protocol;
+    if (!GetUsableDeviceNameAndProtocol(scanner_name, device_name, protocol)) {
       std::move(callback).Run(base::nullopt);
       return;
     }
 
-    const std::string device_name = GetUsableDeviceName(it->second);
-    if (device_name.empty()) {
-      LOG(ERROR) << "Failed to find usable device name for " << scanner_name;
+    GetLorgnetteManagerClient()->GetScannerCapabilities(
+        device_name,
+        base::BindOnce(
+            &LorgnetteScannerManagerImpl::OnScannerCapabilitiesResponse,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback), scanner_name,
+            device_name, protocol));
+  }
+
+  // LorgnetteScannerManager:
+  void Scan(const std::string& scanner_name,
+            const LorgnetteManagerClient::ScanProperties& scan_properties,
+            ScanCallback callback) override {
+    std::string device_name;
+    ScanProtocol protocol;  // Unused.
+    if (!GetUsableDeviceNameAndProtocol(scanner_name, device_name, protocol)) {
       std::move(callback).Run(base::nullopt);
       return;
     }
@@ -123,6 +124,30 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
       scanner_names.push_back(entry.first);
 
     std::move(callback).Run(std::move(scanner_names));
+  }
+
+  // Handles the result of calling
+  // LorgnetteManagerClient::GetScannerCapabilities(). If getting the scanner
+  // capabilities fails, |scanner_name|, |device_name|, and |protocol| are used
+  // to mark the device name that was used as unusable and retry the operation
+  // with the next available device name. This pattern of trying each device
+  // name cannot be used when performing a scan since the backend used to obtain
+  // the capabilities must be the same backend used to perform the scan.
+  void OnScannerCapabilitiesResponse(
+      GetScannerCapabilitiesCallback callback,
+      const std::string& scanner_name,
+      const std::string& device_name,
+      const ScanProtocol protocol,
+      base::Optional<lorgnette::ScannerCapabilities> capabilities) {
+    if (!capabilities) {
+      LOG(WARNING) << "Failed to get scanner capabilities using device name: "
+                   << device_name;
+      MarkDeviceNameUnusable(scanner_name, device_name, protocol);
+      GetScannerCapabilities(scanner_name, std::move(callback));
+      return;
+    }
+
+    std::move(callback).Run(capabilities);
   }
 
   // Handles the result of calling LorgnetteManagerClient::ScanImageToString().
@@ -206,6 +231,58 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
     }
 
     return display_name;
+  }
+
+  // Gets the first usable device name corresponding to the highest priority
+  // protocol for the scanner specified by |scanner_name|. Returns true on
+  // success, false on failure.
+  bool GetUsableDeviceNameAndProtocol(const std::string& scanner_name,
+                                      std::string& device_name_out,
+                                      ScanProtocol& protocol_out) {
+    const auto scanner_it = deduped_scanners_.find(scanner_name);
+    if (scanner_it == deduped_scanners_.end()) {
+      LOG(ERROR) << "Failed to find scanner with name " << scanner_name;
+      return false;
+    }
+
+    for (const auto& protocol : kPrioritizedProtocols) {
+      const auto device_names_it =
+          scanner_it->second.device_names.find(protocol);
+      if (device_names_it == scanner_it->second.device_names.end())
+        continue;
+
+      for (const ScannerDeviceName& name : device_names_it->second) {
+        if (name.usable) {
+          device_name_out = name.device_name;
+          protocol_out = protocol;
+          return true;
+        }
+      }
+    }
+
+    LOG(ERROR) << "Failed to find usable device name for " << scanner_name;
+    return false;
+  }
+
+  // Marks a device name as unusable to prevent it from being returned by future
+  // calls to GetUsableDeviceNameAndProtocol().
+  void MarkDeviceNameUnusable(const std::string& scanner_name,
+                              const std::string& device_name,
+                              const ScanProtocol protocol) {
+    auto scanner_it = deduped_scanners_.find(scanner_name);
+    if (scanner_it == deduped_scanners_.end())
+      return;
+
+    auto device_names_it = scanner_it->second.device_names.find(protocol);
+    if (device_names_it == scanner_it->second.device_names.end())
+      return;
+
+    for (ScannerDeviceName& name : device_names_it->second) {
+      if (name.device_name == device_name) {
+        name.usable = false;
+        return;
+      }
+    }
   }
 
   // Used to detect zeroconf scanners.

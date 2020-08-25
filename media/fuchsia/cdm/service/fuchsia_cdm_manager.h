@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/provision_fetcher.h"
@@ -48,7 +49,7 @@ class FuchsiaCdmManager {
   using KeySystemHandlerMap =
       base::flat_map<std::string, std::unique_ptr<KeySystemHandler>>;
 
-  explicit FuchsiaCdmManager(KeySystemHandlerMap handlers);
+  FuchsiaCdmManager(KeySystemHandlerMap handlers, base::FilePath cdm_data_path);
   ~FuchsiaCdmManager();
 
   void CreateAndProvision(
@@ -72,6 +73,7 @@ class FuchsiaCdmManager {
       bool success);
 
   const KeySystemHandlerMap handlers_;
+  const base::FilePath cdm_data_path_;
 
   // key system -> OriginProvisioner
   base::flat_map<std::string, std::unique_ptr<OriginProvisioner>>

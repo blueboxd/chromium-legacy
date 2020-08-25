@@ -42,4 +42,18 @@ Polymer({
         break;
     }
   },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getFilenameWithLine_() {
+    if (!this.item) {
+      return '';
+    }
+
+    // The filename is prefixed with "../../", so replace it with "//".
+    let filename = this.item.file.replace('../../', '//');
+    return filename + ':' + this.item.line;
+  },
 });

@@ -268,7 +268,6 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   View* GetDefaultFocusableChild() override;
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override;
   bool CanActivate() const override;
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
@@ -299,7 +298,9 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
 
 ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
     : opaque_background_(ui::LAYER_SOLID_COLOR), shelf_(shelf) {
-  set_owned_by_client();  // Deleted by DeleteDelegate().
+  SetOwnedByWidget(true);
+  set_owned_by_client();
+
   set_allow_deactivate_on_esc(true);
 
   const int control_size = ShelfConfig::Get()->control_size();
@@ -361,10 +362,6 @@ bool ShelfNavigationWidget::Delegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
   return Shell::Get()->focus_cycler()->widget_activating() == GetWidget();
-}
-
-void ShelfNavigationWidget::Delegate::DeleteDelegate() {
-  delete this;
 }
 
 views::FocusTraversable*

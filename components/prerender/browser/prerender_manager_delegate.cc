@@ -18,6 +18,10 @@ bool PrerenderManagerDelegate::IsPredictionEnabled() {
   return true;
 }
 
+bool PrerenderManagerDelegate::IsPredictionDisabledDueToNetwork(Origin origin) {
+  return false;
+}
+
 std::string PrerenderManagerDelegate::GetReasonForDisablingPrediction() {
   return std::string();
 }

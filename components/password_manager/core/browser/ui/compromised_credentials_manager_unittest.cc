@@ -543,9 +543,9 @@ class CompromisedCredentialsManagerWithTwoStoresTest : public ::testing::Test {
  private:
   base::test::SingleThreadTaskEnvironment task_env_;
   scoped_refptr<TestPasswordStore> profile_store_ =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/false);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   scoped_refptr<TestPasswordStore> account_store_ =
-      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/true);
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
   SavedPasswordsPresenter presenter_{profile_store_, account_store_};
   CompromisedCredentialsManager provider_{&presenter_, profile_store_,
                                           account_store_};
@@ -604,5 +604,42 @@ TEST_F(CompromisedCredentialsManagerWithTwoStoresTest,
           CredentialView(kExampleOrg, GURL(), base::ASCIIToUTF16(kUsername1),
                          base::ASCIIToUTF16(kPassword2))),
       ElementsAreArray(account_store().stored_passwords().at(kExampleOrg)));
+}
+
+// Test verifies that saving LeakCheckCredential via provider adds expected
+// compromised credential to the correct store.
+TEST_F(CompromisedCredentialsManagerWithTwoStoresTest,
+       SaveCompromisedPassword) {
+  ASSERT_TRUE(profile_store().compromised_credentials().empty());
+  ASSERT_TRUE(account_store().compromised_credentials().empty());
+  // Add `kUsername1`,`kPassword1` to both stores.
+  // And add `kUsername1`,`kPassword2` to the account store only.
+  profile_store().AddLogin(
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+
+  account_store().AddLogin(
+      MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
+  account_store().AddLogin(
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword2));
+
+  RunUntilIdle();
+
+  // Mark `kUsername1`, `kPassword1` as compromised, a new entry should be
+  // added to both stores.
+  provider().SaveCompromisedCredential(
+      MakeLeakCredential(kUsername1, kPassword1));
+  RunUntilIdle();
+
+  EXPECT_EQ(1U, profile_store().compromised_credentials().size());
+  EXPECT_EQ(1U, account_store().compromised_credentials().size());
+
+  // Now, mark `kUsername1`, `kPassword2` as compromised, a new entry should be
+  // added only to the account store.
+  provider().SaveCompromisedCredential(
+      MakeLeakCredential(kUsername1, kPassword2));
+  RunUntilIdle();
+
+  EXPECT_EQ(1U, profile_store().compromised_credentials().size());
+  EXPECT_EQ(2U, account_store().compromised_credentials().size());
 }
 }  // namespace password_manager

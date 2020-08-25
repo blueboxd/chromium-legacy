@@ -27,13 +27,100 @@ constexpr base::TaskTraits kBackendTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
+class PrimaryAccountObserver : public signin::IdentityManager::Observer {
+ public:
+  PrimaryAccountObserver(
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
+      scoped_refptr<StandaloneTrustedVaultBackend> backend,
+      signin::IdentityManager* identity_manager);
+  PrimaryAccountObserver(const PrimaryAccountObserver& other) = delete;
+  PrimaryAccountObserver& operator=(const PrimaryAccountObserver& other) =
+      delete;
+  ~PrimaryAccountObserver() override;
+
+  // signin::IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const CoreAccountInfo& previous_primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
+
+ private:
+  void UpdatePrimaryAccountIfNeeded();
+
+  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+  const scoped_refptr<StandaloneTrustedVaultBackend> backend_;
+  signin::IdentityManager* const identity_manager_;
+  CoreAccountInfo primary_account_;
+};
+
+PrimaryAccountObserver::PrimaryAccountObserver(
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
+    scoped_refptr<StandaloneTrustedVaultBackend> backend,
+    signin::IdentityManager* identity_manager)
+    : backend_task_runner_(backend_task_runner),
+      backend_(backend),
+      identity_manager_(identity_manager) {
+  DCHECK(backend_task_runner_);
+  DCHECK(backend_);
+  DCHECK(identity_manager_);
+
+  identity_manager_->AddObserver(this);
+  UpdatePrimaryAccountIfNeeded();
+}
+
+PrimaryAccountObserver::~PrimaryAccountObserver() {
+  identity_manager_->RemoveObserver(this);
+}
+
+void PrimaryAccountObserver::OnPrimaryAccountSet(
+    const CoreAccountInfo& primary_account_info) {
+  UpdatePrimaryAccountIfNeeded();
+}
+
+void PrimaryAccountObserver::OnPrimaryAccountCleared(
+    const CoreAccountInfo& previous_primary_account_info) {
+  UpdatePrimaryAccountIfNeeded();
+}
+
+void PrimaryAccountObserver::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
+  UpdatePrimaryAccountIfNeeded();
+}
+
+void PrimaryAccountObserver::UpdatePrimaryAccountIfNeeded() {
+  CoreAccountInfo primary_account = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
+  if (primary_account == primary_account_) {
+    return;
+  }
+  primary_account_ = primary_account;
+
+  // IdentityManager returns empty CoreAccountInfo if there is no primary
+  // account.
+  base::Optional<CoreAccountInfo> optional_primary_account;
+  if (!primary_account_.IsEmpty()) {
+    optional_primary_account = primary_account_;
+  }
+
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&StandaloneTrustedVaultBackend::SetPrimaryAccount,
+                     backend_, optional_primary_account));
+}
+
 }  // namespace
 
 StandaloneTrustedVaultClient::StandaloneTrustedVaultClient(
-    const base::FilePath& file_path)
-    : file_path_(file_path),
+    const base::FilePath& file_path,
+    signin::IdentityManager* identity_manager)
+    : identity_manager_(identity_manager),
+      file_path_(file_path),
       backend_task_runner_(
-          base::ThreadPool::CreateSequencedTaskRunner(kBackendTaskTraits)) {}
+          base::ThreadPool::CreateSequencedTaskRunner(kBackendTaskTraits)) {
+  DCHECK(identity_manager_);
+}
 
 StandaloneTrustedVaultClient::~StandaloneTrustedVaultClient() = default;
 
@@ -98,6 +185,16 @@ void StandaloneTrustedVaultClient::WaitForFlushForTesting(
                                          std::move(cb));
 }
 
+void StandaloneTrustedVaultClient::FetchBackendPrimaryAccountForTesting(
+    base::OnceCallback<void(const base::Optional<CoreAccountInfo>&)> cb) const {
+  base::PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &StandaloneTrustedVaultBackend::GetPrimaryAccountForTesting,
+          backend_),
+      std::move(cb));
+}
+
 void StandaloneTrustedVaultClient::TriggerLazyInitializationIfNeeded() {
   if (backend_) {
     return;
@@ -117,8 +214,12 @@ void StandaloneTrustedVaultClient::TriggerLazyInitializationIfNeeded() {
       FROM_HERE,
       base::BindOnce(&StandaloneTrustedVaultBackend::ReadDataFromDisk,
                      backend_));
-  // TODO(crbug.com/1113597): populate current syncing account to |backend_|
-  // here and upon syncing account change.
+
+  // |primary_account_observer_| will populate primary account to |backend_|
+  // whenever it changes and upon construction, if there is a primary account
+  // already.
+  primary_account_observer_ = std::make_unique<PrimaryAccountObserver>(
+      backend_task_runner_, backend_, identity_manager_);
 }
 
 bool StandaloneTrustedVaultClient::IsInitializationTriggeredForTesting() const {

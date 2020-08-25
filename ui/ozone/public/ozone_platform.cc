@@ -36,6 +36,9 @@ void EnsureInstance() {
 
 }  // namespace
 
+OzonePlatform::PlatformProperties::PlatformProperties() = default;
+OzonePlatform::PlatformProperties::~PlatformProperties() = default;
+
 OzonePlatform::OzonePlatform() {
   DCHECK(!g_instance) << "There should only be a single OzonePlatform.";
   g_instance = this;

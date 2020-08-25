@@ -427,16 +427,12 @@ void DialogDelegate::OnWidgetInitialized() {
 // DialogDelegateView:
 
 DialogDelegateView::DialogDelegateView() {
-  // A WidgetDelegate should be deleted on DeleteDelegate.
   set_owned_by_client();
+  SetOwnedByWidget(true);
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegateView.Create", true);
 }
 
 DialogDelegateView::~DialogDelegateView() = default;
-
-void DialogDelegateView::DeleteDelegate() {
-  delete this;
-}
 
 Widget* DialogDelegateView::GetWidget() {
   return View::GetWidget();

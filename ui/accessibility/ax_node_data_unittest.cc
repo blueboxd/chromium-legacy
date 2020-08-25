@@ -174,7 +174,6 @@ TEST(AXNodeDataTest, IsClickable) {
       ax::mojom::Role::kLink,
       ax::mojom::Role::kListBox,
       ax::mojom::Role::kListBoxOption,
-      ax::mojom::Role::kMenuButton,
       ax::mojom::Role::kMenuItem,
       ax::mojom::Role::kMenuItemCheckBox,
       ax::mojom::Role::kMenuItemRadio,

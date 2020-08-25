@@ -469,7 +469,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, BigString) {
 }
 
 // Search Back and Forward on a single occurrence.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SingleOccurrence) {
+// TODO(crbug.com/1119361): Test is flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_SingleOccurrence DISABLED_SingleOccurrence
+#else
+#define MAYBE_SingleOccurrence SingleOccurrence
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SingleOccurrence) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("FindRandomTests.html"));

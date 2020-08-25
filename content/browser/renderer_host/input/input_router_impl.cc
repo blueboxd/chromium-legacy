@@ -28,6 +28,7 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -697,12 +698,16 @@ void InputRouterImpl::MouseWheelEventHandled(
   std::move(callback).Run(event, source, state);
 }
 
-void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
+void InputRouterImpl::OnHasTouchEventConsumers(
+    blink::mojom::TouchEventConsumersPtr consumers) {
   TRACE_EVENT1("input", "InputRouterImpl::OnHasTouchEventHandlers",
-               "has_handlers", has_handlers);
+               "has_handlers", consumers->has_touch_event_handlers);
 
-  touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
-  touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
+  touch_action_filter_.OnHasTouchEventHandlers(
+      consumers->has_touch_event_handlers);
+  touch_event_queue_.OnHasTouchEventHandlers(
+      consumers->has_touch_event_handlers ||
+      consumers->has_hit_testable_scrollbar);
 }
 
 void InputRouterImpl::WaitForInputProcessed(base::OnceClosure callback) {

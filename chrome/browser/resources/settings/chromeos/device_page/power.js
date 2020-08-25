@@ -11,7 +11,9 @@ Polymer({
   is: 'settings-power',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
+    settings.RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -110,6 +112,20 @@ Polymer({
         return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kPowerIdleBehaviorWhileCharging,
+        chromeos.settings.mojom.Setting.kPowerSource,
+        chromeos.settings.mojom.Setting.kSleepWhenLaptopLidClosed,
+        chromeos.settings.mojom.Setting.kPowerIdleBehaviorWhileOnBattery,
+      ]),
+    },
   },
 
   /** @private {?settings.DevicePageBrowserProxy} */
@@ -132,6 +148,36 @@ Polymer({
         'power-management-settings-changed',
         this.powerManagementSettingsChanged_.bind(this));
     this.browserProxy_.requestPowerManagementSettings();
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    if (settingId === chromeos.settings.mojom.Setting.kPowerSource &&
+        this.$.powerSource.hidden) {
+      // If there is only 1 power source, there is no dropdown to focus.
+      // Stop the deep link attempt in this case.
+      return false;
+    }
+
+    // Continue with deep link attempt.
+    return true;
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.POWER) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**

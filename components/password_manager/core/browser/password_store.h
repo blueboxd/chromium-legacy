@@ -20,6 +20,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
@@ -49,6 +50,8 @@ using StateSubscription =
     base::CallbackList<void(const std::string& username)>::Subscription;
 
 namespace password_manager {
+
+using IsAccountStore = util::StrongAlias<class IsAccountStoreTag, bool>;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using metrics_util::GaiaPasswordHashChange;

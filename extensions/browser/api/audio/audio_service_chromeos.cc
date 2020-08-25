@@ -58,6 +58,8 @@ api::audio::DeviceType GetAsAudioApiDeviceType(chromeos::AudioDeviceType type) {
       return api::audio::DEVICE_TYPE_POST_MIX_LOOPBACK;
     case chromeos::AUDIO_TYPE_POST_DSP_LOOPBACK:
       return api::audio::DEVICE_TYPE_POST_DSP_LOOPBACK;
+    case chromeos::AUDIO_TYPE_ALSA_LOOPBACK:
+      return api::audio::DEVICE_TYPE_ALSA_LOOPBACK;
     case chromeos::AUDIO_TYPE_OTHER:
       return api::audio::DEVICE_TYPE_OTHER;
   }

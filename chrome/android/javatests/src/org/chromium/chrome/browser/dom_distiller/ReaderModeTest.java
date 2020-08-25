@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.dom_distiller.ReaderModeManager.DOM_DISTILLER_SCHEME;
 
 import android.app.Activity;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.annotation.NonNull;
@@ -46,6 +47,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -256,6 +258,8 @@ public class ReaderModeTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.M,
+            message = "Failing on Lollipop Phone Tester. https://crbug.com/1120830")
     public void testPreferenceInTab() throws TimeoutException {
         mDownloadTestRule.loadUrl(
                 DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DOM_DISTILLER_SCHEME, mURL, TITLE));

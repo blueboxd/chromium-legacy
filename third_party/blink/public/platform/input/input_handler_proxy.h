@@ -229,9 +229,31 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
       const blink::WebGestureEvent& event,
       const blink::WebInputEventAttribution& original_attribution);
   EventDisposition HandleGestureScrollEnd(const blink::WebGestureEvent& event);
-  EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
-  EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
-  EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
+  EventDisposition HandleTouchStart(
+      EventWithCallback* event_with_callback,
+      const ui::LatencyInfo& original_latency_info);
+  EventDisposition HandleTouchMove(
+      EventWithCallback* event_with_callback,
+      const ui::LatencyInfo& original_latency_info);
+  EventDisposition HandleTouchEnd(EventWithCallback* event_with_callback,
+                                  const ui::LatencyInfo& original_latency_info);
+
+  const cc::InputHandlerPointerResult HandlePointerDown(
+      const gfx::PointF& position,
+      const ui::LatencyInfo&,
+      bool has_modifier,
+      base::TimeTicks timestamp,
+      EventWithCallback* event_with_callback);
+  const cc::InputHandlerPointerResult HandlePointerMove(
+      const gfx::PointF& position,
+      const ui::LatencyInfo&,
+      base::TimeTicks timestamp,
+      EventWithCallback* event_with_callback);
+  const cc::InputHandlerPointerResult HandlePointerUp(
+      const gfx::PointF& position,
+      const ui::LatencyInfo&,
+      base::TimeTicks timestamp,
+      EventWithCallback* event_with_callback);
 
   void InputHandlerScrollEnd();
 

@@ -23,17 +23,30 @@ void FakeLorgnetteScannerManager::GetScannerNames(
       FROM_HERE, base::BindOnce(std::move(callback), scanner_names_));
 }
 
+void FakeLorgnetteScannerManager::GetScannerCapabilities(
+    const std::string& scanner_name,
+    GetScannerCapabilitiesCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), scanner_capabilities_));
+}
+
 void FakeLorgnetteScannerManager::Scan(
     const std::string& scanner_name,
     const LorgnetteManagerClient::ScanProperties& scan_properties,
     ScanCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(scan_data_)));
+      FROM_HERE, base::BindOnce(std::move(callback), scan_data_));
 }
 
 void FakeLorgnetteScannerManager::SetGetScannerNamesResponse(
     const std::vector<std::string>& scanner_names) {
   scanner_names_ = scanner_names;
+}
+
+void FakeLorgnetteScannerManager::SetGetScannerCapabilitiesResponse(
+    const base::Optional<lorgnette::ScannerCapabilities>&
+        scanner_capabilities) {
+  scanner_capabilities_ = scanner_capabilities;
 }
 
 void FakeLorgnetteScannerManager::SetScanResponse(

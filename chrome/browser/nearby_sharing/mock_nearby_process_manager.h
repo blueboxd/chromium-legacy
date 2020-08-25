@@ -29,6 +29,7 @@ class MockNearbyProcessManager : public NearbyProcessManager {
               (Profile * profile),
               (override));
   MOCK_METHOD(bool, IsActiveProfile, (Profile * profile), (const, override));
+  MOCK_METHOD(void, StopProcess, (Profile * profile), (override));
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_PROCESS_MANAGER_H_

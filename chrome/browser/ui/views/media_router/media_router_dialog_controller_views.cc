@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service_factory.h"
+#include "chrome/browser/ui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
@@ -162,7 +163,7 @@ void MediaRouterDialogControllerViews::OnServiceDisabled() {
 }
 
 void MediaRouterDialogControllerViews::InitializeMediaRouterUI() {
-  ui_ = std::make_unique<MediaRouterViewsUI>(initiator());
+  ui_ = std::make_unique<MediaRouterUI>(initiator());
   if (start_presentation_context_) {
     ui_->InitWithStartPresentationContext(
         std::move(start_presentation_context_));

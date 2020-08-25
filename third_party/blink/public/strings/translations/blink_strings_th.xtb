@@ -16,7 +16,7 @@
 <translation id="1335095011850992622">เครดิต</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1359897965706325498">แบนเนอร์</translation>
-<translation id="1480676835519562650">เลือกได้หลายรายการ เลือกไว้ <ph name="SELECTED" /> จาก <ph name="COUNT" /> รายการ</translation>
+<translation id="1480676835519562650">เลือกได้หลายรายการ และมีการเลือกไว้ <ph name="SELECTED" /> จาก <ph name="COUNT" /> รายการ</translation>
 <translation id="1589122976691792535">ภูมิภาค</translation>
 <translation id="1591562245178063882">เดือนนี้</translation>
 <translation id="1637811476055996098">เลือกไฟล์</translation>
@@ -52,7 +52,7 @@
 <translation id="248395913932153421">วัน</translation>
 <translation id="2507943997699731163">โปรดกรอกฟิลด์นี้</translation>
 <translation id="2508569020611168319">รายการแท็บ</translation>
-<translation id="2530182415807757784">เลือกได้หลายรายการ ไม่ได้เลือกรายการใดเลย</translation>
+<translation id="2530182415807757784">เลือกได้หลายรายการ แต่ยังไม่ได้เลือกรายการใดเลย</translation>
 <translation id="2561842179657104141">แสดงส่วนควบคุมสื่อเพิ่มเติม</translation>
 <translation id="2572483411312390101">เล่น</translation>
 <translation id="2613802280814924224">โปรดป้อนค่าที่ถูกต้อง ค่าใกล้เคียงที่สุดที่ถูกต้องคือ <ph name="VALID_VALUE" /></translation>

@@ -210,7 +210,6 @@ chrome.automation.RoleType = {
   MATH: 'math',
   MENU: 'menu',
   MENU_BAR: 'menuBar',
-  MENU_BUTTON: 'menuButton',
   MENU_ITEM: 'menuItem',
   MENU_ITEM_CHECK_BOX: 'menuItemCheckBox',
   MENU_ITEM_RADIO: 'menuItemRadio',

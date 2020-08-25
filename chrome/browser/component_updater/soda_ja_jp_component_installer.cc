@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "media/base/media_switches.h"
 
 using content::BrowserThread;
 
@@ -137,19 +138,19 @@ void RegisterSodaJaJpComponent(ComponentUpdateService* cus,
                                base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_SODA)
-  if (!prefs->GetBoolean(prefs::kLiveCaptionEnabled))
+  if (!prefs->GetBoolean(prefs::kLiveCaptionEnabled) ||
+      !base::FeatureList::IsEnabled(media::kLiveCaption)) {
     return;
+  }
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SodaJaJpComponentInstallerPolicy>(base::BindRepeating(
           [](ComponentUpdateService* cus, PrefService* prefs,
              const base::FilePath& install_dir) {
-            if (prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
               content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
                   ->PostTask(FROM_HERE,
                              base::BindOnce(&UpdateSodaJaJpInstallDirPref,
                                             prefs, install_dir));
-            }
           },
           cus, prefs)));
 

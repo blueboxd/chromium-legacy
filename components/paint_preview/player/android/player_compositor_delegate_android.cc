@@ -84,7 +84,7 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
           DirectoryKey{
               base::android::ConvertJavaStringToUTF8(env, j_directory_key)},
           base::BindOnce(
-              &base::android::RunRunnableAndroid,
+              &base::android::RunIntCallbackAndroid,
               ScopedJavaGlobalRef<jobject>(j_compositor_error_callback))),
       request_id_(0),
       startup_timestamp_(base::TimeTicks::Now()) {
@@ -92,23 +92,23 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
 }
 
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
-    mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+    CompositorStatus compositor_status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
-  bool compositor_started =
-      status == mojom::PaintPreviewCompositor::BeginCompositeStatus::kSuccess ||
-      status ==
-          mojom::PaintPreviewCompositor::BeginCompositeStatus::kPartialSuccess;
+  bool compositor_started = CompositorStatus::OK == compositor_status;
   base::UmaHistogramBoolean(
       "Browser.PaintPreview.Player.CompositorProcessStartedCorrectly",
       compositor_started);
   if (!compositor_started && compositor_error_) {
-    LOG(ERROR) << "Compositor process failed to begin with code: " << status;
-    std::move(compositor_error_).Run();
+    LOG(ERROR) << "Compositor process failed to begin with code: "
+               << static_cast<int>(compositor_status);
+    std::move(compositor_error_).Run(static_cast<int>(compositor_status));
     return;
   }
-  base::UmaHistogramTimes(
-      "Browser.PaintPreview.Player.CompositorProcessStartupTime",
-      base::TimeTicks::Now() - startup_timestamp_);
+  auto delta = base::TimeTicks::Now() - startup_timestamp_;
+  if (delta.InMicroseconds() >= 0) {
+    base::UmaHistogramTimes(
+        "Browser.PaintPreview.Player.CompositorProcessStartupTime", delta);
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<base::UnguessableToken> all_guids;
@@ -243,12 +243,15 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
                                                       j_bitmap);
             },
             j_bitmap_callback, j_error_callback)));
+    if (request_id == 0) {
+      auto delta = base::TimeTicks::Now() - startup_timestamp_;
+      if (delta.InMicroseconds() >= 0) {
+        base::UmaHistogramTimes("Browser.PaintPreview.Player.TimeToFirstBitmap",
+                                delta);
+      }
+    }
   } else {
     base::android::RunRunnableAndroid(j_error_callback);
-  }
-  if (request_id == 0) {
-    base::UmaHistogramTimes("Browser.PaintPreview.Player.TimeToFirstBitmap",
-                            base::TimeTicks::Now() - startup_timestamp_);
   }
 }
 

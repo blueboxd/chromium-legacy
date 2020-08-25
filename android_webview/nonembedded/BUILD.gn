@@ -33,7 +33,7 @@ android_library("nonembedded_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -72,7 +72,7 @@ android_library("devui_java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_viewmodel_java",
     "//third_party/android_deps:androidx_savedstate_savedstate_java",
-    "//ui/android:ui_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   resources_package = "org.chromium.android_webview.devui"
 }

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "v8/include/v8-fast-api-calls.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -89,9 +90,12 @@ class CORE_EXPORT V8DOMConfiguration final {
   // AttributeConfiguration translates into calls to SetNativeDataProperty() on
   // either of instance or prototype object (or their object template).
   struct AttributeConfiguration {
-    AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
     DISALLOW_NEW();
-    const char* const name;
+
+   public:
+    AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
+
+    const char* name;
     v8::AccessorNameGetterCallback getter;
     v8::AccessorNameSetterCallback setter;
 
@@ -140,9 +144,12 @@ class CORE_EXPORT V8DOMConfiguration final {
   // either of instance, prototype, or interface object (or their object
   // template).
   struct AccessorConfiguration {
-    AccessorConfiguration& operator=(const AccessorConfiguration&) = delete;
     DISALLOW_NEW();
-    const char* const name;
+
+   public:
+    AccessorConfiguration& operator=(const AccessorConfiguration&) = delete;
+
+    const char* name;
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
     // V8PrivateProperty::CachedAccessor
@@ -211,6 +218,9 @@ class CORE_EXPORT V8DOMConfiguration final {
   // object's constants. It sets the constant on both the FunctionTemplate and
   // the ObjectTemplate. PropertyAttributes is always ReadOnly.
   struct ConstantConfiguration {
+    DISALLOW_NEW();
+
+   public:
     constexpr ConstantConfiguration(const char* name,
                                     ConstantType type,
                                     int value)
@@ -220,8 +230,8 @@ class CORE_EXPORT V8DOMConfiguration final {
                                     double value)
         : name(name), type(type), dvalue(value) {}
     ConstantConfiguration& operator=(const ConstantConfiguration&) = delete;
-    DISALLOW_NEW();
-    const char* const name;
+
+    const char* name;
     ConstantType type;
     union {
       int ivalue;
@@ -243,8 +253,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     ConstantCallbackConfiguration& operator=(
         const ConstantCallbackConfiguration&) = delete;
 
-    const char* const name;
-    const v8::AccessorNameGetterCallback getter;
+    const char* name;
+    v8::AccessorNameGetterCallback getter;
   };
 
   // Constant installation
@@ -296,13 +306,16 @@ class CORE_EXPORT V8DOMConfiguration final {
   // object's callbacks. It sets a method on instance, prototype or
   // interface object (or their object tepmplate).
   struct MethodConfiguration {
-    MethodConfiguration& operator=(const MethodConfiguration&) = delete;
     DISALLOW_NEW();
+
+   public:
+    MethodConfiguration& operator=(const MethodConfiguration&) = delete;
+
     v8::Local<v8::String> MethodName(v8::Isolate* isolate) const {
       return V8AtomicString(isolate, name);
     }
 
-    const char* const name;
+    const char* name;
     v8::FunctionCallback callback;
     int length;
     // v8::PropertyAttribute
@@ -320,15 +333,18 @@ class CORE_EXPORT V8DOMConfiguration final {
   };
 
   struct SymbolKeyedMethodConfiguration {
+    DISALLOW_NEW();
+
+   public:
     SymbolKeyedMethodConfiguration& operator=(
         const SymbolKeyedMethodConfiguration&) = delete;
-    DISALLOW_NEW();
+
     v8::Local<v8::Name> MethodName(v8::Isolate* isolate) const {
       return get_symbol(isolate);
     }
 
     v8::Local<v8::Symbol> (*get_symbol)(v8::Isolate*);
-    const char* const symbol_alias;
+    const char* symbol_alias;
     v8::FunctionCallback callback;
     // SymbolKeyedMethodConfiguration doesn't support per-world bindings.
     int length;
@@ -344,6 +360,17 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned side_effect_type : 1;
   };
 
+  struct NoAllocDirectCallMethodConfiguration {
+    DISALLOW_NEW();
+
+   public:
+    NoAllocDirectCallMethodConfiguration& operator=(
+        const NoAllocDirectCallMethodConfiguration&) = delete;
+
+    MethodConfiguration method_config;
+    v8::CFunction v8_c_function;
+  };
+
   static void InstallMethods(v8::Isolate*,
                              const DOMWrapperWorld&,
                              v8::Local<v8::ObjectTemplate> instance_template,
@@ -352,6 +379,15 @@ class CORE_EXPORT V8DOMConfiguration final {
                              v8::Local<v8::Signature>,
                              const MethodConfiguration*,
                              size_t method_count);
+  static void InstallMethods(v8::Isolate*,
+                             const DOMWrapperWorld&,
+                             v8::Local<v8::ObjectTemplate> instance_template,
+                             v8::Local<v8::ObjectTemplate> prototype_template,
+                             v8::Local<v8::FunctionTemplate> interface_template,
+                             v8::Local<v8::Signature>,
+                             const NoAllocDirectCallMethodConfiguration*,
+                             size_t method_count);
+
   static void InstallMethod(v8::Isolate*,
                             const DOMWrapperWorld&,
                             v8::Local<v8::ObjectTemplate> instance_template,

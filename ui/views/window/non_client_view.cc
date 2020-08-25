@@ -138,7 +138,8 @@ int NonClientFrameView::GetSystemMenuY() const {
 BEGIN_METADATA(NonClientFrameView, View)
 END_METADATA()
 
-NonClientView::NonClientView() {
+NonClientView::NonClientView(views::ClientView* client_view)
+    : client_view_(client_view) {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 

@@ -7135,7 +7135,7 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
     return true;
   }
   if (!GetFrame() || GetExecutionContext()->IsFeatureEnabled(
-                         mojom::blink::FeaturePolicyFeature::kDocumentWrite,
+                         mojom::blink::DocumentPolicyFeature::kDocumentWrite,
                          ReportOptions::kReportOnFailure)) {
     return true;
   }

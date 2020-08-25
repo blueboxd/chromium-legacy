@@ -106,7 +106,7 @@ void ShowRemoveSuggestion(TemplateURLService* template_url_service,
                           const AutocompleteMatch& match,
                           base::OnceClosure remove_closure) {
   views::BubbleDialogDelegateView::CreateBubble(
-      new RemoveSuggestionBubbleDialogDelegateView(
+      std::make_unique<RemoveSuggestionBubbleDialogDelegateView>(
           template_url_service, anchor_view, match, std::move(remove_closure)))
       ->Show();
 }

@@ -15,11 +15,10 @@ namespace base {
 
 namespace subtle {
 Time TimeNowIgnoringOverride() {
-  zx_time_t nanos_since_unix_epoch;
-  zx_status_t status = zx_clock_get(ZX_CLOCK_UTC, &nanos_since_unix_epoch);
-  ZX_CHECK(status == ZX_OK, status);
-  // The following expression will overflow in the year 289938 A.D.:
-  return Time::FromZxTime(nanos_since_unix_epoch);
+  timespec ts;
+  int status = timespec_get(&ts, TIME_UTC);
+  CHECK(status != 0);
+  return Time::FromTimeSpec(ts);
 }
 
 Time TimeNowFromSystemTimeIgnoringOverride() {

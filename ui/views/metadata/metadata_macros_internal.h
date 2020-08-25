@@ -37,32 +37,34 @@
   class METADATA_CLASS_NAME_INTERNAL(class_name)                         \
       : public views::metadata::ClassMetaData {                          \
    public:                                                               \
+    using ViewClass = class_name;                                        \
     explicit METADATA_CLASS_NAME_INTERNAL(class_name)()                  \
         : ClassMetaData(file, line) {                                    \
       BuildMetaData();                                                   \
     }                                                                    \
+    METADATA_CLASS_NAME_INTERNAL(class_name)                             \
+    (const METADATA_CLASS_NAME_INTERNAL(class_name) &) = delete;         \
+    METADATA_CLASS_NAME_INTERNAL(class_name) & operator=(                \
+        const METADATA_CLASS_NAME_INTERNAL(class_name) &) = delete;      \
                                                                          \
    private:                                                              \
     friend class class_name;                                             \
     virtual void BuildMetaData();                                        \
     static views::metadata::ClassMetaData* meta_data_ ALLOW_UNUSED_TYPE; \
-    DISALLOW_COPY_AND_ASSIGN(METADATA_CLASS_NAME_INTERNAL(class_name));  \
   }
 
-#define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type,          \
-                                        property_name)                      \
-  views::metadata::ClassPropertyMetaData<                                   \
-      class_name, property_type, decltype(&class_name::Set##property_name), \
-      &class_name::Set##property_name,                                      \
-      decltype(std::declval<class_name>().Get##property_name()),            \
-      &class_name::Get##property_name>
+#define METADATA_PROPERTY_TYPE_INTERNAL(property_type, property_name)     \
+  views::metadata::ClassPropertyMetaData<                                 \
+      ViewClass, property_type, decltype(&ViewClass::Set##property_name), \
+      &ViewClass::Set##property_name,                                     \
+      decltype(std::declval<ViewClass>().Get##property_name()),           \
+      &ViewClass::Get##property_name>
 
-#define METADATA_READONLY_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
-                                                 property_name)             \
-  views::metadata::ClassPropertyReadOnlyMetaData<                           \
-      class_name, property_type,                                            \
-      decltype(std::declval<class_name>().Get##property_name()),            \
-      &class_name::Get##property_name>
+#define METADATA_READONLY_PROPERTY_TYPE_INTERNAL(property_type, property_name) \
+  views::metadata::ClassPropertyReadOnlyMetaData<                              \
+      ViewClass, property_type,                                                \
+      decltype(std::declval<ViewClass>().Get##property_name()),                \
+      &ViewClass::Get##property_name>
 
 #define BEGIN_METADATA_INTERNAL(class_name)                                 \
   views::metadata::ClassMetaData* class_name::METADATA_CLASS_NAME_INTERNAL( \

@@ -214,7 +214,9 @@ class HitTestNonClientFrameView : public NativeFrameView {
 // This is used to return HitTestNonClientFrameView on create call.
 class HitTestWidgetDelegate : public WidgetDelegate {
  public:
-  explicit HitTestWidgetDelegate(Widget* widget) : widget_(widget) {}
+  explicit HitTestWidgetDelegate(Widget* widget) : widget_(widget) {
+    SetOwnedByWidget(true);
+  }
   ~HitTestWidgetDelegate() override = default;
 
   void set_can_resize(bool can_resize) {
@@ -236,7 +238,6 @@ class HitTestWidgetDelegate : public WidgetDelegate {
     frame_view_ = frame_view.get();
     return frame_view;
   }
-  void DeleteDelegate() override { delete this; }
 
  private:
   Widget* const widget_;

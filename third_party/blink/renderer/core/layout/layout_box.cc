@@ -3469,8 +3469,28 @@ void LayoutBox::ComputeLogicalWidth(
         PerpendicularContainingBlockLogicalHeight().ClampNegativeToZero();
   }
 
+  // If we have an aspect ratio, see if we have a definite height to compute
+  // the width from.
+  LayoutUnit logical_height_for_ar = kIndefiniteSize;
+  if (StyleRef().AspectRatio() && StyleRef().LogicalWidth().IsAuto() &&
+      (StyleRef().LogicalHeight().IsFixed() ||
+       StyleRef().LogicalHeight().IsPercentOrCalc())) {
+    logical_height_for_ar = ComputeLogicalHeightUsing(
+        kMainOrPreferredSize, StyleRef().LogicalHeight(),
+        /* intrinsic_content_height */ kIndefiniteSize);
+  }
+
   // Width calculations
-  if (treat_as_replaced) {
+  if (logical_height_for_ar != kIndefiniteSize) {
+    NGBoxStrut border_padding(
+        BorderStart() + PaddingStart(), BorderEnd() + PaddingEnd(),
+        BorderBefore() + PaddingBefore(), BorderAfter() + PaddingAfter());
+    LayoutUnit logical_width = InlineSizeFromAspectRatio(
+        border_padding, *StyleRef().LogicalAspectRatio(),
+        StyleRef().BoxSizing(), logical_height_for_ar);
+    computed_values.extent_ = ConstrainLogicalWidthByMinMax(
+        logical_width, container_width_in_inline_direction, cb);
+  } else if (treat_as_replaced) {
     computed_values.extent_ =
         ComputeReplacedLogicalWidth() + BorderAndPaddingLogicalWidth();
   } else {

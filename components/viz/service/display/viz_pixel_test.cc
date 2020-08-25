@@ -55,8 +55,16 @@ std::vector<RendererType> GetRendererTypes() {
   return GetRendererTypes(true, true);
 }
 
-std::vector<RendererType> GetGpuRendererTypes(bool include_dawn) {
-  return GetRendererTypes(false, include_dawn);
+std::vector<RendererType> GetRendererTypesNoDawn() {
+  return GetRendererTypes(true, false);
+}
+
+std::vector<RendererType> GetGpuRendererTypes() {
+  return GetRendererTypes(false, true);
+}
+
+std::vector<RendererType> GetGpuRendererTypesNoDawn() {
+  return GetRendererTypes(false, false);
 }
 
 // static

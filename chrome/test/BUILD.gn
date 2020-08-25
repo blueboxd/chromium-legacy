@@ -4986,7 +4986,6 @@ test("unit_tests") {
       "../browser/extensions/update_install_gate_unittest.cc",
       "../browser/extensions/updater/extension_update_client_command_line_config_policy_unittest.cc",
       "../browser/extensions/updater/extension_updater_unittest.cc",
-      "../browser/extensions/updater/parallel_unpacker_unittest.cc",
       "../browser/extensions/user_script_listener_unittest.cc",
       "../browser/extensions/warning_badge_service_unittest.cc",
       "../browser/extensions/webstore_installer_unittest.cc",
@@ -5612,6 +5611,7 @@ test("unit_tests") {
     sources += [
       "../../ui/views/controls/webview/web_dialog_view_unittest.cc",
       "../../ui/views/controls/webview/webview_unittest.cc",
+      "../browser/ui/media_router/media_router_ui_unittest.cc",
       "../browser/ui/views/accelerator_table_unittest.cc",
       "../browser/ui/views/accelerator_table_unittest_mac.mm",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc",
@@ -5660,7 +5660,6 @@ test("unit_tests") {
       "../browser/ui/views/media_router/cast_dialog_view_unittest.cc",
       "../browser/ui/views/media_router/cast_toolbar_button_unittest.cc",
       "../browser/ui/views/media_router/cloud_services_dialog_view_unittest.cc",
-      "../browser/ui/views/media_router/media_router_views_ui_unittest.cc",
       "../browser/ui/views/media_router/web_contents_display_observer_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_result_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_view_views_unittest.cc",
@@ -6195,6 +6194,8 @@ if (!is_android) {
 
     if (toolkit_views) {
       sources += [
+        "../browser/ui/read_later/read_later_test_utils.cc",
+        "../browser/ui/read_later/read_later_test_utils.h",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h",
         "../browser/ui/views/certificate_selector_browsertest.cc",

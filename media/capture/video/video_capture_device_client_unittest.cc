@@ -227,7 +227,7 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
     PIXEL_FORMAT_NV21,
     PIXEL_FORMAT_YUY2,
     PIXEL_FORMAT_UYVY,
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     PIXEL_FORMAT_RGB24,
 #endif
     PIXEL_FORMAT_ARGB,

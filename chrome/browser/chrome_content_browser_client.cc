@@ -353,6 +353,7 @@
 #include "storage/browser/file_system/external_mount_points.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -2168,7 +2169,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                  kDinosaurEasterEggSwitches,
                                  base::size(kDinosaurEasterEggSwitches));
 
-  if (content::Referrer::ShouldForceLegacyDefaultReferrerPolicy())
+  if (blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy())
     command_line->AppendSwitch(
         blink::switches::kForceLegacyDefaultReferrerPolicy);
 

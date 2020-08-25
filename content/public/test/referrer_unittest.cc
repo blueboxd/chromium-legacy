@@ -110,24 +110,4 @@ TEST(ReferrerTest, BlinkNetRoundTripConversion) {
   }
 }
 
-TEST(DefaultReferrerPolicyTest, SetAndGetForceLegacy) {
-  EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
-  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
-  EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
-}
-
-TEST(DefaultReferrerPolicyTest, ForceLegacyOnly) {
-  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
-  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
-            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
-}
-
-TEST(DefaultReferrerPolicyTest, FeatureAndForceLegacy) {
-  base::test::ScopedFeatureList f;
-  f.InitAndEnableFeature(blink::features::kReducedReferrerGranularity);
-  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
-  EXPECT_EQ(blink::ReferrerUtils::GetDefaultNetReferrerPolicy(),
-            net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
-}
-
 }  // namespace content

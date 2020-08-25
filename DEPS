@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '578215be44d00af16d431bc277b0d0d429fbf53d',
+  'skia_revision': '5660e8b4414b85d0bc742c3a27b91cb928fd38f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f6e6c9332ac370e70205c034cfa6afba8cba8288',
+  'v8_revision': '288014f2f94b4ff0fb0bb160ffac61b7bc3e7739',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f1b9b50369f33676dac882bad509364a7806c750',
+  'devtools_frontend_revision': 'b8ae5a73f8754a47acc50f4c1d7461e8a6fd5e26',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ac74b9c703be054e6f7ce1360ef02dbcd3e8b1a4',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7f786caa5d60e1feec3af7913f47e632440b07da',
       'condition': 'checkout_chromeos',
   },
 
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '41db2fb64914bb8c4cd2261f8ecedf1ef3b28942',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7023f47299aa157951b4677ee4450cac58685a2d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a5c279111d94a095e46c42011b8cdb601bc15033',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@65f9045b37a9f02731008b8f71d86bb9db4f0444',
     'condition': 'checkout_src_internal',
   },
 
@@ -1550,7 +1550,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'EkzqCcAxSpMTFOlOuO7kRf9laK1GtSbJMxH5sUk2zIgC',
+        'version': 'q7fJGoUZfsUaMt-ae3SViUsR1NdBaXcLVuaNOAI_8CMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

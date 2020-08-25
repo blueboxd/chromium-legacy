@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_POLICY_MESSAGING_LAYER_ENCRYPTION_ENCRYPTION_MODULE_H_
 #define CHROME_BROWSER_POLICY_MESSAGING_LAYER_ENCRYPTION_ENCRYPTION_MODULE_H_
 
-#include <string>
-
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
+#include "components/policy/proto/record.pb.h"
 
 namespace reporting {
 
-// TODO(b/153659559) Temporary EncryptionModule until the real one is ready.
 class EncryptionModule : public base::RefCountedThreadSafe<EncryptionModule> {
  public:
   EncryptionModule() = default;
@@ -22,9 +21,13 @@ class EncryptionModule : public base::RefCountedThreadSafe<EncryptionModule> {
   EncryptionModule(const EncryptionModule& other) = delete;
   EncryptionModule& operator=(const EncryptionModule& other) = delete;
 
-  // EncryptRecord will attempt to encrypt the provided |record|. On success the
-  // return value will contain the encrypted string.
-  virtual StatusOr<std::string> EncryptRecord(base::StringPiece record) const;
+  // EncryptRecord will attempt to encrypt the provided |record| and respond
+  // with the callback. On success the returned EncryptedRecord will contain
+  // the encrypted string and encryption information. EncryptedRecord then can
+  // be further updated by the caller.
+  virtual void EncryptRecord(
+      base::StringPiece record,
+      base::OnceCallback<void(StatusOr<EncryptedRecord>)> cb) const;
 
  protected:
   virtual ~EncryptionModule() = default;

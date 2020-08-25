@@ -26,11 +26,13 @@
 <translation id="169515064810179024">حظر المواقع الإلكترونية من الوصول إلى مستشعرات الحركة</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1743802530341753419">السؤال قبل السماح للمواقع الإلكترونية بالاتصال بجهاز (موصى به)</translation>
+<translation id="1779089405699405702">أداة فك ترميز الصور</translation>
 <translation id="1818308510395330587">‏للسماح لتطبيق <ph name="APP_NAME" /> باستخدام ميزة الواقع المعزَّز، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
+<translation id="1989112275319619282">تصفّح</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="2025115093177348061">الواقع المعزّز</translation>
 <translation id="2030769033451695672">يُرجى النقر للرجوع إلى <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
@@ -69,6 +71,7 @@
 <translation id="2968755619301702150">عارض الشهادات</translation>
 <translation id="300526633675317032">سيؤدي هذا إلى محو مساحة التخزين البالغة <ph name="SIZE_IN_KB" /> بأكملها من مساحة تخزين المواقع الإلكترونية.</translation>
 <translation id="301521992641321250">تم الحظر تلقائيًا</translation>
+<translation id="3114012059975132928">مشغّل الفيديو</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
 <translation id="3123473560110926937">حظر الإعلانات في بعض المواقع</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزّنة</translation>
@@ -81,9 +84,11 @@
 <translation id="3538390592868664640">منع المواقع الإلكترونية من إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا</translation>
 <translation id="3586500876634962664">الكاميرا والميكروفون قيد التشغيل</translation>
 <translation id="358794129225322306">السماح لموقع إلكتروني بتنزيل عدة ملفات تلقائيًا.</translation>
+<translation id="3594780231884063836">كتم صوت الفيديو</translation>
 <translation id="3596414637720633074">حظر ملفات تعريف الارتباط التابعة لجهات خارجية في وضع التصفّح المتخفي</translation>
 <translation id="3600792891314830896">كتم صوت المواقع الإلكترونية التي تشغّل الصوت</translation>
 <translation id="3744111561329211289">المزامنة في الخلفية</translation>
+<translation id="3763247130972274048">يُرجى النقر بشكل مزدوج على الفيديو يمينًا أو يسارًا لتخطّي 10 ثوانٍ.</translation>
 <translation id="385051799172605136">رجوع</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
 <translation id="3955193568934677022">السماح للمواقع الإلكترونية بتشغيل المحتوى المحمي (مُستحسَن)</translation>
@@ -129,6 +134,7 @@
 <translation id="5354152178998424783">سيؤدي هذا الإجراء إلى محو <ph name="DATASIZE" /> من البيانات وملفات تعريف الارتباط المُخزّنة من خلال المواقع الإلكترونية.</translation>
 <translation id="5384883051496921101">الموقع الإلكتروني هذا على وشك مشاركة معلومات مع أحد التطبيقات خارج وضع التصفح المتخفي.</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات الموقع الإلكتروني</translation>
+<translation id="5489227211564503167">الوقت المنقضي <ph name="ELAPSED_TIME" /> من <ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5505264765875738116">منع المواقع الإلكترونية من طلب إرسال إشعارات</translation>
 <translation id="5516455585884385570">فتح إعدادات الإشعارات</translation>
@@ -143,6 +149,7 @@
 <translation id="5719847187258001597">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN" /> أو من خلال التطبيق على الشاشة الرئيسية.</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5860033963881614850">غير مفعّل</translation>
+<translation id="5876056640971328065">إيقاف الفيديو مؤقتًا</translation>
 <translation id="5916664084637901428">مفعّل</translation>
 <translation id="5922853908706496913">جارٍ مشاركة شاشتك</translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
@@ -161,6 +168,7 @@
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
 <translation id="6388207532828177975">المحو وإعادة الضبط</translation>
+<translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
 <translation id="6423924377271166037">محو ملفات تعريف الارتباط</translation>
 <translation id="6439114592976064011">منع المواقع الإلكترونية من استخدام جهاز الواقع الافتراضي وبياناته.</translation>
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
@@ -192,6 +200,7 @@
 <translation id="7128222689758636196">السماح لمحرّك البحث الحالي</translation>
 <translation id="7141896414559753902">منع المواقع الإلكترونية من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
+<translation id="723171743924126238">اختيار الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7302486331832100261">أنت تحظر الإشعارات عادةً. للسماح بها، يُرجى النقر على "التفاصيل".</translation>
@@ -211,6 +220,7 @@
 <translation id="7817023149356982970">سيتم تسجيل خروجك من هذا الموقع الإلكتروني.</translation>
 <translation id="7828557259026017104">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. وتستخدمها المواقع الإلكترونية لتتذكّر الإعدادات المفضّلة. أمّا ملفات تعريف الارتباط التابعة لجهات خارجية، فتُنشئها مواقع إلكترونية أخرى. وتمتلك هذه المواقع الإلكترونية بعضًا من المحتوى الذي تراه على صفحة الويب التي تزورها، مثل الإعلانات أو الصور.</translation>
 <translation id="7835852323729233924">تشغيل الوسائط</translation>
+<translation id="783819812427904514">إعادة صوت الفيديو</translation>
 <translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="7846621471902887024">سيتم تسجيل خروجك من جميع المواقع الإلكترونية.</translation>
 <translation id="7882806643839505685">السماح بتشغيل الصوت لموقع معين.</translation>
@@ -218,6 +228,7 @@
 <translation id="7999064672810608036">هل أنت متأكّد أنك تريد محو كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لهذا الموقع الإلكتروني؟</translation>
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
+<translation id="8067883171444229417">تشغيل الفيديو</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
 <translation id="8116925261070264013">المواقع الإلكترونية التي تم كتم الصوت فيها</translation>
@@ -239,6 +250,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{ملف تعريف ارتباط واحد قيد الاستخدام}zero{# ملف تعريف ارتباط قيد الاستخدام}two{ملفا تعريف ارتباط قيد الاستخدام}few{# ملفات تعريف ارتباط قيد الاستخدام}many{# ملف تعريف ارتباط قيد الاستخدام}other{# ملف تعريف ارتباط قيد الاستخدام}}</translation>
 <translation id="8463851957836045671">الموقع الإلكتروني سريع</translation>
 <translation id="851751545965956758">حظر المواقع الإلكترونية من الاتصال بأجهزة</translation>
+<translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="857943718398505171">مسموح بها (موصى بها)</translation>
 <translation id="8609465669617005112">الانتقال إلى الأعلى</translation>
 <translation id="8676374126336081632">محو الإرسال</translation>
@@ -247,9 +259,11 @@
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8737217482364735741">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN" />.</translation>
+<translation id="8751914237388039244">اختيار صورة</translation>
 <translation id="8801436777607969138">‏حظر JavaScript لموقع إلكتروني مُعيَّن.</translation>
 <translation id="8816026460808729765">يمكنك حظر المواقع الإلكترونية من الوصول إلى أجهزة الاستشعار.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">‏تقنية NFC غير مفعّلة على هذا الجهاز. فعّلها في<ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">يفتح هذا الموقع الإلكتروني ويستجيب بشكل سريع لدى معظم الأشخاص.</translation>
 <translation id="8941729603749328384">www.example.com</translation>

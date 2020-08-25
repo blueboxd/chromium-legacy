@@ -119,9 +119,6 @@ enum class ProvisioningResult : int {
   // Check in error. More errors defined below.
   DEVICE_CHECK_IN_FAILED = 5,
 
-  // Cloud provision error. More errors defined below.
-  DEPRECATED_CLOUD_PROVISION_FLOW_FAILED = 6,
-
   // Mojo errors.
   MOJO_VERSION_MISMATCH = 7,
 
@@ -136,10 +133,6 @@ enum class ProvisioningResult : int {
   GMS_SIGN_IN_FAILED = 11,
   GMS_SIGN_IN_TIMEOUT = 12,
   GMS_SIGN_IN_INTERNAL_ERROR = 13,
-
-  // Cloud provision error:
-  DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT = 14,
-  DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 15,
 
   // ARC instance is stopped during the sign in procedure.
   ARC_STOPPED = 16,

@@ -154,6 +154,8 @@ used when committed.
     chrome:// URLs).
 *   [Watchlists](infra/watchlists.md) - Use watchlists to get notified of CLs
     you are interested in.
+*   [Shutdown](shutdown.md) - Explains the steps of Chrome shutdown, to make it
+    easier to determine where to add a new shutdown operation.
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)

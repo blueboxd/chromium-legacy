@@ -25,6 +25,7 @@ _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/an
 
 # These checks are not useful for chromium.
 _DISABLED_ALWAYS = [
+    "AppCompatResource",  # Lint does not correctly detect our appcompat lib.
     "Assert",  # R8 --force-enable-assertions is used to enable java asserts.
     "LintBaseline",  # Don't warn about using baseline.xml files.
     "MissingApplicationIcon",  # False positive for non-production targets.

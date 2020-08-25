@@ -1090,32 +1090,6 @@ bool AXNodeObject::IsTextControl() const {
   return false;
 }
 
-AXObject* AXNodeObject::MenuButtonForMenu() const {
-  Element* menu_item = MenuItemElementForMenu();
-
-  if (menu_item) {
-    // ARIA just has generic menu items. AppKit needs to know if this is a top
-    // level items like MenuBarButton or MenuBarItem
-    AXObject* menu_item_ax = AXObjectCache().GetOrCreate(menu_item);
-    if (menu_item_ax && menu_item_ax->IsMenuButton())
-      return menu_item_ax;
-  }
-  return nullptr;
-}
-
-AXObject* AXNodeObject::MenuButtonForMenuIfExists() const {
-  Element* menu_item = MenuItemElementForMenu();
-
-  if (menu_item) {
-    // ARIA just has generic menu items. AppKit needs to know if this is a top
-    // level items like MenuBarButton or MenuBarItem
-    AXObject* menu_item_ax = AXObjectCache().Get(menu_item);
-    if (menu_item_ax && menu_item_ax->IsMenuButton())
-      return menu_item_ax;
-  }
-  return nullptr;
-}
-
 static Element* SiblingWithAriaRole(String role, Node* node) {
   Node* parent = LayoutTreeBuilderTraversal::Parent(*node);
   if (!parent)
@@ -3429,7 +3403,6 @@ bool AXNodeObject::CanHaveChildren() const {
     case ax::mojom::blink::Role::kCheckBox:
     case ax::mojom::blink::Role::kImage:
     case ax::mojom::blink::Role::kListBoxOption:
-    case ax::mojom::blink::Role::kMenuButton:
     case ax::mojom::blink::Role::kMenuListOption:
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:
@@ -3459,7 +3432,6 @@ bool AXNodeObject::CanHaveChildren() const {
     case ax::mojom::blink::Role::kCheckBox:
     case ax::mojom::blink::Role::kListBoxOption:
     case ax::mojom::blink::Role::kMath:  // role="math" is flat, unlike <math>
-    case ax::mojom::blink::Role::kMenuButton:
     case ax::mojom::blink::Role::kMenuListOption:
     case ax::mojom::blink::Role::kMenuItem:
     case ax::mojom::blink::Role::kMenuItemCheckBox:

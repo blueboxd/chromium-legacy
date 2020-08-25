@@ -55,7 +55,7 @@ const base::Feature kOpenXR{"OpenXR", base::FEATURE_ENABLED_BY_DEFAULT};
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
 // Controls WebXR support for the Windows Mixed Reality Runtime.
 const base::Feature kWindowsMixedReality{"WindowsMixedReality",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // ENABLE_WINDOWS_MR
 }  // namespace features
 }  // namespace device

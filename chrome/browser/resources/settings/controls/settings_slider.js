@@ -73,6 +73,11 @@ Polymer({
     this.loaded_ = true;
   },
 
+  /** @override */
+  focus() {
+    this.$.slider.focus();
+  },
+
   /**
    * @param {number|cr_slider.SliderTick} tick
    * @return {number|undefined}

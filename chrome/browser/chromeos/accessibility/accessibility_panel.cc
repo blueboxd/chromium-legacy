@@ -43,6 +43,8 @@ class AccessibilityPanel::AccessibilityPanelWebContentsObserver
 AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
                                        std::string content_url,
                                        std::string widget_name) {
+  SetOwnedByWidget(true);
+
   views::WebView* web_view = new views::WebView(browser_context);
   web_contents_ = web_view->GetWebContents();
   web_contents_observer_.reset(
@@ -91,10 +93,6 @@ views::Widget* AccessibilityPanel::GetWidget() {
 
 content::WebContents* AccessibilityPanel::GetWebContents() {
   return web_contents_;
-}
-
-void AccessibilityPanel::DeleteDelegate() {
-  delete this;
 }
 
 views::View* AccessibilityPanel::GetContentsView() {

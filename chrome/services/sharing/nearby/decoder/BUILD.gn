@@ -37,8 +37,17 @@ source_set("unit_tests") {
   ]
 }
 
-fuzzer_test("nearby_decoder_fuzzer") {
-  sources = [ "nearby_decoder_fuzzer.cc" ]
+fuzzer_test("nearby_decoder_decode_advertisement_fuzzer") {
+  sources = [ "nearby_decoder_decode_advertisement_fuzzer.cc" ]
+  deps = [
+    ":decoder",
+    "//base",
+    "//mojo/core/embedder",
+  ]
+}
+
+fuzzer_test("nearby_decoder_decode_frame_fuzzer") {
+  sources = [ "nearby_decoder_decode_frame_fuzzer.cc" ]
   deps = [
     ":decoder",
     "//base",

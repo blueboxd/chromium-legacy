@@ -13,6 +13,7 @@
 #include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +66,7 @@ class StandaloneTrustedVaultClientTest : public testing::Test {
   StandaloneTrustedVaultClientTest()
       : file_path_(CreateUniqueTempDir(&temp_dir_)
                        .Append(base::FilePath(FILE_PATH_LITERAL("some_file")))),
-        client_(file_path_) {}
+        client_(file_path_, identity_env_.identity_manager()) {}
 
   ~StandaloneTrustedVaultClientTest() override = default;
 
@@ -84,9 +85,23 @@ class StandaloneTrustedVaultClientTest : public testing::Test {
     loop.Run();
   }
 
+  base::Optional<CoreAccountInfo> FetchBackendPrimaryAccountAndWait() {
+    base::RunLoop loop;
+    base::Optional<CoreAccountInfo> fetched_primary_account;
+    client_.FetchBackendPrimaryAccountForTesting(base::BindLambdaForTesting(
+        [&](const base::Optional<CoreAccountInfo>& primary_account) {
+          fetched_primary_account = primary_account;
+          loop.Quit();
+        }));
+    loop.Run();
+    return fetched_primary_account;
+  }
+
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   const base::FilePath file_path_;
+  // |identity_env_| should outlive |client_|.
+  signin::IdentityTestEnvironment identity_env_;
   StandaloneTrustedVaultClient client_;
 };
 
@@ -175,7 +190,8 @@ TEST_F(StandaloneTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {
   WaitForFlush();
 
   // Instantiate a second client to read the file.
-  StandaloneTrustedVaultClient other_client(file_path_);
+  StandaloneTrustedVaultClient other_client(file_path_,
+                                            identity_env_.identity_manager());
   EXPECT_THAT(FetchKeysAndWaitForClient(kGaiaId1, &other_client),
               ElementsAre(kKey1));
   EXPECT_THAT(FetchKeysAndWaitForClient(kGaiaId2, &other_client),
@@ -204,6 +220,47 @@ TEST_F(StandaloneTrustedVaultClientTest, ShouldRemoveAllStoredKeys) {
   EXPECT_THAT(FetchKeysAndWait(kGaiaId2), IsEmpty());
   EXPECT_FALSE(base::PathExists(file_path_));
 }
+
+// ChromeOS doesn't support sign-out.
+#if !defined(OS_CHROMEOS)
+TEST_F(StandaloneTrustedVaultClientTest, ShouldPopulatePrimaryAccountChanges) {
+  ASSERT_FALSE(client_.IsInitializationTriggeredForTesting());
+
+  // Set initial primary account before backend initialization.
+  const std::string email1 = "user1@gmail.com";
+  identity_env_.SetPrimaryAccount(email1);
+
+  // Trigger backend initialization.
+  ASSERT_THAT(FetchKeysAndWait("user1"), IsEmpty());
+  ASSERT_TRUE(client_.IsInitializationTriggeredForTesting());
+
+  // Verify that current primary account corresponds to |email1|.
+  base::Optional<CoreAccountInfo> current_primary_account =
+      FetchBackendPrimaryAccountAndWait();
+  ASSERT_THAT(current_primary_account, Ne(base::nullopt));
+  EXPECT_THAT(current_primary_account->email, Eq(email1));
+
+  // Remove primary account.
+  identity_env_.ClearPrimaryAccount();
+  current_primary_account = FetchBackendPrimaryAccountAndWait();
+  EXPECT_THAT(current_primary_account, Eq(base::nullopt));
+
+  // Set new primary account.
+  const std::string email2 = "user2@gmail.com";
+  identity_env_.SetPrimaryAccount(email2);
+  current_primary_account = FetchBackendPrimaryAccountAndWait();
+  ASSERT_THAT(current_primary_account, Ne(base::nullopt));
+  EXPECT_THAT(current_primary_account->email, Eq(email2));
+
+  // Set unconsented primary account.
+  const std::string email3 = "user3@gmail.com";
+  identity_env_.ClearPrimaryAccount();
+  identity_env_.SetUnconsentedPrimaryAccount(email3);
+  current_primary_account = FetchBackendPrimaryAccountAndWait();
+  ASSERT_THAT(current_primary_account, Ne(base::nullopt));
+  EXPECT_THAT(current_primary_account->email, Eq(email3));
+}
+#endif
 
 }  // namespace
 

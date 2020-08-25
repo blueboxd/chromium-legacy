@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">புதிய சாளரம்</translation>
 <translation id="1580783302095112590">மின்னஞ்சல் அனுப்பப்பட்டது.</translation>
 <translation id="1582732959743469162">இவ்வாறு செய்தால் உங்களின் தற்போதைய பதிவிறக்கத்திற்கான அனைத்துச் செயல்பாடும் நிறுத்தப்படும்.</translation>
+<translation id="1605405588277479165">முடக்கப்பட்டுள்ளது - பரிந்துரைக்கப்படவில்லை</translation>
 <translation id="1605658421715042784">படத்தை நகலெடு</translation>
 <translation id="1608337082864370066">நகலெடுத்த படத்தைத் தேடவும்</translation>
 <translation id="1612730193129642006">தாவல் கட்டத்தைக் காட்டும் பட்டன்</translation>
@@ -496,6 +497,7 @@
 <translation id="6624219055418309072">மறைநிலையில் தடு</translation>
 <translation id="6628106477656132239">தவறான காலாவதித் தேதி</translation>
 <translation id="6638511529934826365">உரையின் அளவை மாற்று…</translation>
+<translation id="6639730758971422557">பாதுகாப்பு உலாவலை இயக்க, <ph name="BEGIN_LINK" />ஒத்திசைவு மற்றும் Google சேவைகள்<ph name="END_LINK" /> என்பதைத் திறந்து 'பாதுகாப்பு உலாவல்' என்பதைத் தட்டவும்.</translation>
 <translation id="6642362222295953972">ஏற்கனவே திறந்துள்ள தாவலுக்கு மாறு</translation>
 <translation id="6643016212128521049">அழி</translation>
 <translation id="6645899968535965230">QR குறியீடு: <ph name="PAGE_TITLE" /></translation>
@@ -580,6 +582,7 @@
 <translation id="7561196759112975576">எப்போதும்</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="7603852183842204213">பாப்-அப்கள் தடுக்கப்பட்டன (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">கடவுச்சொல்லை நீக்கு</translation>
 <translation id="7638584964844754484">தவறான கடவுத்தொடர்</translation>
 <translation id="7649070708921625228">உதவி</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
@@ -658,6 +661,7 @@
 <translation id="8529767659511976195">புதிது</translation>
 <translation id="8532105204136943229">காலாவதியாகும் ஆண்டு</translation>
 <translation id="8533166274275423134">வேறு எங்கோ திறக்கப்பட்டுள்ளது</translation>
+<translation id="8533670235862049797">பாதுகாப்பு உலாவல் இயக்கப்பட்டுள்ளது</translation>
 <translation id="8534481786647257214">Google+ இடுகை நிறைவுபெற்றது.</translation>
 <translation id="8548878600947630424">பக்கத்தில் கண்டறி</translation>
 <translation id="8574235780160508979">மார்ச் 31 அன்று Chromeமின் சேவை விதிமுறைகள் மாறவுள்ளன. <ph name="BEGIN_LINK" />அவற்றைப் படித்துப் பாருங்கள்<ph name="END_LINK" /></translation>

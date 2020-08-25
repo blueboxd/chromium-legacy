@@ -307,10 +307,6 @@ void DisplayLockContext::Lock() {
     element_->NotifyPriorityScrollAnchorStatusChanged();
   }
 
-  // In either case, we schedule an animation. If we're already inside a
-  // lifecycle update, this will be a no-op.
-  ScheduleAnimation();
-
   // We need to notify the AX cache (if it exists) to update |element_|'s
   // children in the AX cache.
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
@@ -534,17 +530,12 @@ void DisplayLockContext::Unlock() {
   if (!ConnectedToView())
     return;
 
-  ScheduleAnimation();
-
   // There are a few ways we can get unlocked:
   // 1. A new content-visibility property needs us to be ulocked.
   // 2. We're in 'auto' mode and we are intersecting the viewport.
-  // 3. We're activating in hidden-matchable or auto mode
   // In the first case, we are already in style processing, so we don't need to
-  // invalidate style. However, in the second and third cases we invalidate
-  // style so that `AdjustElementStyle()` can be called.
-  // TODO(vmpstr): Case 3 needs to be reworked, since the spec no longer has a
-  // notion of activation.
+  // invalidate style. However, in the second case we invalidate style so that
+  // `AdjustElementStyle()` can be called.
   if (!document_->InStyleRecalc()) {
     // Since size containment depends on the activatability state, we should
     // invalidate the style for this element, so that the style adjuster can

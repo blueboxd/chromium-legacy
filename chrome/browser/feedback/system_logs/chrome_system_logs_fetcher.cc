@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/crash_ids_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"
@@ -23,6 +24,10 @@
 #include "chrome/browser/chromeos/system_logs/shill_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #include "chrome/browser/chromeos/system_logs/ui_hierarchy_log_source.h"
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+#include "chrome/browser/lacros/system_logs/user_log_files_log_source.h"
 #endif
 
 namespace system_logs {
@@ -48,6 +53,10 @@ SystemLogsFetcher* BuildChromeSystemLogsFetcher(bool scrub_data) {
   fetcher->AddSource(std::make_unique<NetworkHealthSource>(scrub_data));
   fetcher->AddSource(std::make_unique<ShillLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<UiHierarchyLogSource>(scrub_data));
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+  fetcher->AddSource(std::make_unique<UserLogFilesLogSource>());
 #endif
 
   return fetcher;

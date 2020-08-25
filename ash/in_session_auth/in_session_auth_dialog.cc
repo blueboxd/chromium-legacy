@@ -20,7 +20,10 @@ constexpr gfx::Size kDefaultSize(340, 490);
 
 class AuthDialogWidgetDelegate : public views::WidgetDelegate {
  public:
-  AuthDialogWidgetDelegate() = default;
+  AuthDialogWidgetDelegate() {
+    SetOwnedByWidget(true);
+    SetModalType(ui::MODAL_TYPE_SYSTEM);
+  }
   AuthDialogWidgetDelegate(const AuthDialogWidgetDelegate&) = delete;
   AuthDialogWidgetDelegate& operator=(const AuthDialogWidgetDelegate&) = delete;
   ~AuthDialogWidgetDelegate() override = default;
@@ -29,8 +32,6 @@ class AuthDialogWidgetDelegate : public views::WidgetDelegate {
   views::View* GetInitiallyFocusedView() override {
     return GetWidget()->GetContentsView();
   }
-  void DeleteDelegate() override { delete this; }
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 };
 
 std::unique_ptr<views::Widget> CreateAuthDialogWidget(aura::Window* parent) {

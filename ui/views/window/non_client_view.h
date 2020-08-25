@@ -155,7 +155,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
  public:
   METADATA_HEADER(NonClientView);
 
-  NonClientView();
+  explicit NonClientView(ClientView* client_view);
   ~NonClientView() override;
 
   // Returns the current NonClientFrameView instance, or NULL if
@@ -209,7 +209,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
 
   // Get/Set client_view property.
   ClientView* client_view() const { return client_view_; }
-  void set_client_view(ClientView* client_view) { client_view_ = client_view; }
 
   // Set the accessible name of this view.
   void SetAccessibleName(const base::string16& name);
@@ -234,7 +233,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // A ClientView object or subclass, responsible for sizing the contents view
   // of the window, hit testing and perhaps other tasks depending on the
   // implementation.
-  ClientView* client_view_ = nullptr;
+  ClientView* const client_view_;
 
   // The NonClientFrameView that renders the non-client portions of the window.
   // This object is not owned by the view hierarchy because it can be replaced

@@ -40,6 +40,9 @@ class PrerenderManagerDelegate {
   // Check whether predictive loading of web pages is enabled.
   virtual bool IsPredictionEnabled();
 
+  // Check whether predictive loading of web pages is disabled due to network.
+  virtual bool IsPredictionDisabledDueToNetwork(Origin origin);
+
   // Gets the reason why predictive loading of web pages was disabld.
   virtual std::string GetReasonForDisablingPrediction();
 };

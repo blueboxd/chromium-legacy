@@ -682,11 +682,6 @@ void ArcSessionManager::OnProvisioningFinished(
     case ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR:
       error = ArcSupportHost::Error::SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
       break;
-    case ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_FAILED:
-    case ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT:
-    case ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
-      error = ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
-      break;
     case ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR:
       error = GetCloudProvisionFlowError(cloud_provision_flow_error);
       break;
@@ -718,11 +713,7 @@ void ArcSessionManager::OnProvisioningFinished(
     return;
   }
 
-  if (result == ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_FAILED ||
-      result == ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT ||
-      result ==
-          ProvisioningResult::DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
-      result == ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR ||
+  if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR ||
       // OVERALL_SIGN_IN_TIMEOUT might be an indication that ARC believes it is
       // fully setup, but Chrome does not.
       result == ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT ||

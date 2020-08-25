@@ -222,7 +222,7 @@ class CredentialManagerImplTest : public testing::Test,
     store_->Init(/*prefs=*/nullptr);
     if (base::FeatureList::IsEnabled(
             features::kEnablePasswordsAccountStorage)) {
-      account_store_ = new TestPasswordStore(/*is_account_store=*/true);
+      account_store_ = new TestPasswordStore(IsAccountStore(true));
       ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
     }
     client_ = std::make_unique<testing::NiceMock<MockPasswordManagerClient>>(

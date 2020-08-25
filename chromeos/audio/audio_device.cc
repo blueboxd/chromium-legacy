@@ -50,6 +50,7 @@ uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
     case AUDIO_TYPE_HOTWORD:
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
+    case AUDIO_TYPE_ALSA_LOOPBACK:
     case AUDIO_TYPE_OTHER:
     default:
       return 0;
@@ -91,6 +92,8 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "POST_MIX_LOOPBACK";
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
       return "POST_DSP_LOOPBACK";
+    case AUDIO_TYPE_ALSA_LOOPBACK:
+      return "ALSA_LOOPBACK";
     case AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
@@ -134,6 +137,8 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_POST_MIX_LOOPBACK;
   else if (node_type.find("POST_DSP_LOOPBACK") != std::string::npos)
     return AUDIO_TYPE_POST_DSP_LOOPBACK;
+  else if (node_type.find("ALSA_LOOPBACK") != std::string::npos)
+    return AUDIO_TYPE_ALSA_LOOPBACK;
   else
     return AUDIO_TYPE_OTHER;
 }

@@ -58,12 +58,6 @@ enum ArcSignInStatus {
   GMS_SIGN_IN_TIMEOUT = 11,
   GMS_SIGN_IN_INTERNAL_ERROR = 12,
 
-  // Please use CLOUD_PROVISION_FLOW_ERROR
-  // [Deprecated in version 25]
-  DEPRECATED_CLOUD_PROVISION_FLOW_FAILED = 5,
-  DEPRECATED_CLOUD_PROVISION_FLOW_TIMEOUT = 13,
-  DEPRECATED_CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
-
   // Top level error for all CloudDPC errors
   // additional details are provided by CloudProvisionFlowError
   [MinVersion=25] CLOUD_PROVISION_FLOW_ERROR = 22,
@@ -457,12 +451,6 @@ interface AuthHost {
       ArcSignInResult result,
       ArcSignInAccount account);
 
-  // Asynchronously requests an authorization code, as well as the account
-  // information. If |initial_signin| is true then that means request is for
-  // initial signin flow. Otherwise it is used for reauthorization flow.
-  [MinVersion=5] RequestAccountInfoDeprecated@7(
-      [MinVersion=11] bool initial_signin);
-
   // Reports metrics to Chrome to be recorded in UMA.
   [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);
 
@@ -533,22 +521,8 @@ interface AuthHost {
 
 // Next Method ID: 6
 interface AuthInstance {
-  // DEPRECATED: Please use Init@2 instead.
-  InitDeprecated@0(pending_remote<AuthHost> host_remote);
-
   // Establishes full-duplex communication with the host.
   [MinVersion=12] Init@2(pending_remote<AuthHost> host_remote) => ();
-
-  // Callback from RequestAccountInfo. This cannot be a normal callback since
-  // the result can sometimes take a few minutes in some cases (Kiosk mode),
-  // and in other cases there is a UI that the user is shown and they can take
-  // an arbitrarily long amount of time to interact with.
-  // If the request completes successfully, |status| must be SUCCESS and
-  // |account_info| is not null.
-  // In case of an error, |status| must contain the reason of failure, other
-  // than SUCCESS, and |account_info| is null.
-  [MinVersion=5] OnAccountInfoReadyDeprecated@1(
-      AccountInfo? account_info, [MinVersion=10] ArcSignInStatus status);
 
   // A notification that an account was updated (or inserted, or removed; see
   // |AccountUpdateType|) in Chrome OS Account Manager.

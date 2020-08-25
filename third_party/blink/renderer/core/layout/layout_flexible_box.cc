@@ -55,7 +55,8 @@
 namespace blink {
 
 static bool HasAspectRatio(const LayoutBox& child) {
-  return child.IsImage() || child.IsCanvas() || IsA<LayoutVideo>(child);
+  return child.IsImage() || child.IsCanvas() || IsA<LayoutVideo>(child) ||
+         child.StyleRef().AspectRatio();
 }
 
 LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
@@ -736,7 +737,7 @@ LayoutPoint LayoutFlexibleBox::FlowAwareLocationForChild(
 bool LayoutFlexibleBox::UseChildAspectRatio(const LayoutBox& child) const {
   if (!HasAspectRatio(child))
     return false;
-  if (child.IntrinsicSize().Height() == 0) {
+  if (!child.StyleRef().AspectRatio() && child.IntrinsicSize().Height() == 0) {
     // We can't compute a ratio in this case.
     return false;
   }
@@ -749,7 +750,6 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
     const LayoutBox& child,
     const Length& cross_size_length) const {
   DCHECK(HasAspectRatio(child));
-  DCHECK_NE(child.IntrinsicSize().Height(), 0);
 
   LayoutUnit cross_size;
   if (cross_size_length.IsFixed()) {
@@ -762,9 +762,15 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
                            ValueForLength(cross_size_length, ContentWidth()));
   }
 
-  const LayoutSize& child_intrinsic_size = child.IntrinsicSize();
-  double ratio = child_intrinsic_size.Width().ToFloat() /
-                 child_intrinsic_size.Height().ToFloat();
+  LayoutSize aspect_ratio;
+  if (child.StyleRef().AspectRatio()) {
+    IntSize int_ratio = *child.StyleRef().AspectRatio();
+    aspect_ratio = LayoutSize{int_ratio.Width(), int_ratio.Height()};
+  } else {
+    aspect_ratio = child.IntrinsicSize();
+  }
+  double ratio =
+      aspect_ratio.Width().ToFloat() / aspect_ratio.Height().ToFloat();
   if (IsHorizontalFlow())
     return LayoutUnit(cross_size * ratio);
   return LayoutUnit(cross_size / ratio);

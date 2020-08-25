@@ -83,7 +83,6 @@ class ArcAuthService : public KeyedService,
 
   void OnAuthorizationResult(mojom::ArcSignInResultPtr result,
                              mojom::ArcSignInAccountPtr account) override;
-  void RequestAccountInfoDeprecated(bool initial_signin) override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
   void ReportSupervisionChangeStatus(
@@ -143,10 +142,6 @@ class ArcAuthService : public KeyedService,
       RequestPrimaryAccountInfoCallback callback,
       bool success,
       const std::string& auth_code);
-
-  // Called to let ARC container know the account info.
-  void OnAccountInfoReadyDeprecated(mojom::ArcSignInStatus status,
-                                    mojom::AccountInfoPtr account_info);
 
   // Issues a request for fetching AccountInfo for a Secondary Account
   // represented by |account_name|. |account_name| is the account identifier

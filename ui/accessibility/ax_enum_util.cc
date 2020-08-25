@@ -518,8 +518,6 @@ const char* ToString(ax::mojom::Role role) {
       return "menu";
     case ax::mojom::Role::kMenuBar:
       return "menuBar";
-    case ax::mojom::Role::kMenuButton:
-      return "menuButton";
     case ax::mojom::Role::kMenuItem:
       return "menuItem";
     case ax::mojom::Role::kMenuItemCheckBox:
@@ -904,8 +902,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kMenu;
   if (0 == strcmp(role, "menuBar"))
     return ax::mojom::Role::kMenuBar;
-  if (0 == strcmp(role, "menuButton"))
-    return ax::mojom::Role::kMenuButton;
   if (0 == strcmp(role, "menuItem"))
     return ax::mojom::Role::kMenuItem;
   if (0 == strcmp(role, "menuItemCheckBox"))

@@ -11,6 +11,7 @@
 <translation id="1056775291175587022">Κανένα δίκτυο</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Κινητό: <ph name="ADDRESS" /></translation>
+<translation id="1087110696012418426">Καλό απόγευμα <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Βαριέμαι</translation>
 <translation id="1104084341931202936">Εμφάνιση ρυθμίσεων προσβασιμότητας</translation>
 <translation id="1104621072296271835">Οι συσκευές σας λειτουργούν ακόμα καλύτερα συνδυαστικά</translation>
@@ -71,6 +72,7 @@
 <translation id="1677472565718498478">Απομένουν <ph name="TIME" /></translation>
 <translation id="1698080062160024910">Χρονόμετρο <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Διεύθυνση IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1708345662127501511">Γραφείο: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Ρυθμίσεις δικτύου</translation>
 <translation id="1743570585616704562">Δεν αναγνωρίστηκε</translation>
 <translation id="1746730358044914197">Οι μέθοδοι εισαγωγής έχουν διαμορφωθεί από τον διαχειριστή σας.</translation>
@@ -107,6 +109,7 @@
 <translation id="2018630726571919839">Πες μου ένα ανέκδοτο</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
 <translation id="2067602449040652523">Φωτεινότητα πληκτρολογίου</translation>
+<translation id="2083190527011054446">Καληνύχτα <ph name="GIVEN_NAME" />,</translation>
 <translation id="209965399369889474">Δεν υπάρχει σύνδεση στο δίκτυο</translation>
 <translation id="2126242104232412123">Νέο γραφείο</translation>
 <translation id="2127372758936585790">Χαμηλή ισχύς φορτιστή</translation>
@@ -185,6 +188,7 @@
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="3033545621352269033">Eνεργό</translation>
 <translation id="3038571455154067151">Για να συνδεθείτε, εισαγάγετε τον κωδικό πρόσβασης γονέα Family Link</translation>
+<translation id="3045488863354895414">Καλό απόγευμα,</translation>
 <translation id="3051128274746680507">Το προφίλ εποπτευόμενου χρήστη θα καταργηθεί σύντομα. Συνδεθείτε για να μάθετε περισσότερα.</translation>
 <translation id="3055162170959710888">Χρησιμοποιήσατε αυτήν τη συσκευή για <ph name="USED_TIME" /> σήμερα</translation>
 <translation id="3076778413190775903">Δίσκος κατάστασης, ώρα <ph name="TIME" />,
@@ -300,11 +304,11 @@
 <translation id="4212472694152630271">Αλλαγή σε PIN</translation>
 <translation id="4215497585250573029">Ρυθμίσεις VPN</translation>
 <translation id="4217571870635786043">Υπαγόρευση</translation>
-<translation id="4229328187280698237">Εναλλαγή σε λειτουργία tablet</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Εμφάνιση ρυθμίσεων ειδοποιήσεων. Οι ειδοποιήσεις είναι απενεργοποιημένες.</translation>
 <translation id="4269883910223712419">Ο διαχειριστής αυτής της συσκευής μπορεί να εκτελεί τις ακόλουθες ενέργειες:</translation>
 <translation id="4279490309300973883">Κατοπτρισμός</translation>
+<translation id="4294319844246081198">Καλημέρα <ph name="GIVEN_NAME" />,</translation>
 <translation id="4296136865091727875">Διαγραφή και των <ph name="COUNT" /> ειδοποιήσεων</translation>
 <translation id="4303223480529385476">Ανάπτυξη περιοχής κατάστασης</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -321,6 +325,7 @@
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4450893287417543264">Να μην εμφανιστεί ξανά</translation>
+<translation id="445864333228800152">Καλησπέρα,</translation>
 <translation id="4458688154122353284">Διακοπή εγγραφής οθόνης</translation>
 <translation id="4477350412780666475">Επόμενο κομμάτι</translation>
 <translation id="4477892968187500306">Αυτή η συσκευή μπορεί να περιέχει εφαρμογές που δεν έχουν επαληθευτεί από την Google.</translation>
@@ -431,6 +436,7 @@
 <translation id="5887866489674258948">Χαμηλός φωτισμός</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5909862606227538307">Ανενεργό γραφείο.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5920710855273935292">Έγινε σίγαση του μικροφώνου</translation>
@@ -562,6 +568,7 @@
 <translation id="7405710164030118432">Για να ξεκλειδώσετε τη συσκευή, εισαγάγετε τον κωδικό πρόσβασης γονέα στο Family Link</translation>
 <translation id="741244894080940828">μετατροπή</translation>
 <translation id="742594950370306541">Η κάμερα δεν χρησιμοποιείται.</translation>
+<translation id="742608627846767349">Καλημέρα,</translation>
 <translation id="743058460480092004">Η κάμερα και το μικρόφωνο χρησιμοποιούνται.</translation>
 <translation id="7466449121337984263">Αγγίξτε τον αισθητήρα.</translation>
 <translation id="7497767806359279797">Επιλογή γλώσσας και πληκτρολογίου</translation>
@@ -648,11 +655,13 @@
 <translation id="8351131234907093545">Δημιουργία σημείωσης</translation>
 <translation id="8371779926711439835">Προώθηση ανά γράμμα</translation>
 <translation id="8375916635258623388">Η συσκευή <ph name="DEVICE_NAME" /> και το τηλέφωνό σας θα συνδεθούν αυτόματα</translation>
+<translation id="8380784334203145311">Καληνύχτα,</translation>
 <translation id="8388750414311082622">Δεν είναι δυνατή η κατάργηση του τελευταίου γραφείου.</translation>
 <translation id="8392451568018454956">Μενού επιλογών για τη διεύθυνση <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ο γονέας σας κλείδωσε αυτήν τη συσκευή</translation>
 <translation id="8412677897383510995">Εμφάνιση ρυθμίσεων προβολής</translation>
 <translation id="8425213833346101688">Αλλαγή</translation>
+<translation id="8426708595819210923">Καλησπέρα <ph name="GIVEN_NAME" />,</translation>
 <translation id="8427213022735114808">Η υπαγόρευση αποστέλλει τη φωνή σας στην Google, ώστε να επιτρέπεται η φωνητική πληκτρολόγηση σε οποιοδήποτε πεδίο κειμένου.</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8433186206711564395">Ρυθμίσεις δικτύου</translation>
@@ -706,7 +715,6 @@
 <translation id="890616557918890486">Αλλαγή πηγής</translation>
 <translation id="8909138438987180327">Η μπαταρία βρίσκεται στο <ph name="PERCENTAGE" /> τοις εκατό.</translation>
 <translation id="8913384980486163186">Με θέμα (προεπιλογή)</translation>
-<translation id="8918251165865262378">Εναλλαγή σε λειτουργία φορητού υπολογιστή.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Ο Βοηθός Google δεν είναι διαθέσιμος σε αυτήν τη γλώσσα.</translation>
 <translation id="8936501819958976551">απενεργοποιημένο</translation>

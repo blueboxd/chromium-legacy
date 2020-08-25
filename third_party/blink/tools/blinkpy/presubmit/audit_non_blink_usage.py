@@ -831,6 +831,20 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/media/audio/',
+        ],
+        'allowed': [
+            # TODO(https://crbug.com/787252): Remove most of the entries below,
+            # once the directory is fully Onion soup'ed.
+            'base::flat_map',
+            'base::Bind.*',
+            'base::Unretained',
+            'mojo::WrapCallbackWithDefaultInvokeIfNotRun',
+            'base::ScopedPlatformFile',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/imagecapture/',
         ],
         'allowed': [

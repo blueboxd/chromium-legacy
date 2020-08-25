@@ -73,12 +73,12 @@ void StandaloneTrustedVaultBackend::FetchKeys(
       FindUserVault(account_info.gaia);
 
   // TODO(crbug.com/1094326): currently there is no guarantee that
-  // |syncing_account_| is set before FetchKeys() call and this may cause
+  // |primary_account_| is set before FetchKeys() call and this may cause
   // redundant sync error in the UI (for key retrieval), especially during the
   // browser startup. Try to find a way to avoid this issue.
   if (!base::FeatureList::IsEnabled(switches::kFollowTrustedVaultKeyRotation) ||
-      !syncing_account_.has_value() ||
-      syncing_account_->gaia != account_info.gaia || !per_user_vault ||
+      !primary_account_.has_value() ||
+      primary_account_->gaia != account_info.gaia || !per_user_vault ||
       !per_user_vault->keys_are_stale() ||
       !per_user_vault->local_device_registration_info().device_registered()) {
     // Keys download attempt is not needed or not possible.
@@ -87,7 +87,7 @@ void StandaloneTrustedVaultBackend::FetchKeys(
   }
 
   // Current state guarantees there is no ongoing requests to the server:
-  // 1. Current |syncing_account_| is |account_info|, so there is no ongoing
+  // 1. Current |primary_account_| is |account_info|, so there is no ongoing
   // request for other accounts.
   // 2. Device is already registered, so there is no device registration for
   // |account_info|.
@@ -120,7 +120,7 @@ void StandaloneTrustedVaultBackend::FetchKeys(
                              .key_material();
   std::vector<uint8_t> last_key_bytes(last_key.begin(), last_key.end());
   connection_->DownloadKeys(
-      *syncing_account_, last_key_bytes,
+      *primary_account_, last_key_bytes,
       per_user_vault->last_vault_key_version(), std::move(key_pair),
       base::BindOnce(&StandaloneTrustedVaultBackend::OnKeysDownloaded,
                      weak_factory_for_connection_.GetWeakPtr(),
@@ -156,15 +156,15 @@ void StandaloneTrustedVaultBackend::RemoveAllStoredKeys() {
   AbandonConnectionRequest();
 }
 
-void StandaloneTrustedVaultBackend::SetSyncingAccount(
-    const base::Optional<CoreAccountInfo>& syncing_account) {
-  if (syncing_account == syncing_account_) {
+void StandaloneTrustedVaultBackend::SetPrimaryAccount(
+    const base::Optional<CoreAccountInfo>& primary_account) {
+  if (primary_account == primary_account_) {
     return;
   }
-  syncing_account_ = syncing_account;
+  primary_account_ = primary_account;
   AbandonConnectionRequest();
-  if (syncing_account_.has_value()) {
-    MaybeRegisterDevice(syncing_account_->gaia);
+  if (primary_account_.has_value()) {
+    MaybeRegisterDevice(primary_account_->gaia);
   }
 }
 
@@ -182,6 +182,11 @@ bool StandaloneTrustedVaultBackend::MarkKeysAsStale(
   return true;
 }
 
+base::Optional<CoreAccountInfo>
+StandaloneTrustedVaultBackend::GetPrimaryAccountForTesting() const {
+  return primary_account_;
+}
+
 sync_pb::LocalDeviceRegistrationInfo
 StandaloneTrustedVaultBackend::GetDeviceRegistrationInfoForTesting(
     const std::string& gaia_id) {
@@ -197,8 +202,8 @@ void StandaloneTrustedVaultBackend::MaybeRegisterDevice(
   if (!base::FeatureList::IsEnabled(switches::kFollowTrustedVaultKeyRotation)) {
     return;
   }
-  if (!syncing_account_.has_value() || syncing_account_->gaia != gaia_id) {
-    // Device registration is supported only for |syncing_account_|.
+  if (!primary_account_.has_value() || primary_account_->gaia != gaia_id) {
+    // Device registration is supported only for |primary_account_|.
     return;
   }
   sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
@@ -247,7 +252,7 @@ void StandaloneTrustedVaultBackend::MaybeRegisterDevice(
   // one ongoing request.
   AbandonConnectionRequest();
   connection_->RegisterDevice(
-      *syncing_account_, last_key_bytes,
+      *primary_account_, last_key_bytes,
       per_user_vault->last_vault_key_version(), key_pair->public_key(),
       base::BindOnce(&StandaloneTrustedVaultBackend::OnDeviceRegistered,
                      weak_factory_for_connection_.GetWeakPtr(), gaia_id));
@@ -256,9 +261,9 @@ void StandaloneTrustedVaultBackend::MaybeRegisterDevice(
 void StandaloneTrustedVaultBackend::OnDeviceRegistered(
     const std::string& gaia_id,
     TrustedVaultRequestStatus status) {
-  // If |syncing_account_| was changed meanwhile, this callback must be
+  // If |primary_account_| was changed meanwhile, this callback must be
   // cancelled.
-  DCHECK(syncing_account_ && syncing_account_->gaia == gaia_id);
+  DCHECK(primary_account_ && primary_account_->gaia == gaia_id);
 
   sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
   DCHECK(per_user_vault);
@@ -285,7 +290,7 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
     TrustedVaultRequestStatus status,
     const std::vector<std::vector<uint8_t>>& vault_keys,
     int last_vault_key_version) {
-  DCHECK(syncing_account_ && syncing_account_->gaia == gaia_id);
+  DCHECK(primary_account_ && primary_account_->gaia == gaia_id);
   DCHECK(!ongoing_fetch_keys_callback_.is_null());
   DCHECK(ongoing_fetch_keys_gaia_id_ == gaia_id);
 

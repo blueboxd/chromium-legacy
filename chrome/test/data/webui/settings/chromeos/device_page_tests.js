@@ -692,6 +692,23 @@ cr.define('device_page_tests', function() {
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectReverseScrollValue(pointersPage, false);
       });
+
+      test('Deep link to touchpad speed', async () => {
+        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+        const params = new URLSearchParams;
+        params.append('settingId', '405');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.POINTERS, params);
+
+        const deepLinkElement =
+            pointersPage.$$('#touchpadSensitivity').$$('cr-slider');
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Touchpad speed slider should be focused for settingId=405.');
+      });
     });
 
     suite(assert(TestNames.Keyboard), function() {
@@ -817,6 +834,23 @@ cr.define('device_page_tests', function() {
             1,
             settings.DevicePageBrowserProxyImpl.getInstance()
                 .keyboardShortcutViewerShown_);
+      });
+
+      test('Deep link to keyboard shortcuts', async () => {
+        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+        const params = new URLSearchParams;
+        params.append('settingId', '413');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.KEYBOARD, params);
+
+        const deepLinkElement =
+            keyboardPage.$$('#keyboardShortcutViewer').$$('cr-icon-button');
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Keyboard shortcuts button should be focused for settingId=413.');
       });
     });
 
@@ -1038,6 +1072,37 @@ cr.define('device_page_tests', function() {
               return showAndGetDeviceSubpage(
                   'display', settings.routes.DISPLAY);
             });
+      });
+
+      test('Deep link to display mirroring', async () => {
+        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+        const params = new URLSearchParams;
+        params.append('settingId', '428');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.DISPLAY, params);
+        // await fakeSystemDisplay.getInfoCalled.promise;
+
+        addDisplay(1);
+        addDisplay(1);
+        fakeSystemDisplay.onDisplayChanged.callListeners();
+        await fakeSystemDisplay.getInfoCalled.promise;
+        await fakeSystemDisplay.getLayoutCalled.promise;
+        expectEquals(2, displayPage.displays.length);
+
+        Polymer.dom.flush();
+        // await fakeSystemDisplay.getInfoCalled.promise;
+        assert(displayPage);
+        assertEquals(2, displayPage.displays.length);
+        assertTrue(displayPage.shouldShowArrangementSection_());
+
+        const deepLinkElement =
+            displayPage.$$('#displayMirrorCheckbox').$$('#checkbox');
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Display mirroring checkbox should be focused for settingId=428.');
       });
     });
 
@@ -1525,6 +1590,21 @@ cr.define('device_page_tests', function() {
                     expectEquals(null, powerPage.$$('#batteryIdleSettingBox'));
                   });
             });
+        test('Deep link to sleep when laptop lid closed', async () => {
+          loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+          assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+          const params = new URLSearchParams;
+          params.append('settingId', '424');
+          settings.Router.getInstance().navigateTo(
+              settings.routes.POWER, params);
+
+          const deepLinkElement = lidClosedToggle.$$('cr-toggle');
+          await test_util.waitAfterNextRender(deepLinkElement);
+          assertEquals(
+              deepLinkElement, getDeepActiveElement(),
+              'Sleep when closed toggle should be focused for settingId=424.');
+        });
       });
     });
 
@@ -1690,6 +1770,28 @@ cr.define('device_page_tests', function() {
         Polymer.dom.flush();
         assertEquals(0, browserProxy.setPreferredAppCount_);
         assertEquals('v2', browserProxy.getPreferredNoteTakingAppId());
+      });
+
+      test('Deep link to preferred app', async () => {
+        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+        browserProxy.setNoteTakingApps([
+          entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+          entry('n2', 'v2', false, LockScreenSupport.NOT_SUPPORTED)
+        ]);
+        browserProxy.setAndroidAppsReceived(true);
+
+        const params = new URLSearchParams;
+        params.append('settingId', '417');
+        settings.Router.getInstance().navigateTo(
+            settings.routes.STYLUS, params);
+
+        const deepLinkElement = stylusPage.$$('#selectApp');
+        await test_util.waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement, getDeepActiveElement(),
+            'Note-taking apps dropdown should be focused for settingId=417.');
       });
 
       test('app-visibility', function() {

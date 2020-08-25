@@ -96,16 +96,16 @@ class StandaloneTrustedVaultBackendTest : public testing::Test {
                       TrustedVaultConnection::RegisterDeviceCallback callback) {
           device_registration_callback = std::move(callback);
         });
-    // Setting the syncing account will trigger device registration.
-    backend()->SetSyncingAccount(account_info);
+    // Setting the primary account will trigger device registration.
+    backend()->SetPrimaryAccount(account_info);
     EXPECT_FALSE(device_registration_callback.is_null());
 
     // Pretend that the registration completed successfully.
     std::move(device_registration_callback)
         .Run(TrustedVaultRequestStatus::kSuccess);
 
-    // Reset syncing account.
-    backend()->SetSyncingAccount(base::nullopt);
+    // Reset primary account.
+    backend()->SetPrimaryAccount(base::nullopt);
 
     std::string device_private_key_material =
         backend_->GetDeviceRegistrationInfoForTesting(account_info.gaia)
@@ -143,8 +143,8 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldRegisterDevice) {
         device_registration_callback = std::move(callback);
       });
 
-  // Setting the syncing account will trigger device registration.
-  backend()->SetSyncingAccount(account_info);
+  // Setting the primary account will trigger device registration.
+  backend()->SetPrimaryAccount(account_info);
   ASSERT_FALSE(device_registration_callback.is_null());
 
   // Pretend that the registration completed successfully.
@@ -176,7 +176,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldFetchKeysImmediately) {
   // Make keys downloading theoretically possible.
   StoreKeysAndMimicDeviceRegistration(kVaultKeys, kLastKeyVersion,
                                       account_info);
-  backend()->SetSyncingAccount(account_info);
+  backend()->SetPrimaryAccount(account_info);
 
   EXPECT_CALL(*connection(), DownloadKeys(_, _, _, _, _)).Times(0);
 
@@ -202,7 +202,7 @@ TEST_F(StandaloneTrustedVaultBackendTest, ShouldDownloadKeys) {
       StoreKeysAndMimicDeviceRegistration({kInitialVaultKey},
                                           kInitialLastKeyVersion, account_info);
   EXPECT_TRUE(backend()->MarkKeysAsStale(account_info));
-  backend()->SetSyncingAccount(account_info);
+  backend()->SetPrimaryAccount(account_info);
 
   const std::vector<std::vector<uint8_t>> kNewVaultKeys = {kInitialVaultKey,
                                                            {1, 3, 2}};

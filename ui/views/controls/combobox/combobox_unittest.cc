@@ -31,8 +31,8 @@
 #include "ui/events/types/event_type.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/combobox_test_api.h"
-#include "ui/views/test/test_ax_event_observer.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -830,10 +830,10 @@ TEST_F(ComboboxTest, MenuModel) {
 TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
   InitCombobox(nullptr);
   base::string16 test_tooltip_text = ASCIIToUTF16("Test Tooltip Text");
-  test::TestAXEventObserver observer;
-  EXPECT_EQ(0, observer.text_changed_event_count());
+  test::AXEventCounter counter(views::AXEventManager::Get());
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
   combobox_->SetTooltipText(test_tooltip_text);
-  EXPECT_EQ(1, observer.text_changed_event_count());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
   EXPECT_EQ(test_tooltip_text, combobox_->GetAccessibleName());
   ui::AXNodeData data;
   combobox_->GetAccessibleNodeData(&data);

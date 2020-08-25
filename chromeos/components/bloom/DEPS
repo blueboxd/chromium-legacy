@@ -1,0 +1,5 @@
+include_rules = [
+  "+ash/public",
+  "+components/signin/public/identity_manager",
+  "+services/network/public",
+]

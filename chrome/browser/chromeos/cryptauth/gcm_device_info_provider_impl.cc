@@ -95,6 +95,12 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
           cryptauth::SoftwareFeature::PHONE_HUB_CLIENT);
     }
 
+    // Wifi Sync Android is only supported if the associated flag is enabled.
+    if (features::IsWifiSyncAndroidEnabled()) {
+      gcm_device_info.add_supported_software_features(
+          cryptauth::SoftwareFeature::WIFI_SYNC_CLIENT);
+    }
+
     return gcm_device_info;
   }());
 

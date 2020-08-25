@@ -10,7 +10,9 @@ Polymer({
   is: 'settings-pointers',
 
   behaviors: [
+    DeepLinkingBehavior,
     PrefsBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -56,11 +58,45 @@ Polymer({
         return loadTimeData.getBoolean('allowScrollSettings');
       },
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kTouchpadTapToClick,
+        chromeos.settings.mojom.Setting.kTouchpadTapDragging,
+        chromeos.settings.mojom.Setting.kTouchpadReverseScrolling,
+        chromeos.settings.mojom.Setting.kTouchpadAcceleration,
+        chromeos.settings.mojom.Setting.kTouchpadScrollAcceleration,
+        chromeos.settings.mojom.Setting.kTouchpadSpeed,
+        chromeos.settings.mojom.Setting.kMouseSwapPrimaryButtons,
+        chromeos.settings.mojom.Setting.kMouseReverseScrolling,
+        chromeos.settings.mojom.Setting.kMouseAcceleration,
+        chromeos.settings.mojom.Setting.kMouseScrollAcceleration,
+        chromeos.settings.mojom.Setting.kMouseSpeed,
+      ]),
+    },
   },
 
   // Used to correctly identify when the mouse button has been released.
   // crbug.com/686949.
   receivedMouseSwapButtonsDown_: false,
+
+  /**
+   * @param {!settings.Route} route
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.POINTERS) {
+      return;
+    }
+
+    this.attemptDeepLink();
+  },
 
   /**
    * Mouse and touchpad sections are only subsections if they are both present.

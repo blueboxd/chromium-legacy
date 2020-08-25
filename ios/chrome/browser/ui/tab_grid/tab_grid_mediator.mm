@@ -298,18 +298,12 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)closeAllItems {
   // This is a no-op if |webStateList| is already empty.
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+  SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
 }
 
 - (void)saveAndCloseAllItems {
   if (self.webStateList->empty())
     return;
-  // Tell the cache to mark these images for deletion, rather than immediately
-  // deleting them.
-  for (int i = 0; i < self.webStateList->count(); i++) {
-    web::WebState* webState = self.webStateList->GetWebStateAt(i);
-    TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-    [self.snapshotCache markImageWithSnapshotID:tabHelper->tab_id()];
-  }
   self.closedSessionWindow = SerializeWebStateList(self.webStateList);
   int old_size =
       self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
@@ -328,8 +322,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   self.closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   self.syncedClosedTabsCount = 0;
-  // Unmark all images for deletion since they are now active tabs again.
-  [self.snapshotCache unmarkAllImages];
 }
 
 - (void)discardSavedClosedItems {
@@ -337,8 +329,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     return;
   self.syncedClosedTabsCount = 0;
   self.closedSessionWindow = nil;
-  // Delete all marked images from the cache.
-  [self.snapshotCache removeMarkedImages];
+  SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
 }
 
 #pragma mark GridCommands helpers

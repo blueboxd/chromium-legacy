@@ -1220,6 +1220,22 @@
             ]
         }
     ],
+    "ChromeSharingHubClank": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeShareQRCode",
+                        "ChromeSharingHub"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeSmartSelection": [
         {
             "platforms": [

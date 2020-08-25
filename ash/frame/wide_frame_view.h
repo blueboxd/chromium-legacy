@@ -51,9 +51,6 @@ class ASH_EXPORT WideFrameView : public views::WidgetDelegateView,
  private:
   static gfx::Rect GetFrameBounds(views::Widget* target);
 
-  // views::WidgetDelegateView:
-  void DeleteDelegate() override;
-
   // views::View:
   void Layout() override;
   void OnMouseEvent(ui::MouseEvent* event) override;

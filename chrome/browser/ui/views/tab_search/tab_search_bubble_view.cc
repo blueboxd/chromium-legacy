@@ -86,9 +86,8 @@ class TabSearchWebView : public views::WebView {
 views::Widget* TabSearchBubbleView::CreateTabSearchBubble(
     content::BrowserContext* browser_context,
     views::View* anchor_view) {
-  auto delegate =
-      std::make_unique<TabSearchBubbleView>(browser_context, anchor_view);
-  return BubbleDialogDelegateView::CreateBubble(delegate.release());
+  return BubbleDialogDelegateView::CreateBubble(
+      std::make_unique<TabSearchBubbleView>(browser_context, anchor_view));
 }
 
 TabSearchBubbleView::TabSearchBubbleView(

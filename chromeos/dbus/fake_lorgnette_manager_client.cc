@@ -26,6 +26,13 @@ void FakeLorgnetteManagerClient::ListScanners(
       FROM_HERE, base::BindOnce(std::move(callback), list_scanners_response_));
 }
 
+void FakeLorgnetteManagerClient::GetScannerCapabilities(
+    const std::string& device_name,
+    DBusMethodCallback<lorgnette::ScannerCapabilities> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), capabilities_response_));
+}
+
 void FakeLorgnetteManagerClient::StartScan(
     std::string device_name,
     const ScanProperties& properties,
@@ -48,6 +55,12 @@ void FakeLorgnetteManagerClient::SetListScannersResponse(
     const base::Optional<lorgnette::ListScannersResponse>&
         list_scanners_response) {
   list_scanners_response_ = list_scanners_response;
+}
+
+void FakeLorgnetteManagerClient::SetScannerCapabilitiesResponse(
+    const base::Optional<lorgnette::ScannerCapabilities>&
+        capabilities_response) {
+  capabilities_response_ = capabilities_response;
 }
 
 void FakeLorgnetteManagerClient::SetScanResponse(

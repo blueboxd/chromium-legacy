@@ -74,6 +74,8 @@ class CORE_EXPORT ContextMenuController final
                        const MouseEvent* mouse_event = nullptr);
   bool ShouldShowContextMenuFromTouch(const WebContextMenuData&);
 
+  void UpdateTextFragmentSelectorGenerator(LocalFrame*);
+
   Member<Page> page_;
   Member<ContextMenuProvider> menu_provider_;
   HitTestResult hit_test_result_;

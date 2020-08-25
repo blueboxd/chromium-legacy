@@ -37,7 +37,7 @@ class NewTabButton : public views::ImageButton,
   // Called when the tab strip transitions to/from single tab mode, the frame
   // state changes or the accent color changes.  Updates the glyph colors for
   // the best contrast on the background.
-  void FrameColorsChanged();
+  virtual void FrameColorsChanged();
 
   void AnimateInkDropToStateForTesting(views::InkDropState state);
 

@@ -73,10 +73,10 @@ class CredentialManagerPendingRequestTaskDelegateMock
 class CredentialManagerPendingRequestTaskTest : public ::testing::Test {
  public:
   CredentialManagerPendingRequestTaskTest() {
-    profile_store_ = new TestPasswordStore(/*is_account_store=*/false);
+    profile_store_ = new TestPasswordStore(IsAccountStore(false));
     profile_store_->Init(/*prefs=*/nullptr);
 
-    account_store_ = new TestPasswordStore(/*is_account_store=*/true);
+    account_store_ = new TestPasswordStore(IsAccountStore(true));
     account_store_->Init(/*prefs=*/nullptr);
 
     client_ = std::make_unique<TestPasswordManagerClient>(profile_store_.get(),

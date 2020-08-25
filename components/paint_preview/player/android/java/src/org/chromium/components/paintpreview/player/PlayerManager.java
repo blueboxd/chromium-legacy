@@ -5,6 +5,7 @@
 package org.chromium.components.paintpreview.player;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
@@ -63,7 +65,7 @@ public class PlayerManager {
             String directoryKey, @NonNull LinkClickHandler linkClickHandler,
             @Nullable Runnable refreshCallback, Runnable viewReadyCallback,
             @Nullable Runnable firstPaintListener, Runnable userInteractionCallback,
-            int backgroundColor, Runnable compositorErrorCallback,
+            int backgroundColor, Callback<Integer> compositorErrorCallback,
             boolean ignoreInitialScrollOffset) {
         TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
@@ -87,6 +89,16 @@ public class PlayerManager {
         PlayerUserFrustrationDetector userFrustrationDetector =
                 new PlayerUserFrustrationDetector(userFrustrationCallback);
         mPlayerGestureListener.setUserFrustrationDetector(userFrustrationDetector);
+    }
+
+    /**
+     * @return Current scroll position of the main frame. null if the player is not
+     * initialized.
+     */
+    public Point getScrollPosition() {
+        if (mRootFrameCoordinator == null) return null;
+
+        return mRootFrameCoordinator.getScrollPosition();
     }
 
     /**

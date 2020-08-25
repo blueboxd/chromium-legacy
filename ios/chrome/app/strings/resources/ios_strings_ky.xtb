@@ -156,6 +156,7 @@
 <translation id="2712127207578915686">Файлды ачуу мүмкүн эмес</translation>
 <translation id="2718352093833049315">Wi-Fi'да гана</translation>
 <translation id="2747003861858887689">Мурунку талаа</translation>
+<translation id="2764831210418622012">жаңы эле</translation>
 <translation id="2773292004659987824">Жашыруун издөө</translation>
 <translation id="277771892408211951">Тил тандоо</translation>
 <translation id="2780046210906776326">Жаңы электрондук почта каттоо эсептери</translation>
@@ -301,6 +302,7 @@
 <translation id="4476574785019001431">Жөндөөлөр</translation>
 <translation id="4496373720959965247">Өтмөктөрдү кошуп, барактарды которуштуруңуз</translation>
 <translation id="4502566650163919158">Азыр текшерүү</translation>
+<translation id="4505980578794259603">Акыркы жолу качан текшерилген: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Кирүүгө үндөгөн жарнама жабылсын</translation>
 <translation id="4526249700380860531">Сакталган сырсөздөрдү <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> дарегинен көрүп жана башкарыңыз</translation>
 <translation id="4536418791685807335">Кайра кирип көрүңүз.</translation>
@@ -482,6 +484,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6445051938772793705">Өлкө</translation>
 <translation id="6445981559479772097">Билдирүү жөнөтүлдү.</translation>
 <translation id="6447842834002726250">Кукилер</translation>
+<translation id="6453018583485750254">Эч качан текшерилбейт.</translation>
 <translation id="6464071786529933911">Жаңы жашруун өтмктө ачуу</translation>
 <translation id="6464397691496239022">Серептөөнү ыңгайлаштыруу, мисалы, аккаунттан чыгарбоо же арабадагы сатып алган нерселериңизди эстеп калуу үчүн сайттар cookie файлдарын колдоно алышат.
 

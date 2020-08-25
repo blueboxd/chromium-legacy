@@ -166,6 +166,7 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit OverlayWindowWidgetDelegate(views::Widget* widget)
       : widget_(widget) {
+    SetOwnedByWidget(true);
     DCHECK(widget_);
   }
   ~OverlayWindowWidgetDelegate() override = default;
@@ -179,7 +180,6 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
     return l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
   }
   bool ShouldShowWindowTitle() const override { return false; }
-  void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(

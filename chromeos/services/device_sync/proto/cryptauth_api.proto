@@ -55,6 +55,8 @@ enum SoftwareFeature {
   SMS_CONNECT_CLIENT = 8;
   PHONE_HUB_HOST = 9;
   PHONE_HUB_CLIENT = 10;
+  WIFI_SYNC_HOST = 11;
+  WIFI_SYNC_CLIENT = 12;
 }
 
 // A seed used to feed an EID BLE advertisement for some time period. This

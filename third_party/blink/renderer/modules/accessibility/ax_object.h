@@ -444,7 +444,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsLink() const;
   virtual bool IsInPageLinkTarget() const;
   bool IsMenu() const;
-  bool IsMenuButton() const;
   bool IsMenuRelated() const;
   bool IsMeter() const;
   virtual bool IsNativeImage() const;

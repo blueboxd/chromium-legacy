@@ -643,6 +643,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="362276910939193118">Mostrar historial completo</translation>
 <translation id="3630155396527302611">Si ya está incluido como un programa con permiso para acceder a la red, intenta
       quitarlo de la lista y agregarlo de nuevo.</translation>
+<translation id="3630699740441428070">Los administradores de este dispositivo configuraron tu conexión de red, lo cual puede permitirles ver tu tráfico de red, incluido los sitios web que visitas.</translation>
 <translation id="3631244953324577188">Biométricos</translation>
 <translation id="3633738897356909127">Botón Actualizar Chrome: presiona Intro para actualizar Chrome desde la configuración del navegador</translation>
 <translation id="3634530185120165534">Bandeja 5</translation>

@@ -261,8 +261,6 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Math");
     case ax::mojom::Role::kMenuBar:
       return result.append("MenuBar");
-    case ax::mojom::Role::kMenuButton:
-      return result.append("MenuButton");
     case ax::mojom::Role::kMenuItem:
       return result.append("MenuItem");
     case ax::mojom::Role::kMenuItemCheckBox:

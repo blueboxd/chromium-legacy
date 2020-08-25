@@ -29,6 +29,7 @@ namespace audio {
     LINEOUT,
     POST_MIX_LOOPBACK,
     POST_DSP_LOOPBACK,
+    ALSA_LOOPBACK,
     OTHER
   };
 

@@ -61,6 +61,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
+  SetOwnedByWidget(true);
+
   views::DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   views::DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -97,10 +99,6 @@ base::string16 ExternalProtocolDialog::GetWindowTitle() const {
             IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK));
   }
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
-}
-
-void ExternalProtocolDialog::DeleteDelegate() {
-  delete this;
 }
 
 views::View* ExternalProtocolDialog::GetContentsView() {

@@ -5,6 +5,7 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
@@ -35,6 +36,17 @@ fuchsia::web::CreateContextParams GetContextParams() {
   create_context_params.set_data_directory(base::fuchsia::OpenDirectory(
       base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
   CHECK(create_context_params.data_directory());
+
+  // DRM services require cdm_data_directory to be populated, so create a
+  // directory under /data and use that as the cdm_data_directory.
+  base::FilePath cdm_data_path =
+      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)
+          .Append("cdm_data");
+  base::File::Error error;
+  CHECK(base::CreateDirectoryAndGetError(cdm_data_path, &error)) << error;
+  create_context_params.set_cdm_data_directory(
+      base::fuchsia::OpenDirectory(cdm_data_path));
+  CHECK(create_context_params.cdm_data_directory());
 
 #if BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0
   create_context_params.set_remote_debugging_port(

@@ -184,7 +184,7 @@
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3033545621352269033">מופעל</translation>
-<translation id="3038571455154067151">‏לכניסה, יש להזין קוד גישה להורים ב-Family Link</translation>
+<translation id="3038571455154067151">‏כדי להיכנס יש להזין את קוד הגישה להורים (הקוד מ-Family Link)</translation>
 <translation id="3051128274746680507">פרופיל המשתמש בפיקוח שלך יוסר בקרוב. יש להיכנס לחשבון כדי לקבל מידע נוסף.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">מגש סטטוס, זמן <ph name="TIME" />,‏
@@ -300,7 +300,6 @@
 <translation id="4212472694152630271">מעבר לקוד אימות</translation>
 <translation id="4215497585250573029">‏הגדרות VPN</translation>
 <translation id="4217571870635786043">הכתבה</translation>
-<translation id="4229328187280698237">מעבר למצב 'טאבלט'</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
@@ -373,7 +372,7 @@
 <translation id="5035389544768382859">אישור הגדרת המסך</translation>
 <translation id="5083553833479578423">‏אפשר להפעיל תכונות Assistant נוספות.</translation>
 <translation id="5114495209940374989">צילומי מסך</translation>
-<translation id="5123162024343028706">חלון צף למעלה</translation>
+<translation id="5123162024343028706">פתיחה בחלון צף</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
@@ -708,7 +707,6 @@
 <translation id="890616557918890486">שינוי המקור</translation>
 <translation id="8909138438987180327">שיעור הטעינה של הסוללה הוא <ph name="PERCENTAGE" /> אחוזים.</translation>
 <translation id="8913384980486163186">מעוצב (ברירת מחדל)</translation>
-<translation id="8918251165865262378">מעבר למצב 'מחשב נייד'</translation>
 <translation id="8921554779039049422">+H</translation>
 <translation id="8921624153894383499">‏Google Assistant לא מדבר בשפה הזאת.</translation>
 <translation id="8936501819958976551">מושבתת</translation>

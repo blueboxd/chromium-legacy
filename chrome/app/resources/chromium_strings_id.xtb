@@ -3,10 +3,12 @@
 <translationbundle lang="id">
 <translation id="1060499346270045814">{NUM_HOURS,plural, =1{Chromium memeriksa software yang tidak diinginkan seminggu sekali. Terakhir diperiksa: 1 jam yang lalu.}other{Chromium memeriksa software yang tidak diinginkan seminggu sekali. Terakhir diperiksa: {NUM_HOURS} jam yang lalu}}</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
+<translation id="107513968719897256">Untuk memisahkan penjelajahan pribadi dan <ph name="NEW_USER" />, buat profil baru di Chromium</translation>
 <translation id="1098170124587656448">Chromium dapat membantu Anda agar tetap aman dari pelanggaran data, ekstensi berbahaya, dan lainnya</translation>
 <translation id="1104942323762546749">Chromium ingin mengekspor sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="113122355610423240">Chromium adalah browser default Anda</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
+<translation id="1315551408014407711">Siapkan profil Chromium baru Anda</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
 <translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
@@ -42,6 +44,7 @@
 <translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium memeriksa software yang tidak diinginkan seminggu sekali. Terakhir diperiksa: 1 menit yang lalu.}other{Chromium memeriksa software yang tidak diinginkan seminggu sekali. Terakhir diperiksa: {NUM_MINS} menit yang lalu.}}</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
+<translation id="2853765747879685679">Tanyakan saat saya membuka Chromium</translation>
 <translation id="2885378588091291677">Pengelola Tugas</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium sudah diperbarui</translation>
@@ -102,9 +105,11 @@
 <translation id="4788777615168560705">Chromium tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Tindakan ini akan menggunakan pemeriksa ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
+<translation id="4893632094755846570">Tindakan ini akan menghapus data penjelajahan Anda dari perangkat ini secara permanen. Untuk memulihkan data, login ke Chromium sebagai</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>
 <translation id="4987820182225656817">Tamu dapat menggunakan Chromium tanpa meninggalkan apa pun.</translation>
 <translation id="4994636714258228724">Tambahkan diri Anda ke Chromium</translation>
+<translation id="5080135079858647714">Buat profil Anda sendiri di Chromium?</translation>
 <translation id="5224391634244552924">Tidak ada sandi yang tersimpan. Chromium dapat memeriksa sandi Anda jika Anda menyimpannya.</translation>
 <translation id="5277894862589591112">Untuk menerapkan perubahan Anda, luncurkan ulang Chromium</translation>
 <translation id="5358375970380395591">Anda masuk dengan akun terkelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
@@ -163,6 +168,7 @@
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="6734080038664603509">Pembaruan &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium sudah terpasang untuk semua pengguna di komputer Anda.</translation>
+<translation id="6762551859069255163">Gunakan profil berbeda di Chromium untuk memisahkan penjelajahan pribadi dan kerja, atau untuk pengguna lain yang menggunakan perangkat ini</translation>
 <translation id="6774082503108938489">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chromium. Tindakan mengaktifkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="6847869444787758381">Chromium akan memberi tahu jika sandi Anda disusupi</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
@@ -251,5 +257,6 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di Windows XP atau Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chromium OS.</translation>
+<translation id="965162752251293939">Siapa yang menggunakan Chromium?</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 </translationbundle>

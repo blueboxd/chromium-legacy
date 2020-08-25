@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -94,11 +96,27 @@ void ReportQueue::SendRecordToStorage(std::string record,
   ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(WrappedRecord wrapped_record, callback,
                                      WrapRecord(record));
 
-  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(EncryptedRecord encrypted_record, callback,
-                                     EncryptRecord(wrapped_record));
+  std::string serialized_wrapped_record;
+  wrapped_record.SerializeToString(&serialized_wrapped_record);
 
-  storage_->AddRecord(encrypted_record, config_->priority(),
-                      std::move(callback));
+  encryption_->EncryptRecord(
+      serialized_wrapped_record,
+      base::BindOnce(
+          [](const Priority& priority, scoped_refptr<StorageModule> storage,
+             EnqueueCallback callback,
+             StatusOr<EncryptedRecord> encrypted_record_result) {
+            if (!encrypted_record_result.ok()) {
+              std::move(callback).Run(encrypted_record_result.status());
+              return;
+            }
+            // Complete EncryptedRecord.
+            auto& encrypted_record = encrypted_record_result.ValueOrDie();
+            auto* sequencing_information =
+                encrypted_record.mutable_sequencing_information();
+            sequencing_information->set_priority(priority);
+            storage->AddRecord(encrypted_record, priority, std::move(callback));
+          },
+          config_->priority(), storage_, std::move(callback)));
 }
 
 StatusOr<WrappedRecord> ReportQueue::WrapRecord(base::StringPiece record_data) {
@@ -122,24 +140,6 @@ StatusOr<std::string> ReportQueue::GetLastRecordDigest() {
   // TODO(b/153659559) Getting the actual last record digest will come later.
   // For now we just set to a string.
   return "LastRecordDigest";
-}
-
-StatusOr<EncryptedRecord> ReportQueue::EncryptRecord(
-    WrappedRecord wrapped_record) {
-  std::string serialized_wrapped_record;
-  wrapped_record.SerializeToString(&serialized_wrapped_record);
-
-  ASSIGN_OR_RETURN(std::string encrypted_string_record,
-                   encryption_->EncryptRecord(serialized_wrapped_record));
-
-  EncryptedRecord encrypted_record;
-  encrypted_record.set_encrypted_wrapped_record(encrypted_string_record);
-
-  auto* sequencing_information =
-      encrypted_record.mutable_sequencing_information();
-  sequencing_information->set_priority(config_->priority());
-
-  return encrypted_record;
 }
 
 }  // namespace reporting

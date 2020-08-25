@@ -236,7 +236,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // Handles touch event forwarding and ack'ed event dispatch.
   PassthroughTouchEventQueueClient* client_;
 
-  // Whether the renderer has at least one touch handler.
+  // Whether the renderer has at least one consumer of touch events, e.g. a JS
+  // event handler or hit-testable scrollbars
   bool has_handlers_;
 
   // Whether any pointer in the touch sequence may have having a consumer.

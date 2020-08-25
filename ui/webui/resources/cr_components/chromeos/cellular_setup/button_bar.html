@@ -1,9 +1,11 @@
 <link rel="import" href="../../../html/polymer.html">
 
+<link rel="import" href="cellular_types.html">
 <link rel="import" href="../../../html/i18n_behavior.html">
 <link rel="import" href="../../../cr_elements/cr_button/cr_button.html">
 <link rel="import" href="../../../cr_elements/shared_style_css.html">
 <link rel="import" href="../../../cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 
 <dom-module id="button-bar">
@@ -18,26 +20,37 @@
     <cr-button id="backward"
         class="cancel-button"
         on-click="onBackwardButtonClicked_"
-        hidden$="[[showCancelButton]]">
+        disabled="[[isButtonDisabled_(Button.BACKWARD, buttonState.*)]]"
+        hidden$="[[isButtonHidden_(Button.BACKWARD, buttonState.*)]]">
       [[i18n('back')]]
     </cr-button>
     <cr-button id="cancel"
         class="cancel-button"
         on-click="onBackwardButtonClicked_"
-        hidden$="[[!showCancelButton]]">
+        disabled="[[isButtonDisabled_(Button.CANCEL, buttonState.*)]]"
+        hidden$="[[isButtonHidden_(Button.CANCEL, buttonState.*)]]">
       [[i18n('cancel')]]
     </cr-button>
     <cr-button id="tryAgain"
         class="action-button"
         on-click="onTryAgainButtonClicked_"
-        hidden$="[[!showTryAgainButton]]">
+        disabled="[[isButtonDisabled_(Button.TRY_AGAIN, buttonState.*)]]"
+        hidden$="[[isButtonHidden_(Button.TRY_AGAIN, buttonState.*)]]">
       [[i18n('tryAgain')]]
     </cr-button>
     <cr-button id="finish"
         class="action-button"
         on-click="onFinishButtonClicked_"
-        hidden$="[[!showFinishButton]]">
+        disabled="[[isButtonDisabled_(Button.FINISH, buttonState.*)]]"
+        hidden$="[[isButtonHidden_(Button.FINISH, buttonState.*)]]">
       [[i18n('finish')]]
+    </cr-button>
+    <cr-button id="next"
+        class="action-button"
+        on-click="onNextButtonClicked_"
+        disabled="[[isButtonDisabled_(Button.NEXT, buttonState.*)]]"
+        hidden$="[[isButtonHidden_(Button.NEXT, buttonState.*)]]">
+      [[i18n('next')]]
     </cr-button>
   </template>
   <script src="button_bar.js"></script>

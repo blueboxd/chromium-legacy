@@ -187,6 +187,8 @@ DeepScanningDialogViews::DeepScanningDialogViews(
       web_contents_(web_contents),
       access_point_(std::move(access_point)),
       files_count_(files_count) {
+  SetOwnedByWidget(true);
+
   if (observer_for_testing)
     observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
 
@@ -274,10 +276,6 @@ views::Widget* DeepScanningDialogViews::GetWidget() {
 
 const views::Widget* DeepScanningDialogViews::GetWidget() const {
   return contents_view_->GetWidget();
-}
-
-void DeepScanningDialogViews::DeleteDelegate() {
-  delete this;
 }
 
 ui::ModalType DeepScanningDialogViews::GetModalType() const {

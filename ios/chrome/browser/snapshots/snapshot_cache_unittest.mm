@@ -651,39 +651,34 @@ TEST_F(SnapshotCacheTest, DeleteRetinaImages) {
   EXPECT_FALSE(base::PathExists(retinaFile));
 }
 
-// Tests that a marked image does not immediately delete when calling
-// |-removeImageWithSnapshotID:|. Calling |-removeMarkedImages| immediately
-// deletes the marked image.
-TEST_F(SnapshotCacheTest, MarkedImageNotImmediatelyDeleted) {
+// Tests that image immediately deletes when calling
+// |-removeImageWithSnapshotID:|.
+TEST_F(SnapshotCacheTest, ImageDeleted) {
   SnapshotCache* cache = GetSnapshotCache();
   UIImage* image =
       GenerateRandomImage(CGSizeMake(kSnapshotPixelSize, kSnapshotPixelSize));
   [cache setImage:image withSnapshotID:@"snapshotID"];
   base::FilePath image_path = [cache imagePathForSnapshotID:@"snapshotID"];
-  [cache markImageWithSnapshotID:@"snapshotID"];
   [cache removeImageWithSnapshotID:@"snapshotID"];
   // Give enough time for deletion.
-  FlushRunLoops();
-  EXPECT_TRUE(base::PathExists(image_path));
-  [cache removeMarkedImages];
   FlushRunLoops();
   EXPECT_FALSE(base::PathExists(image_path));
 }
 
-// Tests that unmarked images are not deleted when calling
-// |-removeMarkedImages|.
-TEST_F(SnapshotCacheTest, UnmarkedImageNotDeleted) {
+// Tests that all images are deleted when calling |-removeAllImages|.
+TEST_F(SnapshotCacheTest, AllImagesDeleted) {
   SnapshotCache* cache = GetSnapshotCache();
   UIImage* image =
       GenerateRandomImage(CGSizeMake(kSnapshotPixelSize, kSnapshotPixelSize));
-  [cache setImage:image withSnapshotID:@"snapshotID"];
-  base::FilePath image_path = [cache imagePathForSnapshotID:@"snapshotID"];
-  [cache markImageWithSnapshotID:@"snapshotID"];
-  [cache unmarkAllImages];
-  [cache removeMarkedImages];
+  [cache setImage:image withSnapshotID:@"snapshotID-1"];
+  [cache setImage:image withSnapshotID:@"snapshotID-2"];
+  base::FilePath image_1_path = [cache imagePathForSnapshotID:@"snapshotID-1"];
+  base::FilePath image_2_path = [cache imagePathForSnapshotID:@"snapshotID-2"];
+  [cache removeAllImages];
   // Give enough time for deletion.
   FlushRunLoops();
-  EXPECT_TRUE(base::PathExists(image_path));
+  EXPECT_FALSE(base::PathExists(image_1_path));
+  EXPECT_FALSE(base::PathExists(image_2_path));
 }
 
 // Tests that observers are notified when a snapshot is cached and removed.

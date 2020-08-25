@@ -151,11 +151,14 @@ class NearbySharingServiceImpl
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
   void InvalidateSurfaceState();
+  bool ShouldStopNearbyProcess();
   void InvalidateSendSurfaceState();
   void InvalidateScanningState();
   void InvalidateReceiveSurfaceState();
   void InvalidateAdvertisingState();
   void StopAdvertising();
+  void StartScanning();
+  StatusCodes StopScanning();
 
   void OnTransferComplete();
   void OnTransferStarted(bool is_incoming);
@@ -184,10 +187,6 @@ class NearbySharingServiceImpl
       NearbyConnection& connection,
       sharing::nearby::ConnectionResponseFrame::Status reponse_status);
   void Fail(const ShareTarget& share_target, TransferMetadata::Status status);
-  void StartScanning(
-      base::Optional<ShareTargetDiscoveredCallback*> discovery_callback);
-  void StartScanning();
-  StatusCodes StopScanning();
   void OnIncomingAdvertisementDecoded(
       const std::string& endpoint_id,
       ShareTarget placeholder_share_target,

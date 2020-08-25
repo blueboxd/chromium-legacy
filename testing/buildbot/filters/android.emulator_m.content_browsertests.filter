@@ -56,4 +56,4 @@
 -RenderFrameHostImplBrowserTest.VisibilityScrolledOutOfView
 
 # crbug.com/1120813
--P/CompositorImplBrowserTestRefreshRate.VideoPreference
+-P/CompositorImplBrowserTestRefreshRate.VideoPreference/*

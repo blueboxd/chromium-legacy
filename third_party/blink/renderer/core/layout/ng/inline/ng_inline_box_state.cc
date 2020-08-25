@@ -27,7 +27,7 @@ FontHeight ComputeEmphasisMarkOutsets(const ComputedStyle& style) {
   const Font& font = style.GetFont();
   LayoutUnit emphasis_mark_height =
       LayoutUnit(font.EmphasisMarkHeight(style.TextEmphasisMarkString()));
-  DCHECK_GT(emphasis_mark_height, LayoutUnit());
+  DCHECK_GE(emphasis_mark_height, LayoutUnit());
   return style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver
              ? FontHeight(emphasis_mark_height, LayoutUnit())
              : FontHeight(LayoutUnit(), emphasis_mark_height);

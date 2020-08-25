@@ -216,10 +216,10 @@ void FuchsiaCdmManager::OriginProvisioner::OnProvisionFail() {
   ProcessPendingCallbacks();
 }
 
-FuchsiaCdmManager::FuchsiaCdmManager(KeySystemHandlerMap handlers)
-    : handlers_(std::move(handlers)) {
-  DETACH_FROM_THREAD(thread_checker_);
-}
+FuchsiaCdmManager::FuchsiaCdmManager(KeySystemHandlerMap handlers,
+                                     base::FilePath cdm_data_path)
+    : handlers_(std::move(handlers)),
+      cdm_data_path_(std::move(cdm_data_path)) {}
 
 FuchsiaCdmManager::~FuchsiaCdmManager() = default;
 

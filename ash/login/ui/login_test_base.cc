@@ -23,11 +23,12 @@ namespace ash {
 // A WidgetDelegate which ensures that |initially_focused| gets focus.
 class LoginTestBase::WidgetDelegate : public views::WidgetDelegate {
  public:
-  explicit WidgetDelegate(views::View* content) : content_(content) {}
+  explicit WidgetDelegate(views::View* content) : content_(content) {
+    SetOwnedByWidget(true);
+  }
   ~WidgetDelegate() override = default;
 
   // views::WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
   views::View* GetInitiallyFocusedView() override { return content_; }
   views::Widget* GetWidget() override { return content_->GetWidget(); }
   const views::Widget* GetWidget() const override {

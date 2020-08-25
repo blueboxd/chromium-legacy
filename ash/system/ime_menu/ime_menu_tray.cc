@@ -28,6 +28,7 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/system/unified/top_shortcut_button.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,6 +54,9 @@ namespace {
 
 // Used for testing.
 const int kEmojiButtonId = 1;
+
+// Insets for the title view (dp).
+constexpr gfx::Insets kTitleViewPadding(0, 0, 0, 16);
 
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
@@ -126,7 +130,7 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
 // The view that contains IME menu title.
 class ImeTitleView : public views::View, public views::ButtonListener {
  public:
-  explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
+  explicit ImeTitleView() {
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(
             0, 0, kMenuSeparatorWidth, 0,
@@ -135,7 +139,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
                 AshColorProvider::AshColorMode::kDark)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal);
+        views::BoxLayout::Orientation::kHorizontal, kTitleViewPadding);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));
     auto* title_label =
@@ -143,20 +147,16 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     title_label->SetBorder(
         views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 1, 0));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SMALL_TITLE,
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER,
                              true /* use_unified_theme */);
     style.SetupLabel(title_label);
 
     AddChildView(title_label);
     layout_ptr->SetFlexForView(title_label, 1);
 
-    if (show_settings_button) {
-      settings_button_ = CreateImeMenuButton(
-          this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
-      if (!TrayPopupUtils::CanOpenWebUISettings())
-        settings_button_->SetEnabled(false);
-      AddChildView(settings_button_);
-    }
+    settings_button_ = AddChildView(std::make_unique<TopShortcutButton>(
+        this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS));
+    settings_button_->SetEnabled(TrayPopupUtils::CanOpenWebUISettings());
   }
 
   // views::ButtonListener:
@@ -171,9 +171,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
   const char* GetClassName() const override { return "ImeTitleView"; }
 
  private:
-  // Settings button that is only used if the emoji, handwriting and voice
-  // buttons are not available.
-  SystemMenuButton* settings_button_;
+  TopShortcutButton* settings_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ImeTitleView);
 };
@@ -195,12 +193,6 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == settings_button_) {
-      ime_menu_tray_->CloseBubble();
-      ShowIMESettings();
-      return;
-    }
-
     // The |keyset| will be used for drawing input view keyset in IME
     // extensions. ImeMenuTray::ShowKeyboardWithKeyset() will deal with
     // the |keyset| string to generate the right input view url.
@@ -264,19 +256,12 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
                               IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
       AddChildView(voice_button_);
     }
-
-    settings_button_ = CreateImeMenuButton(this, kSystemMenuSettingsIcon,
-                                           IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
-    AddChildView(settings_button_);
-    if (!TrayPopupUtils::CanOpenWebUISettings())
-      settings_button_->SetEnabled(false);
   }
 
   ImeMenuTray* ime_menu_tray_;
   SystemMenuButton* emoji_button_;
   SystemMenuButton* handwriting_button_;
   SystemMenuButton* voice_button_;
-  SystemMenuButton* settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
 };
@@ -379,9 +364,8 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   bubble_view->set_margins(GetSecondaryBubbleInsets());
 
   // Add a title item with a separator on the top of the IME menu.
-  bool show_bottom_buttons = ShouldShowBottomButtons();
-  setup_layered_view(bubble_view->AddChildView(
-      std::make_unique<ImeTitleView>(!show_bottom_buttons)));
+  setup_layered_view(
+      bubble_view->AddChildView(std::make_unique<ImeTitleView>()));
 
   // Adds IME list to the bubble.
   ime_list_view_ =
@@ -390,7 +374,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
                        ImeListView::SHOW_SINGLE_IME);
   setup_layered_view(ime_list_view_);
 
-  if (show_bottom_buttons) {
+  if (ShouldShowBottomButtons()) {
     setup_layered_view(
         bubble_view->AddChildView(std::make_unique<ImeButtonsView>(
             this, is_emoji_enabled_, is_handwriting_enabled_,

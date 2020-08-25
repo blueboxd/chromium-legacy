@@ -85,6 +85,8 @@ void WideFrameView::SetCaptionButtonModel(
 
 WideFrameView::WideFrameView(views::Widget* target)
     : target_(target), widget_(std::make_unique<views::Widget>()) {
+  // WideFrameView is owned by its client, not by Views.
+  SetOwnedByWidget(false);
   display::Screen::GetScreen()->AddObserver(this);
 
   aura::Window* target_window = target->GetNativeWindow();
@@ -127,11 +129,6 @@ WideFrameView::~WideFrameView() {
     target_header_view->GetFrameHeader()->UpdateFrameHeaderKey();
     target_->GetNativeWindow()->RemoveObserver(this);
   }
-}
-
-void WideFrameView::DeleteDelegate() {
-  // WideFrameView is owned by a client, not its widget, so don't delete
-  // here.
 }
 
 void WideFrameView::Layout() {

@@ -23,6 +23,11 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-keyboard',
 
+    behaviors: [
+      DeepLinkingBehavior,
+      settings.RouteObserverBehavior,
+    ],
+
     properties: {
       /** Preferences state. */
       prefs: {
@@ -80,6 +85,19 @@ cr.define('settings', function() {
         value: [2000, 1000, 500, 300, 200, 100, 50, 30, 20],
         readOnly: true,
       },
+
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set([
+          chromeos.settings.mojom.Setting.kKeyboardFunctionKeys,
+          chromeos.settings.mojom.Setting.kKeyboardAutoRepeat,
+          chromeos.settings.mojom.Setting.kKeyboardShortcuts,
+        ]),
+      },
     },
 
     /** @override */
@@ -88,6 +106,19 @@ cr.define('settings', function() {
           'show-keys-changed', this.onShowKeysChange_.bind(this));
       settings.DevicePageBrowserProxyImpl.getInstance().initializeKeyboard();
       this.setUpKeyMapTargets_();
+    },
+
+    /**
+     * @param {!settings.Route} route
+     * @param {settings.Route} oldRoute
+     */
+    currentRouteChanged(route, oldRoute) {
+      // Does not apply to this page.
+      if (route !== settings.routes.KEYBOARD) {
+        return;
+      }
+
+      this.attemptDeepLink();
     },
 
     /**

@@ -18,7 +18,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/referrer.h"
 #include "device/fido/features.h"
 #include "device/gamepad/public/cpp/gamepad_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -28,6 +27,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -341,6 +341,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaFeeds, media::kMediaFeeds, kUseFeatureState},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess,
      kEnableOnly},
+    {wf::EnableCompositeSVG, blink::features::kCompositeSVG, kUseFeatureState},
     {wf::EnableCompositingOptimizations,
      blink::features::kCompositingOptimizations, kUseFeatureState},
     {wf::EnableConversionMeasurementInfraSupport,
@@ -625,7 +626,7 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   WebRuntimeFeatures::EnableReducedReferrerGranularity(
       base::FeatureList::IsEnabled(
           blink::features::kReducedReferrerGranularity) &&
-      !content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+      !blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
 
   if (base::FeatureList::IsEnabled(
           blink::features::kAppCacheRequireOriginTrial)) {

@@ -5,9 +5,6 @@
 #ifndef UI_GFX_X_EVENT_H_
 #define UI_GFX_X_EVENT_H_
 
-#include <X11/Xlib.h>
-#include <xcb/xcb.h>
-
 #include <cstdint>
 #include <utility>
 
@@ -29,11 +26,12 @@ class COMPONENT_EXPORT(X11) Event {
  public:
   template <typename T>
   explicit Event(T&& xproto_event) {
+    using DecayT = std::decay_t<T>;
     sequence_valid_ = true;
     sequence_ = xproto_event.sequence;
-    type_id_ = T::type_id;
-    deleter_ = [](void* event) { delete reinterpret_cast<T*>(event); };
-    T* event = new T(std::forward<T>(xproto_event));
+    type_id_ = DecayT::type_id;
+    deleter_ = [](void* event) { delete reinterpret_cast<DecayT*>(event); };
+    auto* event = new DecayT(std::forward<T>(xproto_event));
     event_ = event;
     window_ = event->GetWindow();
   }

@@ -35,7 +35,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "mojo/public/mojom/base/binder.mojom.h"
 
 // TODO(crbug.com/1101667): Currently, this source has log spamming
 // by LOG(WARNING) for non critical errors to make it easy
@@ -223,6 +222,21 @@ bool BrowserManager::Start() {
   mojo::PlatformChannel channel;
   channel.PrepareToPassRemoteEndpoint(&options, &command_line);
 
+  // Queue messages to establish the mojo connection,
+  // so that the passed IPC is available already when lacros-chrome accepts
+  // the invitation.
+  // TODO(crbug.com/1115092): Pass the initialization parameter over
+  // mojo connection.
+  mojo::OutgoingInvitation invitation;
+  lacros_chrome_service_.Bind(
+      mojo::PendingRemote<crosapi::mojom::LacrosChromeService>(
+          invitation.AttachMessagePipe(0), /*version=*/0));
+  lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
+      &BrowserManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
+  lacros_chrome_service_->RequestAshChromeServiceReceiver(
+      base::BindOnce(&BrowserManager::OnAshChromeServiceReceiverReceived,
+                     weak_factory_.GetWeakPtr()));
+
   // Create the lacros-chrome subprocess.
   base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
   // If lacros_process_ already exists, because it does not call waitpid(2),
@@ -235,22 +249,11 @@ bool BrowserManager::Start() {
   state_ = State::STARTING;
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 
-  // Invite the lacros-chrome to the mojo universe, and bind
-  // LacrosChromeService and AshChromeService interfaces to each other.
+  // Invite the lacros-chrome to the mojo universe.
   channel.RemoteProcessLaunchAttempted();
-  mojo::OutgoingInvitation invitation;
-  mojo::Remote<mojo_base::mojom::Binder> binder(
-      mojo::PendingRemote<mojo_base::mojom::Binder>(
-          invitation.AttachMessagePipe(0), /*version=*/0));
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  lacros_process_.Handle(),
                                  channel.TakeLocalEndpoint());
-  binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
-  lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
-      &BrowserManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
-  lacros_chrome_service_->RequestAshChromeServiceReceiver(
-      base::BindOnce(&BrowserManager::OnAshChromeServiceReceiverReceived,
-                     weak_factory_.GetWeakPtr()));
   return true;
 }
 

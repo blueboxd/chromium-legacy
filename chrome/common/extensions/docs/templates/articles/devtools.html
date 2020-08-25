@@ -212,7 +212,7 @@ chrome.runtime.onConnect.addListener(function(devToolsConnection) {
     devToolsConnection.onDisconnect.addListener(function() {
          devToolsConnection.onMessage.removeListener(devToolsListener);
     });
-}
+});
 </pre>
 
 <h3 id="evaluating-js">Evaluating JavaScript in the Inspected Window</h3>

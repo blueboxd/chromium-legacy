@@ -18,7 +18,7 @@ struct SerialPortInfo {
 
   // This member is used to identify whether the SerialPortInfo object is
   // converted from a Bluetooth serial device.
-  DeviceType type;
+  DeviceType type = PLATFORM_SERIAL;
 
   // On macOS a serial device may have two paths, one for the call-out device
   // and one for the dial-in device. The call-out device is preferred. If

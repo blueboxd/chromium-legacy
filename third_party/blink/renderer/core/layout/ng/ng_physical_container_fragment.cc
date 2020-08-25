@@ -110,6 +110,14 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
               outline_rects, additional_offset, outline_type, containing_block);
           continue;
         }
+        if (item.IsText()) {
+          if (outline_type == NGOutlineType::kDontIncludeBlockVisualOverflow)
+            continue;
+          outline_rects->push_back(
+              PhysicalRect(additional_offset + item.OffsetInContainerBlock(),
+                           item.Size().ToLayoutSize()));
+          continue;
+        }
         if (item.Type() == NGFragmentItem::kBox) {
           if (const NGPhysicalBoxFragment* child_box =
                   item.PostLayoutBoxFragment()) {
@@ -120,7 +128,6 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
           }
           continue;
         }
-        DCHECK(item.IsText());
       }
       // Don't add |Children()|. If |this| has |NGFragmentItems|, children are
       // either line box, which we already handled in items, or OOF, which we

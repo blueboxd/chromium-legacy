@@ -86,11 +86,28 @@ TEST(MediaSourceTest, ForLocalFile) {
   EXPECT_FALSE(source.IsDialSource());
 }
 
-TEST(MediaSourceTest, ForDesktop) {
+TEST(MediaSourceTest, ForDesktopWithoutAudio) {
   std::string media_id = "fakeMediaId";
-  auto source = MediaSource::ForDesktop(media_id);
+  auto source = MediaSource::ForDesktop(media_id, false);
   EXPECT_EQ("urn:x-org.chromium.media:source:desktop:" + media_id, source.id());
   EXPECT_TRUE(source.IsDesktopMirroringSource());
+  EXPECT_EQ(media_id, source.DesktopStreamId());
+  EXPECT_FALSE(source.IsDesktopSourceWithAudio());
+  EXPECT_FALSE(source.IsTabMirroringSource());
+  EXPECT_FALSE(source.IsLocalFileSource());
+  EXPECT_FALSE(source.IsCastPresentationUrl());
+  EXPECT_FALSE(source.IsDialSource());
+}
+
+TEST(MediaSourceTest, ForDesktopWithAudio) {
+  std::string media_id = "fakeMediaId";
+  auto source = MediaSource::ForDesktop(media_id, true);
+  EXPECT_EQ("urn:x-org.chromium.media:source:desktop:" + media_id +
+                "?with_audio=true",
+            source.id());
+  EXPECT_TRUE(source.IsDesktopMirroringSource());
+  EXPECT_EQ(media_id, source.DesktopStreamId());
+  EXPECT_TRUE(source.IsDesktopSourceWithAudio());
   EXPECT_FALSE(source.IsTabMirroringSource());
   EXPECT_FALSE(source.IsLocalFileSource());
   EXPECT_FALSE(source.IsCastPresentationUrl());

@@ -336,6 +336,7 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/native_page:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
+    "//chrome/browser/video_tutorials:factory_java",
     "//chrome/browser/video_tutorials:java",
     "//chrome/browser/webauthn/android:java",
     "//chrome/browser/xsurface:java",
@@ -618,6 +619,7 @@ java_group("chrome_all_java") {
     "//chrome/browser/test_dummy/internal:base_module_java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/browser/ui/android/appmenu/internal:java",
+    "//chrome/browser/video_tutorials/internal:java",
     "//components/browser_ui/android/bottomsheet/internal:java",
   ]
 
@@ -3163,7 +3165,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/translate/TranslateBridge.java",
     "java/src/org/chromium/chrome/browser/usage_stats/NotificationSuspender.java",
     "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
-    "java/src/org/chromium/chrome/browser/video_tutorials/VideoTutorialServiceFactory.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",

@@ -100,6 +100,8 @@ constexpr gfx::Rect TERMINAL_DEFAULT_BOUNDS(gfx::Point(64, 64),
                                             gfx::Size(652, 484));
 constexpr gfx::Size TERMINAL_SETTINGS_DEFAULT_SIZE(768, 512);
 constexpr gfx::Size HELP_DEFAULT_SIZE(960, 600);
+// The height of camera app window includes the top bar height which is 32.
+constexpr gfx::Size CAMERA_WINDOW_DEFAULT_SIZE(864, 486 + 32);
 }  // namespace
 
 // static
@@ -360,6 +362,11 @@ gfx::Rect AppBrowserController::GetDefaultBounds() const {
     gfx::Rect bounds =
         display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
     bounds.ClampToCenteredSize(HELP_DEFAULT_SIZE);
+    return bounds;
+  } else if (system_app_type_ == SystemAppType::CAMERA) {
+    gfx::Rect bounds =
+        display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+    bounds.ClampToCenteredSize(CAMERA_WINDOW_DEFAULT_SIZE);
     return bounds;
   }
   return gfx::Rect();

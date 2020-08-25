@@ -478,9 +478,11 @@ bool Internals::isPreloadedBy(const String& url, Document* document) {
 bool Internals::isLoading(const String& url) {
   if (!document_)
     return false;
-  const String cache_identifier = document_->Fetcher()->GetCacheIdentifier();
-  Resource* resource = GetMemoryCache()->ResourceForURL(
-      document_->CompleteURL(url), cache_identifier);
+  const KURL full_url = document_->CompleteURL(url);
+  const String cache_identifier =
+      document_->Fetcher()->GetCacheIdentifier(full_url);
+  Resource* resource =
+      GetMemoryCache()->ResourceForURL(full_url, cache_identifier);
   // We check loader() here instead of isLoading(), because a multipart
   // ImageResource lies isLoading() == false after the first part is loaded.
   return resource && resource->Loader();
@@ -489,9 +491,11 @@ bool Internals::isLoading(const String& url) {
 bool Internals::isLoadingFromMemoryCache(const String& url) {
   if (!document_)
     return false;
-  const String cache_identifier = document_->Fetcher()->GetCacheIdentifier();
-  Resource* resource = GetMemoryCache()->ResourceForURL(
-      document_->CompleteURL(url), cache_identifier);
+  const KURL full_url = document_->CompleteURL(url);
+  const String cache_identifier =
+      document_->Fetcher()->GetCacheIdentifier(full_url);
+  Resource* resource =
+      GetMemoryCache()->ResourceForURL(full_url, cache_identifier);
   return resource && resource->GetStatus() == ResourceStatus::kCached;
 }
 

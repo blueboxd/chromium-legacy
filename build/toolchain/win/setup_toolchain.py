@@ -102,9 +102,15 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     # Load environment from json file.
     env = os.path.normpath(os.path.join(sdk_dir, 'bin/SetEnv.%s.json' % cpu))
     env = json.load(open(env))['env']
+    if env['VSINSTALLDIR'] == [["..", "..\\"]]:
+      # Old-style paths were relative to the win_sdk\bin directory.
+      json_relative_dir = os.path.join(sdk_dir, 'bin')
+    else:
+      # New-style paths are relative to the toolchain directory, which is the
+      # parent of the SDK directory.
+      json_relative_dir = os.path.split(sdk_dir)[0]
     for k in env:
-      entries = [os.path.join(*([os.path.join(sdk_dir, 'bin')] + e))
-                 for e in env[k]]
+      entries = [os.path.join(*([json_relative_dir] + e)) for e in env[k]]
       # clang-cl wants INCLUDE to be ;-separated even on non-Windows,
       # lld-link wants LIB to be ;-separated even on non-Windows.  Path gets :.
       # The separator for INCLUDE here must match the one used in main() below.

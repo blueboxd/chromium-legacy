@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom-forward.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db.h"
@@ -346,6 +347,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
       storage::mojom::NativeFileSystemContext* native_file_system_context,
+      std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
@@ -598,6 +600,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // IndexedDBContextImpl.
   storage::mojom::BlobStorageContext* blob_storage_context_;
   storage::mojom::NativeFileSystemContext* native_file_system_context_;
+
+  // Filesystem proxy to use for file operations.  nullptr if in memory.
+  std::unique_ptr<storage::FilesystemProxy> filesystem_proxy_;
 
   // The origin identifier is a key prefix unique to the origin used in the
   // leveldb backing store to partition data by origin. It is a normalized

@@ -410,7 +410,7 @@ void SVGImage::DrawForContainer(cc::PaintCanvas* canvas,
 PaintImage SVGImage::PaintImageForCurrentFrame() {
   auto builder =
       CreatePaintImageBuilder().set_completion_state(completion_state());
-  PopulatePaintRecordForCurrentFrameForContainer(builder, NullURL(), Size());
+  PopulatePaintRecordForCurrentFrameForContainer(builder, Size(), 1, NullURL());
   return builder.TakePaintImage();
 }
 
@@ -489,16 +489,21 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
 
 void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
     PaintImageBuilder& builder,
-    const KURL& url,
-    const IntSize& container_size) {
+    const IntSize& zoomed_container_size,
+    float zoom,
+    const KURL& url) {
   if (!page_)
     return;
 
-  const IntRect container_rect(IntPoint(), container_size);
+  const IntRect container_rect(IntPoint(), zoomed_container_size);
+  // Compute a new container size based on the zoomed (and potentially
+  // rounded) size.
+  FloatSize container_size(zoomed_container_size);
+  container_size.Scale(1 / zoom);
 
   PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording(container_rect);
-  DrawForContainer(canvas, PaintFlags(), FloatSize(container_rect.Size()), 1,
+  DrawForContainer(canvas, PaintFlags(), container_size, zoom,
                    FloatRect(container_rect), FloatRect(container_rect), url);
   builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect,
                            PaintImage::GetNextContentId());
@@ -937,8 +942,9 @@ SkBitmap SVGImage::AsSkBitmapForCursor(float device_scale_factor) {
 
   auto builder =
       CreatePaintImageBuilder().set_completion_state(completion_state());
-  PopulatePaintRecordForCurrentFrameForContainer(builder, NullURL(),
-                                                 scaled_size);
+  // TODO(fs): Pass |device_scale_factor| as zoom.
+  PopulatePaintRecordForCurrentFrameForContainer(builder, scaled_size, 1,
+                                                 NullURL());
 
   PaintImage paint_image = builder.TakePaintImage();
   if (!paint_image)

@@ -362,6 +362,26 @@ def _WriteInputParamForTracingImpl(generator, kind, cpp_parameter_name,
     for line in _WrapIfNullable(loop_generator):
       yield line
     return
+  if (mojom.IsInterfaceRequestKind(kind)
+      or mojom.IsAssociatedInterfaceRequestKind(kind)):
+    yield output_context.AddSingleValue('Boolean',
+                                        cpp_parameter_name + '.is_pending()')
+    return
+  if (mojom.IsAnyHandleOrInterfaceKind(kind)
+      and not mojom.IsInterfaceKind(kind)):
+    yield output_context.AddSingleValue('Boolean',
+                                        cpp_parameter_name + '.is_valid()')
+    return
+  """ The case |mojom.IsInterfaceKind(kind)| is not covered.
+  |mojom.IsInterfaceKind(kind) == True| for the following types:
+  |mojo::InterfacePtrInfo|, |mojo::InterfacePtr|.
+    There is |mojo::InterfacePtrInfo::is_valid|,
+      but not |mojo::InterfacePtrInfo::is_bound|.
+    There is |mojo::InterfacePtr::is_bound|,
+      but not |mojo::InterfacePtr::is_valid|.
+
+  Both |mojo::InterfacePtrInfo| and |mojo::InterfacePtr| are deprecated.
+  """
   yield output_context.AddSingleValue('String', _TraceEventToString())
 
 

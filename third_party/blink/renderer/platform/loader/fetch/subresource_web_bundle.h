@@ -24,6 +24,7 @@ class PLATFORM_EXPORT SubresourceWebBundle : public GarbageCollectedMixin {
   virtual bool CanHandleRequest(const KURL& url) const = 0;
   virtual mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
   GetURLLoaderFactory() = 0;
+  virtual String GetCacheIdentifier() const = 0;
 };
 
 }  // namespace blink

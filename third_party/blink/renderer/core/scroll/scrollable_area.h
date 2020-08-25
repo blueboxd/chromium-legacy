@@ -74,11 +74,13 @@ enum IncludeScrollbarsInRect {
 };
 
 class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
-  DISALLOW_COPY_AND_ASSIGN(ScrollableArea);
   USING_PRE_FINALIZER(ScrollableArea, Dispose);
 
  public:
   using ScrollCallback = base::OnceClosure;
+
+  ScrollableArea(const ScrollableArea&) = delete;
+  ScrollableArea& operator=(const ScrollableArea&) = delete;
 
   static int PixelsPerLineStep(LocalFrame*);
   static float MinFractionToStepWhenPaging();

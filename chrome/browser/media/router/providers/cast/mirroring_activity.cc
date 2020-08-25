@@ -323,13 +323,16 @@ void MirroringActivity::OnSessionSet(const CastSession& session) {
   auto cast_source = CastMediaSource::FromMediaSource(route_.media_source());
   DCHECK(cast_source);
 
-  // Derive session type from capabilities and media source.
+  // Derive session type by intersecting the sink capabilities with what the
+  // media source can provide.
   const bool has_audio = (cast_data_.capabilities &
                           static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0 &&
-                         cast_source->allow_audio_capture();
+                         cast_source->ProvidesStreamingAudioCapture();
   const bool has_video = (cast_data_.capabilities &
                           static_cast<uint8_t>(cast_channel::VIDEO_OUT)) != 0;
-  DCHECK(has_audio || has_video);
+  if (!has_audio && !has_video) {
+    return;
+  }
   const SessionType session_type =
       has_audio && has_video
           ? SessionType::AUDIO_AND_VIDEO

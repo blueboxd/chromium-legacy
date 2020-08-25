@@ -70,7 +70,7 @@ namespace fileManagerPrivateInternal {
                                    GetContentMimeTypeCallback callback);
     static void getContentMetadata(DOMString blobUUID,
                                    DOMString mimeType,
-                                   fileManagerPrivate.ContentMetadataType type,
+                                   boolean includeImages,
                                    GetContentMetadataCallback callback);
     static void pinDriveFile(DOMString url,
                              boolean pin,

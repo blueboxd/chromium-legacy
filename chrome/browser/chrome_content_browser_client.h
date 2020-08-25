@@ -683,8 +683,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsOriginTrialRequiredForAppCache(
       content::BrowserContext* browser_context) override;
-  void BindBrowserControlInterface(
-      mojo::GenericPendingReceiver receiver) override;
+  void BindBrowserControlInterface(mojo::ScopedMessagePipeHandle pipe) override;
   bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url) override;
   bool ShouldAllowInsecurePrivateNetworkRequests(

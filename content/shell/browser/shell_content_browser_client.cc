@@ -440,12 +440,10 @@ ShellContentBrowserClient::GetNetworkContextsParentDirectory() {
 }
 
 void ShellContentBrowserClient::BindBrowserControlInterface(
-    mojo::GenericPendingReceiver receiver) {
-  if (auto r = receiver.As<mojom::ShellController>()) {
-    mojo::MakeSelfOwnedReceiver(std::make_unique<ShellControllerImpl>(),
-                                std::move(r));
-    return;
-  }
+    mojo::ScopedMessagePipeHandle pipe) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ShellControllerImpl>(),
+      mojo::PendingReceiver<mojom::ShellController>(std::move(pipe)));
 }
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {

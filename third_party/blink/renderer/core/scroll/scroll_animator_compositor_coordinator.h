@@ -34,7 +34,6 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
     : public GarbageCollected<ScrollAnimatorCompositorCoordinator>,
       private CompositorAnimationClient,
       CompositorAnimationDelegate {
-  DISALLOW_COPY_AND_ASSIGN(ScrollAnimatorCompositorCoordinator);
   USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, Dispose);
 
  public:
@@ -82,6 +81,10 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
     kRunningOnCompositorButNeedsAdjustment,
   };
 
+  ScrollAnimatorCompositorCoordinator(
+      const ScrollAnimatorCompositorCoordinator&) = delete;
+  ScrollAnimatorCompositorCoordinator& operator=(
+      const ScrollAnimatorCompositorCoordinator&) = delete;
   ~ScrollAnimatorCompositorCoordinator() override;
 
   bool HasAnimationThatRequiresService() const;

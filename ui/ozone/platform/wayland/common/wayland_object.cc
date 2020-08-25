@@ -8,6 +8,7 @@
 #include <gtk-primary-selection-client-protocol.h>
 #include <keyboard-extension-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
@@ -214,6 +215,25 @@ const wl_interface* ObjectTraits<zwp_linux_dmabuf_v1>::interface =
     &zwp_linux_dmabuf_v1_interface;
 void (*ObjectTraits<zwp_linux_dmabuf_v1>::deleter)(zwp_linux_dmabuf_v1*) =
     &zwp_linux_dmabuf_v1_destroy;
+
+const wl_interface* ObjectTraits<zwp_linux_buffer_release_v1>::interface =
+    &zwp_linux_buffer_release_v1_interface;
+void (*ObjectTraits<zwp_linux_buffer_release_v1>::deleter)(
+    zwp_linux_buffer_release_v1*) = &zwp_linux_buffer_release_v1_destroy;
+
+const wl_interface*
+    ObjectTraits<zwp_linux_explicit_synchronization_v1>::interface =
+        &zwp_linux_explicit_synchronization_v1_interface;
+void (*ObjectTraits<zwp_linux_explicit_synchronization_v1>::deleter)(
+    zwp_linux_explicit_synchronization_v1*) =
+    &zwp_linux_explicit_synchronization_v1_destroy;
+
+const wl_interface*
+    ObjectTraits<zwp_linux_surface_synchronization_v1>::interface =
+        &zwp_linux_surface_synchronization_v1_interface;
+void (*ObjectTraits<zwp_linux_surface_synchronization_v1>::deleter)(
+    zwp_linux_surface_synchronization_v1*) =
+    &zwp_linux_surface_synchronization_v1_destroy;
 
 const wl_interface* ObjectTraits<zxdg_shell_v6>::interface =
     &zxdg_shell_v6_interface;

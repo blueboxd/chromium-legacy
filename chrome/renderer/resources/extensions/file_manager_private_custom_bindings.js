@@ -148,7 +148,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('getContentMetadata',
-      function(fileEntry, mimeType, type, callback) {
+      function(fileEntry, mimeType, includeImages, callback) {
     fileEntry.file(blob => {
       var blobUUID = blobNatives.GetBlobUuid(blob);
 
@@ -162,7 +162,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       }.bind(this, blob);  // Bind a blob reference: crbug.com/415792#c12
 
       fileManagerPrivateInternal.getContentMetadata(
-          blobUUID, mimeType, type, onGetContentMetadata);
+          blobUUID, mimeType, !!includeImages, onGetContentMetadata);
     }, (error) => {
       var errorUUID = '';
 
@@ -172,7 +172,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       }.bind(this);
 
       fileManagerPrivateInternal.getContentMetadata(
-          errorUUID, mimeType, type, onGetContentMetadata);
+          errorUUID, mimeType, false, onGetContentMetadata);
     });
   });
 

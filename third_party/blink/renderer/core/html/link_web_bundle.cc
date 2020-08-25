@@ -204,6 +204,11 @@ LinkWebBundle::GetURLLoaderFactory() {
   return bundle_loader_->GetURLLoaderFactory();
 }
 
+String LinkWebBundle::GetCacheIdentifier() const {
+  DCHECK(bundle_loader_);
+  return bundle_loader_->url().GetString();
+}
+
 // static
 KURL LinkWebBundle::ParseResourceUrl(const AtomicString& str) {
   // The implementation is almost copy and paste from ParseExchangeURL() defined

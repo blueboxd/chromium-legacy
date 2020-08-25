@@ -5,12 +5,7 @@
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
-}
-
-if (is_android) {
-  java_group("java") {
-    deps = [ ":public_java" ]
-  }
+  import("//chrome/android/features/android_library_factory_tmpl.gni")
 }
 
 group("video_tutorials") {
@@ -38,17 +33,6 @@ source_set("public") {
     "//components/keyed_service/core",
     "//url:url",
   ]
-
-  if (is_android) {
-    sources += [
-      "android/tutorial_conversion_bridge.cc",
-      "android/tutorial_conversion_bridge.h",
-      "android/video_tutorial_service_bridge.cc",
-      "android/video_tutorial_service_bridge.h",
-    ]
-
-    deps += [ ":jni_headers" ]
-  }
 }
 
 source_set("factory") {
@@ -66,39 +50,37 @@ source_set("factory") {
 }
 
 if (is_android) {
-  android_library("public_java") {
+  android_library("java") {
     sources = [
       "android/java/src/org/chromium/chrome/browser/video_tutorials/Tutorial.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/VideoTutorialService.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
     ]
 
     deps = [
       "//base:base_java",
-      "//base:jni_java",
       "//components/browser_ui/widget/android:java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
 
     srcjar_deps = [ ":jni_enums" ]
-
-    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  }
-
-  generate_jni("jni_headers") {
-    visibility = [ ":*" ]
-
-    sources = [
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/TutorialConversionBridge.java",
-      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
-    ]
   }
 
   java_cpp_enum("jni_enums") {
     visibility = [ "*" ]
 
     sources = [ "tutorial.h" ]
+  }
+
+  android_library_factory("factory_java") {
+    # These deps will be inherited by the resulting android_library target.
+    deps = [
+      ":java",
+      "//chrome/browser/profiles/android:java",
+    ]
+
+    # This internal file will be replaced by a generated file so the resulting
+    # android_library target does not actually depend on this internal file.
+    sources = [ "internal/android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceFactory.java" ]
   }
 }
 

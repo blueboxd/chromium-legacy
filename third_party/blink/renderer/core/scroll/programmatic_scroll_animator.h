@@ -25,10 +25,11 @@ class CompositorScrollOffsetAnimationCurve;
 // ScrollAnimatorMac.
 
 class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
-  DISALLOW_COPY_AND_ASSIGN(ProgrammaticScrollAnimator);
-
  public:
   explicit ProgrammaticScrollAnimator(ScrollableArea*);
+  ProgrammaticScrollAnimator(const ProgrammaticScrollAnimator&) = delete;
+  ProgrammaticScrollAnimator& operator=(const ProgrammaticScrollAnimator&) =
+      delete;
   ~ProgrammaticScrollAnimator() override;
 
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&,

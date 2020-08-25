@@ -632,7 +632,6 @@
 #endif
 
 #if BUILDFLAG(IS_LACROS)
-#include "chrome/browser/chrome_browser_main_extra_parts_lacros.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
@@ -1378,10 +1377,6 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Combine with ChromeBrowserMainPartsChromeos.
   main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsAsh>());
-#endif
-
-#if BUILDFLAG(IS_LACROS)
-  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsLacros>());
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
@@ -5816,11 +5811,11 @@ bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
 }
 
 void ChromeContentBrowserClient::BindBrowserControlInterface(
-    mojo::GenericPendingReceiver receiver) {
+    mojo::ScopedMessagePipeHandle pipe) {
 #if BUILDFLAG(IS_LACROS)
-  if (auto r = receiver.As<crosapi::mojom::LacrosChromeService>()) {
-    chromeos::LacrosChromeServiceImpl::Get()->BindReceiver(std::move(r));
-  }
+  chromeos::LacrosChromeServiceImpl::Get()->BindReceiver(
+      mojo::PendingReceiver<crosapi::mojom::LacrosChromeService>(
+          std::move(pipe)));
 #endif
 }
 

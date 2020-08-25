@@ -289,9 +289,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the renderer to the browser.
 
-// Tells the browser that the print dialog has been shown.
-IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
-
 // Sends back to the browser the rendered document that was requested by a
 // PrintMsg_PrintPages message or from scripted printing. The memory handle in
 // this message is already valid in the browser process. Waits until the

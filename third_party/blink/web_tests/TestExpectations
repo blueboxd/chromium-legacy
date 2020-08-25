@@ -3069,9 +3069,6 @@ crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Pass ]
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onnegotiationneeded.https.html [ Pass ]
 
-# Tests that start hanging after implementing RTCRtpTransceiver.stop
-crbug.com/1115087 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
-
 # See also crbug.com/920100 (sheriff 2019-01-09).
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout Failure ]
@@ -5209,6 +5206,7 @@ crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
+crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -6709,3 +6707,6 @@ crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
 crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
 
 crbug.com/1119676 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure ]
+
+# Sheriff 2020-08-25
+crbug.com/1121429 fast/selectors/placeholder-shown-style-update.html [ Pass Crash ]

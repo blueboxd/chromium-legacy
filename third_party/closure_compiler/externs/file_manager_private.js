@@ -267,12 +267,6 @@ chrome.fileManagerPrivate.CrostiniEventType = {
   UNSHARE: 'unshare',
 };
 
-/** @enum {string} */
-chrome.fileManagerPrivate.ContentMetadataType = {
-  METADATATAGSIMAGES: 'metadataTagsImages',
-  METADATATAGS: 'metadataTags',
-};
-
 /**
  * @typedef {{
  *   taskId: string,

@@ -5,14 +5,17 @@
 #ifndef UI_GFX_X_XPROTO_UTIL_H_
 #define UI_GFX_X_XPROTO_UTIL_H_
 
-#include <X11/Xlib.h>
+#include <cstdint>
 
 #include "base/component_export.h"
 
 namespace x11 {
 
 COMPONENT_EXPORT(X11)
-void LogErrorEventDescription(const XErrorEvent& error_event);
+void LogErrorEventDescription(unsigned long serial,
+                              uint8_t error_code,
+                              uint8_t request_code,
+                              uint8_t minor_code);
 
 }  // namespace x11
 

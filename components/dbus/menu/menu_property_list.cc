@@ -14,10 +14,9 @@
 #include "ui/gfx/image/image.h"
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
-
 #include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/gfx/x/x11.h"                                   // nogncheck
 #endif
 
 MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,

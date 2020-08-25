@@ -29,7 +29,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -57,6 +56,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   static AXObjectCache* Create(Document&);
 
+  AXObjectCache(const AXObjectCache&) = delete;
+  AXObjectCache& operator=(const AXObjectCache&) = delete;
   virtual ~AXObjectCache() = default;
   virtual void Trace(Visitor*) const {}
 
@@ -180,7 +181,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   AXObjectCache() = default;
 
   static AXObjectCacheCreateFunction create_function_;
-  DISALLOW_COPY_AND_ASSIGN(AXObjectCache);
 };
 
 }  // namespace blink

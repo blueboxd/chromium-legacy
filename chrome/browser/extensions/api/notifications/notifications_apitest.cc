@@ -222,7 +222,8 @@ class NotificationsApiTest : public extensions::ExtensionApiTest {
 }  // namespace
 
 // http://crbug.com/691913
-#if (defined(OS_LINUX) || defined(OS_WIN)) && !defined(NDEBUG)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)) && \
+    !defined(NDEBUG)
 #define MAYBE_TestBasicUsage DISABLED_TestBasicUsage
 #else
 #define MAYBE_TestBasicUsage TestBasicUsage

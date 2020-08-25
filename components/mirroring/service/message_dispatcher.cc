@@ -69,6 +69,10 @@ MessageDispatcher::~MessageDispatcher() {
 }
 
 void MessageDispatcher::Send(mojom::CastMessagePtr message) {
+  // TODO(crbug.com/1117673): Add MR-internals logging:
+  // VLOG(2) << "Inbound message received: ns=" << message->message_namespace
+  //         << ", data=" << message->json_format_data;
+
   if (message->message_namespace != mojom::kWebRtcNamespace &&
       message->message_namespace != mojom::kRemotingNamespace) {
     DVLOG(2) << "Ignoring message with unknown namespace = "
@@ -126,6 +130,9 @@ int32_t MessageDispatcher::GetNextSeqNumber() {
 }
 
 void MessageDispatcher::SendOutboundMessage(mojom::CastMessagePtr message) {
+  // TODO(crbug.com/1117673): Add MR-internals logging:
+  //   VLOG(2) << "Sending outbound message: ns=" << message->message_namespace
+  //           << ", data=" << message->json_format_data;
   outbound_channel_->Send(std::move(message));
 }
 

@@ -44,6 +44,9 @@ struct zaura_surface;
 struct zcr_keyboard_extension_v1;
 struct zcr_extended_keyboard_v1;
 struct zwp_linux_dmabuf_v1;
+struct zwp_linux_buffer_release_v1;
+struct zwp_linux_explicit_synchronization_v1;
+struct zwp_linux_surface_synchronization_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
 struct zxdg_toplevel_v6;
@@ -277,6 +280,24 @@ template <>
 struct ObjectTraits<zwp_linux_dmabuf_v1> {
   static const wl_interface* interface;
   static void (*deleter)(zwp_linux_dmabuf_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_buffer_release_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_buffer_release_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_explicit_synchronization_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_explicit_synchronization_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_surface_synchronization_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_surface_synchronization_v1*);
 };
 
 template <>

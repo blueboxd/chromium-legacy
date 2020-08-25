@@ -116,7 +116,7 @@ std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {
 PlatformType GetCurrentPlatformType() {
 #if defined(OS_WIN)
   return WINDOWS_PLATFORM;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   return LINUX_PLATFORM;
 #elif defined(OS_IOS)
   return IOS_PLATFORM;

@@ -52,6 +52,7 @@ constexpr uint32_t kMaxXdgShellVersion = 1;
 constexpr uint32_t kMaxDeviceManagerVersion = 3;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
+constexpr uint32_t kMaxExplicitSyncVersion = 2;
 constexpr uint32_t kMinAuraShellVersion = 10;
 constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
@@ -331,6 +332,12 @@ void WaylandConnection::Global(void* data,
     connection->primary_selection_device_manager_ =
         std::make_unique<GtkPrimarySelectionDeviceManager>(manager.release(),
                                                            connection);
+  } else if (!connection->linux_explicit_synchronization_ &&
+             (strcmp(interface, "zwp_linux_explicit_synchronization_v1") ==
+              0)) {
+    connection->linux_explicit_synchronization_ =
+        wl::Bind<zwp_linux_explicit_synchronization_v1>(
+            registry, name, std::min(version, kMaxExplicitSyncVersion));
   } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =

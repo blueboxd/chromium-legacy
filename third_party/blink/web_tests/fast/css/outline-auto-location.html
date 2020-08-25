@@ -1,4 +1,15 @@
 <html>
+<style>
+.test3 {
+  outline: auto 3px #1f5ccf;
+  background-color: lightblue;
+  margin: 20px;
+  font-size: 30px;
+  line-height: 16px;
+  height: 16px;
+  width: fit-content;
+}
+</style>
 	<body>
 		<div style="outline:solid 3px #1f5ccf; background-color: lightblue; margin: 20px">
 			<p>There should be one outline around the whole div</p>
@@ -8,5 +19,7 @@
 			<p>There should be one outline around the whole div</p>
 			<p style="margin-left: -20px">Not around each element</p>
 		</div>
+
+                <div class="test3">Auto outline should be taller than the div height.</div>
 	</body>
 </html>

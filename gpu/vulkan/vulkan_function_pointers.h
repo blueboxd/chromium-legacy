@@ -32,7 +32,9 @@
 #endif
 
 #if defined(USE_VULKAN_XLIB)
-#include <X11/Xlib.h>
+typedef struct _XDisplay Display;
+typedef unsigned long Window;
+typedef unsigned long VisualID;
 #include <vulkan/vulkan_xlib.h>
 #endif
 

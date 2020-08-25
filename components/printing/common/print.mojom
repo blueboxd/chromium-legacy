@@ -261,4 +261,7 @@ interface PrintManagerHost {
 
   // Sends the document cookie of the current printer query to the browser.
   DidGetDocumentCookie(int32 cookie);
+
+  // Tells the browser that the print dialog has been shown.
+  DidShowPrintDialog();
 };

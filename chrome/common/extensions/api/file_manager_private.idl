@@ -249,14 +249,6 @@ enum CrostiniEventType {
   unshare
 };
 
-// Metadata extraction types for getContentMetadata().
-enum ContentMetadataType {
-  // Extract metadata tags and images.
-  metadataTagsImages,
-  // Extract metadata tags only.
-  metadataTags
-};
-
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -959,12 +951,13 @@ interface Functions {
   // Gets metadata from an Audio or Video file.
   // |fileEntry| The file entry to be checked.
   // |mimeType| Content sniffed mimeType of the file.
-  // |type| Content metadata type to extact.
+  // |includeImages| False returns metadata tags only. True returns
+  //     metadata tags and metadata (thumbnail) images.
   // |callback|
   [nocompile]
   static void getContentMetadata([instanceof=FileEntry] object fileEntry,
                                  DOMString mimeType,
-                                 ContentMetadataType type,
+                                 boolean includeImages,
                                  GetContentMetadataCallback callback);
 
   // Gets localized strings and initialization data.

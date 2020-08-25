@@ -81,7 +81,19 @@ void DesktopMediaPickerController::OnInitialMediaListFound() {
   DCHECK(source_lists_.size() == 1);
   auto* source_list = source_lists_[0].get();
   if (source_list->GetSourceCount() == 1) {
-    OnPickerDialogResults({}, source_list->GetSource(0).id);
+    // With only one possible source, the picker dialog is being bypassed. Apply
+    // the default value of the "audio checkbox" here for desktop screen share.
+    // Only two platform configurations support desktop audio capture (i.e.,
+    // system-wide audio loopback) at this time.
+    content::DesktopMediaID media_id = source_list->GetSource(0).id;
+    DCHECK_EQ(media_id.type, content::DesktopMediaID::TYPE_SCREEN);
+#if defined(USE_CRAS) || defined(OS_WIN)
+    media_id.audio_share =
+        params_.request_audio && params_.approve_audio_by_default;
+#else
+    media_id.audio_share = false;
+#endif
+    OnPickerDialogResults({}, media_id);
     return;
   }
 

@@ -9,8 +9,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/important_file_writer.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -25,6 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
@@ -63,7 +62,6 @@
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::FilePath;
-using base::ImportantFileWriter;
 using base::StringPiece;
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
@@ -111,14 +109,6 @@ FilePath GetBlobFileNameForKey(const FilePath& path_base,
       GetBlobDirectoryNameForKey(path_base, database_id, blob_number);
   path = path.AppendASCII(base::StringPrintf("%" PRIx64, blob_number));
   return path;
-}
-
-bool MakeIDBBlobDirectory(const FilePath& path_base,
-                          int64_t database_id,
-                          int64_t blob_number) {
-  FilePath path =
-      GetBlobDirectoryNameForKey(path_base, database_id, blob_number);
-  return base::CreateDirectory(path);
 }
 
 std::string ComputeOriginIdentifier(const Origin& origin) {
@@ -394,9 +384,11 @@ bool DecodeExternalObjects(const std::string& data,
   return true;
 }
 
-bool IsPathTooLong(const FilePath& leveldb_dir) {
-  int limit = base::GetMaximumPathComponentLength(leveldb_dir.DirName());
-  if (limit == -1) {
+bool IsPathTooLong(storage::FilesystemProxy* filesystem,
+                   const base::FilePath& leveldb_dir) {
+  base::Optional<int> limit =
+      filesystem->GetMaximumPathComponentLength(leveldb_dir.DirName());
+  if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
 // In limited testing, ChromeOS returns 143, other OSes 255.
 #if defined(OS_CHROMEOS)
@@ -406,9 +398,9 @@ bool IsPathTooLong(const FilePath& leveldb_dir) {
 #endif
   }
   size_t component_length = leveldb_dir.BaseName().value().length();
-  if (component_length > static_cast<uint32_t>(limit)) {
+  if (component_length > static_cast<uint32_t>(*limit)) {
     DLOG(WARNING) << "Path component length (" << component_length
-                  << ") exceeds maximum (" << limit
+                  << ") exceeds maximum (" << *limit
                   << ") allowed by this filesystem.";
     const int min = 140;
     const int max = 300;
@@ -615,6 +607,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
     std::unique_ptr<TransactionalLevelDBDatabase> db,
     storage::mojom::BlobStorageContext* blob_storage_context,
     storage::mojom::NativeFileSystemContext* native_file_system_context,
+    std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
     BlobFilesCleanedCallback blob_files_cleaned,
     ReportOutstandingBlobsCallback report_outstanding_blobs,
     scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
@@ -625,6 +618,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       blob_path_(blob_path),
       blob_storage_context_(blob_storage_context),
       native_file_system_context_(native_file_system_context),
+      filesystem_proxy_(std::move(filesystem_proxy)),
       origin_identifier_(ComputeOriginIdentifier(origin)),
       idb_task_runner_(idb_task_runner),
       io_task_runner_(io_task_runner),
@@ -693,9 +687,11 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
         PutInt(write_batch.get(), data_version_key, db_data_version.Encode()));
     // If a blob directory already exists for this database, blow it away.  It's
     // leftover from a partially-purged previous generation of data.
-    if (!base::DeletePathRecursively(blob_path_)) {
-      INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
-      return IOErrorStatus();
+    if (filesystem_proxy_) {
+      if (!filesystem_proxy_->RemoveDirectoryRecursively(blob_path_)) {
+        INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
+        return IOErrorStatus();
+      }
     }
   } else {
     if (db_schema_version > indexed_db::kLatestKnownSchemaVersion)
@@ -833,7 +829,7 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
   // Delete all empty files that resulted from the migration to v4. If this
   // fails it's not a big deal.
   for (const auto& path : empty_blobs_to_delete) {
-    base::DeleteFile(path);
+    filesystem_proxy_->RemoveFile(path);
   }
 
   if (clean_active_journal) {
@@ -958,16 +954,18 @@ Status IndexedDBBackingStore::UpgradeBlobEntriesToV4(
             continue;
           }
           needs_rewrite = true;
-          base::File::Info info;
           base::FilePath path =
               GetBlobFileName(metadata.id, object.blob_number());
-          if (!base::GetFileInfo(path, &info)) {
+
+          base::Optional<base::File::Info> info =
+              filesystem_proxy_->GetFileInfo(path);
+          if (!info.has_value()) {
             return leveldb::Status::Corruption(
                 "Unable to upgrade to database version 4.", "");
           }
-          object.set_size(info.size);
-          object.set_last_modified(info.last_modified);
-          if (info.size == 0)
+          object.set_size(info->size);
+          object.set_last_modified(info->last_modified);
+          if (info->size == 0)
             empty_blobs_to_delete->push_back(path);
         }
         if (!needs_rewrite)
@@ -1081,20 +1079,22 @@ leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
 }
 
 // static
-bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
-                                                 const Origin& origin,
-                                                 const std::string& message) {
-  const FilePath info_path =
+bool IndexedDBBackingStore::RecordCorruptionInfo(
+    const base::FilePath& path_base,
+    const Origin& origin,
+    const std::string& message) {
+  auto filesystem = storage::CreateFilesystemProxy();
+  const base::FilePath info_path =
       path_base.Append(indexed_db::ComputeCorruptionFileName(origin));
-  if (IsPathTooLong(info_path))
+  if (IsPathTooLong(filesystem.get(), info_path))
     return false;
 
   base::DictionaryValue root_dict;
   root_dict.SetString("message", message);
   std::string output_js;
+
   base::JSONWriter::Write(root_dict, &output_js);
-  return base::ImportantFileWriter::WriteFileAtomically(info_path,
-                                                        output_js.c_str());
+  return filesystem->WriteFileAtomically(info_path, std::move(output_js));
 }
 
 Status IndexedDBBackingStore::DeleteDatabase(
@@ -1705,13 +1705,13 @@ bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
   DVLOG(1) << "Deleting blob " << blob_number << " from IndexedDB database "
            << database_id << " at path " << path.value();
 #endif
-  return base::DeleteFile(path);
+  return filesystem_proxy_->RemoveFile(path);
 }
 
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64_t database_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   FilePath path = GetBlobDirectoryName(blob_path_, database_id);
-  return base::DeletePathRecursively(path);
+  return filesystem_proxy_->RemoveDirectoryRecursively(path);
 }
 
 Status IndexedDBBackingStore::CleanUpBlobJournal(
@@ -3000,7 +3000,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction() {
   // m78 and m79, they need to be checked. See https://crbug.com/1039446
   base::FilePath blob_path =
       backing_store_->GetBlobFileName(database_id_, next_blob_number);
-  while (base::PathExists(blob_path)) {
+  while (backing_store_->filesystem_proxy_->PathExists(blob_path)) {
     ++next_blob_number;
     blob_path = backing_store_->GetBlobFileName(database_id_, next_blob_number);
   }
@@ -3336,8 +3336,9 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
             continue;
           // If this directory creation fails then the WriteBlobToFile call
           // will fail. So there is no need to special-case handle it here.
-          MakeIDBBlobDirectory(backing_store_->blob_path_, database_id_,
-                               entry.blob_number());
+          FilePath path = GetBlobDirectoryNameForKey(
+              backing_store_->blob_path_, database_id_, entry.blob_number());
+          backing_store_->filesystem_proxy_->CreateDirectory(path);
           // TODO(dmurph): Refactor IndexedDBExternalObject to not use a
           // SharedRemote, so this code can just move the remote, instead of
           // cloning.

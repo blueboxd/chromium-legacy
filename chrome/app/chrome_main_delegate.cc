@@ -175,6 +175,11 @@
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+#include "chrome/browser/lacros/lacros_chrome_service_delegate_impl.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#endif
+
 base::LazyInstance<ChromeContentGpuClient>::DestructorAtExit
     g_chrome_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentRendererClient>::DestructorAtExit
@@ -546,6 +551,13 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 #if defined(OS_CHROMEOS)
   // Initialize D-Bus clients that depend on feature list.
   chromeos::InitializeFeatureListDependentDBus();
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+  // LacrosChromeServiceImpl instance is needs the sequence of the main thread,
+  // and needs to be created earlier than incoming Mojo invitation handling.
+  lacros_chrome_service_ = std::make_unique<chromeos::LacrosChromeServiceImpl>(
+      std::make_unique<LacrosChromeServiceDelegateImpl>());
 #endif
 
 #if defined(OS_ANDROID)

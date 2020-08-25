@@ -5,8 +5,6 @@
 #include "ui/base/x/selection_requestor.h"
 
 #include <stddef.h>
-#include <xcb/xcb.h>
-
 #include <memory>
 
 #include "base/bind.h"
@@ -44,19 +42,12 @@ class SelectionRequestorTest : public testing::Test {
     ui::SetStringProperty(x_window_, requestor_->x_property_,
                           gfx::GetAtom("STRING"), value);
 
-    xcb_generic_event_t ge;
-    memset(&ge, 0, sizeof(ge));
-    auto* event = reinterpret_cast<xcb_selection_notify_event_t*>(&ge);
-    event->response_type = x11::SelectionNotifyEvent::opcode;
-    event->sequence = 0;
-    event->requestor = static_cast<uint32_t>(x_window_);
-    event->selection = static_cast<uint32_t>(selection);
-    event->target = static_cast<uint32_t>(target);
-    event->property = static_cast<uint32_t>(requestor_->x_property_);
-    event->time = x11::CurrentTime;
-
-    x11::Event xev(&ge, x11::Connection::Get());
-    requestor_->OnSelectionNotify(*xev.As<x11::SelectionNotifyEvent>());
+    requestor_->OnSelectionNotify({
+        .requestor = x_window_,
+        .selection = selection,
+        .target = target,
+        .property = requestor_->x_property_,
+    });
   }
 
  protected:

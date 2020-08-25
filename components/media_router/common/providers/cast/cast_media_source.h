@@ -55,6 +55,7 @@ class BitwiseOr {
   bool empty() const { return bits_ == 0; }
   T bits() const { return bits_; }
   void Add(E value) { bits_ |= Mask(value); }
+  void Remove(E value) { bits_ &= ~Mask(value); }
   bool Has(E value) const { return (bits_ & Mask(value)) != 0; }
   bool HasAll(const BitwiseOr& other) const {
     return (bits_ & other.bits_) == other.bits_;
@@ -168,6 +169,11 @@ class CastMediaSource {
   // Returns a list of App IDs in this CastMediaSource.
   std::vector<std::string> GetAppIds() const;
 
+  // Returns true iff all of the following are true: this source is a streaming
+  // source, the site requested audio capture, and the application is capable of
+  // providing audio capture (and has the user's permission to do so).
+  bool ProvidesStreamingAudioCapture() const;
+
   const MediaSource::Id& source_id() const { return source_id_; }
   const std::vector<CastAppInfo>& app_infos() const { return app_infos_; }
   const std::string& client_id() const { return client_id_; }
@@ -194,9 +200,12 @@ class CastMediaSource {
       const base::Optional<base::TimeDelta>& target_playout_delay) {
     target_playout_delay_ = target_playout_delay;
   }
-  bool allow_audio_capture() const { return allow_audio_capture_; }
-  void set_allow_audio_capture(bool allow_audio_capture) {
-    allow_audio_capture_ = allow_audio_capture;
+  // See also: ProvidesStreamingAudioCapture().
+  bool site_requested_audio_capture() const {
+    return site_requested_audio_capture_;
+  }
+  void set_site_requested_audio_capture(bool is_requested) {
+    site_requested_audio_capture_ = is_requested;
   }
   const std::string& app_params() const { return app_params_; }
   void set_app_params(const std::string& app_params) {
@@ -217,7 +226,7 @@ class CastMediaSource {
   std::string client_id_;
   base::Optional<cast_channel::BroadcastRequest> broadcast_request_;
   base::Optional<base::TimeDelta> target_playout_delay_;
-  bool allow_audio_capture_ = true;
+  bool site_requested_audio_capture_ = true;
   std::vector<ReceiverAppType> supported_app_types_ = {ReceiverAppType::kWeb};
   std::string app_params_;
 };

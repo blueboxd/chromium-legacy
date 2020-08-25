@@ -53,6 +53,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
       /*blob_storage_context=*/nullptr,
       /*native_file_system_context=*/nullptr,
+      /*filesystem_proxy=*/nullptr,
       IndexedDBBackingStore::BlobFilesCleanedCallback(),
       IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner,
       task_runner);
@@ -91,6 +92,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
             TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
         /*blob_storage_context=*/nullptr,
         /*native_file_system_context=*/nullptr,
+        /*filesystem_proxy=*/nullptr,
         IndexedDBBackingStore::BlobFilesCleanedCallback(),
         IndexedDBBackingStore::ReportOutstandingBlobsCallback(), task_runner,
         task_runner);

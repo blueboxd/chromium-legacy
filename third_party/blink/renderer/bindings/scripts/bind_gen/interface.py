@@ -2961,7 +2961,8 @@ def make_named_property_descriptor_callback(cg_context, function_name):
 // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty\
 """))
 
-    if "OverrideBuiltins" not in cg_context.interface.extended_attributes:
+    if ("LegacyOverrideBuiltins" not in
+            cg_context.interface.extended_attributes):
         body.append(
             TextNode("""\
 // step 2.1. If the result of running the named property visibility algorithm
@@ -5606,7 +5607,7 @@ def make_indexed_and_named_property_callbacks_and_install_node(cg_context):
                 and props.named_setter.owner, props.named_deleter
                 and props.named_deleter.owner))
         flags = ["v8::PropertyHandlerFlags::kOnlyInterceptStrings"]
-        if "OverrideBuiltins" not in interface.extended_attributes:
+        if "LegacyOverrideBuiltins" not in interface.extended_attributes:
             flags.append("v8::PropertyHandlerFlags::kNonMasking")
         if (props.named_getter.extended_attributes.value_of("Affects") ==
                 "Nothing"):

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
-#include "chrome/android/chrome_jni_headers/VideoTutorialServiceFactory_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/video_tutorials/android/video_tutorial_service_bridge.h"
+#include "chrome/browser/video_tutorials/internal/android/video_tutorial_service_bridge.h"
+#include "chrome/browser/video_tutorials/internal/jni_headers/VideoTutorialServiceFactory_jni.h"
 #include "chrome/browser/video_tutorials/video_tutorial_service_factory.h"
 
 // Takes a Java Profile and returns a Java VideoTutorialService.

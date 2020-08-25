@@ -1108,7 +1108,13 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnNetworkScreen) {
+// TODO(https://crbug.com/1121422): Flaky on ChromeOS ASAN.
+#if defined(OS_CHROMEOS)
+#define MAYBE_BackOnNetworkScreen DISABLED_BackOnNetworkScreen
+#else
+#define MAYBE_BackOnNetworkScreen BackOnNetworkScreen
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_BackOnNetworkScreen) {
   SimulateNetworkConnected();
   SkipToScreen(NetworkScreenView::kScreenId);
 

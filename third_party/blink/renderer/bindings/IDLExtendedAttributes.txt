@@ -64,6 +64,7 @@ HighEntropy=|Direct
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
+LegacyOverrideBuiltins
 LegacyTreatAsPartialInterface
 LegacyTreatNonObjectAsNull
 LegacyUnenumerableNamedProperties
@@ -83,7 +84,6 @@ NamedConstructor_CallWith=Document
 NamedConstructor_RaisesException
 NoInterfaceObject
 NotEnumerable
-OverrideBuiltins
 PartialInterfaceImplementedAs=*
 PermissiveDictionaryConversion
 PerWorldBindings

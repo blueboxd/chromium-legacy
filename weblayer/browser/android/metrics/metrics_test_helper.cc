@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/no_destructor.h"
-#include "base/run_loop.h"
+#include "content/public/test/test_utils.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/test/weblayer_browsertests_jni/MetricsTestHelper_jni.h"
 
@@ -52,7 +52,7 @@ ProfileImpl* CreateProfile(const std::string& name) {
   ProfileImpl* profile = GetProfileByName(name);
   // Creating a profile may involve storage partition initialization. Wait for
   // the initialization to be completed.
-  base::RunLoop().RunUntilIdle();
+  content::RunAllTasksUntilIdle();
   return profile;
 }
 void DestroyProfile(const std::string& name) {

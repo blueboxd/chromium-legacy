@@ -59,6 +59,17 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
   if (speech_recognition_service_.is_bound())
     return;
 
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  DCHECK(prefs);
+#if BUILDFLAG(ENABLE_SODA)
+  auto binary_path = prefs->GetFilePath(prefs::kSodaBinaryPath);
+  auto config_path = SpeechRecognitionService::GetSodaConfigPath(prefs);
+  if (binary_path.empty() || config_path.empty()) {
+    LOG(ERROR) << "Unable to find SODA files on the device.";
+    return;
+  }
+#endif
+
   content::ServiceProcessHost::Launch(
       speech_recognition_service_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
@@ -74,12 +85,9 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
   speech_recognition_service_.reset_on_idle_timeout(kIdleProcessTimeout);
 
   speech_recognition_service_client_.reset();
-
-  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
-  DCHECK(prefs);
-  speech_recognition_service_->SetSodaPath(
-      prefs->GetFilePath(prefs::kSodaBinaryPath),
-      prefs->GetFilePath(prefs::kSodaEnUsConfigPath));
+#if BUILDFLAG(ENABLE_SODA)
+  speech_recognition_service_->SetSodaPath(binary_path, config_path);
+#endif
   speech_recognition_service_->BindSpeechRecognitionServiceClient(
       speech_recognition_service_client_.BindNewPipeAndPassRemote());
   OnNetworkServiceDisconnect();
@@ -89,12 +97,13 @@ base::FilePath SpeechRecognitionService::GetSodaConfigPath(PrefService* prefs) {
   speech::LanguageCode language = speech::GetLanguageCode(
       prefs->GetString(prefs::kLiveCaptionLanguageCode));
   switch (language) {
+    case speech::LanguageCode::kNone:
+      NOTREACHED();
+      return base::FilePath();
     case speech::LanguageCode::kEnUs:
       return prefs->GetFilePath(prefs::kSodaEnUsConfigPath);
     case speech::LanguageCode::kJaJp:
       return prefs->GetFilePath(prefs::kSodaJaJpConfigPath);
-    default:
-      NOTREACHED();
   }
 
   return base::FilePath();

@@ -12,6 +12,7 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/x/connection.h"
 
+typedef unsigned long XID;
 typedef unsigned long VisualID;
 typedef union _XEvent XEvent;
 typedef struct _XImage XImage;

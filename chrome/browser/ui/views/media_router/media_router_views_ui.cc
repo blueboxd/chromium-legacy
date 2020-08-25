@@ -614,7 +614,8 @@ void MediaRouterViewsUI::InitCommon() {
 
   // Desktop mirror mode is always available.
   query_result_manager_->SetSourcesForCastMode(
-      MediaCastMode::DESKTOP_MIRROR, {MediaSource::ForDesktop()}, origin);
+      MediaCastMode::DESKTOP_MIRROR, {MediaSource::ForUnchosenDesktop()},
+      origin);
 
   // File mirroring is always available.
   query_result_manager_->SetSourcesForCastMode(

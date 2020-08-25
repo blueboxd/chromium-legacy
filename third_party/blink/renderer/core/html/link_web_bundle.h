@@ -43,6 +43,7 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
   bool CanHandleRequest(const KURL& url) const override;
   mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
   GetURLLoaderFactory() override;
+  String GetCacheIdentifier() const override;
 
   // Parse the given |str| as a url. If |str| doesn't meet the criteria which
   // WebBundles specification requires, this returns invalid empty KURL as an

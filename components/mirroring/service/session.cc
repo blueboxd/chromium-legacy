@@ -812,7 +812,8 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
 }
 
 void Session::OnResponseParsingError(const std::string& error_message) {
-  // TODO(crbug.com/1015467): Log the |error_message| in the mirroring logs.
+  // TODO(crbug.com/1117673): Add MR-internals logging:
+  //   VLOG(2) << "[REJECT] " << error_message;
 }
 
 void Session::CreateAudioStream(

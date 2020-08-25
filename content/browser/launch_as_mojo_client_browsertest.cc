@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "mojo/public/mojom/base/binder.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_OZONE)
@@ -93,15 +92,12 @@ class LaunchAsMojoClientBrowserTest : public ContentBrowserTest {
     channel.RemoteProcessLaunchAttempted();
 
     mojo::OutgoingInvitation invitation;
-    mojo::Remote<mojo_base::mojom::Binder> binder(
-        mojo::PendingRemote<mojo_base::mojom::Binder>(
+    mojo::Remote<mojom::ShellController> controller(
+        mojo::PendingRemote<mojom::ShellController>(
             invitation.AttachMessagePipe(0), /*version=*/0));
     mojo::OutgoingInvitation::Send(std::move(invitation),
                                    content_shell_process_.Handle(),
                                    channel.TakeLocalEndpoint());
-
-    mojo::Remote<mojom::ShellController> controller;
-    binder->Bind(controller.BindNewPipeAndPassReceiver());
     return controller;
   }
 

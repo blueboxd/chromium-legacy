@@ -5,6 +5,7 @@
 #include "ui/gfx/x/x11_error_tracker.h"
 
 #include "base/check.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
@@ -26,18 +27,18 @@ X11ErrorTracker::X11ErrorTracker() {
   // X11ErrorTracker instances on the same thread.
   DCHECK(g_handler == nullptr);
   g_handler = this;
-  XSync(GetXDisplay(), False);
-  old_handler_ = XSetErrorHandler(X11ErrorHandler);
+  XSync(GetXDisplay(), x11::False);
+  old_handler_ = reinterpret_cast<void*>(XSetErrorHandler(X11ErrorHandler));
   g_x11_error_code = 0;
 }
 
 X11ErrorTracker::~X11ErrorTracker() {
   g_handler = nullptr;
-  XSetErrorHandler(old_handler_);
+  XSetErrorHandler(reinterpret_cast<XErrorHandler>(old_handler_));
 }
 
 bool X11ErrorTracker::FoundNewError() {
-  XSync(GetXDisplay(), False);
+  XSync(GetXDisplay(), x11::False);
   unsigned char error = g_x11_error_code;
   g_x11_error_code = 0;
   return error != 0;

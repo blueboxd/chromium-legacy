@@ -31,7 +31,9 @@ const int kWaitForUIThreadSeconds = 10;
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *error));
+        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, error->serial,
+                                  error->error_code, error->request_code,
+                                  error->minor_code));
   }
   return 0;
 }

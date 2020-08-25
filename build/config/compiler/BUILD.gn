@@ -2318,10 +2318,12 @@ config("symbols") {
       swiftflags = [ "-g" ]
     }
 
-    if (use_debug_fission && !is_nacl && !is_android) {
+    if (use_debug_fission && !is_nacl &&
+        (!is_android || target_os == "android")) {
       # NOTE: Some Chrome OS builds globally set |use_debug_fission| to true,
-      # but they also build some targets against Android toolchains which aren't
-      # compatible with it.
+      # but they also build some targets whose toolchains aren't
+      # compatible with it. In particular don't turn it on for Android
+      # toolchain if not building for Android OS.
       #
       # TODO(https://crbug.com/837032): See if we can clean this up by e.g. not
       # setting use_debug_fission globally.
@@ -2329,6 +2331,16 @@ config("symbols") {
     }
     asmflags = cflags
     ldflags = []
+
+    if (use_debug_fission && is_android && target_os == "android") {
+      # NOTE: This flag is for use by the link wrapper scripts. They are also
+      # expected to remove it before sending the rest of ldflags to the actual
+      # linker. Only expect Android Chrome build on Android OS to need this.
+      ldflags += [
+        "--generate-dwp",
+        "-gsplit-dwarf",
+      ]
+    }
 
     # TODO(thakis): Figure out if there's a way to make this go for 32-bit,
     # currently we get "warning:

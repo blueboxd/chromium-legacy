@@ -882,5 +882,50 @@ std::string TracedValueJSON::ToFormattedJSON() const {
   return str;
 }
 
+TracedValue::ArrayScope::ArrayScope(TracedValue* value) : value_(value) {
+  value_->BeginArray();
+}
+
+TracedValue::ArrayScope::ArrayScope(TracedValue* value, const char* name)
+    : value_(value) {
+  value_->BeginArray(name);
+}
+
+TracedValue::ArrayScope::~ArrayScope() {
+  value_->EndArray();
+}
+
+TracedValue::ArrayScope TracedValue::AppendArrayScoped() {
+  return TracedValue::ArrayScope(this);
+}
+
+TracedValue::ArrayScope TracedValue::BeginArrayScoped(const char* name) {
+  return TracedValue::ArrayScope(this, name);
+}
+
+TracedValue::DictionaryScope::DictionaryScope(TracedValue* value)
+    : value_(value) {
+  value_->BeginDictionary();
+}
+
+TracedValue::DictionaryScope::DictionaryScope(TracedValue* value,
+                                              const char* name)
+    : value_(value) {
+  value_->BeginDictionary(name);
+}
+
+TracedValue::DictionaryScope::~DictionaryScope() {
+  value_->EndDictionary();
+}
+
+TracedValue::DictionaryScope TracedValue::AppendDictionaryScoped() {
+  return TracedValue::DictionaryScope(this);
+}
+
+TracedValue::DictionaryScope TracedValue::BeginDictionaryScoped(
+    const char* name) {
+  return TracedValue::DictionaryScope(this, name);
+}
+
 }  // namespace trace_event
 }  // namespace base

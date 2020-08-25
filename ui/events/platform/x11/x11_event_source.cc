@@ -4,11 +4,6 @@
 
 #include "ui/events/platform/x11/x11_event_source.h"
 
-#include <X11/Xlib-xcb.h>
-#include <xcb/xcb.h>
-#include <xcb/xcbext.h>
-#include <xcb/xproto.h>
-
 #include <algorithm>
 #include <memory>
 #include <type_traits>

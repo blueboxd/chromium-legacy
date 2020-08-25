@@ -7,6 +7,10 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+// gdkx.h includes Xlib.h directly, so we need to manually undef any macros
+// that conflict with the below includes.
+#undef None
+
 #include "base/check.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"

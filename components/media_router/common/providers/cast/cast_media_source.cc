@@ -197,11 +197,16 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForTabMirroring(
 }
 
 std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
-    const MediaSource::Id& source_id) {
+    const MediaSource& source) {
   // TODO(https://crbug.com/849335): Add back audio-only devices for desktop
   // mirroring when proper support is implemented.
-  return std::make_unique<CastMediaSource>(
-      source_id, std::vector<CastAppInfo>({CastAppInfo::ForCastStreaming()}));
+  CastAppInfo info = CastAppInfo::ForCastStreaming();
+  if (info.required_capabilities.Has(CastDeviceCapability::AUDIO_OUT) &&
+      !source.IsDesktopSourceWithAudio()) {
+    info.required_capabilities.Remove(CastDeviceCapability::AUDIO_OUT);
+  }
+  return std::make_unique<CastMediaSource>(source.id(),
+                                           std::vector<CastAppInfo>({info}));
 }
 
 // The logic shared by ParseCastUrl() and ParseLegacyCastUrl().
@@ -249,7 +254,7 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
   }
 
   if (audio_capture_str == "0")
-    cast_source->set_allow_audio_capture(false);
+    cast_source->set_site_requested_audio_capture(false);
 
   if (!supported_app_types.empty())
     cast_source->set_supported_app_types(supported_app_types);
@@ -393,7 +398,7 @@ std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSource(
     return CastMediaSourceForTabMirroring(source.id());
 
   if (source.IsDesktopMirroringSource())
-    return CastMediaSourceForDesktopMirroring(source.id());
+    return CastMediaSourceForDesktopMirroring(source);
 
   const GURL& url = source.url();
 
@@ -460,6 +465,20 @@ std::vector<std::string> CastMediaSource::GetAppIds() const {
     app_ids.push_back(info.app_id);
 
   return app_ids;
+}
+
+bool CastMediaSource::ProvidesStreamingAudioCapture() const {
+  if (!site_requested_audio_capture_) {
+    return false;
+  }
+  for (const auto& info : app_infos_) {
+    if ((info.app_id == kCastStreamingAppId ||
+         info.app_id == kCastStreamingAudioAppId) &&
+        info.required_capabilities.Has(CastDeviceCapability::AUDIO_OUT)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void CastMediaSource::set_supported_app_types(

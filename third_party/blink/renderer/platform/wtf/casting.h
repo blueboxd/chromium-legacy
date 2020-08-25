@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CASTING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CASTING_H_
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -57,6 +58,8 @@ struct DowncastTraits {
   template <typename U>
   static bool AllowFrom(const U&) {
     static_assert(sizeof(U) == 0, "no downcast traits specialization for T");
+    NOTREACHED();
+    return false;
   }
 };
 

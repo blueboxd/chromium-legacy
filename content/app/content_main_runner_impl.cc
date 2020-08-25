@@ -90,7 +90,7 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/dynamic_library_support.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "mojo/public/mojom/base/binder.mojom.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
@@ -393,24 +393,6 @@ void PreSandboxInit() {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-class ControlInterfaceBinderImpl : public mojo_base::mojom::Binder {
- public:
-  ControlInterfaceBinderImpl() = default;
-  ~ControlInterfaceBinderImpl() override = default;
-
-  // mojo_base::mojom::Binder:
-  void Bind(mojo::GenericPendingReceiver receiver) override {
-    GetContentClient()->browser()->BindBrowserControlInterface(
-        std::move(receiver));
-  }
-};
-
-void RunControlInterfaceBinder(mojo::ScopedMessagePipeHandle pipe) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<ControlInterfaceBinderImpl>(),
-      mojo::PendingReceiver<mojo_base::mojom::Binder>(std::move(pipe)));
-}
 
 }  // namespace
 
@@ -969,7 +951,8 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
           mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
               command_line);
       auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
-      RunControlInterfaceBinder(invitation.ExtractMessagePipe(0));
+      GetContentClient()->browser()->BindBrowserControlInterface(
+          invitation.ExtractMessagePipe(0));
     }
 
     download::SetIOTaskRunner(

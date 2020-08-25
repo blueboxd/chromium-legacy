@@ -34,7 +34,7 @@ void BluetoothSerialDeviceEnumerator::OnGotClassicAdapter(
     if (base::Contains(device_uuids, GetSerialPortProfileUUID())) {
       auto port = mojom::SerialPortInfo::New();
       port->token = base::UnguessableToken::Create();
-      port->path = base::FilePath::FromUTF8Unsafe(device->GetIdentifier());
+      port->path = base::FilePath::FromUTF8Unsafe(device->GetAddress());
       port->type = mojom::DeviceType::SPP_DEVICE;
       bluetooth_ports_.insert(
           std::make_pair(device->GetAddress(), port->token));
@@ -49,7 +49,7 @@ void BluetoothSerialDeviceEnumerator::DeviceAdded(BluetoothAdapter* adapter,
   if (base::Contains(device_uuids, GetSerialPortProfileUUID())) {
     auto port = mojom::SerialPortInfo::New();
     port->token = base::UnguessableToken::Create();
-    port->path = base::FilePath::FromUTF8Unsafe(device->GetIdentifier());
+    port->path = base::FilePath::FromUTF8Unsafe(device->GetAddress());
     port->type = mojom::DeviceType::SPP_DEVICE;
     bluetooth_ports_.insert(std::make_pair(device->GetAddress(), port->token));
     AddPort(std::move(port));
@@ -63,6 +63,20 @@ void BluetoothSerialDeviceEnumerator::DeviceRemoved(BluetoothAdapter* adapter,
   base::UnguessableToken token = it->second;
   bluetooth_ports_.erase(it);
   RemovePort(token);
+}
+
+scoped_refptr<BluetoothAdapter> BluetoothSerialDeviceEnumerator::GetAdapter() {
+  return adapter_;
+}
+
+base::Optional<std::string>
+BluetoothSerialDeviceEnumerator::GetAddressFromToken(
+    const base::UnguessableToken& token) {
+  for (const auto& entry : bluetooth_ports_) {
+    if (entry.second == token)
+      return entry.first;
+  }
+  return base::nullopt;
 }
 
 }  // namespace device

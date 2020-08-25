@@ -48,10 +48,21 @@ interface RenderAccessibilityHost {
   // reset request from the browser. When the browser requests a reset, it
   // ignores incoming remote calls until it sees one with the correct reset
   // token. Any other time, it ignores further calls with a reset token.
+  //
+  // The accessibility information sent to the browser is dependent on both
+  // the number of nodes in the DOM (and their accessibility metadata) as well
+  // as the number of changes that generate events. Therefore, this payload can
+  // become arbitrarily large.
+  // TODO(crbug.com/1088484) tracks work to improve the payload size.
+  [UnlimitedSize]
   HandleAXEvents(array<ax.mojom.AXTreeUpdate> updates,
                  array<ax.mojom.AXEvent> events, int32 reset_token) => ();
 
   // Sent to update the browser of the location of accessibility objects.
+  // Similar to HandleAXEvents, the message size is also unbounded (though in
+  // practice these message sizes are quite a bit smaller than HandleAXEvents).
+  // TODO(crbug.com/1088484) tracks work to improve the payload size.
+  [UnlimitedSize]
   HandleAXLocationChanges(array<LocationChanges> changes);
 };
 

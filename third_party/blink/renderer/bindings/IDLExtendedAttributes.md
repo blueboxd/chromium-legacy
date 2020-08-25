@@ -92,7 +92,7 @@ attribute DOMString item;
 [ImplementedAs=setItem] setter DOMString (unsigned long index);
 ```
 
-There is one interface extended attribute that only affects special operations: `[OverrideBuiltins]`.
+There is one interface extended attribute that only affects special operations: `[LegacyOverrideBuiltins]`.
 
 The following extended attributes are used on special operations, as on methods generally: `[RaisesException]`.
 
@@ -408,9 +408,9 @@ Note that `[NoInterfaceObject]` **MUST** be specified on testing interfaces, as 
 };
 ```
 
-### [OverrideBuiltins] _(i)_
+### [LegacyOverrideBuiltins] _(i)_
 
-Standard: [OverrideBuiltins](http://heycam.github.io/webidl/#OverrideBuiltins)
+Standard: [LegacyOverrideBuiltins](https://heycam.github.io/webidl/#OverrideBuiltins)
 
 Summary: Affects named property operations, making named properties shadow built-in properties of the object.
 

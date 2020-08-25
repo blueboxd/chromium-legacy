@@ -50,7 +50,7 @@ void MediaRouterDesktop::OnUserGesture() {
   MediaRouterMojoImpl::OnUserGesture();
   // Allow MRPM to intelligently update sinks and observers by passing in a
   // media source.
-  UpdateMediaSinks(MediaSource::ForDesktop().id());
+  UpdateMediaSinks(MediaSource::ForUnchosenDesktop().id());
 
   media_sink_service_->BindLogger(GetLogger());
   media_sink_service_->OnUserGesture();

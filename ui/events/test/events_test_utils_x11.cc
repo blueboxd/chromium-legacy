@@ -5,7 +5,6 @@
 #include "ui/events/test/events_test_utils_x11.h"
 
 #include <stddef.h>
-#include <xcb/xproto.h>
 
 #include "base/check_op.h"
 #include "base/notreached.h"
@@ -19,6 +18,7 @@
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xinput.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace {
 
@@ -38,14 +38,15 @@ unsigned int XEventState(int flags) {
 }
 
 // Converts EventType to XKeyEvent type.
-int XKeyEventType(ui::EventType type) {
+x11::KeyEvent::Opcode XKeyEventType(ui::EventType type) {
   switch (type) {
     case ui::ET_KEY_PRESSED:
       return x11::KeyEvent::Press;
     case ui::ET_KEY_RELEASED:
       return x11::KeyEvent::Release;
     default:
-      return 0;
+      NOTREACHED();
+      return {};
   }
 }
 
@@ -130,76 +131,49 @@ ScopedXI2Event::~ScopedXI2Event() = default;
 void ScopedXI2Event::InitKeyEvent(EventType type,
                                   KeyboardCode key_code,
                                   int flags) {
-  auto* connection = x11::Connection::Get();
-  xcb_generic_event_t ge;
-  memset(&ge, 0, sizeof(ge));
-  auto* key = reinterpret_cast<xcb_key_press_event_t*>(&ge);
-  key->response_type = XKeyEventType(type);
-  CHECK_NE(0, key->response_type);
-  key->sequence = 0;
-  key->time = 0;
-  key->event = 0;
-  key->root = 0;
-  key->child = 0;
-  key->event_x = 0;
-  key->event_y = 0;
-  key->root_x = 0;
-  key->root_y = 0;
-  key->state = XEventState(flags);
-  key->detail = XKeyCodeForWindowsKeyCode(key_code, flags, connection);
-  key->same_screen = 1;
+  x11::KeyEvent key_event{
+      .opcode = XKeyEventType(type),
+      .detail = static_cast<x11::KeyCode>(
+          XKeyCodeForWindowsKeyCode(key_code, flags, x11::Connection::Get())),
+      .state = static_cast<x11::KeyButMask>(XEventState(flags)),
+      .same_screen = true,
+  };
 
-  x11::Event x11_event(&ge, connection);
+  x11::Event x11_event(key_event);
   event_ = std::move(x11_event);
 }
 
 void ScopedXI2Event::InitMotionEvent(const gfx::Point& location,
                                      const gfx::Point& root_location,
                                      int flags) {
-  auto* connection = x11::Connection::Get();
-  xcb_generic_event_t ge;
-  memset(&ge, 0, sizeof(ge));
-  auto* motion = reinterpret_cast<xcb_motion_notify_event_t*>(&ge);
-  motion->response_type = MotionNotify;
-  motion->sequence = 0;
-  motion->time = 0;
-  motion->event = 0;
-  motion->root = 0;
-  motion->child = 0;
-  motion->event_x = location.x();
-  motion->event_y = location.y();
-  motion->root_x = root_location.x();
-  motion->root_y = root_location.y();
-  motion->state = XEventState(flags);
-  motion->same_screen = 1;
+  x11::MotionNotifyEvent motion_event{
+      .root_x = root_location.x(),
+      .root_y = root_location.y(),
+      .event_x = location.x(),
+      .event_y = location.y(),
+      .state = static_cast<x11::KeyButMask>(XEventState(flags)),
+      .same_screen = true,
+  };
 
-  x11::Event x11_event(&ge, connection);
+  x11::Event x11_event(motion_event);
   event_ = std::move(x11_event);
 }
 
 void ScopedXI2Event::InitButtonEvent(EventType type,
                                      const gfx::Point& location,
                                      int flags) {
-  auto* connection = x11::Connection::Get();
-  xcb_generic_event_t ge;
-  memset(&ge, 0, sizeof(ge));
-  auto* button = reinterpret_cast<xcb_button_press_event_t*>(&ge);
-  button->response_type = (type == ui::ET_MOUSE_PRESSED)
-                              ? x11::ButtonEvent::Press
-                              : x11::ButtonEvent::Release;
-  button->sequence = 0;
-  button->time = 0;
-  button->event = 0;
-  button->root = 0;
-  button->event_x = location.x();
-  button->event_y = location.y();
-  button->root_x = location.x();
-  button->root_y = location.y();
-  button->state = 0;
-  button->detail = XButtonEventButton(type, flags);
-  button->same_screen = 1;
+  x11::ButtonEvent button_event{
+      .opcode = type == ui::ET_MOUSE_PRESSED ? x11::ButtonEvent::Press
+                                             : x11::ButtonEvent::Release,
+      .detail = static_cast<x11::Button>(XButtonEventButton(type, flags)),
+      .root_x = location.x(),
+      .root_y = location.y(),
+      .event_x = location.x(),
+      .event_y = location.y(),
+      .same_screen = true,
+  };
 
-  x11::Event x11_event(&ge, connection);
+  x11::Event x11_event(button_event);
   event_ = std::move(x11_event);
 }
 

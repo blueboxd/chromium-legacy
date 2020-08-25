@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
 }
 
 // See crbug.com/248470
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_TestCrashRendererNotificationRemain \
     DISABLED_TestCrashRendererNotificationRemain
 #else

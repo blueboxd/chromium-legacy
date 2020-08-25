@@ -29,6 +29,11 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -99,6 +104,17 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
 
   // DesktopWidgetTestInteractive
   void SetUp() override {
+#if defined(USE_OZONE)
+    // Run tests only for X11 (ozone or not Ozone).
+    if (features::IsUsingOzonePlatform() &&
+        std::strcmp(ui::OzonePlatform::GetInstance()->GetPlatformName(),
+                    "x11") != 0) {
+      // SetUp still is required to be run. Otherwise, ViewsTestBase CHECKs in
+      // the dtor.
+      DesktopWidgetTestInteractive::SetUp();
+      GTEST_SKIP();
+    }
+#endif
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
     XSynchronize(xdisplay(), x11::True);
@@ -106,7 +122,8 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
   }
 
   void TearDown() override {
-    XSynchronize(xdisplay(), x11::False);
+    if (!IsSkipped())
+      XSynchronize(xdisplay(), x11::False);
     DesktopWidgetTestInteractive::TearDown();
   }
 

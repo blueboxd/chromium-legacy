@@ -9,14 +9,7 @@
 #error "This file should only be included by //ui/gfx/x:xprotos"
 #endif
 
-#include <X11/Xlib-xcb.h>
-#include <stdint.h>
-#include <string.h>
-#include <xcb/xcb.h>
-#include <xcb/xcbext.h>
-
 #include <bitset>
-#include <limits>
 #include <type_traits>
 
 #include "base/component_export.h"

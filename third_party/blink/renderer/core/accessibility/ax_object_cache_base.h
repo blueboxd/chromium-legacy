@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ACCESSIBILITY_AX_OBJECT_CACHE_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ACCESSIBILITY_AX_OBJECT_CACHE_BASE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -24,6 +23,8 @@ class AXObject;
 // new public API methods or similar) and remove this class.
 class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
  public:
+  AXObjectCacheBase(const AXObjectCacheBase&) = delete;
+  AXObjectCacheBase& operator=(const AXObjectCacheBase&) = delete;
   ~AXObjectCacheBase() override = default;
 
   virtual AXObject* Get(const Node*) = 0;
@@ -31,7 +32,6 @@ class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
 
  protected:
   AXObjectCacheBase() = default;
-  DISALLOW_COPY_AND_ASSIGN(AXObjectCacheBase);
 };
 
 template <>

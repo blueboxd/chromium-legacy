@@ -4,6 +4,8 @@
 
 #include "ui/gfx/x/xproto_types.h"
 
+#include <xcb/xcbext.h>
+
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto_internal.h"
@@ -92,15 +94,8 @@ FutureBase::~FutureBase() {
         if (!error)
           return;
 
-        x11::LogErrorEventDescription(XErrorEvent({
-            .type = error->response_type,
-            .display = connection->display(),
-            .resourceid = error->resource_id,
-            .serial = error->full_sequence,
-            .error_code = error->error_code,
-            .request_code = error->major_code,
-            .minor_code = error->minor_code,
-        }));
+        x11::LogErrorEventDescription(error->full_sequence, error->error_code,
+                                      error->major_code, error->minor_code);
       },
       connection_));
 }

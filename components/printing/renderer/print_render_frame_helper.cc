@@ -2270,7 +2270,7 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
   params.is_scripted = is_scripted;
   params.is_modifiable = !IsPrintingNodeOrPdfFrame(frame, node);
 
-  Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
+  GetPrintManagerHost()->DidShowPrintDialog();
 
   print_pages_params_.reset();
 

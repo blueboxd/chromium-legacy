@@ -67,6 +67,73 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
+  // Helper to open / close an array. The ctor of |ArrayScope| opens the array,
+  // the dtor closes. To be used via |TracedValue::AppendArrayScoped| and
+  // |TracedValue::BeginArrayScoped|.
+  //
+  // |ArrayScope| holds a |TracedValue| pointer which should remain a valid
+  // pointer at the time |ArrayScope::~ArrayScope| is called.
+  //
+  // |ArrayScope::ArrayScope| calls |TracedValue::BeginArray|
+  // |ArrayScope::~ArrayScope| calls |TracedValue::EndArray| (which checks if
+  // the held |TracedValue*| is in array state).
+  //
+  // Example:
+  //   std::unique_ptr<TracedValue> value(new TracedValue());
+  //   {
+  //     auto scope = value->BeginArrayScoped("array_name");
+  //     value->AppendBoolean(false);
+  //   }
+  class BASE_EXPORT ArrayScope {
+   public:
+    ~ArrayScope();
+
+   private:
+    explicit ArrayScope(TracedValue* value);
+    explicit ArrayScope(TracedValue* value, const char* name);
+
+    TracedValue* value_;
+
+    friend class TracedValue;
+  };
+
+  ArrayScope AppendArrayScoped();
+  ArrayScope BeginArrayScoped(const char* name);
+
+  // Helper to open / close a dictionary. The ctor of |DictionaryScope| opens
+  // the dictionary, the dtor closes. To be used via
+  // |TracedValue::AppendDictionaryScoped| and
+  // |TracedValue::BeginDictionaryScoped|.
+  //
+  // |DictionaryScope| holds a |TracedValue| pointer which should remain a valid
+  // pointer at the time |DictionaryScope::~DictionaryScope| is called.
+  //
+  // |DictionaryScope::DictionaryScope| calls |TracedValue::BeginDictionary|
+  // |DictionaryScope::~DictionaryScope| calls |TracedValue::EndDictionary|
+  // (which checks if the held |TracedValue*| is in dictionary state).
+  //
+  // Example:
+  //   std::unique_ptr<TracedValue> value(new TracedValue());
+  //   {
+  //     auto scope = value->BeginDictionaryScoped("dictionary_name");
+  //     value->SetBoolean("my_boolean", false);
+  //   }
+  class BASE_EXPORT DictionaryScope {
+   public:
+    ~DictionaryScope();
+
+   private:
+    explicit DictionaryScope(TracedValue* value);
+    explicit DictionaryScope(TracedValue* value, const char* name);
+
+    TracedValue* value_;
+
+    friend class TracedValue;
+  };
+
+  DictionaryScope AppendDictionaryScoped();
+  DictionaryScope BeginDictionaryScoped(const char* name);
+
   class BASE_EXPORT Array;
   class BASE_EXPORT Dictionary;
   class BASE_EXPORT ValueHolder;

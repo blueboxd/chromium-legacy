@@ -2947,7 +2947,7 @@ static_library("browser") {
       "updates/update_notification_client.h",
       "updates/update_notification_service_bridge_android.cc",
       "updates/update_notification_service_bridge_android.h",
-      "video_tutorials/android/video_tutorial_service_bridge_factory.cc",
+      "video_tutorials/internal/android/video_tutorial_service_bridge_factory.cc",
       "webauthn/android/cable_module_android.cc",
     ]
     public_deps += [
@@ -4106,8 +4106,6 @@ static_library("browser") {
   if (chromeos_is_browser_only) {
     assert(enable_native_notifications)
     sources += [
-      "chrome_browser_main_extra_parts_lacros.cc",
-      "chrome_browser_main_extra_parts_lacros.h",
       "lacros/lacros_chrome_service_delegate_impl.cc",
       "lacros/lacros_chrome_service_delegate_impl.h",
       "metrics/lacros_metrics_provider.cc",

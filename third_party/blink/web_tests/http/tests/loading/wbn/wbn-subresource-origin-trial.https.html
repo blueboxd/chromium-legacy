@@ -37,19 +37,29 @@ promise_test(async (t) => {
 
   assert_true(window.internals.isUseCounted(document, SubresourceWebBundles));
 
-  const result_promise = new Promise((resolve) => {
-      // This function will be called from script.js
-      window.report_result = resolve;
-    });
+  async function loadScriptAndWaitReport(script_url) {
+    const result_promise = new Promise((resolve) => {
+        // This function will be called from script.js
+        window.report_result = resolve;
+      });
 
-  const script = document.createElement('script');
-  script.src = script_url;
-  document.body.appendChild(script);
+    const script = document.createElement('script');
+    script.src = script_url;
+    document.body.appendChild(script);
+    return result_promise;
+  }
 
   assert_equals(
-    await result_promise,
+    await loadScriptAndWaitReport(script_url),
     'from web bundle',
     'Script should be loaded from the web bundle.');
+  document.body.removeChild(link);
+
+  assert_equals(
+    await loadScriptAndWaitReport(script_url),
+    'from server',
+    'Script should be loaded from the server after removing the link ' +
+    'rel=webbundle.');
 }, 'Subresource Web Bundles Origin Trial');
 </script>
 </body>

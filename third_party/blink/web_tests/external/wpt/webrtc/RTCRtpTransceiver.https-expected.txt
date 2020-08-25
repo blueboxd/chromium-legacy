@@ -23,19 +23,19 @@ PASS checkRemoveAndReadd
 PASS checkAddTrackExistingTransceiverThenRemove
 FAIL checkRemoveTrackNegotiation assert_equals: pc2.setRemoteDescription(offer) should've added 2 tracks to receive stream expected 2 but got 0
 FAIL checkMute assert_true: expected true got false
-FAIL checkStop promise_test: Unhandled rejection with value: object "TypeError: stoppedTransceiver.stop is not a function"
-FAIL checkStopAfterCreateOffer promise_test: Unhandled rejection with value: object "TypeError: pc1.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterSetLocalOffer promise_test: Unhandled rejection with value: object "TypeError: pc1.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterSetRemoteOffer promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterCreateAnswer promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterSetLocalAnswer promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterClose assert_equals: Stopping a transceiver on a closed PC should throw. throws InvalidStateError expected "InvalidStateError" but got "TypeError"
-FAIL checkLocalRollback promise_test: Unhandled rejection with value: object "TypeError: pc.getTransceivers(...)[0].stop is not a function"
+FAIL checkStop assert_equals: getReceivers does not expose a receiver of a stopped transceiver expected 0 but got 1
+FAIL checkStopAfterCreateOffer assert_equals: expected "[{stopped:true}]" but got "[{stopped:false}]"
+FAIL checkStopAfterSetLocalOffer assert_equals: expected "[{stopped:true}]" but got "[{stopped:false}]"
+FAIL checkStopAfterSetRemoteOffer assert_equals: expected "[{mid:null,stopped:true}]" but got "[{mid:\"0\",stopped:false}]"
+FAIL checkStopAfterCreateAnswer assert_equals: expected "[{mid:null,stopped:true}]" but got "[{mid:\"0\",stopped:false}]"
+FAIL checkStopAfterSetLocalAnswer assert_equals: expected "[{mid:null,stopped:true}]" but got "[{mid:\"0\",stopped:false}]"
+PASS checkStopAfterClose
+FAIL checkLocalRollback assert_equals: expected "[{stopped:true}]" but got "[{stopped:false}]"
 PASS checkRollbackAndSetRemoteOfferWithDifferentType
 FAIL checkRemoteRollback assert_equals: expected "{currentDirection:null,mid:null,stopped:true}" but got "{currentDirection:null,mid:null,stopped:false}"
-FAIL checkMsectionReuse promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
-FAIL checkStopAfterCreateOfferWithReusedMsection promise_test: Unhandled rejection with value: object "TypeError: pc1.getTransceivers(...)[1].stop is not a function"
-FAIL checkAddIceCandidateToStoppedTransceiver promise_test: Unhandled rejection with value: object "TypeError: pc1.getTransceivers(...)[1].stop is not a function"
-FAIL checkBundleTagRejected promise_test: Unhandled rejection with value: object "TypeError: pc2.getTransceivers(...)[0].stop is not a function"
+FAIL checkMsectionReuse assert_equals: expected "[{currentDirection:null,mid:null,stopped:true}]" but got "[{currentDirection:\"inactive\",mid:\"0\",stopped:false}]"
+PASS checkStopAfterCreateOfferWithReusedMsection
+PASS checkAddIceCandidateToStoppedTransceiver
+FAIL checkBundleTagRejected promise_test: Unhandled rejection with value: object "InvalidAccessError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote offer sdp: The m= section with mid='1' should be rejected."
 Harness: the test ran to completion.
 

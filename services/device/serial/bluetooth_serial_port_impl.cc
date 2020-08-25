@@ -14,26 +14,29 @@ namespace device {
 
 // static
 void BluetoothSerialPortImpl::Create(
-    std::unique_ptr<BluetoothDevice> device,
+    scoped_refptr<BluetoothAdapter> adapter,
+    const std::string& address,
     mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBluetoothSerialPortProfileInSerialApi));
 
   // This BluetoothSerialPortImpl is owned by |receiver| and |watcher|.
-  new BluetoothSerialPortImpl(std::move(device), std::move(receiver),
+  new BluetoothSerialPortImpl(std::move(adapter), address, std::move(receiver),
                               std::move(watcher));
 }
 
 BluetoothSerialPortImpl::BluetoothSerialPortImpl(
-    std::unique_ptr<BluetoothDevice> device,
+    scoped_refptr<BluetoothAdapter> adapter,
+    const std::string& address,
     mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher)
     : receiver_(this, std::move(receiver)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       out_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      bluetooth_device_(std::move(device)) {
+      bluetooth_adapter_(std::move(adapter)),
+      address_(address) {
   receiver_.set_disconnect_handler(
       base::BindOnce([](BluetoothSerialPortImpl* self) { delete self; },
                      base::Unretained(this)));
@@ -55,12 +58,16 @@ void BluetoothSerialPortImpl::Open(
     OpenCallback callback) {
   if (client)
     client_.Bind(std::move(client));
-
-  BluetoothDevice::UUIDSet device_uuids = bluetooth_device_->GetUUIDs();
+  BluetoothDevice* device = bluetooth_adapter_->GetDevice(address_);
+  if (!device) {
+    std::move(callback).Run(false);
+    return;
+  }
+  BluetoothDevice::UUIDSet device_uuids = device->GetUUIDs();
   if (base::Contains(device_uuids, GetSerialPortProfileUUID())) {
     auto copyable_callback =
         base::AdaptCallbackForRepeating(std::move(callback));
-    bluetooth_device_->ConnectToService(
+    device->ConnectToService(
         GetSerialPortProfileUUID(),
         base::BindOnce(&BluetoothSerialPortImpl::OnSocketConnected,
                        weak_ptr_factory_.GetWeakPtr(), copyable_callback),

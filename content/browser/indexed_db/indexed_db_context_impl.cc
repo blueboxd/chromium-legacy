@@ -13,7 +13,6 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
@@ -25,6 +24,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
@@ -129,7 +129,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       force_keep_session_state_(false),
       quota_manager_proxy_(quota_manager_proxy),
       io_task_runner_(io_task_runner),
-      clock_(clock) {
+      clock_(clock),
+      filesystem_proxy_(storage::CreateFilesystemProxy()) {
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
@@ -220,7 +221,8 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin,
           idb_directory);
   bool success = s.ok();
   if (success)
-    success = base::DeletePathRecursively(GetBlobStorePath(origin));
+    success =
+        filesystem_proxy_->RemoveDirectoryRecursively(GetBlobStorePath(origin));
   QueryDiskAndUpdateQuotaUsage(origin);
   if (success) {
     GetOriginSet()->erase(origin);
@@ -703,10 +705,11 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
   }
 
   base::FilePath idb_directory = GetLevelDBPath(origin);
-  base::File::Info file_info;
-  if (!base::GetFileInfo(idb_directory, &file_info))
+  base::Optional<base::File::Info> info =
+      filesystem_proxy_->GetFileInfo(idb_directory);
+  if (!info.has_value())
     return base::Time();
-  return file_info.last_modified;
+  return info->last_modified;
 }
 
 size_t IndexedDBContextImpl::GetConnectionCountSync(const Origin& origin) {
@@ -829,7 +832,8 @@ void IndexedDBContextImpl::Shutdown() {
                   context->origins_to_purge_on_shutdown_.end())
                 continue;
               factory->ForceClose(*origin, false);
-              base::DeletePathRecursively(*file_path);
+              context->filesystem_proxy_->RemoveDirectoryRecursively(
+                  *file_path);
             }
           },
           base::WrapRefCounted(this)));
@@ -856,7 +860,7 @@ int64_t IndexedDBContextImpl::ReadUsageFromDisk(const Origin& origin) const {
 
   int64_t total_size = 0;
   for (const base::FilePath& path : GetStoragePaths(origin))
-    total_size += base::ComputeDirectorySize(path);
+    total_size += filesystem_proxy_->ComputeDirectorySize(path);
   return total_size;
 }
 

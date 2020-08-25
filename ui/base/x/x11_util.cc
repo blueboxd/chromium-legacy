@@ -101,7 +101,9 @@ int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
 
   if (base::CurrentThread::Get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *e));
+        FROM_HERE,
+        base::BindOnce(&x11::LogErrorEventDescription, e->serial, e->error_code,
+                       e->request_code, e->minor_code));
   } else {
     LOG(ERROR) << "X error received: "
                << "serial " << e->serial << ", "

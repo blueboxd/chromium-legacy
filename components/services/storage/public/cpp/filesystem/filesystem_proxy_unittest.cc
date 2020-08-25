@@ -28,6 +28,9 @@ namespace storage {
 namespace {
 
 constexpr char kFile1Contents[] = "Hello, world!";
+constexpr char kFile2Contents[] = "Goodbye, cruel world!";
+constexpr char kDir1File1Contents[] = "asdf";
+constexpr char kDir1File2Contents[] = "qwerty";
 
 using ::testing::UnorderedElementsAre;
 
@@ -62,10 +65,14 @@ class FilesystemProxyTest : public testing::TestWithParam<bool> {
     CHECK(base::CreateDirectory(root.Append(kDir2)));
     CHECK(base::WriteFile(root.Append(kFile1), kFile1Contents,
                           base::size(kFile1Contents) - 1));
-    CHECK(base::WriteFile(root.Append(kFile2), " ", 1));
-    CHECK(base::WriteFile(root.Append(kDir1).Append(kDir1File1), " ", 1));
-    CHECK(base::WriteFile(root.Append(kDir1).Append(kDir1File2), " ", 1));
-    CHECK(base::WriteFile(root.Append(kDir2).Append(kDir1File2), " ", 1));
+    CHECK(base::WriteFile(root.Append(kFile2), kFile2Contents,
+                          base::size(kFile2Contents) - 1));
+    CHECK(base::WriteFile(root.Append(kDir1).Append(kDir1File1),
+                          kDir1File1Contents,
+                          base::size(kDir1File1Contents) - 1));
+    CHECK(base::WriteFile(root.Append(kDir1).Append(kDir1File2),
+                          kDir1File2Contents,
+                          base::size(kDir1File2Contents) - 1));
 
     if (UseRestrictedFilesystem()) {
       // Run a remote FilesystemImpl on a background thread to exercise
@@ -323,9 +330,38 @@ TEST_P(FilesystemProxyTest, RemoveFile) {
 
 TEST_P(FilesystemProxyTest, CreateAndRemoveDirectory) {
   const base::FilePath kNewDirectoryName{FILE_PATH_LITERAL("new_dir")};
-  EXPECT_EQ(base::File::FILE_OK, proxy().CreateDirectory(kNewDirectoryName));
+
   EXPECT_TRUE(proxy().RemoveDirectory(kNewDirectoryName));
-  EXPECT_FALSE(proxy().RemoveDirectory(kNewDirectoryName));
+
+  EXPECT_EQ(base::File::FILE_OK, proxy().CreateDirectory(kNewDirectoryName));
+  EXPECT_TRUE(proxy().PathExists(kNewDirectoryName));
+
+  EXPECT_TRUE(proxy().RemoveDirectory(kNewDirectoryName));
+
+  EXPECT_FALSE(proxy().PathExists(kNewDirectoryName));
+  EXPECT_TRUE(proxy().RemoveDirectory(kNewDirectoryName));
+}
+
+TEST_P(FilesystemProxyTest, RemoveDirectoryFailsOnSubDirectory) {
+  // kDir1 has a subdirectory kDir1Dir1, which RemoveDirectory can't remove.
+  EXPECT_TRUE(proxy().PathExists(kDir1));
+  EXPECT_FALSE(proxy().RemoveDirectory(kDir1));
+  EXPECT_TRUE(proxy().PathExists(kDir1));
+}
+
+TEST_P(FilesystemProxyTest, RemoveDirectoryRecursively) {
+  EXPECT_TRUE(proxy().PathExists(kDir1));
+  EXPECT_TRUE(proxy().RemoveDirectoryRecursively(kDir1));
+  EXPECT_FALSE(proxy().PathExists(kDir1));
+  EXPECT_TRUE(proxy().RemoveDirectoryRecursively(kDir1));
+}
+
+TEST_P(FilesystemProxyTest, GetMaximumPathComponentLength) {
+  // This has different values on different platforms, so merely smoke test
+  // this to make sure it returns a reasonable valid value.
+  base::Optional<int> max = proxy().GetMaximumPathComponentLength(kDir1);
+  ASSERT_TRUE(max.has_value());
+  EXPECT_GT(*max, 50);
 }
 
 TEST_P(FilesystemProxyTest, GetFileInfo) {
@@ -342,7 +378,8 @@ TEST_P(FilesystemProxyTest, GetFileInfo) {
       proxy().GetFileInfo(kDir1.Append(kDir1File1));
   ASSERT_TRUE(dir1_file1_info.has_value());
   EXPECT_FALSE(dir1_file1_info->is_directory);
-  EXPECT_EQ(1, dir1_file1_info->size);
+  EXPECT_EQ(static_cast<int>(base::size(kDir1File1Contents) - 1),
+            dir1_file1_info->size);
 
   const base::FilePath kBadFilename{FILE_PATH_LITERAL("bad_file")};
   EXPECT_FALSE(proxy().GetFileInfo(kBadFilename).has_value());
@@ -402,6 +439,13 @@ TEST_P(FilesystemProxyTest, LockFile) {
   EXPECT_NE(nullptr, result.value());
 }
 
+TEST_P(FilesystemProxyTest, ComputeDirectorySize) {
+  // The file size does not include the null terminator, so subtract 1 per file.
+  int64_t expected_size =
+      base::size(kDir1File1Contents) + base::size(kDir1File2Contents) - 2;
+  EXPECT_EQ(proxy().ComputeDirectorySize(kDir1), expected_size);
+}
+
 TEST_P(FilesystemProxyTest, AbsolutePathEqualToRoot) {
   // Verifies that if a delegate is given an absolute path identical to its
   // root path, it is correctly resolved to an empty relative path and can
@@ -426,6 +470,14 @@ TEST_P(FilesystemProxyTest, AbsolutePathWithinRoot) {
               UnorderedElementsAre(MakeAbsolute(kDir1.Append(kDir1File1)),
                                    MakeAbsolute(kDir1.Append(kDir1File2)),
                                    MakeAbsolute(kDir1.Append(kDir1Dir1))));
+}
+
+TEST_P(FilesystemProxyTest, WriteFileAtomically) {
+  const base::FilePath kFile{FILE_PATH_LITERAL("some_new_file")};
+
+  const std::string kData{"files can have a little data, as a treat"};
+  EXPECT_TRUE(proxy().WriteFileAtomically(kFile, kData));
+  EXPECT_EQ(kData, ReadFileContentsAtPath(kFile));
 }
 
 INSTANTIATE_TEST_SUITE_P(, FilesystemProxyTest, testing::Bool());

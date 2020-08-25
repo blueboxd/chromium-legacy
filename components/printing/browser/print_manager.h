@@ -42,6 +42,7 @@ class PrintManager : public content::WebContentsObserver,
   // printing::mojom::PrintManager:
   void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override;
   void DidGetDocumentCookie(int32_t cookie) override;
+  void DidShowPrintDialog() override;
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -104,6 +105,9 @@ class PrintManager : public content::WebContentsObserver,
 
   int number_pages_ = 0;  // Number of pages to print in the print job.
   int cookie_ = 0;        // The current document cookie.
+  // Holds WebContents associated mojo receivers.
+  content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
+      print_manager_host_receivers_;
 
 #if defined(OS_ANDROID)
   // Callback to execute when done writing pdf.
@@ -117,9 +121,6 @@ class PrintManager : public content::WebContentsObserver,
   std::map<content::RenderFrameHost*,
            mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>>
       print_render_frames_;
-
-  content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
-      print_manager_host_receivers_;
 };
 
 }  // namespace printing

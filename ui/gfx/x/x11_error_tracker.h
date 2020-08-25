@@ -5,8 +5,6 @@
 #ifndef UI_GFX_X_X11_ERROR_TRACKER_H_
 #define UI_GFX_X_X11_ERROR_TRACKER_H_
 
-#include <X11/Xlib.h>
-
 #include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -26,7 +24,10 @@ class GFX_EXPORT X11ErrorTracker {
   bool FoundNewError();
 
  private:
-  XErrorHandler old_handler_;
+  // The real type of |old_handler_| is XErrorHandler, or "int
+  // (*handler)(Display *, XErrorEvent *)".  However, XErrorEvent cannot be
+  // forward declared, so void* is necessary here.
+  void* old_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(X11ErrorTracker);
 };

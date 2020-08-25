@@ -7,6 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -22,15 +23,17 @@ namespace device {
 class BluetoothSerialPortImpl : public mojom::SerialPort {
  public:
   // Creates of instance of BluetoothSerialPortImpl using a Bluetooth
-  // device and a receiver/watcher to create a pipe. The receiver and
-  // watcher will own this object.
+  // adapter, a Bluetooth device address and a receiver/watcher to
+  // create a pipe. The receiver and watcher will own this object.
   static void Create(
-      std::unique_ptr<BluetoothDevice> device,
+      scoped_refptr<BluetoothAdapter> adapter,
+      const std::string& address,
       mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher);
 
   BluetoothSerialPortImpl(
-      std::unique_ptr<BluetoothDevice> device,
+      scoped_refptr<BluetoothAdapter> adapter,
+      const std::string& address,
       mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher);
   BluetoothSerialPortImpl(const BluetoothSerialPortImpl&) = delete;
@@ -91,8 +94,9 @@ class BluetoothSerialPortImpl : public mojom::SerialPort {
   FlushCallback write_flush_callback_;
   DrainCallback drain_callback_;
 
-  scoped_refptr<device::BluetoothSocket> bluetooth_socket_;
-  std::unique_ptr<BluetoothDevice> bluetooth_device_;
+  scoped_refptr<BluetoothSocket> bluetooth_socket_;
+  const scoped_refptr<BluetoothAdapter> bluetooth_adapter_;
+  const std::string address_;
 
   bool read_pending_ = false;
   bool write_pending_ = false;

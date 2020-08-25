@@ -114,7 +114,7 @@ TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
 
 TEST_F(MediaRouterDesktopTest, OnUserGesture) {
   EXPECT_CALL(mock_extension_provider_,
-              UpdateMediaSinks(MediaSource::ForDesktop().id()));
+              UpdateMediaSinks(MediaSource::ForUnchosenDesktop().id()));
   router()->OnUserGesture();
   base::RunLoop().RunUntilIdle();
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
-#define CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
+#ifndef CHROME_BROWSER_VIDEO_TUTORIALS_INTERNAL_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
+#define CHROME_BROWSER_VIDEO_TUTORIALS_INTERNAL_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
 
 #include "base/android/jni_android.h"
 #include "base/supports_user_data.h"
@@ -42,4 +42,4 @@ class VideoTutorialServiceBridge : public base::SupportsUserData::Data {
 
 }  // namespace video_tutorials
 
-#endif  // CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
+#endif  // CHROME_BROWSER_VIDEO_TUTORIALS_INTERNAL_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_

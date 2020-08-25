@@ -4,6 +4,12 @@
 
 #include "ui/gfx/x/xproto_internal.h"
 
+#include <stdint.h>
+#include <xcb/xcb.h>
+#include <xcb/xcbext.h>
+
+#include "ui/gfx/x/x11.h"
+
 // XCB used to send requests with FDs by sending each FD individually with
 // xcb_send_fd(), then the request with xcb_send_request().  However, there's a
 // race condition -- FDs can get mixed up if multiple threads are sending them

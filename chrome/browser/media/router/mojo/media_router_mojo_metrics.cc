@@ -147,7 +147,7 @@ void MediaRouterMojoMetrics::RecordSiteInitiatedMirroringStarted(
   auto cast_source = CastMediaSource::FromMediaSource(media_source);
   if (cast_source) {
     ukm::builders::MediaRouter_SiteInitiatedMirroringStarted(source_id)
-        .SetAllowAudioCapture(cast_source->allow_audio_capture())
+        .SetAllowAudioCapture(cast_source->site_requested_audio_capture())
         .Record(ukm::UkmRecorder::Get());
   }
 }

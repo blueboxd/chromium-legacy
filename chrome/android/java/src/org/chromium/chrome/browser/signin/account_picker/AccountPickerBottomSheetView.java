@@ -152,11 +152,12 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      */
     void setUpSignInGeneralErrorView() {
         mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_error_title);
+        mAccountPickerSubtitle.setText(R.string.signin_account_picker_general_error_subtitle);
         mAccountPickerSubtitle.setVisibility(View.VISIBLE);
         mContentView.findViewById(R.id.account_picker_signin_spinner_view)
                 .setVisibility(View.INVISIBLE);
-        mContinueAsButton.setVisibility(View.VISIBLE);
         mContinueAsButton.setText(R.string.signin_account_picker_general_error_button);
+        mContinueAsButton.setVisibility(View.VISIBLE);
 
         mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
         mSelectedAccountView.setVisibility(View.GONE);
@@ -164,13 +165,14 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
 
     /**
      * Sets up the view for sign-in auth error.
-     * TODO(https://crbug.com/1116952): Add strings for subtitle and button for sign-in auth error
      */
     void setUpSignInAuthErrorView() {
         mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_error_title);
+        mAccountPickerSubtitle.setText(R.string.signin_account_picker_auth_error_subtitle);
         mAccountPickerSubtitle.setVisibility(View.VISIBLE);
         mContentView.findViewById(R.id.account_picker_signin_spinner_view)
                 .setVisibility(View.INVISIBLE);
+        mContinueAsButton.setText(R.string.auth_error_card_button);
         mContinueAsButton.setVisibility(View.VISIBLE);
 
         mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);

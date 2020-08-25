@@ -216,9 +216,11 @@ bool PrintViewManager::PrintPreview(
   return true;
 }
 
-void PrintViewManager::OnDidShowPrintDialog(content::RenderFrameHost* rfh) {
-  if (rfh != print_preview_rfh_)
+void PrintViewManager::DidShowPrintDialog() {
+  if (print_manager_host_receivers_.GetCurrentTargetFrame() !=
+      print_preview_rfh_) {
     return;
+  }
 
   if (on_print_dialog_shown_callback_)
     std::move(on_print_dialog_shown_callback_).Run();
@@ -302,7 +304,6 @@ bool PrintViewManager::OnMessageReceived(
   FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManager, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_SetupScriptedPrintPreview, &helper,
         FrameDispatchHelper::OnSetupScriptedPrintPreview)

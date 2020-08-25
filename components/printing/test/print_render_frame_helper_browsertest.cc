@@ -229,6 +229,7 @@ class TestPrintManagerHost
     printer_->SetPrintedPagesCount(cookie, number_pages);
   }
   void DidGetDocumentCookie(int32_t cookie) override {}
+  void DidShowPrintDialog() override {}
 
   void SetExpectedPagesCount(int32_t number_pages) {
     number_pages_ = number_pages;

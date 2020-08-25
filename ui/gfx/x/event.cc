@@ -4,6 +4,8 @@
 
 #include "ui/gfx/x/event.h"
 
+#include <xcb/xcb.h>
+
 #include <cstring>
 
 #include "base/check_op.h"

@@ -4,9 +4,6 @@
 
 #include "ui/gfx/x/x11_atom_cache.h"
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-
 #include <utility>
 #include <vector>
 

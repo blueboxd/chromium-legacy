@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
@@ -1881,8 +1882,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // External applications and services may launch the browser in a mode which
   // exposes browser control interfaces via Mojo. Any such interface binding
   // request received from an external client is passed to this method.
-  virtual void BindBrowserControlInterface(
-      mojo::GenericPendingReceiver receiver);
+  virtual void BindBrowserControlInterface(mojo::ScopedMessagePipeHandle pipe);
 
   // Returns true when a context (e.g., iframe) whose URL is |url| should
   // inherit the parent COEP value implicitly, similar to "blob:"

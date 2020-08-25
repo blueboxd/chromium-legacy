@@ -50,16 +50,25 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemImpl
                 mojom::FileReadAccess read_access,
                 mojom::FileWriteAccess write_access,
                 OpenFileCallback callback) override;
+  void WriteFileAtomically(const base::FilePath& path,
+                           const std::string& contents,
+                           WriteFileAtomicallyCallback callback) override;
   void RemoveFile(const base::FilePath& path,
                   RemoveFileCallback callback) override;
   void CreateDirectory(const base::FilePath& path,
                        CreateDirectoryCallback callback) override;
   void RemoveDirectory(const base::FilePath& path,
                        RemoveDirectoryCallback callback) override;
+  void RemoveDirectoryRecursively(
+      const base::FilePath& path,
+      RemoveDirectoryRecursivelyCallback callback) override;
   void GetFileInfo(const base::FilePath& path,
                    GetFileInfoCallback callback) override;
   void GetPathAccess(const base::FilePath& path,
                      GetPathAccessCallback callback) override;
+  void GetMaximumPathComponentLength(
+      const base::FilePath& path,
+      GetMaximumPathComponentLengthCallback callback) override;
   void RenameFile(const base::FilePath& old_path,
                   const base::FilePath& new_path,
                   RenameFileCallback callback) override;

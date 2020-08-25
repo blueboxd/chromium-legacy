@@ -230,8 +230,8 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     const std::vector<const api::events::Rule*>& api_rules) {
   EvaluationScope evaluation_scope(this);
   const Extension* extension = ExtensionRegistry::Get(browser_context())
-      ->GetInstalledExtension(extension_id);
-  DCHECK(extension);
+      ->enabled_extensions().GetByID(extension_id);
+  CHECK(extension);
 
   std::string error;
   RulesMap new_rules;

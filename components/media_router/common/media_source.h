@@ -96,18 +96,17 @@ class MediaSource {
   static MediaSource ForPresentationUrl(const GURL& presentation_url);
 
   // Creates a media source for a specific desktop.
-  static MediaSource ForDesktop(const std::string& desktop_media_id);
+  // |registered_desktop_stream_id| is the string returned by
+  // content::DesktopStreamsRegistry::RegisterStream().
+  static MediaSource ForDesktop(const std::string& registered_desktop_stream_id,
+                                bool with_audio);
 
-  // Creates a media source representing "the" desktop.  When possible, prefer
-  // the form with an argument instead.  This type of source is used to
-  // represent using a desktop as a media source at a point where, in the case
-  // of multiple desktops, the actual desktop to use cannot be determined.
-  // Before a route can be created using the source, the desktop picker must be
-  // invoked to choose a specific desktop.
-  //
-  // TODO(crbug.com/809249): See if this method can be removed after the
-  // extension-based Cast MRP is removed.
-  static MediaSource ForDesktop();
+  // Creates a media source representing a yet-to-be-chosen desktop, screen or
+  // window. This must never be passed to a mojom::MediaRouteProvider
+  // implementation's CreateRoute(). This is just a placeholder for the media
+  // router UI until the moment the user initiates capture and picks a specific
+  // desktop/screen/window.
+  static MediaSource ForUnchosenDesktop();
 
   // Returns true if source outputs its content via tab mirroring and isn't a
   // local file.
@@ -128,11 +127,14 @@ class MediaSource {
   // source and -1 for non-tab sources or the ForAnyTab() source.
   int TabId() const;
 
-  // When this source was created by ForDesktop(string), returns a stream ID
-  // suitable for passing to
-  // content::DesktopStreamsRegistry::RequestMediaForStreamId().  Otherwise
+  // When this source was created by ForDesktop(), returns the stream ID to pass
+  // to content::DesktopStreamsRegistry::RequestMediaForStreamId(). Otherwise,
   // returns base::nullopt.
   base::Optional<std::string> DesktopStreamId() const;
+
+  // Returns true if this source represents desktop capture that also provides
+  // audio loopback capture. Returns false otherwise.
+  bool IsDesktopSourceWithAudio() const;
 
   // Returns true this source outputs its content via DIAL.
   // TODO(crbug.com/804419): Move this to in-browser DIAL/Cast MRP when we have

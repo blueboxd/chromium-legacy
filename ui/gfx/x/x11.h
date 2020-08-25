@@ -64,6 +64,8 @@ extern "C" {
 #include <X11/keysym.h>
 }
 
+#include "ui/gfx/x/xproto_undef.h"
+
 #include "ui/gfx/x/connection.h"
 
 // These commonly used names are undefined and if necessary recreated
@@ -75,18 +77,18 @@ extern "C" {
 // headers than initially expected, including system headers like
 // those from X11.
 
-#undef Status         // Defined by X11/Xlib.h to int
-#undef Bool           // Defined by X11/Xlib.h to int
-#undef RootWindow     // Defined by X11/Xlib.h
-#undef DestroyAll     // Defined by X11/X.h to 0
-#undef Always         // Defined by X11/X.h to 2
-#undef FocusIn        // Defined by X.h to 9
-#undef FocusOut       // Defined by X.h to 10
-#undef None           // Defined by X11/X.h to 0L
-#undef True           // Defined by X11/Xlib.h to 1
-#undef False          // Defined by X11/Xlib.h to 0
-#undef CurrentTime    // Defined by X11/X.h to 0L
-#undef Success        // Defined by X11/X.h to 0
+#undef Status       // Defined by X11/Xlib.h to int
+#undef Bool         // Defined by X11/Xlib.h to int
+#undef RootWindow   // Defined by X11/Xlib.h
+#undef DestroyAll   // Defined by X11/X.h to 0
+#undef Always       // Defined by X11/X.h to 2
+#undef FocusIn      // Defined by X.h to 9
+#undef FocusOut     // Defined by X.h to 10
+#undef None         // Defined by X11/X.h to 0L
+#undef True         // Defined by X11/Xlib.h to 1
+#undef False        // Defined by X11/Xlib.h to 0
+#undef CurrentTime  // Defined by X11/X.h to 0L
+#undef Success      // Defined by X11/X.h to 0
 
 // The x11 namespace allows to scope X11 constants and types that
 // would be problematic at the default preprocessor level.

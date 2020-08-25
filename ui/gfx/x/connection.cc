@@ -4,10 +4,8 @@
 
 #include "ui/gfx/x/connection.h"
 
-#include <X11/Xlib-xcb.h>
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
 #include <xcb/xcb.h>
+#include <xcb/xcbext.h>
 
 #include <algorithm>
 
@@ -21,6 +19,7 @@
 #include "ui/gfx/x/bigreq.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/randr.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_switches.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_internal.h"
@@ -194,12 +193,12 @@ void ConvertCase(KeySym sym, KeySym* lower, KeySym* upper) {
   *upper = static_cast<KeySym>(upper32);
 }
 
-bool IsKeypadKey(KeySym keysym) {
+bool IsXKeypadKey(KeySym keysym) {
   auto key = static_cast<uint32_t>(keysym);
   return key >= XK_KP_Space && key <= XK_KP_Equal;
 }
 
-bool IsPrivateKeypadKey(KeySym keysym) {
+bool IsPrivateXKeypadKey(KeySym keysym) {
   auto key = static_cast<uint32_t>(keysym);
   return key >= 0x11000000 && key <= 0x1100FFFF;
 }
@@ -621,7 +620,7 @@ KeySym Connection::TranslateKey(uint32_t key, unsigned int modifiers) const {
 
   if ((modifiers & num_lock_) &&
       (n_keysyms > 1 &&
-       (IsKeypadKey(syms[1]) || IsPrivateKeypadKey(syms[1])))) {
+       (IsXKeypadKey(syms[1]) || IsPrivateXKeypadKey(syms[1])))) {
     if ((modifiers & ShiftMask) ||
         ((modifiers & LockMask) && (lock_meaning_ == XK_Shift_Lock))) {
       return syms[0];

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/task/post_task.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
@@ -200,6 +201,19 @@ FileErrorOr<base::File> FilesystemProxy::OpenFile(const base::FilePath& path,
   return file;
 }
 
+bool FilesystemProxy::WriteFileAtomically(const base::FilePath& path,
+                                          const std::string& contents) {
+  if (!remote_directory_) {
+    return base::ImportantFileWriter::WriteFileAtomically(
+        MaybeMakeAbsolute(path), contents);
+  }
+
+  bool success = false;
+  remote_directory_->WriteFileAtomically(MakeRelative(path), contents,
+                                         &success);
+  return success;
+}
+
 bool FilesystemProxy::RemoveFile(const base::FilePath& path) {
   if (!remote_directory_)
     return base::DeleteFile(MaybeMakeAbsolute(path));
@@ -224,13 +238,22 @@ base::File::Error FilesystemProxy::CreateDirectory(const base::FilePath& path) {
 bool FilesystemProxy::RemoveDirectory(const base::FilePath& path) {
   if (!remote_directory_) {
     const base::FilePath full_path = MaybeMakeAbsolute(path);
-    if (!base::DirectoryExists(full_path))
-      return false;
     return base::DeleteFile(full_path);
   }
 
   bool success = false;
   remote_directory_->RemoveDirectory(MakeRelative(path), &success);
+  return success;
+}
+
+bool FilesystemProxy::RemoveDirectoryRecursively(const base::FilePath& path) {
+  if (!remote_directory_) {
+    const base::FilePath full_path = MaybeMakeAbsolute(path);
+    return base::DeletePathRecursively(full_path);
+  }
+
+  bool success = false;
+  remote_directory_->RemoveDirectoryRecursively(MakeRelative(path), &success);
   return success;
 }
 
@@ -260,6 +283,20 @@ base::Optional<FilesystemProxy::PathAccessInfo> FilesystemProxy::GetPathAccess(
     return base::nullopt;
 
   return PathAccessInfo{info->can_read, info->can_write};
+}
+
+base::Optional<int> FilesystemProxy::GetMaximumPathComponentLength(
+    const base::FilePath& path) {
+  if (!remote_directory_)
+    return base::GetMaximumPathComponentLength(MaybeMakeAbsolute(path));
+
+  int len = -1;
+  bool success = false;
+  remote_directory_->GetMaximumPathComponentLength(MakeRelative(path), &success,
+                                                   &len);
+  if (!success)
+    return base::nullopt;
+  return len;
 }
 
 base::File::Error FilesystemProxy::RenameFile(const base::FilePath& old_path,
@@ -310,6 +347,33 @@ bool FilesystemProxy::SetOpenedFileLength(base::File* file, uint64_t length) {
   remote_directory_->SetOpenedFileLength(std::move(*file), length, &success,
                                          file);
   return success;
+}
+
+// TODO(enne): this could be a lot of sync ipcs.  Should this be implemented
+// as a Directory API instead?
+int64_t FilesystemProxy::ComputeDirectorySize(const base::FilePath& path) {
+  if (!remote_directory_)
+    return base::ComputeDirectorySize(MaybeMakeAbsolute(path));
+
+  int64_t running_size = 0;
+
+  const mojom::GetEntriesMode mode = mojom::GetEntriesMode::kFilesOnly;
+  base::File::Error error = base::File::FILE_ERROR_IO;
+  std::vector<base::FilePath> entries;
+  base::FilePath relative_path = MakeRelative(path);
+  remote_directory_->GetEntries(relative_path, mode, &error, &entries);
+  if (error != base::File::FILE_OK)
+    return running_size;
+
+  for (auto& entry : entries) {
+    base::Optional<base::File::Info> info;
+    base::FilePath path = entry;
+    remote_directory_->GetFileInfo(relative_path.Append(entry), &info);
+    if (info.has_value())
+      running_size += info->size;
+  }
+
+  return running_size;
 }
 
 base::FilePath FilesystemProxy::MakeRelative(const base::FilePath& path) const {

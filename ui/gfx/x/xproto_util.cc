@@ -8,11 +8,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto.h"
 
 namespace x11 {
 
-void LogErrorEventDescription(const XErrorEvent& error_event) {
+void LogErrorEventDescription(unsigned long serial,
+                              uint8_t error_code,
+                              uint8_t request_code,
+                              uint8_t minor_code) {
   // This function may make some expensive round trips (XListExtensions,
   // XQueryExtension), but the only effect this function has is LOG(WARNING),
   // so early-return if the log would never be sent anyway.
@@ -22,13 +26,13 @@ void LogErrorEventDescription(const XErrorEvent& error_event) {
   char error_str[256];
   char request_str[256];
 
-  XDisplay* dpy = error_event.display;
   x11::Connection* conn = x11::Connection::Get();
-  XGetErrorText(dpy, error_event.error_code, error_str, sizeof(error_str));
+  auto* dpy = conn->display();
+  XGetErrorText(dpy, error_code, error_str, sizeof(error_str));
 
   strncpy(request_str, "Unknown", sizeof(request_str));
-  if (error_event.request_code < 128) {
-    std::string num = base::NumberToString(error_event.request_code);
+  if (request_code < 128) {
+    std::string num = base::NumberToString(request_code);
     XGetErrorDatabaseText(dpy, "XRequest", num.c_str(), "Unknown", request_str,
                           sizeof(request_str));
   } else {
@@ -37,9 +41,8 @@ void LogErrorEventDescription(const XErrorEvent& error_event) {
         int ext_code, first_event, first_error;
         const char* name = str.name.c_str();
         XQueryExtension(dpy, name, &ext_code, &first_event, &first_error);
-        if (error_event.request_code == ext_code) {
-          std::string msg =
-              base::StringPrintf("%s.%d", name, error_event.minor_code);
+        if (request_code == ext_code) {
+          std::string msg = base::StringPrintf("%s.%d", name, minor_code);
           XGetErrorDatabaseText(dpy, "XRequest", msg.c_str(), "Unknown",
                                 request_str, sizeof(request_str));
           break;
@@ -49,13 +52,12 @@ void LogErrorEventDescription(const XErrorEvent& error_event) {
   }
 
   LOG(WARNING) << "X error received: "
-               << "serial " << error_event.serial << ", "
-               << "error_code " << static_cast<int>(error_event.error_code)
-               << " (" << error_str << "), "
-               << "request_code " << static_cast<int>(error_event.request_code)
-               << ", "
-               << "minor_code " << static_cast<int>(error_event.minor_code)
-               << " (" << request_str << ")";
+               << "serial " << serial << ", "
+               << "error_code " << static_cast<int>(error_code) << " ("
+               << error_str << "), "
+               << "request_code " << static_cast<int>(request_code) << ", "
+               << "minor_code " << static_cast<int>(minor_code) << " ("
+               << request_str << ")";
 }
 
 }  // namespace x11

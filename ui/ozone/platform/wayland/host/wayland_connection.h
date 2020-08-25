@@ -60,6 +60,10 @@ class WaylandConnection {
   zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
   }
+  zwp_linux_explicit_synchronization_v1* linux_explicit_synchronization_v1()
+      const {
+    return linux_explicit_synchronization_.get();
+  }
 
   void set_serial(uint32_t serial) { serial_ = serial; }
   uint32_t serial() const { return serial_; }
@@ -167,6 +171,8 @@ class WaylandConnection {
   wl::Object<zcr_keyboard_extension_v1> keyboard_extension_v1_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
   wl::Object<zaura_shell> aura_shell_;
+  wl::Object<zwp_linux_explicit_synchronization_v1>
+      linux_explicit_synchronization_;
 
   // Event source instance. Must be declared before input objects so it
   // outlives them so thus being able to properly handle their destruction.

@@ -31,7 +31,7 @@ TEST(CastMediaSourceTest, FromCastURLWithDefaults) {
             source->default_action_policy());
   EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
   EXPECT_EQ(base::nullopt, source->target_playout_delay());
-  EXPECT_EQ(true, source->allow_audio_capture());
+  EXPECT_EQ(true, source->site_requested_audio_capture());
 }
 
 TEST(CastMediaSourceTest, FromCastURL) {
@@ -70,7 +70,7 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ("appParams", source->app_params());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(42),
             source->target_playout_delay());
-  EXPECT_EQ(false, source->allow_audio_capture());
+  EXPECT_EQ(false, source->site_requested_audio_capture());
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {

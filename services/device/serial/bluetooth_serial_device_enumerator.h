@@ -29,6 +29,13 @@ class BluetoothSerialDeviceEnumerator : public BluetoothAdapter::Observer,
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
 
+  scoped_refptr<BluetoothAdapter> GetAdapter();
+
+  // This method will search the map of Bluetooth ports and find the
+  // address with the matching token.
+  base::Optional<std::string> GetAddressFromToken(
+      const base::UnguessableToken& token);
+
  protected:
   scoped_refptr<BluetoothAdapter> adapter_;
 

@@ -706,7 +706,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   if (!archive_ && factory.GetType() == ResourceType::kRaw)
     return nullptr;
 
-  const String cache_identifier = GetCacheIdentifier();
+  const String cache_identifier = GetCacheIdentifier(url);
   // Most off-main-thread resource fetches use Resource::kRaw and don't reach
   // this point, but off-main-thread module fetches might.
   if (IsMainThread()) {
@@ -1093,8 +1093,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       // found, we may need to make it block the onload event.
       MakePreloadedResourceBlockOnloadIfNeeded(resource, params);
     } else if (IsMainThread()) {
-      resource =
-          GetMemoryCache()->ResourceForURL(params.Url(), GetCacheIdentifier());
+      resource = GetMemoryCache()->ResourceForURL(
+          params.Url(), GetCacheIdentifier(params.Url()));
       if (resource) {
         policy = DetermineRevalidationPolicy(resource_type, params, *resource,
                                              is_static_data);
@@ -1288,7 +1288,8 @@ void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
 Resource* ResourceFetcher::CreateResourceForLoading(
     const FetchParameters& params,
     const ResourceFactory& factory) {
-  const String cache_identifier = GetCacheIdentifier();
+  const String cache_identifier =
+      GetCacheIdentifier(params.GetResourceRequest().Url());
   DCHECK(!IsMainThread() || params.IsStaleRevalidation() ||
          !GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
                                            cache_identifier));
@@ -2119,13 +2120,19 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   to_be_removed.clear();
 }
 
-String ResourceFetcher::GetCacheIdentifier() const {
+String ResourceFetcher::GetCacheIdentifier(const KURL& url) const {
   if (properties_->GetControllerServiceWorkerMode() !=
       mojom::ControllerServiceWorkerMode::kNoController) {
     return String::Number(properties_->ServiceWorkerId());
   }
   if (properties_->WebBundlePhysicalUrl().IsValid())
     return properties_->WebBundlePhysicalUrl().GetString();
+
+  for (auto& bundle : subresource_web_bundles_) {
+    if (bundle->CanHandleRequest(url))
+      return bundle->GetCacheIdentifier();
+  }
+
   return MemoryCache::DefaultCacheIdentifier();
 }
 

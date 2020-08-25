@@ -53,6 +53,54 @@ TEST(TraceEventArgumentTest, InitializerListCreatedFlatDictionary) {
       json);
 }
 
+TEST(TraceEventArgumentTest, ArrayAndDictionaryScope) {
+  std::unique_ptr<TracedValue> value(new TracedValue());
+  {
+    auto dictionary = value->BeginDictionaryScoped("dictionary_name");
+    value->SetInteger("my_int", 1);
+  }
+  {
+    auto array = value->BeginArrayScoped("array_name");
+    value->AppendInteger(2);
+  }
+  {
+    auto surround_dictionary =
+        value->BeginDictionaryScoped("outside_dictionary");
+    value->SetBoolean("my_bool:", true);
+    {
+      auto inside_array = value->BeginArrayScoped("inside_array");
+      value->AppendBoolean(false);
+    }
+    {
+      auto inside_array = value->BeginDictionaryScoped("inside_dictionary");
+      value->SetBoolean("inner_bool", false);
+    }
+  }
+  {
+    auto surround_array = value->BeginArrayScoped("outside_array");
+    value->AppendBoolean(false);
+    {
+      auto inside_dictionary = value->AppendDictionaryScoped();
+      value->SetBoolean("my_bool:", true);
+    }
+    {
+      auto inside_array = value->AppendArrayScoped();
+      value->AppendBoolean(false);
+    }
+  }
+  std::string json;
+  value->AppendAsTraceFormat(&json);
+  EXPECT_EQ(
+      "{"
+      "\"dictionary_name\":{\"my_int\":1},"
+      "\"array_name\":[2],"
+      "\"outside_dictionary\":{\"my_bool:\":true,\"inside_array\":[false],"
+      "\"inside_dictionary\":{\"inner_bool\":false}},"
+      "\"outside_array\":[false,{\"my_bool:\":true},[false]]"
+      "}",
+      json);
+}
+
 std::string SayHello() {
   // Create a string by concatenating two strings, so that there is no literal
   // corresponding to the result.

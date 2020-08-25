@@ -412,7 +412,7 @@ static unsigned AvoidDownloadIfHigherDensityResourceIsInCache(
     KURL url = document->CompleteURL(
         StripLeadingAndTrailingHTMLSpaces(image_candidates[i]->Url()));
     if (GetMemoryCache()->ResourceForURL(
-            url, document->Fetcher()->GetCacheIdentifier()) ||
+            url, document->Fetcher()->GetCacheIdentifier(url)) ||
         url.ProtocolIsData())
       return i;
   }

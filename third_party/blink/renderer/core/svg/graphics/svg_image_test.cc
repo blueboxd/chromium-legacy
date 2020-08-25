@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -232,6 +233,27 @@ TEST_F(SVGImageTest, DisablesSMILEvents) {
       To<SVGSVGElement>(local_frame->GetDocument()->documentElement())
           ->TimeContainer();
   EXPECT_TRUE(time_container->EventsDisabled());
+}
+
+TEST_F(SVGImageTest, PaintFrameForCurrentFrameWithMQAndZoom) {
+  const bool kShouldPause = false;
+  Load(R"SVG(
+         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'>
+           <style>@media(max-width:50px){rect{fill:blue}}</style>
+           <rect width='10' height='10' fill='red'/>
+         </svg>)SVG",
+       kShouldPause);
+
+  scoped_refptr<SVGImageForContainer> container = SVGImageForContainer::Create(
+      &GetImage(), FloatSize(100, 100), 2, NullURL());
+  SkBitmap bitmap =
+      container->AsSkBitmapForCurrentFrame(kDoNotRespectImageOrientation);
+  ASSERT_EQ(bitmap.width(), 100);
+  ASSERT_EQ(bitmap.height(), 100);
+  EXPECT_EQ(bitmap.getColor(10, 10), SK_ColorBLUE);
+  EXPECT_EQ(bitmap.getColor(90, 10), SK_ColorBLUE);
+  EXPECT_EQ(bitmap.getColor(10, 90), SK_ColorBLUE);
+  EXPECT_EQ(bitmap.getColor(90, 90), SK_ColorBLUE);
 }
 
 class SVGImageSimTest : public SimTest, private ScopedMockOverlayScrollbars {};

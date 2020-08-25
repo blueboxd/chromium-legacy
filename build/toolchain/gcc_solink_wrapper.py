@@ -93,6 +93,7 @@ def main():
   parser.add_argument('--strip',
                       help='The strip binary to run',
                       metavar='PATH')
+  parser.add_argument('--dwp', help='The dwp binary to run', metavar='PATH')
   parser.add_argument('--sofile',
                       required=True,
                       help='Shared object file produced by linking command',
@@ -121,6 +122,16 @@ def main():
   # https://crbug.com/954311 tracks finding a better way to plumb these.
   link_only = InterceptFlag('--link-only', args.command)
   collect_inputs_only = InterceptFlag('--collect-inputs-only', args.command)
+  generate_dwp = InterceptFlag('--generate-dwp', args.command)
+
+  # First, run the actual link.
+  command = wrapper_utils.CommandToRun(args.command)
+  result = wrapper_utils.RunLinkWithOptionalMapFile(command,
+                                                    env=fast_env,
+                                                    map_file=args.map_file)
+
+  if result != 0:
+    return result
 
   # If only linking, we are likely generating a partitioned .so that will be
   # split apart later. In that case:
@@ -158,6 +169,15 @@ def main():
   if result != 0 or link_only:
     return result
 
+  # If dwp is set, then package debug info for this SO.
+  dwp_proc = None
+  if generate_dwp:
+    if not args.dwp:
+      parser.error('--generate-dwp requireds --dwp')
+    dwp_proc = subprocess.Popen(
+        wrapper_utils.CommandToRun(
+            [args.dwp, '-e', args.sofile, '-o', args.output + '.dwp']))
+
   # Next, generate the contents of the TOC file.
   result, toc = CollectTOC(args)
   if result != 0:
@@ -171,6 +191,11 @@ def main():
   if args.strip:
     result = subprocess.call(wrapper_utils.CommandToRun(
         [args.strip, '-o', args.output, args.sofile]))
+
+  if dwp_proc:
+    dwp_result = dwp_proc.wait()
+    if dwp_result != 0:
+      return dwp_result
 
   return result
 

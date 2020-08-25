@@ -155,7 +155,7 @@ Resource* CachedResource(LocalFrame* frame,
   }
   if (!cached_resource) {
     cached_resource = GetMemoryCache()->ResourceForURL(
-        url, document->Fetcher()->GetCacheIdentifier());
+        url, document->Fetcher()->GetCacheIdentifier(url));
   }
   if (!cached_resource)
     cached_resource = loader->ResourceForURL(url);

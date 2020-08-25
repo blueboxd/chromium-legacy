@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -33,11 +32,13 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
@@ -101,10 +102,11 @@ IndexedDBDatabaseError CreateDefaultError() {
 std::tuple<base::FilePath /*leveldb_path*/,
            base::FilePath /*blob_path*/,
            leveldb::Status>
-CreateDatabaseDirectories(const base::FilePath& path_base,
+CreateDatabaseDirectories(storage::FilesystemProxy* filesystem,
+                          const base::FilePath& path_base,
                           const url::Origin& origin) {
   leveldb::Status status;
-  if (!base::CreateDirectoryAndGetError(path_base, nullptr)) {
+  if (filesystem->CreateDirectory(path_base) != base::File::Error::FILE_OK) {
     status =
         leveldb::Status::IOError("Unable to create IndexedDB database path");
     LOG(ERROR) << status.ToString() << ": \"" << path_base.AsUTF8Unsafe()
@@ -118,7 +120,7 @@ CreateDatabaseDirectories(const base::FilePath& path_base,
       path_base.Append(indexed_db::GetLevelDBFileName(origin));
   base::FilePath blob_path =
       path_base.Append(indexed_db::GetBlobStoreFileName(origin));
-  if (indexed_db::IsPathTooLong(leveldb_path)) {
+  if (indexed_db::IsPathTooLong(filesystem, leveldb_path)) {
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
                      origin);
     status = leveldb::Status::IOError("File path too long");
@@ -161,6 +163,7 @@ std::tuple<bool, leveldb::Status> AreSchemasKnown(
               IndexedDBDataFormatVersion::Decode(raw_db_data_version)),
           s};
 }
+
 }  // namespace
 
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(
@@ -679,8 +682,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   leveldb::Status s = leveldb::Status::OK();
   if (!is_incognito_and_in_memory) {
     // The database will be on-disk and not in-memory.
-    std::tie(database_path, blob_path, s) =
-        CreateDatabaseDirectories(data_directory, origin);
+    auto filesystem_proxy = storage::CreateFilesystemProxy();
+    std::tie(database_path, blob_path, s) = CreateDatabaseDirectories(
+        filesystem_proxy.get(), data_directory, origin);
     if (!s.ok())
       return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
               IndexedDBDataLossInfo(), /*was_cold_open=*/true};
@@ -709,11 +713,14 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
         },
         origin, weak_factory_.GetWeakPtr());
     const bool is_first_attempt = i == 0;
+    auto filesystem_proxy = !is_incognito_and_in_memory
+                                ? storage::CreateFilesystemProxy()
+                                : nullptr;
     std::tie(backing_store, s, data_loss_info, disk_full) =
         OpenAndVerifyIndexedDBBackingStore(
             origin, data_directory, database_path, blob_path,
-            std::move(scopes_options), &scopes_factory, is_first_attempt,
-            create_if_missing);
+            std::move(scopes_options), &scopes_factory,
+            std::move(filesystem_proxy), is_first_attempt, create_if_missing);
     if (LIKELY(is_first_attempt))
       first_try_status = s;
     if (LIKELY(s.ok()))
@@ -817,6 +824,7 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     std::unique_ptr<TransactionalLevelDBDatabase> db,
     storage::mojom::BlobStorageContext* blob_storage_context,
     storage::mojom::NativeFileSystemContext* native_file_system_context,
+    std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
     IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
     IndexedDBBackingStore::ReportOutstandingBlobsCallback
         report_outstanding_blobs,
@@ -825,8 +833,9 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, transactional_leveldb_factory, origin, blob_path,
       std::move(db), blob_storage_context, native_file_system_context,
-      std::move(blob_files_cleaned), std::move(report_outstanding_blobs),
-      std::move(idb_task_runner), std::move(io_task_runner));
+      std::move(filesystem_proxy), std::move(blob_files_cleaned),
+      std::move(report_outstanding_blobs), std::move(idb_task_runner),
+      std::move(io_task_runner));
 }
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
            leveldb::Status,
@@ -839,6 +848,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
     base::FilePath blob_path,
     LevelDBScopesOptions scopes_options,
     LevelDBScopesFactory* scopes_factory,
+    std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
     bool is_first_attempt,
     bool create_if_missing) {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
@@ -857,8 +867,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
   if (!is_incognito_and_in_memory) {
     // Check for previous corruption, and if found then try to delete the
     // database.
-    std::string corruption_message =
-        indexed_db::ReadCorruptionInfo(data_directory, origin);
+    std::string corruption_message = indexed_db::ReadCorruptionInfo(
+        filesystem_proxy.get(), data_directory, origin);
     if (UNLIKELY(!corruption_message.empty())) {
       LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
                     "database.";
@@ -954,7 +964,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
       backing_store_mode, &class_factory_->transactional_leveldb_factory(),
       origin, blob_path, std::move(database), context_->blob_storage_context(),
-      context_->native_file_system_context(),
+      context_->native_file_system_context(), std::move(filesystem_proxy),
       base::BindRepeating(&IndexedDBFactoryImpl::BlobFilesCleaned,
                           weak_factory_.GetWeakPtr(), origin),
       base::BindRepeating(&IndexedDBFactoryImpl::ReportOutstandingBlobs,

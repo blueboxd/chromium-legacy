@@ -132,7 +132,7 @@ TEST_F(MirroringActivityTest, MirrorDesktop) {
   base::HistogramTester uma_recorder;
   EXPECT_CALL(media_router_,
               GetMirroringServiceHostForDesktop(_, kDesktopMediaId, _));
-  MediaSource source = MediaSource::ForDesktop(kDesktopMediaId);
+  MediaSource source = MediaSource::ForDesktop(kDesktopMediaId, true);
   ASSERT_TRUE(source.IsDesktopMirroringSource());
   MakeActivity(source);
 

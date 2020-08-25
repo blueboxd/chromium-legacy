@@ -181,8 +181,9 @@ class CORE_EXPORT SVGImage final : public Image {
                                const KURL&);
   void PopulatePaintRecordForCurrentFrameForContainer(
       PaintImageBuilder&,
-      const KURL&,
-      const IntSize& container_size);
+      const IntSize& container_size,
+      float zoom,
+      const KURL&);
 
   // Paints the current frame. Returns new PaintRecord.
   sk_sp<PaintRecord> PaintRecordForCurrentFrame(const KURL&);

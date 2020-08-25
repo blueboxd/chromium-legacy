@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -193,6 +194,13 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
   std::move(callback).Run(error, std::move(file));
 }
 
+void FilesystemImpl::WriteFileAtomically(const base::FilePath& path,
+                                         const std::string& contents,
+                                         WriteFileAtomicallyCallback callback) {
+  std::move(callback).Run(base::ImportantFileWriter::WriteFileAtomically(
+      MakeAbsolute(path), std::move(contents)));
+}
+
 void FilesystemImpl::RemoveFile(const base::FilePath& path,
                                 RemoveFileCallback callback) {
   std::move(callback).Run(base::DeleteFile(MakeAbsolute(path)));
@@ -207,13 +215,13 @@ void FilesystemImpl::CreateDirectory(const base::FilePath& path,
 
 void FilesystemImpl::RemoveDirectory(const base::FilePath& path,
                                      RemoveDirectoryCallback callback) {
-  const base::FilePath full_path = MakeAbsolute(path);
-  if (!base::DirectoryExists(full_path)) {
-    std::move(callback).Run(false);
-    return;
-  }
+  std::move(callback).Run(base::DeleteFile(MakeAbsolute(path)));
+}
 
-  std::move(callback).Run(base::DeleteFile(full_path));
+void FilesystemImpl::RemoveDirectoryRecursively(
+    const base::FilePath& path,
+    RemoveDirectoryRecursivelyCallback callback) {
+  std::move(callback).Run(base::DeletePathRecursively(MakeAbsolute(path)));
 }
 
 void FilesystemImpl::GetFileInfo(const base::FilePath& path,
@@ -228,6 +236,14 @@ void FilesystemImpl::GetFileInfo(const base::FilePath& path,
 void FilesystemImpl::GetPathAccess(const base::FilePath& path,
                                    GetPathAccessCallback callback) {
   std::move(callback).Run(GetPathAccessLocal(MakeAbsolute(path)));
+}
+
+void FilesystemImpl::GetMaximumPathComponentLength(
+    const base::FilePath& path,
+    GetMaximumPathComponentLengthCallback callback) {
+  int len = base::GetMaximumPathComponentLength(MakeAbsolute(path));
+  bool success = len != -1;
+  return std::move(callback).Run(success, len);
 }
 
 void FilesystemImpl::RenameFile(const base::FilePath& old_path,

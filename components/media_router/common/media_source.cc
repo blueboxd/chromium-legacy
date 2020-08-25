@@ -25,7 +25,10 @@ constexpr char kAnyTabMediaUrn[] = "urn:x-org.chromium.media:source:tab:*";
 constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
 constexpr base::StringPiece kDesktopMediaUrnPrefix =
     "urn:x-org.chromium.media:source:desktop:";
-constexpr base::StringPiece kUnknownDesktopMediaUrn =
+// WARNING: If more desktop URN parameters are added in the future, the parsing
+// code will have to be smarter!
+constexpr base::StringPiece kDesktopMediaUrnAudioParam = "?with_audio=true";
+constexpr base::StringPiece kUnchosenDesktopMediaUrn =
     "urn:x-org.chromium.media:source:desktop";
 
 // List of non-http(s) schemes that are allowed in a Presentation URL.
@@ -98,14 +101,21 @@ MediaSource MediaSource::ForTab(int tab_id) {
 }
 
 // static
-MediaSource MediaSource::ForDesktop(const std::string& desktop_media_id) {
-  DCHECK(!desktop_media_id.empty());
-  return MediaSource(kDesktopMediaUrnPrefix.as_string() + desktop_media_id);
+MediaSource MediaSource::ForDesktop(
+    const std::string& registered_desktop_stream_id,
+    bool with_audio) {
+  DCHECK(!registered_desktop_stream_id.empty());
+  std::string id =
+      kDesktopMediaUrnPrefix.as_string() + registered_desktop_stream_id;
+  if (with_audio) {
+    id += kDesktopMediaUrnAudioParam.as_string();
+  }
+  return MediaSource(id);
 }
 
 // static
-MediaSource MediaSource::ForDesktop() {
-  return MediaSource(kUnknownDesktopMediaUrn.as_string());
+MediaSource MediaSource::ForUnchosenDesktop() {
+  return MediaSource(kUnchosenDesktopMediaUrn.as_string());
 }
 
 // static
@@ -118,7 +128,7 @@ bool MediaSource::IsTabMirroringSource() const {
 }
 
 bool MediaSource::IsDesktopMirroringSource() const {
-  return id() == kUnknownDesktopMediaUrn ||
+  return id() == kUnchosenDesktopMediaUrn ||
          base::StartsWith(id(), kDesktopMediaUrnPrefix,
                           base::CompareCase::SENSITIVE);
 }
@@ -142,9 +152,22 @@ int MediaSource::TabId() const {
 base::Optional<std::string> MediaSource::DesktopStreamId() const {
   if (base::StartsWith(id_, kDesktopMediaUrnPrefix,
                        base::CompareCase::SENSITIVE)) {
-    return std::string(id_.begin() + kDesktopMediaUrnPrefix.size(), id_.end());
+    const auto begin = id_.begin() + kDesktopMediaUrnPrefix.size();
+    auto end = id_.end();
+    if (base::EndsWith(id_, kDesktopMediaUrnAudioParam,
+                       base::CompareCase::SENSITIVE)) {
+      end -= kDesktopMediaUrnAudioParam.size();
+    }
+    return std::string(begin, end);
   }
   return base::nullopt;
+}
+
+bool MediaSource::IsDesktopSourceWithAudio() const {
+  return base::StartsWith(id_, kDesktopMediaUrnPrefix,
+                          base::CompareCase::SENSITIVE) &&
+         base::EndsWith(id_, kDesktopMediaUrnAudioParam,
+                        base::CompareCase::SENSITIVE);
 }
 
 bool MediaSource::IsDialSource() const {

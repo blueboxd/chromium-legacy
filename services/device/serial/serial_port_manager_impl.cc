@@ -14,6 +14,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/device/public/cpp/serial/serial_switches.h"
 #include "services/device/serial/bluetooth_serial_device_enumerator.h"
+#include "services/device/serial/bluetooth_serial_port_impl.h"
 #include "services/device/serial/serial_device_enumerator.h"
 #include "services/device/serial/serial_port_impl.h"
 
@@ -90,6 +91,17 @@ void SerialPortManagerImpl::GetPort(
         FROM_HERE,
         base::BindOnce(&SerialPortImpl::Create, *path, std::move(receiver),
                        std::move(watcher), ui_task_runner_));
+    return;
+  }
+
+  DCHECK(bluetooth_enumerator_);
+  base::Optional<std::string> address =
+      bluetooth_enumerator_->GetAddressFromToken(token);
+  if (address) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&BluetoothSerialPortImpl::Create,
+                                  bluetooth_enumerator_->GetAdapter(), *address,
+                                  std::move(receiver), std::move(watcher)));
   }
 }
 

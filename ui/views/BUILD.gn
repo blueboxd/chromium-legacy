@@ -1394,6 +1394,9 @@ source_set("views_interactive_ui_tests") {
     sources += [
       "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
     ]
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 
   if (use_x11 || ozone_platform_x11) {

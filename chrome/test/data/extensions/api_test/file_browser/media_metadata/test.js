@@ -121,7 +121,7 @@ function testGetContentMetadataEmpty() {
   const entry = emptyEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'audio/mpeg', 'metadataTags', (metadata) => {
+      entry, 'audio/mpeg', false, (metadata) => {
     chrome.test.assertEq(undefined, metadata);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -129,13 +129,13 @@ function testGetContentMetadataEmpty() {
 }
 
 /*
- * getContentMetadata 'metadataTags' returns tags only.
+ * getContentMetadata can return metadata tags only.
  */
 function testGetContentMetadataAudioTags() {
   const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'audio/mpeg', 'metadataTags', (metadata) => {
+      entry, 'audio/mpeg', false, (metadata) => {
     chrome.test.assertEq('audio/mpeg', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -147,13 +147,13 @@ function testGetContentMetadataAudioTags() {
 }
 
 /*
- * getContentMetadata 'metadataTagsImages' returns tags and images.
+ * getContentMetadata can return metadata tags and metadata images.
  */
 function testGetContentMetadataAudioTagsImages() {
   const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'audio/mpeg', 'metadataTagsImages', (metadata) => {
+      entry, 'audio/mpeg', true, (metadata) => {
     chrome.test.assertEq('audio/mpeg', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -217,7 +217,7 @@ function testGetContentMetadataVideoTagsImages() {
   const entry = videoEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'video/mp4', 'metadataTagsImages', (metadata) => {
+      entry, 'video/mp4', true, (metadata) => {
     chrome.test.assertEq('video/mp4', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -235,7 +235,7 @@ function testGetContentMetadataRetainsInputMimeType() {
   const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'audio/input-type', 'metadataTags', (metadata) => {
+      entry, 'audio/input-type', false, (metadata) => {
     chrome.test.assertEq('audio/input-type', metadata.mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -250,7 +250,7 @@ function testGetContentMetadataVideoResetsAudioMime() {
   const entry = videoEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'audio/input-type', 'metadataTagsImages', (metadata) => {
+      entry, 'audio/input-type', true, (metadata) => {
     chrome.test.assertEq('video/input-type', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -269,7 +269,7 @@ function testGetContentMetadataUnsupportedMimetypeError() {
   const entry = imageEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      entry, 'image/jpeg', 'metadataTags', (metadata) => {
+      entry, 'image/jpeg', false, (metadata) => {
     chrome.test.assertEq(undefined, metadata);
 
     if (!chrome.runtime.lastError) {

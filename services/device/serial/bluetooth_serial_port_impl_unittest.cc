@@ -33,6 +33,7 @@ namespace {
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Return;
 using ::testing::WithArgs;
 
 constexpr char kBuffer[] = "test";
@@ -62,15 +63,17 @@ class BluetoothSerialPortImplTest : public testing::Test {
     scoped_refptr<MockBluetoothAdapter> adapter =
         base::MakeRefCounted<MockBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
-    auto mock_device = std::make_unique<MockBluetoothDevice>(
+    mock_device_ = std::make_unique<MockBluetoothDevice>(
         adapter.get(), 0, "Test Device", kDeviceAddress, false, false);
-    mock_device->AddUUID(GetSerialPortProfileUUID());
+    mock_device_->AddUUID(GetSerialPortProfileUUID());
 
-    EXPECT_CALL(*mock_device,
+    EXPECT_CALL(*adapter, GetDevice(kDeviceAddress))
+        .WillOnce(Return(mock_device_.get()));
+    EXPECT_CALL(*mock_device_,
                 ConnectToService(GetSerialPortProfileUUID(), _, _))
         .WillOnce(RunOnceCallback<1>(mock_socket_));
 
-    BluetoothSerialPortImpl::Create(std::move(mock_device),
+    BluetoothSerialPortImpl::Create(std::move(adapter), kDeviceAddress,
                                     port->BindNewPipeAndPassReceiver(),
                                     std::move(watcher_remote));
   }
@@ -86,15 +89,17 @@ class BluetoothSerialPortImplTest : public testing::Test {
     scoped_refptr<MockBluetoothAdapter> adapter =
         base::MakeRefCounted<MockBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
-    auto mock_device = std::make_unique<MockBluetoothDevice>(
+    mock_device_ = std::make_unique<MockBluetoothDevice>(
         adapter.get(), 0, "Test Device", kDeviceAddress, false, false);
-    mock_device->AddUUID(GetSerialPortProfileUUID());
+    mock_device_->AddUUID(GetSerialPortProfileUUID());
 
-    EXPECT_CALL(*mock_device,
+    EXPECT_CALL(*adapter, GetDevice(kDeviceAddress))
+        .WillOnce(Return(mock_device_.get()));
+    EXPECT_CALL(*mock_device_,
                 ConnectToService(GetSerialPortProfileUUID(), _, _))
         .WillOnce(RunOnceCallback<2>("Error"));
 
-    BluetoothSerialPortImpl::Create(std::move(mock_device),
+    BluetoothSerialPortImpl::Create(std::move(adapter), kDeviceAddress,
                                     port->BindNewPipeAndPassReceiver(),
                                     std::move(watcher_remote));
   }
@@ -116,6 +121,7 @@ class BluetoothSerialPortImplTest : public testing::Test {
  private:
   scoped_refptr<MockBluetoothSocket> mock_socket_ =
       base::MakeRefCounted<MockBluetoothSocket>();
+  std::unique_ptr<MockBluetoothDevice> mock_device_;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 };

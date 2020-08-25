@@ -115,6 +115,8 @@ void PrintManager::DidGetDocumentCookie(int32_t cookie) {
   cookie_ = cookie;
 }
 
+void PrintManager::DidShowPrintDialog() {}
+
 void PrintManager::OnPrintingFailed(int cookie) {
   if (cookie != cookie_) {
     NOTREACHED();

@@ -146,6 +146,9 @@ DesktopMediaPickerController::Params MakeDesktopPickerParams(
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
   params.select_only_screen = true;
+  params.request_audio = true;
+  params.approve_audio_by_default = true;
+
   return params;
 }
 
@@ -1132,8 +1135,8 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
           media_id, "ChromeMediaRouter", content::kRegistryStreamTypeDesktop);
 
   media_route_providers_[provider_id]->CreateRoute(
-      MediaSource::ForDesktop(request.stream_id).id(), sink_id, presentation_id,
-      origin, -1, timeout, off_the_record,
+      MediaSource::ForDesktop(request.stream_id, media_id.audio_share).id(),
+      sink_id, presentation_id, origin, -1, timeout, off_the_record,
       base::BindOnce(
           [](mojom::MediaRouteProvider::CreateRouteCallback inner_callback,
              base::WeakPtr<MediaRouterMojoImpl> self,

@@ -78,7 +78,7 @@ SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkSurfaceCharacterization characterization,
-    RenderPassId render_pass_id)
+    AggregatedRenderPassId render_pass_id)
     : render_pass_id_(render_pass_id) {
   recorder_storage_.emplace(characterization);
   recorder_ = &recorder_storage_.value();
@@ -117,7 +117,7 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   root_recorder_.reset();
 
   if (!render_pass_image_cache_.empty()) {
-    std::vector<RenderPassId> render_pass_ids;
+    std::vector<AggregatedRenderPassId> render_pass_ids;
     render_pass_ids.reserve(render_pass_ids.size());
     for (auto& entry : render_pass_image_cache_)
       render_pass_ids.push_back(entry.first);
@@ -482,7 +482,7 @@ void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
-    const RenderPassId& id,
+    const AggregatedRenderPassId& id,
     const gfx::Size& surface_size,
     ResourceFormat format,
     bool mipmap,
@@ -570,7 +570,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
-    const RenderPassId& id,
+    const AggregatedRenderPassId& id,
     const gfx::Size& size,
     ResourceFormat format,
     bool mipmap,
@@ -605,7 +605,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
 }
 
 void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
-    std::vector<RenderPassId> ids) {
+    std::vector<AggregatedRenderPassId> ids) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
 
@@ -632,7 +632,7 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
 }
 
 void SkiaOutputSurfaceImpl::CopyOutput(
-    RenderPassId id,
+    AggregatedRenderPassId id,
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {

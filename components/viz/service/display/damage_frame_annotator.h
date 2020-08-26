@@ -15,7 +15,7 @@
 namespace viz {
 
 class AggregatedFrame;
-class RenderPass;
+class AggregatedRenderPass;
 
 // Draws a red outline around the root RenderPasses damage rect.
 class DamageFrameAnnotator : public SurfaceAggregator::FrameAnnotator {
@@ -38,7 +38,7 @@ class DamageFrameAnnotator : public SurfaceAggregator::FrameAnnotator {
     Highlight highlight;
   };
 
-  void AnnotateRootRenderPass(RenderPass* render_pass);
+  void AnnotateRootRenderPass(AggregatedRenderPass* render_pass);
 
   std::vector<AnnotationData> annotations_;
 

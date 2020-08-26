@@ -1396,7 +1396,7 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Sync strings in account management dialog -->
-      <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
+      <message name="IDS_SYNC_ANDROID_SYSTEM_SYNC_DISABLED" desc="Message to show when Android system-level sync flag is disabled">
         Android system sync disabled
       </message>
       <message name="IDS_SYNC_IS_DISABLED" desc="Message to show when Chrome sync is disabled">

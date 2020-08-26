@@ -169,6 +169,7 @@ NGPhysicalBoxFragment::RareData::RareData(NGBoxFragmentBuilder* builder,
         descendant.static_position.ConvertToPhysical(
             builder->Style().GetWritingMode(), builder->Direction(), size),
         descendant.inline_container,
+        descendant.fragmentainer_consumed_block_size,
         descendant.containing_block_offset.ConvertToPhysical(
             builder->Style().GetWritingDirection(), size,
             descendant.containing_block_fragment

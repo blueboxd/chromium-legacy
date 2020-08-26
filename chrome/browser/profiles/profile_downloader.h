@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
@@ -40,6 +39,8 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   };
 
   explicit ProfileDownloader(ProfileDownloaderDelegate* delegate);
+  ProfileDownloader(const ProfileDownloader&) = delete;
+  ProfileDownloader& operator=(const ProfileDownloader&) = delete;
   ~ProfileDownloader() override;
 
   // Starts downloading profile information if the necessary authorization token
@@ -122,13 +123,11 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
-  PictureStatus picture_status_;
+  PictureStatus picture_status_ = PICTURE_FAILED;
   signin::IdentityManager* identity_manager_;
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
-  bool waiting_for_account_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileDownloader);
+  bool waiting_for_account_info_ = false;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_DOWNLOADER_H_

@@ -4,20 +4,26 @@
 
 #include "pdf/url_loader_wrapper_impl.h"
 
-#include <memory>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/containers/span.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/logging.h"
+#include "pdf/ppapi_migration/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
+#include "ppapi/cpp/var.h"
+#include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
 
@@ -101,8 +107,8 @@ bool IsDoubleEndLineAtEnd(const char* buffer, int size) {
 }  // namespace
 
 URLLoaderWrapperImpl::URLLoaderWrapperImpl(pp::Instance* plugin_instance,
-                                           const pp::URLLoader& url_loader)
-    : plugin_instance_(plugin_instance), url_loader_(url_loader) {
+                                           scoped_refptr<UrlLoader> url_loader)
+    : plugin_instance_(plugin_instance), url_loader_(std::move(url_loader)) {
   SetHeadersFromLoader();
 }
 
@@ -130,7 +136,7 @@ std::string URLLoaderWrapperImpl::GetContentDisposition() const {
 }
 
 int URLLoaderWrapperImpl::GetStatusCode() const {
-  return url_loader_.GetResponseInfo().GetStatusCode();
+  return url_loader_->GetResponseInfo().GetStatusCode();
 }
 
 bool URLLoaderWrapperImpl::IsMultipart() const {
@@ -146,12 +152,12 @@ bool URLLoaderWrapperImpl::GetByteRangeStart(int* start) const {
 bool URLLoaderWrapperImpl::GetDownloadProgress(
     int64_t* bytes_received,
     int64_t* total_bytes_to_be_received) const {
-  return url_loader_.GetDownloadProgress(bytes_received,
-                                         total_bytes_to_be_received);
+  return url_loader_->GetDownloadProgress(bytes_received,
+                                          total_bytes_to_be_received);
 }
 
 void URLLoaderWrapperImpl::Close() {
-  url_loader_.Close();
+  url_loader_->Close();
   read_starter_.Stop();
 }
 
@@ -160,14 +166,10 @@ void URLLoaderWrapperImpl::OpenRange(const std::string& url,
                                      uint32_t position,
                                      uint32_t size,
                                      ResultCallback callback) {
-  pp::CompletionCallback cc = PPCompletionCallbackFromResultCallback(
+  url_loader_->Open(
+      MakeRangeRequest(plugin_instance_, url, referrer_url, position, size),
       base::BindOnce(&URLLoaderWrapperImpl::DidOpen, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
-  int rv = url_loader_.Open(
-      MakeRangeRequest(plugin_instance_, url, referrer_url, position, size),
-      cc);
-  if (rv != PP_OK_COMPLETIONPENDING)
-    cc.Run(rv);
 }
 
 void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
@@ -182,13 +184,10 @@ void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
 }
 
 void URLLoaderWrapperImpl::ReadResponseBodyImpl(ResultCallback callback) {
-  pp::CompletionCallback cc = PPCompletionCallbackFromResultCallback(
+  url_loader_->ReadResponseBody(
+      base::span<char>(buffer_, buffer_size_),
       base::BindOnce(&URLLoaderWrapperImpl::DidRead, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
-  int rv = url_loader_.ReadResponseBody(buffer_, buffer_size_, cc);
-  if (rv != PP_OK_COMPLETIONPENDING) {
-    cc.Run(rv);
-  }
 }
 
 void URLLoaderWrapperImpl::SetResponseHeaders(
@@ -300,7 +299,7 @@ void URLLoaderWrapperImpl::DidRead(ResultCallback callback, int32_t result) {
 }
 
 void URLLoaderWrapperImpl::SetHeadersFromLoader() {
-  pp::URLResponseInfo response = url_loader_.GetResponseInfo();
+  pp::URLResponseInfo response = url_loader_->GetResponseInfo();
   pp::Var headers_var = response.GetHeaders();
 
   SetResponseHeaders(headers_var.is_string() ? headers_var.AsString() : "");

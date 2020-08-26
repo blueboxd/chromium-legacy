@@ -113,7 +113,7 @@ static const char kDevToolsDualScreenDeviceEmulatedHistogram[] =
 static const char kDevtoolsGridSettingChangedHistogram[] =
     "DevTools.GridSettingChanged";
 static const char kDevtoolsCSSGridSettingsHistogram[] =
-    "DevTools.CSSGridSettings";
+    "DevTools.CSSGridSettings2";
 static const char kDevtoolsExperimentEnabledHistogram[] =
     "DevTools.ExperimentEnabled";
 static const char kDevtoolsExperimentDisabledHistogram[] =

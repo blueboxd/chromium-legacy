@@ -244,7 +244,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   }
 
   // Required inputs below.
-  const RenderPassDrawQuad* quad = nullptr;
+  const AggregatedRenderPassDrawQuad* quad = nullptr;
 
   // Either |contents_texture| or |bypass_quad_texture| is populated. The
   // |contents_texture| will be valid if non-null, and when null the
@@ -587,6 +587,10 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::Material::kInvalid:
       NOTREACHED();
       break;
+    case DrawQuad::Material::kAggregatedRenderPass:
+      DrawRenderPassQuad(AggregatedRenderPassDrawQuad::MaterialCast(quad),
+                         clip_region);
+      break;
     case DrawQuad::Material::kDebugBorder:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
@@ -595,7 +599,9 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::Material::kRenderPass:
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), clip_region);
+      // At this point, RenderPassDrawQuads should be replaced by
+      // AggregatedRenderPassDrawQuad.
+      NOTREACHED();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), clip_region);
@@ -829,7 +835,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   DCHECK(backdrop_filter_bounds);
   DCHECK(unclipped_rect);
 
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   gfx::QuadF scaled_region;
   // |scaled_region| is a quad in [-0.5,0.5] space that represents |clip_region|
   // as a fraction of the space defined by |quad->rect|. If |clip_region| is
@@ -1016,7 +1022,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
          params->backdrop_filter_quality <= 1.0f);
   DCHECK(!params->filters)
       << "Filters should always be in a separate Effect node";
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   // Check if cached result can be used
@@ -1167,7 +1173,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   return filtered_image_texture;
 }
 
-const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(
+    const AggregatedRenderPass* pass) {
 #if defined(OS_APPLE)
   // On Macs, this path can sometimes lead to all black output.
   // TODO(enne): investigate this and remove this hack.
@@ -1218,7 +1225,7 @@ const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
 #endif
 }
 
-void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+void GLRenderer::DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   DrawRenderPassDrawQuadParams params;
@@ -1285,7 +1292,7 @@ void GLRenderer::DrawRenderPassQuadInternal(
 bool GLRenderer::InitializeRPDQParameters(
     DrawRenderPassDrawQuadParams* params) {
   DCHECK(params);
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
@@ -1360,7 +1367,7 @@ static GLuint GetGLTextureIDFromSkImage(const SkImage* image,
 
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   params->blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(params->blend_mode) ||
@@ -1445,7 +1452,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
 
 bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DrawRenderPassDrawQuadParams* params) {
-  const RenderPassDrawQuad* quad = params->quad;
+  const auto* quad = params->quad;
   // Apply filters to the contents texture.
   if (params->filters) {
     DCHECK(!params->filters->IsEmpty());
@@ -1996,7 +2003,7 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
 // static
 void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
     const gfx::Transform& device_transform,
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     const gfx::QuadF* aa_quad,
     const gfx::QuadF* clip_region,
     gfx::QuadF* local_quad,
@@ -3420,7 +3427,8 @@ void GLRenderer::BindFramebufferToOutputSurface() {
   }
 }
 
-void GLRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
+void GLRenderer::BindFramebufferToTexture(
+    const AggregatedRenderPassId render_pass_id) {
   tint_gl_composited_content_ = false;
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
 
@@ -3980,10 +3988,11 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 }
 
 std::unique_ptr<GLRenderer::OverlayTexture>
-GLRenderer::FindOrCreateOverlayTexture(const RenderPassId& render_pass_id,
-                                       int width,
-                                       int height,
-                                       const gfx::ColorSpace& color_space) {
+GLRenderer::FindOrCreateOverlayTexture(
+    const AggregatedRenderPassId& render_pass_id,
+    int width,
+    int height,
+    const gfx::ColorSpace& color_space) {
   // First try to use a texture for the same RenderPassId, to keep things more
   // stable and less likely to clobber each others textures.
   auto match_with_id = [&](const std::unique_ptr<OverlayTexture>& overlay) {
@@ -4165,11 +4174,11 @@ void GLRenderer::ProcessOverdrawFeedback(base::CheckedNumeric<int> surface_area,
 }
 
 void GLRenderer::UpdateRenderPassTextures(
-    const RenderPassList& render_passes_in_draw_order,
-    const base::flat_map<RenderPassId, RenderPassRequirements>&
+    const AggregatedRenderPassList& render_passes_in_draw_order,
+    const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
   // Collect RenderPass textures that should be deleted.
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<AggregatedRenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_textures_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
@@ -4209,7 +4218,7 @@ ResourceFormat GLRenderer::CurrentRenderPassResourceFormat() const {
 }
 
 void GLRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId& render_pass_id,
+    const AggregatedRenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto contents_texture_it = render_pass_textures_.find(render_pass_id);
   if (contents_texture_it != render_pass_textures_.end()) {
@@ -4226,13 +4235,13 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
 }
 
 bool GLRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId& render_pass_id) const {
+    const AggregatedRenderPassId& render_pass_id) const {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   return texture_it != render_pass_textures_.end();
 }
 
 gfx::Size GLRenderer::GetRenderPassBackingPixelSize(
-    const RenderPassId& render_pass_id) {
+    const AggregatedRenderPassId& render_pass_id) {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   DCHECK(texture_it != render_pass_textures_.end());
   return texture_it->second.size();

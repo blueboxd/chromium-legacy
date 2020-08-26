@@ -20,6 +20,7 @@
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -45,6 +46,7 @@
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
+#include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
@@ -629,14 +631,14 @@ void PDFiumEngine::PostPaint() {
   }
 }
 
-bool PDFiumEngine::HandleDocumentLoad(const pp::URLLoader& loader) {
+bool PDFiumEngine::HandleDocumentLoad(scoped_refptr<UrlLoader> loader) {
   password_tries_remaining_ = kMaxPasswordTries;
   process_when_pending_request_complete_ =
       base::FeatureList::IsEnabled(features::kPdfIncrementalLoading);
 
   if (!doc_loader_set_for_testing_) {
-    auto loader_wrapper =
-        std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(), loader);
+    auto loader_wrapper = std::make_unique<URLLoaderWrapperImpl>(
+        GetPluginInstance(), std::move(loader));
     loader_wrapper->SetResponseHeaders(headers_);
 
     doc_loader_ = std::make_unique<DocumentLoaderImpl>(this);
@@ -656,7 +658,7 @@ pp::Instance* PDFiumEngine::GetPluginInstance() {
 
 std::unique_ptr<URLLoaderWrapper> PDFiumEngine::CreateURLLoader() {
   return std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(),
-                                                client_->CreateURLLoader());
+                                                client_->CreateUrlLoader());
 }
 
 void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {

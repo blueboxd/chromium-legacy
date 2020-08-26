@@ -8,7 +8,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- All sites -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
+        android:fragment="org.chromium.components.browser_ui.site_settings.AllSiteSettings"
         android:key="all_sites"
         android:title="@string/all_sites"
         android:icon="@drawable/settings_all_sites"
@@ -68,7 +68,7 @@
     <!-- Storage -->
     <!-- TODO(finnur): Move this over to the new Usage screen, once it exists. -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
+        android:fragment="org.chromium.components.browser_ui.site_settings.AllSiteSettings"
         android:key="use_storage"
         android:title="@string/website_settings_storage"
         android:icon="@drawable/settings_storage"

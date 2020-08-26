@@ -12,12 +12,10 @@ import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NO
 import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.format.Formatter;
 import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -26,11 +24,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
@@ -50,7 +46,6 @@ import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
-import org.chromium.components.browser_ui.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -79,7 +74,7 @@ import java.util.Set;
 @UsedByReflection("site_settings_preferences.xml")
 public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener,
-                   AddExceptionPreference.SiteAddedCallback, View.OnClickListener,
+                   AddExceptionPreference.SiteAddedCallback,
                    PreferenceManager.OnPreferenceTreeClickListener {
     // The key to use to pass which category this preference should display,
     // e.g. Location/Popups/All sites (if blank).
@@ -98,8 +93,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     private TextView mEmptyView;
     // The item for searching the list of items.
     private MenuItem mSearchItem;
-    // The clear button displayed in the Storage view.
-    private Button mClearButton;
     // The Site Settings Category we are showing.
     private SiteSettingsCategory mCategory;
     // If not blank, represents a substring to use to search for site names.
@@ -313,10 +306,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             mCategory = SiteSettingsCategory.createFromPreferenceKey(
                     browserContextHandle, getArguments().getString(EXTRA_CATEGORY, ""));
         }
-        if (mCategory == null) {
-            mCategory = SiteSettingsCategory.createFromType(
-                    browserContextHandle, SiteSettingsCategory.Type.ALL_SITES);
-        }
+
+        assert !(mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
+                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE));
 
         int contentType = mCategory.getContentSettingsType();
         mRequiresTriStateSetting =
@@ -325,14 +317,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 WebsitePreferenceBridge.requiresFourStateContentSetting(contentType);
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-
-        // Add custom views for Storage Preferences to bottom of the fragment.
-        if (mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
-            inflater.inflate(R.layout.storage_preferences_view, view, true);
-            mEmptyView = view.findViewById(R.id.empty_storage);
-            mClearButton = view.findViewById(R.id.clear_button);
-            mClearButton.setOnClickListener(this);
-        }
 
         mListView = getListView();
 
@@ -350,30 +334,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      */
     public SiteSettingsCategory getCategoryForTest() {
         return mCategory;
-    }
-
-    /**
-     * This clears all the storage for websites that are displayed to the user. This happens
-     * asynchronously, and then we call {@link #getInfoForOrigins()} when we're done.
-     */
-    public void clearStorage() {
-        if (mWebsites == null) return;
-        RecordUserAction.record("MobileSettingsStorageClearAll");
-
-        // The goal is to refresh the info for origins again after we've cleared all of them, so we
-        // wait until the last website is cleared to refresh the origin list.
-        final int[] numLeft = new int[1];
-        numLeft[0] = mWebsites.size();
-        for (int i = 0; i < mWebsites.size(); i++) {
-            WebsitePreference preference = mWebsites.get(i);
-            preference.site().clearAllStoredData(getSiteSettingsClient().getBrowserContextHandle(),
-                    new StoredDataClearedCallback() {
-                        @Override
-                        public void onStoredDataCleared() {
-                            if (--numLeft[0] <= 0) getInfoForOrigins();
-                        }
-                    });
-        }
     }
 
     @Override
@@ -456,64 +416,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         if (preference instanceof WebsitePreference) {
             WebsitePreference website = (WebsitePreference) preference;
             website.setFragment(SingleWebsiteSettings.class.getName());
-            // EXTRA_SITE re-uses already-fetched permissions, which we can only use if the Website
-            // was populated with data for all permission types.
-            if (mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)) {
-                website.putSiteIntoExtras(SingleWebsiteSettings.EXTRA_SITE);
-            } else {
-                website.putSiteAddressIntoExtras(SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
-            }
+
+            website.putSiteAddressIntoExtras(SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
+
             int navigationSource = getArguments().getInt(
                     SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
             website.getExtras().putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
         }
 
         return super.onPreferenceTreeClick(preference);
-    }
-
-    /** OnClickListener for the clear button. We show an alert dialog to confirm the action */
-    @Override
-    public void onClick(View v) {
-        if (getActivity() == null || v != mClearButton) return;
-
-        long totalUsage = 0;
-        boolean includesApps = false;
-        Set<String> originsWithInstalledApp =
-                getSiteSettingsClient().getWebappSettingsClient().getOriginsWithInstalledApp();
-        if (mWebsites != null) {
-            for (WebsitePreference preference : mWebsites) {
-                totalUsage += preference.site().getTotalUsage();
-                if (!includesApps) {
-                    includesApps = originsWithInstalledApp.contains(
-                            preference.site().getAddress().getOrigin());
-                }
-            }
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View dialogView =
-                getActivity().getLayoutInflater().inflate(R.layout.clear_data_dialog, null);
-        TextView message = dialogView.findViewById(android.R.id.message);
-        TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
-        TextView offlineText = dialogView.findViewById(R.id.offline_text);
-        signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_all_message);
-        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
-        String dialogFormattedText =
-                getString(includesApps ? R.string.webstorage_clear_data_dialog_message_with_app
-                                       : R.string.webstorage_clear_data_dialog_message,
-                        Formatter.formatShortFileSize(getActivity(), totalUsage));
-        message.setText(dialogFormattedText);
-        builder.setView(dialogView);
-        builder.setPositiveButton(R.string.storage_clear_dialog_clear_storage_option,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        clearStorage();
-                    }
-                });
-        builder.setNegativeButton(R.string.cancel, null);
-        builder.setTitle(R.string.storage_clear_site_storage_title);
-        builder.create().show();
     }
 
     // OnPreferenceChangeListener:
@@ -527,9 +438,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
             for (@SiteSettingsCategory.Type int type = 0;
                     type < SiteSettingsCategory.Type.NUM_ENTRIES; type++) {
-                if (type == SiteSettingsCategory.Type.ALL_SITES
-                        || type == SiteSettingsCategory.Type.USE_STORAGE
-                        || !mCategory.showSites(type)) {
+                if (!mCategory.showSites(type)) {
                     continue;
                 }
 
@@ -947,16 +856,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
         PreferenceGroup managedGroup = (PreferenceGroup) screen.findPreference(MANAGED_GROUP);
         boolean permissionBlockedByOs = mCategory.showPermissionBlockedMessage(getActivity());
-        // For these categories, no binary, tri-state or custom toggles should be shown.
-        boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
-                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE);
-        boolean hideSecondaryToggles = hideMainToggles || permissionBlockedByOs;
 
-        if (hideMainToggles) {
-            screen.removePreference(binaryToggle);
-            screen.removePreference(triStateToggle);
-            screen.removePreference(fourStateCookieToggle);
-        } else if (mRequiresTriStateSetting) {
+        if (mRequiresTriStateSetting) {
             screen.removePreference(binaryToggle);
             screen.removePreference(fourStateCookieToggle);
             configureTriStateToggle(triStateToggle, contentType);
@@ -970,15 +871,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             configureBinaryToggle(binaryToggle, contentType);
         }
 
-        if (permissionBlockedByOs) {
-            maybeShowOsWarning(screen);
-        }
-
         if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
             screen.removePreference(screen.findPreference(COOKIE_INFO_TEXT_KEY));
         }
 
-        if (hideSecondaryToggles) {
+        if (permissionBlockedByOs) {
+            maybeShowOsWarning(screen);
+
             screen.removePreference(thirdPartyCookies);
             screen.removePreference(notificationsVibrate);
             screen.removePreference(notificationsQuietUi);

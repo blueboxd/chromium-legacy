@@ -302,15 +302,6 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
          atomic_policy_group_enabled_policy_value->source ==
              POLICY_SOURCE_PRIORITY_CLOUD) &&
         atomic_policy_group_enabled_policy_value->scope == POLICY_SCOPE_USER);
-  auto* value =
-      chrome_policies.GetValue(key::kExtensionInstallListsMergeEnabled);
-  if (value && value->GetBool()) {
-    policy_lists_to_merge.insert(key::kExtensionInstallForcelist);
-    policy_lists_to_merge.insert(key::kExtensionInstallBlacklist);
-    policy_lists_to_merge.insert(key::kExtensionInstallBlocklist);
-    policy_lists_to_merge.insert(key::kExtensionInstallWhitelist);
-    policy_lists_to_merge.insert(key::kExtensionInstallAllowlist);
-  }
 
   PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));
   PolicyDictionaryMerger policy_dictionary_merger(

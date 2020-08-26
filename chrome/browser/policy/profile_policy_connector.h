@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 
@@ -39,6 +38,8 @@ class ChromeBrowserPolicyConnector;
 class ProfilePolicyConnector final {
  public:
   ProfilePolicyConnector();
+  ProfilePolicyConnector(const ProfilePolicyConnector&) = delete;
+  ProfilePolicyConnector& operator=(const ProfilePolicyConnector&) = delete;
   ~ProfilePolicyConnector();
 
   // |user| is only used in Chrome OS builds and should be set to nullptr
@@ -164,8 +165,6 @@ class ProfilePolicyConnector final {
 
   std::unique_ptr<PolicyService> policy_service_;
   std::unique_ptr<bool> is_managed_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };
 
 }  // namespace policy

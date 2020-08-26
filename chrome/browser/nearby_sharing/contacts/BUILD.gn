@@ -18,8 +18,11 @@ source_set("contacts") {
     "//base",
     "//chrome/browser/nearby_sharing/client",
     "//chrome/browser/nearby_sharing/common",
+    "//chrome/browser/nearby_sharing/local_device_data",
     "//chrome/browser/nearby_sharing/logging",
     "//chrome/browser/nearby_sharing/proto",
+    "//chrome/browser/nearby_sharing/scheduling",
+    "//components/prefs",
   ]
 }
 
@@ -43,7 +46,10 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "nearby_share_contact_downloader_impl_unittest.cc" ]
+  sources = [
+    "nearby_share_contact_downloader_impl_unittest.cc",
+    "nearby_share_contact_manager_impl_unittest.cc",
+  ]
 
   deps = [
     ":contacts",
@@ -53,7 +59,11 @@ source_set("unit_tests") {
     "//chrome/browser/nearby_sharing/client",
     "//chrome/browser/nearby_sharing/client:test_support",
     "//chrome/browser/nearby_sharing/common",
+    "//chrome/browser/nearby_sharing/local_device_data:test_support",
     "//chrome/browser/nearby_sharing/proto",
+    "//chrome/browser/nearby_sharing/scheduling",
+    "//chrome/browser/nearby_sharing/scheduling:test_support",
+    "//components/sync_preferences:test_support",
     "//testing/gtest",
   ]
 }

@@ -587,12 +587,19 @@ void ClientAndroid::InvalidateAccessToken(const std::string& access_token) {
 }
 
 void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
+  if (controller_) {
+    DestroyController();
+  }
   controller_ = std::make_unique<Controller>(
       web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
       std::move(service));
 }
 
 void ClientAndroid::DestroyController() {
+  if (controller_ && ui_controller_android_ &&
+      ui_controller_android_->IsAttachedTo(controller_.get())) {
+    ui_controller_android_->Detach();
+  }
   controller_.reset();
   started_ = false;
 }

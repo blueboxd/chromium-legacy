@@ -2149,6 +2149,8 @@ crbug.com/1082020 external/wpt/web-bundle/subresource-loading/* [ Skip ]
 virtual/subresource-web-bundles/external/wpt/web-bundle/subresource-loading/* [ Pass ]
 crbug.com/1082020 http/tests/loading/wbn/subresource-loading/* [ Skip ]
 virtual/subresource-web-bundles/http/tests/loading/wbn/subresource-loading/* [ Pass ]
+crbug.com/1082020 http/tests/loading/wbn/origin-trial/* [ Skip ]
+virtual/subresource-web-bundles-disabled/http/tests/loading/wbn/origin-trial/* [ Pass ]
 
 # No good way to automate this test yet
 external/wpt/native-file-system/showSaveFilePicker-manual.https.html [ Skip ]

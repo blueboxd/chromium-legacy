@@ -14,9 +14,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -38,11 +40,11 @@
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
+#include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ppapi_migration/value_conversions.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
-#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/text_input_dev.h"
@@ -1446,13 +1448,9 @@ void OutOfProcessInstance::SubmitForm(const std::string& url,
   request.SetMethod("POST");
   request.AppendDataToBody(reinterpret_cast<const char*>(data), length);
 
-  form_loader_ = CreateURLLoaderInternal();
-  pp::CompletionCallback callback =
-      PPCompletionCallbackFromResultCallback(base::BindOnce(
-          &OutOfProcessInstance::FormDidOpen, weak_factory_.GetWeakPtr()));
-  int rv = form_loader_.Open(request, callback);
-  if (rv != PP_OK_COMPLETIONPENDING)
-    callback.Run(rv);
+  form_loader_ = CreateUrlLoaderInternal();
+  form_loader_->Open(request, base::BindOnce(&OutOfProcessInstance::FormDidOpen,
+                                             weak_factory_.GetWeakPtr()));
 }
 
 void OutOfProcessInstance::FormDidOpen(int32_t result) {
@@ -1462,7 +1460,7 @@ void OutOfProcessInstance::FormDidOpen(int32_t result) {
   }
 }
 
-pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
+scoped_refptr<UrlLoader> OutOfProcessInstance::CreateUrlLoader() {
   if (full_) {
     if (!did_call_start_loading_) {
       did_call_start_loading_ = true;
@@ -1476,7 +1474,7 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
         this, PP_CONTENT_RESTRICTION_SAVE | PP_CONTENT_RESTRICTION_PRINT);
   }
 
-  return CreateURLLoaderInternal();
+  return CreateUrlLoaderInternal();
 }
 
 std::vector<PDFEngine::Client::SearchStringResult>
@@ -2076,27 +2074,19 @@ void OutOfProcessInstance::LoadUrl(const std::string& url,
   request.SetMethod("GET");
   request.SetFollowRedirects(false);
 
-  pp::URLLoader* loader =
-      is_print_preview ? &embed_preview_loader_ : &embed_loader_;
-  *loader = CreateURLLoaderInternal();
-  pp::CompletionCallback callback = PPCompletionCallbackFromResultCallback(
+  scoped_refptr<UrlLoader>& loader =
+      is_print_preview ? embed_preview_loader_ : embed_loader_;
+  loader = CreateUrlLoaderInternal();
+  loader->Open(
+      request,
       base::BindOnce(is_print_preview ? &OutOfProcessInstance::DidOpenPreview
                                       : &OutOfProcessInstance::DidOpen,
                      weak_factory_.GetWeakPtr()));
-  int rv = loader->Open(request, callback);
-  if (rv != PP_OK_COMPLETIONPENDING)
-    callback.Run(rv);
 }
 
-pp::URLLoader OutOfProcessInstance::CreateURLLoaderInternal() {
-  pp::URLLoader loader(this);
-
-  const PPB_URLLoaderTrusted* trusted_interface =
-      reinterpret_cast<const PPB_URLLoaderTrusted*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_URLLOADERTRUSTED_INTERFACE));
-  if (trusted_interface)
-    trusted_interface->GrantUniversalAccess(loader.pp_resource());
+scoped_refptr<UrlLoader> OutOfProcessInstance::CreateUrlLoaderInternal() {
+  auto loader = base::MakeRefCounted<UrlLoader>(this);
+  loader->GrantUniversalAccess();
   return loader;
 }
 

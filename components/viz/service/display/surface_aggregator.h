@@ -110,7 +110,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                          float parent_device_scale_factor,
                          const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
-                         RenderPass* dest_pass,
+                         AggregatedRenderPass* dest_pass,
                          bool ignore_undamaged,
                          gfx::Rect* damage_rect_in_quad_space,
                          bool* damage_rect_in_quad_space_valid,
@@ -124,7 +124,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           const gfx::Transform& target_transform,
                           const ClipData& clip_rect,
                           bool stretch_content_to_fill_bounds,
-                          RenderPass* dest_pass,
+                          AggregatedRenderPass* dest_pass,
                           bool ignore_undamaged,
                           gfx::Rect* damage_rect_in_quad_space,
                           bool* damage_rect_in_quad_space_valid,
@@ -136,7 +136,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const SurfaceDrawQuad* surface_quad,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
-      RenderPass* dest_pass,
+      AggregatedRenderPass* dest_pass,
       const RoundedCornerInfo& rounded_corner_info);
 
   void EmitGutterQuadsIfNecessary(
@@ -146,14 +146,14 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       SkColor background_color,
-      RenderPass* dest_pass,
+      AggregatedRenderPass* dest_pass,
       const RoundedCornerInfo& rounded_corner_info);
 
   SharedQuadState* CopySharedQuadState(
       const SharedQuadState* source_sqs,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
-      RenderPass* dest_render_pass,
+      AggregatedRenderPass* dest_render_pass,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
@@ -165,7 +165,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& quad_layer_rect,
       const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
-      RenderPass* dest_render_pass,
+      AggregatedRenderPass* dest_render_pass,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
@@ -177,7 +177,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const std::unordered_map<ResourceId, ResourceId>& resource_to_child_map,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
-      RenderPass* dest_pass,
+      AggregatedRenderPass* dest_pass,
       const SurfaceId& surface_id,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
@@ -227,7 +227,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // and return the combined damage rect.
   gfx::Rect PrewalkSurface(Surface* surface,
                            bool in_moved_pixel_rp,
-                           RenderPassId parent_pass,
+                           AggregatedRenderPassId parent_pass,
                            bool will_draw,
                            const gfx::Rect& damage_from_parent,
                            PrewalkResult* result);
@@ -258,15 +258,32 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const DrawQuad* quad,
       const gfx::Transform& parent_quad_to_root_target_transform);
   void UnionSurfaceDamageRectsOnTop(const gfx::Rect& surface_rect,
-                                    const gfx::Transform& target_transform,
-                                    const RenderPass* pass);
+                                    const gfx::Transform& target_transform);
+
+  // Determines occluding damage. Note that there is two version of the
+  // function, differing on what type of RenderPass is given (aggregated or from
+  // the compositor). If the compositor pass is given, it is assumed that it
+  // will be transformed into an aggregated pass later, so the values (with the
+  // exception of the id) will be the same. The id is remapped to an aggregated
+  // id.
   DrawQuad* ProcessSurfaceOccludingDamage(
       const Surface* surface,
       const RenderPassList& render_pass_list,
       const gfx::Transform& target_transform,
       const RenderPass* dest_pass,
       gfx::Rect* occluding_damage_rect);
-  bool RenderPassNeedsFullDamage(const RenderPass* pass) const;
+  DrawQuad* ProcessSurfaceOccludingDamage(
+      const Surface* surface,
+      const RenderPassList& render_pass_list,
+      const gfx::Transform& target_transform,
+      const AggregatedRenderPass* dest_pass,
+      gfx::Rect* occluding_damage_rect);
+
+  // Returns true if the render pass with the given id and cache_render_pass
+  // flag would need full damage.
+  bool RenderPassNeedsFullDamage(const AggregatedRenderPassId& id,
+                                 bool cache_render_pass) const;
+
   bool IsRootSurface(const Surface* surface) const;
 
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
@@ -296,29 +313,40 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const cc::ListContainer<DrawQuad>::Iterator& end,
       const gfx::Rect& jelly_clip,
       float skew,
-      RenderPass* render_pass);
+      AggregatedRenderPass* render_pass);
   // Appends quads directly to |root_pass|, applying |skew|.
   void CreateDeJellyNormalQuads(
       cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
       const cc::ListContainer<DrawQuad>::Iterator& end,
-      RenderPass* root_pass,
+      AggregatedRenderPass* root_pass,
       float skew);
   // Appends |render_pass| to |root_pass|, applying |skew|, |jelly_clip|,
   // |opacity|, and |blend_mode|.
-  void AppendDeJellyRenderPass(float skew,
-                               const gfx::Rect& jelly_clip,
-                               float opacity,
-                               SkBlendMode blend_mode,
-                               RenderPass* root_pass,
-                               std::unique_ptr<RenderPass> render_pass);
+  void AppendDeJellyRenderPass(
+      float skew,
+      const gfx::Rect& jelly_clip,
+      float opacity,
+      SkBlendMode blend_mode,
+      AggregatedRenderPass* root_pass,
+      std::unique_ptr<AggregatedRenderPass> render_pass);
   // Appends quads from |quad_iterator| to |render_pass| for |state|.
   void AppendDeJellyQuadsForSharedQuadState(
       cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
       const cc::ListContainer<DrawQuad>::Iterator& end,
-      RenderPass* render_pass,
+      AggregatedRenderPass* render_pass,
       const SharedQuadState* state);
   // Update |last_frame_had_jelly_|, should be called once per frame.
   void SetLastFrameHadJelly(bool had_jelly);
+
+  // An internal helper for the `ProcessSurfaceOccludingDamage()` functions.
+  DrawQuad* ProcessSurfaceOccludingDamageInternal(
+      const Surface* surface,
+      const RenderPassList& render_pass_list,
+      const gfx::Transform& parent_target_transform,
+      const gfx::Transform& dest_transform_to_root_target,
+      const AggregatedRenderPassId& dest_pass_id,
+      bool dest_pass_cached,
+      gfx::Rect* occluding_damage_rect);
 
   SurfaceManager* manager_;
   DisplayResourceProvider* provider_;
@@ -335,9 +363,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // render passes.
   int max_render_target_size_ = 0;
   // The id for the final color conversion render pass.
-  RenderPassId color_conversion_render_pass_id_;
+  AggregatedRenderPassId color_conversion_render_pass_id_;
   // The id for the optional render pass used to apply the display transform.
-  RenderPassId display_transform_render_pass_id_;
+  AggregatedRenderPassId display_transform_render_pass_id_;
 
   base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
 
@@ -363,26 +391,26 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   base::flat_set<SurfaceId> valid_surfaces_;
 
   // This is the pass list for the aggregated frame.
-  RenderPassList* dest_pass_list_;
+  AggregatedRenderPassList* dest_pass_list_;
 
   // The target display time for the aggregated frame.
   base::TimeTicks expected_display_time_;
 
   // This is the set of aggregated pass ids that are affected by filters that
   // move pixels.
-  base::flat_set<RenderPassId> moved_pixel_passes_;
+  base::flat_set<AggregatedRenderPassId> moved_pixel_passes_;
 
   // This is the set of aggregated pass ids that are drawn by copy requests, so
   // should not have their damage rects clipped to the root damage rect.
-  base::flat_set<RenderPassId> copy_request_passes_;
+  base::flat_set<AggregatedRenderPassId> copy_request_passes_;
 
   // This is the set of aggregated pass ids that has damage from contributing
   // content.
-  base::flat_set<RenderPassId> contributing_content_damaged_passes_;
+  base::flat_set<AggregatedRenderPassId> contributing_content_damaged_passes_;
 
   // This maps each aggregated pass id to the set of (aggregated) pass ids
   // that its RenderPassDrawQuads depend on
-  base::flat_map<RenderPassId, base::flat_set<RenderPassId>>
+  base::flat_map<AggregatedRenderPassId, base::flat_set<AggregatedRenderPassId>>
       render_pass_dependencies_;
 
   // The root damage rect of the currently-aggregating frame.

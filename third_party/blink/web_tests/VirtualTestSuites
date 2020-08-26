@@ -730,6 +730,11 @@
     "args": [ "--enable-blink-features=SubresourceWebBundles" ]
   },
   {
+    "prefix": "subresource-web-bundles-disabled",
+    "bases": [ "http/tests/loading/wbn/origin-trial/" ],
+    "args": [ "--disable-blink-features=SubresourceWebBundles" ]
+  },
+  {
     "prefix": "transform-interop",
     "bases": [ "external/wpt/css/css-transforms" ],
     "args": [ "--enable-features=TransformInterop" ]

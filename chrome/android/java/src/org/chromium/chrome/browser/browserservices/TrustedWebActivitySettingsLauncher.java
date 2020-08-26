@@ -13,8 +13,8 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.browser_ui.site_settings.AllSiteSettings;
 import org.chromium.components.browser_ui.site_settings.SettingsNavigationSource;
-import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 
@@ -76,17 +76,16 @@ public class TrustedWebActivitySettingsLauncher {
 
     private static void openFilteredAllSiteSettings(Context context, Collection<String> domains) {
         Bundle extras = new Bundle();
-        extras.putString(SingleCategorySettings.EXTRA_CATEGORY,
+        extras.putString(AllSiteSettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));
-        extras.putString(SingleCategorySettings.EXTRA_TITLE,
+        extras.putString(AllSiteSettings.EXTRA_TITLE,
                 context.getString(R.string.twa_clear_data_site_selection_title));
-        extras.putStringArrayList(
-                SingleCategorySettings.EXTRA_SELECTED_DOMAINS, new ArrayList<>(domains));
+        extras.putStringArrayList(AllSiteSettings.EXTRA_SELECTED_DOMAINS, new ArrayList<>(domains));
         extras.putInt(SettingsNavigationSource.EXTRA_KEY,
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        settingsLauncher.launchSettingsActivity(context, SingleCategorySettings.class, extras);
+        settingsLauncher.launchSettingsActivity(context, AllSiteSettings.class, extras);
     }
 
     /**

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/surfaces/surface_id.h"
 
@@ -16,8 +17,9 @@ RenderPassIdRemapper::RenderPassIdRemapper() = default;
 
 RenderPassIdRemapper::~RenderPassIdRemapper() = default;
 
-RenderPassId RenderPassIdRemapper::Remap(RenderPassId surface_local_pass_id,
-                                         const SurfaceId& surface_id) {
+AggregatedRenderPassId RenderPassIdRemapper::Remap(
+    RenderPassId surface_local_pass_id,
+    const SurfaceId& surface_id) {
   auto key = std::make_pair(surface_id, surface_local_pass_id);
   auto it = render_pass_allocator_map_.find(key);
   if (it != render_pass_allocator_map_.end()) {
@@ -31,7 +33,7 @@ RenderPassId RenderPassIdRemapper::Remap(RenderPassId surface_local_pass_id,
   return render_pass_info.id;
 }
 
-RenderPassId RenderPassIdRemapper::NextAvailableId() {
+AggregatedRenderPassId RenderPassIdRemapper::NextAvailableId() {
   return render_pass_id_generator_.GenerateNextId();
 }
 

@@ -715,26 +715,26 @@ class NGInlineNodeDataEditor final {
         item->shape_result_->CopyAdjustedOffset(item->start_offset_);
   }
 
+  // TODO(yosin): Once we can reproduce invalid |ShapeResult| offsets, we
+  // should make this function works only for |DCHECK_IS_ON()|.
   void VerifyItems(const Vector<NGInlineItem>& items) const {
-#if DCHECK_IS_ON()
     unsigned last_offset = items.front().start_offset_;
     for (const NGInlineItem& item : items) {
-      DCHECK_LE(item.start_offset_, item.end_offset_);
-      DCHECK_EQ(last_offset, item.start_offset_);
+      CHECK_LE(item.start_offset_, item.end_offset_);
+      CHECK_EQ(last_offset, item.start_offset_);
       last_offset = item.end_offset_;
       if (!item.shape_result_ || item.layout_object_ != layout_text_)
         continue;
-      DCHECK_LT(item.start_offset_, item.end_offset_);
+      CHECK_LT(item.start_offset_, item.end_offset_);
       if (item.shape_result_->StartIndex() == item.start_offset_) {
-        DCHECK_LE(item.shape_result_->EndIndex(), item.end_offset_);
+        CHECK_LE(item.shape_result_->EndIndex(), item.end_offset_);
       } else {
-        DCHECK_LE(item.start_offset_, item.shape_result_->StartIndex());
-        DCHECK_EQ(item.end_offset_, item.shape_result_->EndIndex());
+        CHECK_LE(item.start_offset_, item.shape_result_->StartIndex());
+        CHECK_EQ(item.end_offset_, item.shape_result_->EndIndex());
       }
     }
-    DCHECK_EQ(last_offset,
-              block_flow_->GetNGInlineNodeData()->text_content.length());
-#endif
+    CHECK_EQ(last_offset,
+             block_flow_->GetNGInlineNodeData()->text_content.length());
   }
 
   std::unique_ptr<NGInlineNodeData> data_;

@@ -331,6 +331,7 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_CALL(*this, OnConnectToRemotingSource()).Times(1);
     EXPECT_CALL(remoting_source_, OnSinkAvailable(_)).Times(1);
     auto capabilities = std::make_unique<ReceiverCapability>();
+    capabilities->remoting = 2;
     capabilities->media_caps =
         std::vector<std::string>({"video", "audio", "vp8", "opus"});
     auto response = ReceiverResponse::CreateCapabilitiesResponseForTesting(

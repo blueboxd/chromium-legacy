@@ -16,6 +16,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -140,7 +141,7 @@ void SoftwareRenderer::BindFramebufferToOutputSurface() {
 }
 
 void SoftwareRenderer::BindFramebufferToTexture(
-    const RenderPassId render_pass_id) {
+    const AggregatedRenderPassId render_pass_id) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   DCHECK(it != render_pass_bitmaps_.end());
   SkBitmap& bitmap = it->second;
@@ -308,6 +309,9 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   switch (quad->material) {
+    case DrawQuad::Material::kAggregatedRenderPass:
+      DrawRenderPassQuad(AggregatedRenderPassDrawQuad::MaterialCast(quad));
+      break;
     case DrawQuad::Material::kDebugBorder:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
@@ -315,7 +319,9 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::Material::kRenderPass:
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad));
+      // At this point, all RenderPassDrawQuads should be converted to
+      // AggregatedRenderPassDrawQuads.
+      NOTREACHED();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad));
@@ -491,7 +497,8 @@ void SoftwareRenderer::DrawTileQuad(const TileDrawQuad* quad) {
                                  &current_paint_);
 }
 
-void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
+void SoftwareRenderer::DrawRenderPassQuad(
+    const AggregatedRenderPassDrawQuad* quad) {
   auto it = render_pass_bitmaps_.find(quad->render_pass_id);
   if (it == render_pass_bitmaps_.end())
     return;
@@ -673,7 +680,7 @@ void SoftwareRenderer::GenerateMipmap() {
 
 bool SoftwareRenderer::ShouldApplyBackdropFilters(
     const cc::FilterOperations* backdrop_filters,
-    const RenderPassDrawQuad* quad) const {
+    const AggregatedRenderPassDrawQuad* quad) const {
   if (!backdrop_filters)
     return false;
   if (quad->shared_quad_state->opacity == 0.f)
@@ -693,7 +700,7 @@ bool SoftwareRenderer::ShouldApplyBackdropFilters(
 // underlying backdrop.
 sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     SkImageFilter* filter,
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     const SkBitmap& to_filter,
     bool offset_expanded_bounds,
     SkIRect* result_rect) const {
@@ -741,7 +748,7 @@ SkBitmap SoftwareRenderer::GetBackdropBitmap(
 }
 
 gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     const cc::FilterOperations* backdrop_filters,
     base::Optional<gfx::RRectF> backdrop_filter_bounds_input,
     gfx::Transform contents_device_transform,
@@ -780,7 +787,7 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 }
 
 sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     SkTileMode content_tile_mode) const {
   const cc::FilterOperations* backdrop_filters =
       BackdropFiltersForPass(quad->render_pass_id);
@@ -894,10 +901,10 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
 }
 
 void SoftwareRenderer::UpdateRenderPassTextures(
-    const RenderPassList& render_passes_in_draw_order,
-    const base::flat_map<RenderPassId, RenderPassRequirements>&
+    const AggregatedRenderPassList& render_passes_in_draw_order,
+    const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<AggregatedRenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_bitmaps_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
@@ -918,12 +925,12 @@ void SoftwareRenderer::UpdateRenderPassTextures(
 
   // Delete RenderPass bitmaps from the previous frame that will not be used
   // again.
-  for (const RenderPassId& id : passes_to_delete)
+  for (const AggregatedRenderPassId& id : passes_to_delete)
     render_pass_bitmaps_.erase(id);
 }
 
 void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId& render_pass_id,
+    const AggregatedRenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   if (it != render_pass_bitmaps_.end()) {
@@ -951,13 +958,13 @@ void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
 }
 
 bool SoftwareRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId& render_pass_id) const {
+    const AggregatedRenderPassId& render_pass_id) const {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   return it != render_pass_bitmaps_.end();
 }
 
 gfx::Size SoftwareRenderer::GetRenderPassBackingPixelSize(
-    const RenderPassId& render_pass_id) {
+    const AggregatedRenderPassId& render_pass_id) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   DCHECK(it != render_pass_bitmaps_.end());
   SkBitmap& bitmap = it->second;

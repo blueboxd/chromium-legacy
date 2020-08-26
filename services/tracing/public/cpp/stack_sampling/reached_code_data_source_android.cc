@@ -9,10 +9,16 @@
 
 #include "base/android/reached_addresses_bitset.h"
 #include "base/android/reached_code_profiler.h"
+#include "base/debug/elf_reader.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/perfetto/include/perfetto/tracing/data_source.h"
+#include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/profiling/profile_common.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/profiling/profile_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+
+extern char __ehdr_start;
 
 namespace tracing {
 
@@ -47,9 +53,30 @@ void ReachedCodeDataSource::StopTracing(
   if (!bitset) {
     return;
   }
-  std::vector<uint32_t> offsets = bitset->GetReachedOffsets();
+
   perfetto::TraceWriter::TracePacketHandle trace_packet =
       trace_writer_->NewTracePacket();
+
+  auto* interned_data = trace_packet->set_interned_data();
+  base::debug::ElfBuildIdBuffer buf;
+  size_t size = base::debug::ReadElfBuildId(&__ehdr_start, true, buf);
+  if (size > 0) {
+    std::string module_id(buf, size);
+    TracingSamplerProfiler::MangleModuleIDIfNeeded(&module_id);
+    auto* str = interned_data->add_build_ids();
+    str->set_iid(0);
+    str->set_str(module_id);
+  }
+
+  base::Optional<base::StringPiece> library_name =
+      base::debug::ReadElfLibraryName(&__ehdr_start);
+  if (library_name) {
+    auto* str = interned_data->add_mapping_paths();
+    str->set_iid(0);
+    str->set_str(library_name->as_string());
+  }
+
+  std::vector<uint32_t> offsets = bitset->GetReachedOffsets();
   // Delta encoded timestamps and interned data require incremental state.
   auto* streaming_profile_packet = trace_packet->set_streaming_profile_packet();
   for (uint32_t offset : offsets) {

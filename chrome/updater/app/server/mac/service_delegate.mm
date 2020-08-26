@@ -226,8 +226,11 @@
     VLOG(0) << "performControlTasks complete.";
     if (reply)
       reply();
+
+    _appServer->TaskCompleted();
   }));
 
+  _appServer->TaskStarted();
   _callbackRunner->PostTask(
       FROM_HERE,
       base::BindOnce(&updater::ControlService::Run, _service, std::move(cb)));

@@ -541,7 +541,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {
+      const viz::AggregatedRenderPassList& render_passes) override {
     EXPECT_TRUE(will_draw_and_swap) << did_swap_;
     if (did_swap_) {
       // TODO(crbug.com/564832): Ignore the extra frame that occurs due to copy
@@ -582,8 +582,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void AfterTest() override { EXPECT_TRUE(did_swap_); }
 
-  viz::RenderPassId parent_render_pass_id;
-  viz::RenderPassId copy_layer_render_pass_id;
+  viz::AggregatedRenderPassId parent_render_pass_id;
+  viz::AggregatedRenderPassId copy_layer_render_pass_id;
   TestLayerTreeFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;

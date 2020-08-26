@@ -51,4 +51,4 @@ ProfileNotification::ProfileNotification(
 #endif
 }
 
-ProfileNotification::~ProfileNotification() {}
+ProfileNotification::~ProfileNotification() = default;

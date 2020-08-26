@@ -127,7 +127,7 @@ class PasswordGenerationPopupControllerImpl
  private:
   class KeyPressRegistrator;
   // PasswordGenerationPopupController implementation:
-  void Hide(autofill::PopupHidingReason reason) override;
+  void Hide(autofill::PopupHidingReason) override;
   void ViewDestroyed() override;
   void SelectionCleared() override;
   void SetSelected() override;
@@ -136,6 +136,8 @@ class PasswordGenerationPopupControllerImpl
   content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
+
+  void HideImpl();
 
   GenerationUIState state() const override;
   bool password_selected() const override;

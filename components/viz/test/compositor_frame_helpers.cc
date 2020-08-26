@@ -139,10 +139,15 @@ CompositorFrame MakeDefaultCompositorFrame() {
   return CompositorFrameBuilder().AddDefaultRenderPass().Build();
 }
 
-AggregatedFrame MakeDefaultAggregatedFrame() {
+AggregatedFrame MakeDefaultAggregatedFrame(size_t num_render_passes) {
+  static AggregatedRenderPassId::Generator id_generator;
   AggregatedFrame frame;
-  frame.render_pass_list =
-      std::move(MakeDefaultCompositorFrame().render_pass_list);
+  for (size_t i = 0; i < num_render_passes; ++i) {
+    frame.render_pass_list.push_back(std::make_unique<AggregatedRenderPass>());
+    frame.render_pass_list.back()->SetNew(id_generator.GenerateNextId(),
+                                          kDefaultOutputRect,
+                                          kDefaultDamageRect, gfx::Transform());
+  }
   return frame;
 }
 

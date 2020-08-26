@@ -29,6 +29,7 @@ struct Capabilities;
 }
 
 namespace viz {
+class AggregatedRenderPassDrawQuad;
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
 class SkiaOutputSurface;
@@ -66,18 +67,19 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  protected:
   bool CanPartialSwap() override;
   void UpdateRenderPassTextures(
-      const RenderPassList& render_passes_in_draw_order,
-      const base::flat_map<RenderPassId, RenderPassRequirements>&
+      const AggregatedRenderPassList& render_passes_in_draw_order,
+      const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
-      const RenderPassId& render_pass_id,
+      const AggregatedRenderPassId& render_pass_id,
       const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
-      const RenderPassId& render_pass_id) const override;
+      const AggregatedRenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassBackingPixelSize(
-      const RenderPassId& render_pass_id) override;
+      const AggregatedRenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
-  void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
+  void BindFramebufferToTexture(
+      const AggregatedRenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
@@ -133,7 +135,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                                          const gfx::Rect* scissor_rect,
                                          const DrawQuad* quad,
                                          const gfx::QuadF* draw_region) const;
-  DrawRPDQParams CalculateRPDQParams(const RenderPassDrawQuad* quad,
+  DrawRPDQParams CalculateRPDQParams(const AggregatedRenderPassDrawQuad* quad,
                                      DrawQuadParams* params);
   // Modifies |params| and |rpdq_params| to apply correctly when drawing the
   // RenderPass directly via |bypass_quad|.
@@ -190,7 +192,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // either are not textures (debug, picture), or it's very likely
   // the texture will have advanced paint effects (rpdq). Additionally, they do
   // not support being drawn directly for a pass-through RenderPass.
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+  void DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad,
                           DrawQuadParams* params);
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                            DrawQuadParams* params);
@@ -224,7 +226,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // skia_renderer can draw most single-quad passes directly, regardless of
   // blend mode or image filtering.
-  const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+  const DrawQuad* CanPassBeDrawnDirectly(
+      const AggregatedRenderPass* pass) override;
 
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
   // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't
@@ -268,7 +271,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     RenderPassBacking(RenderPassBacking&&);
     RenderPassBacking& operator=(RenderPassBacking&&);
   };
-  base::flat_map<RenderPassId, RenderPassBacking> render_pass_backings_;
+  base::flat_map<AggregatedRenderPassId, RenderPassBacking>
+      render_pass_backings_;
 
   const DrawMode draw_mode_;
 

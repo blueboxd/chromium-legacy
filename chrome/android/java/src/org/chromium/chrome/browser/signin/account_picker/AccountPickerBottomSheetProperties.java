@@ -21,21 +21,21 @@ import java.lang.annotation.RetentionPolicy;
  */
 class AccountPickerBottomSheetProperties {
     /**
-     * States of account picker.
-     * Different account picker state correspond to different account picker bottom sheet
+     * View states of account picker.
+     * Different account picker view state correspond to different account picker bottom sheet
      * configuration.
      */
     @IntDef({
-            AccountPickerBottomSheetState.NO_ACCOUNTS,
-            AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST,
-            AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST,
-            AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS,
-            AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL,
-            AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR,
-            AccountPickerBottomSheetState.SIGNIN_AUTH_ERROR,
+            ViewState.NO_ACCOUNTS,
+            ViewState.COLLAPSED_ACCOUNT_LIST,
+            ViewState.EXPANDED_ACCOUNT_LIST,
+            ViewState.SIGNIN_IN_PROGRESS,
+            ViewState.INCOGNITO_INTERSTITIAL,
+            ViewState.SIGNIN_GENERAL_ERROR,
+            ViewState.SIGNIN_AUTH_ERROR,
     })
     @Retention(RetentionPolicy.SOURCE)
-    @interface AccountPickerBottomSheetState {
+    @interface ViewState {
         /**
          * When there is no account on device, the user sees only one blue button
          * |Add account to device|.
@@ -112,18 +112,17 @@ class AccountPickerBottomSheetProperties {
     static final ReadableObjectPropertyKey<Runnable> ON_CONTINUE_AS_CLICKED =
             new ReadableObjectPropertyKey<>("on_continue_as_clicked");
 
-    // PropertyKey indicates the state of the account picker bottom sheet
-    static final WritableIntPropertyKey ACCOUNT_PICKER_BOTTOM_SHEET_STATE =
-            new WritableIntPropertyKey("account_picker_bottom_sheet_state");
+    // PropertyKey indicates the view state of the account picker bottom sheet
+    static final WritableIntPropertyKey VIEW_STATE = new WritableIntPropertyKey("view_state");
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ON_SELECTED_ACCOUNT_CLICKED,
-            SELECTED_ACCOUNT_DATA, ON_CONTINUE_AS_CLICKED, ACCOUNT_PICKER_BOTTOM_SHEET_STATE};
+    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            ON_SELECTED_ACCOUNT_CLICKED, SELECTED_ACCOUNT_DATA, ON_CONTINUE_AS_CLICKED, VIEW_STATE};
 
     /**
      * Creates a default model for the AccountPickerBottomSheet.
      *
      * In the default model, as the selected account data is null, the bottom sheet is in the
-     * state {@link AccountPickerBottomSheetState#NO_ACCOUNTS}.
+     * state {@link ViewState#NO_ACCOUNTS}.
      */
     static PropertyModel createModel(
             Runnable onSelectedAccountClicked, Runnable onContinueAsClicked) {
@@ -131,7 +130,7 @@ class AccountPickerBottomSheetProperties {
                 .with(ON_SELECTED_ACCOUNT_CLICKED, onSelectedAccountClicked)
                 .with(SELECTED_ACCOUNT_DATA, null)
                 .with(ON_CONTINUE_AS_CLICKED, onContinueAsClicked)
-                .with(ACCOUNT_PICKER_BOTTOM_SHEET_STATE, AccountPickerBottomSheetState.NO_ACCOUNTS)
+                .with(VIEW_STATE, ViewState.NO_ACCOUNTS)
                 .build();
     }
 

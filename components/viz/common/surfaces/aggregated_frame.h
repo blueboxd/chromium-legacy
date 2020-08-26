@@ -10,7 +10,7 @@
 
 #include "base/optional.h"
 #include "components/viz/common/delegated_ink_metadata.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/latency/latency_info.h"
@@ -55,7 +55,7 @@ class VIZ_COMMON_EXPORT AggregatedFrame {
   // delegated ink metadata.
   std::unique_ptr<DelegatedInkMetadata> delegated_ink_metadata;
 
-  RenderPassList render_pass_list;
+  AggregatedRenderPassList render_pass_list;
 };
 
 }  // namespace viz

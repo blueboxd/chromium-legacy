@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -46,12 +45,13 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -93,28 +93,24 @@ public class AccountPickerBottomSheetTest {
     public static final DisableAnimationsTestRule sNoAnimationsRule =
             new DisableAnimationsTestRule();
 
-    @Captor
-    public ArgumentCaptor<Callback<String>> callbackArgumentCaptor;
-
-    private final ChromeTabbedActivityTestRule mActivityTestRule =
-            new ChromeTabbedActivityTestRule();
+    @Rule
+    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private final CustomFakeProfileDataSource mFakeProfileDataSource =
             new CustomFakeProfileDataSource();
 
-    private final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(mFakeProfileDataSource);
-
-    private AccountPickerBottomSheetCoordinator mCoordinator;
-
-    // Destroys the mock AccountManagerFacade in the end as ChromeActivity may needs
-    // to unregister observers in the stub.
     @Rule
-    public final RuleChain mRuleChain =
-            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
+    public final AccountManagerTestRule mAccountManagerTestRule =
+            new AccountManagerTestRule(mFakeProfileDataSource);
 
     @Mock
     private AccountPickerDelegate mAccountPickerDelegateMock;
+
+    @Captor
+    public ArgumentCaptor<Callback<String>> callbackArgumentCaptor;
+
+    private AccountPickerBottomSheetCoordinator mCoordinator;
 
     @Before
     public void setUp() {

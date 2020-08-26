@@ -212,7 +212,7 @@ public class SyncSettingsUtils {
         Resources res = context.getResources();
 
         if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
-            return res.getString(R.string.sync_android_master_sync_disabled);
+            return res.getString(R.string.sync_android_system_sync_disabled);
         }
 
         if (profileSyncService == null) {

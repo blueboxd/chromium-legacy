@@ -76,7 +76,7 @@ class CompositorFrameBuilder {
 CompositorFrame MakeDefaultCompositorFrame();
 
 // Makes an aggregated frame out of the default compositor frame.
-AggregatedFrame MakeDefaultAggregatedFrame();
+AggregatedFrame MakeDefaultAggregatedFrame(size_t num_render_passes = 1);
 
 // Creates a CompositorFrame that will be valid once its render_pass_list is
 // initialized.

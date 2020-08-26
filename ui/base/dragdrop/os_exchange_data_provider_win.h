@@ -87,12 +87,26 @@ class DataObjectImpl : public DownloadFileObserver,
 
   // Our internal representation of stored data & type info.
   struct StoredDataInfo {
+   public:
     FORMATETC format_etc;
-    STGMEDIUM* medium;
+    STGMEDIUM medium;
     std::unique_ptr<DownloadFileProvider> downloader;
 
-    StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium);
     ~StoredDataInfo();
+    StoredDataInfo(const StoredDataInfo&) = delete;
+    StoredDataInfo& operator=(const StoredDataInfo&) = delete;
+
+    // Takes ownership of and nullifies `medium` to approximate moving from
+    // STGMEDIUM.
+    static std::unique_ptr<StoredDataInfo> TakeStorageMedium(
+        const FORMATETC& format_etc,
+        STGMEDIUM& medium);
+
+   private:
+    // STGMEDIUM is just a POD, it does not guarantee `medium` is no longer be
+    // used after calling this constructor while the ownership of `medium` is
+    // passed.
+    StoredDataInfo(const FORMATETC& format_etc, const STGMEDIUM& medium);
   };
 
   typedef std::vector<std::unique_ptr<StoredDataInfo>> StoredData;

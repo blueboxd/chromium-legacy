@@ -110,7 +110,7 @@ NGPrePaintInfo SetupFragmentData(const NGFragmentChildIterator& iterator,
     // The fragment is block-level.
     if (IsResumingLayout(incoming_break_token)) {
       // This isn't the first fragment for the node. We now need to walk past
-      // all prededing fragments to figure out which FragmentData to return (or
+      // all preceding fragments to figure out which FragmentData to return (or
       // create, if it doesn't already exist).
       const LayoutBox& layout_box = ToLayoutBox(object);
       for (wtf_size_t idx = 0;; idx++) {

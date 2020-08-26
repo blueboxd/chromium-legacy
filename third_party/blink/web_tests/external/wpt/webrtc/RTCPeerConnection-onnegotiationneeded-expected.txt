@@ -6,9 +6,9 @@ PASS Calling addTransceiver() twice should fire negotiationneeded event once
 PASS Calling both addTransceiver() and createDataChannel() should fire negotiationneeded event once
 PASS negotiationneeded event should not fire if signaling state is not stable
 FAIL negotiationneeded event should fire only after signaling state goes back to stable after setRemoteDescription assert_false: negotiationneeded should not fire until the next iteration of the event loop after SRD success expected false got true
-FAIL negotiationneeded event should fire only after signaling state goes back to stable after setLocalDescription assert_false: negotiationneeded should not fire until the next iteration of the event loop after SLD success expected false got true
-FAIL negotiationneeded event should fire only after signalingstatechange event fires from setRemoteDescription assert_false: negotiationneeded should not fire before signalingstatechange fires expected false got true
-FAIL negotiationneeded event should fire only after signalingstatechange event fires from setLocalDescription assert_false: negotiationneeded should not fire until the next iteration of the event loop after returning to stable expected false got true
+PASS negotiationneeded event should fire only after signaling state goes back to stable after setLocalDescription
+PASS negotiationneeded event should fire only after signalingstatechange event fires from setRemoteDescription
+PASS negotiationneeded event should fire only after signalingstatechange event fires from setLocalDescription
 PASS addTrack should cause negotiationneeded to fire
 PASS removeTrack should cause negotiationneeded to fire on the caller
 PASS removeTrack should cause negotiationneeded to fire on the callee

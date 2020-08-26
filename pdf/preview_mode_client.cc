@@ -10,8 +10,10 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "pdf/document_layout.h"
+#include "pdf/ppapi_migration/url_loader.h"
 
 namespace chrome_pdf {
 
@@ -114,9 +116,9 @@ void PreviewModeClient::SubmitForm(const std::string& url,
   NOTREACHED();
 }
 
-pp::URLLoader PreviewModeClient::CreateURLLoader() {
+scoped_refptr<UrlLoader> PreviewModeClient::CreateUrlLoader() {
   NOTREACHED();
-  return pp::URLLoader();
+  return base::MakeRefCounted<UrlLoader>();
 }
 
 std::vector<PDFEngine::Client::SearchStringResult>

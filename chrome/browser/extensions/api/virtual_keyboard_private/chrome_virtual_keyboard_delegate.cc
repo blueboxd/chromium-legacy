@@ -392,6 +392,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
+  features->AppendString(
+      GenerateFeatureFlag("handwritinggestureediting",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kHandwritingGestureEditing)));
   features->AppendString(GenerateFeatureFlag(
       "floatingkeyboarddefault",
       base::FeatureList::IsEnabled(

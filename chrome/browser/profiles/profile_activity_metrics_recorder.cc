@@ -30,7 +30,7 @@ constexpr int kMaxProfileBucket = 100;
 constexpr base::TimeDelta kLongTimeOfInactivity =
     base::TimeDelta::FromMinutes(30);
 
-int GetMetricsBucketIndex(Profile* profile) {
+int GetMetricsBucketIndex(const Profile* profile) {
   if (profile->IsGuestSession())
     return 0;
 
@@ -46,7 +46,7 @@ int GetMetricsBucketIndex(Profile* profile) {
   return entry->GetMetricsBucketIndex();
 }
 
-void RecordProfileSessionDuration(Profile* profile,
+void RecordProfileSessionDuration(const Profile* profile,
                                   base::TimeDelta session_length) {
   if (!profile || session_length.InMinutes() <= 0)
     return;
@@ -61,7 +61,7 @@ void RecordProfileSessionDuration(Profile* profile,
   }
 }
 
-void RecordBrowserActivation(Profile* profile) {
+void RecordBrowserActivation(const Profile* profile) {
   DCHECK(profile);
   int profile_bucket = GetMetricsBucketIndex(profile);
 
@@ -71,7 +71,7 @@ void RecordBrowserActivation(Profile* profile) {
   }
 }
 
-void RecordUserAction(Profile* profile) {
+void RecordUserAction(const Profile* profile) {
   if (!profile)
     return;
 
@@ -89,7 +89,7 @@ void RecordProfilesState() {
       .RecordProfilesState();
 }
 
-void RecordAccountMetrics(Profile* profile) {
+void RecordAccountMetrics(const Profile* profile) {
   DCHECK(profile);
 
   ProfileAttributesEntry* entry;

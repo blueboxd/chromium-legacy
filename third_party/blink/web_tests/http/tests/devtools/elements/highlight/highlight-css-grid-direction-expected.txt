@@ -362,13 +362,13 @@ rtlGrid{
       "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
-          "x": 48,
+          "x": 98,
           "y": 44,
           "computedSize": 20,
           "authoredSize": "20px"
         },
         {
-          "x": 83,
+          "x": 63,
           "y": 44,
           "computedSize": 50,
           "authoredSize": "50px"
@@ -376,7 +376,7 @@ rtlGrid{
       ],
       "rowTrackSizes": [
         {
-          "x": 38,
+          "x": 108,
           "y": 94,
           "computedSize": 100,
           "authoredSize": "100px"
@@ -434,49 +434,49 @@ rtlGrid{
       ],
       "positiveRowLineNumberPositions": [
         {
-          "x": 38,
+          "x": 108,
           "y": 44
         },
         {
-          "x": 38,
+          "x": 108,
           "y": 144
         }
       ],
       "positiveColumnLineNumberPositions": [
         {
-          "x": 38,
-          "y": 44
-        },
-        {
-          "x": 58,
-          "y": 44
-        },
-        {
           "x": 108,
+          "y": 44
+        },
+        {
+          "x": 88,
+          "y": 44
+        },
+        {
+          "x": 38,
           "y": 44
         }
       ],
       "negativeRowLineNumberPositions": [
         {
-          "x": 108,
+          "x": 38,
           "y": 44
         },
         {
-          "x": 108,
+          "x": 38,
           "y": 144
         }
       ],
       "negativeColumnLineNumberPositions": [
         {
-          "x": 38,
-          "y": 144
-        },
-        {
-          "x": 58,
-          "y": 144
-        },
-        {
           "x": 108,
+          "y": 144
+        },
+        {
+          "x": 88,
+          "y": 144
+        },
+        {
+          "x": 38,
           "y": 144
         }
       ],
@@ -888,13 +888,13 @@ rtlGridGap{
       "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
-          "x": 32,
+          "x": 98,
           "y": 44,
           "computedSize": 20,
           "authoredSize": "20px"
         },
         {
-          "x": 83,
+          "x": 47,
           "y": 44,
           "computedSize": 50,
           "authoredSize": "50px"
@@ -902,7 +902,7 @@ rtlGridGap{
       ],
       "rowTrackSizes": [
         {
-          "x": 22,
+          "x": 108,
           "y": 94,
           "computedSize": 100,
           "authoredSize": "100px"
@@ -966,49 +966,49 @@ rtlGridGap{
       ],
       "positiveRowLineNumberPositions": [
         {
-          "x": 22,
+          "x": 108,
           "y": 44
         },
         {
-          "x": 22,
+          "x": 108,
           "y": 144
         }
       ],
       "positiveColumnLineNumberPositions": [
         {
-          "x": 22,
-          "y": 44
-        },
-        {
-          "x": 50,
-          "y": 44
-        },
-        {
           "x": 108,
+          "y": 44
+        },
+        {
+          "x": 80,
+          "y": 44
+        },
+        {
+          "x": 22,
           "y": 44
         }
       ],
       "negativeRowLineNumberPositions": [
         {
-          "x": 108,
+          "x": 22,
           "y": 44
         },
         {
-          "x": 108,
+          "x": 22,
           "y": 144
         }
       ],
       "negativeColumnLineNumberPositions": [
         {
-          "x": 22,
-          "y": 144
-        },
-        {
-          "x": 50,
-          "y": 144
-        },
-        {
           "x": 108,
+          "y": 144
+        },
+        {
+          "x": 80,
+          "y": 144
+        },
+        {
+          "x": 22,
           "y": 144
         }
       ],

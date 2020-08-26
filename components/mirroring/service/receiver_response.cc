@@ -150,10 +150,18 @@ std::unique_ptr<ReceiverError> ParseError(const Json::Value& value) {
 
 std::unique_ptr<ReceiverCapability> ParseCapability(const Json::Value& value) {
   auto capability = std::make_unique<ReceiverCapability>();
-  if (!value ||
-      !GetStringArray(value["mediaCaps"], &(capability->media_caps))) {
+
+  if (!value)
+    return {};
+
+  if (!GetInt(value["remoting"], &(capability->remoting))) {
+    capability->remoting = ReceiverCapability::kRemotingVersionUnknown;
+  }
+
+  if (!GetStringArray(value["mediaCaps"], &(capability->media_caps))) {
     return {};
   }
+
   return capability;
 }
 

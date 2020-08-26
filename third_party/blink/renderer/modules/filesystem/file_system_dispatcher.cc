@@ -422,11 +422,16 @@ void FileSystemDispatcher::Cancel(int request_id_to_cancel,
     std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
-  cancellable_operations_.find(request_id_to_cancel)
-      ->value->Value()
-      ->Cancel(WTF::Bind(&FileSystemDispatcher::DidCancel,
-                         WrapWeakPersistent(this), std::move(callback),
-                         request_id_to_cancel));
+  auto& remote =
+      cancellable_operations_.find(request_id_to_cancel)->value->Value();
+  if (!remote.is_bound()) {
+    RemoveOperationRemote(request_id_to_cancel);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+  remote->Cancel(WTF::Bind(&FileSystemDispatcher::DidCancel,
+                           WrapWeakPersistent(this), std::move(callback),
+                           request_id_to_cancel));
 }
 
 void FileSystemDispatcher::CreateSnapshotFile(

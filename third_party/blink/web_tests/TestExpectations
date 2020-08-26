@@ -1043,6 +1043,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-001.html [ Crash Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
+crbug.com/1121965 virtual/layout_ng_block_frag/external/wpt/css/css-contain/content-visibility/content-visibility-026.html [ Failure Pass ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
 crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
@@ -2617,7 +2618,6 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
@@ -5316,9 +5316,6 @@ crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Fai
 
 # This test is not intended to pass on Plan B.
 crbug.com/740501 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure Timeout ]
-# Temporarily disable to unblock a WebRTC CL that makes more tests pass.
-crbug.com/1060083 external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure ]
-crbug.com/1060083 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
 
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
 

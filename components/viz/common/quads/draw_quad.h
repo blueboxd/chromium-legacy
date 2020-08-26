@@ -37,7 +37,10 @@ class VIZ_COMMON_EXPORT DrawQuad {
     kInvalid,
     kDebugBorder,
     kPictureContent,
+    // This is the compositor, pre-aggregation, draw quad.
     kRenderPass,
+    // This is the viz, post-aggregation, draw quad.
+    kAggregatedRenderPass,
     kSolidColor,
     kStreamVideoContent,
     kSurfaceContent,

@@ -87,6 +87,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // Offset of the container's padding-box.
     LogicalOffset container_offset;
 
+    // The block size consumed by all previous fragmentainers.
+    LayoutUnit fragmentainer_consumed_block_size;
+
     LogicalSize ContentSize(EPosition position) const {
       return position == EPosition::kAbsolute ? content_size_for_absolute
                                               : content_size_for_fixed;
@@ -124,19 +127,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const WritingMode,
       const TextDirection,
       const LayoutBox* only_layout,
-      const NGBlockBreakToken* break_token = nullptr,
-      const NGConstraintSpace* fragmentainer_constraint_space = nullptr);
+      bool is_fragmentainer_descendant = false);
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
 
-  void AddOOFResultsToFragmentainer(
-      const Vector<scoped_refptr<const NGLayoutResult>>& results,
-      const wtf_size_t index);
-  const NGConstraintSpace& GetFragmentainerConstraintSpace(
-      const wtf_size_t index);
-  void AddOOFResultToFragmentainerResults(
-      const scoped_refptr<const NGLayoutResult> result,
-      const wtf_size_t index);
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
       const LogicalSize& container_content_size_in_child_writing_mode,
@@ -145,6 +139,18 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const LayoutUnit block_offset,
       const NGBlockBreakToken* break_token,
       const NGConstraintSpace* fragmentainer_constraint_space);
+  void AddOOFResultsToFragmentainer(
+      const Vector<scoped_refptr<const NGLayoutResult>>& results,
+      wtf_size_t index);
+  const NGConstraintSpace& GetFragmentainerConstraintSpace(wtf_size_t index);
+  void AddOOFResultToFragmentainerResults(
+      const scoped_refptr<const NGLayoutResult> result,
+      wtf_size_t index);
+  void ComputeStartFragmentIndexAndRelativeOffset(
+      const ContainingBlockInfo& container_info,
+      WritingMode default_writing_mode,
+      wtf_size_t* start_index,
+      LogicalOffset* offset) const;
 
   const NGConstraintSpace& container_space_;
   NGBoxFragmentBuilder* container_builder_;

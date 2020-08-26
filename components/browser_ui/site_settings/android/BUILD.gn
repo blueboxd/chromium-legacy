@@ -41,6 +41,7 @@ source_set("android") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/AllSiteSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectInfo.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorage.java",
@@ -199,6 +200,7 @@ android_resources("java_resources") {
     "java/res/layout/website_features.xml",
     "java/res/menu/website_preferences_menu.xml",
     "java/res/values/ids.xml",
+    "java/res/xml/all_site_preferences.xml",
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",
     "java/res/xml/website_preferences.xml",

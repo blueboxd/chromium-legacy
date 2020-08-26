@@ -39,6 +39,7 @@ namespace autofill {
 using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using features::kAutofillEnforceMinRequiredFieldsForQuery;
 using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using features::kAutofillLabelAffixRemoval;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
 
@@ -752,8 +753,280 @@ TEST_F(FormStructureTest, Heuristics_FormlessNonCheckoutForm) {
 }
 
 // All fields share a common prefix which could confuse the heuristics. Test
+// that the common prefixes are stripped out before running heuristics.
+// This test ensures that |parseable_name| is used for heuristics.
+TEST_F(FormStructureTest, StripCommonNameAffix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$phone");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+  ASSERT_EQ(4U, form_structure->autofill_count());
+
+  // First name.
+  EXPECT_EQ(ASCIIToUTF16("firstname"),
+            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  // Last name.
+  EXPECT_EQ(ASCIIToUTF16("lastname"),
+            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  // Email.
+  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+  // Phone.
+  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure->field(3)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+}
+
+// All fields share a common prefix, but it's not stripped due to
+// the |IsValidParseableName()| rule.
+TEST_F(FormStructureTest, StripCommonNameAffix_SmallPrefix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Address 1");
+  field.name = ASCIIToUTF16("address1");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address 2");
+  field.name = ASCIIToUTF16("address2");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address 3");
+  field.name = ASCIIToUTF16("address3");
+  form.fields.push_back(field);
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(3U, form_structure->field_count());
+
+  // Address 1.
+  EXPECT_EQ(ASCIIToUTF16("address1"),
+            form_structure->field(0)->parseable_name());
+  // Address 2.
+  EXPECT_EQ(ASCIIToUTF16("address2"),
+            form_structure->field(1)->parseable_name());
+  // Address 3
+  EXPECT_EQ(ASCIIToUTF16("address3"),
+            form_structure->field(2)->parseable_name());
+}
+
+// All fields share both a common prefix and suffix which could confuse the
+// heuristics. Test that the common affixes are stripped out from
+// |parseable_name| during |FormStructure| initialization.
+TEST_F(FormStructureTest, StripCommonNameAffix_PrefixAndSuffix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name =
+      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname_data");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name =
+      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname_data");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name =
+      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$email_data");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name =
+      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$phone_data");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name =
+      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit_data");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+
+  // First name.
+  EXPECT_EQ(ASCIIToUTF16("firstname"),
+            form_structure->field(0)->parseable_name());
+  // Last name.
+  EXPECT_EQ(ASCIIToUTF16("lastname"),
+            form_structure->field(1)->parseable_name());
+  // Email.
+  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  // Phone.
+  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  // Submit.
+  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+}
+
+// Only some fields share a long common long prefix, no fields share a suffix.
+// Test that only the common prefixes are stripped out in |parseable_name|
+// during |FormStructure| initialization.
+TEST_F(FormStructureTest, StripCommonNameAffix_SelectiveLongPrefix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+
+  // First name.
+  EXPECT_EQ(ASCIIToUTF16("firstname"),
+            form_structure->field(0)->parseable_name());
+  // Last name.
+  EXPECT_EQ(ASCIIToUTF16("lastname"),
+            form_structure->field(1)->parseable_name());
+  // Email.
+  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  // Phone.
+  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  // Submit.
+  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+}
+
+// Only some fields share a long common short prefix, no fields share a suffix.
+// Test that short uncommon prefixes are not stripped (even if there are
+// enough).
+TEST_F(FormStructureTest,
+       StripCommonNameAffix_SelectiveLongPrefixIgnoreLength) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Street Name");
+  field.name = ASCIIToUTF16("address_streetname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("address_housenumber");
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("address_apartmentnumber");
+  form.fields.push_back(field);
+
+  std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+
+  // First name.
+  EXPECT_EQ(ASCIIToUTF16("firstname"),
+            form_structure->field(0)->parseable_name());
+  // Last name.
+  EXPECT_EQ(ASCIIToUTF16("lastname"),
+            form_structure->field(1)->parseable_name());
+  // Email.
+  EXPECT_EQ(ASCIIToUTF16("address_streetname"),
+            form_structure->field(2)->parseable_name());
+  // Phone.
+  EXPECT_EQ(ASCIIToUTF16("address_housenumber"),
+            form_structure->field(3)->parseable_name());
+  // Submit.
+  EXPECT_EQ(ASCIIToUTF16("address_apartmentnumber"),
+            form_structure->field(4)->parseable_name());
+}
+
+// All fields share a common prefix which could confuse the heuristics. Test
 // that the common prefix is stripped out before running heuristics.
 TEST_F(FormStructureTest, StripCommonNamePrefix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kAutofillLabelAffixRemoval);
+
   FormData form;
   form.url = GURL("http://www.foo.com/");
 
@@ -805,6 +1078,9 @@ TEST_F(FormStructureTest, StripCommonNamePrefix) {
 // All fields share a common prefix which is small enough that it is not
 // stripped from the name before running the heuristics.
 TEST_F(FormStructureTest, StripCommonNamePrefix_SmallPrefix) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kAutofillLabelAffixRemoval);
+
   FormData form;
   form.url = GURL("http://www.foo.com/");
 
@@ -5872,6 +6148,100 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
             forms[0]->field(2)->Type().GetStorableType());
   EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(3)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest, SetStrippedParseableNames) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
+}
+
+TEST_F(FormStructureTest, IsValidParseableName) {
+  // Parseable name should not be empty.
+  EXPECT_FALSE(FormStructure::IsValidParseableName(ASCIIToUTF16("")));
+  // Parseable name should not be solely numerical.
+  EXPECT_FALSE(FormStructure::IsValidParseableName(ASCIIToUTF16("1265125")));
+
+  // Valid parseable name cases.
+  EXPECT_TRUE(FormStructure::IsValidParseableName(ASCIIToUTF16("a23")));
+  EXPECT_TRUE(FormStructure::IsValidParseableName(ASCIIToUTF16("*)&%@")));
+}
+
+TEST_F(FormStructureTest, FindLongestCommonAffixLength) {
+  auto String16ToStringPiece16 = [](std::vector<base::string16>& vin,
+                                    std::vector<base::StringPiece16>& vout) {
+    vout.clear();
+    for (auto& str : vin)
+      vout.push_back(str);
+  };
+
+  // Normal prefix case.
+  std::vector<base::string16> strings;
+  std::vector<base::StringPiece16> stringPieces;
+  strings.push_back(ASCIIToUTF16("123456XXX123456789"));
+  strings.push_back(ASCIIToUTF16("12345678XXX012345678_foo"));
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
+  strings.push_back(ASCIIToUTF16("1234567XXX901234567890"));
+  String16ToStringPiece16(strings, stringPieces);
+  size_t affixLength =
+      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
+  EXPECT_EQ(ASCIIToUTF16("123456").size(), affixLength);
+
+  // Normal suffix case.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("black and gold dress"));
+  strings.push_back(ASCIIToUTF16("work_address"));
+  strings.push_back(ASCIIToUTF16("123456XXX1234_home_address"));
+  strings.push_back(ASCIIToUTF16("1234567890123456_city_address"));
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
+  EXPECT_EQ(ASCIIToUTF16("dress").size(), affixLength);
+
+  // Handles no common prefix.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
+  strings.push_back(ASCIIToUTF16("4567890123456789"));
+  strings.push_back(ASCIIToUTF16("7890123456789012"));
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength =
+      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
+  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+
+  // Handles no common suffix.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("1234567890123456"));
+  strings.push_back(ASCIIToUTF16("4567890123456789"));
+  strings.push_back(ASCIIToUTF16("7890123456789012"));
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
+  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+
+  // Only one string, prefix case.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("1234567890"));
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength =
+      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
+  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
+
+  // Only one string, suffix case.
+  strings.clear();
+  strings.push_back(ASCIIToUTF16("1234567890"));
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
+  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
+
+  // Empty vector, prefix case.
+  strings.clear();
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength =
+      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
+  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
+
+  // Empty vector, suffix case.
+  strings.clear();
+  String16ToStringPiece16(strings, stringPieces);
+  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
+  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
 }
 
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {

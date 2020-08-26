@@ -139,12 +139,12 @@ TEST_F(NGOutOfFlowLayoutPartTest, PositionedInMulticol) {
     offset:0,0 size:1000x40
       offset:0,0 size:492x40
         offset:0,0 size:100x40
-        offset:0,20 size:10x10
-        offset:0,10 size:5x5
       offset:508,0 size:492x40
         offset:0,0 size:100x10
         offset:0,10 size:30x8
           offset:0,0 size:35x8
+        offset:0,30 size:10x10
+        offset:0,20 size:5x5
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -176,18 +176,17 @@ TEST_F(NGOutOfFlowLayoutPartTest, SimplePositionedFragmentation) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(bebeaudr): The OOF positioned element should start in the second
-  // column rather than the first.
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
       offset:0,0 size:492x40
         offset:0,0 size:100x40
-        offset:0,5 size:19x35
       offset:508,0 size:492x40
         offset:0,0 size:100x10
         offset:0,10 size:30x0
-        offset:0,0 size:19x29
+        offset:0,15 size:19x25
+      offset:1016,0 size:492x40
+        offset:0,0 size:19x39
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -305,14 +304,18 @@ TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentationWithNewEmptyColumns) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(bebeaudr): The OOF fragment should start at a column fragment with
-  // index 2, and there should be an empty column fragment at index 1.
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
       offset:0,0 size:492x40
         offset:0,0 size:30x0
-        offset:0,80 size:5x120
+      offset:508,0 size:492x40
+      offset:1016,0 size:492x40
+        offset:0,0 size:5x40
+      offset:1524,0 size:492x40
+        offset:0,0 size:5x40
+      offset:2032,0 size:492x40
+        offset:0,0 size:5x40
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -326,7 +329,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, BreakInsideAvoid) {
           column-count:2; column-fill:auto; column-gap:16px; height:40px;
         }
         .rel {
-          position: relative;
+          position:relative;
         }
         .abs {
           position:absolute; break-inside:avoid;
@@ -343,15 +346,15 @@ TEST_F(NGOutOfFlowLayoutPartTest, BreakInsideAvoid) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(bebeaudr): The abspos should have an offset of (0,10), and
-  // break into a second column, ignoring "break-inside:avoid".
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
       offset:0,0 size:492x40
         offset:0,0 size:20x10
         offset:0,10 size:30x0
-        offset:0,0 size:40x40
+        offset:0,10 size:40x30
+      offset:508,0 size:492x40
+        offset:0,0 size:40x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -382,15 +385,15 @@ TEST_F(NGOutOfFlowLayoutPartTest, BreakBeforeColumn) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(bebeaudr): The abspos should have an offset of (0,30) in the first
-  // column, ignoring "break-before:column", and break into a second column.
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
       offset:0,0 size:492x40
         offset:0,0 size:10x30
         offset:0,30 size:30x0
-        offset:0,0 size:40x30
+        offset:0,30 size:40x10
+      offset:508,0 size:492x40
+        offset:0,0 size:40x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -422,7 +425,6 @@ TEST_F(NGOutOfFlowLayoutPartTest, BreakAfterColumn) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(bebeaudr): The abspos should have an offset of (0,20).
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
@@ -430,7 +432,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, BreakAfterColumn) {
         offset:0,0 size:10x20
         offset:0,20 size:30x10
         offset:0,30 size:20x10
-        offset:0,0 size:40x10
+        offset:0,20 size:40x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -561,6 +563,190 @@ TEST_F(NGOutOfFlowLayoutPartTest, ChildBreakAfterAvoid) {
         offset:0,0 size:40x50
           offset:0,0 size:20x50
           offset:0,50 size:10x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests that a positioned element with a negative top property moves the OOF
+// node to the previous fragmentainer and spans 3 columns.
+// TODO(bebeaudr): Figure out why this is crashing. https://crbug.com/1117625.
+TEST_F(
+    NGOutOfFlowLayoutPartTest,
+    DISABLED_PositionedFragmentationWithNegativeTopPropertyAndNewEmptyColumn) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position: relative; width:30px;
+        }
+        .abs {
+          position:absolute; top:-40px; width:5px; height:80px;
+        }
+      </style>
+      <div id="container">
+        <div id="multicol">
+          <div class="rel" style="height: 60px; width: 32px;"></div>
+          <div class="rel">
+            <div class="abs"></div>
+          </div>
+        </div>
+      </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x40
+        offset:0,0 size:32x40
+        offset:0,20 size:5x20
+      offset:508,0 size:492x40
+        offset:0,0 size:32x20
+        offset:0,20 size:30x0
+        offset:0,0 size:5x40
+      offset:1016,0 size:492x40
+        offset:0,0 size:5x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// TODO(bebeaudr): Enable when http://crbug.com/1115584 is fixed.
+TEST_F(NGOutOfFlowLayoutPartTest,
+       DISABLED_PositionedFragmentationWithBottomProperty) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position: relative;
+        }
+        .abs {
+          position:absolute; bottom:10px; width:5px; height:40px;
+        }
+      </style>
+      <div id="container">
+        <div id="multicol">
+          <div class="rel" style="height: 60px; width: 32px;">
+            <div class="abs"></div>
+          </div>
+        </div>
+      </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x40
+        offset:0,0 size:32x40
+        offset:0,10 size:5x30
+      offset:508,0 size:492x40
+        offset:0,0 size:32x20
+        offset:0,0 size:5x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests that a positioned element without a top or bottom property stays in
+// flow - even though it's treated as an OOF element.
+TEST_F(NGOutOfFlowLayoutPartTest,
+       PositionedFragmentationInFlowWithAddedColumns) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position:relative; width:30px;
+        }
+        .abs {
+          position:absolute; width:5px; height:80px;
+        }
+       </style>
+       <div id="container">
+         <div id="multicol">
+           <div class="rel">
+             <div style="height: 60px; width: 32px;"></div>
+             <div class="abs"></div>
+           </div>
+         </div>
+       </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x40
+        offset:0,0 size:30x40
+          offset:0,0 size:32x40
+      offset:508,0 size:492x40
+        offset:0,0 size:30x20
+          offset:0,0 size:32x20
+        offset:0,20 size:5x20
+      offset:1016,0 size:492x40
+        offset:0,0 size:5x40
+      offset:1524,0 size:492x40
+        offset:0,0 size:5x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests that the fragments of a positioned element are added to the right
+// fragmentainer despite the presence of column spanners.
+TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentationAndColumnSpanners) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count:2; column-fill:auto; column-gap:16px; height:40px;
+        }
+        .rel {
+          position:relative; width:30px;
+        }
+        .abs {
+          position:absolute; width:5px; height:20px;
+        }
+       </style>
+       <div id="container">
+         <div id="multicol">
+           <div class="rel">
+             <div style="column-span:all;"></div>
+             <div style="height: 60px; width: 32px;"></div>
+             <div style="column-span:all;"></div>
+             <div class="abs"></div>
+           </div>
+         </div>
+       </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  // TODO(almaher): The height of fragmentainer `offset:0,30 size:492x10` might
+  // need to be updated in your CL about column spanners.
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:492x1
+        offset:0,0 size:30x0
+      offset:0,0 size:1000x0
+      offset:0,0 size:492x30
+        offset:0,0 size:30x30
+          offset:0,0 size:32x30
+      offset:508,0 size:492x30
+        offset:0,0 size:30x30
+          offset:0,0 size:32x30
+      offset:0,30 size:1000x0
+      offset:0,30 size:492x10
+        offset:0,0 size:30x0
+        offset:0,0 size:5x10
+      offset:508,30 size:492x10
+        offset:0,0 size:5x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

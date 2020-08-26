@@ -97,8 +97,9 @@ class WaitForSwapDisplayClient : public DisplayClient {
   WaitForSwapDisplayClient() = default;
 
   void DisplayOutputSurfaceLost() override {}
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              RenderPassList* render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      AggregatedRenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
@@ -668,7 +669,7 @@ class RendererPerfTest : public testing::Test {
     timer_.Reset();
     do {
       RenderPassList local_list;
-      RenderPass::CopyAll(render_pass_list, &local_list);
+      RenderPass::CopyAllForTest(render_pass_list, &local_list);
       DrawFrame(std::move(local_list));
       client_.WaitForSwap();
       timer_.NextLap();

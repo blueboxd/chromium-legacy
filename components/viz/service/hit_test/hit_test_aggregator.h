@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_AGGREGATOR_H_
 #define COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_AGGREGATOR_H_
 
+#include <vector>
+
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -39,7 +41,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   // are aggregated into |hit_test_data_|. If |render_passes| are given and
   // the correct flags are set, hit-test debug quads will be inserted.
   void Aggregate(const SurfaceId& display_surface_id,
-                 RenderPassList* render_passes = nullptr);
+                 AggregatedRenderPassList* render_passes = nullptr);
 
  private:
   friend class TestHitTestAggregator;
@@ -71,7 +73,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
                                               uint64_t active_frame_index);
 
   // Inserts debug quads based on hit-test data.
-  void InsertHitTestDebugQuads(RenderPassList* render_passes);
+  void InsertHitTestDebugQuads(AggregatedRenderPassList* render_passes);
 
   const HitTestManager* const hit_test_manager_;
 

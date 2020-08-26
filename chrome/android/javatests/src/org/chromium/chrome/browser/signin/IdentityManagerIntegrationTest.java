@@ -16,8 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
@@ -48,8 +46,8 @@ public class IdentityManagerIntegrationTest {
 
     @Before
     public void setUp() {
-        mTestAccount1 = createCoreAccountInfoFromEmail(TEST_ACCOUNT1);
-        mTestAccount2 = createCoreAccountInfoFromEmail(TEST_ACCOUNT2);
+        mTestAccount1 = mAccountManagerTestRule.toCoreAccountInfo(TEST_ACCOUNT1);
+        mTestAccount2 = mAccountManagerTestRule.toCoreAccountInfo(TEST_ACCOUNT2);
 
         NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
 
@@ -60,12 +58,6 @@ public class IdentityManagerIntegrationTest {
                     IdentityServicesProvider.get().getSigninManager(profile).getIdentityMutator();
             mIdentityManager = IdentityServicesProvider.get().getIdentityManager(profile);
         });
-    }
-
-    private static CoreAccountInfo createCoreAccountInfoFromEmail(String accountEmail) {
-        String accountGaiaId =
-                AccountManagerFacadeProvider.getInstance().getAccountGaiaId(accountEmail);
-        return new CoreAccountInfo(new CoreAccountId(accountGaiaId), accountEmail, accountGaiaId);
     }
 
     @After

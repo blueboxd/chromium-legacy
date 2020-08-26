@@ -242,7 +242,10 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
           NearbyShareLocalDeviceDataManagerImpl::Factory::Create(
               prefs,
               http_client_factory_.get())),
-      contact_manager_(NearbyShareContactManagerImpl::Factory::Create()),
+      contact_manager_(NearbyShareContactManagerImpl::Factory::Create(
+          prefs,
+          http_client_factory_.get(),
+          local_device_data_manager_.get())),
       certificate_manager_(NearbyShareCertificateManagerImpl::Factory::Create(
           local_device_data_manager_.get(),
           prefs,

@@ -58,6 +58,9 @@ void ImportBookmarksFromVersion(base::StringPiece firefox_version,
 // TODO(jschuh): Disabled on Win64 build. http://crbug.com/179688
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
 #define MAYBE_NSS(x) DISABLED_##x
+#elif defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
+// No NSS dylibs are available for arm64: https://crbug.com/1121685
+#define MAYBE_NSS(x) DISABLED_##x
 #else
 #define MAYBE_NSS(x) x
 #endif

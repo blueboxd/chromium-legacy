@@ -54,7 +54,7 @@ ProfilePrefStoreManager::ProfilePrefStoreManager(
       seed_(seed),
       legacy_device_id_(legacy_device_id) {}
 
-ProfilePrefStoreManager::~ProfilePrefStoreManager() {}
+ProfilePrefStoreManager::~ProfilePrefStoreManager() = default;
 
 // static
 void ProfilePrefStoreManager::RegisterProfilePrefs(

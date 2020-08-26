@@ -144,6 +144,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
           "specified.");
       return ScriptPromise();
     }
+    // The following function only works on SVGImages (as checked above).
     return ImageBitmap::CreateAsync(this, crop_rect, script_state, options);
   }
   return ImageBitmapSource::FulfillImageBitmap(

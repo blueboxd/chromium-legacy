@@ -73,6 +73,10 @@ class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
         &ProxiedPoliciesPropagatedWatcher::OnProviderUpdatePropagationTimedOut);
   }
 
+  ProxiedPoliciesPropagatedWatcher(const ProxiedPoliciesPropagatedWatcher&) =
+      delete;
+  ProxiedPoliciesPropagatedWatcher& operator=(
+      const ProxiedPoliciesPropagatedWatcher&) = delete;
   ~ProxiedPoliciesPropagatedWatcher() override {
     device_wide_policy_service_->RemoveProviderUpdateObserver(this);
   }
@@ -108,8 +112,6 @@ class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
   const ConfigurationPolicyProvider* const source_policy_provider_;
   base::OnceClosure proxied_policies_propagated_callback_;
   base::OneShotTimer timeout_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxiedPoliciesPropagatedWatcher);
 };
 
 }  // namespace internal
@@ -133,9 +135,9 @@ ProxyPolicyProvider* GetProxyPolicyProvider() {
 
 #endif  // defined(OS_CHROMEOS)
 
-ProfilePolicyConnector::ProfilePolicyConnector() {}
+ProfilePolicyConnector::ProfilePolicyConnector() = default;
 
-ProfilePolicyConnector::~ProfilePolicyConnector() {}
+ProfilePolicyConnector::~ProfilePolicyConnector() = default;
 
 void ProfilePolicyConnector::Init(
     const user_manager::User* user,

@@ -97,6 +97,7 @@ QuadList::Iterator QuadList::InsertCopyBeforeDrawQuad(Iterator at,
                                                                     copy);
     }
     // RenderPass quads should not be copied.
+    case DrawQuad::Material::kAggregatedRenderPass:
     case DrawQuad::Material::kRenderPass:
     case DrawQuad::Material::kInvalid:
       NOTREACHED();  // Invalid DrawQuad material.

@@ -20,6 +20,8 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -95,8 +97,9 @@ class TestDisplayScheduler : public DisplayScheduler {
 class StubDisplayClient : public DisplayClient {
  public:
   void DisplayOutputSurfaceLost() override {}
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              RenderPassList* render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      AggregatedRenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
@@ -936,12 +939,7 @@ TEST_F(DisplayTest, DrawOcclusionWithBlending) {
   SetUpGpuDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame compositor_frame = CompositorFrameBuilder()
-                                         .AddDefaultRenderPass()
-                                         .AddDefaultRenderPass()
-                                         .Build();
-  AggregatedFrame frame;
-  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
+  AggregatedFrame frame = MakeDefaultAggregatedFrame(/*num_render_passes=*/2);
 
   bool is_clipped = false;
   bool are_contents_opaque = true;
@@ -989,12 +987,7 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
   SetUpGpuDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame compositor_frame = CompositorFrameBuilder()
-                                         .AddDefaultRenderPass()
-                                         .AddDefaultRenderPass()
-                                         .Build();
-  AggregatedFrame frame;
-  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
+  AggregatedFrame frame = MakeDefaultAggregatedFrame(/*num_render_passes=*/2);
 
   bool is_clipped = false;
   bool are_contents_opaque = true;
@@ -1017,7 +1010,7 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
   cc::FilterOperations backdrop_filters;
   backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
   bd_render_pass->SetAll(
-      RenderPassId{2}, bd_filter_rect, gfx::Rect(), gfx::Transform(),
+      AggregatedRenderPassId{2}, bd_filter_rect, gfx::Rect(), gfx::Transform(),
       cc::FilterOperations(), backdrop_filters,
       gfx::RRectF(gfx::RectF(bd_filter_rect), 0), gfx::ContentColorUsage::kSRGB,
       false, false, false, false);
@@ -1030,8 +1023,9 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
         is_clipped, are_contents_opaque, opacity, SkBlendMode::kSrcOver, 0);
 
     if (i == 0) {  // Backdrop filter quad
-      auto* new_quad = root_render_pass->quad_list
-                           .AllocateAndConstruct<RenderPassDrawQuad>();
+      auto* new_quad =
+          root_render_pass->quad_list
+              .AllocateAndConstruct<AggregatedRenderPassDrawQuad>();
       new_quad->SetNew(shared_quad_states[i], rects[i], rects[i],
                        bd_render_pass->id, 2, gfx::RectF(), gfx::Size(),
                        gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
@@ -2657,12 +2651,7 @@ TEST_F(DisplayTest, DrawOcclusionWithMultipleRenderPass) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame compositor_frame = CompositorFrameBuilder()
-                                         .AddDefaultRenderPass()
-                                         .AddDefaultRenderPass()
-                                         .Build();
-  AggregatedFrame frame;
-  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
+  AggregatedFrame frame = MakeDefaultAggregatedFrame(/*num_render_passes=*/2);
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
   // rect 4 is identical to rect 3, but in a separate render pass.
@@ -2715,8 +2704,8 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(100, 0, 60, 60);
 
-  std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
-  render_pass2->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+  auto render_pass2 = std::make_unique<AggregatedRenderPass>();
+  render_pass2->SetNew(AggregatedRenderPassId{1}, gfx::Rect(), gfx::Rect(),
                        gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass2));
   gfx::Rect rect3(10, 10, 120, 30);
@@ -2788,15 +2777,15 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
   AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
 
-  std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
-  render_pass2->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+  auto render_pass2 = std::make_unique<AggregatedRenderPass>();
+  render_pass2->SetNew(AggregatedRenderPassId{1}, gfx::Rect(), gfx::Rect(),
                        gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass2));
 
   bool is_clipped = false;
   bool opaque_content = true;
   float opacity = 1.f;
-  RenderPassId render_pass_id{1};
+  AggregatedRenderPassId render_pass_id{1};
   ResourceId mask_resource_id = 2;
 
   SharedQuadState* shared_quad_state =
@@ -2805,12 +2794,13 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
                    ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
   SharedQuadState* shared_quad_state2 =
       frame.render_pass_list.at(1)->CreateAndAppendSharedQuadState();
-  auto* quad1 = frame.render_pass_list.front()
-                    ->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  auto* quad1 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<AggregatedRenderPassDrawQuad>();
 
   {
     // rect1 is a DrawQuad from SQS1 and which is also the RenderPass rect
-    // from SQS2. The RenderPassDrawQuad should not be occluded.
+    // from SQS2. The AggregatedRenderPassDrawQuad should not be occluded.
     //  rect1
     //   +----+
     //   |    |
@@ -3025,17 +3015,19 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
 
   bool is_clipped = false;
   bool opaque_content = true;
-  RenderPassId render_pass_id{1};
+  AggregatedRenderPassId render_pass_id{1};
   ResourceId mask_resource_id = 2;
   float opacity = 1.f;
   SharedQuadState* shared_quad_state =
       frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* R1 = frame.render_pass_list.front()
-                 ->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  auto* R1 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<AggregatedRenderPassDrawQuad>();
   SharedQuadState* shared_quad_state2 =
       frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* R2 = frame.render_pass_list.front()
-                 ->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  auto* R2 =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<AggregatedRenderPassDrawQuad>();
   SharedQuadState* shared_quad_state3 =
       frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
   auto* D1 = frame.render_pass_list.front()
@@ -3075,8 +3067,8 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
     EXPECT_EQ(4u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     display_->RemoveOverdrawQuads(&frame);
     // As shown in the image above, the opaque region |d1| and |d2| does not
-    // occlude each other. Since RenderPassDrawQuad |r1| and |r2| cannot be
-    // removed to reduce overdraw, |quad_list| remains unchanged.
+    // occlude each other. Since AggregatedRenderPassDrawQuad |r1| and |r2|
+    // cannot be removed to reduce overdraw, |quad_list| remains unchanged.
     EXPECT_EQ(4u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     EXPECT_EQ(rect1.ToString(), frame.render_pass_list.front()
                                     ->quad_list.ElementAt(0)
@@ -3123,8 +3115,8 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
     EXPECT_EQ(4u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     display_->RemoveOverdrawQuads(&frame);
     // As shown in the image above, the opaque region |d1| and |d2| does not
-    // occlude each other. Since RenderPassDrawQuad |r1| and |r2| cannot be
-    // removed to reduce overdraw, |quad_list| remains unchanged.
+    // occlude each other. Since AggregatedRenderPassDrawQuad |r1| and |r2|
+    // cannot be removed to reduce overdraw, |quad_list| remains unchanged.
     EXPECT_EQ(4u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     EXPECT_EQ(rect5.ToString(), frame.render_pass_list.front()
                                     ->quad_list.ElementAt(0)
@@ -3170,8 +3162,8 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
     EXPECT_EQ(4u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     display_->RemoveOverdrawQuads(&frame);
     // As shown in the image above, the opaque region |d2| is contained in |d1|
-    // Since RenderPassDrawQuad |r1| and |r2| cannot be removed to reduce
-    // overdraw, |quad_list| is reduced by 1.
+    // Since AggregatedRenderPassDrawQuad |r1| and |r2| cannot be removed to
+    // reduce overdraw, |quad_list| is reduced by 1.
     EXPECT_EQ(3u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
     EXPECT_EQ(rect5.ToString(), frame.render_pass_list.front()
                                     ->quad_list.ElementAt(0)

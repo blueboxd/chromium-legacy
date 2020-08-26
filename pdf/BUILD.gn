@@ -194,6 +194,8 @@ if (enable_pdf) {
       "ppapi_migration/image.h",
       "ppapi_migration/input_event_conversions.cc",
       "ppapi_migration/input_event_conversions.h",
+      "ppapi_migration/url_loader.cc",
+      "ppapi_migration/url_loader.h",
       "ppapi_migration/value_conversions.cc",
       "ppapi_migration/value_conversions.h",
     ]
@@ -247,6 +249,7 @@ if (enable_pdf) {
 
     deps = [
       ":internal",
+      ":ppapi_migration",
       "//base",
       "//cc/paint",
       "//ppapi/cpp:objects",  # TODO(crbug.com/1114263): PDFEngine::Client only.
@@ -273,6 +276,7 @@ if (enable_pdf) {
 
     deps = [
       ":internal",
+      ":ppapi_migration",
       "//base",
       "//ppapi/cpp:objects",
       "//testing/gtest",

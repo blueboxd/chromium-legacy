@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
 
@@ -83,7 +85,7 @@ PDFiumTestBase::InitializeEngineWithoutLoading(
     const base::FilePath::CharType* pdf_name) {
   InitializeEngineResult result;
 
-  pp::URLLoader dummy_loader;
+  auto dummy_loader = base::MakeRefCounted<UrlLoader>();
   result.engine =
       std::make_unique<PDFiumEngine>(client, /*enable_javascript=*/false);
   client->set_engine(result.engine.get());
@@ -94,7 +96,7 @@ PDFiumTestBase::InitializeEngineWithoutLoading(
   result.engine->SetDocumentLoaderForTesting(std::move(test_loader));
 
   if (!result.engine->New("https://chromium.org/dummy.pdf", "") ||
-      !result.engine->HandleDocumentLoad(dummy_loader)) {
+      !result.engine->HandleDocumentLoad(std::move(dummy_loader))) {
     client->set_engine(nullptr);
     result.engine = nullptr;
     result.document_loader = nullptr;

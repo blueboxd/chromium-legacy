@@ -262,6 +262,11 @@ void DiceResponseHandler::OnTimeoutUnlockReconcilor() {
   lock_.reset();
 }
 
+void DiceResponseHandler::SetTaskRunner(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner_ = std::move(task_runner);
+}
+
 void DiceResponseHandler::ProcessDiceSigninHeader(
     const std::string& gaia_id,
     const std::string& email,
@@ -271,9 +276,14 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
   if (no_authorization_code) {
     if (base::FeatureList::IsEnabled(kSupportOAuthOutageInDice)) {
       lock_ = std::make_unique<AccountReconcilor::Lock>(account_reconcilor_);
+      if (!timer_) {
+        timer_ = std::make_unique<base::OneShotTimer>();
+        if (task_runner_)
+          timer_->SetTaskRunner(task_runner_);
+      }
       // If there is already another lock, the timer will be reset and
       // we'll wait another full timeout.
-      timer_.Start(
+      timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours),
           base::BindOnce(&DiceResponseHandler::OnTimeoutUnlockReconcilor,

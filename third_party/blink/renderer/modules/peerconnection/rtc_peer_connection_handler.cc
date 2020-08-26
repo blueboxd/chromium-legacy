@@ -620,9 +620,7 @@ bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
   const char kLocalTld[] = ".local";
   if (!candidate.Address().ContainsOnlyASCIIOrEmpty())
     return false;
-  // TODO(crbug.com/787254): Replace with String::EndsWithIgnoringCase.
-  return base::EndsWith(candidate.Address().Ascii(), kLocalTld,
-                        base::CompareCase::INSENSITIVE_ASCII);
+  return candidate.Address().EndsWithIgnoringASCIICase(kLocalTld);
 }
 
 }  // namespace

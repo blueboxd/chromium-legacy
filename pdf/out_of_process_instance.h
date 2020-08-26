@@ -16,6 +16,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_view_plugin_base.h"
@@ -25,7 +26,6 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
-#include "ppapi/cpp/url_loader.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
@@ -44,6 +44,7 @@ namespace chrome_pdf {
 class Graphics;
 class PaintReadyRect;
 class PDFiumEngine;
+class UrlLoader;
 
 class OutOfProcessInstance : public PdfViewPluginBase,
                              public pp::Instance,
@@ -144,7 +145,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
-  pp::URLLoader CreateURLLoader() override;
+  scoped_refptr<UrlLoader> CreateUrlLoader() override;
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;
@@ -215,7 +216,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Creates a URL loader and allows it to access all urls, i.e. not just the
   // frame's origin.
-  pp::URLLoader CreateURLLoaderInternal();
+  scoped_refptr<UrlLoader> CreateUrlLoaderInternal();
 
   bool CanSaveEdits() const;
   void SaveToFile(const std::string& token);
@@ -331,8 +332,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
-  pp::URLLoader embed_loader_;
-  pp::URLLoader embed_preview_loader_;
+  scoped_refptr<UrlLoader> embed_loader_;
+  scoped_refptr<UrlLoader> embed_preview_loader_;
 
   // The current cursor.
   PP_CursorType_Dev cursor_ = PP_CURSORTYPE_POINTER;
@@ -426,7 +427,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   std::string url_;
 
   // Used for submitting forms.
-  pp::URLLoader form_loader_;
+  scoped_refptr<UrlLoader> form_loader_;
 
   // The callback for receiving the password from the page.
   base::OnceCallback<void(const std::string&)> password_callback_;

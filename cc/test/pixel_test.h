@@ -58,24 +58,25 @@ class PixelTest : public testing::Test {
   explicit PixelTest(GraphicsBackend backend = kDefault);
   ~PixelTest() override;
 
-  bool RunPixelTest(viz::RenderPassList* pass_list,
+  bool RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
-  bool RunPixelTest(viz::RenderPassList* pass_list,
+  bool RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                     std::vector<SkColor>* ref_pixels,
                     const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTarget(viz::RenderPassList* pass_list,
-                                      viz::RenderPass* target,
+  bool RunPixelTestWithReadbackTarget(viz::AggregatedRenderPassList* pass_list,
+                                      viz::AggregatedRenderPass* target,
                                       const base::FilePath& ref_file,
                                       const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTargetAndArea(viz::RenderPassList* pass_list,
-                                             viz::RenderPass* target,
-                                             const base::FilePath& ref_file,
-                                             const PixelComparator& comparator,
-                                             const gfx::Rect* copy_rect);
+  bool RunPixelTestWithReadbackTargetAndArea(
+      viz::AggregatedRenderPassList* pass_list,
+      viz::AggregatedRenderPass* target,
+      const base::FilePath& ref_file,
+      const PixelComparator& comparator,
+      const gfx::Rect* copy_rect);
 
   viz::ContextProvider* context_provider() const {
     return output_surface_->context_provider();

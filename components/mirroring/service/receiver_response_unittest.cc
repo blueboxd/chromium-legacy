@@ -143,6 +143,7 @@ TEST_F(ReceiverResponseTest, ParseCapabilityMessage) {
           "type": "CAPABILITIES_RESPONSE",
           "result": "ok",
           "capabilities": {
+            "remoting": 2,
             "mediaCaps": ["audio", "video", "vp9"],
             "keySystems": [
               {
@@ -171,6 +172,7 @@ TEST_F(ReceiverResponseTest, ParseCapabilityMessage) {
   ASSERT_TRUE(response->valid());
   EXPECT_EQ(std::vector<std::string>({"audio", "video", "vp9"}),
             response->capabilities().media_caps);
+  EXPECT_EQ(2, response->capabilities().remoting);
 }
 
 TEST_F(ReceiverResponseTest, ParseRpcMessage) {

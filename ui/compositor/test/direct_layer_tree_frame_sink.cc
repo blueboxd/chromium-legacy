@@ -145,7 +145,7 @@ void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
 
 void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    viz::RenderPassList* render_passes) {
+    viz::AggregatedRenderPassList* render_passes) {
   if (support_->GetHitTestAggregator()) {
     support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId(),
                                                 render_passes);

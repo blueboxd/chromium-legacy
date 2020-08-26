@@ -11,6 +11,7 @@
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_timing_details_map.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
@@ -67,8 +68,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   // viz::DisplayClient overrides.
   void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              viz::RenderPassList* render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      viz::AggregatedRenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}

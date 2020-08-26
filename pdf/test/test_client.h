@@ -30,7 +30,7 @@ class TestClient : public PDFEngine::Client {
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
   std::string GetURL() override;
-  pp::URLLoader CreateURLLoader() override;
+  scoped_refptr<UrlLoader> CreateUrlLoader() override;
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;

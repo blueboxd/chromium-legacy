@@ -140,7 +140,7 @@ class SkiaOutputSurfaceImplOnGpu
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(base::TimeTicks post_task_timestamp,
-                             RenderPassId id,
+                             AggregatedRenderPassId id,
                              sk_sp<SkDeferredDisplayList> ddl,
                              std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
@@ -148,9 +148,9 @@ class SkiaOutputSurfaceImplOnGpu
   // Deletes resources for RenderPasses in |ids|. Also takes ownership of
   // |images_contexts| and destroys them on GPU thread.
   void RemoveRenderPassResource(
-      std::vector<RenderPassId> ids,
+      std::vector<AggregatedRenderPassId> ids,
       std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
-  bool CopyOutput(RenderPassId id,
+  bool CopyOutput(AggregatedRenderPassId id,
                   copy_output::RenderPassGeometry geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request,
@@ -339,7 +339,7 @@ class SkiaOutputSurfaceImplOnGpu
   base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
       output_surface_plane_;
 
-  base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
+  base::flat_map<AggregatedRenderPassId, OffscreenSurface> offscreen_surfaces_;
 
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
   std::vector<sk_sp<SkDeferredDisplayList>> destroy_after_swap_;

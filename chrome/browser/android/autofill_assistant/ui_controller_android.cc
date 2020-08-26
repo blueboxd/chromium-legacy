@@ -315,8 +315,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   client_ = client;
 
   // Detach from the current ui_delegate, if one was set previously.
-  if (ui_delegate_)
-    ui_delegate_->RemoveObserver(this);
+  Detach();
 
   // Attach to the new ui_delegate.
   ui_delegate_ = ui_delegate;
@@ -385,12 +384,17 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   SetVisible(true);
 }
 
+void UiControllerAndroid::Detach() {
+  if (ui_delegate_) {
+    ui_delegate_->RemoveObserver(this);
+  }
+  ui_delegate_ = nullptr;
+}
+
 UiControllerAndroid::~UiControllerAndroid() {
   Java_AutofillAssistantUiController_clearNativePtr(AttachCurrentThread(),
                                                     java_object_);
-
-  if (ui_delegate_)
-    ui_delegate_->RemoveObserver(this);
+  Detach();
 }
 
 base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetModel() {

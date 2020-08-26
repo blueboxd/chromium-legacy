@@ -1224,6 +1224,10 @@ const char kHandwritingGestureDescription[] =
     "handwriting you write inside the virtual keyboard to Google servers for "
     "recognition but will not be associated with your Google account.";
 
+const char kHandwritingGestureEditingName[] = "Handwriting Gestures Editing";
+const char kHandwritingGestureEditingDescription[] =
+    "Enables editing with handwriting gestures within the virtual keyboard.";
+
 const char kHardwareMediaKeyHandling[] = "Hardware Media Key Handling";
 const char kHardwareMediaKeyHandlingDescription[] =
     "Enables using media keys to control the active media session. This "
@@ -2527,6 +2531,16 @@ const char kWebXrIncubationsDescription[] =
 const char kWebXrMultiGpuName[] = "WebXR Multi GPU Support";
 const char kWebXrMultiGpuDescription[] =
     "Improves WebXR support for computers with more than one GPU.";
+
+const char kWellKnownChangePasswordName[] =
+    "Support for .well-known/change-password";
+
+const char kWellKnownChangePasswordDescription[] =
+    "If enabled the 'change password' button in password checkup redirects to "
+    "the .well-known/change-password path. The path is supposed to point to "
+    "the password change form of the site. When the site doesn't support "
+    ".well-known/change-password it is checked if a fallback url is available. "
+    "Otherwise the user is redirected to the orgin.";
 
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =

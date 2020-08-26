@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -60,7 +59,6 @@ namespace blink {
 class FloatRect;
 class GraphicsContext;
 class Image;
-class KURL;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 
@@ -246,15 +244,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   }
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
   ContextProviderWrapper() const {
-    return nullptr;
-  }
-
-  virtual sk_sp<PaintRecord> PaintRecordForContainer(
-      const KURL& url,
-      const IntSize& container_size,
-      const IntRect& draw_src_rect,
-      const IntRect& draw_dst_rect,
-      bool flip_y) {
     return nullptr;
   }
 

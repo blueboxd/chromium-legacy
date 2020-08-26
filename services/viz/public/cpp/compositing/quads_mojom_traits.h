@@ -74,6 +74,8 @@ struct UnionTraits<viz::mojom::DrawQuadStateDataView, viz::DrawQuad> {
     switch (quad.material) {
       case viz::DrawQuad::Material::kInvalid:
         break;
+      case viz::DrawQuad::Material::kAggregatedRenderPass:
+        break;
       case viz::DrawQuad::Material::kDebugBorder:
         return viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
       case viz::DrawQuad::Material::kPictureContent:

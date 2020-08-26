@@ -73,6 +73,8 @@ class SelectionForUndoStep::Builder final {
 
  public:
   Builder();
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
 
   const SelectionForUndoStep& Build() const { return selection_; }
 
@@ -88,8 +90,6 @@ class SelectionForUndoStep::Builder final {
 
  private:
   SelectionForUndoStep selection_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 VisibleSelection CreateVisibleSelection(const SelectionForUndoStep&);

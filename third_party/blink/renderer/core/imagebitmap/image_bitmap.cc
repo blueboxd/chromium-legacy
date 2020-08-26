@@ -16,8 +16,10 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -998,7 +1000,6 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  scoped_refptr<Image> input = image->CachedImage()->GetImage();
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options)) {
@@ -1008,13 +1009,14 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
     return promise;
   }
 
+  scoped_refptr<Image> input = image->CachedImage()->GetImage();
+  DCHECK(input->IsSVGImage());
   IntRect input_rect(IntPoint(), input->Size());
-  const IntRect src_rect = Intersection(input_rect, parsed_options.crop_rect);
 
   // In the case when |crop_rect| doesn't intersect the source image, we return
   // a transparent black image, respecting the color_params but ignoring
-  // poremultiply_alpha.
-  if (src_rect.IsEmpty()) {
+  // premultiply_alpha.
+  if (!parsed_options.crop_rect.Intersects(input_rect)) {
     ImageBitmap* bitmap =
         MakeGarbageCollected<ImageBitmap>(MakeBlankImage(parsed_options));
     if (bitmap->BitmapImage()) {
@@ -1031,9 +1033,21 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   IntRect draw_src_rect(parsed_options.crop_rect);
   IntRect draw_dst_rect(0, 0, parsed_options.resize_width,
                         parsed_options.resize_height);
-  sk_sp<PaintRecord> paint_record =
-      input->PaintRecordForContainer(NullURL(), input->Size(), draw_src_rect,
-                                     draw_dst_rect, parsed_options.flip_y);
+  PaintRecorder recorder;
+  cc::PaintCanvas* canvas = recorder.beginRecording(draw_src_rect);
+  if (parsed_options.flip_y) {
+    canvas->translate(0, draw_dst_rect.Height());
+    canvas->scale(1, -1);
+  }
+  SVGImageForContainer::Create(To<SVGImage>(input.get()),
+                               FloatSize(input_rect.Size()), 1, NullURL())
+      ->Draw(canvas, cc::PaintFlags(), FloatRect(draw_dst_rect),
+             FloatRect(draw_src_rect),
+             // The following will all be ignored.
+             kRespectImageOrientation, Image::kDoNotClampImageToSourceRect,
+             Image::kSyncDecode);
+  sk_sp<PaintRecord> paint_record = recorder.finishRecordingAsPicture();
+
   std::unique_ptr<ParsedOptions> passed_parsed_options =
       std::make_unique<ParsedOptions>(parsed_options);
   worker_pool::PostTask(

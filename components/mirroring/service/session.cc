@@ -90,6 +90,9 @@ constexpr int kAudioSsrcMax = 5e5;
 constexpr int kVideoSsrcMin = 5e5 + 1;
 constexpr int kVideoSsrcMax = 10e5;
 
+// The implemented remoting version.
+constexpr int kSupportedRemotingVersion = 2;
+
 class TransportClient final : public media::cast::CastTransport::Client {
  public:
   explicit TransportClient(Session* session) : session_(session) {}
@@ -983,6 +986,22 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
     }
     return;
   }
+
+  // Check if the remoting version used in the receiver is supported or not.
+  int remoting_version = response.capabilities().remoting;
+
+  // For backwards-compatibility, if the remoting version field was not set,
+  // assume it is 1.
+  if (remoting_version == ReceiverCapability::kRemotingVersionUnknown) {
+    remoting_version = 1;
+  }
+
+  if (remoting_version > kSupportedRemotingVersion) {
+    VLOG(1) << "Unsupported remoting version (" << remoting_version << " > "
+            << kSupportedRemotingVersion << ')';
+    return;
+  }
+
   const std::vector<std::string>& caps = response.capabilities().media_caps;
 
   std::string build_version;

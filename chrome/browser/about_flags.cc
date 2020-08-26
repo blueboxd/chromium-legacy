@@ -3978,6 +3978,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kHandwritingGesture)},
+
+    {"handwriting-gesture-editing",
+     flag_descriptions::kHandwritingGestureEditingName,
+     flag_descriptions::kHandwritingGestureEditingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHandwritingGestureEditing)},
 #endif  // OS_CHROMEOS
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -6343,6 +6348,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordsWeaknessCheckDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordsWeaknessCheck)},
 #endif  // !defined(OS_ANDROID)
+
+    {"well-known-change-password",
+     flag_descriptions::kWellKnownChangePasswordName,
+     flag_descriptions::kWellKnownChangePasswordDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kWellKnownChangePassword)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

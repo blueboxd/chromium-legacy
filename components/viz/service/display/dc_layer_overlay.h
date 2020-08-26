@@ -10,7 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -84,7 +84,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   // Virtual for testing.
   virtual void Process(DisplayResourceProvider* resource_provider,
                        const gfx::RectF& display_rect,
-                       RenderPassList* render_passes,
+                       AggregatedRenderPassList* render_passes,
                        gfx::Rect* damage_rect,
                        DCLayerOverlayList* dc_layer_overlays);
   void ClearOverlayState();
@@ -103,7 +103,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   // UpdateDCLayerOverlays() adds the quad at |it| to the overlay list
   // |dc_layer_overlays|.
   void UpdateDCLayerOverlays(const gfx::RectF& display_rect,
-                             RenderPass* render_pass,
+                             AggregatedRenderPass* render_pass,
                              const QuadList::Iterator& it,
                              const gfx::Rect& quad_rectangle_in_target_space,
                              const gfx::Rect& occluding_damage_rect,
@@ -117,12 +117,12 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
 
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,
-                                       RenderPass* render_pass,
+                                       AggregatedRenderPass* render_pass,
                                        const gfx::Rect& quad_rectangle,
                                        const QuadList::Iterator& it,
                                        gfx::Rect* damage_rect);
   void ProcessForUnderlay(const gfx::RectF& display_rect,
-                          RenderPass* render_pass,
+                          AggregatedRenderPass* render_pass,
                           const gfx::Rect& quad_rectangle,
                           const QuadList::Iterator& it,
                           gfx::Rect* damage_rect,
@@ -132,7 +132,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   void InsertDebugBorderDrawQuad(const gfx::RectF& display_rect,
                                  const gfx::Rect& overlay_rect,
                                  SkColor border_color,
-                                 RenderPass* render_pass,
+                                 AggregatedRenderPass* render_pass,
                                  gfx::Rect* damage_rect);
 
   bool has_overlay_support_;

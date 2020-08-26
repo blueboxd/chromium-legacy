@@ -669,7 +669,7 @@
   {
     "name": "cross-origin-isolated",
     "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "cross-origin-opener-policy",
@@ -679,12 +679,12 @@
   {
     "name": "cross-origin-opener-policy-access-reporting",
     "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "cross-origin-opener-policy-reporting",
     "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "crostini-disk-resizing",
@@ -2689,6 +2689,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "handwriting-gesture-editing",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "happiness-tracking-surveys-for-desktop",
     "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
     "expiry_milestone": 84
@@ -4577,6 +4582,11 @@
     // the particular hardware. Useful to debug user issues or multiple runtimes
     // with a single headset.
     "expiry_milestone": -1
+  },
+  {
+    "name": "well-known-change-password",
+    "owners": ["jdoerrie", "vasilii"],
+    "expiry_milestone": 87
   },
   {
     "name": "wifi-sync-android",

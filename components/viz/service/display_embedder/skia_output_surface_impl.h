@@ -105,7 +105,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;
 
-  SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
+  SkCanvas* BeginPaintRenderPass(const AggregatedRenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
                                  bool mipmap,
@@ -113,17 +113,18 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) override;
   void MakePromiseSkImage(ImageContext* image_context) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
-      const RenderPassId& id,
+      const AggregatedRenderPassId& id,
       const gfx::Size& size,
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
 
-  void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
+  void RemoveRenderPassResource(
+      std::vector<AggregatedRenderPassId> ids) override;
   void ScheduleOverlays(OverlayList overlays,
                         std::vector<gpu::SyncToken> sync_tokens) override;
 
-  void CopyOutput(RenderPassId id,
+  void CopyOutput(AggregatedRenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request) override;
@@ -209,11 +210,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
    public:
     explicit ScopedPaint(SkDeferredDisplayListRecorder* root_recorder);
     ScopedPaint(SkSurfaceCharacterization characterization,
-                RenderPassId render_pass_id);
+                AggregatedRenderPassId render_pass_id);
     ~ScopedPaint();
 
     SkDeferredDisplayListRecorder* recorder() { return recorder_; }
-    RenderPassId render_pass_id() { return render_pass_id_; }
+    AggregatedRenderPassId render_pass_id() { return render_pass_id_; }
 
    private:
     // This is recorder being used for current paint
@@ -221,7 +222,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
     // If we need new recorder for this Paint (i.e it's not root render pass),
     // it's stored here
     base::Optional<SkDeferredDisplayListRecorder> recorder_storage_;
-    const RenderPassId render_pass_id_;
+    const AggregatedRenderPassId render_pass_id_;
   };
 
   // This holds current paint info
@@ -239,7 +240,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   base::Optional<SkNWayCanvas> nway_canvas_;
 
   // The cache for promise image created from render passes.
-  base::flat_map<RenderPassId, std::unique_ptr<ImageContextImpl>>
+  base::flat_map<AggregatedRenderPassId, std::unique_ptr<ImageContextImpl>>
       render_pass_image_cache_;
 
   // Sync tokens for resources which are used for the current frame or render

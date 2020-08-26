@@ -38,7 +38,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
                const OverlayProcessorInterface::FilterOperationsMap&
                    render_pass_backdrop_filters,
                DisplayResourceProvider* resource_provider,
-               RenderPassList* render_pass,
+               AggregatedRenderPassList* render_pass,
                const PrimaryPlane* primary_plane,
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;

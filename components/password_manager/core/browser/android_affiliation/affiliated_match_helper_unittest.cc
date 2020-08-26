@@ -29,11 +29,9 @@ namespace {
 
 using StrategyOnCacheMiss = AndroidAffiliationService::StrategyOnCacheMiss;
 
-class MockAffiliationService
-    : public testing::StrictMock<AndroidAffiliationService> {
+class MockAndroidAffiliationService : public AndroidAffiliationService {
  public:
-  MockAffiliationService()
-      : testing::StrictMock<AndroidAffiliationService>(nullptr) {
+  MockAndroidAffiliationService() : AndroidAffiliationService(nullptr) {
     testing::DefaultValue<AffiliatedFacets>::Set(AffiliatedFacets());
   }
 
@@ -87,9 +85,6 @@ class MockAffiliationService
                            expected_facet_uri_spec)))
         .RetiresOnSaturation();
   }
-
- private:
-  DISALLOW_ASSIGN(MockAffiliationService);
 };
 
 const char kTestWebFacetURIAlpha1[] = "https://one.alpha.example.com";
@@ -305,7 +300,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   TestPasswordStore* password_store() { return password_store_.get(); }
 
-  MockAffiliationService* mock_affiliation_service() {
+  MockAndroidAffiliationService* mock_affiliation_service() {
     return mock_affiliation_service_;
   }
 
@@ -328,7 +323,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    auto service = std::make_unique<MockAffiliationService>();
+    auto service =
+        std::make_unique<testing::StrictMock<MockAndroidAffiliationService>>();
     mock_affiliation_service_ = service.get();
 
     password_store_->Init(nullptr);
@@ -357,9 +353,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
   std::unique_ptr<AffiliatedMatchHelper> match_helper_;
 
   // Owned by |match_helper_|.
-  MockAffiliationService* mock_affiliation_service_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AffiliatedMatchHelperTest);
+  MockAndroidAffiliationService* mock_affiliation_service_ = nullptr;
 };
 
 // GetAffiliatedAndroidRealm* tests verify that GetAffiliatedAndroidRealms()

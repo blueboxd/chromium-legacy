@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/time.mojom";
 
 // Implementation of the proposed "Sms Detection API".
 //
-// Proposal: https://github.com/samuelgoto/sms-receiver
+// Proposal: https://github.com/WICG/web-otp
 enum SmsStatus {
   kSuccess,
   kTimeout,

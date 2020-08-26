@@ -242,6 +242,10 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 const base::Feature kGesturePropertiesDBusService{
     "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables editing with handwriting gestures within the virtual keyboard.
+const base::Feature kHandwritingGestureEditing{
+    "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable the help app in the first run experience. This opens the help app
 // after the OOBE, and provides some extra functionality like a getting started
 // guide inside the app.

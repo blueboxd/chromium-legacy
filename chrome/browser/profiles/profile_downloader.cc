@@ -43,10 +43,8 @@ constexpr char kAuthorizationHeader[] = "Bearer %s";
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : delegate_(delegate),
-      picture_status_(PICTURE_FAILED),
       identity_manager_(delegate_->GetIdentityManager()),
-      identity_manager_observer_(this),
-      waiting_for_account_info_(false) {
+      identity_manager_observer_(this) {
   DCHECK(delegate_);
   identity_manager_observer_.Add(identity_manager_);
 }

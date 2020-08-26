@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -372,7 +372,7 @@ void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
     const gfx::RectF& display_rect,
     const gfx::Rect& overlay_rect,
     SkColor border_color,
-    RenderPass* render_pass,
+    AggregatedRenderPass* render_pass,
     gfx::Rect* damage_rect) {
   if (overlay_rect.IsEmpty())
     return;
@@ -397,14 +397,14 @@ void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
 void DCLayerOverlayProcessor::Process(
     DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
-    RenderPassList* render_pass_list,
+    AggregatedRenderPassList* render_pass_list,
     gfx::Rect* damage_rect,
     DCLayerOverlayList* dc_layer_overlays) {
   gfx::Rect this_frame_overlay_rect;
   gfx::Rect this_frame_underlay_rect;
 
   // Which render passes have backdrop filters.
-  base::flat_set<RenderPassId> render_pass_has_backdrop_filters;
+  base::flat_set<AggregatedRenderPassId> render_pass_has_backdrop_filters;
   for (const auto& render_pass : *render_pass_list) {
     if (!render_pass->backdrop_filters.IsEmpty())
       render_pass_has_backdrop_filters.insert(render_pass->id);
@@ -415,7 +415,7 @@ void DCLayerOverlayProcessor::Process(
   // by backdrop filters.
   std::vector<gfx::Rect> backdrop_filter_rects;
 
-  RenderPass* root_render_pass = render_pass_list->back().get();
+  auto* root_render_pass = render_pass_list->back().get();
   if (render_pass_list->back()->is_color_conversion_pass) {
     DCHECK_GT(render_pass_list->size(), 1u);
     root_render_pass = (*render_pass_list)[render_pass_list->size() - 2].get();
@@ -435,8 +435,8 @@ void DCLayerOverlayProcessor::Process(
   bool has_required_overlays = false;
 
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it, ++index) {
-    if (it->material == DrawQuad::Material::kRenderPass) {
-      const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
+    if (it->material == DrawQuad::Material::kAggregatedRenderPass) {
+      const auto* rpdq = AggregatedRenderPassDrawQuad::MaterialCast(*it);
       if (render_pass_has_backdrop_filters.count(rpdq->render_pass_id)) {
         backdrop_filter_rects.push_back(
             gfx::ToEnclosingRect(ClippedQuadRectangle(rpdq)));
@@ -551,7 +551,7 @@ void DCLayerOverlayProcessor::Process(
 
 void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
     const gfx::RectF& display_rect,
-    RenderPass* render_pass,
+    AggregatedRenderPass* render_pass,
     const QuadList::Iterator& it,
     const gfx::Rect& quad_rectangle_in_target_space,
     const gfx::Rect& occluding_damage_rect,
@@ -625,7 +625,7 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
 
 QuadList::Iterator DCLayerOverlayProcessor::ProcessForOverlay(
     const gfx::RectF& display_rect,
-    RenderPass* render_pass,
+    AggregatedRenderPass* render_pass,
     const gfx::Rect& quad_rectangle,
     const QuadList::Iterator& it,
     gfx::Rect* damage_rect) {
@@ -644,7 +644,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessForOverlay(
 
 void DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& display_rect,
-    RenderPass* render_pass,
+    AggregatedRenderPass* render_pass,
     const gfx::Rect& quad_rectangle,
     const QuadList::Iterator& it,
     gfx::Rect* damage_rect,

@@ -526,7 +526,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
     return true;
   }
   bool AccessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
-  AXObjectInclusion AccessibilityPlatformIncludesObject() const;
   virtual AXObjectInclusion DefaultObjectInclusion(
       IgnoredReasons* = nullptr) const;
   bool IsInertOrAriaHidden() const;

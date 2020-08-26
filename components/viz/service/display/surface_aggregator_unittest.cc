@@ -21,6 +21,8 @@
 #include "base/time/time.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -316,13 +318,16 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
         EXPECT_EQ(expected_quad.rect, solid_color_quad->rect);
         break;
       }
+      // Expected RenderPass quad will become AggregatedRenderPass after
+      // aggregation.
       case DrawQuad::Material::kRenderPass: {
-        ASSERT_EQ(DrawQuad::Material::kRenderPass, quad->material);
+        ASSERT_EQ(DrawQuad::Material::kAggregatedRenderPass, quad->material);
 
-        const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
+        const auto* render_pass_quad =
+            AggregatedRenderPassDrawQuad::MaterialCast(quad);
 
         EXPECT_EQ(expected_quad.render_pass_id,
-                  render_pass_quad->render_pass_id);
+                  RenderPassId{uint64_t{render_pass_quad->render_pass_id}});
         EXPECT_EQ(expected_quad.can_use_backdrop_filter_cache,
                   render_pass_quad->can_use_backdrop_filter_cache);
         break;
@@ -334,7 +339,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   }
 
   static void TestPassMatchesExpectations(Pass expected_pass,
-                                          const RenderPass* pass) {
+                                          const AggregatedRenderPass* pass) {
     ASSERT_EQ(expected_pass.quads.size(), pass->quad_list.size());
     for (auto iter = pass->quad_list.cbegin(); iter != pass->quad_list.cend();
          ++iter) {
@@ -345,12 +350,12 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
   static void TestPassesMatchExpectations(
       const std::vector<Pass>& expected_passes,
-      const RenderPassList* passes) {
+      const AggregatedRenderPassList* passes) {
     ASSERT_EQ(expected_passes.size(), passes->size());
 
     for (size_t i = 0; i < expected_passes.size(); ++i) {
       SCOPED_TRACE(base::StringPrintf("Pass number %" PRIuS, i));
-      RenderPass* pass = (*passes)[i].get();
+      auto* pass = (*passes)[i].get();
       TestPassMatchesExpectations(expected_passes[i], pass);
     }
   }
@@ -487,7 +492,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
     VerifyQuadCoverSQS(&aggregated_frame);
 
     // Ensure no duplicate pass ids output.
-    std::set<RenderPassId> used_passes;
+    std::set<AggregatedRenderPassId> used_passes;
     for (const auto& pass : aggregated_frame.render_pass_list)
       EXPECT_TRUE(used_passes.insert(pass->id).second);
 
@@ -1365,7 +1370,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadScaled) {
   EXPECT_EQ(1u, root_render_pass->quad_list.size());
 
   auto* output_quad = root_render_pass->quad_list.back();
-  EXPECT_EQ(DrawQuad::Material::kRenderPass, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kAggregatedRenderPass, output_quad->material);
 
   // The RenderPassDrawQuad should have the same scale transform that was
   // applied to the SurfaceDrawQuad.
@@ -1594,8 +1599,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
 
   std::vector<Quad> expected_quads = {
       Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
-      Quad::RenderPassQuad(aggregated_frame.render_pass_list[0]->id,
-                           gfx::Transform(), false),
+      Quad::RenderPassQuad(
+          RenderPassId{uint64_t{aggregated_frame.render_pass_list[0]->id}},
+          gfx::Transform(), false),
       Quad::SolidColorQuad(SK_ColorBLACK, gfx::Rect(5, 5))};
   std::vector<Pass> expected_passes = {Pass(embedded_quads, SurfaceSize()),
                                        Pass(expected_quads, SurfaceSize())};
@@ -1857,7 +1863,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
   ASSERT_EQ(5u, aggregated_pass_list.size());
-  RenderPassId actual_pass_ids[] = {
+  AggregatedRenderPassId actual_pass_ids[] = {
       aggregated_pass_list[0]->id, aggregated_pass_list[1]->id,
       aggregated_pass_list[2]->id, aggregated_pass_list[3]->id,
       aggregated_pass_list[4]->id};
@@ -1894,10 +1900,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // This render pass pass quad will reference the first pass from the
     // embedded surface, which is the second pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::Material::kRenderPass,
+    ASSERT_EQ(DrawQuad::Material::kAggregatedRenderPass,
               third_pass_quad_list.ElementAt(1)->material);
     const auto* third_pass_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(third_pass_quad_list.ElementAt(1));
+        AggregatedRenderPassDrawQuad::MaterialCast(
+            third_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[1],
               third_pass_render_pass_draw_quad->render_pass_id);
   }
@@ -1916,19 +1923,21 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // The next quad will be a render pass quad referencing the second pass from
     // the embedded surface, which is the third pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::Material::kRenderPass,
+    ASSERT_EQ(DrawQuad::Material::kAggregatedRenderPass,
               fourth_pass_quad_list.ElementAt(1)->material);
     const auto* fourth_pass_first_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(1));
+        AggregatedRenderPassDrawQuad::MaterialCast(
+            fourth_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[2],
               fourth_pass_first_render_pass_draw_quad->render_pass_id);
 
     // The last quad will be a render pass quad referencing the first pass from
     // the root surface, which is the first pass overall.
-    ASSERT_EQ(DrawQuad::Material::kRenderPass,
+    ASSERT_EQ(DrawQuad::Material::kAggregatedRenderPass,
               fourth_pass_quad_list.ElementAt(2)->material);
     const auto* fourth_pass_second_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(2));
+        AggregatedRenderPassDrawQuad::MaterialCast(
+            fourth_pass_quad_list.ElementAt(2));
     EXPECT_EQ(actual_pass_ids[0],
               fourth_pass_second_render_pass_draw_quad->render_pass_id);
   }
@@ -1944,10 +1953,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     // The last quad in the last pass will reference the second pass from the
     // root surface, which after aggregating is the fourth pass in the overall
     // list.
-    ASSERT_EQ(DrawQuad::Material::kRenderPass,
+    ASSERT_EQ(DrawQuad::Material::kAggregatedRenderPass,
               fifth_pass_quad_list.ElementAt(1)->material);
     const auto* fifth_pass_render_pass_draw_quad =
-        RenderPassDrawQuad::MaterialCast(fifth_pass_quad_list.ElementAt(1));
+        AggregatedRenderPassDrawQuad::MaterialCast(
+            fifth_pass_quad_list.ElementAt(1));
     EXPECT_EQ(actual_pass_ids[3],
               fifth_pass_render_pass_draw_quad->render_pass_id);
   }
@@ -2154,9 +2164,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
   ASSERT_EQ(3u, aggregated_pass_list.size());
-  RenderPassId actual_pass_ids[] = {aggregated_pass_list[0]->id,
-                                    aggregated_pass_list[1]->id,
-                                    aggregated_pass_list[2]->id};
+  AggregatedRenderPassId actual_pass_ids[] = {aggregated_pass_list[0]->id,
+                                              aggregated_pass_list[1]->id,
+                                              aggregated_pass_list[2]->id};
   // Make sure the aggregated frame's pass IDs are all unique.
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < i; ++j) {
@@ -2168,15 +2178,17 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   // Make sure the render pass quads reference the remapped pass IDs.
   DrawQuad* render_pass_quads[] = {aggregated_pass_list[1]->quad_list.front(),
                                    aggregated_pass_list[2]->quad_list.front()};
-  ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::Material::kRenderPass);
-  EXPECT_EQ(
-      actual_pass_ids[0],
-      RenderPassDrawQuad::MaterialCast(render_pass_quads[0])->render_pass_id);
+  ASSERT_EQ(render_pass_quads[0]->material,
+            DrawQuad::Material::kAggregatedRenderPass);
+  EXPECT_EQ(actual_pass_ids[0],
+            AggregatedRenderPassDrawQuad::MaterialCast(render_pass_quads[0])
+                ->render_pass_id);
 
-  ASSERT_EQ(render_pass_quads[1]->material, DrawQuad::Material::kRenderPass);
-  EXPECT_EQ(
-      actual_pass_ids[1],
-      RenderPassDrawQuad::MaterialCast(render_pass_quads[1])->render_pass_id);
+  ASSERT_EQ(render_pass_quads[1]->material,
+            DrawQuad::Material::kAggregatedRenderPass);
+  EXPECT_EQ(actual_pass_ids[1],
+            AggregatedRenderPassDrawQuad::MaterialCast(render_pass_quads[1])
+                ->render_pass_id);
 }
 
 void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
@@ -3753,7 +3765,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     EXPECT_EQ(gfx::Rect(SurfaceSize()),
               aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // The |quad_to_test| (20,30 80x80) intersects with damage below, which is
     // union of surface quad damage (0,0 70x70) and root surface damage (0,0
     // 100x100), so its |can_use_backdrop_filter_cache| is reset to false.
@@ -3790,7 +3803,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
 
     EXPECT_EQ(gfx::Rect(), aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // No damage under |quad_to_test| and its |can_use_backdrop_filter_cache|
     // retains its value.
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
@@ -3823,7 +3837,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     ASSERT_EQ(expected_num_passes_after_aggregation,
               aggregated_pass_list.size());
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // The |quad_to_test| (20,30 80x80) doesn't intersect the damage from the
     // surface quad below (10,10 10x10) and the |can_use_backdrop_filter_cache|
     // retains its value of true.
@@ -3857,7 +3872,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     ASSERT_EQ(expected_num_passes_after_aggregation,
               aggregated_pass_list.size());
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // The |quad_to_test| (20,30 80x80) intersects the damage from the
     // surface quad below (60,60 10x10) and the |can_use_backdrop_filter_cache|
     // resets to false.
@@ -3997,7 +4013,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
               aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test =
         aggregated_pass_list[AllowMerge() ? 2 : 1]->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // 1) Without merging, the |quad_to_test| (or more precisely, the
     // |output_rect| of the render pass referenced by the quad that's used for
     // damage intersection test) (0,0 60x60) has damage below from surface root
@@ -4043,7 +4060,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     EXPECT_EQ(gfx::Rect(), aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test =
         aggregated_pass_list[AllowMerge() ? 2 : 1]->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // With or without merging, the |quad_to_test| (0,0 60x60) has no damage
     // from under it, so its |can_use_backdrop_filter_cache| remains unchanged.
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
@@ -4082,7 +4100,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     EXPECT_EQ(expected_damage_rect, aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test =
         aggregated_pass_list[AllowMerge() ? 2 : 1]->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // 1) Without merging, the |quad_to_test| (0,0 60x60) doesn't have any
     // damage coming from under it and its |can_use_backdrop_filter_cache| flag
     // remains unchanged (true).
@@ -4126,7 +4145,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     EXPECT_EQ(expected_damage_rect, aggregated_pass_list.back()->damage_rect);
     const auto* quad_to_test =
         aggregated_pass_list[AllowMerge() ? 2 : 1]->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     // 1) Without merging, the |quad_to_test| (0,0 60x60) doesn't have any
     // damage from under it and its |can_use_backdrop_filter_cache| remains
     // unchanged (true).
@@ -4261,7 +4281,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // The damage rect from under |quad_to_test| (0,0 100x100) intersects quad
     // render pass output rect (0,0 50x50).
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_FALSE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4291,7 +4312,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // There is no damage from under |quad_to_test| so
     // |can_use_backdrop_filter_cache| remains true.
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4333,7 +4355,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // The damage rect from under |quad_to_test| (1,1 10x10) intersects quad
     // render pass output rect (0,0 50x50).
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_FALSE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4365,7 +4388,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // |can_use_backdrop_filter_cache| remains true.
 
     const auto* quad_to_test = aggregated_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
   }
 }
@@ -4474,7 +4498,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // (2,2 5x5).
     const auto* quad_to_test =
         aggregated_frame.render_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_FALSE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4502,7 +4527,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
     // |can_use_backdrop_filter_cache| flag of |quad_to_test| remains true.
     const auto* quad_to_test =
         aggregated_frame.render_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4547,7 +4573,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
 
     const auto* quad_to_test =
         aggregated_frame_2.render_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_TRUE(rp_quad->can_use_backdrop_filter_cache);
   }
 
@@ -4596,7 +4623,8 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
 
     const auto* quad_to_test =
         aggregated_frame_2.render_pass_list.back()->quad_list.front();
-    const auto* rp_quad = RenderPassDrawQuad::MaterialCast(quad_to_test);
+    const auto* rp_quad =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad_to_test);
     EXPECT_FALSE(rp_quad->can_use_backdrop_filter_cache);
   }
 }
@@ -7738,7 +7766,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassDoesNotFillSurface) {
     // The base pass should contain a single RPDQ with a |rect| matching
     // |child_rect|.
     ASSERT_EQ(1u, aggregated_frame.render_pass_list[1]->quad_list.size());
-    const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(
+    const auto* rpdq = AggregatedRenderPassDrawQuad::MaterialCast(
         aggregated_frame.render_pass_list[1]->quad_list.front());
     EXPECT_EQ(child_rect, rpdq->rect);
 

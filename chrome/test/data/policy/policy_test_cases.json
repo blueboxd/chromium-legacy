@@ -1187,10 +1187,6 @@
     ]
   },
 
-  "EnableOriginBoundCerts": {
-    "note": "This policy is retired, see http://crbug.com/354749."
-  },
-
   "DisableSSLRecordSplitting": {
     "note": "This policy is retired, see https://bugs.chromium.org/p/chromium/issues/detail?id=485097#c17."
   },
@@ -1641,10 +1637,6 @@
         "prefs": { "extensions.management": {} }
       }
     ]
-  },
-
-  "ExtensionInstallListsMergeEnabled": {
-    "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
   "BlockUnsupportedFiletypes": {
@@ -3118,10 +3110,6 @@
 
   "EnterpriseWebStoreName": {
     "note": "This policy is retired, see http://crbug.com/178938."
-  },
-
-  "EnableMemoryInfo": {
-    "note": "This policy is retired, see http://crbug.com/350339."
   },
 
   "DisablePrintPreview": {

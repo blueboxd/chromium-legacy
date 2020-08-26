@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"

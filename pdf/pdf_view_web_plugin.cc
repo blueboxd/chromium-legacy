@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/memory/scoped_refptr.h"
 #include "cc/paint/paint_canvas.h"
 #include "pdf/pdf_engine.h"
+#include "pdf/ppapi_migration/url_loader.h"
 #include "ppapi/cpp/url_loader.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
@@ -149,8 +151,8 @@ void PdfViewWebPlugin::SubmitForm(const std::string& url,
                                   const void* data,
                                   int length) {}
 
-pp::URLLoader PdfViewWebPlugin::CreateURLLoader() {
-  return pp::URLLoader();
+scoped_refptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoader() {
+  return base::MakeRefCounted<UrlLoader>();
 }
 
 std::vector<PDFEngine::Client::SearchStringResult>

@@ -42,7 +42,7 @@ base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
   return test_dir.Append(base::FilePath(basename));
 }
 
-SharedQuadState* CreateSharedQuadState(RenderPass* render_pass,
+SharedQuadState* CreateSharedQuadState(AggregatedRenderPass* render_pass,
                                        const gfx::Rect& rect) {
   const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = rect;
@@ -122,7 +122,7 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
   }
 
   // Creates a RenderPass that embeds a single quad containing |source_bitmap_|.
-  std::unique_ptr<RenderPass> GenerateRootRenderPass() {
+  std::unique_ptr<AggregatedRenderPass> GenerateRootRenderPass() {
     ResourceFormat format =
         (source_bitmap_.info().colorType() == kBGRA_8888_SkColorType)
             ? ResourceFormat::BGRA_8888
@@ -138,8 +138,9 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
     ResourceId mapped_resource_id = resource_map[resource_id];
 
     const gfx::Rect output_rect(kSourceSize);
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(RenderPassId{1}, output_rect, output_rect, gfx::Transform());
+    auto pass = std::make_unique<AggregatedRenderPass>();
+    pass->SetNew(AggregatedRenderPassId{1}, output_rect, output_rect,
+                 gfx::Transform());
 
     SharedQuadState* sqs = CreateSharedQuadState(pass.get(), output_rect);
 
@@ -162,7 +163,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   // Generates a RenderPass which contains one quad that spans the full output.
   // The quad has our source image, so the framebuffer should contain the source
   // image after DrawFrame().
-  std::unique_ptr<RenderPass> pass = GenerateRootRenderPass();
+  auto pass = GenerateRootRenderPass();
 
   std::unique_ptr<CopyOutputResult> result;
   base::RunLoop loop;
@@ -192,7 +193,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   request->set_result_selection(result_selection);
   pass->copy_requests.push_back(std::move(request));
 
-  RenderPassList pass_list;
+  AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);

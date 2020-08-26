@@ -274,7 +274,10 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (wasSigninFlowInterrupted()) {
+        // The user might also sign out from this page. Check to see if the user is signed in
+        // before going through this flow.
+        if (wasSigninFlowInterrupted()
+                && mSigninPreference.getState() == SignInPreference.State.SIGNED_IN) {
             // If the setup flow was previously interrupted, and now the user dismissed the page
             // without turning sync on, then mark first setup as complete (so that we won't show the
             // error again), but turn sync off.

@@ -48,7 +48,7 @@ gfx::Rect OverlayProcessorWin::GetAndResetOverlayDamage() {
 
 void OverlayProcessorWin::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    AggregatedRenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
@@ -59,7 +59,7 @@ void OverlayProcessorWin::ProcessForOverlays(
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessorWin::ProcessForOverlays");
 
-  RenderPass* root_render_pass = render_passes->back().get();
+  auto* root_render_pass = render_passes->back().get();
   // Skip overlay processing if we have copy request.
   if (!root_render_pass->copy_requests.empty()) {
     damage_rect->Union(dc_layer_overlay_processor_

@@ -159,6 +159,11 @@ const base::Feature kAutofillRetrieveFromCacheWithRendererIds{
 const base::Feature kAutofillKeyboardAccessory{
     "AutofillKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, autofill will use new logic to strip both prefixes
+// and suffixes when setting FormStructure::parseable_name_
+extern const base::Feature kAutofillLabelAffixRemoval{
+    "AutofillLabelAffixRemoval", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillPruneSuggestions{
     "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 

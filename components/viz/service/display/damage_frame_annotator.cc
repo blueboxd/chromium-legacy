@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "cc/base/math_util.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
-#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/surfaces/aggregated_frame.h"
 
@@ -34,7 +34,8 @@ void DamageFrameAnnotator::AnnotateAggregatedFrame(AggregatedFrame* frame) {
   annotations_.clear();
 }
 
-void DamageFrameAnnotator::AnnotateRootRenderPass(RenderPass* render_pass) {
+void DamageFrameAnnotator::AnnotateRootRenderPass(
+    AggregatedRenderPass* render_pass) {
   const size_t num_quads_to_add = annotations_.size();
 
   // Insert |num_quads_to_add| new DebugBorderDrawQuad at start of list. The

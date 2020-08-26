@@ -83,14 +83,7 @@ void RenderPassDrawQuad::ExtendValue(
   TracedValue::SetIDRef(
       reinterpret_cast<void*>(static_cast<uint64_t>(render_pass_id)), value,
       "render_pass_id");
-  value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
-  cc::MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
-  cc::MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);
-  cc::MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
-  value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
-  value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
-  value->SetBoolean("can_use_backdrop_filter_cache",
-                    can_use_backdrop_filter_cache);
+  RenderPassDrawQuadInternal::ExtendValue(value);
 }
 
 }  // namespace viz

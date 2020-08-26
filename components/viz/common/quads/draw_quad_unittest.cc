@@ -17,6 +17,8 @@
 #include "cc/paint/filter_operations.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
@@ -685,6 +687,9 @@ TEST(DrawQuadTest, LargestQuadType) {
 
   for (int i = 0; i <= static_cast<int>(DrawQuad::Material::kMaxValue); ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::Material::kAggregatedRenderPass:
+        largest = std::max(largest, sizeof(AggregatedRenderPassDrawQuad));
+        break;
       case DrawQuad::Material::kDebugBorder:
         largest = std::max(largest, sizeof(DebugBorderDrawQuad));
         break;
@@ -729,6 +734,9 @@ TEST(DrawQuadTest, LargestQuadType) {
   LOG(ERROR) << "kLargestDrawQuad " << LargestDrawQuadSize();
   for (int i = 0; i <= static_cast<int>(DrawQuad::Material::kMaxValue); ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::Material::kAggregatedRenderPass:
+        LOG(ERROR) << "AggregatedRenderPass " << sizeof(AggregatedRenderPass);
+        break;
       case DrawQuad::Material::kDebugBorder:
         LOG(ERROR) << "DebugBorderDrawQuad " << sizeof(DebugBorderDrawQuad);
         break;

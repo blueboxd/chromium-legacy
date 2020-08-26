@@ -43,6 +43,8 @@ class CORE_EXPORT DeleteSelectionOptions::Builder final {
 
  public:
   Builder();
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder*) = delete;
 
   DeleteSelectionOptions Build() const;
 
@@ -53,8 +55,6 @@ class CORE_EXPORT DeleteSelectionOptions::Builder final {
 
  private:
   DeleteSelectionOptions options_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace blink

@@ -34,6 +34,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 
 #if !BUILDFLAG(SUPPORTS_CODE_ORDERING)
 #error Code ordering support is required for the reached code profiler.
@@ -72,7 +73,11 @@ void HandleSignal(int signal, siginfo_t* info, void* context) {
     return;
 
   ucontext_t* ucontext = reinterpret_cast<ucontext_t*>(context);
-  uint32_t address = ucontext->uc_mcontext.arm_pc;
+#if defined(ARCH_CPU_ARM64)
+  uintptr_t address = ucontext->uc_mcontext.pc;
+#else
+  uintptr_t address = ucontext->uc_mcontext.arm_pc;
+#endif
   ReachedAddressesBitset::GetTextBitset()->RecordAddress(address);
 }
 

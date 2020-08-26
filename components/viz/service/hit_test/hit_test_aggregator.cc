@@ -33,7 +33,7 @@ HitTestAggregator::HitTestAggregator(
 HitTestAggregator::~HitTestAggregator() = default;
 
 void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
-                                  RenderPassList* render_passes) {
+                                  AggregatedRenderPassList* render_passes) {
   DCHECK(referenced_child_regions_.empty());
 
   // The index will only have changed when new hit-test data has been submitted.
@@ -63,7 +63,8 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
   }
 }
 
-void HitTestAggregator::InsertHitTestDebugQuads(RenderPassList* render_passes) {
+void HitTestAggregator::InsertHitTestDebugQuads(
+    AggregatedRenderPassList* render_passes) {
   const base::flat_set<FrameSinkId>* hit_test_async_queried_debug_regions =
       hit_test_manager_->GetHitTestAsyncQueriedDebugRegions(
           root_frame_sink_id_);

@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/macros.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -25,6 +24,9 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
  public:
   explicit ProfileNameVerifierObserver(
       TestingProfileManager* testing_profile_manager);
+  ProfileNameVerifierObserver(const ProfileNameVerifierObserver&) = delete;
+  ProfileNameVerifierObserver& operator=(const ProfileNameVerifierObserver&) =
+      delete;
   ~ProfileNameVerifierObserver() override;
 
   // ProfileInfoCacheObserver overrides:
@@ -40,7 +42,6 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
   ProfileInfoCache* GetCache();
   std::map<base::FilePath, base::string16> profile_names_;
   TestingProfileManager* testing_profile_manager_;
-  DISALLOW_COPY_AND_ASSIGN(ProfileNameVerifierObserver);
 };
 
 class ProfileInfoCacheTest : public testing::Test {

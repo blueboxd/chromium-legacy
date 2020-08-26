@@ -406,6 +406,8 @@ class FormStructure {
   friend class FormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonAffixLength);
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTest, IsValidParseableName);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
                            RationalizePhoneNumber_RunsOncePerSection);
 
@@ -555,11 +557,32 @@ class FormStructure {
   // Further processes the extracted |fields_|.
   void ProcessExtractedFields();
 
+  // Tries to set |parseable_name| fields by stripping the given offsets from
+  // both sides of the |name| fields.
+  // Sets |parseable_name| to |name| if the sum of offsets is bigger than 
+  // |name|.
+  // Sets all |parseable_name| to |name| without modification and returns
+  // false if a name fails the |IsValidParseableName()| check after stripping.
+  bool SetStrippedParseableNames(size_t offset_left, size_t offset_right);
+
+  // Returns true if |string| is a valid parseable_name. Current criterion
+  // is the |autofill::kParseableNameValidationRe| regex.
+  static bool IsValidParseableName(base::string16 string);
+
+  // Returns the length of the longest common prefix found within |strings|
+  // if |findCommonSuffix| is false. Otherwise returns longest common suffix.
+  static size_t FindLongestCommonAffixLength(
+      const std::vector<base::StringPiece16>& strings,
+      bool findCommonSuffix = false);
+
   // Returns the longest common prefix found within |strings|. Strings below a
-  // threshold length are excluded when performing this check; this is needed
-  // because an exceptional field may be missing a prefix which is otherwise
-  // consistently applied--for instance, a framework may only apply a prefix
-  // to those fields which are bound when POSTing.
+  // threshold length defined by |kMinCommonNamePrefixLength| are excluded
+  // when performing this check; this is needed because an exceptional
+  // field may be missing a prefix which is otherwise consistently applied.
+  // For instance, a framework may only apply a prefix to those fields
+  // which are bound when POSTing.
+  //
+  // Soon to be replaced by FindLongestCommonPrefixLength
   static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
 

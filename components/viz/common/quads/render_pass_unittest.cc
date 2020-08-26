@@ -10,6 +10,7 @@
 
 #include "cc/test/geometry_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +75,7 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
 }
 
 TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
-  RenderPassId render_pass_id{3u};
+  AggregatedRenderPassId render_pass_id{3u};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -91,7 +92,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   bool has_damage_from_contributing_content = false;
   bool generate_mipmap = false;
 
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  auto pass = std::make_unique<AggregatedRenderPass>();
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                filters, backdrop_filters, backdrop_filter_bounds,
                content_color_usage, has_transparent_background,
@@ -109,9 +110,9 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   color_quad->SetNew(pass->shared_quad_state_list.back(), gfx::Rect(),
                      gfx::Rect(), SkColor(), false);
 
-  RenderPassId new_render_pass_id{63u};
+  AggregatedRenderPassId new_render_pass_id{63u};
 
-  std::unique_ptr<RenderPass> copy = pass->Copy(new_render_pass_id);
+  auto copy = pass->Copy(new_render_pass_id);
   EXPECT_EQ(new_render_pass_id, copy->id);
   EXPECT_EQ(pass->output_rect, copy->output_rect);
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
@@ -243,7 +244,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
 
   // Make a copy with CopyAll().
   RenderPassList copy_list;
-  RenderPass::CopyAll(pass_list, &copy_list);
+  RenderPass::CopyAllForTest(pass_list, &copy_list);
 
   CompareRenderPassLists(pass_list, copy_list);
 }
@@ -312,7 +313,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
 
   // Make a copy with CopyAll().
   RenderPassList copy_list;
-  RenderPass::CopyAll(pass_list, &copy_list);
+  RenderPass::CopyAllForTest(pass_list, &copy_list);
 
   CompareRenderPassLists(pass_list, copy_list);
 }

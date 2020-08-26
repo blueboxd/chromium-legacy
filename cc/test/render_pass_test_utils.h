@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "cc/paint/filter_operations.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -40,6 +41,13 @@ viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
                                const gfx::Transform& root_transform,
                                const FilterOperations& filters);
 
+viz::AggregatedRenderPass* AddRenderPass(
+    viz::AggregatedRenderPassList* pass_list,
+    viz::AggregatedRenderPassId render_pass_id,
+    const gfx::Rect& output_rect,
+    const gfx::Transform& root_transform,
+    const FilterOperations& filters);
+
 // Adds a new render pass with the provided properties to the given
 // render pass list.
 viz::RenderPass* AddRenderPassWithDamage(viz::RenderPassList* pass_list,
@@ -48,19 +56,35 @@ viz::RenderPass* AddRenderPassWithDamage(viz::RenderPassList* pass_list,
                                          const gfx::Rect& damage_rect,
                                          const gfx::Transform& root_transform,
                                          const FilterOperations& filters);
+viz::AggregatedRenderPass* AddRenderPassWithDamage(
+    viz::AggregatedRenderPassList* pass_list,
+    viz::AggregatedRenderPassId render_pass_id,
+    const gfx::Rect& output_rect,
+    const gfx::Rect& damage_rect,
+    const gfx::Transform& root_transform,
+    const FilterOperations& filters);
 
 // Adds a solid quad to a given render pass.
-viz::SolidColorDrawQuad* AddQuad(viz::RenderPass* pass,
-                                 const gfx::Rect& rect,
-                                 SkColor color);
+template <typename RenderPassType>
+inline viz::SolidColorDrawQuad* AddQuad(RenderPassType* pass,
+                                        const gfx::Rect& rect,
+                                        SkColor color) {
+  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect, false,
+                       false, 1, SkBlendMode::kSrcOver, 0);
+  auto* quad =
+      pass->template CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  quad->SetNew(shared_state, rect, rect, color, false);
+  return quad;
+}
 
 // Adds a solid quad to a given render pass and sets is_clipped=true.
-viz::SolidColorDrawQuad* AddClippedQuad(viz::RenderPass* pass,
+viz::SolidColorDrawQuad* AddClippedQuad(viz::AggregatedRenderPass* pass,
                                         const gfx::Rect& rect,
                                         SkColor color);
 
 // Adds a solid quad with a transform to a given render pass.
-viz::SolidColorDrawQuad* AddTransformedQuad(viz::RenderPass* pass,
+viz::SolidColorDrawQuad* AddTransformedQuad(viz::AggregatedRenderPass* pass,
                                             const gfx::Rect& rect,
                                             SkColor color,
                                             const gfx::Transform& transform);
@@ -68,10 +92,13 @@ viz::SolidColorDrawQuad* AddTransformedQuad(viz::RenderPass* pass,
 // Adds a render pass quad to an existing render pass.
 viz::RenderPassDrawQuad* AddRenderPassQuad(viz::RenderPass* to_pass,
                                            viz::RenderPass* contributing_pass);
+viz::AggregatedRenderPassDrawQuad* AddRenderPassQuad(
+    viz::AggregatedRenderPass* to_pass,
+    viz::AggregatedRenderPass* contributing_pass);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
-void AddRenderPassQuad(viz::RenderPass* to_pass,
-                       viz::RenderPass* contributing_pass,
+void AddRenderPassQuad(viz::AggregatedRenderPass* to_pass,
+                       viz::AggregatedRenderPass* contributing_pass,
                        viz::ResourceId mask_resource_id,
                        gfx::Transform transform,
                        SkBlendMode blend_mode);
@@ -85,11 +112,11 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
 // The resource used in render pass is created by viz::ClientResourceProvider,
 // then transferred to viz::DisplayResourceProvider.
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
-    viz::RenderPass* to_pass,
+    viz::AggregatedRenderPass* to_pass,
     viz::DisplayResourceProvider* resource_provider,
     viz::ClientResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider,
-    viz::RenderPassId child_pass_id,
+    viz::AggregatedRenderPassId child_pass_id,
     gpu::SyncToken* sync_token_for_mailbox_texture);
 
 }  // namespace cc

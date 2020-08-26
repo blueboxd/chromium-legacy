@@ -57,7 +57,7 @@ gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
 
 void OverlayProcessorMac::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    AggregatedRenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
@@ -86,7 +86,7 @@ void OverlayProcessorMac::ProcessForOverlays(
   // SkiaRenderer yet.
   if (!enable_render_pass_) {
     for (auto* const quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::Material::kRenderPass)
+      if (quad->material == DrawQuad::Material::kAggregatedRenderPass)
         return;
     }
   }

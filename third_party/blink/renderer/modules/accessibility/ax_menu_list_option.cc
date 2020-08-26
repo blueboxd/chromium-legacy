@@ -152,8 +152,11 @@ bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
 
 bool AXMenuListOption::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  if (IsInertOrAriaHidden())
+  if (IsInertOrAriaHidden()) {
+    if (ignored_reasons)
+      ComputeIsInertOrAriaHidden(ignored_reasons);
     return true;
+  }
 
   if (DynamicTo<HTMLOptionElement>(GetNode())->FastHasAttribute(
           html_names::kHiddenAttr))

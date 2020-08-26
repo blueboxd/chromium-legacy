@@ -642,4 +642,31 @@ TEST_F(CompromisedCredentialsManagerWithTwoStoresTest,
   EXPECT_EQ(1U, profile_store().compromised_credentials().size());
   EXPECT_EQ(2U, account_store().compromised_credentials().size());
 }
+
+TEST_F(CompromisedCredentialsManagerWithTwoStoresTest,
+       RemoveCompromisedCredential) {
+  // Add `kUsername1`,`kPassword1` to both stores.
+  profile_store().AddLogin(
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  account_store().AddLogin(
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+
+  // Mark `kUsername1` and `kPassword1` to be compromised in both stores.
+  profile_store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1));
+  account_store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  // Now remove the compromised credentials
+  EXPECT_TRUE(provider().RemoveCompromisedCredential(
+      CredentialView(kExampleCom, GURL(), base::ASCIIToUTF16(kUsername1),
+                     base::ASCIIToUTF16(kPassword1))));
+  RunUntilIdle();
+
+  // It should have been removed from both stores.
+  EXPECT_TRUE(profile_store().stored_passwords().at(kExampleCom).empty());
+  EXPECT_TRUE(account_store().stored_passwords().at(kExampleCom).empty());
+}
+
 }  // namespace password_manager

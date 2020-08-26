@@ -31,10 +31,7 @@ class ExecuteScriptApiTestBase : public ExtensionApiTest {
 class ExecuteScriptApiTest : public ExecuteScriptApiTestBase,
                              public testing::WithParamInterface<ContextType> {
  protected:
-  void SetUp() override {
-    ExecuteScriptApiTestBase::SetUp();
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
+  ExecuteScriptApiTest() {
     if (GetParam() == ContextType::kServiceWorker)
       current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
   }

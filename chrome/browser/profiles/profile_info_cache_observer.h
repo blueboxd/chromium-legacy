@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 
@@ -17,7 +16,9 @@ class FilePath;
 // ProfileInfoCache.
 class ProfileInfoCacheObserver {
  public:
-  virtual ~ProfileInfoCacheObserver() {}
+  ProfileInfoCacheObserver(const ProfileInfoCacheObserver&) = delete;
+  ProfileInfoCacheObserver& operator=(const ProfileInfoCacheObserver&) = delete;
+  virtual ~ProfileInfoCacheObserver() = default;
 
   virtual void OnProfileAdded(const base::FilePath& profile_path) {}
   virtual void OnProfileWillBeRemoved(const base::FilePath& profile_path) {}
@@ -37,9 +38,7 @@ class ProfileInfoCacheObserver {
       const base::FilePath& profile_path) {}
 
  protected:
-  ProfileInfoCacheObserver() {}
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoCacheObserver);
+  ProfileInfoCacheObserver() = default;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_

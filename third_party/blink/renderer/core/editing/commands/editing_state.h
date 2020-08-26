@@ -27,14 +27,14 @@ class CORE_EXPORT EditingState final {
 
  public:
   EditingState();
+  EditingState(const EditingState&) = delete;
+  EditingState& operator=(const EditingState&) = delete;
 
   void Abort();
   bool IsAborted() const { return is_aborted_; }
 
  private:
   bool is_aborted_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(EditingState);
 };
 
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
@@ -44,14 +44,15 @@ class IgnorableEditingAbortState final {
 
  public:
   IgnorableEditingAbortState();
+  IgnorableEditingAbortState(const IgnorableEditingAbortState&) = delete;
+  IgnorableEditingAbortState& operator=(const IgnorableEditingAbortState&) =
+      delete;
   ~IgnorableEditingAbortState();
 
   EditingState* GetEditingState() { return &editing_state_; }
 
  private:
   EditingState editing_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(IgnorableEditingAbortState);
 };
 
 // Abort the editing command if the specified expression is true.
@@ -70,6 +71,8 @@ class NoEditingAbortChecker final {
 
  public:
   NoEditingAbortChecker(const char* file, int line);
+  NoEditingAbortChecker(const NoEditingAbortChecker&) = delete;
+  NoEditingAbortChecker& operator=(const NoEditingAbortChecker&) = delete;
   ~NoEditingAbortChecker();
 
   EditingState* GetEditingState() { return &editing_state_; }
@@ -78,8 +81,6 @@ class NoEditingAbortChecker final {
   EditingState editing_state_;
   const char* const file_;
   int const line_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoEditingAbortChecker);
 };
 
 // If a function with EditingState* argument should not be aborted,

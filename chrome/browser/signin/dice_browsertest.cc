@@ -18,6 +18,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/dice_response_handler.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
@@ -110,6 +113,7 @@ const char kOAuth2TokenExchangeURL[] = "/oauth2/v4/token";
 const char kOAuth2TokenRevokeURL[] = "/o/oauth2/revoke";
 const char kSecondaryEmail[] = "secondary_email@example.com";
 const char kSigninURL[] = "/signin";
+const char kSigninWithOutageInDiceURL[] = "/signin/outage";
 const char kSignoutURL[] = "/signout";
 
 // Test response that does not complete synchronously. It must be unblocked by
@@ -153,7 +157,8 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
     const base::RepeatingCallback<void(const std::string&)>& callback,
     const HttpRequest& request) {
   if (!net::test_server::ShouldHandle(request, kSigninURL) &&
-      !net::test_server::ShouldHandle(request, kChromeSyncEndpointURL))
+      !net::test_server::ShouldHandle(request, kChromeSyncEndpointURL) &&
+      !net::test_server::ShouldHandle(request, kSigninWithOutageInDiceURL))
     return nullptr;
 
   // Extract Dice request header.
@@ -168,12 +173,21 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
   // Add the SIGNIN dice header.
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   if (header_value != kNoDiceRequestHeader) {
-    http_response->AddCustomHeader(
-        kDiceResponseHeader,
-        base::StringPrintf(
-            "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
-            signin::GetTestGaiaIdForEmail(main_email).c_str(),
-            main_email.c_str(), kAuthorizationCode));
+    if (net::test_server::ShouldHandle(request, kSigninWithOutageInDiceURL)) {
+      http_response->AddCustomHeader(
+          kDiceResponseHeader,
+          base::StringPrintf("action=SIGNIN,authuser=1,id=%s,email=%s,"
+                             "no_authorization_code=true",
+                             signin::GetTestGaiaIdForEmail(main_email).c_str(),
+                             main_email.c_str()));
+    } else {
+      http_response->AddCustomHeader(
+          kDiceResponseHeader,
+          base::StringPrintf(
+              "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
+              signin::GetTestGaiaIdForEmail(main_email).c_str(),
+              main_email.c_str(), kAuthorizationCode));
+    }
   }
 
   // When hitting the Chrome Sync endpoint, redirect to kEnableSyncURL, which
@@ -331,6 +345,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
         reconcilor_blocked_count_(0),
         reconcilor_unblocked_count_(0),
         reconcilor_started_count_(0) {
+    feature_list_.InitAndEnableFeature(kSupportOAuthOutageInDice);
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleSigninURL, main_email_,
         base::BindRepeating(&DiceBrowserTest::OnSigninRequest,
@@ -601,6 +616,10 @@ class DiceBrowserTest : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
+  DiceResponseHandler* GetDiceResponseHandler() {
+    return DiceResponseHandler::GetForProfile(browser()->profile());
+  }
+
   const std::string main_email_;
   net::EmbeddedTestServer https_server_;
   bool enable_sync_requested_;
@@ -612,6 +631,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
   int reconcilor_unblocked_count_;
   int reconcilor_started_count_;
   std::string dice_request_header_;
+  base::test::ScopedFeatureList feature_list_;
 
   // Unblocks the server responses.
   base::OnceClosure unblock_token_exchange_response_closure_;
@@ -657,6 +677,34 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
   EXPECT_EQ(1, reconcilor_started_count_);
+}
+
+// Checks that the account reconcilor is blocked when where was OAuth
+// outage in Dice, and unblocked after the timeout.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SupportOAuthOutageInDice) {
+  DiceResponseHandler* dice_response_handler = GetDiceResponseHandler();
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner =
+      new base::TestMockTimeTaskRunner();
+  dice_response_handler->SetTaskRunner(task_runner);
+  NavigateToURL(kSigninWithOutageInDiceURL);
+  // Check that the Dice request header was sent.
+  std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  EXPECT_EQ(base::StringPrintf("version=%s,client_id=%s,device_id=%s,"
+                               "signin_mode=all_accounts,"
+                               "signout_mode=show_confirmation",
+                               signin::kDiceProtocolVersion, client_id.c_str(),
+                               GetDeviceId().c_str()),
+            dice_request_header_);
+  // Check that the reconcilor was blocked and not unblocked before timeout.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  task_runner->FastForwardBy(
+      base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours / 2));
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  task_runner->FastForwardBy(
+      base::TimeDelta::FromHours((kLockAccountReconcilorTimeoutHours + 1) / 2));
+  // Check that the reconcilor was unblocked.
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
 }
 
 // Checks that re-auth on Gaia triggers the fetch for a refresh token.

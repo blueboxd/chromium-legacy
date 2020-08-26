@@ -585,7 +585,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     base::TimeTicks post_task_timestamp,
-    RenderPassId id,
+    AggregatedRenderPassId id,
     sk_sp<SkDeferredDisplayList> ddl,
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
@@ -652,13 +652,13 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 }
 
 void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
-    std::vector<RenderPassId> ids,
+    std::vector<AggregatedRenderPassId> ids,
     std::vector<std::unique_ptr<ImageContextImpl>> image_contexts) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
 
-  for (RenderPassId id : ids) {
+  for (AggregatedRenderPassId id : ids) {
     // It's possible that |offscreen_surfaces_| won't contain an entry for the
     // render pass if draw failed early.
     auto it = offscreen_surfaces_.find(id);
@@ -681,7 +681,7 @@ static void PostTaskFromMainToImplThread(
 }
 
 bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
-    RenderPassId id,
+    AggregatedRenderPassId id,
     copy_output::RenderPassGeometry geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request,

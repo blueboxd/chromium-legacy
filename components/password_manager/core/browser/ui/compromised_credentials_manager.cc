@@ -216,15 +216,13 @@ void CompromisedCredentialsManager::SaveCompromisedCredential(
     if (saved_password.password_value == credential.password() &&
         CanonicalizeUsername(saved_password.username_value) ==
             canonicalized_username) {
-      PasswordStore& store = saved_password.IsUsingAccountStore()
-                                 ? *account_store_
-                                 : *profile_store_;
-      store.AddCompromisedCredentials({
-          .signon_realm = saved_password.signon_realm,
-          .username = saved_password.username_value,
-          .create_time = base::Time::Now(),
-          .compromise_type = CompromiseType::kLeaked,
-      });
+      GetStoreFor(saved_password)
+          .AddCompromisedCredentials({
+              .signon_realm = saved_password.signon_realm,
+              .username = saved_password.username_value,
+              .create_time = base::Time::Now(),
+              .compromise_type = CompromiseType::kLeaked,
+          });
     }
   }
 }
@@ -243,7 +241,7 @@ bool CompromisedCredentialsManager::UpdateCompromisedCredentials(
     return false;
 
   for (size_t i = 1; i < forms.size(); ++i)
-    profile_store_->RemoveLogin(forms[i]);
+    GetStoreFor(forms[i]).RemoveLogin(forms[i]);
 
   // Note: We Invoke EditPassword on the presenter rather than UpdateLogin() on
   // the store, so that observers of the presenter get notified of this event.
@@ -260,7 +258,7 @@ bool CompromisedCredentialsManager::RemoveCompromisedCredential(
   // credentials were deleted.
   const auto& saved_passwords = it->second.forms;
   for (const autofill::PasswordForm& saved_password : saved_passwords)
-    profile_store_->RemoveLogin(saved_password);
+    GetStoreFor(saved_password).RemoveLogin(saved_password);
 
   return !saved_passwords.empty();
 }
@@ -311,6 +309,11 @@ void CompromisedCredentialsManager::UpdateCachedDataAndNotifyObservers(
   for (auto& observer : observers_) {
     observer.OnCompromisedCredentialsChanged(credentials);
   }
+}
+
+PasswordStore& CompromisedCredentialsManager::GetStoreFor(
+    const autofill::PasswordForm& form) {
+  return form.IsUsingAccountStore() ? *account_store_ : *profile_store_;
 }
 
 }  // namespace password_manager

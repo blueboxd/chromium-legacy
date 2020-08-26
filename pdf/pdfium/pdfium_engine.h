@@ -93,7 +93,7 @@ class PDFiumEngine : public PDFEngine,
              std::vector<pp::Rect>& ready,
              std::vector<pp::Rect>& pending) override;
   void PostPaint() override;
-  bool HandleDocumentLoad(const pp::URLLoader& loader) override;
+  bool HandleDocumentLoad(scoped_refptr<UrlLoader> loader) override;
   bool HandleEvent(const InputEvent& event) override;
   uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;

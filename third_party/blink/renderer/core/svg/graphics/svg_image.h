@@ -118,12 +118,6 @@ class CORE_EXPORT SVGImage final : public Image {
   // object size is non-empty.)
   bool HasIntrinsicDimensions() const;
 
-  sk_sp<PaintRecord> PaintRecordForContainer(const KURL&,
-                                             const IntSize& container_size,
-                                             const IntRect& draw_src_rect,
-                                             const IntRect& draw_dst_rect,
-                                             bool flip_y) override;
-
   PaintImage PaintImageForCurrentFrame() override;
 
  protected:

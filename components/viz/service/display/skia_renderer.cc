@@ -21,6 +21,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -254,7 +255,11 @@ bool IsAAForcedOff(const DrawQuad* quad) {
     case DrawQuad::Material::kPictureContent:
       return PictureDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     case DrawQuad::Material::kRenderPass:
+      NOTREACHED();
       return RenderPassDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
+    case DrawQuad::Material::kAggregatedRenderPass:
+      return AggregatedRenderPassDrawQuad::MaterialCast(quad)
+          ->force_anti_aliasing_off;
     case DrawQuad::Material::kSolidColor:
       return SolidColorDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     case DrawQuad::Material::kTiledContent:
@@ -881,7 +886,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   }
 }
 
-void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
+void SkiaRenderer::BindFramebufferToTexture(
+    const AggregatedRenderPassId render_pass_id) {
   auto iter = render_pass_backings_.find(render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
@@ -974,6 +980,13 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
   }
 
   switch (quad->material) {
+    case DrawQuad::Material::kAggregatedRenderPass:
+      // RPDQ should only ever be encountered as a top-level quad, not when
+      // bypassing another renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawRenderPassQuad(AggregatedRenderPassDrawQuad::MaterialCast(quad),
+                         params);
+      break;
     case DrawQuad::Material::kDebugBorder:
       // DebugBorders draw directly into the device space, so are not compatible
       // with image filters, so should never have been promoted as a bypass quad
@@ -988,10 +1001,10 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kRenderPass:
-      // RPDQ should only ever be encountered as a top-level quad, not when
-      // bypassing another renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), params);
+      // RenderPassDrawQuads should be converted to
+      // AggregatedRenderPassDrawQuads at this point.
+      DrawUnsupportedQuad(quad, rpdq_params, params);
+      NOTREACHED();
       break;
     case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), rpdq_params,
@@ -1351,10 +1364,13 @@ bool SkiaRenderer::CanExplicitlyScissor(
   if (!contents_device_transform.IsScaleOrTranslation())
     return false;
 
-  if (quad->material == DrawQuad::Material::kRenderPass) {
+  // Sanity check: we should not have a RenderPassDrawQuad here.
+  DCHECK_NE(quad->material, DrawQuad::Material::kRenderPass);
+  if (quad->material == DrawQuad::Material::kAggregatedRenderPass) {
     // If the renderpass has filters, the filters may modify the effective
     // geometry beyond the quad's visible_rect, so it's not safe to pre-clip.
-    auto pass_id = RenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
+    auto pass_id =
+        AggregatedRenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
     if (FiltersForPass(pass_id) || BackdropFiltersForPass(pass_id))
       return false;
   }
@@ -1364,7 +1380,8 @@ bool SkiaRenderer::CanExplicitlyScissor(
          contents_device_transform.matrix().get(2, 2) >= 0.0;
 }
 
-const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
+    const AggregatedRenderPass* pass) {
   // TODO(michaelludwig) - For now, this only supports opaque, src-over quads
   // with invertible transforms and simple content (image or color only).
   // Can only collapse a single tile quad.
@@ -1380,6 +1397,7 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   // and nested render passes cannot bypass a render pass
   // (their draw functions do not accept DrawRPDQParams either).
   if (quad->material == DrawQuad::Material::kRenderPass ||
+      quad->material == DrawQuad::Material::kAggregatedRenderPass ||
       quad->material == DrawQuad::Material::kDebugBorder ||
       quad->material == DrawQuad::Material::kPictureContent)
     return nullptr;
@@ -1570,6 +1588,7 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
     return true;
 
   if (new_quad->material != DrawQuad::Material::kRenderPass &&
+      new_quad->material != DrawQuad::Material::kAggregatedRenderPass &&
       new_quad->material != DrawQuad::Material::kStreamVideoContent &&
       new_quad->material != DrawQuad::Material::kTextureContent &&
       new_quad->material != DrawQuad::Material::kTiledContent)
@@ -2265,8 +2284,10 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     const char* hdr = R"(
 uniform half offset;
 uniform half multiplier;
+in shader child;
 
-void main(inout half4 color) {
+half4 main() {
+  half4 color = sample(child);
   // un-premultiply alpha
   if (color.a > 0)
     color.rgb /= color.a;
@@ -2277,6 +2298,7 @@ void main(inout half4 color) {
     const char* ftr = R"(
   // premultiply alpha
   color.rgb *= color.a;
+  return color;
 }
 )";
 
@@ -2292,7 +2314,8 @@ void main(inout half4 color) {
   input.multiplier = resource_multiplier;
   sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
 
-  return effect->makeColorFilter(std::move(data));
+  sk_sp<SkColorFilter> child = nullptr;  // = default input color
+  return effect->makeColorFilter(std::move(data), &child, 1);
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetContentColorFilter() {
@@ -2332,7 +2355,7 @@ sk_sp<SkColorFilter> SkiaRenderer::GetContentColorFilter() {
 }
 
 SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
-    const RenderPassDrawQuad* quad,
+    const AggregatedRenderPassDrawQuad* quad,
     DrawQuadParams* params) {
   DrawRPDQParams rpdq_params(params->visible_rect);
 
@@ -2476,7 +2499,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   return rpdq_params;
 }
 
-void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+void SkiaRenderer::DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad,
                                       DrawQuadParams* params) {
   DrawRPDQParams rpdq_params = CalculateRPDQParams(quad, params);
   if (rpdq_params.filter_bounds.IsEmpty())
@@ -2563,7 +2586,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
   switch (draw_mode_) {
     case DrawMode::DDL: {
       // Root framebuffer uses id 0 in SkiaOutputSurface.
-      RenderPassId render_pass_id;
+      AggregatedRenderPassId render_pass_id;
       const auto* const render_pass = current_frame()->current_render_pass;
       if (render_pass != current_frame()->root_render_pass) {
         render_pass_id = render_pass->id;
@@ -2633,10 +2656,10 @@ GrDirectContext* SkiaRenderer::GetGrContext() {
 }
 
 void SkiaRenderer::UpdateRenderPassTextures(
-    const RenderPassList& render_passes_in_draw_order,
-    const base::flat_map<RenderPassId, RenderPassRequirements>&
+    const AggregatedRenderPassList& render_passes_in_draw_order,
+    const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<AggregatedRenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_backings_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
@@ -2667,7 +2690,7 @@ void SkiaRenderer::UpdateRenderPassTextures(
 }
 
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
-    const RenderPassId& render_pass_id,
+    const AggregatedRenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto it = render_pass_backings_.find(render_pass_id);
   if (it != render_pass_backings_.end()) {
@@ -2766,13 +2789,13 @@ SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
 }
 
 bool SkiaRenderer::IsRenderPassResourceAllocated(
-    const RenderPassId& render_pass_id) const {
+    const AggregatedRenderPassId& render_pass_id) const {
   auto it = render_pass_backings_.find(render_pass_id);
   return it != render_pass_backings_.end();
 }
 
 gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
-    const RenderPassId& render_pass_id) {
+    const AggregatedRenderPassId& render_pass_id) {
   auto it = render_pass_backings_.find(render_pass_id);
   DCHECK(it != render_pass_backings_.end());
   return it->second.size;

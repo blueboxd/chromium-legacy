@@ -23,6 +23,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/service/display/bsp_tree.h"
@@ -197,7 +198,8 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   return window_rect;
 }
 
-const DrawQuad* DirectRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+const DrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
+    const AggregatedRenderPass* pass) {
   return nullptr;
 }
 
@@ -210,12 +212,13 @@ void DirectRenderer::SetVisible(bool visible) {
 }
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
-    const RenderPassList& render_passes_in_draw_order) {
+    const AggregatedRenderPassList& render_passes_in_draw_order) {
   DCHECK(render_pass_bypass_quads_.empty());
 
   auto& root_render_pass = render_passes_in_draw_order.back();
 
-  base::flat_map<RenderPassId, RenderPassRequirements> render_passes_in_frame;
+  base::flat_map<AggregatedRenderPassId, RenderPassRequirements>
+      render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
     // If there's a copy request, we need an explicit renderpass backing so
     // only try to draw directly if there are no copy requests.
@@ -238,7 +241,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 }
 
 void DirectRenderer::DrawFrame(
-    RenderPassList* render_passes_in_draw_order,
+    AggregatedRenderPassList* render_passes_in_draw_order,
     float device_scale_factor,
     const gfx::Size& device_viewport_size,
     const gfx::DisplayColorSpaces& display_color_spaces) {
@@ -248,7 +251,7 @@ void DirectRenderer::DrawFrame(
       "Renderer4.renderPassCount",
       base::saturated_cast<int>(render_passes_in_draw_order->size()));
 
-  RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
+  auto* root_render_pass = render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
 #if DCHECK_IS_ON()
@@ -528,19 +531,19 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
 }
 
 const cc::FilterOperations* DirectRenderer::FiltersForPass(
-    RenderPassId render_pass_id) const {
+    AggregatedRenderPassId render_pass_id) const {
   auto it = render_pass_filters_.find(render_pass_id);
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
 const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
-    RenderPassId render_pass_id) const {
+    AggregatedRenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filters_.find(render_pass_id);
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
 const base::Optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
-    RenderPassId render_pass_id) const {
+    AggregatedRenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end()
              ? base::Optional<gfx::RRectF>()
@@ -563,7 +566,7 @@ void DirectRenderer::FlushPolygons(
 }
 
 void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
-    RenderPass* render_pass) {
+    AggregatedRenderPass* render_pass) {
   if (render_pass_bypass_quads_.find(render_pass->id) !=
       render_pass_bypass_quads_.end()) {
     return;
@@ -608,7 +611,7 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
   }
 }
 
-void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
+void DirectRenderer::DrawRenderPass(const AggregatedRenderPass* render_pass) {
   TRACE_EVENT0("viz", "DirectRenderer::DrawRenderPass");
   if (CanSkipRenderPass(render_pass))
     return;
@@ -728,7 +731,8 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     GenerateMipmap();
 }
 
-bool DirectRenderer::CanSkipRenderPass(const RenderPass* render_pass) const {
+bool DirectRenderer::CanSkipRenderPass(
+    const AggregatedRenderPass* render_pass) const {
   if (render_pass == current_frame()->root_render_pass)
     return false;
 
@@ -757,7 +761,7 @@ bool DirectRenderer::CanSkipRenderPass(const RenderPass* render_pass) const {
   return false;
 }
 
-void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
+void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
@@ -790,8 +794,9 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
-    const RenderPass* render_pass) const {
-  const RenderPass* root_render_pass = current_frame()->root_render_pass;
+    const AggregatedRenderPass* render_pass) const {
+  const AggregatedRenderPass* root_render_pass =
+      current_frame()->root_render_pass;
   gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
 
   if (render_pass == root_render_pass) {
@@ -827,9 +832,12 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
       if (!backdrop_filter_output_rects_.empty() &&
           !root_damage_rect.IsEmpty()) {
         for (auto* quad : render_pass->quad_list) {
-          if (quad->material == DrawQuad::Material::kRenderPass) {
+          // Sanity check: we should not have a RenderPassDrawQuad here.
+          DCHECK_NE(quad->material, DrawQuad::Material::kRenderPass);
+          if (quad->material == DrawQuad::Material::kAggregatedRenderPass) {
             auto iter = backdrop_filter_output_rects_.find(
-                RenderPassDrawQuad::MaterialCast(quad)->render_pass_id);
+                AggregatedRenderPassDrawQuad::MaterialCast(quad)
+                    ->render_pass_id);
             if (iter != backdrop_filter_output_rects_.end()) {
               gfx::Rect this_output_rect = iter->second;
               if (root_damage_rect.Intersects(this_output_rect))
@@ -871,7 +879,7 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 }
 
 gfx::Size DirectRenderer::CalculateTextureSizeForRenderPass(
-    const RenderPass* render_pass) {
+    const AggregatedRenderPass* render_pass) {
   // Round the size of the render pass backings to a multiple of 64 pixels. This
   // reduces memory fragmentation. https://crbug.com/146070. This also allows
   // backings to be more easily reused during a resize operation.
@@ -891,7 +899,7 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(
-    const RenderPassId& render_pass_id) const {
+    const AggregatedRenderPassId& render_pass_id) const {
   return IsRenderPassResourceAllocated(render_pass_id);
 }
 

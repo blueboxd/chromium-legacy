@@ -467,26 +467,6 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
   StartAnimation();
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
-    const KURL& url,
-    const IntSize& container_size,
-    const IntRect& draw_src_rect,
-    const IntRect& draw_dst_rect,
-    bool flip_y) {
-  if (!page_)
-    return nullptr;
-
-  PaintRecorder recorder;
-  cc::PaintCanvas* canvas = recorder.beginRecording(draw_src_rect);
-  if (flip_y) {
-    canvas->translate(0, draw_dst_rect.Height());
-    canvas->scale(1, -1);
-  }
-  DrawForContainer(canvas, PaintFlags(), FloatSize(container_size), 1,
-                   FloatRect(draw_dst_rect), FloatRect(draw_src_rect), url);
-  return recorder.finishRecordingAsPicture();
-}
-
 void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
     PaintImageBuilder& builder,
     const IntSize& zoomed_container_size,

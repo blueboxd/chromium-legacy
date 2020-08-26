@@ -53,7 +53,11 @@ AXRestriction AXMenuListPopup::Restriction() const {
 
 bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  return AccessibilityIsIgnoredByDefault(ignored_reasons);
+  // Base whether the menupopup is ignored on the containing <select>.
+  if (parent_)
+    return parent_->ComputeAccessibilityIsIgnored(ignored_reasons);
+
+  return kIgnoreObject;
 }
 
 AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -52,7 +52,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   // SkiaOutputSurfaceImplOnGpu::OffscreenSurface can be factored out. This
   // would make ImageContextImpl cleaner and handling of render passes less
   // confusing.
-  ImageContextImpl(RenderPassId render_pass_id,
+  ImageContextImpl(AggregatedRenderPassId render_pass_id,
                    const gfx::Size& size,
                    ResourceFormat resource_format,
                    bool mipmap,
@@ -61,7 +61,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
 
   void OnContextLost() final;
 
-  RenderPassId render_pass_id() const { return render_pass_id_; }
+  AggregatedRenderPassId render_pass_id() const { return render_pass_id_; }
   GrMipMapped mipmap() const { return mipmap_; }
 
   void set_promise_image_texture(
@@ -100,7 +100,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   bool BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base,
                                     gfx::Size* size);
 
-  const RenderPassId render_pass_id_;
+  const AggregatedRenderPassId render_pass_id_;
   const GrMipMapped mipmap_ = GrMipMapped::kNo;
 
   // Fallback in case we cannot produce a |representation_|.

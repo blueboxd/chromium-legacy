@@ -28,6 +28,10 @@ const char kNearbySharingFullNamePrefName[] = "nearby_sharing.full_name";
 const char kNearbySharingIconUrlPrefName[] = "nearby_sharing.icon_url";
 const char kNearbySharingOnboardingDismissedTimePrefName[] =
     "nearby_sharing.onboarding_dismissed_time";
+const char kNearbySharingSchedulerContactDownloadPrefName[] =
+    "nearby_sharing.scheduler.contact_download";
+const char kNearbySharingSchedulerContactUploadPrefName[] =
+    "nearby_sharing.scheduler.contact_upload";
 const char kNearbySharingSchedulerDownloadDeviceDataPrefName[] =
     "nearby_sharing.scheduler.download_device_data";
 const char kNearbySharingSchedulerUploadDeviceNamePrefName[] =
@@ -63,6 +67,10 @@ void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
                                /*default_value=*/std::string());
   registry->RegisterStringPref(prefs::kNearbySharingIconUrlPrefName,
                                /*default_value=*/std::string());
+  registry->RegisterDictionaryPref(
+      prefs::kNearbySharingSchedulerContactDownloadPrefName);
+  registry->RegisterDictionaryPref(
+      prefs::kNearbySharingSchedulerContactUploadPrefName);
   registry->RegisterDictionaryPref(
       prefs::kNearbySharingSchedulerDownloadDeviceDataPrefName);
   registry->RegisterDictionaryPref(

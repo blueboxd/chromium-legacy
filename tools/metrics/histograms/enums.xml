@@ -16175,6 +16175,18 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="20" label="showGridTrackSizes.true"/>
 </enum>
 
+<enum name="DevtoolsGridSettingChanged2">
+  <int value="0" label="showGridLineLabels.none"/>
+  <int value="1" label="showGridLineLabels.lineNumbers"/>
+  <int value="2" label="showGridLineLabels.lineNames"/>
+  <int value="3" label="extendGridLines.false"/>
+  <int value="4" label="extendGridLines.true"/>
+  <int value="5" label="showGridAreas.false"/>
+  <int value="6" label="showGridAreas.true"/>
+  <int value="7" label="showGridTrackSizes.false"/>
+  <int value="8" label="showGridTrackSizes.true"/>
+</enum>
+
 <enum name="DevToolsIssuesPanelOpenedFrom">
   <int value="0" label="Console Info Bar"/>
   <int value="1" label="Learn More Link COEP"/>
@@ -20887,8 +20899,6 @@ Called by update_document_policy_enum.py.-->
   <int value="111" label="MediaCacheSize"/>
   <int value="112" label="EnterpriseWebStoreURL"/>
   <int value="113" label="EnterpriseWebStoreName"/>
-  <int value="114" label="EnableOriginBoundCerts"/>
-  <int value="115" label="EnableMemoryInfo"/>
   <int value="116" label="ProxySettings"/>
   <int value="117" label="DisablePrintPreview"/>
   <int value="118" label="DisableSSLRecordSplitting"/>
@@ -21316,7 +21326,6 @@ Called by update_document_policy_enum.py.-->
   <int value="541" label="DeviceBootOnAcEnabled"/>
   <int value="542" label="SignedHTTPExchangeEnabled"/>
   <int value="543" label="DeviceQuickFixBuildToken"/>
-  <int value="544" label="ExtensionInstallListsMergeEnabled"/>
   <int value="545" label="SamlInSessionPasswordChangeEnabled"/>
   <int value="547" label="DeviceDockMacAddressSource"/>
   <int value="548" label="DeviceAdvancedBatteryChargeModeEnabled"/>
@@ -40630,6 +40639,7 @@ from previous Chrome versions.
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
+  <int value="-1694900665" label="HandwritingGestureEditing:enabled"/>
   <int value="-1693498375" label="CdmFactoryDaemon:enabled"/>
   <int value="-1692967465"
       label="ContextMenuPerformanceInfoAndRemoteHintFetching:enabled"/>
@@ -40787,6 +40797,7 @@ from previous Chrome versions.
   <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
   <int value="-1535694535" label="PageInfoPerformanceHints:enabled"/>
   <int value="-1533258008" label="CalculateNativeWinOcclusion:enabled"/>
+  <int value="-1532720464" label="WellKnownChangePassword:enabled"/>
   <int value="-1532645183" label="ReleaseNotesNotification:enabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
@@ -43526,6 +43537,7 @@ from previous Chrome versions.
   <int value="1320450434" label="ArcUsbStorageUI:disabled"/>
   <int value="1324623677"
       label="SessionRestorePrioritizesBackgroundUseCases:enabled"/>
+  <int value="1325459977" label="HandwritingGestureEditing:disabled"/>
   <int value="1327883321"
       label="OmniboxHistoryQuickProviderAllowMidwordContinuations:enabled"/>
   <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>
@@ -43665,6 +43677,7 @@ from previous Chrome versions.
   <int value="1467322206" label="AssistAutoCorrect:enabled"/>
   <int value="1467583815" label="AVIF:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1472938299" label="WellKnownChangePassword:disabled"/>
   <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
@@ -58135,11 +58148,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ProfileAddNewUser">
-  <int value="0" label="Add new user from icon menu"/>
+  <int value="0" label="(Deprecated) Add new user from icon menu"/>
   <int value="1" label="Add new user from title bar menu"/>
   <int value="2" label="Add new user from settings dialog"/>
-  <int value="3" label="Add new user from the User Manager"/>
+  <int value="3" label="(Deprecated) Add new user from the User Manager"/>
   <int value="4" label="Auto-created after deleting last user"/>
+  <int value="5" label="Add new user from sign-in interception"/>
+  <int value="6" label="Add new user from the sync flow (to avoid data clash)"/>
 </enum>
 
 <enum name="ProfileAllAccountsCategories">

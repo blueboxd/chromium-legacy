@@ -32,6 +32,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
+import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.CANCELED;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.ERROR_OFFLINE;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.ERROR_UNKNOWN;
 import static org.chromium.chrome.browser.password_check.PasswordCheckUIStatus.IDLE;
@@ -281,6 +282,14 @@ public class PasswordCheckControllerTest {
 
         // Check the compromised credentials count updated.
         assertThat(mModel.get(ITEMS).get(0).model.get(COMPROMISED_CREDENTIALS_COUNT), is(2));
+    }
+
+    @Test
+    public void testCanceledStatusDoesntUpdateModel() {
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
+        mMediator.onPasswordCheckStatusChanged(CANCELED);
+        // Check that the header model didn't change.
+        assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
     }
 
     @Test

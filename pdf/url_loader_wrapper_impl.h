@@ -10,11 +10,11 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/url_loader_wrapper.h"
-#include "ppapi/cpp/url_loader.h"
 #include "ui/gfx/range/range.h"
 
 namespace pp {
@@ -23,10 +23,12 @@ class Instance;
 
 namespace chrome_pdf {
 
+class UrlLoader;
+
 class URLLoaderWrapperImpl : public URLLoaderWrapper {
  public:
   URLLoaderWrapperImpl(pp::Instance* plugin_instance,
-                       const pp::URLLoader& url_loader);
+                       scoped_refptr<UrlLoader> url_loader);
   URLLoaderWrapperImpl(const URLLoaderWrapperImpl&) = delete;
   URLLoaderWrapperImpl& operator=(const URLLoaderWrapperImpl&) = delete;
   ~URLLoaderWrapperImpl() override;
@@ -63,7 +65,7 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
   void ReadResponseBodyImpl(ResultCallback callback);
 
   pp::Instance* const plugin_instance_;
-  pp::URLLoader url_loader_;
+  scoped_refptr<UrlLoader> url_loader_;
   std::string response_headers_;
 
   int content_length_ = -1;

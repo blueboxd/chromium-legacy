@@ -2081,8 +2081,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, WidowsAndAbspos) {
     </div>
   )HTML");
 
-  // TODO(bebeaudr): The OOF positioned element should start in the second
-  // column rather than the first.
   String dump = DumpFragmentTree(GetElementById("container"));
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x70
@@ -2091,12 +2089,13 @@ TEST_F(NGColumnLayoutAlgorithmTest, WidowsAndAbspos) {
         offset:0,0 size:100x70
           offset:0,0 size:0x20
           offset:0,20 size:0x20
-        offset:0,40 size:33x30
       offset:110,0 size:100x70
         offset:0,0 size:100x60
           offset:0,0 size:0x20
           offset:0,20 size:0x20
           offset:0,40 size:0x20
+        offset:0,40 size:33x30
+      offset:220,0 size:100x70
         offset:0,0 size:33x3
 )DUMP";
   EXPECT_EQ(expectation, dump);

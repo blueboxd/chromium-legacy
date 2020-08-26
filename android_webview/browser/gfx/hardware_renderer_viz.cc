@@ -67,8 +67,9 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
 
   // viz::DisplayClient overrides.
   void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              viz::RenderPassList* render_passes) override;
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      viz::AggregatedRenderPassList* render_passes) override;
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
@@ -250,7 +251,7 @@ void HardwareRendererViz::OnViz::DisplayOutputSurfaceLost() {
 
 void HardwareRendererViz::OnViz::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    viz::RenderPassList* render_passes) {
+    viz::AggregatedRenderPassList* render_passes) {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
   hit_test_aggregator_->Aggregate(child_surface_id_, render_passes);
 }

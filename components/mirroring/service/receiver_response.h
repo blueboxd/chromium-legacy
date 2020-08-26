@@ -49,6 +49,11 @@ struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverCapability {
   ReceiverCapability& operator=(ReceiverCapability&& receiver_response);
   ReceiverCapability& operator=(const ReceiverCapability& receiver_response);
 
+  static constexpr int kRemotingVersionUnknown = -1;
+
+  // The remoting version that the receiver uses.
+  int remoting = kRemotingVersionUnknown;
+
   // Set of capabilities (e.g., ac3, 4k, hevc, vp9, dolby_vision, etc.).
   std::vector<std::string> media_caps;
 };

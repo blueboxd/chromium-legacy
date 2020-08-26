@@ -119,6 +119,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
+
+    // If the account with a refresh token is invalidated during this operation
+    // then |identity| will be nil. Do not process it in this case.
+    if (!identity) {
+      continue;
+    }
     CollectionViewItem* item = [self accountItem:identity];
     [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];

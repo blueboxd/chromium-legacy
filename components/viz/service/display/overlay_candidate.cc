@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -200,16 +200,16 @@ bool OverlayCandidate::IsOccludedByFilteredQuad(
     const OverlayCandidate& candidate,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad_list_end,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_backdrop_filters) {
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
-    if (overlap_iter->material == DrawQuad::Material::kRenderPass) {
+    if (overlap_iter->material == DrawQuad::Material::kAggregatedRenderPass) {
       gfx::RectF overlap_rect = cc::MathUtil::MapClippedRect(
           overlap_iter->shared_quad_state->quad_to_target_transform,
           gfx::RectF(overlap_iter->rect));
-      const RenderPassDrawQuad* render_pass_draw_quad =
-          RenderPassDrawQuad::MaterialCast(*overlap_iter);
+      const auto* render_pass_draw_quad =
+          AggregatedRenderPassDrawQuad::MaterialCast(*overlap_iter);
       if (candidate.display_rect.Intersects(overlap_rect) &&
           render_pass_backdrop_filters.count(
               render_pass_draw_quad->render_pass_id)) {

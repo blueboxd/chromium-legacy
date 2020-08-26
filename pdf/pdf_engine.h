@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -58,6 +59,7 @@ class VarDictionary;
 namespace chrome_pdf {
 
 class InputEvent;
+class UrlLoader;
 struct DocumentAttachmentInfo;
 struct DocumentMetadata;
 
@@ -220,7 +222,7 @@ class PDFEngine {
                             int length) {}
 
     // Creates and returns new URL loader for partial document requests.
-    virtual pp::URLLoader CreateURLLoader() = 0;
+    virtual scoped_refptr<UrlLoader> CreateUrlLoader() = 0;
 
     // Searches the given string for "term" and returns the results.  Unicode-
     // aware.
@@ -336,7 +338,7 @@ class PDFEngine {
                      std::vector<pp::Rect>& ready,
                      std::vector<pp::Rect>& pending) = 0;
   virtual void PostPaint() = 0;
-  virtual bool HandleDocumentLoad(const pp::URLLoader& loader) = 0;
+  virtual bool HandleDocumentLoad(scoped_refptr<UrlLoader> loader) = 0;
   virtual bool HandleEvent(const InputEvent& event) = 0;
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual void PrintBegin() = 0;

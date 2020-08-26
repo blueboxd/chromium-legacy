@@ -460,7 +460,6 @@
         'ExtensionAllowedTypes',
         'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
-        'ExtensionInstallListsMergeEnabled',
         'BlockExternalExtensions',
       ],
     },
@@ -4730,27 +4729,6 @@
       Note: For Windows® instances not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.''',
     },
     {
-      'name': 'ExtensionInstallListsMergeEnabled',
-      'owners': ['file://components/policy/resources/OWNERS'],
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*: 75-'],
-      'future': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 544,
-      'caption': '''Merge extension install list policies from multiple sources''',
-      'tags': [],
-      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph>, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
-
-      If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
-
-      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.''',
-    },
-    {
       'name': 'BlockExternalExtensions',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -8321,50 +8299,6 @@
       'caption': '''Enterprise web store name (deprecated)''',
       'tags': [],
       'desc': '''This setting has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29. The recommended way to set up organization-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.''',
-    },
-    {
-      'name': 'EnableOriginBoundCerts',
-      'owners': ['file://src/net/OWNERS'],
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-35'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'deprecated': True,
-      'future': True,
-      'example_value': True,
-      'id': 114,
-      'caption': '''Enable TLS domain-bound certificates extension (deprecated)''',
-      'tags': [],
-      'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 36.
-
-      Specifies whether the TLS domain-bound certificates extension should be enabled.
-
-      This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
-    },
-    {
-      'name': 'EnableMemoryInfo',
-      'owners': ['file://components/policy/resources/OWNERS'],
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-34', 'chrome_os:18-34'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'deprecated': True,
-      'future': True,
-      'example_value': False,
-      'id': 115,
-      'caption': '''Enable reporting memory info (JS heap size) to page (deprecated)''',
-      'tags': [],
-      'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 35.
-
-      Memory info is anyway reported to page, regardless of the option value, but the sizes reported are
-      quantized and the rate of updates is limited for security reasons. To obtain real-time precise data,
-      please use tools like Telemetry.''',
     },
     {
       'name': 'DisablePrintPreview',
@@ -12891,10 +12825,10 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'internal_only': True,
       },
       'example_value': 'restricted',
       'id': 196,
-      'future': True,
       'caption': '''Set the restriction on the fetching of the Variations seed''',
       'tags': [],
       'desc': '''Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -12911,11 +12845,11 @@
       'supported_on': ['chrome_os:28-'],
       'features': {
         'dynamic_refresh': False,
+        'internal_only': True,
       },
       'device_only': True,
       'example_value': 'restricted',
       'id': 199,
-      'future': True,
       'caption': '''Set the restriction on the fetching of the Variations seed''',
       'tags': [],
       'desc': '''Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
@@ -24172,7 +24106,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
+  'deleted_policy_ids': [114, 115, 412, 476, 544, 546, 562, 569, 578],
   'highest_id_currently_used': 783,
   'highest_atomic_group_id_currently_used': 40
 }

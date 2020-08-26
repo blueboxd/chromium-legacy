@@ -183,7 +183,7 @@ void ProfileDestroyer::RenderProcessHostDestroyed(
     content::RenderProcessHost* host) {
   TRACE_EVENT2("shutdown", "ProfileDestroyer::RenderProcessHostDestroyed",
                "profile", profile_, "render_process_host", host);
-  DCHECK(num_hosts_ > 0);
+  DCHECK_GT(num_hosts_, 0u);
   --num_hosts_;
   if (num_hosts_ == 0) {
     // Delay the destruction one step further in case other observers need to

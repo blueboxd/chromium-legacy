@@ -5,9 +5,12 @@
 #ifndef CC_TEST_TEST_HOOKS_H_
 #define CC_TEST_TEST_HOOKS_H_
 
+#include <memory>
+
 #include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 
 namespace gfx {
 struct PresentationFeedback;
@@ -96,7 +99,7 @@ class TestHooks : public AnimationDelegate {
       const viz::CompositorFrame& frame) {}
   virtual void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) {}
+      const viz::AggregatedRenderPassList& render_passes) {}
   virtual void DisplayDidDrawAndSwapOnThread() {}
 
   // Main thread hooks.

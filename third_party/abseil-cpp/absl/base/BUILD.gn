@@ -6,7 +6,7 @@ import("//third_party/abseil-cpp/absl.gni")
 
 absl_source_set("atomic_hook") {
   public = [ "internal/atomic_hook.h" ]
-  deps = [
+  public_deps = [
     ":config",
     ":core_headers",
   ]
@@ -15,14 +15,14 @@ absl_source_set("atomic_hook") {
 
 absl_source_set("errno_saver") {
   public = [ "internal/errno_saver.h" ]
-  deps = [ ":config" ]
+  public_deps = [ ":config" ]
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("log_severity") {
   sources = [ "log_severity.cc" ]
   public = [ "log_severity.h" ]
-  deps = [
+  public_deps = [
     ":config",
     ":core_headers",
   ]
@@ -31,7 +31,7 @@ absl_source_set("log_severity") {
 absl_source_set("raw_logging_internal") {
   sources = [ "internal/raw_logging.cc" ]
   public = [ "internal/raw_logging.h" ]
-  deps = [
+  public_deps = [
     ":atomic_hook",
     ":config",
     ":core_headers",
@@ -86,7 +86,7 @@ absl_source_set("core_headers") {
     "port.h",
     "thread_annotations.h",
   ]
-  deps = [ ":config" ]
+  public_deps = [ ":config" ]
 }
 
 absl_source_set("malloc_internal") {
@@ -95,7 +95,7 @@ absl_source_set("malloc_internal") {
     "internal/direct_mmap.h",
     "internal/low_level_alloc.h",
   ]
-  deps = [
+  public_deps = [
     ":base",
     ":base_internal",
     ":config",
@@ -113,7 +113,7 @@ absl_source_set("base_internal") {
     "internal/invoke.h",
     "internal/scheduling_mode.h",
   ]
-  deps = [
+  public_deps = [
     ":config",
     "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
@@ -144,7 +144,7 @@ absl_source_set("base") {
   # TODO(mbonadei): The bazel file has:
   #   "-DEFAULTLIB:advapi32.lib"
   # understand if this is needed here as well.
-  deps = [
+  public_deps = [
     ":atomic_hook",
     ":base_internal",
     ":config",
@@ -160,7 +160,7 @@ absl_source_set("base") {
 absl_source_set("throw_delegate") {
   sources = [ "internal/throw_delegate.cc" ]
   public = [ "internal/throw_delegate.h" ]
-  deps = [
+  public_deps = [
     ":config",
     ":raw_logging_internal",
   ]
@@ -170,7 +170,7 @@ absl_source_set("throw_delegate") {
 absl_source_set("exception_testing") {
   testonly = true
   public = [ "internal/exception_testing.h" ]
-  deps = [ ":config" ]
+  public_deps = [ ":config" ]
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
@@ -224,7 +224,7 @@ absl_source_set("endian") {
     "internal/endian.h",
     "internal/unaligned_access.h",
   ]
-  deps = [
+  public_deps = [
     ":config",
     ":core_headers",
   ]
@@ -232,7 +232,7 @@ absl_source_set("endian") {
 
 absl_source_set("bits") {
   public = [ "internal/bits.h" ]
-  deps = [
+  public_deps = [
     ":config",
     ":core_headers",
   ]
@@ -242,7 +242,7 @@ absl_source_set("bits") {
 absl_source_set("exponential_biased") {
   sources = [ "internal/exponential_biased.cc" ]
   public = [ "internal/exponential_biased.h" ]
-  deps = [
+  public_deps = [
     ":config",
     ":core_headers",
   ]
@@ -252,7 +252,7 @@ absl_source_set("exponential_biased") {
 absl_source_set("periodic_sampler") {
   sources = [ "internal/periodic_sampler.cc" ]
   public = [ "internal/periodic_sampler.h" ]
-  deps = [
+  public_deps = [
     ":core_headers",
     ":exponential_biased",
   ]
@@ -262,8 +262,10 @@ absl_source_set("scoped_set_env") {
   testonly = true
   public = [ "internal/scoped_set_env.h" ]
   sources = [ "internal/scoped_set_env.cc" ]
-  deps = [
+  public_deps = [
     ":config",
+  ]
+  deps = [
     ":raw_logging_internal",
   ]
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
@@ -272,8 +274,10 @@ absl_source_set("scoped_set_env") {
 absl_source_set("strerror") {
   sources = [ "internal/strerror.cc" ]
   public = [ "internal/strerror.h" ]
-  deps = [
+  public_deps = [
     ":config",
+  ]
+  deps = [
     ":core_headers",
     ":errno_saver",
   ]
@@ -282,7 +286,7 @@ absl_source_set("strerror") {
 
 absl_source_set("fast_type_id") {
   public = [ "internal/fast_type_id.h" ]
-  deps = [ ":config" ]
+  public_deps = [ ":config" ]
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 

@@ -1238,28 +1238,19 @@ bool AXObject::AccessibilityIsIgnoredByDefault(
   return DefaultObjectInclusion(ignored_reasons) == kIgnoreObject;
 }
 
-AXObjectInclusion AXObject::AccessibilityPlatformIncludesObject() const {
-  if (IsA<AXMenuListPopup>(this) || IsA<AXMenuListOption>(this))
-    return kIncludeObject;
-
-  return kDefaultBehavior;
-}
-
 AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsInertOrAriaHidden()) {
     // Keep focusable elements that are aria-hidden in tree, so that they can
-    // still fire events such as focus and value changes. Handle the case where
-    // a <select> element is aria-hidden.
-    if (RoleValue() != ax::mojom::blink::Role::kMenuListPopup &&
-        !CanSetFocusAttribute()) {
+    // still fire events such as focus and value changes.
+    if (!CanSetFocusAttribute()) {
       if (ignored_reasons)
         ComputeIsInertOrAriaHidden(ignored_reasons);
       return kIgnoreObject;
     }
   }
 
-  return AccessibilityPlatformIncludesObject();
+  return kDefaultBehavior;
 }
 
 bool AXObject::IsInertOrAriaHidden() const {

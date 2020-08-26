@@ -162,6 +162,10 @@ class CompromisedCredentialsManager
   void UpdateCachedDataAndNotifyObservers(
       SavedPasswordsPresenter::SavedPasswordsView saved_passwords);
 
+  // Returns the `profile_store_` or `account_store_` if `form` is stored in the
+  // profile store of the account store accordingly.
+  PasswordStore& GetStoreFor(const autofill::PasswordForm& form);
+
   // A weak handle to the presenter used to join the list of compromised
   // credentials with saved passwords. Needs to outlive this instance.
   SavedPasswordsPresenter* presenter_ = nullptr;

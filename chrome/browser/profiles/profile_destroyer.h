@@ -9,7 +9,6 @@
 
 #include <set>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -30,6 +29,8 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   // Ownership of the profile is passed to profile destroyer and the profile
   // should not be used after this call.
   static void DestroyProfileWhenAppropriate(Profile* const profile);
+  ProfileDestroyer(const ProfileDestroyer&) = delete;
+  ProfileDestroyer& operator=(const ProfileDestroyer&) = delete;
 
  private:
   friend class ProfileImpl;
@@ -78,8 +79,6 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   Profile* profile_;
 
   base::WeakPtrFactory<ProfileDestroyer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileDestroyer);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_DESTROYER_H_

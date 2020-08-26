@@ -15,6 +15,10 @@
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 
+class NearbyShareClientFactory;
+class NearbyShareLocalDeviceDataManager;
+class PrefService;
+
 // A fake implementation of NearbyShareContactManager, along with a fake
 // factory, to be used in tests. Stores parameters input into
 // NearbyShareContactManager method calls. Use the notification methods from the
@@ -37,11 +41,29 @@ class FakeNearbyShareContactManager : public NearbyShareContactManager {
       return instances_;
     }
 
+    PrefService* latest_pref_service() const { return latest_pref_service_; }
+
+    NearbyShareClientFactory* latest_http_client_factory() const {
+      return latest_http_client_factory_;
+    }
+
+    NearbyShareLocalDeviceDataManager* latest_local_device_data_manager()
+        const {
+      return latest_local_device_data_manager_;
+    }
+
    private:
     // NearbyShareContactManagerImpl::Factory:
-    std::unique_ptr<NearbyShareContactManager> CreateInstance() override;
+    std::unique_ptr<NearbyShareContactManager> CreateInstance(
+        PrefService* pref_service,
+        NearbyShareClientFactory* http_client_factory,
+        NearbyShareLocalDeviceDataManager* local_device_data_manager) override;
 
     std::vector<FakeNearbyShareContactManager*> instances_;
+    PrefService* latest_pref_service_ = nullptr;
+    NearbyShareClientFactory* latest_http_client_factory_ = nullptr;
+    NearbyShareLocalDeviceDataManager* latest_local_device_data_manager_ =
+        nullptr;
   };
 
   FakeNearbyShareContactManager();

@@ -589,4 +589,26 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       performAction:grey_tap()];
 }
 
+// Simulates a potential race condition in which the account is invalidated
+// after the user taps the Settings button to navigate to the identity
+// choosing UI. Depending on the timing, the account removal may occur after
+// the UI has retrieved the list of valid accounts. The test ensures that in
+// this case no account is presented to the user.
+- (void)testAccountInvalidatedDuringSignin {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
+
+  // Invalidate account after menu generation. If the underlying code does not
+  // handle the race condition of removing an identity while showing menu is in
+  // progress this test will likely be flaky.
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
+  // Check that the identity has been removed.
+  [[EarlGrey selectElementWithMatcher:identityChooserButtonMatcherWithEmail(
+                                          fakeIdentity.userEmail)]
+      assertWithMatcher:grey_notVisible()];
+}
+
 @end

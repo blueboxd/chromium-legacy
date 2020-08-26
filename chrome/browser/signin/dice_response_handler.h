@@ -12,6 +12,9 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -78,6 +81,9 @@ class DiceResponseHandler : public KeyedService {
 
   // Returns the number of pending DiceTokenFetchers. Exposed for testing.
   size_t GetPendingDiceTokenFetchersCountForTesting() const;
+
+  // Sets |task_runner_| for testing.
+  void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  private:
   // Helper class to fetch a refresh token from an authorization code.
@@ -168,8 +174,8 @@ class DiceResponseHandler : public KeyedService {
   // Lock the account reconcilor for kLockAccountReconcilorTimeoutHours
   // when there was OAuth outage in Dice.
   std::unique_ptr<AccountReconcilor::Lock> lock_;
-  base::OneShotTimer timer_;
-
+  std::unique_ptr<base::OneShotTimer> timer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(DiceResponseHandler);
 };
 

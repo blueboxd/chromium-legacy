@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetProperties.AccountPickerBottomSheetState;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetProperties.ViewState;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -68,8 +68,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
         // Clicking on one account in the account list when the account list is expanded
         // will collapse it to the selected account
-        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST);
+        mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.COLLAPSED_ACCOUNT_LIST);
         setSelectedAccountName(accountName);
     }
 
@@ -86,8 +85,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
      */
     @Override
     public void goIncognitoMode() {
-        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL);
+        mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.INCOGNITO_INTERSTITIAL);
         mAccountPickerDelegate.goIncognitoMode();
     }
 
@@ -111,24 +109,22 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         if (accounts.isEmpty()) {
             // If all accounts disappeared, no matter if the account list is collapsed or expanded,
             // we will go to the zero account screen.
-            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                    AccountPickerBottomSheetState.NO_ACCOUNTS);
+            mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.NO_ACCOUNTS);
             mSelectedAccountName = null;
             mModel.set(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA, null);
             return;
         }
 
-        @AccountPickerBottomSheetState
-        int state =
-                mModel.get(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE);
-        if (state == AccountPickerBottomSheetState.NO_ACCOUNTS) {
+        @ViewState
+        int viewState = mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE);
+        if (viewState == ViewState.NO_ACCOUNTS) {
             // When a non-empty account list appears while it is currently zero-account screen,
             // we should change the screen to collapsed account list and set the selected account
             // to the first account of the account list
-            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                    AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST);
+            mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE,
+                    ViewState.COLLAPSED_ACCOUNT_LIST);
             setSelectedAccountName(accounts.get(0).name);
-        } else if (state == AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST
+        } else if (viewState == ViewState.COLLAPSED_ACCOUNT_LIST
                 && AccountUtils.findAccountByName(accounts, mSelectedAccountName) == null) {
             // When it is already collapsed account list, we update the selected account only
             // when the current selected account name is no longer in the new account list
@@ -159,8 +155,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     private void onSelectedAccountClicked() {
         // Clicking on the selected account when the account list is collapsed will expand the
         // account list and make the account list visible
-        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST);
+        mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.EXPANDED_ACCOUNT_LIST);
     }
 
     /**
@@ -171,8 +166,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         if (mSelectedAccountName == null) {
             addAccount();
         } else {
-            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                    AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS);
+            mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.SIGNIN_IN_PROGRESS);
             new AsyncTask<String>() {
                 @Override
                 protected String doInBackground() {
@@ -192,11 +186,10 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
 
     private void onSignInError(GoogleServiceAuthError error) {
         if (error.getState() == State.INVALID_GAIA_CREDENTIALS) {
-            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                    AccountPickerBottomSheetState.SIGNIN_AUTH_ERROR);
+            mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.SIGNIN_AUTH_ERROR);
         } else {
-            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                    AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR);
+            mModel.set(
+                    AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.SIGNIN_GENERAL_ERROR);
         }
     }
 }

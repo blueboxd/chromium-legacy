@@ -11,7 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
@@ -52,7 +52,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 #endif
 
   using FilterOperationsMap =
-      base::flat_map<RenderPassId, cc::FilterOperations*>;
+      base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>;
 
   virtual bool DisableSplittingQuads() const;
 
@@ -121,7 +121,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // or CALayers. This must be called every frame.
   virtual void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
-      RenderPassList* render_passes,
+      AggregatedRenderPassList* render_passes,
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,

@@ -110,9 +110,13 @@ void DeviceStateMixin::SetUpLocalState() {
     case DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
     case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
     case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
-    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
       local_state->SetBoolean(prefs::kOobeComplete, true);
       local_state->SetInteger(prefs::kDeviceRegistered, 1);
+      local_state->SetBoolean(prefs::kEnrollmentRecoveryRequired, false);
+      break;
+    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
+      local_state->SetBoolean(prefs::kOobeComplete, true);
+      local_state->SetInteger(prefs::kDeviceRegistered, 0);
       local_state->SetBoolean(prefs::kEnrollmentRecoveryRequired, false);
       break;
     case DeviceStateMixin::State::BEFORE_OOBE:

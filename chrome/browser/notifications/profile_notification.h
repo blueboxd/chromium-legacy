@@ -31,6 +31,8 @@ class ProfileNotification {
       Profile* profile,
       const message_center::Notification& notification,
       NotificationHandler::Type type = NotificationHandler::Type::MAX);
+  ProfileNotification(const ProfileNotification&) = delete;
+  ProfileNotification& operator=(const ProfileNotification&) = delete;
   ~ProfileNotification();
 
   Profile* profile() const { return profile_; }
@@ -57,8 +59,6 @@ class ProfileNotification {
   NotificationHandler::Type type_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileNotification);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_PROFILE_NOTIFICATION_H_

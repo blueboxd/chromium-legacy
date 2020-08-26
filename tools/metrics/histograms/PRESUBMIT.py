@@ -92,8 +92,10 @@ def ValidateSingleFile(input_api, output_api, file_obj, cwd, results):
     # change obsolete_histograms.xml.
     return False
 
-  # If the changed file is histograms.xml, pretty-print and validate prefix it.
-  elif 'histograms.xml' in filepath:
+  # If the changed file is histograms.xml or histogram_suffixes_list.xml,
+  # pretty-print and validate prefix it.
+  elif ('histograms.xml' in filepath
+        or 'histogram_suffixes_list.xml' in filepath):
     GetPrettyPrintErrors(input_api, output_api, cwd, filepath, results)
     # TODO(crbug/1120229): Re-enable validate prefix check once all histograms
     # are split.

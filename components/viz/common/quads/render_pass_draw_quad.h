@@ -12,6 +12,7 @@
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass_draw_quad_internal.h"
 #include "components/viz/common/viz_common_export.h"
 
 #include "ui/gfx/geometry/point_f.h"
@@ -19,10 +20,8 @@
 
 namespace viz {
 
-class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
+class VIZ_COMMON_EXPORT RenderPassDrawQuad : public RenderPassDrawQuadInternal {
  public:
-  static const size_t kMaskResourceIdIndex = 0;
-
   RenderPassDrawQuad();
   RenderPassDrawQuad(const RenderPassDrawQuad& other);
   ~RenderPassDrawQuad() override;
@@ -56,33 +55,6 @@ class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
               bool can_use_backdrop_filter_cache);
 
   RenderPassId render_pass_id;
-  gfx::RectF mask_uv_rect;
-  gfx::Size mask_texture_size;
-
-  // The scale from layer space of the root layer of the render pass to
-  // the render pass physical pixels. This scale is applied to the filter
-  // parameters for pixel-moving filters. This scale should include
-  // content-to-target-space scale, and device pixel ratio.
-  gfx::Vector2dF filters_scale;
-
-  // The origin for post-processing filters which will be used to offset
-  // crop rects, lights, etc.
-  gfx::PointF filters_origin;
-
-  gfx::RectF tex_coord_rect;
-
-  float backdrop_filter_quality;
-
-  bool force_anti_aliasing_off;
-
-  // If the quad has backdrop filters, this flag indicates if the cached
-  // backdrop filtered result can be used instead of having to recompute the
-  // filter operation.
-  mutable bool can_use_backdrop_filter_cache;
-
-  ResourceId mask_resource_id() const {
-    return resources.ids[kMaskResourceIdIndex];
-  }
 
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 

@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/delegated_ink_metadata.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/display_resource_provider.h"
@@ -43,7 +44,6 @@ class DrawPolygon;
 class OutputSurface;
 struct DebugRendererSettings;
 class RendererSettings;
-class RenderPass;
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -68,8 +68,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
-      const RenderPassList& render_passes_in_draw_order);
-  void DrawFrame(RenderPassList* render_passes_in_draw_order,
+      const AggregatedRenderPassList& render_passes_in_draw_order);
+  void DrawFrame(AggregatedRenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::Size& device_viewport_size,
                  const gfx::DisplayColorSpaces& display_color_spaces);
@@ -104,9 +104,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     DrawingFrame();
     ~DrawingFrame();
 
-    const RenderPassList* render_passes_in_draw_order = nullptr;
-    const RenderPass* root_render_pass = nullptr;
-    const RenderPass* current_render_pass = nullptr;
+    const AggregatedRenderPassList* render_passes_in_draw_order = nullptr;
+    const AggregatedRenderPass* root_render_pass = nullptr;
+    const AggregatedRenderPass* current_render_pass = nullptr;
 
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
@@ -126,7 +126,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   void SetCurrentFrameForTesting(const DrawingFrame& frame);
   bool HasAllocatedResourcesForTesting(
-      const RenderPassId& render_pass_id) const;
+      const AggregatedRenderPassId& render_pass_id) const;
   // Allow tests to enlarge the texture size of non-root render passes to
   // verify cases where the texture doesn't match the render pass size.
   void SetEnlargePassTextureAmountForTesting(const gfx::Size& amount) {
@@ -183,47 +183,50 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                       const gfx::Rect& render_pass_scissor);
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
-  gfx::Size CalculateTextureSizeForRenderPass(const RenderPass* render_pass);
+  gfx::Size CalculateTextureSizeForRenderPass(
+      const AggregatedRenderPass* render_pass);
 
   void FlushPolygons(
       base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,
       const gfx::Rect& render_pass_scissor,
       bool use_render_pass_scissor);
-  void DrawRenderPassAndExecuteCopyRequests(RenderPass* render_pass);
-  void DrawRenderPass(const RenderPass* render_pass);
+  void DrawRenderPassAndExecuteCopyRequests(AggregatedRenderPass* render_pass);
+  void DrawRenderPass(const AggregatedRenderPass* render_pass);
   // Returns true if it detects that we do not need to draw the render pass.
   // This may be because the RenderPass is already cached, or because it is
   // entirely clipped out, for instance.
-  bool CanSkipRenderPass(const RenderPass* render_pass) const;
-  void UseRenderPass(const RenderPass* render_pass);
+  bool CanSkipRenderPass(const AggregatedRenderPass* render_pass) const;
+  void UseRenderPass(const AggregatedRenderPass* render_pass);
   gfx::Rect ComputeScissorRectForRenderPass(
-      const RenderPass* render_pass) const;
+      const AggregatedRenderPass* render_pass) const;
 
   void DoDrawPolygon(const DrawPolygon& poly,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
 
-  const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
+  const cc::FilterOperations* FiltersForPass(
+      AggregatedRenderPassId render_pass_id) const;
   const cc::FilterOperations* BackdropFiltersForPass(
-      RenderPassId render_pass_id) const;
+      AggregatedRenderPassId render_pass_id) const;
   const base::Optional<gfx::RRectF> BackdropFilterBoundsForPass(
-      RenderPassId render_pass_id) const;
+      AggregatedRenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
   virtual void UpdateRenderPassTextures(
-      const RenderPassList& render_passes_in_draw_order,
-      const base::flat_map<RenderPassId, RenderPassRequirements>&
+      const AggregatedRenderPassList& render_passes_in_draw_order,
+      const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
           render_passes_in_frame) = 0;
   virtual void AllocateRenderPassResourceIfNeeded(
-      const RenderPassId& render_pass_id,
+      const AggregatedRenderPassId& render_pass_id,
       const RenderPassRequirements& requirements) = 0;
   virtual bool IsRenderPassResourceAllocated(
-      const RenderPassId& render_pass_id) const = 0;
+      const AggregatedRenderPassId& render_pass_id) const = 0;
   virtual gfx::Size GetRenderPassBackingPixelSize(
-      const RenderPassId& render_pass_id) = 0;
+      const AggregatedRenderPassId& render_pass_id) = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
-  virtual void BindFramebufferToTexture(const RenderPassId render_pass_id) = 0;
+  virtual void BindFramebufferToTexture(
+      const AggregatedRenderPassId render_pass_id) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       SurfaceInitializationMode initialization_mode,
@@ -239,7 +242,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
   // return that quad, otherwise return null.
-  virtual const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
+  virtual const DrawQuad* CanPassBeDrawnDirectly(
+      const AggregatedRenderPass* pass);
   virtual void FinishDrawingQuadList() {}
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
@@ -281,15 +285,18 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // RenderPass. The DrawQuads are owned by their RenderPasses, which outlive
   // the drawn frame, so it is safe to store these pointers until the end of
   // DrawFrame().
-  base::flat_map<RenderPassId, const DrawQuad*> render_pass_bypass_quads_;
+  base::flat_map<AggregatedRenderPassId, const DrawQuad*>
+      render_pass_bypass_quads_;
 
   // A map from RenderPass id to the filters used when drawing the RenderPass.
-  base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
-  base::flat_map<RenderPassId, cc::FilterOperations*>
+  base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>
+      render_pass_filters_;
+  base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>
       render_pass_backdrop_filters_;
-  base::flat_map<RenderPassId, base::Optional<gfx::RRectF>>
+  base::flat_map<AggregatedRenderPassId, base::Optional<gfx::RRectF>>
       render_pass_backdrop_filter_bounds_;
-  base::flat_map<RenderPassId, gfx::Rect> backdrop_filter_output_rects_;
+  base::flat_map<AggregatedRenderPassId, gfx::Rect>
+      backdrop_filter_output_rects_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;

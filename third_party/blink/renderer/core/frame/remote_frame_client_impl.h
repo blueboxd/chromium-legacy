@@ -20,11 +20,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   // FrameClient overrides:
   bool InShadowTree() const override;
   void Detached(FrameDetachType) override;
-  Frame* Opener() const override;
-  Frame* Parent() const override;
-  Frame* Top() const override;
-  Frame* NextSibling() const override;
-  Frame* FirstChild() const override;
   base::UnguessableToken GetDevToolsFrameToken() const override;
 
   // RemoteFrameClient overrides:
@@ -44,6 +39,10 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void PageScaleFactorChanged(float page_scale_factor,
                               bool is_pinch_gesture_active) override;
   void DidChangeScreenInfo(const ScreenInfo& original_screen_info) override;
+  void DidChangeRootWindowSegments(
+      const std::vector<gfx::Rect>& root_widget_window_segments) override;
+  void DidChangeVisibleViewportSize(
+      const gfx::Size& visible_viewport_size) override;
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;

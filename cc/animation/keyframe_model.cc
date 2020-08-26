@@ -286,14 +286,16 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
   if (curve_->Duration() <= base::TimeDelta())
     return base::TimeDelta();
 
-  base::TimeDelta repeated_duration = curve_->Duration() * iterations_;
-  base::TimeDelta active_duration =
-      repeated_duration / std::abs(playback_rate_);
+  base::TimeDelta repeated_duration = std::isfinite(iterations_)
+                                          ? (curve_->Duration() * iterations_)
+                                          : base::TimeDelta::Max();
 
   // Calculate the scaled active time
   base::TimeDelta scaled_active_time;
   if (playback_rate_ < 0) {
     DCHECK(std::isfinite(iterations_));
+    base::TimeDelta active_duration =
+        repeated_duration / std::abs(playback_rate_);
     scaled_active_time =
         ((active_time - active_duration) * playback_rate_) + start_offset;
   } else {

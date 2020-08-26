@@ -523,6 +523,51 @@ const FeatureEntry::FeatureVariation
          base::size(kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing),
          nullptr}};
 
+const FeatureEntry::FeatureParam
+    kDelayCompetingLowPriorityRequestsAggressiveFirstPaint[] = {
+        {"until", "first_paint"},
+        {"priority_threshold", "medium"}};
+const FeatureEntry::FeatureParam
+    kDelayCompetingLowPriorityRequestsAggressiveFirstContentfulPaint[] = {
+        {"until", "first_contentful_paint"},
+        {"priority_threshold", "medium"}};
+const FeatureEntry::FeatureParam
+    kDelayCompetingLowPriorityRequestsRelaxedFirstPaint[] = {
+        {"until", "first_paint"},
+        {"priority_threshold", "high"}};
+const FeatureEntry::FeatureParam
+    kDelayCompetingLowPriorityRequestsRelaxedFirstContentfulPaint[] = {
+        {"until", "first_contentful_paint"},
+        {"priority_threshold", "high"}};
+const FeatureEntry::FeatureParam
+    kDelayCompetingLowPriorityRequestsRelaxedAlways[] = {
+        {"until", "always"},
+        {"priority_threshold", "high"}};
+
+const FeatureEntry::FeatureVariation
+    kDelayCompetingLowPriorityRequestsFeatureVariations[] = {
+        {"behind medium priority, until first paint",
+         kDelayCompetingLowPriorityRequestsAggressiveFirstPaint,
+         base::size(kDelayCompetingLowPriorityRequestsAggressiveFirstPaint),
+         nullptr},
+        {"behind medium priority, until first contentful paint",
+         kDelayCompetingLowPriorityRequestsAggressiveFirstContentfulPaint,
+         base::size(
+             kDelayCompetingLowPriorityRequestsAggressiveFirstContentfulPaint),
+         nullptr},
+        {"behind high priority, until first paint",
+         kDelayCompetingLowPriorityRequestsRelaxedFirstPaint,
+         base::size(kDelayCompetingLowPriorityRequestsRelaxedFirstPaint),
+         nullptr},
+        {"behind high priority, until first contentful paint",
+         kDelayCompetingLowPriorityRequestsRelaxedFirstContentfulPaint,
+         base::size(
+             kDelayCompetingLowPriorityRequestsRelaxedFirstContentfulPaint),
+         nullptr},
+        {"behind high priority, always",
+         kDelayCompetingLowPriorityRequestsRelaxedAlways,
+         base::size(kDelayCompetingLowPriorityRequestsRelaxedAlways), nullptr}};
+
 const FeatureEntry::FeatureParam kIntensiveWakeUpThrottlingImmediate[] = {
     {blink::features::kIntensiveWakeUpThrottling_GracePeriodSeconds_Name, "0"}};
 
@@ -4028,6 +4073,14 @@ const FeatureEntry kFeatureEntries[] = {
                                     kDelayAsyncScriptExecutionFeatureVariations,
                                     "DelayAsyncScriptExecution")},
 
+    {"delay-competing-low-priority-requests",
+     flag_descriptions::kDelayCompetingLowPriorityRequestsName,
+     flag_descriptions::kDelayCompetingLowPriorityRequestsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         blink::features::kDelayCompetingLowPriorityRequests,
+         kDelayCompetingLowPriorityRequestsFeatureVariations,
+         "DelayCompetingLowPriorityRequests")},
+
     {"prefetch-privacy-changes", flag_descriptions::kPrefetchPrivacyChangesName,
      flag_descriptions::kPrefetchPrivacyChangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrefetchPrivacyChanges)},
@@ -6353,6 +6406,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWellKnownChangePasswordName,
      flag_descriptions::kWellKnownChangePasswordDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kWellKnownChangePassword)},
+
+#if defined(OS_MAC)
+    {"videotoolbox-vp9-decoding",
+     flag_descriptions::kVideoToolboxVp9DecodingName,
+     flag_descriptions::kVideoToolboxVp9DecodingDescription, kOsMac,
+     FEATURE_VALUE_TYPE(media::kVideoToolboxVp9Decoding)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

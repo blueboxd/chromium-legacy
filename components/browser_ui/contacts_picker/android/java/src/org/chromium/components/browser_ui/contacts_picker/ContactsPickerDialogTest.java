@@ -4,7 +4,6 @@
 
 package org.chromium.components.browser_ui.contacts_picker;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,15 +16,13 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.LargeTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -39,6 +36,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.ui.ContactsPickerListener;
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -46,7 +44,6 @@ import org.chromium.ui.test.util.RenderTestRule;
 import org.chromium.ui.vr.VrModeObserver;
 import org.chromium.ui.vr.VrModeProvider;
 
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +61,6 @@ public class ContactsPickerDialogTest extends DummyUiActivityTestCase
     public static DisableAnimationsTestRule mDisableAnimationsTestRule =
             new DisableAnimationsTestRule();
 
-    @Mock
     private WindowAndroid mWindowAndroid;
 
     @Rule
@@ -112,10 +108,8 @@ public class ContactsPickerDialogTest extends DummyUiActivityTestCase
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        Mockito.doReturn(new WeakReference<Context>(getActivity()))
-                .when(mWindowAndroid)
-                .getContext();
+        mWindowAndroid = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return new ActivityWindowAndroid(getActivity()); });
         FeatureList.setTestFeatures(Collections.singletonMap(
                 ContactsPickerFeatureList.CONTACTS_PICKER_SELECT_ALL, true));
         mIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
@@ -124,6 +118,11 @@ public class ContactsPickerDialogTest extends DummyUiActivityTestCase
         ContactViewHolder.setIconForTesting(mIcon);
         // Disable the async task since it tries to access contact icons which would fail in tests.
         CompressContactIconsWorkerTask.sDisableForTesting = true;
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mWindowAndroid.destroy(); });
     }
 
     // ContactsPickerDialog.ContactsPickerListener:

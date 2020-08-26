@@ -47,7 +47,7 @@ class MediaNotificationService
       public media_message_center::MediaNotificationController,
       public MediaNotificationContainerObserver {
  public:
-  explicit MediaNotificationService(Profile* profile);
+  MediaNotificationService(Profile* profile, bool show_from_all_profiles);
   MediaNotificationService(const MediaNotificationService&) = delete;
   MediaNotificationService& operator=(const MediaNotificationService&) = delete;
   ~MediaNotificationService() override;
@@ -108,7 +108,7 @@ class MediaNotificationService
   // Called by a |MediaNotificationService::Session| when it becomes inactive.
   void OnSessionBecameInactive(const std::string& id);
 
-  // Used by a |MediaNotificationAudioDeviceSelectorView| to query the system
+  // Used by a |MediaNotificationDeviceSelectorView| to query the system
   // for connected audio output devices.
   std::unique_ptr<MediaNotificationDeviceProvider::
                       GetOutputDevicesCallbackList::Subscription>

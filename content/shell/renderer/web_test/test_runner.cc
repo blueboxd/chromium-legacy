@@ -1254,8 +1254,8 @@ void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
   blink::WebView* web_view = GetWebFrame()->View();
   web_view->DisableAutoResizeForTesting(new_size);
 
-  gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y,
-                        new_size.width(), new_size.height());
+  gfx::Rect window_rect(widget->GetWebWidget()->WindowRect().origin(),
+                        new_size);
   widget->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
@@ -2213,7 +2213,7 @@ void TestRunner::Install(WebFrameTestProxy* frame,
                               IsWebPlatformTestsMode(), is_main_test_window);
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());
-  gamepad_controller_.Install(frame->GetWebFrame());
+  gamepad_controller_.Install(frame);
   frame->GetWebViewTestProxy()
       ->GetWebView()
       ->SetScreenOrientationOverrideForTesting(

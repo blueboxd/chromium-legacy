@@ -443,13 +443,17 @@ class EventGenerator {
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
-  void PressKey(KeyboardCode key_code, int flags);
+  void PressKey(KeyboardCode key_code,
+                int flags,
+                int source_device_id = ED_UNKNOWN_DEVICE);
 
   // Generates a key release event. On platforms except Windows and X11, a key
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
-  void ReleaseKey(KeyboardCode key_code, int flags);
+  void ReleaseKey(KeyboardCode key_code,
+                  int flags,
+                  int source_device_id = ED_UNKNOWN_DEVICE);
 
   // Dispatch the event to the WindowEventDispatcher.
   void Dispatch(Event* event);
@@ -466,7 +470,10 @@ class EventGenerator {
   void Init(gfx::NativeWindow root_window, gfx::NativeWindow target_window);
 
   // Dispatch a key event to the WindowEventDispatcher.
-  void DispatchKeyEvent(bool is_press, KeyboardCode key_code, int flags);
+  void DispatchKeyEvent(bool is_press,
+                        KeyboardCode key_code,
+                        int flags,
+                        int source_device_id);
 
   void UpdateCurrentDispatcher(const gfx::Point& point);
   void PressButton(int flag);

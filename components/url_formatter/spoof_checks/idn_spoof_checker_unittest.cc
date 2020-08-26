@@ -1236,7 +1236,7 @@ const IDNTestCase kIdnCases[] = {
     {"xn--rmdcmef.mm", L"႐႑႕႖႗.mm", kSafe},
     {"xn--rmdcmef.xn--7idjb0f4ck", L"႐႑႕႖႗.မြန်မာ", kSafe},
 // Thai:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     {"xn--o3cedqz2c.com", L"ทนบพรห.com", kUnsafe},
     {"xn--o3cedqz2c.th", L"ทนบพรห.th", kSafe},
     {"xn--o3cedqz2c.xn--o3cw4h", L"ทนบพรห.ไทย", kSafe},

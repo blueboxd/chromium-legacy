@@ -8,6 +8,7 @@
 #include "ash/public/cpp/accessibility_event_rewriter_delegate.h"
 #include "ash/shell.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/types/event_type.h"
@@ -19,6 +20,16 @@ AccessibilityEventRewriter::AccessibilityEventRewriter(
     AccessibilityEventRewriterDelegate* delegate)
     : delegate_(delegate), event_rewriter_chromeos_(event_rewriter_chromeos) {
   Shell::Get()->accessibility_controller()->SetAccessibilityEventRewriter(this);
+
+  // By default, observe all input device types.
+  keyboard_input_device_types_.insert(ui::INPUT_DEVICE_INTERNAL);
+  keyboard_input_device_types_.insert(ui::INPUT_DEVICE_USB);
+  keyboard_input_device_types_.insert(ui::INPUT_DEVICE_BLUETOOTH);
+  keyboard_input_device_types_.insert(ui::INPUT_DEVICE_UNKNOWN);
+
+  UpdateKeyboardDeviceIds();
+
+  observer_.Add(ui::DeviceDataManager::GetInstance());
 }
 
 AccessibilityEventRewriter::~AccessibilityEventRewriter() {
@@ -52,23 +63,58 @@ void AccessibilityEventRewriter::OnUnhandledSpokenFeedbackEvent(
   }
 }
 
-ui::EventDispatchDetails AccessibilityEventRewriter::RewriteEvent(
-    const ui::Event& event,
-    const Continuation continuation) {
-  bool captured = false;
-  if (!delegate_)
-    return SendEvent(continuation, &event);
+bool AccessibilityEventRewriter::SetKeyCodesForSwitchAccessCommand(
+    std::set<int> new_key_codes,
+    SwitchAccessCommand command) {
+  bool has_changed = false;
+  std::set<int> to_clear;
 
-  if (Shell::Get()->accessibility_controller()->IsSwitchAccessRunning()) {
-    captured = RewriteEventForSwitchAccess(event, continuation);
+  // Clear old values that conflict with the new assignment.
+  // TODO(anastasi): convert to use iterators directly and remove has_changed as
+  // an extra step.
+  for (const auto& val : key_code_to_switch_access_command_) {
+    int old_key_code = val.first;
+    SwitchAccessCommand old_command = val.second;
+
+    if (new_key_codes.count(old_key_code) > 0) {
+      if (old_command != command) {
+        has_changed = true;
+        // Modifying the map while iterating through it causes reference
+        // failures.
+        to_clear.insert(old_key_code);
+      } else {
+        new_key_codes.erase(old_key_code);
+      }
+      continue;
+    }
+
+    // This value was previously mapped to the command, but is no longer.
+    if (old_command == command) {
+      has_changed = true;
+      to_clear.insert(old_key_code);
+      switch_access_key_codes_to_capture_.erase(old_key_code);
+    }
+  }
+  for (int key_code : to_clear) {
+    key_code_to_switch_access_command_.erase(key_code);
   }
 
-  if (!captured) {
-    captured = RewriteEventForChromeVox(event, continuation);
+  if (new_key_codes.size() == 0)
+    return has_changed;
+
+  // Add any new key codes to the map.
+  for (int key_code : new_key_codes) {
+    switch_access_key_codes_to_capture_.insert(key_code);
+    key_code_to_switch_access_command_[key_code] = command;
   }
 
-  return captured ? DiscardEvent(continuation)
-                  : SendEvent(continuation, &event);
+  return true;
+}
+
+void AccessibilityEventRewriter::SetKeyboardInputDeviceTypes(
+    const std::set<ui::InputDeviceType>& keyboard_input_device_types) {
+  keyboard_input_device_types_ = keyboard_input_device_types;
+  UpdateKeyboardDeviceIds();
 }
 
 bool AccessibilityEventRewriter::RewriteEventForChromeVox(
@@ -143,52 +189,43 @@ bool AccessibilityEventRewriter::RewriteEventForSwitchAccess(
   return capture;
 }
 
-bool AccessibilityEventRewriter::SetKeyCodesForSwitchAccessCommand(
-    std::set<int> new_key_codes,
-    SwitchAccessCommand command) {
-  bool has_changed = false;
-  std::set<int> to_clear;
-
-  // Clear old values that conflict with the new assignment.
-  // TODO(anastasi): convert to use iterators directly and remove has_changed as
-  // an extra step.
-  for (const auto& val : key_code_to_switch_access_command_) {
-    int old_key_code = val.first;
-    SwitchAccessCommand old_command = val.second;
-
-    if (new_key_codes.count(old_key_code) > 0) {
-      if (old_command != command) {
-        has_changed = true;
-        // Modifying the map while iterating through it causes reference
-        // failures.
-        to_clear.insert(old_key_code);
-      } else {
-        new_key_codes.erase(old_key_code);
-      }
-      continue;
-    }
-
-    // This value was previously mapped to the command, but is no longer.
-    if (old_command == command) {
-      has_changed = true;
-      to_clear.insert(old_key_code);
-      switch_access_key_codes_to_capture_.erase(old_key_code);
-    }
+void AccessibilityEventRewriter::UpdateKeyboardDeviceIds() {
+  keyboard_device_ids_.clear();
+  for (auto& keyboard :
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+    if (keyboard_input_device_types_.count(keyboard.type))
+      keyboard_device_ids_.insert(keyboard.id);
   }
-  for (int key_code : to_clear) {
-    key_code_to_switch_access_command_.erase(key_code);
+}
+
+ui::EventDispatchDetails AccessibilityEventRewriter::RewriteEvent(
+    const ui::Event& event,
+    const Continuation continuation) {
+  if (event.IsKeyEvent() && event.source_device_id() != ui::ED_UNKNOWN_DEVICE &&
+      keyboard_device_ids_.count(event.source_device_id()) == 0) {
+    return SendEvent(continuation, &event);
   }
 
-  if (new_key_codes.size() == 0)
-    return has_changed;
+  bool captured = false;
+  if (!delegate_)
+    return SendEvent(continuation, &event);
 
-  // Add any new key codes to the map.
-  for (int key_code : new_key_codes) {
-    switch_access_key_codes_to_capture_.insert(key_code);
-    key_code_to_switch_access_command_[key_code] = command;
+  if (Shell::Get()->accessibility_controller()->IsSwitchAccessRunning()) {
+    captured = RewriteEventForSwitchAccess(event, continuation);
   }
 
-  return true;
+  if (!captured) {
+    captured = RewriteEventForChromeVox(event, continuation);
+  }
+
+  return captured ? DiscardEvent(continuation)
+                  : SendEvent(continuation, &event);
+}
+
+void AccessibilityEventRewriter::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kKeyboard)
+    UpdateKeyboardDeviceIds();
 }
 
 }  // namespace ash

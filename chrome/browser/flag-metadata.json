@@ -774,6 +774,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "delay-competing-low-priority-requests",
+    "owners": [ "dom", "chrome-loading@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "desktop-version-default",
     "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 87
@@ -4515,6 +4520,11 @@
   {
     "name": "video-tutorials",
     "owners": [ "shaktisahu", "hesen" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "videotoolbox-vp9-decoding",
+    "owners": [ "dalecurtis", "videostack-eng" ],
     "expiry_milestone": 90
   },
   {

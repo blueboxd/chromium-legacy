@@ -1986,6 +1986,12 @@ const char kDelayAsyncScriptExecutionName[] = "Delay Async Script Execution";
 const char kDelayAsyncScriptExecutionDescription[] =
     "The execution of async scripts will be delayed.";
 
+const char kDelayCompetingLowPriorityRequestsName[] =
+    "Delay Competing Low Priority Requests";
+const char kDelayCompetingLowPriorityRequestsDescription[] =
+    "Low priority requests will be delayed if they would otherwise compete "
+    "with a high priority request.";
+
 const char kPrefetchPrivacyChangesName[] =
     "Prefetch request properties are updated to be privacy-preserving";
 const char kPrefetchPrivacyChangesDescription[] =
@@ -3520,6 +3526,10 @@ const char kMetalName[] = "Metal";
 const char kMetalDescription[] =
     "Use Metal instead of OpenGL for rasterization (if out-of-process "
     "rasterization is enabled) and display (if the Skia renderer is enabled)";
+
+const char kVideoToolboxVp9DecodingName[] = "VideoToolbox VP9 Decoding";
+const char kVideoToolboxVp9DecodingDescription[] =
+    "Controls usage of VideoToolbox for hardware decoding of VP9 video.";
 
 #endif
 

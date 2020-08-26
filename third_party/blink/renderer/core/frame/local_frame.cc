@@ -563,15 +563,13 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
     content_capture_manager_ = nullptr;
   }
 
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
-  // It seems to crash because Frame is detached before LocalFrameView.
   // Verify here that any LocalFrameView has been detached by now.
   if (view_ && view_->IsAttached()) {
-    CHECK(DeprecatedLocalOwner());
-    CHECK(DeprecatedLocalOwner()->OwnedEmbeddedContentView());
-    CHECK_EQ(view_, DeprecatedLocalOwner()->OwnedEmbeddedContentView());
+    DCHECK(DeprecatedLocalOwner());
+    DCHECK(DeprecatedLocalOwner()->OwnedEmbeddedContentView());
+    DCHECK_EQ(view_, DeprecatedLocalOwner()->OwnedEmbeddedContentView());
   }
-  CHECK(!view_ || !view_->IsAttached());
+  DCHECK(!view_ || !view_->IsAttached());
 
   // This is the earliest that scripting can be disabled:
   // - FrameLoader::Detach() can fire XHR abort events
@@ -588,15 +586,13 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   DCHECK(!IsDetached());
 
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
-  CHECK(!view_->IsAttached());
+  DCHECK(!view_->IsAttached());
   Client()->WillBeDetached();
   // Notify ScriptController that the frame is closing, since its cleanup ends
   // up calling back to LocalFrameClient via WindowProxy.
   GetScriptController().ClearForClose();
 
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
-  CHECK(!view_->IsAttached());
+  DCHECK(!view_->IsAttached());
   SetView(nullptr);
 
   GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
@@ -1289,6 +1285,9 @@ bool LocalFrame::ShouldThrottleRendering() const {
 LocalFrame::LocalFrame(LocalFrameClient* client,
                        Page& page,
                        FrameOwner* owner,
+                       Frame* parent,
+                       Frame* previous_sibling,
+                       FrameInsertType insert_type,
                        const base::UnguessableToken& frame_token,
                        WindowAgentFactory* inheriting_agent_factory,
                        InterfaceRegistry* interface_registry,
@@ -1296,6 +1295,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     : Frame(client,
             page,
             owner,
+            parent,
+            previous_sibling,
+            insert_type,
             frame_token,
             MakeGarbageCollected<LocalWindowProxyManager>(*this),
             inheriting_agent_factory),
@@ -1425,7 +1427,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
 
   // Navigating window.opener cross origin, without user activation. See
   // https://crbug.com/813643.
-  if (Client()->Opener() == target_frame && !HasTransientUserActivation(this) &&
+  if (Opener() == target_frame && !HasTransientUserActivation(this) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(destination_url).get())) {
     UseCounter::Count(GetDocument(),
@@ -1462,7 +1464,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
                 kPropagatesToAuxiliaryBrowsingContexts) &&
         (GetSecurityContext()->IsSandboxed(
              network::mojom::blink::WebSandboxFlags::kPopups) ||
-         target_frame.Client()->Opener() != this)) {
+         target_frame.Opener() != this)) {
       PrintNavigationErrorMessage(
           target_frame,
           "The frame attempting navigation is sandboxed and is trying "
@@ -1535,9 +1537,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   // and/or "parent" relation). Requiring some sort of relation prevents a
   // document from navigating arbitrary, unrelated top-level frames.
   if (!target_frame.Tree().Parent()) {
-    if (target_frame == Client()->Opener())
+    if (target_frame == Opener())
       return true;
-    if (CanAccessAncestor(origin, target_frame.Client()->Opener()))
+    if (CanAccessAncestor(origin, target_frame.Opener()))
       return true;
   }
 

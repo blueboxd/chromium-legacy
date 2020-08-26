@@ -9079,6 +9079,12 @@ histogram as enum -->
   <int value="9" label="Ignored Locally Trusted Leaf Cert"/>
 </enum>
 
+<enum name="ChangePasswordUrlFetchResult">
+  <int value="0" label="Fetch succeeded"/>
+  <int value="1" label="Fetch failed"/>
+  <int value="2" label="Response is malformed"/>
+</enum>
+
 <enum name="ChannelLayout">
   <int value="0" label="CHANNEL_LAYOUT_NONE"/>
   <int value="1" label="CHANNEL_LAYOUT_UNSUPPORTED"/>
@@ -9291,6 +9297,24 @@ histogram as enum -->
   <int value="0" label="NTP"/>
   <int value="1" label="Menu"/>
   <int value="2" label="Startup"/>
+</enum>
+
+<enum name="ChromeMLServiceDecisionTreePredictionResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="True"/>
+  <int value="2" label="False"/>
+</enum>
+
+<enum name="ChromeMLServiceLoadModelResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Model spec error"/>
+  <int value="2" label="Load model error"/>
+  <int value="3" label="Feature not supported"/>
+</enum>
+
+<enum name="ChromeMLServiceRequestStatus">
+  <int value="0" label="Requested Service Launched"/>
+  <int value="1" label="Requested Service Not Launched"/>
 </enum>
 
 <enum name="ChromeNotifierServiceActionType">
@@ -28938,6 +28962,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3454" label="RTCPeerConnectionCreateAnswer"/>
   <int value="3455"
       label="V8AuthenticatorAttestationResponse_GetTransports_Method"/>
+  <int value="3456" label="WebCodecsAudioDecoder"/>
+  <int value="3457" label="WebCodecsVideoDecoder"/>
+  <int value="3458" label="WebCodecsVideoEncoder"/>
+  <int value="3459" label="WebCodecsVideoTrackReader"/>
+  <int value="3460" label="WebCodecsImageDecoder"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33137,6 +33166,12 @@ Called by update_feature_policy_enum.py.-->
   <int value="25" label="kSetAccountsInCookieFailure"/>
   <int value="26" label="kInvalidConsentResult"/>
   <int value="27" label="kCanceled"/>
+</enum>
+
+<enum name="GetChangePasswordUrlMetric">
+  <int value="0" label="Gstatic file was not fetched yet"/>
+  <int value="1" label="Url override was available and used"/>
+  <int value="2" label="No url override was available"/>
 </enum>
 
 <enum name="GetEncryptionKeyAction">
@@ -41291,6 +41326,7 @@ from previous Chrome versions.
   <int value="-1064302126"
       label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
+  <int value="-1061203892" label="VideoToolboxVp9Decoding:disabled"/>
   <int value="-1060541241" label="ForcePreferredIntervalForVideo:enabled"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056860259"
@@ -41495,6 +41531,7 @@ from previous Chrome versions.
   <int value="-861343291" label="ChromeHome:disabled"/>
   <int value="-860578793" label="TabGridLayoutAndroid:disabled"/>
   <int value="-860534647" label="SiteDetails:enabled"/>
+  <int value="-858280894" label="DelayCompetingLowPriorityRequests:disabled"/>
   <int value="-856915246" label="enable-new-audio-rendering-mixing-strategy"/>
   <int value="-856016114" label="NTPOfflinePages:disabled"/>
   <int value="-855277252" label="CookiesWithoutSameSiteMustBeSecure:disabled"/>
@@ -41589,6 +41626,7 @@ from previous Chrome versions.
   <int value="-749048160" label="enable-panels"/>
   <int value="-748571227"
       label="AssistantEnableMediaSessionIntegration:enabled"/>
+  <int value="-747919789" label="VideoToolboxVp9Decoding:enabled"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
   <int value="-747072690" label="NtpRepeatableQueries:disabled"/>
   <int value="-746328467" label="ExpensiveBackgroundTimerThrottling:disabled"/>
@@ -44282,6 +44320,7 @@ from previous Chrome versions.
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
+  <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
   <int value="2115848376" label="LacrosSupport:disabled"/>
   <int value="2118287149" label="HelpAppSearchServiceIntegration:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
@@ -58151,7 +58190,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="(Deprecated) Add new user from icon menu"/>
   <int value="1" label="Add new user from title bar menu"/>
   <int value="2" label="Add new user from settings dialog"/>
-  <int value="3" label="(Deprecated) Add new user from the User Manager"/>
+  <int value="3" label="Add new user from the Profile picker"/>
   <int value="4" label="Auto-created after deleting last user"/>
   <int value="5" label="Add new user from sign-in interception"/>
   <int value="6" label="Add new user from the sync flow (to avoid data clash)"/>
@@ -69335,6 +69374,8 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Compositor Deserialization Error"/>
   <int value="6" label="Invalid Root Frame SKP"/>
   <int value="7" label="Invalid Request"/>
+  <int value="8" label="Old Version"/>
+  <int value="9" label="Unexpected Version"/>
 </enum>
 
 <enum name="TabbedPaintPreviewExitCause">

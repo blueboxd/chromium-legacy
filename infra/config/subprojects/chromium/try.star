@@ -108,12 +108,14 @@ try_.chromium_builder(
     name = "win-official",
     branch_selector = branches.STANDARD_RELEASES,
     os = os.WINDOWS_DEFAULT,
+    cores = 32,
 )
 
 try_.chromium_builder(
     name = "win32-official",
     branch_selector = branches.STANDARD_RELEASES,
     os = os.WINDOWS_DEFAULT,
+    cores = 32,
 )
 
 try_.chromium_android_builder(
@@ -584,7 +586,7 @@ try_.chromium_mac_ios_builder(
     branch_selector = branches.STANDARD_RELEASES,
     executable = "recipe:chromium_trybot",
     properties = {
-        "xcode_build_version": "12a8189h",
+        "xcode_build_version": "12a8189n",
     },
     tryjob = try_.job(),
 )

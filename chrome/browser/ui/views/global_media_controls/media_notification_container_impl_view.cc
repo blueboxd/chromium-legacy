@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
-#include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/audio/audio_device_description.h"
@@ -124,9 +124,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
           media::kGlobalMediaControlsSeamlessTransfer) &&
       !is_cast_notification) {
     auto audio_device_selector_view =
-        std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-            this, service_, audio_sink_id_, foreground_color_,
-            background_color_);
+        std::make_unique<MediaNotificationDeviceSelectorView>(
+            this, audio_sink_id_, foreground_color_, background_color_);
     audio_device_selector_view_ =
         AddChildView(std::move(audio_device_selector_view));
     view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
@@ -349,9 +348,18 @@ void MediaNotificationContainerImplView::OnAudioSinkChosen(
   }
 }
 
-void MediaNotificationContainerImplView::
-    OnAudioDeviceSelectorViewSizeChanged() {
+void MediaNotificationContainerImplView::OnDeviceSelectorViewSizeChanged() {
   OnSizeChanged();
+}
+
+std::unique_ptr<
+    MediaNotificationDeviceProvider::GetOutputDevicesCallbackList::Subscription>
+MediaNotificationContainerImplView::
+    RegisterAudioOutputDeviceDescriptionsCallback(
+        MediaNotificationDeviceProvider::GetOutputDevicesCallbackList::
+            CallbackType callback) {
+  return service_->RegisterAudioOutputDeviceDescriptionsCallback(
+      std::move(callback));
 }
 
 ui::Layer* MediaNotificationContainerImplView::GetSlideOutLayer() {
@@ -483,7 +491,7 @@ void MediaNotificationContainerImplView::OnSizeChanged() {
     DCHECK(audio_device_selector_view_size.width() == kWidth);
     new_size.set_height(new_size.height() +
                         audio_device_selector_view_size.height());
-    view_->UpdateAudioDeviceSelectorAvailability(
+    view_->UpdateDeviceSelectorAvailability(
         audio_device_selector_view_->GetVisible());
   }
 

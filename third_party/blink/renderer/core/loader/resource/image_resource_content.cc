@@ -481,23 +481,27 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   // Pass image url to reporting API.
   const String& image_url = Url().GetString();
 
+  const char* message_format =
+      "Image bpp (byte per pixel) exceeds max value set in %s.";
+
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
         mojom::blink::DocumentPolicyFeature::kLossyImagesMaxBpp,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
-        g_empty_string, image_url);
+        String::Format(message_format, "lossy-images-max-bpp"), image_url);
   }
   if (compression_format == ImageDecoder::kLosslessFormat) {
     // Enforce the lossless image policy.
     bool enabled_by_10k_policy = context.IsFeatureEnabled(
         mojom::blink::DocumentPolicyFeature::kLosslessImagesMaxBpp,
         PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure,
-        g_empty_string, image_url);
+        String::Format(message_format, "lossless-images-max-bpp"), image_url);
     bool enabled_by_1k_policy = context.IsFeatureEnabled(
         mojom::blink::DocumentPolicyFeature::kLosslessImagesStrictMaxBpp,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
-        g_empty_string, image_url);
+        String::Format(message_format, "lossless-images-strict-max-bpp"),
+        image_url);
     return enabled_by_10k_policy && enabled_by_1k_policy;
   }
 

@@ -43,3 +43,13 @@
 -ToolbarActionViewInteractiveUITest*
 -WidgetCaptureTest.SystemModalWindowReleasesCapture
 -WidgetInputMethodInteractiveTest*
+
+# crbug.com/1121486
+# Following tests were flaky. We disable them first until we have time to investigate.
+-BrowserCommandControllerInteractiveTest.ShortcutsShouldTakeEffectInBrowserFullscreen
+-ExtensionApiTest.DisplayModeWindowIsInFullscreen
+-ExtensionCrashRecoveryTest.TwoExtensionsReloadIndependently
+-KeyboardLockInteractiveBrowserTest.SubsequentLockCallSupersedesPreviousCall
+-NewTabPageDoodleShareDialogFocusTest.All
+-PlatformNotificationServiceBrowserTest.TestShouldDisplayMultiFullscreen
+-PopupBlockerBrowserTest.BlockWebContentsCreationIncognito

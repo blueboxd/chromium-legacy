@@ -16,7 +16,7 @@
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "device/bluetooth/public/mojom/device.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace bluetooth {
 
@@ -35,8 +35,8 @@ class Adapter : public mojom::Adapter,
                        ConnectToDeviceCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void GetInfo(GetInfoCallback callback) override;
-  void SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
-                 SetClientCallback callback) override;
+  void AddObserver(mojo::PendingRemote<mojom::AdapterObserver> observer,
+                   AddObserverCallback callback) override;
   void SetDiscoverable(bool discoverable,
                        SetDiscoverableCallback callback) override;
   void SetName(const std::string& name, SetNameCallback callback) override;
@@ -98,8 +98,8 @@ class Adapter : public mojom::Adapter,
   // The current Bluetooth adapter.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  // The adapter client that listens to this service.
-  mojo::Remote<mojom::AdapterClient> client_;
+  // The adapter observers that listen to this service.
+  mojo::RemoteSet<mojom::AdapterObserver> observers_;
 
   base::WeakPtrFactory<Adapter> weak_ptr_factory_{this};
 

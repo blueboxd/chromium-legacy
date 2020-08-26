@@ -90,6 +90,7 @@ class SearchHandler : public mojom::SearchHandler,
 
   std::vector<mojom::SearchResultPtr>::iterator AddSubpageResultIfPossible(
       const std::vector<mojom::SearchResultPtr>::iterator& position,
+      const mojom::SearchResultPtr& child_result,
       mojom::Subpage subpage,
       double relevance_score,
       std::vector<mojom::SearchResultPtr>* results) const;

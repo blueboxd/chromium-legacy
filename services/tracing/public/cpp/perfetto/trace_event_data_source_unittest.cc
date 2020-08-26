@@ -1898,7 +1898,7 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedMultipleEvents) {
   EXPECT_FALSE(e_packet->track_event().has_log_message());
 }
 
-TEST_F(TraceEventDataSourceTest, HistogramSample) {
+TEST_F(TraceEventDataSourceTest, HistogramSampleTraceConfigEmpty) {
   base::trace_event::TraceConfig trace_config(
       "-*,disabled-by-default-histogram_samples",
       base::trace_event::RECORD_UNTIL_FULL);
@@ -1919,6 +1919,48 @@ TEST_F(TraceEventDataSourceTest, HistogramSample) {
   EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name_hash(),
             base::HashMetricName("Foo.Bar"));
   EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().sample(), 1u);
+}
+
+TEST_F(TraceEventDataSourceTest, HistogramSampleTraceConfigNotEmpty) {
+  base::trace_event::TraceConfig trace_config(
+      "-*,disabled-by-default-histogram_samples",
+      base::trace_event::RECORD_UNTIL_FULL);
+  trace_config.EnableHistogram("Foo1.Bar1");
+  trace_config.EnableHistogram("Foo3.Bar3");
+
+  CreateTraceEventDataSource(/*privacy_filtering_enabled=*/false,
+                             /*start_trace=*/true, trace_config.ToString());
+
+  UMA_HISTOGRAM_BOOLEAN("Foo1.Bar1", true);
+  UMA_HISTOGRAM_BOOLEAN("Foo2.Bar2", true);
+  UMA_HISTOGRAM_BOOLEAN("Foo3.Bar3", true);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+
+  ExpectEventCategories(e_packet,
+                        {{1u, TRACE_DISABLED_BY_DEFAULT("histogram_samples")}});
+  ExpectEventNames(e_packet, {{1u, "HistogramSample"}});
+  ASSERT_TRUE(e_packet->track_event().has_chrome_histogram_sample());
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name_hash(),
+            base::HashMetricName("Foo1.Bar1"));
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name(),
+            "Foo1.Bar1");
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().sample(), 1u);
+
+  e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+
+  ExpectEventCategories(e_packet, {});
+  ExpectEventNames(e_packet, {});
+  ASSERT_TRUE(e_packet->track_event().has_chrome_histogram_sample());
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name_hash(),
+            base::HashMetricName("Foo3.Bar3"));
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name(),
+            "Foo3.Bar3");
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().sample(), 1u);
+
+  EXPECT_EQ(packet_index, producer_client()->GetFinalizedPacketCount());
 }
 
 TEST_F(TraceEventDataSourceTest, UserActionEvent) {

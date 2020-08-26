@@ -183,7 +183,8 @@ class AdsPageLoadMetricsObserver
   void RecordAggregateHistogramsForHeavyAds();
 
   // Should be called on all frames prior to recording any aggregate histograms.
-  void RecordPerFrameHistograms(const FrameData& ad_frame_data);
+  void RecordPerFrameMetrics(const FrameData& ad_frame_data,
+                             ukm::SourceId source_id);
   void RecordPerFrameHistogramsForAdTagging(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForCpuUsage(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForHeavyAds(const FrameData& ad_frame_data);
@@ -289,6 +290,11 @@ class AdsPageLoadMetricsObserver
 
   // Whether there was a heavy ad on the page at some point.
   bool heavy_ad_on_page_ = false;
+
+  // Whether or not the metrics for this observer have already been recorded.
+  // This can occur if the Chrome app is backgrounded.  If so, we continue to
+  // keep track of things for interventions, but don't report anything further.
+  bool histograms_recorded_ = false;
 
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;

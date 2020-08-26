@@ -27,6 +27,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -73,6 +74,10 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
       std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
   ring_highlight_path->set_use_contents_bounds(true);
   focus_ring()->SetPathGenerator(std::move(ring_highlight_path));
+
+  // Always have a value on this property so we can modify it directly without
+  // a heap allocation.
+  SetProperty(views::kInternalPaddingKey, gfx::Insets());
 }
 
 TabCloseButton::~TabCloseButton() {}
@@ -88,6 +93,10 @@ void TabCloseButton::SetIconColors(SkColor foreground_color,
   icon_color_ = foreground_color;
   set_ink_drop_base_color(
       color_utils::GetColorWithMaxContrast(background_color));
+}
+
+void TabCloseButton::SetButtonPadding(const gfx::Insets& padding) {
+  *GetProperty(views::kInternalPaddingKey) = padding;
 }
 
 const char* TabCloseButton::GetClassName() const {
@@ -130,12 +139,13 @@ void TabCloseButton::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+gfx::Insets TabCloseButton::GetInsets() const {
+  return ImageButton::GetInsets() + *GetProperty(views::kInternalPaddingKey);
+}
+
 gfx::Size TabCloseButton::CalculatePreferredSize() const {
-  int width = GetGlyphSize();
-  gfx::Size size(width, width);
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  return size;
+  const int glyph_size = GetGlyphSize();
+  return gfx::Size(glyph_size, glyph_size) + GetInsets().size();
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {

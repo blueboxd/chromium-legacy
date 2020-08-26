@@ -125,8 +125,9 @@ class TabLoadingFrameNavigationSchedulerTest
 
 }  // namespace
 
+// TODO(crbug.com/1121748): Test is flaky.
 IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
-                       ThrottlingDisabled) {
+                       DISABLED_ThrottlingDisabled) {
   GURL url(embedded_test_server()->GetURL("a.com", "/a.html"));
   auto* contents = shell()->web_contents();
 
@@ -216,8 +217,9 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   WaitForLoad(contents2);
 }
 
+// TODO(crbug.com/1121748): Test is flaky.
 IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
-                       ChildFrameThrottled) {
+                       DISABLED_ChildFrameThrottled) {
   GURL url(embedded_test_server()->GetURL("a.com", "/a_embeds_b.html"));
   auto* contents = shell()->web_contents();
 
@@ -323,8 +325,9 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   WaitForLoad(contents);
 }
 
+// TODO(crbug.com/1121748): Test is flaky.
 IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
-                       NavigationInterruptsThrottling) {
+                       DISABLED_NavigationInterruptsThrottling) {
   GURL url(embedded_test_server()->GetURL("a.com", "/a_embeds_b.html"));
   auto* contents = shell()->web_contents();
 

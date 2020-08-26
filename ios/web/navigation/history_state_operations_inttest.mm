@@ -66,9 +66,6 @@ class HistoryStateOperationsTest : public web::WebIntTest {
   void SetUp() override {
     web::WebIntTest::SetUp();
 
-    // History state tests use file-based test pages.
-    web::test::SetUpFileBasedHttpServer();
-
     // Load the history state test page.
     state_operations_url_ =
         web::test::HttpServer::MakeUrl(kHistoryStateOperationsTestUrl);

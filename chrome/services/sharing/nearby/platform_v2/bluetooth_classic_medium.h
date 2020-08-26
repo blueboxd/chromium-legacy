@@ -24,7 +24,7 @@ namespace chrome {
 // implementation consumes the synchronous signatures of
 // bluetooth::mojom::Adapter methods.
 class BluetoothClassicMedium : public api::BluetoothClassicMedium,
-                               public bluetooth::mojom::AdapterClient {
+                               public bluetooth::mojom::AdapterObserver {
  public:
   explicit BluetoothClassicMedium(bluetooth::mojom::Adapter* adapter);
   ~BluetoothClassicMedium() override;
@@ -43,7 +43,7 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium,
       const std::string& service_uuid) override;
 
  private:
-  // bluetooth::mojom::AdapterClient:
+  // bluetooth::mojom::AdapterObserver:
   void PresentChanged(bool present) override;
   void PoweredChanged(bool powered) override;
   void DiscoverableChanged(bool discoverable) override;
@@ -56,9 +56,9 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium,
   // will always outlive this object.
   bluetooth::mojom::Adapter* adapter_ = nullptr;
 
-  // |adapter_client_| is only set and bound during active discovery so that
+  // |adapter_observer_| is only set and bound during active discovery so that
   // events we don't care about outside of discovery don't pile up.
-  mojo::Receiver<bluetooth::mojom::AdapterClient> adapter_client_{this};
+  mojo::Receiver<bluetooth::mojom::AdapterObserver> adapter_observer_{this};
 
   // These properties are only set while discovery is active.
   base::Optional<DiscoveryCallback> discovery_callback_;

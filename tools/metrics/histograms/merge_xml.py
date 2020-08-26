@@ -59,24 +59,32 @@ def GetEnumsNodes(doc, trees):
 
 
 def CombineHistogramsSorted(doc, trees):
-  """Sorts <histogram> nodes by name and returns a single <histograms> node.
+  """Sorts histograms related nodes by name and returns the combined nodes.
+
+  This function sorts nodes including <histogram>, <variant> and
+  <histogram_suffix>. Then it returns one <histograms> that contains the
+  sorted <histogram> and <variant> nodes and the other <histogram_suffixes_list>
+  node containing all <histogram_suffixes> nodes.
 
   Args:
     doc: The document to create the node in.
     trees: A list of DOM trees.
 
   Returns:
-    A list containing a single <histograms> node.
+    A list containing the combined <histograms> node and the combined
+    <histogram_suffix_list> node.
   """
+  # Create the combined <histograms> tag.
   combined_histograms = doc.createElement('histograms')
 
+  def SortByLowerCaseName(node):
+    return node.getAttribute('name').lower()
+
   variants_nodes = GetElementsByTagName(trees, 'variants', depth=3)
-  sorted_variants = sorted(variants_nodes,
-                           key=lambda node: node.getAttribute('name').lower())
+  sorted_variants = sorted(variants_nodes, key=SortByLowerCaseName)
 
   histogram_nodes = GetElementsByTagName(trees, 'histogram', depth=3)
-  sorted_histograms = sorted(histogram_nodes,
-                             key=lambda node: node.getAttribute('name').lower())
+  sorted_histograms = sorted(histogram_nodes, key=SortByLowerCaseName)
 
   for variants in sorted_variants:
     # Use unsafe version of `appendChild` function here because the safe one
@@ -89,10 +97,23 @@ def CombineHistogramsSorted(doc, trees):
     xml.dom.minidom._append_child(combined_histograms, variants)
 
   for histogram in sorted_histograms:
-    # See above comment.
     xml.dom.minidom._append_child(combined_histograms, histogram)
 
-  return [combined_histograms]
+  # Create the combined <histogram_suffixes_list> tag.
+  combined_histogram_suffixes_list = doc.createElement(
+      'histogram_suffixes_list')
+
+  histogram_suffixes_nodes = GetElementsByTagName(trees,
+                                                  'histogram_suffixes',
+                                                  depth=3)
+  sorted_histogram_suffixes = sorted(histogram_suffixes_nodes,
+                                     key=SortByLowerCaseName)
+
+  for histogram_suffixes in sorted_histogram_suffixes:
+    xml.dom.minidom._append_child(combined_histogram_suffixes_list,
+                                  histogram_suffixes)
+
+  return [combined_histograms, combined_histogram_suffixes_list]
 
 
 def MakeNodeWithChildren(doc, tag, children):
@@ -129,9 +150,9 @@ def MergeTrees(trees):
           # This can result in the merged document having multiple <enums> and
           # similar sections, but scripts ignore these anyway.
           GetEnumsNodes(doc, trees) +
-          # Sort the histograms by name and return a single <histograms> node.
-          CombineHistogramsSorted(doc, trees) +
-          GetElementsByTagName(trees, 'histogram_suffixes_list')))
+          # Sort the <histogram> and <histogram_suffixes> nodes by name and
+          # return the combined nodes.
+          CombineHistogramsSorted(doc, trees)))
   # After using the unsafe version of appendChild, we see a regression when
   # pretty-printing the merged |doc|. This might because the unsafe appendChild
   # doesn't build indexes for later lookup. And thus, we need to convert the

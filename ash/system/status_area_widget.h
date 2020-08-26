@@ -33,6 +33,7 @@ class StopRecordingButtonTray;
 class UnifiedSystemTray;
 class TrayBackgroundView;
 class VirtualKeyboardTray;
+class MediaTray;
 
 // Widget showing the system tray, notification tray, and other tray views in
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
@@ -212,6 +213,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   std::unique_ptr<StatusAreaOverflowButtonTray> overflow_button_tray_;
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
   std::unique_ptr<DictationButtonTray> dictation_button_tray_;
+  std::unique_ptr<MediaTray> media_tray_;
   std::unique_ptr<UnifiedSystemTray> unified_system_tray_;
   std::unique_ptr<LogoutButtonTray> logout_button_tray_;
   std::unique_ptr<PaletteTray> palette_tray_;

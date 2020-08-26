@@ -1,0 +1,47 @@
+<template>
+  <style>
+    ::-webkit-scrollbar-thumb {
+      background: var(--google-grey-refresh-300);
+    }
+
+    /* TODO(crbug.com/1110109): Add WCAG compliant dark mode support. */
+    @media (prefers-color-scheme: dark) {
+      ::-webkit-scrollbar-thumb {
+        background: var(--google-grey-refresh-500);
+      }
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--google-grey-refresh-500);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--google-grey-refresh-300);
+      }
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--tab-search-background-color);
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .mwb-list-item {
+      align-items: center;
+      background-color: var(--mwb-background-color);
+      display: flex;
+      padding: calc(var(--mwb-list-item-vertical-margin)/2) var(--mwb-list-item-horizontal-margin);
+    }
+
+    .mwb-list-item:hover {
+      background-color: var(--mwb-list-item-hover-background-color);
+    }
+
+    .mwb-list-item.selected {
+      background-color: var(--mwb-list-item-selected-background-color);
+    }
+  </style>
+</template>

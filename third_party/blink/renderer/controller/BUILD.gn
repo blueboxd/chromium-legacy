@@ -45,6 +45,10 @@ component("controller") {
     "memory_usage_monitor.h",
     "performance_manager/renderer_resource_coordinator_impl.cc",
     "performance_manager/renderer_resource_coordinator_impl.h",
+    "performance_manager/v8_per_frame_memory_reporter_impl.cc",
+    "performance_manager/v8_per_frame_memory_reporter_impl.h",
+    "performance_manager/v8_worker_memory_reporter.cc",
+    "performance_manager/v8_worker_memory_reporter.h",
   ]
 
   if (is_linux || is_chromeos) {
@@ -62,13 +66,6 @@ component("controller") {
       "memory_usage_monitor_posix.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
-    ]
-  } else {
-    sources += [
-      "performance_manager/v8_per_frame_memory_reporter_impl.cc",
-      "performance_manager/v8_per_frame_memory_reporter_impl.h",
-      "performance_manager/v8_worker_memory_reporter.cc",
-      "performance_manager/v8_worker_memory_reporter.h",
     ]
   }
   if (is_win) {
@@ -172,7 +169,11 @@ source_set("blink_unittests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [ "tests/run_all_tests.cc" ]
+  sources = [
+    "performance_manager/v8_per_frame_memory_reporter_impl_test.cc",
+    "performance_manager/v8_worker_memory_reporter_test.cc",
+    "tests/run_all_tests.cc",
+  ]
   sources += bindings_unittest_files
   if (is_linux || is_chromeos) {
     sources += [ "memory_usage_monitor_posix_test.cc" ]
@@ -182,11 +183,6 @@ source_set("blink_unittests_sources") {
       "memory_usage_monitor_posix_test.cc",
       "oom_intervention_impl_test.cc",
       "user_level_memory_pressure_signal_generator_test.cc",
-    ]
-  } else {
-    sources += [
-      "performance_manager/v8_per_frame_memory_reporter_impl_test.cc",
-      "performance_manager/v8_worker_memory_reporter_test.cc",
     ]
   }
 

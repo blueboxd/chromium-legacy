@@ -43,18 +43,18 @@ class AudioDeviceEntryView : public views::Button {
                        const std::string& subtext = "");
 
   const std::string& GetDeviceId() { return raw_device_id_; }
+  const std::string& GetDeviceName() { return device_name_; }
 
   void SetHighlighted(bool highlighted);
 
   void OnColorsChanged(const SkColor& foreground_color,
                        const SkColor& background_color);
 
-  std::string get_label_for_testing();
   bool is_highlighted_for_testing() { return is_highlighted_; }
 
  protected:
   SkColor foreground_color_, background_color_;
-  const std::string raw_device_id_;
+  const std::string raw_device_id_, device_name_;
   bool is_highlighted_ = false;
   views::View* icon_container_;
   views::ImageView* device_icon_;
@@ -72,7 +72,8 @@ AudioDeviceEntryView::AudioDeviceEntryView(const SkColor& foreground_color,
                                            const std::string& subtext)
     : foreground_color_(foreground_color),
       background_color_(background_color),
-      raw_device_id_(raw_device_id) {
+      raw_device_id_(raw_device_id),
+      device_name_(name) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
 
@@ -102,7 +103,7 @@ AudioDeviceEntryView::AudioDeviceEntryView(const SkColor& foreground_color,
       views::Label::GetDefaultFontList().DeriveWithSizeDelta(1)};
   device_name_label_ =
       labels_container_->AddChildView(std::make_unique<views::Label>(
-          base::UTF8ToUTF16(name), device_name_label_font));
+          base::UTF8ToUTF16(device_name_), device_name_label_font));
   device_name_label_->SetEnabledColor(foreground_color);
   device_name_label_->SetBackgroundColor(background_color);
 
@@ -159,10 +160,6 @@ void AudioDeviceEntryView::OnColorsChanged(const SkColor& foreground_color,
 
   // Reapply highlight formatting as some effects rely on these colors.
   SetHighlighted(is_highlighted_);
-}
-
-std::string AudioDeviceEntryView::get_label_for_testing() {
-  return base::UTF16ToUTF8(device_name_label_->GetText());
 }
 
 MediaNotificationAudioDeviceSelectorView::
@@ -259,10 +256,6 @@ MediaNotificationAudioDeviceSelectorView::
 
 void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
     const media::AudioDeviceDescriptions& device_descriptions) {
-  bool is_visible = ShouldBeVisible(device_descriptions);
-  SetVisible(is_visible);
-  delegate_->OnAudioDeviceSelectorViewSizeChanged();
-
   audio_device_entries_container_->RemoveAllChildViews(true);
   current_device_entry_view_ = nullptr;
 
@@ -283,6 +276,9 @@ void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
       current_device_still_exists
           ? current_device_id_
           : media::AudioDeviceDescription::kDefaultDeviceId);
+
+  SetVisible(ShouldBeVisible(device_descriptions));
+  delegate_->OnAudioDeviceSelectorViewSizeChanged();
 }
 
 void MediaNotificationAudioDeviceSelectorView::OnColorsChanged(
@@ -327,8 +323,7 @@ void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
 std::string
 MediaNotificationAudioDeviceSelectorView::get_entry_label_for_testing(
     views::View* entry_view) {
-  return static_cast<AudioDeviceEntryView*>(entry_view)
-      ->get_label_for_testing();
+  return static_cast<AudioDeviceEntryView*>(entry_view)->GetDeviceName();
 }
 
 // static
@@ -356,5 +351,20 @@ void MediaNotificationAudioDeviceSelectorView::HideDevices() {
 
 bool MediaNotificationAudioDeviceSelectorView::ShouldBeVisible(
     const media::AudioDeviceDescriptions& device_descriptions) {
+  // The UI should be visible if there are more than one unique devices. That is
+  // when:
+  // * There are at least three devices
+  // * Or, there are two devices and one of them has the default ID but not the
+  // default name.
+  if (audio_device_entries_container_->children().size() == 2) {
+    return util::ranges::any_of(
+        audio_device_entries_container_->children(), [](views::View* view) {
+          auto* entry = static_cast<AudioDeviceEntryView*>(view);
+          return entry->GetDeviceId() ==
+                     media::AudioDeviceDescription::kDefaultDeviceId &&
+                 entry->GetDeviceName() !=
+                     media::AudioDeviceDescription::GetDefaultDeviceName();
+        });
+  }
   return device_descriptions.size() > 2;
 }

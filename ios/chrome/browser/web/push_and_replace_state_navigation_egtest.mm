@@ -58,7 +58,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl("http://ios/pa%20th");
   const std::string pushStatePathSpaceOmniboxText =
       net::GetContentAndFragmentForUrl(pushStatePathSpaceURL);
-  web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Push 3 URLs. Verify that the URL changed and the status was updated.
@@ -98,7 +97,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 
 // Tests that calling replaceState() changes the current history entry.
 - (void)testHtml5HistoryReplaceStateThenGoBackAndForward {
-  web::test::SetUpFileBasedHttpServer();
   const GURL initialURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);
   const std::string initialOmniboxText =
       net::GetContentAndFragmentForUrl(initialURL);
@@ -187,7 +185,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const std::string replaceStateThenPushStateOmniboxText =
       net::GetContentAndFragmentForUrl(replaceStateThenPushStateURL);
 
-  web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Replace state and then push state. Verify that at the end, the URL changed
@@ -221,8 +218,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const std::string pushStateThenReplaceStateOmniboxText =
       net::GetContentAndFragmentForUrl(pushStateThenReplaceStateURL);
 
-  web::test::SetUpFileBasedHttpServer();
-
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
   [ChromeEarlGrey loadURL:historyTestURL];
   const std::string historyTestOmniboxText =
@@ -248,7 +243,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 // Tests that page loads occur when navigating to or past a non-pushed URL.
 - (void)testHtml5HistoryNavigatingPastNonPushedURL {
   GURL nonPushedURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);
-  web::test::SetUpFileBasedHttpServer();
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
   [ChromeEarlGrey loadURL:historyTestURL];
   const std::string historyTestOmniboxText =
@@ -324,7 +318,6 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const char pushStateUnicode2Label[] = "Action: pushStateUnicode2∢";
   NSString* pushStateUnicode2Status = @"pushStateUnicode2∢";
 
-  web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Do 2 push states with unicode characters.

@@ -12,9 +12,16 @@ namespace viz {
 struct BeginFrameArgs;
 }
 
+namespace gfx {
+class Vector2dF;
+}
+
 namespace cc {
 
 struct CompositorCommitData;
+class LayerTreeHostImpl;
+class LayerTreeSettings;
+class ScrollTree;
 
 // This is the interface that LayerTreeHostImpl and the "graphics" side of the
 // compositor uses to talk to the compositor ThreadedInputHandler. This
@@ -69,6 +76,35 @@ class InputDelegateForCompositor {
   // like scheduling decisions which might schedule a wheel and a touch
   // scrolling differently due to user perception.
   virtual bool IsActivelyPrecisionScrolling() const = 0;
+};
+
+// This is the interface that's exposed by the LayerTreeHostImpl to the input
+// handler.
+class CompositorDelegateForInput {
+ public:
+  virtual ScrollTree& GetScrollTree() const = 0;
+  virtual bool HasAnimatedScrollbars() const = 0;
+  virtual void SetNeedsCommit() = 0;
+  virtual void SetNeedsFullViewportRedraw() = 0;
+  virtual void DidUpdateScrollAnimationCurve() = 0;
+  virtual void AccumulateScrollDeltaForTracing(const gfx::Vector2dF& delta) = 0;
+  virtual void DidStartPinchZoom() = 0;
+  virtual void DidUpdatePinchZoom() = 0;
+  virtual void DidEndPinchZoom() = 0;
+  virtual void DidStartScroll() = 0;
+  virtual void DidMouseLeave() = 0;
+  virtual bool IsInHighLatencyMode() const = 0;
+  virtual void WillScrollContent(ElementId element_id) = 0;
+  virtual void DidScrollContent(ElementId element_id, bool animated) = 0;
+  virtual float DeviceScaleFactor() const = 0;
+  virtual float PageScaleFactor() const = 0;
+  virtual const LayerTreeSettings& GetSettings() const = 0;
+
+  // TODO(bokan): Temporary escape hatch for code that hasn't yet been
+  // converted to use the input<->compositor interface. This will eventually be
+  // removed.
+  virtual LayerTreeHostImpl& GetImplDeprecated() = 0;
+  virtual const LayerTreeHostImpl& GetImplDeprecated() const = 0;
 };
 
 }  // namespace cc

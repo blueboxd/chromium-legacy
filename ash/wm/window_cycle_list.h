@@ -49,7 +49,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   void StepToWindow(aura::Window* window);
 
   // Checks whether |event| occurs within the cycle view.
-  bool IsEventInCycleView(ui::MouseEvent* event);
+  bool IsEventInCycleView(ui::LocatedEvent* event);
 
   void set_user_did_accept(bool user_did_accept) {
     user_did_accept_ = user_did_accept;

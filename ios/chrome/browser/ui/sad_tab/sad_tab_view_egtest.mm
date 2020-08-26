@@ -70,7 +70,6 @@ id<GREYMatcher> incognitoHelpContainsText() {
     EARL_GREY_TEST_DISABLED(@"Fails on iOS 13.");
   }
   // Prepare a simple but known URL to avoid testing from the NTP.
-  web::test::SetUpFileBasedHttpServer();
   const GURL simple_URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
 

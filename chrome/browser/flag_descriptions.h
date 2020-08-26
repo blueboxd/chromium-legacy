@@ -804,9 +804,6 @@ extern const char kMediaHistoryDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
-extern const char kMixBrowserTypeTabsName[];
-extern const char kMixBrowserTypeTabsDescription[];
-
 extern const char kMixedFormsDisableAutofillName[];
 extern const char kMixedFormsDisableAutofillDescription[];
 

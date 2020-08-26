@@ -20,7 +20,7 @@ BluetoothClassicMedium::~BluetoothClassicMedium() = default;
 
 bool BluetoothClassicMedium::StartDiscovery(
     DiscoveryCallback discovery_callback) {
-  if (adapter_client_.is_bound() && discovery_callback_ &&
+  if (adapter_observer_.is_bound() && discovery_callback_ &&
       discovery_session_.is_bound()) {
     return true;
   }
@@ -29,9 +29,9 @@ bool BluetoothClassicMedium::StartDiscovery(
   discovered_bluetooth_devices_map_.clear();
 
   bool success =
-      adapter_->SetClient(adapter_client_.BindNewPipeAndPassRemote());
+      adapter_->AddObserver(adapter_observer_.BindNewPipeAndPassRemote());
   if (!success) {
-    adapter_client_.reset();
+    adapter_observer_.reset();
     return false;
   }
 
@@ -39,7 +39,7 @@ bool BluetoothClassicMedium::StartDiscovery(
   success = adapter_->StartDiscoverySession(&discovery_session);
 
   if (!success || !discovery_session.is_valid()) {
-    adapter_client_.reset();
+    adapter_observer_.reset();
     return false;
   }
 
@@ -63,7 +63,7 @@ bool BluetoothClassicMedium::StopDiscovery() {
     stop_discovery_success = stop_discovery_success && message_success;
   }
 
-  adapter_client_.reset();
+  adapter_observer_.reset();
   discovery_callback_.reset();
   discovery_session_.reset();
 
@@ -142,7 +142,7 @@ void BluetoothClassicMedium::DiscoveringChanged(bool discovering) {
 
 void BluetoothClassicMedium::DeviceAdded(
     bluetooth::mojom::DeviceInfoPtr device) {
-  if (!adapter_client_.is_bound() || !discovery_callback_ ||
+  if (!adapter_observer_.is_bound() || !discovery_callback_ ||
       !discovery_session_.is_bound()) {
     return;
   }
@@ -166,7 +166,7 @@ void BluetoothClassicMedium::DeviceChanged(
 
 void BluetoothClassicMedium::DeviceRemoved(
     bluetooth::mojom::DeviceInfoPtr device) {
-  if (!adapter_client_.is_bound() || !discovery_callback_ ||
+  if (!adapter_observer_.is_bound() || !discovery_callback_ ||
       !discovery_session_.is_bound()) {
     return;
   }

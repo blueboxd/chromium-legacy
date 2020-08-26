@@ -36,6 +36,7 @@
 -AutofillProviderBrowserTest.FrameDetachedOnFormlessSubmission
 -AutofillProviderBrowserTestWithSkipFlagOn.InferredLabelChangeNotImpactFormComparing
 -AutomationApiTest.ForceLayout
+-AutomationManagerAuraBrowserTest.EventFromAction
 -AutoplayExtensionBrowserTest.AutoplayAllowedInIframe
 -BluetoothApiTest.*
 -BluetoothLowEnergyApiTest.*
@@ -214,3 +215,13 @@
 -WebViewTest.Shim_TestDisplayNoneWebviewRemoveChild
 -WelcomeA11y.WelcomeFlow_listitem
 -WorkerTaskProviderBrowserTest.CreateTasksForMultiProfiles
+
+# crbug.com/1121486
+# Following tests were flaky. We disable them first until we have time to investigate.
+-DevToolsExtensionTest.HttpIframeInDevToolsExtensionDevtools
+-DevToolsSanityTest.*
+-FindInPageControllerTest.SingleOccurrence
+-MediaRouterUIBrowserTest.PinAndUnpinToolbarIcon
+-MultiActionAPITest.PopupCreation/*
+-PDFExtensionClipboardTest.CombinedShiftArrowPresses
+-PopupTrackerBrowserTest.ControlClick_HasTracker

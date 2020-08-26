@@ -1021,8 +1021,14 @@ void FrameLoader::CommitNavigation(
     base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
 
     progress_tracker_->ProgressStarted();
-    frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-    probe::DidStartProvisionalLoad(frame_);
+    // In DocumentLoader, the matching DidCommitLoad messages are only called
+    // for kRegular commits. Skip them here, too, to ensure we match
+    // start/commit message pairs.
+    if (commit_reason == CommitReason::kRegular) {
+      frame_->GetFrameScheduler()->DidStartProvisionalLoad(
+          frame_->IsMainFrame());
+      probe::DidStartProvisionalLoad(frame_);
+    }
 
     DCHECK(Client()->HasWebView());
     scoped_refptr<SecurityOrigin> security_origin =

@@ -61,12 +61,6 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // if snapshot generation fails.
   void UpdateSnapshotWithCallback(void (^callback)(UIImage*));
 
-  // DEPRECATED(crbug.com/917929): Use the asynchronous function
-  // |UpdateSnapshotWithCallback()| for all new callsites.
-  // Generates a new snapshot, updates the snapshot cache, and returns the new
-  // snapshot image. Returns nil if snapshot generation fails.
-  UIImage* UpdateSnapshot();
-
   // Generates a new snapshot without any overlays, and returns the new snapshot
   // image. This does not update the snapshot cache. Returns nil if snapshot
   // generation fails.

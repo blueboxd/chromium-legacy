@@ -236,7 +236,10 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   // |layer|. See the definition of the scrollParent property in Layer for
   // more detail.
   if (const PaintLayer* scrolling_ancestor = layer.AncestorScrollingLayer()) {
-    if (scrolling_ancestor->NeedsCompositedScrolling() &&
+    if ((scrolling_ancestor->NeedsCompositedScrolling() ||
+         // If this is true, we'll force scrolling_ancestor to use composited
+         // scrolling because this layer is composited.
+         scrolling_ancestor->NeedsReorderOverlayOverflowControls()) &&
         layer.ScrollParent()) {
       DCHECK(!scrolling_ancestor->GetLayoutObject()
                   .IsStackingContext());

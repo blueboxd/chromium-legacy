@@ -28,21 +28,21 @@ cr.define('adapter_broker', function() {
   /**
    * The proxy class of an adapter and router of adapter events.
    * Exposes an EventTarget interface that allows other object to subscribe to
-   * to specific AdapterClient events.
+   * to specific AdapterObserver events.
    * Provides remote access to Adapter functions. Converts parameters to Mojo
    * handles and back when necessary.
    *
-   * @implements {bluetooth.mojom.AdapterClientInterface}
+   * @implements {bluetooth.mojom.AdapterObserverInterface}
    */
   class AdapterBroker extends cr.EventTarget {
     /** @param {!AdapterRemote} adapter */
     constructor(adapter) {
       super();
-      this.adapterClientReceiver_ =
-          new bluetooth.mojom.AdapterClientReceiver(this);
+      this.adapterObserverReceiver_ =
+          new bluetooth.mojom.AdapterObserverReceiver(this);
       this.adapter_ = adapter;
-      this.adapter_.setClient(
-          this.adapterClientReceiver_.$.bindNewPipeAndPassRemote());
+      this.adapter_.addObserver(
+          this.adapterObserverReceiver_.$.bindNewPipeAndPassRemote());
     }
 
     presentChanged(present) {

@@ -36,7 +36,7 @@ class GroupNode extends SAChildNode {
   /** @override */
   get location() {
     const childLocations = this.children_.map(c => c.location);
-    return RectHelper.unionAll(childLocations);
+    return RectUtil.unionAll(childLocations);
   }
 
   /** @override */
@@ -134,7 +134,7 @@ class GroupNode extends SAChildNode {
       i++;
 
       while (i < nodes.length &&
-             RectHelper.sameRow(children[0].location, nodes[i].location)) {
+             RectUtil.sameRow(children[0].location, nodes[i].location)) {
         children.push(nodes[i]);
         i++;
       }

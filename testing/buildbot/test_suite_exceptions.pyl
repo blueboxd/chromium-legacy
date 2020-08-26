@@ -175,9 +175,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              # Run the layout tests on a consistent set of hardware
-              # (Mac Minis).
-              'gpu': '8086:0a2e',
+              'gpu': None,
             },
           ],
           'shards': 25,

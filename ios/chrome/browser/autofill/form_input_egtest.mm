@@ -74,7 +74,6 @@ void AssertElementIsFocused(const std::string& element_id) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no hidden toolbar in tablet)");
   }
 
-  web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/multi_field_form.html");
   [ChromeEarlGrey loadURL:URL];

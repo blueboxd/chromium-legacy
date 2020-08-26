@@ -225,6 +225,7 @@ aom_av1_encoder_intrin_sse2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/encodetxb_sse2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/highbd_block_error_intrin_sse2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/temporal_filter_sse2.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/highbd_temporal_filter_sse2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/wedge_utils_sse2.c",
 ]
 

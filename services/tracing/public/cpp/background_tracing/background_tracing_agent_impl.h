@@ -40,10 +40,11 @@ class COMPONENT_EXPORT(BACKGROUND_TRACING_CPP) BackgroundTracingAgentImpl
   static void OnHistogramChanged(
       base::WeakPtr<BackgroundTracingAgentImpl> weak_self,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const std::string& histogram_name,
       base::Histogram::Sample reference_lower_value,
       base::Histogram::Sample reference_upper_value,
       bool repeat,
+      const char* histogram_name,
+      uint64_t name_hash,
       base::Histogram::Sample actual_value);
   void SendTriggerMessage(const std::string& histogram_name);
   void SendAbortBackgroundTracingMessage();

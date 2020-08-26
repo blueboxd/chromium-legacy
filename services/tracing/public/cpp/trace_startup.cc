@@ -153,20 +153,22 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
 
   const auto trace_config = trace_log->GetCurrentTraceConfig();
 
-  // We can't currently propagate event filter options, memory dump configs, or
-  // trace buffer sizes via command line flags (they only support categories,
-  // trace options, record mode). If event filters are set, we bail out here to
-  // avoid recording events that we shouldn't in the child process. Even if
-  // memory dump config is set, it's OK to propagate the remaining config,
-  // because the child won't record events it shouldn't without it and will
-  // adopt the memory dump config once it connects to the tracing service.
-  // Buffer sizes configure the tracing service's central buffer, so also don't
-  // affect local tracing.
+  // We can't currently propagate event filter options, histogram names, memory
+  // dump configs, or trace buffer sizes via command line flags (they only
+  // support categories, trace options, record mode). If event filters or
+  // histogram names are set, we bail out here to avoid recording events that we
+  // shouldn't in the child process. Even if memory dump config is set, it's OK
+  // to propagate the remaining config, because the child won't record events it
+  // shouldn't without it and will adopt the memory dump config once it connects
+  // to the tracing service. Buffer sizes configure the tracing service's
+  // central buffer, so also don't affect local tracing.
   //
   // TODO(eseckler): Support propagating the full config via command line flags
   // somehow (--trace-config?). This will also need some rethinking to support
   // multiple concurrent tracing sessions in the future.
   if (!trace_config.event_filters().empty())
+    return;
+  if (!trace_config.histogram_names().empty())
     return;
 
   // Make sure that the startup session uses privacy filtering mode if it's

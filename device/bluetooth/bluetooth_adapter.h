@@ -19,6 +19,7 @@
 #include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -311,9 +312,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     ServiceOptions();
     ~ServiceOptions();
 
-    std::unique_ptr<int> channel;
-    std::unique_ptr<int> psm;
-    std::unique_ptr<std::string> name;
+    base::Optional<int> channel;
+    base::Optional<int> psm;
+    base::Optional<std::string> name;
   };
 
   // The ErrorCallback is used for methods that can fail in which case it is

@@ -158,12 +158,12 @@ enum AuthenticationButtonType {
 }
 
 - (void)signinWillStart {
-  self.confirmationButton.hidden = YES;
+  self.confirmationButton.enabled = NO;
   [self startAnimatingActivityIndicator];
 }
 
 - (void)signinDidStop {
-  self.confirmationButton.hidden = NO;
+  self.confirmationButton.enabled = YES;
   [self stopAnimatingActivityIndicator];
 }
 
@@ -427,7 +427,7 @@ enum AuthenticationButtonType {
   [self.view addSubview:self.activityIndicator];
 
   self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameCenterConstraints(self.confirmationButton, self.activityIndicator);
+  AddSameCenterConstraints(self.containerView, self.activityIndicator);
 }
 
 // Sets the text, styling, and other button properties for the skip sign-in

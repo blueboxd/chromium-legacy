@@ -46,8 +46,8 @@ void BackgroundTracingAgentImpl::SetUMACallback(
       histogram_name,
       base::BindRepeating(&BackgroundTracingAgentImpl::OnHistogramChanged,
                           weak_self, base::SequencedTaskRunnerHandle::Get(),
-                          histogram_name, histogram_lower_value,
-                          histogram_upper_value, repeat));
+                          histogram_lower_value, histogram_upper_value,
+                          repeat));
 
   base::HistogramBase* existing_histogram =
       base::StatisticsRecorder::FindHistogram(histogram_name);
@@ -93,10 +93,11 @@ void BackgroundTracingAgentImpl::ClearUMACallback(
 void BackgroundTracingAgentImpl::OnHistogramChanged(
     base::WeakPtr<BackgroundTracingAgentImpl> weak_self,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const std::string& histogram_name,
     base::Histogram::Sample histogram_lower_value,
     base::Histogram::Sample histogram_upper_value,
     bool repeat,
+    const char* histogram_name,
+    uint64_t name_hash,
     base::Histogram::Sample actual_value) {
   // NOTE: This method is called from an arbitrary sequence.
 
@@ -115,7 +116,7 @@ void BackgroundTracingAgentImpl::OnHistogramChanged(
               [&](perfetto::EventContext ctx) {
                 perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
                     ctx.event()->set_chrome_histogram_sample();
-                new_sample->set_name_hash(base::HashMetricName(histogram_name));
+                new_sample->set_name_hash(name_hash);
                 new_sample->set_sample(actual_value);
               });
 

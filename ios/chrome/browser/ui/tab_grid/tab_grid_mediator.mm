@@ -135,17 +135,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
       _scopedWebStateObserver;
 }
 
-// Public properties.
-@synthesize browser = _browser;
-@synthesize tabRestoreService = _tabRestoreService;
-// Private properties.
-@synthesize webStateList = _webStateList;
-@synthesize browserState = _browserState;
-@synthesize consumer = _consumer;
-@synthesize closedSessionWindow = _closedSessionWindow;
-@synthesize syncedClosedTabsCount = _syncedClosedTabsCount;
-@synthesize appearanceCache = _appearanceCache;
-
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
   if (self = [super init]) {
     _consumer = consumer;
@@ -191,6 +180,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     didInsertWebState:(web::WebState*)webState
               atIndex:(int)index
            activating:(BOOL)activating {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress())
+    return;
   [self.consumer insertItem:CreateItem(webState)
                     atIndex:index
              selectedItemID:GetActiveTabId(webStateList)];
@@ -201,6 +193,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
      didMoveWebState:(web::WebState*)webState
            fromIndex:(int)fromIndex
              toIndex:(int)toIndex {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress())
+    return;
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   [self.consumer moveItemWithID:tabHelper->tab_id() toIndex:toIndex];
 }
@@ -209,6 +204,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     didReplaceWebState:(web::WebState*)oldWebState
           withWebState:(web::WebState*)newWebState
                atIndex:(int)index {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress())
+    return;
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(oldWebState);
   [self.consumer replaceItemID:tabHelper->tab_id()
                       withItem:CreateItem(newWebState)];
@@ -219,6 +217,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)webStateList:(WebStateList*)webStateList
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress())
+    return;
   if (!webStateList)
     return;
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
@@ -233,6 +234,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress())
+    return;
   // If the selected index changes as a result of the last webstate being
   // detached, atIndex will be -1.
   if (atIndex == -1) {
@@ -242,6 +246,21 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(newWebState);
   [self.consumer selectItemWithID:tabHelper->tab_id()];
+}
+
+- (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
+  DCHECK_EQ(_webStateList, webStateList);
+  _scopedWebStateObserver->RemoveAll();
+}
+
+- (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
+  DCHECK_EQ(_webStateList, webStateList);
+  for (int i = 0; i < self.webStateList->count(); i++) {
+    web::WebState* webState = self.webStateList->GetWebStateAt(i);
+    _scopedWebStateObserver->Add(webState);
+  }
+  [self.consumer populateItems:CreateItems(self.webStateList)
+                selectedItemID:GetActiveTabId(self.webStateList)];
 }
 
 #pragma mark - CRWWebStateObserver

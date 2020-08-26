@@ -599,6 +599,23 @@ void av1_get_nz_map_contexts_c(const uint8_t* const levels,
                                int8_t* const coeff_contexts);
 #define av1_get_nz_map_contexts av1_get_nz_map_contexts_c
 
+void av1_highbd_apply_temporal_filter_c(
+    const struct yv12_buffer_config* ref_frame,
+    const struct macroblockd* mbd,
+    const BLOCK_SIZE block_size,
+    const int mb_row,
+    const int mb_col,
+    const int num_planes,
+    const double* noise_levels,
+    const MV* subblock_mvs,
+    const int* subblock_mses,
+    const int q_factor,
+    const int filter_strength,
+    const uint8_t* pred,
+    uint32_t* accum,
+    uint16_t* count);
+#define av1_highbd_apply_temporal_filter av1_highbd_apply_temporal_filter_c
+
 int64_t av1_highbd_block_error_c(const tran_low_t* coeff,
                                  const tran_low_t* dqcoeff,
                                  intptr_t block_size,

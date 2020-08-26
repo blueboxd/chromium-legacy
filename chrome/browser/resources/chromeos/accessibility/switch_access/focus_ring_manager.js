@@ -97,7 +97,7 @@ class FocusRingManager {
       if (childRect) {
         // If the current element is not the back button, the focus rect should
         // expand to contain the child rect.
-        focusRect = RectHelper.expandToFitWithPadding(
+        focusRect = RectUtil.expandToFitWithPadding(
             SAConstants.Focus.GROUP_BUFFER, focusRect, childRect);
         manager.rings_.get(SAConstants.Focus.ID.NEXT).rects = [childRect];
       }

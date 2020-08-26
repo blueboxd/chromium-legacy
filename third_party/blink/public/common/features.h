@@ -277,7 +277,6 @@ BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kCrOSAutoSelect;
 
-BLINK_COMMON_EXPORT extern const base::Feature kCompositeSVG;
 BLINK_COMMON_EXPORT extern const base::Feature kCompositingOptimizations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;

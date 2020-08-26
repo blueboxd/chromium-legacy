@@ -102,7 +102,7 @@ class ActionableTabNode extends NodeWrapper {
     if (!this.closeButton_) {
       return super.location;
     }
-    return RectHelper.difference(super.location, this.closeButton_.location);
+    return RectUtil.difference(super.location, this.closeButton_.location);
   }
 
   // ================= General methods =================

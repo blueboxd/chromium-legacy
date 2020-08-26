@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/record_histogram_checker.h"
 #include "base/metrics/sparse_histogram.h"
@@ -435,14 +436,24 @@ namespace {
 // CallbackCheckWrapper is simply a convenient way to check and store that
 // a callback was actually run.
 struct CallbackCheckWrapper {
-  CallbackCheckWrapper() : called(false), last_histogram_value(0) {}
+  CallbackCheckWrapper()
+      : called(false),
+        last_histogram_name(""),
+        last_name_hash(HashMetricName("")),
+        last_histogram_value(0) {}
 
-  void OnHistogramChanged(base::HistogramBase::Sample histogram_value) {
+  void OnHistogramChanged(const char* histogram_name,
+                          uint64_t name_hash,
+                          base::HistogramBase::Sample histogram_value) {
     called = true;
+    last_histogram_name = histogram_name;
+    last_name_hash = name_hash;
     last_histogram_value = histogram_value;
   }
 
   bool called;
+  const char* last_histogram_name;
+  uint64_t last_name_hash;
   base::HistogramBase::Sample last_histogram_value;
 };
 
@@ -535,6 +546,8 @@ TEST_P(StatisticsRecorderTest, CallbackUsedTest) {
     histogram->Add(1);
 
     EXPECT_TRUE(callback_wrapper.called);
+    EXPECT_STREQ(callback_wrapper.last_histogram_name, "TestHistogram");
+    EXPECT_EQ(callback_wrapper.last_name_hash, HashMetricName("TestHistogram"));
     EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
   }
 
@@ -552,6 +565,9 @@ TEST_P(StatisticsRecorderTest, CallbackUsedTest) {
     linear_histogram->Add(1);
 
     EXPECT_TRUE(callback_wrapper.called);
+    EXPECT_STREQ(callback_wrapper.last_histogram_name, "TestLinearHistogram");
+    EXPECT_EQ(callback_wrapper.last_name_hash,
+              HashMetricName("TestLinearHistogram"));
     EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
   }
 
@@ -572,6 +588,9 @@ TEST_P(StatisticsRecorderTest, CallbackUsedTest) {
     custom_histogram->Add(1);
 
     EXPECT_TRUE(callback_wrapper.called);
+    EXPECT_STREQ(callback_wrapper.last_histogram_name, "TestCustomHistogram");
+    EXPECT_EQ(callback_wrapper.last_name_hash,
+              HashMetricName("TestCustomHistogram"));
     EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
   }
 
@@ -589,6 +608,9 @@ TEST_P(StatisticsRecorderTest, CallbackUsedTest) {
     custom_histogram->Add(1);
 
     EXPECT_TRUE(callback_wrapper.called);
+    EXPECT_STREQ(callback_wrapper.last_histogram_name, "TestSparseHistogram");
+    EXPECT_EQ(callback_wrapper.last_name_hash,
+              HashMetricName("TestSparseHistogram"));
     EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
   }
 }
@@ -608,6 +630,8 @@ TEST_P(StatisticsRecorderTest, CallbackUsedBeforeHistogramCreatedTest) {
   histogram->Add(1);
 
   EXPECT_TRUE(callback_wrapper.called);
+  EXPECT_STREQ(callback_wrapper.last_histogram_name, "TestHistogram");
+  EXPECT_EQ(callback_wrapper.last_name_hash, HashMetricName("TestHistogram"));
   EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
 }
 

@@ -304,6 +304,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit available_space_for_columns = AvailableLogicalWidth();
     PlaceItemsOnGrid(track_sizing_algorithm_, available_space_for_columns);
 
+    track_sizing_algorithm_.SetAvailableSpace(kForColumns,
+                                              available_space_for_columns);
     PerformGridItemsPreLayout(track_sizing_algorithm_);
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the

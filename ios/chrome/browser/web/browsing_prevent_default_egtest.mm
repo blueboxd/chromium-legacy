@@ -42,7 +42,6 @@ GURL GetTestUrl() {
   // Disable popup blocking, because that will mask failures that try to open
   // new tabs.
   ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW);
-  web::test::SetUpFileBasedHttpServer();
 
   const GURL testURL = GetTestUrl();
   [ChromeEarlGrey loadURL:testURL];
@@ -81,7 +80,6 @@ GURL GetTestUrl() {
   // Disable popup blocking, because that will mask failures that try to open
   // new tabs.
   ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW);
-  web::test::SetUpFileBasedHttpServer();
 
   const GURL testURL = GetTestUrl();
   [ChromeEarlGrey loadURL:testURL];

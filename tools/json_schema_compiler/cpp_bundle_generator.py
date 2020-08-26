@@ -42,6 +42,7 @@ def _RemoveUnneededFields(schema):
   _RemoveKey(ret, 'nocompile', bool)
   _RemoveKey(ret, 'noinline_doc', bool)
   _RemoveKey(ret, 'jsexterns', object)
+  _RemoveKey(ret, 'manifest_keys', object)
   return ret
 
 def _PrefixSchemaWithNamespace(schema):

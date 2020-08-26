@@ -129,7 +129,7 @@ void WindowCycleController::StepToWindow(aura::Window* window) {
   window_cycle_list_->StepToWindow(window);
 }
 
-bool WindowCycleController::IsEventInCycleView(ui::MouseEvent* event) {
+bool WindowCycleController::IsEventInCycleView(ui::LocatedEvent* event) {
   return window_cycle_list_ && window_cycle_list_->IsEventInCycleView(event);
 }
 

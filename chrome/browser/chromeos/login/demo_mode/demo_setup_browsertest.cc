@@ -514,8 +514,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, InvokeWithTaps) {
   EXPECT_TRUE(IsConfirmationDialogShown());
 }
 
+// TODO(https://crbug.com/1121422): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DoNotInvokeWithNonConsecutiveTaps \
+  DISABLED_DoNotInvokeWithNonConsecutiveTaps
+#else
+#define MAYBE_DoNotInvokeWithNonConsecutiveTaps \
+  DoNotInvokeWithNonConsecutiveTaps
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       DoNotInvokeWithNonConsecutiveTaps) {
+                       MAYBE_DoNotInvokeWithNonConsecutiveTaps) {
   // Use fake time to avoid flakiness.
   const base::Time kFakeTime = base::Time::UnixEpoch();
   SetFakeTimeForMultiTapDetector(kFakeTime);
@@ -856,7 +864,14 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OfflineDemoModeUnavailable) {
+// TODO(https://crbug.com/1121422): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OfflineDemoModeUnavailable DISABLED_OfflineDemoModeUnavailable
+#else
+#define MAYBE_OfflineDemoModeUnavailable OfflineDemoModeUnavailable
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       MAYBE_OfflineDemoModeUnavailable) {
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -936,8 +951,14 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OfflineSetupFlowSuccess) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
+// TODO(https://crbug.com/1121422): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OfflineSetupFlowErrorDefault DISABLED_OfflineSetupFlowErrorDefault
+#else
+#define MAYBE_OfflineSetupFlowErrorDefault OfflineSetupFlowErrorDefault
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OfflineSetupFlowErrorDefault) {
+                       MAYBE_OfflineSetupFlowErrorDefault) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForStatus(
@@ -1002,8 +1023,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
+// TODO(https://crbug.com/1121422): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
+  DISABLED_OfflineSetupFlowErrorPowerwashRequired
+#else
+#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
+  OfflineSetupFlowErrorPowerwashRequired
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OfflineSetupFlowErrorPowerwashRequired) {
+                       MAYBE_OfflineSetupFlowErrorPowerwashRequired) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForLockError(

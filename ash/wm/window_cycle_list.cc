@@ -11,6 +11,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -38,6 +39,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -145,6 +147,23 @@ class WindowCycleItemView : public WindowMiniView {
   bool OnMousePressed(const ui::MouseEvent& event) override {
     Shell::Get()->window_cycle_controller()->CompleteCycling();
     return true;
+  }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_TAP:
+      case ui::ET_GESTURE_LONG_PRESS:
+      case ui::ET_GESTURE_LONG_TAP:
+      case ui::ET_GESTURE_TWO_FINGER_TAP: {
+        WindowCycleController* controller =
+            Shell::Get()->window_cycle_controller();
+        controller->StepToWindow(source_window());
+        controller->CompleteCycling();
+        break;
+      }
+      default:
+        break;
+    }
   }
 
  private:
@@ -545,9 +564,12 @@ void WindowCycleList::StepToWindow(aura::Window* window) {
   Step(target_index - current_index_);
 }
 
-bool WindowCycleList::IsEventInCycleView(ui::MouseEvent* event) {
-  return cycle_view_->GetBoundsInScreen().Contains(
-      display::Screen::GetScreen()->GetCursorScreenPoint());
+bool WindowCycleList::IsEventInCycleView(ui::LocatedEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::Window* event_root = target->GetRootWindow();
+  gfx::Point event_screen_point = event->root_location();
+  wm::ConvertPointToScreen(event_root, &event_screen_point);
+  return cycle_view_->GetBoundsInScreen().Contains(event_screen_point);
 }
 
 // static

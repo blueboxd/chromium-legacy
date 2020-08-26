@@ -437,9 +437,7 @@ class DetachToBrowserTabDragControllerTest
       public ::testing::WithParamInterface<const char*> {
  public:
   DetachToBrowserTabDragControllerTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kMixBrowserTypeTabs} /* enabled_features */,
-        {features::kWebUITabStrip} /* disabled_features */);
+    scoped_feature_list_.InitAndDisableFeature(features::kWebUITabStrip);
   }
   DetachToBrowserTabDragControllerTest(
       const DetachToBrowserTabDragControllerTest&) = delete;
@@ -3531,38 +3529,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
   ASSERT_TRUE(ReleaseInput());
   EXPECT_EQ("100 0", IDString(app_browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(app_browser1->tab_strip_model()));
-}
-
-// Move tab from TYPE_APP Browser to TYPE_NORMAL Browser.
-// Only allowed with feature MixBrowserTypeTabs.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
-                       DragAppToNormalWindow) {
-  // Install and get a tabbed system app.
-  web_app::AppId tabbed_app_id = InstallMockApp();
-  Browser* app_browser = LaunchWebAppBrowser(tabbed_app_id);
-  ASSERT_EQ(2u, browser_list->size());
-  // Close normal browser since other code expects only 1 browser to start.
-  CloseBrowserSynchronously(browser());
-  ASSERT_EQ(1u, browser_list->size());
-  SelectFirstBrowser();
-
-  Browser* browser2 = CreateAnotherBrowserAndResize();
-  ResetIDs(browser2->tab_strip_model(), 100);
-
-  AddTabsAndResetBrowser(browser(), 1, GetAppUrl());
-  TabStrip* tab_strip1 = GetTabStripForBrowser(app_browser);
-  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
-
-  // Move to the first tab and drag it enough so that it detaches, but not
-  // enough that it attaches to browser2.
-  DragTabAndNotify(tab_strip1, base::BindOnce(&DragToSeparateWindowStep2, this,
-                                              tab_strip1, tab_strip2));
-
-  // Should now be attached to tab_strip2.
-  // Release mouse or touch, stopping the drag session.
-  ASSERT_TRUE(ReleaseInput());
-  EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
-  EXPECT_EQ("1", IDString(app_browser->tab_strip_model()));
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

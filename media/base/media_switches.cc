@@ -370,6 +370,10 @@ const base::Feature kGlobalMediaControlsAutoDismiss{
 const base::Feature kGlobalMediaControlsForCast{
     "GlobalMediaControlsForCast", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow Global Media Controls in system tray of CrOS.
+const base::Feature kGlobalMediaControlsForChromeOS{
+    "GlobalMediaControlsForChromeOS", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allow global media controls notifications to be dragged out into overlay
 // notifications. It is no-op if kGlobalMediaControls is not enabled.
 const base::Feature kGlobalMediaControlsOverlayControls{

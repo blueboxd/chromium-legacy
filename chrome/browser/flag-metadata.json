@@ -3036,11 +3036,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "mix-browser-type-tabs",
-    "owners": [ "joelhockey", "tbuckley" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "mixed-forms-disable-autofill",
     "owners": [ "carlosil" ],
     "expiry_milestone": 88
@@ -3128,7 +3123,7 @@
   {
     "name": "ntp-iframe-one-google-bar",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 87
   },
   {
     "name": "ntp-modules",
@@ -3138,7 +3133,7 @@
   {
     "name": "ntp-one-google-bar-modal-overlays",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 87
   },
   {
     "name": "ntp-realbox",
@@ -3158,7 +3153,7 @@
   {
     "name": "ntp-webui",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 87
   },
   {
     "name": "offline-indicator-always-http-probe",
@@ -4004,7 +3999,7 @@
   {
     "name": "share-button-in-top-toolbar",
     "owners": [ "jeffreycohen" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "shared-clipboard-ui",

@@ -7,6 +7,7 @@
 
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
@@ -24,8 +25,8 @@ class FakeAdapter : public mojom::Adapter {
                        ConnectToDeviceCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void GetInfo(GetInfoCallback callback) override;
-  void SetClient(::mojo::PendingRemote<mojom::AdapterClient> client,
-                 SetClientCallback callback) override;
+  void AddObserver(mojo::PendingRemote<mojom::AdapterObserver> observer,
+                   AddObserverCallback callback) override;
   void SetDiscoverable(bool discoverable,
                        SetDiscoverableCallback callback) override;
   void SetName(const std::string& name, SetNameCallback callback) override;
@@ -69,7 +70,7 @@ class FakeAdapter : public mojom::Adapter {
   std::set<std::pair<std::string, device::BluetoothUUID>>
       allowed_connections_for_service_name_and_uuid_pair_;
 
-  mojo::Remote<mojom::AdapterClient> client_;
+  mojo::RemoteSet<mojom::AdapterObserver> observers_;
 };
 
 }  // namespace bluetooth

@@ -97,7 +97,6 @@ void WaitforPDFExtensionView() {
 // TODO(crbug.com/947536): Fails on iOS 12 devices.
 // TODO(crbug.com/1106997): Test fails in simulator builders.
 - (void)DISABLED_testLongPDFInitialState {
-  web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];
@@ -127,7 +126,6 @@ void WaitforPDFExtensionView() {
   }
 #endif
 
-  web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
   [ChromeEarlGrey loadURL:URL];
@@ -161,7 +159,6 @@ void WaitforPDFExtensionView() {
 #define MAYBE_testLongPDFScroll testLongPDFScroll
 #endif
 - (void)MAYBE_testLongPDFScroll {
-  web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];

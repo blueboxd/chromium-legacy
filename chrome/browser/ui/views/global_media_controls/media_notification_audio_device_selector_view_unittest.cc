@@ -265,7 +265,7 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, VisibilityChanges) {
   // The audio device selector view should become hidden when there is only one
   // unique device.
   provider_->AddDevice("Speaker", "1");
-  provider_->AddDevice("default",
+  provider_->AddDevice(media::AudioDeviceDescription::GetDefaultDeviceName(),
                        media::AudioDeviceDescription::kDefaultDeviceId);
   auto* provider = provider_.get();
   service_->set_device_provider_for_testing(std::move(provider_));
@@ -279,7 +279,20 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, VisibilityChanges) {
 
   testing::Mock::VerifyAndClearExpectations(&delegate);
 
+  provider->ResetDevices();
+  provider->AddDevice("Speaker", "1");
+  provider->AddDevice("Headphones",
+                      media::AudioDeviceDescription::kDefaultDeviceId);
+  EXPECT_CALL(delegate, OnAudioDeviceSelectorViewSizeChanged).Times(1);
+  provider->RunUICallback();
+  EXPECT_TRUE(view_->GetVisible());
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+
+  provider->ResetDevices();
+  provider->AddDevice("Speaker", "1");
   provider->AddDevice("Headphones", "2");
+  provider->AddDevice(media::AudioDeviceDescription::GetDefaultDeviceName(),
+                      media::AudioDeviceDescription::kDefaultDeviceId);
   EXPECT_CALL(delegate, OnAudioDeviceSelectorViewSizeChanged).Times(1);
   provider->RunUICallback();
   EXPECT_TRUE(view_->GetVisible());

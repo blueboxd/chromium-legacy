@@ -41,6 +41,7 @@ class TabSearchBubbleView : public views::BubbleDialogDelegateView {
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
 
   void OnWebViewSizeChanged();
 

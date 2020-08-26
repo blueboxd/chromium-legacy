@@ -692,11 +692,6 @@ bool IsParkableStringsToDiskEnabled() {
 const base::Feature kCrOSAutoSelect{"CrOSAutoSelect",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables compositing of eligible SVG elements to improve animation
-// performance. See crbug.com/1101002.
-const base::Feature kCompositeSVG{"CompositeSVG",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCompositingOptimizations{
     "CompositingOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
 

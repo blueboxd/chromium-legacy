@@ -20,6 +20,7 @@
 #include "device/bluetooth/server_socket.h"
 #include "device/bluetooth/socket.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace bluetooth {
@@ -79,9 +80,9 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   std::move(callback).Run(std::move(adapter_info));
 }
 
-void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
-                        SetClientCallback callback) {
-  client_.Bind(std::move(client));
+void Adapter::AddObserver(mojo::PendingRemote<mojom::AdapterObserver> observer,
+                          AddObserverCallback callback) {
+  observers_.Add(std::move(observer));
   std::move(callback).Run();
 }
 
@@ -132,7 +133,7 @@ void Adapter::CreateRfcommService(const std::string& service_name,
                                   const device::BluetoothUUID& service_uuid,
                                   CreateRfcommServiceCallback callback) {
   device::BluetoothAdapter::ServiceOptions service_options;
-  service_options.name = std::make_unique<std::string>(service_name);
+  service_options.name = service_name;
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->CreateRfcommService(
@@ -145,50 +146,47 @@ void Adapter::CreateRfcommService(const std::string& service_name,
 
 void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                     bool present) {
-  if (client_)
-    client_->PresentChanged(present);
+  for (auto& observer : observers_)
+    observer->PresentChanged(present);
 }
 
 void Adapter::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                     bool powered) {
-  if (client_)
-    client_->PoweredChanged(powered);
+  for (auto& observer : observers_)
+    observer->PoweredChanged(powered);
 }
 
 void Adapter::AdapterDiscoverableChanged(device::BluetoothAdapter* adapter,
                                          bool discoverable) {
-  if (client_)
-    client_->DiscoverableChanged(discoverable);
+  for (auto& observer : observers_)
+    observer->DiscoverableChanged(discoverable);
 }
 
 void Adapter::AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                         bool discovering) {
-  if (client_)
-    client_->DiscoveringChanged(discovering);
+  for (auto& observer : observers_)
+    observer->DiscoveringChanged(discovering);
 }
 
 void Adapter::DeviceAdded(device::BluetoothAdapter* adapter,
                           device::BluetoothDevice* device) {
-  if (client_) {
-    auto device_info = Device::ConstructDeviceInfoStruct(device);
-    client_->DeviceAdded(std::move(device_info));
-  }
+  auto device_info = Device::ConstructDeviceInfoStruct(device);
+  for (auto& observer : observers_)
+    observer->DeviceAdded(device_info->Clone());
 }
 
 void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device) {
-  if (client_) {
-    auto device_info = Device::ConstructDeviceInfoStruct(device);
-    client_->DeviceChanged(std::move(device_info));
-  }
+  auto device_info = Device::ConstructDeviceInfoStruct(device);
+  for (auto& observer : observers_)
+    observer->DeviceChanged(device_info->Clone());
 }
 
 void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device) {
-  if (client_) {
-    auto device_info = Device::ConstructDeviceInfoStruct(device);
-    client_->DeviceRemoved(std::move(device_info));
-  }
+  auto device_info = Device::ConstructDeviceInfoStruct(device);
+  for (auto& observer : observers_)
+    observer->DeviceRemoved(device_info->Clone());
 }
 
 void Adapter::OnGattConnected(

@@ -24,6 +24,7 @@ class ASH_EXPORT WindowCycleEventFilter : public ui::EventHandler {
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   class AltReleaseHandler : public ui::EventHandler {

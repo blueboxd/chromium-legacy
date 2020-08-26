@@ -1949,6 +1949,8 @@ TEST_F(AnimationAnimationTestCompositing,
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { overflow: scroll; width: 100px; height: 100px; }
+      /* to prevent the mock overlay scrollbar from affecting compositing. */
+      #scroller::-webkit-scrollbar { display: none; }
       #target { width: 100px; height: 200px; will-change: transform; }
       #spacer { width: 200px; height: 2000px; }
     </style>

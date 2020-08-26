@@ -86,15 +86,11 @@ void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
   }
   // Use the UIKit-based snapshot API as a fallback when the WKWebView API is
   // unavailable.
-  UIImage* image = UpdateSnapshot();
+  UIImage* image = [snapshot_generator_ updateSnapshot];
   dispatch_async(dispatch_get_main_queue(), ^{
     if (callback)
       callback(image);
   });
-}
-
-UIImage* SnapshotTabHelper::UpdateSnapshot() {
-  return [snapshot_generator_ updateSnapshot];
 }
 
 UIImage* SnapshotTabHelper::GenerateSnapshotWithoutOverlays() {

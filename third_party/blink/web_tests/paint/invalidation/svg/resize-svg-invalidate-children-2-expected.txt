@@ -8,11 +8,8 @@
     },
     {
       "name": "LayoutSVGRoot svg",
-      "bounds": [600, 400],
-      "invalidations": [
-        [50, 0, 500, 400],
-        [0, 120, 200, 160]
-      ],
+      "position": [50, 0],
+      "bounds": [500, 400],
       "transform": 1
     }
   ],

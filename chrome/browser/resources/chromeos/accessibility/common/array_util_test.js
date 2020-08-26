@@ -41,7 +41,7 @@ TEST_F('ArrayUtilTest', 'ContentsAreEqual', function() {
     assertTrue(
         ArrayUtil.contentsAreEqual(arrayWithObj, secondArrayWithObj),
         'Different array instances with references to the same object ' +
-            'instance should be equal with contentsareEqual.');
+            'instance should be equal with contentsAreEqual.');
     assertFalse(
         ArrayUtil.contentsAreEqual(arrayWithObj, arrayWithDifferentObj),
         'Arrays with different objects should not be equal (ArrayUtil.' +

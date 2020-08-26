@@ -144,8 +144,12 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     //
     // To avoid this double-parenting, only add the child tree ID of this
     // window if the top-level window doesn't have an associated Widget.
+    //
+    // Also, if this window is not visible, its child tree should also be
+    // non-visible so prune it.
     if (!window_->GetToplevelWindow() ||
-        GetWidgetForWindow(window_->GetToplevelWindow())) {
+        GetWidgetForWindow(window_->GetToplevelWindow()) ||
+        !window_->IsVisible()) {
       return;
     }
 

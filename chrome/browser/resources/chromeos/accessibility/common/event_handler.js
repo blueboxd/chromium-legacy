@@ -12,7 +12,7 @@ class EventHandler {
    *         !Array<!chrome.automation.AutomationNode>} nodes
    * @param {!chrome.automation.EventType |
    *     !Array<!chrome.automation.EventType>} types
-   * @param {!function(!chrome.automation.AutomationEvent)} callback
+   * @param {?function(!chrome.automation.AutomationEvent)} callback
    * @param {{capture: (boolean|undefined), exactMatch: (boolean|undefined),
    *     listenOnce: (boolean|undefined), predicate:
    *     ((function(chrome.automation.AutomationEvent): boolean)|undefined)}}
@@ -32,7 +32,7 @@ class EventHandler {
     /** @private {!Array<!chrome.automation.EventType>} */
     this.types_ = types instanceof Array ? types : [types];
 
-    /** @private {!function(!chrome.automation.AutomationEvent)} */
+    /** @private {?function(!chrome.automation.AutomationEvent)} */
     this.callback_ = callback;
 
     /** @private {boolean} */
@@ -79,6 +79,11 @@ class EventHandler {
       }
     }
     this.listening_ = false;
+  }
+
+  /** @param {?function(!chrome.automation.AutomationEvent)} callback */
+  setCallback(callback) {
+    this.callback_ = callback;
   }
 
   /**
@@ -138,6 +143,8 @@ class EventHandler {
       this.stop();
     }
 
-    this.callback_(event);
+    if (this.callback_) {
+      this.callback_(event);
+    }
   }
 }

@@ -517,6 +517,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionTop];
+    if (self.items.count > 0) {
+      [self removeEmptyStateAnimated:YES];
+    } else {
+      [self animateEmptyStateIn];
+    }
   }
   // Whether the view is visible or not, the delegate must be updated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];

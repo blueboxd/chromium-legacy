@@ -476,9 +476,8 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
         id_and_data->second != ad_frames_data_storage_.end() &&
         id_and_data->second->heavy_ad_status_with_policy() !=
             FrameData::HeavyAdStatus::kNone) {
-      RecordPerFrameHistograms(*id_and_data->second);
-      id_and_data->second->RecordAdFrameLoadUkmEvent(
-          GetDelegate().GetPageUkmSourceId());
+      RecordPerFrameMetrics(*id_and_data->second,
+                            GetDelegate().GetPageUkmSourceId());
       ad_frames_data_storage_.erase(id_and_data->second);
       ad_frames_data_.erase(id_and_data);
       ad_frames_data_storage_.emplace_back(
@@ -549,17 +548,27 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   // The browser may come back, but there is no guarantee. To be safe, record
-  // what we have now and ignore future changes to this navigation.
-  if (GetDelegate().DidCommit()) {
+  // what we have now and keep tracking only for the purposes of interventions.
+  if (GetDelegate().DidCommit() && !histograms_recorded_)
     RecordHistograms(GetDelegate().GetPageUkmSourceId());
-  }
+  // Even if we didn't commit/record histograms, set histograms_recorded_ to
+  // true, because this preserves the behavior of not reporting after the
+  // browser app has been backgrounded.
+  histograms_recorded_ = true;
 
-  return STOP_OBSERVING;
+  // TODO(ericrobinson): We could potentially make this contingent on whether
+  // heavy_ads is enabled, but it's probably simpler to continue to monitor
+  // silently in case future interventions require similar behavior.
+  return CONTINUE_OBSERVING;
 }
 
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  RecordHistograms(GetDelegate().GetPageUkmSourceId());
+  // If Chrome was backgrounded previously, then we have already recorded the
+  // histograms, otherwise we need to.
+  if (!histograms_recorded_)
+    RecordHistograms(GetDelegate().GetPageUkmSourceId());
+  histograms_recorded_ = true;
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -664,9 +673,7 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
   // remove it from storage. All child frames should be deleted by this point.
   if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
                            render_frame_host->GetFrameTreeNodeId()) {
-    RecordPerFrameHistograms(*ancestor_data);
-    ancestor_data->RecordAdFrameLoadUkmEvent(
-        GetDelegate().GetPageUkmSourceId());
+    RecordPerFrameMetrics(*ancestor_data, GetDelegate().GetPageUkmSourceId());
     DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
     page_ad_density_tracker_.RemoveRect(id_and_data->first);
@@ -845,13 +852,8 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   // Record per-frame metrics for any existing frames.
   for (const auto& frame_data : ad_frames_data_storage_) {
-    RecordPerFrameHistograms(frame_data);
-    frame_data.RecordAdFrameLoadUkmEvent(source_id);
+    RecordPerFrameMetrics(frame_data, source_id);
   }
-
-  // Clear the frame data now that all per frame metrics are recorded.
-  ad_frames_data_storage_.clear();
-  ad_frames_data_.clear();
 
   RecordAggregateHistogramsForAdTagging(
       FrameData::FrameVisibility::kNonVisible);
@@ -1002,11 +1004,16 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForHeavyAds() {
       GetDelegate().GetPageEndReason() == page_load_metrics::END_RELOAD);
 }
 
-void AdsPageLoadMetricsObserver::RecordPerFrameHistograms(
-    const FrameData& ad_frame_data) {
+void AdsPageLoadMetricsObserver::RecordPerFrameMetrics(
+    const FrameData& ad_frame_data,
+    ukm::SourceId source_id) {
+  // If we've previously recorded histograms, then don't do anything.
+  if (histograms_recorded_)
+    return;
   RecordPerFrameHistogramsForCpuUsage(ad_frame_data);
   RecordPerFrameHistogramsForAdTagging(ad_frame_data);
   RecordPerFrameHistogramsForHeavyAds(ad_frame_data);
+  ad_frame_data.RecordAdFrameLoadUkmEvent(source_id);
 }
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
@@ -1019,7 +1026,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
   if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
-  // Record per frame histograms to the appropriate visibility prefixes.
+  // Record per-frame histograms to the appropriate visibility prefixes.
   for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,
                                 ad_frame_data.visibility()}) {
     // Report the peak windowed usage, which is independent of activation status
@@ -1067,7 +1074,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
 
   RecordAdFrameIgnoredByRestrictedAdTagging(false /*ignored */);
 
-  // Record per frame histograms to the appropriate visibility prefixes.
+  // Record per-frame histograms to the appropriate visibility prefixes.
   for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,
                                 ad_frame_data.visibility()}) {
     // Update aggregate ad information.
@@ -1131,7 +1138,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForHeavyAds(
   if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
-  // Record per frame histograms to the appropriate visibility prefixes.
+  // Record per-frame histograms to the appropriate visibility prefixes.
   for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,
                                 ad_frame_data.visibility()}) {
     ADS_HISTOGRAM("HeavyAds.ComputedType2", UMA_HISTOGRAM_ENUMERATION,

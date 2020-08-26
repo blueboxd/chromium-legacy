@@ -8,6 +8,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -110,6 +111,11 @@ gfx::Size TabSearchBubbleView::CalculatePreferredSize() const {
   preferred_size.SetToMax(kMinSize);
   preferred_size.SetToMin(kMaxSize);
   return preferred_size;
+}
+
+void TabSearchBubbleView::AddedToWidget() {
+  BubbleDialogDelegateView::AddedToWidget();
+  web_view_->holder()->SetCornerRadii(gfx::RoundedCornersF(GetCornerRadius()));
 }
 
 void TabSearchBubbleView::OnWebViewSizeChanged() {

@@ -128,13 +128,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   scoped_refptr<testing::StrictMock<MockBluetoothSocket> > mock_server_socket
       = new testing::StrictMock<MockBluetoothSocket>();
   BluetoothAdapter::ServiceOptions service_options;
-  service_options.name.reset(new std::string("MyServiceName"));
+  service_options.name = "MyServiceName";
   EXPECT_CALL(
       *mock_adapter_,
       CreateRfcommService(
           service_uuid,
           testing::Field(&BluetoothAdapter::ServiceOptions::name,
-                         testing::Pointee(testing::Eq("MyServiceName"))),
+                         testing::Eq("MyServiceName")),
           testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<2>(mock_server_socket));
 

@@ -117,6 +117,25 @@ void WindowCycleEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void WindowCycleEventFilter::OnGestureEvent(ui::GestureEvent* event) {
+  if (features::IsInteractiveWindowCycleListEnabled() &&
+      Shell::Get()->window_cycle_controller()->IsEventInCycleView(event)) {
+    return;
+  }
+
+  // Prevent any form of tap from doing anything while the Alt+Tab UI is active.
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_DOUBLE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+      event->type() == ui::ET_GESTURE_TAP_DOWN ||
+      event->type() == ui::ET_GESTURE_TAP_UNCONFIRMED ||
+      event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
+      event->type() == ui::ET_GESTURE_LONG_PRESS ||
+      event->type() == ui::ET_GESTURE_LONG_TAP) {
+    event->StopPropagation();
+  }
+}
+
 WindowCycleEventFilter::AltReleaseHandler::AltReleaseHandler() = default;
 
 WindowCycleEventFilter::AltReleaseHandler::~AltReleaseHandler() = default;

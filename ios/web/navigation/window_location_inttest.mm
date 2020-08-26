@@ -62,9 +62,6 @@ class WindowLocationTest : public web::WebIntTest {
   void SetUp() override {
     web::WebIntTest::SetUp();
 
-    // window.location tests use file-based test pages.
-    web::test::SetUpFileBasedHttpServer();
-
     // Load the window.location test page.
     window_location_url_ =
         web::test::HttpServer::MakeUrl(kWindowLocationTestURL);

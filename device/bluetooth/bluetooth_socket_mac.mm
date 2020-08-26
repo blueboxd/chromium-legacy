@@ -20,6 +20,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -245,7 +246,7 @@ NSString* IntToNSString(int integer) {
 // corresponding to the provided |uuid|, |name|, and |protocol_definition|. Does
 // not include a service name in the definition if |name| is null.
 NSDictionary* BuildServiceDefinition(const BluetoothUUID& uuid,
-                                     const std::string* name,
+                                     const base::Optional<std::string>& name,
                                      NSArray* protocol_definition) {
   NSMutableDictionary* service_definition = [NSMutableDictionary dictionary];
 
@@ -290,8 +291,7 @@ NSDictionary* BuildRfcommServiceDefinition(
       },
     ],
   ];
-  return BuildServiceDefinition(
-      uuid, options.name.get(), rfcomm_protocol_definition);
+  return BuildServiceDefinition(uuid, options.name, rfcomm_protocol_definition);
 }
 
 // Returns a dictionary containing the Bluetooth L2CAP service definition
@@ -310,8 +310,7 @@ NSDictionary* BuildL2capServiceDefinition(
       },
     ],
   ];
-  return BuildServiceDefinition(
-      uuid, options.name.get(), l2cap_protocol_definition);
+  return BuildServiceDefinition(uuid, options.name, l2cap_protocol_definition);
 }
 
 // Registers a Bluetooth service with the specified |service_definition| in the
@@ -340,7 +339,7 @@ IOBluetoothSDPServiceRecord* RegisterService(
 // Returns true iff the |requested_channel_id| was registered in the RFCOMM
 // |service_record|. If it was, also updates |registered_channel_id| with the
 // registered value, as the requested id may have been left unspecified.
-bool VerifyRfcommService(const int* requested_channel_id,
+bool VerifyRfcommService(const base::Optional<int>& requested_channel_id,
                          BluetoothRFCOMMChannelID* registered_channel_id,
                          IOBluetoothSDPServiceRecord* service_record) {
   // Test whether the requested channel id was available.
@@ -357,9 +356,9 @@ bool VerifyRfcommService(const int* requested_channel_id,
   return true;
 }
 
-// Registers an RFCOMM service with the specified |uuid|, |options.channel_id|,
+// Registers an RFCOMM service with the specified |uuid|, |options.channel|,
 // and |options.name| in the system SDP server. Automatically allocates a
-// channel if |options.channel_id| is null. Does not specify a name if
+// channel if |options.channel| is null. Does not specify a name if
 // |options.name| is null. Returns a handle to the registered service and
 // updates |registered_channel_id| to the actual channel id, or returns nil if
 // the service could not be registered.
@@ -369,14 +368,14 @@ IOBluetoothSDPServiceRecord* RegisterRfcommService(
     BluetoothRFCOMMChannelID* registered_channel_id) {
   return RegisterService(
       BuildRfcommServiceDefinition(uuid, options),
-      base::BindOnce(&VerifyRfcommService, options.channel.get(),
+      base::BindOnce(&VerifyRfcommService, options.channel,
                      registered_channel_id));
 }
 
 // Returns true iff the |requested_psm| was registered in the L2CAP
 // |service_record|. If it was, also updates |registered_psm| with the
 // registered value, as the requested PSM may have been left unspecified.
-bool VerifyL2capService(const int* requested_psm,
+bool VerifyL2capService(const base::Optional<int>& requested_psm,
                         BluetoothL2CAPPSM* registered_psm,
                         IOBluetoothSDPServiceRecord* service_record) {
   // Test whether the requested PSM was available.
@@ -404,7 +403,7 @@ IOBluetoothSDPServiceRecord* RegisterL2capService(
     BluetoothL2CAPPSM* registered_psm) {
   return RegisterService(
       BuildL2capServiceDefinition(uuid, options),
-      base::BindOnce(&VerifyL2capService, options.psm.get(), registered_psm));
+      base::BindOnce(&VerifyL2capService, options.psm, registered_psm));
 }
 
 }  // namespace

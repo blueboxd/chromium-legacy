@@ -210,7 +210,8 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);
 
-  if (layer->IsRootLayer() && layer->ScrollsOverflow() &&
+  if ((layer->IsRootLayer() || layer->NeedsReorderOverlayOverflowControls()) &&
+      layer->ScrollsOverflow() &&
       layer->DescendantHasDirectOrScrollingCompositingReason() &&
       !layer->NeedsCompositedScrolling())
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);

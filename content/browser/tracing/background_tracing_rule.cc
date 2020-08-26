@@ -250,9 +250,8 @@ class HistogramRule : public BackgroundTracingRule,
     base::StatisticsRecorder::SetCallback(
         histogram_name_,
         base::BindRepeating(&HistogramRule::OnHistogramChangedCallback,
-                            base::Unretained(this), histogram_name_,
-                            histogram_lower_value_, histogram_upper_value_,
-                            repeat_));
+                            base::Unretained(this), histogram_lower_value_,
+                            histogram_upper_value_, repeat_));
 
     BackgroundTracingManagerImpl::GetInstance()->AddAgentObserver(this);
     installed_ = true;
@@ -310,10 +309,11 @@ class HistogramRule : public BackgroundTracingRule,
     agent->ClearUMACallback(histogram_name_);
   }
 
-  void OnHistogramChangedCallback(const std::string& histogram_name,
-                                  base::Histogram::Sample reference_lower_value,
+  void OnHistogramChangedCallback(base::Histogram::Sample reference_lower_value,
                                   base::Histogram::Sample reference_upper_value,
                                   bool repeat,
+                                  const char* histogram_name,
+                                  uint64_t name_hash,
                                   base::Histogram::Sample actual_value) {
     if (reference_lower_value > actual_value ||
         reference_upper_value < actual_value) {

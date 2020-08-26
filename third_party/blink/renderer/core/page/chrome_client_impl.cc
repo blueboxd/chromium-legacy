@@ -238,9 +238,7 @@ void ChromeClientImpl::StartDragging(LocalFrame* frame,
                                      const SkBitmap& drag_image,
                                      const gfx::Point& drag_image_offset) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  WebDragData drag = drag_data;
-  drag.SetReferrerPolicy(web_frame->GetDocument().GetReferrerPolicy());
-  web_frame->LocalRootFrameWidget()->StartDragging(drag, mask, drag_image,
+  web_frame->LocalRootFrameWidget()->StartDragging(drag_data, mask, drag_image,
                                                    drag_image_offset);
 }
 

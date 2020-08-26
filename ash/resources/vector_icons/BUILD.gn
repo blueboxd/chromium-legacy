@@ -49,6 +49,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "dictation_on.icon",
     "dictation_on_newui.icon",
     "dogfood.icon",
+    "global_media_controls.icon",
     "hollow_check_circle.icon",
     "html.icon",
     "ime_menu_emoticon.icon",

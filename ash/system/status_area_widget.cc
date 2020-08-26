@@ -18,6 +18,7 @@
 #include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
+#include "ash/system/media/media_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
@@ -33,6 +34,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "media/base/media_switches.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 
@@ -113,6 +115,11 @@ void StatusAreaWidget::Initialize() {
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
   AddTrayButton(palette_tray_.get());
+
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
+    media_tray_ = std::make_unique<MediaTray>(shelf_);
+    AddTrayButton(media_tray_.get());
+  }
 
   unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
   AddTrayButton(unified_system_tray_.get());

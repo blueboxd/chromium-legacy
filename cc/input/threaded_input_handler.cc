@@ -48,9 +48,11 @@ void RecordCompositorSlowScrollMetric(ui::ScrollInputType type,
 InputHandlerCommitData::InputHandlerCommitData() = default;
 InputHandlerCommitData::~InputHandlerCommitData() = default;
 
-ThreadedInputHandler::ThreadedInputHandler(LayerTreeHostImpl* host_impl)
-    : host_impl_(*host_impl),
-      scrollbar_controller_(std::make_unique<ScrollbarController>(host_impl)) {}
+ThreadedInputHandler::ThreadedInputHandler(
+    CompositorDelegateForInput& compositor_delegate)
+    : compositor_delegate_(compositor_delegate),
+      scrollbar_controller_(std::make_unique<ScrollbarController>(
+          &compositor_delegate_.GetImplDeprecated())) {}
 
 ThreadedInputHandler::~ThreadedInputHandler() = default;
 
@@ -81,7 +83,9 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
   // ScrollBy is a better place to do it).
   if (scroll_state->delta_granularity() ==
       ui::ScrollGranularity::kScrollByPrecisePixel) {
-    host_impl_.mutator_host()->ScrollAnimationAbort();
+    compositor_delegate_.GetImplDeprecated()
+        .mutator_host()
+        ->ScrollAnimationAbort();
     scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   }
 
@@ -152,8 +156,9 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
                            TRACE_EVENT_SCOPE_THREAD);
       gfx::Point viewport_point(scroll_state->position_x(),
                                 scroll_state->position_y());
-      gfx::PointF device_viewport_point = gfx::ScalePoint(
-          gfx::PointF(viewport_point), host_impl_.DeviceScaleFactor());
+      gfx::PointF device_viewport_point =
+          gfx::ScalePoint(gfx::PointF(viewport_point),
+                          compositor_delegate_.DeviceScaleFactor());
 
       if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
         if (scroll_state->data()->is_main_thread_hit_tested) {
@@ -259,7 +264,7 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
   } else if (!scrolling_node) {
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
-    if (Settings().is_layer_tree_for_subframe) {
+    if (compositor_delegate_.GetSettings().is_layer_tree_for_subframe) {
       // OOPIFs never have a viewport scroll node so if we can't scroll
       // we need to be bubble up to the parent frame. This happens by
       // returning SCROLL_UNKNOWN.
@@ -355,22 +360,14 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
         ui::ScrollGranularity::kScrollByPixel;
   }
 
-  host_impl_.AccumulateScrollDeltaForTracing(
+  compositor_delegate_.AccumulateScrollDeltaForTracing(
       gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y()));
 
-  // Flash the overlay scrollbar even if the scroll delta is 0.
-  if (Settings().scrollbar_flash_after_any_scroll_update) {
-    host_impl_.FlashAllScrollbars(false);
-  } else {
-    ScrollbarAnimationController* animation_controller =
-        host_impl_.ScrollbarAnimationControllerForElementId(
-            CurrentlyScrollingNode()->element_id);
-    if (animation_controller)
-      animation_controller->WillUpdateScroll();
-  }
+  compositor_delegate_.WillScrollContent(CurrentlyScrollingNode()->element_id);
 
-  float initial_top_controls_offset =
-      host_impl_.browser_controls_manager()->ControlsTopOffset();
+  float initial_top_controls_offset = compositor_delegate_.GetImplDeprecated()
+                                          .browser_controls_manager()
+                                          ->ControlsTopOffset();
 
   ScrollLatchedScroller(scroll_state, delayed_by);
 
@@ -380,9 +377,9 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
   did_scroll_y_for_scroll_gesture_ |= did_scroll_y;
   bool did_scroll_content = did_scroll_x || did_scroll_y;
   if (did_scroll_content) {
-    ShowScrollbarsForImplScroll(CurrentlyScrollingNode()->element_id);
     bool is_animated_scroll = ShouldAnimateScroll(*scroll_state);
-    host_impl_.DidScrollContent(is_animated_scroll);
+    compositor_delegate_.DidScrollContent(CurrentlyScrollingNode()->element_id,
+                                          is_animated_scroll);
   } else {
     overscroll_delta_for_main_thread_ +=
         gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
@@ -411,8 +408,9 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
   accumulated_root_overscroll_ += unused_root_delta;
 
   bool did_scroll_top_controls =
-      initial_top_controls_offset !=
-      host_impl_.browser_controls_manager()->ControlsTopOffset();
+      initial_top_controls_offset != compositor_delegate_.GetImplDeprecated()
+                                         .browser_controls_manager()
+                                         ->ControlsTopOffset();
 
   InputHandlerScrollResult scroll_result;
   scroll_result.did_scroll = did_scroll_content || did_scroll_top_controls;
@@ -437,8 +435,11 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
   scroll_result.current_visual_offset.Scale(scale_factor);
 
   // Run animations which need to respond to updated scroll offset.
-  host_impl_.mutator_host()->TickScrollAnimations(
-      host_impl_.CurrentBeginFrameArgs().frame_time, GetScrollTree());
+  compositor_delegate_.GetImplDeprecated().mutator_host()->TickScrollAnimations(
+      compositor_delegate_.GetImplDeprecated()
+          .CurrentBeginFrameArgs()
+          .frame_time,
+      GetScrollTree());
 
   return scroll_result;
 }
@@ -450,7 +451,9 @@ void ThreadedInputHandler::ScrollEnd(bool should_snap) {
 
   // Note that if we deferred the scroll end then we should not snap. We will
   // snap once we deliver the deferred scroll end.
-  if (host_impl_.mutator_host()->ImplOnlyScrollAnimatingElement()) {
+  if (compositor_delegate_.GetImplDeprecated()
+          .mutator_host()
+          ->ImplOnlyScrollAnimatingElement()) {
     DCHECK(!deferred_scroll_end_);
     deferred_scroll_end_ = true;
     return;
@@ -463,7 +466,9 @@ void ThreadedInputHandler::ScrollEnd(bool should_snap) {
 
   DCHECK(latched_scroll_type_.has_value());
 
-  host_impl_.browser_controls_manager()->ScrollEnd();
+  compositor_delegate_.GetImplDeprecated()
+      .browser_controls_manager()
+      ->ScrollEnd();
 
   ClearCurrentlyScrollingNode();
   deferred_scroll_end_ = false;
@@ -494,29 +499,31 @@ void ThreadedInputHandler::RecordScrollBegin(
       scrolling_thread = FrameSequenceMetrics::ThreadType::kMain;
       break;
   }
-  host_impl_.frame_trackers().StartScrollSequence(tracker_type,
-                                                  scrolling_thread);
+  compositor_delegate_.GetImplDeprecated().frame_trackers().StartScrollSequence(
+      tracker_type, scrolling_thread);
 }
 
 void ThreadedInputHandler::RecordScrollEnd(ui::ScrollInputType input_type) {
-  host_impl_.frame_trackers().StopSequence(GetTrackerTypeForScroll(input_type));
+  compositor_delegate_.GetImplDeprecated().frame_trackers().StopSequence(
+      GetTrackerTypeForScroll(input_type));
 }
 
 InputHandlerPointerResult ThreadedInputHandler::MouseMoveAt(
     const gfx::Point& viewport_point) {
   InputHandlerPointerResult result;
-  if (Settings().compositor_threaded_scrollbar_scrolling) {
+  if (compositor_delegate_.GetSettings()
+          .compositor_threaded_scrollbar_scrolling) {
     result =
         scrollbar_controller_->HandlePointerMove(gfx::PointF(viewport_point));
   }
 
   // Early out if there are no animation controllers and avoid the hit test.
   // This happens on platforms without animated scrollbars.
-  if (!host_impl_.HasAnimatedScrollbars())
+  if (!compositor_delegate_.HasAnimatedScrollbars())
     return result;
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), host_impl_.DeviceScaleFactor());
+      gfx::PointF(viewport_point), compositor_delegate_.DeviceScaleFactor());
 
   ScrollHitTestResult hit_test = HitTestScrollNode(device_viewport_point);
 
@@ -533,11 +540,13 @@ InputHandlerPointerResult ThreadedInputHandler::MouseMoveAt(
 
   ElementId scroll_element_id = scroll_node->element_id;
   ScrollbarAnimationController* new_animation_controller =
-      host_impl_.ScrollbarAnimationControllerForElementId(scroll_element_id);
+      compositor_delegate_.GetImplDeprecated()
+          .ScrollbarAnimationControllerForElementId(scroll_element_id);
   if (scroll_element_id != scroll_element_id_mouse_currently_over_) {
     ScrollbarAnimationController* old_animation_controller =
-        host_impl_.ScrollbarAnimationControllerForElementId(
-            scroll_element_id_mouse_currently_over_);
+        compositor_delegate_.GetImplDeprecated()
+            .ScrollbarAnimationControllerForElementId(
+                scroll_element_id_mouse_currently_over_);
     if (old_animation_controller)
       old_animation_controller->DidMouseLeave();
 
@@ -545,7 +554,8 @@ InputHandlerPointerResult ThreadedInputHandler::MouseMoveAt(
 
     // Experiment: Enables will flash scrollbar when user move mouse enter a
     // scrollable area.
-    if (Settings().scrollbar_flash_when_mouse_enter && new_animation_controller)
+    if (compositor_delegate_.GetSettings().scrollbar_flash_when_mouse_enter &&
+        new_animation_controller)
       new_animation_controller->DidScrollUpdate();
   }
 
@@ -561,8 +571,9 @@ InputHandlerPointerResult ThreadedInputHandler::MouseDown(
     const gfx::PointF& viewport_point,
     bool shift_modifier) {
   ScrollbarAnimationController* animation_controller =
-      host_impl_.ScrollbarAnimationControllerForElementId(
-          scroll_element_id_mouse_currently_over_);
+      compositor_delegate_.GetImplDeprecated()
+          .ScrollbarAnimationControllerForElementId(
+              scroll_element_id_mouse_currently_over_);
   if (animation_controller) {
     animation_controller->DidMouseDown();
     scroll_element_id_mouse_currently_captured_ =
@@ -570,7 +581,8 @@ InputHandlerPointerResult ThreadedInputHandler::MouseDown(
   }
 
   InputHandlerPointerResult result;
-  if (Settings().compositor_threaded_scrollbar_scrolling) {
+  if (compositor_delegate_.GetSettings()
+          .compositor_threaded_scrollbar_scrolling) {
     result = scrollbar_controller_->HandlePointerDown(viewport_point,
                                                       shift_modifier);
   }
@@ -582,8 +594,9 @@ InputHandlerPointerResult ThreadedInputHandler::MouseUp(
     const gfx::PointF& viewport_point) {
   if (scroll_element_id_mouse_currently_captured_) {
     ScrollbarAnimationController* animation_controller =
-        host_impl_.ScrollbarAnimationControllerForElementId(
-            scroll_element_id_mouse_currently_captured_);
+        compositor_delegate_.GetImplDeprecated()
+            .ScrollbarAnimationControllerForElementId(
+                scroll_element_id_mouse_currently_captured_);
 
     scroll_element_id_mouse_currently_captured_ = ElementId();
 
@@ -592,22 +605,22 @@ InputHandlerPointerResult ThreadedInputHandler::MouseUp(
   }
 
   InputHandlerPointerResult result;
-  if (Settings().compositor_threaded_scrollbar_scrolling)
+  if (compositor_delegate_.GetSettings()
+          .compositor_threaded_scrollbar_scrolling)
     result = scrollbar_controller_->HandlePointerUp(viewport_point);
 
   return result;
 }
 
 void ThreadedInputHandler::MouseLeave() {
-  for (auto& pair : host_impl_.get_scrollbar_animation_controllers())
-    pair.second->DidMouseLeave();
+  compositor_delegate_.DidMouseLeave();
   scroll_element_id_mouse_currently_over_ = ElementId();
 }
 
 ElementId ThreadedInputHandler::FindFrameElementIdAtPoint(
     const gfx::PointF& viewport_point) {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), host_impl_.DeviceScaleFactor());
+      gfx::PointF(viewport_point), compositor_delegate_.DeviceScaleFactor());
   return ActiveTree().FindFrameElementIdAtPoint(device_viewport_point);
 }
 
@@ -635,14 +648,15 @@ void ThreadedInputHandler::SetSynchronousInputHandlerRootScrollOffset(
   if (!changed)
     return;
 
-  ShowScrollbarsForImplScroll(OuterViewportScrollNode()->element_id);
+  compositor_delegate_.DidScrollContent(OuterViewportScrollNode()->element_id,
+                                        /*is_animated_scroll=*/false);
   SetNeedsCommit();
 
   // After applying the synchronous input handler's scroll offset, tell it what
   // we ended up with.
   UpdateRootLayerStateForSynchronousInputHandler();
 
-  host_impl_.DidSetRootScrollOffsetForSynchronousInputHandler();
+  compositor_delegate_.SetNeedsFullViewportRedraw();
 }
 
 void ThreadedInputHandler::PinchGestureBegin() {
@@ -653,8 +667,10 @@ void ThreadedInputHandler::PinchGestureBegin() {
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        OuterViewportScrollNode() ? false : true);
   ActiveTree().SetCurrentlyScrollingNode(OuterViewportScrollNode());
-  host_impl_.browser_controls_manager()->PinchBegin();
-  host_impl_.DidStartPinchZoom();
+  compositor_delegate_.GetImplDeprecated()
+      .browser_controls_manager()
+      ->PinchBegin();
+  compositor_delegate_.DidStartPinchZoom();
 }
 
 void ThreadedInputHandler::PinchGestureUpdate(float magnify_delta,
@@ -665,7 +681,7 @@ void ThreadedInputHandler::PinchGestureUpdate(float magnify_delta,
   has_pinch_zoomed_ = true;
   GetViewport().PinchUpdate(magnify_delta, anchor);
   SetNeedsCommit();
-  host_impl_.DidUpdatePinchZoom();
+  compositor_delegate_.DidUpdatePinchZoom();
   // Pinching can change the root scroll offset, so inform the synchronous input
   // handler.
   UpdateRootLayerStateForSynchronousInputHandler();
@@ -679,13 +695,15 @@ void ThreadedInputHandler::PinchGestureEnd(const gfx::Point& anchor,
     ClearCurrentlyScrollingNode();
   }
   GetViewport().PinchEnd(anchor, snap_to_min);
-  host_impl_.browser_controls_manager()->PinchEnd();
+  compositor_delegate_.GetImplDeprecated()
+      .browser_controls_manager()
+      ->PinchEnd();
   SetNeedsCommit();
-  host_impl_.DidEndPinchZoom();
+  compositor_delegate_.DidEndPinchZoom();
 }
 
 void ThreadedInputHandler::SetNeedsAnimateInput() {
-  host_impl_.SetNeedsAnimateInput();
+  compositor_delegate_.GetImplDeprecated().SetNeedsAnimateInput();
 }
 
 bool ThreadedInputHandler::IsCurrentlyScrollingViewport() const {
@@ -703,7 +721,7 @@ EventListenerProperties ThreadedInputHandler::GetEventListenerProperties(
 bool ThreadedInputHandler::HasBlockingWheelEventHandlerAt(
     const gfx::Point& viewport_point) const {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), host_impl_.DeviceScaleFactor());
+      gfx::PointF(viewport_point), compositor_delegate_.DeviceScaleFactor());
 
   LayerImpl* layer_impl_with_wheel_event_handler =
       ActiveTree().FindLayerThatIsHitByPointInWheelEventHandlerRegion(
@@ -717,7 +735,7 @@ ThreadedInputHandler::EventListenerTypeForTouchStartOrMoveAt(
     const gfx::Point& viewport_point,
     TouchAction* out_touch_action) {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), host_impl_.DeviceScaleFactor());
+      gfx::PointF(viewport_point), compositor_delegate_.DeviceScaleFactor());
 
   LayerImpl* layer_impl_with_touch_handler =
       ActiveTree().FindLayerThatIsHitByPointInTouchHandlerRegion(
@@ -769,20 +787,23 @@ ThreadedInputHandler::EventListenerTypeForTouchStartOrMoveAt(
 std::unique_ptr<SwapPromiseMonitor>
 ThreadedInputHandler::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return host_impl_.CreateLatencyInfoSwapPromiseMonitor(latency);
+  return compositor_delegate_.GetImplDeprecated()
+      .CreateLatencyInfoSwapPromiseMonitor(latency);
 }
 
 std::unique_ptr<EventsMetricsManager::ScopedMonitor>
 ThreadedInputHandler::GetScopedEventMetricsMonitor(
     std::unique_ptr<EventMetrics> event_metrics) {
-  return host_impl_.GetScopedEventMetricsMonitor(std::move(event_metrics));
+  return compositor_delegate_.GetImplDeprecated().GetScopedEventMetricsMonitor(
+      std::move(event_metrics));
 }
 
 ScrollElasticityHelper* ThreadedInputHandler::CreateScrollElasticityHelper() {
   DCHECK(!scroll_elasticity_helper_);
-  if (Settings().enable_elastic_overscroll) {
+  if (compositor_delegate_.GetSettings().enable_elastic_overscroll) {
     scroll_elasticity_helper_.reset(
-        ScrollElasticityHelper::CreateForLayerTreeHostImpl(&host_impl_));
+        ScrollElasticityHelper::CreateForLayerTreeHostImpl(
+            &compositor_delegate_.GetImplDeprecated()));
   }
   return scroll_elasticity_helper_.get();
 }
@@ -880,7 +901,7 @@ void ThreadedInputHandler::ScrollEndForSnapFling(bool did_finish) {
 }
 
 void ThreadedInputHandler::NotifyInputEvent() {
-  host_impl_.NotifyInputEvent();
+  compositor_delegate_.GetImplDeprecated().NotifyInputEvent();
 }
 
 //
@@ -904,7 +925,8 @@ void ThreadedInputHandler::ProcessCommitDeltas(
   // for getting it.
   GetScrollTree().CollectScrollDeltas(
       commit_data, inner_viewport_scroll_element_id,
-      Settings().commit_fractional_scroll_deltas, snapped_elements);
+      compositor_delegate_.GetSettings().commit_fractional_scroll_deltas,
+      snapped_elements);
 
   // Record and reset scroll source flags.
   DCHECK(!commit_data->manipulation_info);
@@ -972,8 +994,7 @@ void ThreadedInputHandler::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 void ThreadedInputHandler::DidCommit() {
   // In high latency mode commit cannot finish within the same frame. We need to
   // flush input here to make sure they got picked up by |PrepareTiles()|.
-  if (input_handler_client_ &&
-      host_impl_.GetCompositorThreadPhase() == ImplThreadPhase::IDLE)
+  if (input_handler_client_ && compositor_delegate_.IsInHighLatencyMode())
     input_handler_client_->DeliverInputForHighLatencyMode();
 }
 
@@ -1050,11 +1071,11 @@ const ScrollNode* ThreadedInputHandler::CurrentlyScrollingNode() const {
 }
 
 ScrollTree& ThreadedInputHandler::GetScrollTree() {
-  return ActiveTree().property_trees()->scroll_tree;
+  return compositor_delegate_.GetScrollTree();
 }
 
 ScrollTree& ThreadedInputHandler::GetScrollTree() const {
-  return ActiveTree().property_trees()->scroll_tree;
+  return compositor_delegate_.GetScrollTree();
 }
 
 ScrollNode* ThreadedInputHandler::InnerViewportScrollNode() const {
@@ -1066,25 +1087,21 @@ ScrollNode* ThreadedInputHandler::OuterViewportScrollNode() const {
 }
 
 Viewport& ThreadedInputHandler::GetViewport() const {
-  return host_impl_.viewport();
+  return compositor_delegate_.GetImplDeprecated().viewport();
 }
 
 void ThreadedInputHandler::SetNeedsCommit() {
-  host_impl_.SetNeedsCommitInputChanges();
+  compositor_delegate_.SetNeedsCommit();
 }
 
 LayerTreeImpl& ThreadedInputHandler::ActiveTree() {
-  DCHECK(host_impl_.active_tree());
-  return *host_impl_.active_tree();
+  DCHECK(compositor_delegate_.GetImplDeprecated().active_tree());
+  return *compositor_delegate_.GetImplDeprecated().active_tree();
 }
 
 LayerTreeImpl& ThreadedInputHandler::ActiveTree() const {
-  DCHECK(host_impl_.active_tree());
-  return *host_impl_.active_tree();
-}
-
-const LayerTreeSettings& ThreadedInputHandler::Settings() const {
-  return host_impl_.settings();
+  DCHECK(compositor_delegate_.GetImplDeprecated().active_tree());
+  return *compositor_delegate_.GetImplDeprecated().active_tree();
 }
 
 FrameSequenceTrackerType ThreadedInputHandler::GetTrackerTypeForScroll(
@@ -1140,7 +1157,7 @@ gfx::Vector2dF ThreadedInputHandler::ResolveScrollGranularityToPixels(
 
     // Convert from rootframe coordinates to screen coordinates (physical
     // pixels).
-    scroller_size.Scale(ActiveTree().page_scale_factor_for_scroll());
+    scroller_size.Scale(compositor_delegate_.PageScaleFactor());
 
     pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
         pixel_delta, scroller_size, viewport_size);
@@ -1402,18 +1419,6 @@ bool ThreadedInputHandler::IsTouchDraggingScrollbar(
          type == ui::ScrollInputType::kTouchscreen;
 }
 
-void ThreadedInputHandler::ShowScrollbarsForImplScroll(ElementId element_id) {
-  if (Settings().scrollbar_flash_after_any_scroll_update) {
-    host_impl_.FlashAllScrollbars(true);
-    return;
-  }
-  if (!element_id)
-    return;
-  if (ScrollbarAnimationController* animation_controller =
-          host_impl_.ScrollbarAnimationControllerForElementId(element_id))
-    animation_controller->DidScrollUpdate();
-}
-
 ScrollNode* ThreadedInputHandler::GetNodeToScroll(ScrollNode* node) const {
   // Blink has a notion of a "root scroller", which is the scroller in a page
   // that is considered to host the main content. Typically this will be the
@@ -1492,7 +1497,7 @@ gfx::Vector2dF ThreadedInputHandler::ComputeScrollDelta(
     const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta) {
   ScrollTree& scroll_tree = GetScrollTree();
-  float scale_factor = ActiveTree().page_scale_factor_for_scroll();
+  float scale_factor = compositor_delegate_.PageScaleFactor();
 
   gfx::Vector2dF adjusted_scroll(delta);
   adjusted_scroll.Scale(1.f / scale_factor);
@@ -1526,7 +1531,8 @@ bool ThreadedInputHandler::CalculateLocalScrollDeltaAndStartPoint(
   // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
 
-  float scale_from_viewport_to_screen_space = host_impl_.DeviceScaleFactor();
+  float scale_from_viewport_to_screen_space =
+      compositor_delegate_.DeviceScaleFactor();
   gfx::PointF screen_space_point =
       gfx::ScalePoint(viewport_point, scale_from_viewport_to_screen_space);
 
@@ -1596,7 +1602,8 @@ gfx::Vector2dF ThreadedInputHandler::ScrollNodeWithViewportSpaceDelta(
   if (end_clipped)
     return gfx::Vector2dF();
 
-  float scale_from_viewport_to_screen_space = host_impl_.DeviceScaleFactor();
+  float scale_from_viewport_to_screen_space =
+      compositor_delegate_.DeviceScaleFactor();
   gfx::PointF actual_viewport_end_point = gfx::ScalePoint(
       actual_screen_space_end_point, 1.f / scale_from_viewport_to_screen_space);
   return actual_viewport_end_point - viewport_point;
@@ -1608,7 +1615,7 @@ gfx::Vector2dF ThreadedInputHandler::ScrollNodeWithLocalDelta(
   bool scrolls_outer_viewport = scroll_node.scrolls_outer_viewport;
   TRACE_EVENT2("cc", "ScrollNodeWithLocalDelta", "delta_y", local_delta.y(),
                "is_outer", scrolls_outer_viewport);
-  float page_scale_factor = ActiveTree().page_scale_factor_for_scroll();
+  float page_scale_factor = compositor_delegate_.PageScaleFactor();
 
   ScrollTree& scroll_tree = GetScrollTree();
   gfx::ScrollOffset previous_offset =
@@ -1673,8 +1680,9 @@ void ThreadedInputHandler::ScrollLatchedScroller(ScrollState* scroll_state,
   if (ShouldAnimateScroll(*scroll_state)) {
     DCHECK(!scroll_state->is_in_inertial_phase());
 
-    if (ElementId id =
-            host_impl_.mutator_host()->ImplOnlyScrollAnimatingElement()) {
+    if (ElementId id = compositor_delegate_.GetImplDeprecated()
+                           .mutator_host()
+                           ->ImplOnlyScrollAnimatingElement()) {
       TRACE_EVENT_INSTANT0("cc", "UpdateExistingAnimation",
                            TRACE_EVENT_SCOPE_THREAD);
 
@@ -1713,8 +1721,8 @@ void ThreadedInputHandler::ScrollLatchedScroller(ScrollState* scroll_state,
         applied_delta = GetViewport().ScrollAnimated(delta, delayed_by);
       } else {
         applied_delta = ComputeScrollDelta(scroll_node, delta);
-        host_impl_.ScrollAnimationCreate(scroll_node, applied_delta,
-                                         delayed_by);
+        compositor_delegate_.GetImplDeprecated().ScrollAnimationCreate(
+            scroll_node, applied_delta, delayed_by);
       }
     }
 
@@ -1849,15 +1857,19 @@ void ThreadedInputHandler::DidLatchToScroller(const ScrollState& scroll_state,
                                               ui::ScrollInputType type) {
   DCHECK(CurrentlyScrollingNode());
   deferred_scroll_end_ = false;
-  host_impl_.browser_controls_manager()->ScrollBegin();
-  host_impl_.mutator_host()->ScrollAnimationAbort();
+  compositor_delegate_.GetImplDeprecated()
+      .browser_controls_manager()
+      ->ScrollBegin();
+  compositor_delegate_.GetImplDeprecated()
+      .mutator_host()
+      ->ScrollAnimationAbort();
 
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
   latched_scroll_type_ = type;
   last_scroll_begin_state_ = scroll_state;
 
-  host_impl_.DidStartScroll();
+  compositor_delegate_.DidStartScroll();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
   UpdateScrollSourceInfo(scroll_state, type);
@@ -1899,7 +1911,7 @@ bool ThreadedInputHandler::CanConsumeDelta(const ScrollState& scroll_state,
 
 bool ThreadedInputHandler::ShouldAnimateScroll(
     const ScrollState& scroll_state) const {
-  if (!Settings().enable_smooth_scroll)
+  if (!compositor_delegate_.GetSettings().enable_smooth_scroll)
     return false;
 
   bool has_precise_scroll_deltas = scroll_state.delta_granularity() ==
@@ -1959,17 +1971,9 @@ bool ThreadedInputHandler::SnapAtScrollEnd() {
   if (!data.FindSnapPosition(*strategy, &snap_position, &snap_target_ids))
     return false;
 
+  // TODO(bokan): Why only on the viewport?
   if (GetViewport().ShouldScroll(*scroll_node)) {
-    // Flash the overlay scrollbar even if the scroll delta is 0.
-    if (Settings().scrollbar_flash_after_any_scroll_update) {
-      host_impl_.FlashAllScrollbars(false);
-    } else {
-      ScrollbarAnimationController* animation_controller =
-          host_impl_.ScrollbarAnimationControllerForElementId(
-              scroll_node->element_id);
-      if (animation_controller)
-        animation_controller->WillUpdateScroll();
-    }
+    compositor_delegate_.WillScrollContent(scroll_node->element_id);
   }
 
   gfx::Vector2dF delta =
@@ -1977,13 +1981,14 @@ bool ThreadedInputHandler::SnapAtScrollEnd() {
   bool did_animate = false;
   if (scroll_node->scrolls_outer_viewport) {
     gfx::Vector2dF scaled_delta(delta);
-    scaled_delta.Scale(ActiveTree().page_scale_factor_for_scroll());
+    scaled_delta.Scale(compositor_delegate_.PageScaleFactor());
     gfx::Vector2dF consumed_delta =
         GetViewport().ScrollAnimated(scaled_delta, base::TimeDelta());
     did_animate = !consumed_delta.IsZero();
   } else {
-    did_animate = host_impl_.ScrollAnimationCreate(*scroll_node, delta,
-                                                   base::TimeDelta());
+    did_animate =
+        compositor_delegate_.GetImplDeprecated().ScrollAnimationCreate(
+            *scroll_node, delta, base::TimeDelta());
   }
   DCHECK(!IsAnimatingForSnap());
   if (did_animate) {
@@ -2025,20 +2030,26 @@ bool ThreadedInputHandler::ScrollAnimationUpdateTarget(
     base::TimeDelta delayed_by) {
   // TODO(bokan): Remove |scroll_node| as a parameter and just use the value
   // coming from |mutator_host|.
-  DCHECK_EQ(scroll_node.element_id,
-            host_impl_.mutator_host()->ImplOnlyScrollAnimatingElement());
+  DCHECK_EQ(scroll_node.element_id, compositor_delegate_.GetImplDeprecated()
+                                        .mutator_host()
+                                        ->ImplOnlyScrollAnimatingElement());
 
-  float scale_factor = ActiveTree().page_scale_factor_for_scroll();
+  float scale_factor = compositor_delegate_.PageScaleFactor();
   gfx::Vector2dF adjusted_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);
   adjusted_delta = UserScrollableDelta(scroll_node, adjusted_delta);
 
   bool animation_updated =
-      host_impl_.mutator_host()->ImplOnlyScrollAnimationUpdateTarget(
-          adjusted_delta, GetScrollTree().MaxScrollOffset(scroll_node.id),
-          host_impl_.CurrentBeginFrameArgs().frame_time, delayed_by);
+      compositor_delegate_.GetImplDeprecated()
+          .mutator_host()
+          ->ImplOnlyScrollAnimationUpdateTarget(
+              adjusted_delta, GetScrollTree().MaxScrollOffset(scroll_node.id),
+              compositor_delegate_.GetImplDeprecated()
+                  .CurrentBeginFrameArgs()
+                  .frame_time,
+              delayed_by);
   if (animation_updated) {
-    host_impl_.DidUpdateScrollAnimationCurve();
+    compositor_delegate_.DidUpdateScrollAnimationCurve();
 
     // The animation is no longer targeting a snap position. By clearing the
     // target, this will ensure that we attempt to resnap at the end of this

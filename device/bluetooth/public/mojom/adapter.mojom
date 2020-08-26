@@ -124,9 +124,9 @@ interface Adapter {
   [Sync]
   GetInfo() => (AdapterInfo info);
 
-  // Sets the client that listens for the adapter's events.
+  // Adds an observer that listens for the adapter's events.
   [Sync]
-  SetClient(pending_remote<AdapterClient> client) => ();
+  AddObserver(pending_remote<AdapterObserver> observer) => ();
 
   // Requests the local device to make itself discoverable to nearby remote
   // devices.
@@ -164,7 +164,8 @@ interface Adapter {
       => (pending_remote<ServerSocket>? server_socket);
 };
 
-interface AdapterClient {
+// Listener on Bluetooth events. Register as an observer via AddObserver().
+interface AdapterObserver {
   // Called when the presence of the adapter changes.
   PresentChanged(bool present);
 

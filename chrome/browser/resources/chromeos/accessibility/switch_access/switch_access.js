@@ -63,32 +63,27 @@ class SwitchAccess {
     }
     // If it's not currently in the tree, listen for changes to the desktop
     // tree.
-    const onDesktopChildrenChanged = (event) => {
+    const eventHandler = new EventHandler(
+        desktop, chrome.automation.EventType.CHILDREN_CHANGED,
+        null /** callback */);
+
+    const onEvent = (event) => {
       if (event.target.matches(findParams)) {
         // If the event target is the node we're looking for, we've found it.
-        desktop.removeEventListener(
-            chrome.automation.EventType.CHILDREN_CHANGED,
-            onDesktopChildrenChanged, false);
+        eventHandler.stop();
         foundCallback(event.target);
       } else if (event.target.children.length > 0) {
         // Otherwise, see if one of its children is the node we're looking for.
         node = event.target.find(findParams);
         if (node) {
-          desktop.removeEventListener(
-              chrome.automation.EventType.CHILDREN_CHANGED,
-              onDesktopChildrenChanged, false);
+          eventHandler.stop();
           foundCallback(node);
         }
       }
     };
 
-    // Note: Cannot use an EventHandler here because in some cases we want
-    // to run foundCallback on the event.target, and in some cases we want to
-    // run foundCallback on one of the target's children. We would need to
-    // recalculate the interesting child twice to use EventHandler.
-    desktop.addEventListener(
-        chrome.automation.EventType.CHILDREN_CHANGED, onDesktopChildrenChanged,
-        false);
+    eventHandler.setCallback(onEvent);
+    eventHandler.start();
   }
 
   /*

@@ -134,7 +134,7 @@ const SwitchAccessPredicate = {
         (scope instanceof SARootNode ? scope.isEquivalentTo(node) :
                                        scope === node);
     if (scope && !scopeEqualsNode &&
-        RectHelper.areEqual(node.location, scope.location)) {
+        RectUtil.equal(node.location, scope.location)) {
       cache.isGroup.set(node, false);
       return false;
     }

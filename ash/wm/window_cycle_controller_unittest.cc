@@ -973,6 +973,30 @@ TEST_F(InteractiveWindowCycleControllerTest, KeysConfirmSelection) {
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
+// When a user taps on an item, it should cycle to it, complete cycling and
+// activate the tapped item.
+TEST_F(InteractiveWindowCycleControllerTest, TapSelect) {
+  std::unique_ptr<Window> w0 = CreateTestWindow();
+  std::unique_ptr<Window> w1 = CreateTestWindow();
+  std::unique_ptr<Window> w2 = CreateTestWindow();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  // Start cycle and tap third item.
+  // Starting order of windows in cycle list is [2,1,0].
+  controller->StartCycling();
+  generator->GestureTapAt(
+      GetWindowCycleItemViews()[2]->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(wm::IsActiveWindow(w0.get()));
+
+  // Start cycle and tap second item.
+  // Starting order of windows in cycle list is [0,2,1].
+  controller->StartCycling();
+  generator->GestureTapAt(
+      GetWindowCycleItemViews()[1]->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+}
+
 // Tests that frame throttling starts and ends accordingly when window cycling
 // starts and ends.
 TEST_F(WindowCycleControllerTest, FrameThrottling) {

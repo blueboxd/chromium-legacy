@@ -152,16 +152,13 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
                                      ToV8InspectorStringView(message));
 }
 
-// TODO(mustaq): Fix the caller in v8/src.
+// TODO(mustaq): Is it tied to a specific user action? https://crbug.com/826293
 void ThreadDebugger::beginUserGesture() {
   auto* window = CurrentDOMWindow(isolate_);
   LocalFrame::NotifyUserActivation(
       window ? window->GetFrame() : nullptr,
       mojom::blink::UserActivationNotificationType::kDevTools);
 }
-
-// TODO(mustaq): Fix the caller in v8/src.
-void ThreadDebugger::endUserGesture() {}
 
 std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
     v8::Local<v8::Value> value) {

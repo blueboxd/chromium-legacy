@@ -153,7 +153,7 @@ void SearchHandler::AddParentResults(
 
         // Nested subpage.
         if (metadata.parent_subpage) {
-          it = AddSubpageResultIfPossible(it, *metadata.parent_subpage,
+          it = AddSubpageResultIfPossible(it, result, *metadata.parent_subpage,
                                           result->relevance_score,
                                           search_results);
           break;
@@ -171,7 +171,7 @@ void SearchHandler::AddParentResults(
 
         // Nested setting.
         if (metadata.primary.second) {
-          it = AddSubpageResultIfPossible(it, *metadata.primary.second,
+          it = AddSubpageResultIfPossible(it, result, *metadata.primary.second,
                                           result->relevance_score,
                                           search_results);
           break;
@@ -213,11 +213,21 @@ SearchHandler::AddSectionResultIfPossible(
 std::vector<mojom::SearchResultPtr>::iterator
 SearchHandler::AddSubpageResultIfPossible(
     const std::vector<mojom::SearchResultPtr>::iterator& curr_position,
+    const mojom::SearchResultPtr& child_result,
     mojom::Subpage subpage,
     double relevance_score,
     std::vector<mojom::SearchResultPtr>* results) const {
   // If |results| already includes |subpage|, do not add it again.
   if (ContainsSubpageResult(*results, subpage))
+    return curr_position;
+
+  mojom::SearchResultPtr subpage_result =
+      hierarchy_->GetSubpageMetadata(subpage).ToSearchResult(
+          child_result->relevance_score);
+
+  // Don't add a result for a parent subpage if it has the exact same text as
+  // the child result, since this results in a broken-looking UI.
+  if (subpage_result->result_text == child_result->result_text)
     return curr_position;
 
   return results->insert(

@@ -203,11 +203,11 @@ class NavigationManager {
     if (!location) {
       // Closure compiler doesn't realize we already checked isValidAndVisible
       // before calling tryMoving, so we need to explicitly check location here
-      // so that RectHelper.center does not cause a closure error.
+      // so that RectUtil.center does not cause a closure error.
       NavigationManager.moveToValidNode();
       return;
     }
-    const center = RectHelper.center(location);
+    const center = RectUtil.center(location);
     // Check if the top center is visible as a proxy for occlusion. It's
     // possible that other parts of the window are occluded, but in Chrome we
     // can't drag windows off the top of the screen.

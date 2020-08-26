@@ -2059,7 +2059,11 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
   SetBodyInnerHTML(R"HTML(
-    <style>body { margin: 0; }</style>
+    <style>
+      body { margin: 0; }
+      /* to prevent the mock overlay scrollbar from affecting compositing. */
+      #scroller::-webkit-scrollbar { display: none; }
+    </style>
     <div id='scroller' style='overflow:scroll; width:400px; height:300px;'>
       <div id='child'
           style='position:relative; width:100px; height: 200px;'></div>
@@ -2337,6 +2341,10 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
     <style>
       body {
         margin: 0;
+      }
+      /* to prevent the mock overlay scrollbar from affecting compositing. */
+      #overflow::-webkit-scrollbar {
+        display: none;
       }
       #overflow {
         position: relative;
@@ -3701,7 +3709,11 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
   // property tree context for a (pseudo) stacking context that is scrolled by a
   // containing block that is not one of the painting ancestors.
   SetBodyInnerHTML(R"HTML(
-    <style>body { margin: 20px 30px; }</style>
+    <style>
+      body { margin: 20px 30px; }
+      /* to prevent the mock overlay scrollbar from affecting compositing. */
+      #clipper::-webkit-scrollbar { display: none; }
+    </style>
     <div id='clipper' style='overflow:scroll; width:400px; height:300px;'>
       <div id='child'
           style='position:relative; width:500px; height: 600px;'></div>

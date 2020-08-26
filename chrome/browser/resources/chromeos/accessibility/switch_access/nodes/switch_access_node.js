@@ -224,7 +224,7 @@ class SAChildNode {
 
     const loc = this.location;
     if (loc) {
-      str += 'loc(' + RectHelper.toString(loc) + ') ';
+      str += 'loc(' + RectUtil.toString(loc) + ') ';
     }
 
     if (this.isGroup()) {
@@ -299,7 +299,7 @@ class SARootNode {
     const children =
         this.children_.filter((c) => !(c instanceof BackButtonNode));
     const childLocations = children.map((c) => c.location);
-    return RectHelper.unionAll(childLocations);
+    return RectUtil.unionAll(childLocations);
   }
 
   // ================= General methods =================
@@ -413,7 +413,7 @@ class SARootNode {
 
     const loc = this.location;
     if (loc) {
-      str += 'loc(' + RectHelper.toString(loc) + ') ';
+      str += 'loc(' + RectUtil.toString(loc) + ') ';
     }
 
 

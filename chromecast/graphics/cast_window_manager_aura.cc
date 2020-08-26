@@ -4,7 +4,6 @@
 
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_features.h"
@@ -236,11 +235,8 @@ void CastWindowManagerAura::Setup() {
   rounded_window_corners_ = RoundedWindowCorners::Create(this);
 
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
-  if (base::FeatureList::IsEnabled(kReduceHeadlessFrameRate)) {
-    ui::Compositor* compositor = window_tree_host_->compositor();
-    compositor->SetDisplayVSyncParameters(
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(250));
-  }
+  window_tree_host_->compositor()->SetDisplayVSyncParameters(
+      base::TimeTicks(), base::TimeDelta::FromMilliseconds(250));
 #endif
 }
 

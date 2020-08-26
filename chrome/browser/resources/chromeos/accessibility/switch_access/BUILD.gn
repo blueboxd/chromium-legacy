@@ -74,7 +74,6 @@ run_jsbundler("switch_access_copied_files") {
     "nodes/tab_node.js",
     "nodes/window_node.js",
     "preferences.js",
-    "rect_helper.js",
     "switch_access.js",
     "switch_access_constants.js",
     "switch_access_predicate.js",
@@ -150,7 +149,6 @@ js_type_check("closure_compile") {
     ":navigation_manager",
     ":node_wrapper",
     ":preferences",
-    ":rect_helper",
     ":slider_node",
     ":switch_access",
     ":switch_access_constants",
@@ -162,6 +160,7 @@ js_type_check("closure_compile") {
     "../common:automation_predicate",
     "../common:closure_shim",
     "../common:constants",
+    "../common:rect_util",
     "../common:repeated_event_handler",
     "../common:repeated_tree_change_handler",
     "../common:tree_walker",
@@ -180,9 +179,9 @@ js_library("background") {
 js_library("back_button_node") {
   sources = [ "nodes/back_button_node.js" ]
   deps = [
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -250,9 +249,9 @@ js_library("group_node") {
   deps = [
     ":back_button_node",
     ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -277,11 +276,11 @@ js_library("keyboard_node") {
     ":event_helper",
     ":group_node",
     ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
     "../common:constants",
+    "../common:rect_util",
     "../common:tree_walker",
   ]
   externs_list = [
@@ -365,10 +364,6 @@ js_library("preferences") {
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
-js_library("rect_helper") {
-  externs_list = [ "$externs_path/accessibility_private.js" ]
-}
-
 js_library("slider_node") {
   sources = [ "nodes/slider_node.js" ]
   deps = [
@@ -424,9 +419,9 @@ js_library("tab_node") {
   sources = [ "nodes/tab_node.js" ]
   deps = [
     ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:rect_util",
   ]
   externs_list = [ "$externs_path/automation.js" ]
 }

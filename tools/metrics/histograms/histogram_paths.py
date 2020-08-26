@@ -17,7 +17,8 @@ def _FindHistogramsXmlFiles():
   file_list = []
   for dirName, _, fileList in os.walk(PATH_TO_HISTOGRAMS_XML_DIR):
     for filename in fileList:
-      if filename == 'histograms.xml' or filename == 'histogram_suffixes.xml':
+      if (filename == 'histograms.xml'
+          or filename == 'histogram_suffixes_list.xml'):
         # Compute the relative path of the histograms xml file.
         file_path = os.path.relpath(
           os.path.join(dirName, filename), PATH_TO_HISTOGRAMS_XML_DIR)
@@ -54,10 +55,12 @@ ALL_XMLS = [path_util.GetInputFile(f) for f in ALL_XMLS_RELATIVE]
 ALL_TEST_XMLS_RELATIVE = [
     'tools/metrics/histograms/test_data/enums.xml',
     'tools/metrics/histograms/test_data/histograms.xml',
+    'tools/metrics/histograms/test_data/histogram_suffixes_list.xml',
     'tools/metrics/histograms/test_data/ukm.xml',
 ]
 ALL_TEST_XMLS = [path_util.GetInputFile(f) for f in ALL_TEST_XMLS_RELATIVE]
-TEST_ENUMS_XML, TEST_HISTOGRAMS_XML, TEST_UKM_XML = ALL_TEST_XMLS
+(TEST_ENUMS_XML, TEST_HISTOGRAMS_XML, TEST_SUFFIXES_XML,
+ TEST_UKM_XML) = ALL_TEST_XMLS
 
 # The path to the `histogram_index` file.
 HISTOGRAMS_INDEX = path_util.GetInputFile(

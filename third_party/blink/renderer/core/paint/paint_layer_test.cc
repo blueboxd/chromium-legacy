@@ -228,6 +228,10 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
     return;
 
   SetBodyInnerHTML(R"HTML(
+    <style>
+     /* to prevent the mock overlay scrollbar from affecting compositing. */
+     ::-webkit-scrollbar { display: none; }
+    </style>
     <div id='scroll' style='width: 100px; height: 100px; overflow: scroll'>
       <div id='content' style='position: relative; background: blue;
           width: 2000px; height: 2000px'></div>

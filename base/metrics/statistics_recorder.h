@@ -143,7 +143,10 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramBase::Flags required_flags,
                             HistogramSnapshotManager* snapshot_manager);
 
-  using OnSampleCallback = base::RepeatingCallback<void(HistogramBase::Sample)>;
+  using OnSampleCallback =
+      base::RepeatingCallback<void(const char* /*=histogram_name*/,
+                                   uint64_t /*=name_hash*/,
+                                   HistogramBase::Sample)>;
 
   // Sets the callback to notify when a new sample is recorded on the histogram
   // referred to by |histogram_name|. Can be called before or after the

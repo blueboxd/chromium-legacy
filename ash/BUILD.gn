@@ -943,6 +943,8 @@ component("ash") {
     "system/locale/unified_locale_detailed_view_controller.h",
     "system/machine_learning/user_settings_event_logger.cc",
     "system/machine_learning/user_settings_event_logger.h",
+    "system/media/media_tray.cc",
+    "system/media/media_tray.h",
     "system/message_center/arc_notification_manager_delegate_impl.cc",
     "system/message_center/arc_notification_manager_delegate_impl.h",
     "system/message_center/ash_message_center_lock_screen_controller.cc",

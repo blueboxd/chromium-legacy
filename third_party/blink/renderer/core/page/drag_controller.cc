@@ -1334,6 +1334,7 @@ void DragController::DoSystemDrag(DragImage* image,
   IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
   gfx::Point offset_point(offset_size.Width(), offset_size.Height());
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
+  drag_data.SetReferrerPolicy(drag_initiator_->GetReferrerPolicy());
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
   SkBitmap drag_image;

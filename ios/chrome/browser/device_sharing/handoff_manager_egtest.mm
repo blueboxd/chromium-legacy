@@ -47,13 +47,6 @@ void AssertHandoffURL(const GURL& gurl) {
 
 @implementation HandoffManagerTestCase
 
-#pragma mark - Overrides base class
-
-- (void)setUp {
-  [super setUp];
-  web::test::SetUpFileBasedHttpServer();
-}
-
 #pragma mark - Tests
 
 // Tests that an empty new tab page should result in no Handoff URL.

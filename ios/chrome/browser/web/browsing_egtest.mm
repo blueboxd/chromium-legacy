@@ -110,8 +110,6 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
     EARL_GREY_TEST_SKIPPED(@"Tab Title not displayed on handset.");
   }
 
-  web::test::SetUpFileBasedHttpServer();
-
   const GURL destinationURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
   [ChromeEarlGrey loadURL:destinationURL];
@@ -129,8 +127,6 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Tab Title not displayed on handset.");
   }
-
-  web::test::SetUpFileBasedHttpServer();
 
   const GURL destinationURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/testpage.pdf");

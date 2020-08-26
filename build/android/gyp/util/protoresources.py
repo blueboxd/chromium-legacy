@@ -201,7 +201,7 @@ def HardcodeSharedLibraryDynamicAttributes(zip_path,
       table.ParseFromString(data)
       _HardcodeInTable(table, is_bundle_module, shared_resources_allowlist)
       data = table.SerializeToString()
-    elif filename.endswith('.xml'):
+    elif filename.endswith('.xml') and not filename.startswith('res/raw'):
       xml_node = Resources_pb2.XmlNode()
       xml_node.ParseFromString(data)
       _ProcessProtoXmlNode(xml_node)

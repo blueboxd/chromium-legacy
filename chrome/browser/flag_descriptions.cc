@@ -1366,11 +1366,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
-const char kMixBrowserTypeTabsName[] = "Mix browser type tabs";
-const char kMixBrowserTypeTabsDescription[] =
-    "Allows tabs to be dragged between any browsers that support tabs, "
-    "including apps";
-
 const char kMixedFormsDisableAutofillName[] =
     "Disable autofill for mixed forms";
 const char kMixedFormsDisableAutofillDescription[] =

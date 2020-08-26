@@ -176,7 +176,7 @@ void HistogramBase::FindAndRunCallback(HistogramBase::Sample sample) const {
   StatisticsRecorder::OnSampleCallback cb =
       StatisticsRecorder::FindCallback(histogram_name());
   if (!cb.is_null())
-    cb.Run(sample);
+    cb.Run(histogram_name(), name_hash(), sample);
 }
 
 void HistogramBase::GetCountAndBucketData(Count* count,

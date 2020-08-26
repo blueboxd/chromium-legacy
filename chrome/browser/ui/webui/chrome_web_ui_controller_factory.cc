@@ -23,6 +23,7 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui.h"
@@ -1018,7 +1019,8 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       // https://crbug.com/859345
       origin.host() == chrome::kChromeUIDownloadsHost ||
       // TODO(crbug.com/1076506): remove when change to iframed OneGoogleBar.
-      origin.host() == chrome::kChromeUINewTabPageHost;
+      (origin.host() == chrome::kChromeUINewTabPageHost &&
+       !base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
 }
 
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() = default;

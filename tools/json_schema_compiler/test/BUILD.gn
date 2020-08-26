@@ -9,34 +9,43 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions)
 
+sources_ = [
+  "additional_properties.json",
+  "any.json",
+  "arrays.json",
+  "callbacks.json",
+  "choices.json",
+  "crossref.json",
+  "enums.json",
+  "error_generation.json",
+  "functions_as_parameters.json",
+  "functions_on_types.json",
+  "idl_basics.idl",
+  "idl_object_types.idl",
+  "idl_other_namespace.idl",
+  "idl_other_namespace_sub_namespace.idl",
+  "idl_properties.idl",
+  "objects.json",
+  "objects_movable.idl",
+  "objects_movable_json.json",
+  "simple_api.json",
+]
+
 generated_types("generated_types") {
   visibility = [ ":*" ]
 
-  sources = [
-    "additional_properties.json",
-    "any.json",
-    "arrays.json",
-    "callbacks.json",
-    "choices.json",
-    "crossref.json",
-    "enums.json",
-    "error_generation.json",
-    "functions_as_parameters.json",
-    "functions_on_types.json",
-    "idl_basics.idl",
-    "idl_object_types.idl",
-    "idl_other_namespace.idl",
-    "idl_other_namespace_sub_namespace.idl",
-    "idl_properties.idl",
-    "objects.json",
-    "objects_movable.idl",
-    "objects_movable_json.json",
-    "simple_api.json",
-  ]
+  sources = sources_
 
   root_namespace = "test::api::%(namespace)s"
 
   deps = [ "//extensions/buildflags" ]
+}
+
+generated_json_strings("generated_api_json_strings") {
+  sources = sources_
+  bundle_name = ""
+  visibility = [ ":*" ]
+  root_namespace = "test::api::%(namespace)s"
 }
 
 json_features("features_compiler_test") {
@@ -61,6 +70,7 @@ source_set("unit_tests") {
     "error_generation_unittest.cc",
     "functions_as_parameters_unittest.cc",
     "functions_on_types_unittest.cc",
+    "generated_schemas_unittest.cc",
     "idl_schemas_unittest.cc",
     "objects_unittest.cc",
     "simple_api_unittest.cc",
@@ -74,6 +84,7 @@ source_set("unit_tests") {
   public_deps = [ ":features_compiler_test" ]
 
   deps = [
+    ":generated_api_json_strings",
     ":generated_types",
     "//base",
     "//testing/gmock",

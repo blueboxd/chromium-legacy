@@ -36,7 +36,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // Verifies that entering a URL in the omnibox navigates to the correct URL and
 // displays content.
 - (void)testEnterURL {
-  web::test::SetUpFileBasedHttpServer();
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
   [ChromeEarlGrey loadURL:URL];

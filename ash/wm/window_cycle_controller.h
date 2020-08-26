@@ -17,7 +17,7 @@ class Window;
 }
 
 namespace ui {
-class MouseEvent;
+class LocatedEvent;
 }
 
 namespace ash {
@@ -64,7 +64,7 @@ class ASH_EXPORT WindowCycleController {
   void StepToWindow(aura::Window* window);
 
   // Checks whether |event| occurs within the cycle view.
-  bool IsEventInCycleView(ui::MouseEvent* event);
+  bool IsEventInCycleView(ui::LocatedEvent* event);
 
   // Returns the WindowCycleList.
   const WindowCycleList* window_cycle_list() const {

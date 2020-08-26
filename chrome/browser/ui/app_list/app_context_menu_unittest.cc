@@ -598,10 +598,8 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
 }
 
 // In suspended state app does not have launch item.
-// Disabled for being flaky. crbug.com/1115762
-TEST_P(AppContextMenuTest, DISABLED_ArcMenuSuspendedItem) {
-  apps::AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
+TEST_P(AppContextMenuTest, ArcMenuSuspendedItem) {
+  app_service_test().SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -609,7 +607,7 @@ TEST_P(AppContextMenuTest, DISABLED_ArcMenuSuspendedItem) {
   app.suspended = true;
 
   arc_test.app_instance()->SendRefreshAppList({app});
-  app_service_test.FlushMojoCalls();
+  app_service_test().FlushMojoCalls();
 
   const std::string app_id = ArcAppTest::GetAppId(app);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);

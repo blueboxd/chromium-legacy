@@ -2284,14 +2284,11 @@ bool TabDragController::CanAttachTo(gfx::NativeWindow window) {
   if (other_browser->profile() != browser->profile())
     return false;
 
-  // Unless we allow Feature mix-browser-type-tabs, ensure that
-  // browser types and app names are the same.
-  if (!base::FeatureList::IsEnabled(features::kMixBrowserTypeTabs)) {
-    if (other_browser->type() != browser->type() ||
-        (browser->is_type_app() &&
-         browser->app_name() != other_browser->app_name())) {
-      return false;
-    }
+  // Ensure that browser types and app names are the same.
+  if (other_browser->type() != browser->type() ||
+      (browser->is_type_app() &&
+       browser->app_name() != other_browser->app_name())) {
+    return false;
   }
 
   return true;

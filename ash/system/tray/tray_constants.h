@@ -238,6 +238,9 @@ constexpr int kPrivacyScreenToastSpacing = 16;
 constexpr gfx::Insets kHoldingSpaceContainerPadding = gfx::Insets(16);
 constexpr int kHoldingSpaceContainerSeparation = 8;
 
+// Constants used for media tray.
+constexpr int kMediaTrayPadding = 8;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

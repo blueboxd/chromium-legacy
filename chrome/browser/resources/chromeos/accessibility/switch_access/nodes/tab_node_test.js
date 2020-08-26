@@ -42,7 +42,7 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
 
     const tabAsRoot = NavigationManager.instance.group_;
     assertTrue(
-        RectHelper.areEqual(tab.location, tabAsRoot.location),
+        RectUtil.equal(tab.location, tabAsRoot.location),
         'Tab location should not change when treated as root');
     assertEquals(
         3, tabAsRoot.children.length, 'Tab as root should have 3 children');
@@ -57,7 +57,7 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         tabToSelect.hasAction(SwitchAccessMenuAction.SELECT),
         'Tab as a group should have a SELECT action');
     assertFalse(
-        RectHelper.areEqual(tabAsRoot.location, tabToSelect.location),
+        RectUtil.equal(tabAsRoot.location, tabToSelect.location),
         'Tab node to select should not have the same location as tab as root');
     assertEquals(
         null, tabToSelect.asRootNode(),
@@ -74,12 +74,11 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         close.hasAction(SwitchAccessMenuAction.SELECT),
         'Close button should have a SELECT action');
     assertFalse(
-        RectHelper.areEqual(tabAsRoot.location, close.location),
+        RectUtil.equal(tabAsRoot.location, close.location),
         'Close button should not have the same location as tab as root');
-    const overlap =
-        RectHelper.intersection(tabToSelect.location, close.location);
+    const overlap = RectUtil.intersection(tabToSelect.location, close.location);
     assertTrue(
-        RectHelper.areEqual(RectHelper.ZERO_RECT, overlap),
+        RectUtil.equal(RectUtil.ZERO_RECT, overlap),
         'Close button and tab node to select should not overlap');
 
     BackButtonNode

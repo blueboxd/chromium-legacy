@@ -119,11 +119,6 @@ enum class GpuRasterizationStatus {
   OFF_DEVICE,
 };
 
-enum class ImplThreadPhase {
-  IDLE,
-  INSIDE_IMPL_FRAME,
-};
-
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
@@ -205,7 +200,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                     public ScrollbarAnimationControllerClient,
                                     public VideoFrameControllerClient,
                                     public MutatorHostClient,
-                                    public ImageAnimationController::Client {
+                                    public ImageAnimationController::Client,
+                                    public CompositorDelegateForInput {
  public:
   // This structure is used to build all the state required for producing a
   // single CompositorFrame. The |render_passes| list becomes the set of
@@ -396,25 +392,29 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
 
   // Interface for ThreadedInputHandler
-  bool HasAnimatedScrollbars() const;
-  void SetNeedsCommitInputChanges();
-  void DidUpdateScrollAnimationCurve();
-  void AccumulateScrollDeltaForTracing(const gfx::Vector2dF& delta);
-  void DidStartPinchZoom();
-  void DidEndPinchZoom();
-  void DidUpdatePinchZoom();
-  void DidStartScroll();
-  void DidSetRootScrollOffsetForSynchronousInputHandler();
+  ScrollTree& GetScrollTree() const override;
+  bool HasAnimatedScrollbars() const override;
+  // Already overridden for BrowserControlsOffsetManagerClient which declares a
+  // method of the same name.
+  // void SetNeedsCommit();
+  void SetNeedsFullViewportRedraw() override;
+  void DidUpdateScrollAnimationCurve() override;
+  void AccumulateScrollDeltaForTracing(const gfx::Vector2dF& delta) override;
+  void DidStartPinchZoom() override;
+  void DidUpdatePinchZoom() override;
+  void DidEndPinchZoom() override;
+  void DidStartScroll() override;
+  void DidMouseLeave() override;
+  bool IsInHighLatencyMode() const override;
+  void WillScrollContent(ElementId element_id) override;
+  void DidScrollContent(ElementId element_id, bool animated) override;
+  float DeviceScaleFactor() const override;
+  float PageScaleFactor() const override;
+  const LayerTreeSettings& GetSettings() const override;
+  LayerTreeHostImpl& GetImplDeprecated() override;
+  const LayerTreeHostImpl& GetImplDeprecated() const override;
+
   FrameSequenceTrackerCollection& frame_trackers() { return frame_trackers_; }
-  ImplThreadPhase GetCompositorThreadPhase() const;
-  std::unordered_map<ElementId,
-                     std::unique_ptr<ScrollbarAnimationController>,
-                     ElementIdHash>&
-  get_scrollbar_animation_controllers() {
-    return scrollbar_animation_controllers_;
-  }
-  void DidScrollContent(bool animated);
-  float DeviceScaleFactor() const;
 
   // Updates registered ElementIds present in |changed_list|. Call this after
   // changing the property trees for the |changed_list| trees.
@@ -535,6 +535,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
   gfx::ColorSpace GetRasterColorSpace(
       gfx::ContentColorUsage content_color_usage) const override;
+  float GetSDRWhiteLevel() const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
@@ -1136,6 +1137,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // success) state.
   std::vector<std::pair<int, bool>> completed_image_decode_requests_;
 
+  enum class ImplThreadPhase {
+    IDLE,
+    INSIDE_IMPL_FRAME,
+  };
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 
   ImageAnimationController image_animation_controller_;

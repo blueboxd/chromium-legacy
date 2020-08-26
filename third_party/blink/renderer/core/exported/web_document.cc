@@ -93,7 +93,9 @@ WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
 
 bool WebDocument::IsSecureContext() const {
   const Document* document = ConstUnwrap<Document>();
-  return document && document->GetExecutionContext()->IsSecureContext();
+  ExecutionContext* context =
+      document ? document->GetExecutionContext() : nullptr;
+  return context && context->IsSecureContext();
 }
 
 WebString WebDocument::Encoding() const {
@@ -233,15 +235,6 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
   Vector<String> selectors;
   selectors.Append(web_selectors.Data(), web_selectors.size());
   CSSSelectorWatch::From(*document).WatchCSSSelectors(selectors);
-}
-
-network::mojom::ReferrerPolicy WebDocument::GetReferrerPolicy() const {
-  return ConstUnwrap<Document>()->GetExecutionContext()->GetReferrerPolicy();
-}
-
-WebString WebDocument::OutgoingReferrer() {
-  return WebString(
-      Unwrap<Document>()->GetExecutionContext()->OutgoingReferrer());
 }
 
 WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {

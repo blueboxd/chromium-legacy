@@ -86,7 +86,6 @@ std::unique_ptr<net::test_server::HttpResponse> WriteReloadHandler(
 
 + (void)setUpHelper {
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
-  web::test::SetUpFileBasedHttpServer();
 }
 
 + (void)tearDown {

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,9 +80,10 @@ void FakeAdapter::GetInfo(GetInfoCallback callback) {
   std::move(callback).Run(std::move(adapter_info));
 }
 
-void FakeAdapter::SetClient(::mojo::PendingRemote<mojom::AdapterClient> client,
-                            SetClientCallback callback) {
-  client_.Bind(std::move(client));
+void FakeAdapter::AddObserver(
+    mojo::PendingRemote<mojom::AdapterObserver> observer,
+    AddObserverCallback callback) {
+  observers_.Add(std::move(observer));
   std::move(callback).Run();
 }
 
@@ -190,15 +190,18 @@ bool FakeAdapter::IsDiscoverySessionActive() {
 }
 
 void FakeAdapter::NotifyDeviceAdded(mojom::DeviceInfoPtr device_info) {
-  client_->DeviceAdded(std::move(device_info));
+  for (auto& observer : observers_)
+    observer->DeviceAdded(device_info->Clone());
 }
 
 void FakeAdapter::NotifyDeviceChanged(mojom::DeviceInfoPtr device_info) {
-  client_->DeviceChanged(std::move(device_info));
+  for (auto& observer : observers_)
+    observer->DeviceChanged(device_info->Clone());
 }
 
 void FakeAdapter::NotifyDeviceRemoved(mojom::DeviceInfoPtr device_info) {
-  client_->DeviceRemoved(std::move(device_info));
+  for (auto& observer : observers_)
+    observer->DeviceRemoved(device_info->Clone());
 }
 
 void FakeAdapter::AllowConnectionForAddressAndUuidPair(

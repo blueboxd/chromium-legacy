@@ -415,7 +415,6 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 //
 // Disabled due to flakiness: https://crbug.com/1111194.
 - (void)DISABLED_testAppVersionJSAPIWithMobileUserAgent {
-  web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.
   [ChromeEarlGrey waitForWebStateContainingText:[self defaultLabel]];

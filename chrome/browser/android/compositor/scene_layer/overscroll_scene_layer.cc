@@ -18,8 +18,7 @@ OverscrollSceneLayer::OverscrollSceneLayer(JNIEnv* env,
     : SceneLayer(env, jobj),
       window_(ui::WindowAndroid::FromJavaWindowAndroid(jwindow)),
       glow_effect_(std::make_unique<ui::OverscrollGlow>(this)) {
-  if (window_->GetCompositor())
-    window_->AddObserver(this);
+  window_->AddObserver(this);
 }
 
 OverscrollSceneLayer::~OverscrollSceneLayer() {}

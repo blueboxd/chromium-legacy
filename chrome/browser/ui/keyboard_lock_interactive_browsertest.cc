@@ -260,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
 }
 
 // https://crbug.com/1108391 Flakey on ChromeOS.
-#if defined(OS_CHROMEOS)
+// https://crbug.com/1121172 Also flaky on Lacros.
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 #define MAYBE_SubsequentLockCallSupersedesPreviousCall \
   DISABLED_SubsequentLockCallSupersedesPreviousCall
 #else

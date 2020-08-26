@@ -87,7 +87,7 @@ BluetoothInternalsTest.prototype = {
         super([
           'getInfo',
           'getDevices',
-          'setClient',
+          'addObserver',
         ]);
 
         this.receiver = new bluetooth.mojom.AdapterReceiver(this);
@@ -122,8 +122,8 @@ BluetoothInternalsTest.prototype = {
         return {devices: this.devices_};
       }
 
-      async setClient(client) {
-        this.methodCalled('setClient', client);
+      async addObserver(observer) {
+        this.methodCalled('addObserver', observer);
       }
 
       async setDiscoverable() {
@@ -366,7 +366,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
         internalsHandler.whenCalled('getAdapter'),
         internalsHandler.adapter.whenCalled('getInfo'),
         internalsHandler.adapter.whenCalled('getDevices'),
-        internalsHandler.adapter.whenCalled('setClient')
+        internalsHandler.adapter.whenCalled('addObserver')
       ]);
     });
 

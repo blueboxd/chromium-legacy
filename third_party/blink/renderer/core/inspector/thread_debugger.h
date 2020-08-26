@@ -83,7 +83,6 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
  private:
   // V8InspectorClient implementation.
   void beginUserGesture() override;
-  void endUserGesture() override;
   std::unique_ptr<v8_inspector::StringBuffer> valueSubtype(
       v8::Local<v8::Value>) override;
   bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;

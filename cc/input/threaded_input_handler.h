@@ -31,8 +31,6 @@ class ScrollOffset;
 namespace cc {
 
 class LayerImpl;
-class LayerTreeHostImpl;
-class LayerTreeSettings;
 class ScrollbarController;
 class ScrollElasticityHelper;
 struct ScrollNode;
@@ -42,7 +40,8 @@ class Viewport;
 
 class CC_EXPORT ThreadedInputHandler : public InputDelegateForCompositor {
  public:
-  explicit ThreadedInputHandler(LayerTreeHostImpl* host_impl);
+  explicit ThreadedInputHandler(
+      CompositorDelegateForInput& compositor_delegate);
   ~ThreadedInputHandler();
 
   // =========== InputHandler "Interface" - will override in a future CL
@@ -181,16 +180,12 @@ class CC_EXPORT ThreadedInputHandler : public InputDelegateForCompositor {
   LayerTreeImpl& ActiveTree();
   LayerTreeImpl& ActiveTree() const;
 
-  const LayerTreeSettings& Settings() const;
-
   bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
                              const ScrollNode* scroll_node) const;
 
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
       ui::ScrollInputType type);
-
-  void ShowScrollbarsForImplScroll(ElementId element_id);
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 
@@ -334,7 +329,9 @@ class CC_EXPORT ThreadedInputHandler : public InputDelegateForCompositor {
     return scrollbar_controller_.get();
   }
 
-  LayerTreeHostImpl& host_impl_;
+  // The input handler is owned by the delegate so their lifetimes are tied
+  // together.
+  CompositorDelegateForInput& compositor_delegate_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
 

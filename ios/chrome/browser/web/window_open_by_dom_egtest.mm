@@ -16,8 +16,7 @@
 #include "ios/net/url_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,12 +25,9 @@
 
 using chrome_test_util::OmniboxText;
 
-using web::test::HttpServer;
-
 namespace {
 // URL of the file-based page supporting these tests.
-const char kTestURL[] =
-    "http://ios/testing/data/http_server_files/window_open.html";
+const char kTestURL[] = "/window_open.html";
 
 // Returns matcher for Blocked Popup infobar.
 id<GREYMatcher> PopupBlocker() {
@@ -51,23 +47,9 @@ id<GREYMatcher> PopupBlocker() {
 
 @implementation WindowOpenByDOMTestCase
 
-#if defined(CHROME_EARL_GREY_2)
 + (void)setUpForTestCase {
   [super setUpForTestCase];
-  [self setUpHelper];
-}
-#elif defined(CHROME_EARL_GREY_1)
-+ (void)setUp {
-  [super setUp];
-  [self setUpHelper];
-}
-#else
-#error Not an EarlGrey Test
-#endif
-
-+ (void)setUpHelper {
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
-  web::test::SetUpFileBasedHttpServer();
 }
 
 + (void)tearDown {
@@ -77,8 +59,10 @@ id<GREYMatcher> PopupBlocker() {
 
 - (void)setUp {
   [super setUp];
+  GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
+
   // Open the test page. There should only be one tab open.
-  [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kTestURL)];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kTestURL)];
   [ChromeEarlGrey waitForWebStateContainingText:"Expected result"];
   [ChromeEarlGrey waitForMainTabCount:1];
 }
@@ -167,7 +151,7 @@ id<GREYMatcher> PopupBlocker() {
 
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
-      HttpServer::MakeUrl(std::string(kTestURL) + "#assigned");
+      self.testServer->GetURL(std::string(kTestURL) + "#assigned");
   const std::string targetOmniboxText =
       net::GetContentAndFragmentForUrl(targetURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
@@ -184,7 +168,7 @@ id<GREYMatcher> PopupBlocker() {
 
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
-      HttpServer::MakeUrl(std::string(kTestURL) + "#updated");
+      self.testServer->GetURL(std::string(kTestURL) + "#updated");
   const std::string targetOmniboxText =
       net::GetContentAndFragmentForUrl(targetURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
@@ -266,7 +250,7 @@ id<GREYMatcher> PopupBlocker() {
 
   // Ensure that the starting tab hasn't navigated.
   [ChromeEarlGrey closeCurrentTab];
-  const GURL URL = HttpServer::MakeUrl(kTestURL);
+  const GURL URL = self.testServer->GetURL(kTestURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

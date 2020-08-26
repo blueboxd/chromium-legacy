@@ -65,6 +65,7 @@ base::TimeDelta IsolatedPrerenderCanaryCheckCacheLifetime();
 enum class IsolatedPrerenderOriginProbeType {
   kDns,
   kHttpHead,
+  kTls,
 };
 IsolatedPrerenderOriginProbeType IsolatedPrerenderOriginProbeMechanism();
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
@@ -163,6 +164,7 @@ group("polymer3_elements") {
     ":search_highlight_style_css_module",
     ":shared_style_css_module",
     ":shared_vars_css_module",
+    ":web_components",
     "cr_action_menu:cr_action_menu_module",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
@@ -223,4 +225,11 @@ js_library("cr_scrollable_behavior.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":modulize" ]
+}
+
+html_to_js("web_components") {
+  js_files = [
+    "mwb_shared_style.js",
+    "mwb_shared_vars.js",
+  ]
 }

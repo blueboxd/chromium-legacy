@@ -470,10 +470,27 @@ void TraceEventDataSource::RegisterWithTraceLog(
       &TraceEventDataSource::FlushCurrentThread,
       &TraceEventDataSource::OnUpdateDuration);
 
+  DCHECK(monitored_histograms_.empty());
   if (trace_config.IsCategoryGroupEnabled(
           TRACE_DISABLED_BY_DEFAULT("histogram_samples"))) {
-    base::StatisticsRecorder::SetGlobalSampleCallback(
-        &TraceEventDataSource::OnMetricsSampleCallback);
+    if (trace_config.histogram_names().empty()) {
+      base::StatisticsRecorder::SetGlobalSampleCallback(
+          &TraceEventDataSource::OnMetricsSampleCallback);
+    } else {
+      for (const std::string& histogram_name : trace_config.histogram_names()) {
+        if (base::StatisticsRecorder::SetCallback(
+                histogram_name,
+                base::BindRepeating(
+                    &TraceEventDataSource::OnMetricsSampleCallback))) {
+          monitored_histograms_.emplace_back(histogram_name);
+        } else {
+          // TODO(crbug/1119851): Refactor SetCallback to allow multiple
+          // callbacks for a single histogram.
+          LOG(WARNING) << "OnMetricsSampleCallback was not set for histogram "
+                       << histogram_name;
+        }
+      }
+    }
   }
 
   base::AutoLock l(lock_);
@@ -855,6 +872,11 @@ void TraceEventDataSource::StopTracing(
   }
 
   base::StatisticsRecorder::SetGlobalSampleCallback(nullptr);
+  for (const std::string& histogram_name : monitored_histograms_) {
+    base::StatisticsRecorder::ClearCallback(histogram_name);
+  }
+  monitored_histograms_.clear();
+
   auto task_runner = base::GetRecordActionTaskRunner();
   if (task_runner) {
     task_runner->PostTask(

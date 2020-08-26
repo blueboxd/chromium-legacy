@@ -482,8 +482,8 @@ WARN_UNUSED_RESULT bool StartMonitorBodyReadFromNetBeforePausedHistogram(
       kBodyReadFromNetBeforePausedHistogram,
       base::BindRepeating(
           [](const base::RepeatingClosure& quit_closure,
-             base::HistogramBase::Sample* output,
-             base::HistogramBase::Sample sample) {
+             base::HistogramBase::Sample* output, const char* histogram_name,
+             uint64_t name_hash, base::HistogramBase::Sample sample) {
             *output = sample;
             quit_closure.Run();
           },

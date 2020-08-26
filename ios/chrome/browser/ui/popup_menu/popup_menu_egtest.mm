@@ -165,7 +165,6 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
     EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
   }
 #endif
-  web::test::SetUpFileBasedHttpServer();
   const GURL URL = web::test::HttpServer::MakeUrl(kPDFURL);
 
   // Navigate to a mock pdf and verify that the find button is disabled.

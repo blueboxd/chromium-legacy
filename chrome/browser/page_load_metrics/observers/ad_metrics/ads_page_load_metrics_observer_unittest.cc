@@ -509,6 +509,8 @@ class AdsPageLoadMetricsObserverTest
 
   void OnHidden() { web_contents()->WasHidden(); }
 
+  void OnAppEnterBackground() { tester_->SimulateAppEnterBackground(); }
+
   void OnShown() { web_contents()->WasShown(); }
 
   void TriggerFirstUserActivation(RenderFrameHost* render_frame_host) {
@@ -2119,6 +2121,102 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
       heavy_ad_thresholds::kMaxNetworkBytes / 1024, 1);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.NetworkBytesAtFrameUnload"), 1);
+}
+
+// Test that when the page is hidden and the app enters the background, that we
+// record histograms, but continue to monitor for CPU heavy ad interventions.
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdCpuInterventionInBackground) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it get reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 1);
+
+  // Use just under the peak threshold amount of CPU.
+  OnCpuTimingUpdate(
+      ad_frame,
+      base::TimeDelta::FromMilliseconds(
+          heavy_ad_thresholds::kMaxPeakWindowedPercent * 30000 / 100 - 1));
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
+  // Verify no reporting happened prior to backgrounding.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Bytes.FullPage.Total2"), 0);
+
+  // Background the page.
+  OnAppEnterBackground();
+
+  // Verify reporting happened.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Bytes.FullPage.Total2"), 1);
+
+  // Use enough CPU to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
+  AdvancePageDuration(base::TimeDelta::FromSeconds(10));
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
+
+  // Wait for an error page and then check there's an intervention on the frame.
+  waiter.WaitForError();
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+
+  // Navigate away to trigger histograms. Check they didn't fire again.
+  NavigateFrame(kNonAdUrl, main_frame);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Bytes.FullPage.Total2"), 1);
+}
+
+// Test that when the page is hidden and the app enters the background, that we
+// record histograms, but continue to monitor for network heavy ad
+// interventions.
+TEST_F(AdsPageLoadMetricsObserverTest,
+       HeavyAdNetworkInterventionInBackgrounded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Load just under the threshold amount of bytes.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) - 1);
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
+  // Verify that prior to an intervention is triggered we do not log
+  // NetworkBytesAtFrameUnload.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.NetworkBytesAtFrameUnload"), 0);
+
+  // Verify no reporting happened prior to backgrounding.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.TotalUsage2"), 0);
+
+  // Background the page.
+  OnAppEnterBackground();
+
+  // Verify reporting happened.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.TotalUsage2"), 1);
+
+  // Load enough bytes to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 2);
+
+  // Wait for an error page and then check there's an intervention on the frame.
+  waiter.WaitForError();
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+
+  // Navigate away to trigger histograms. Check they didn't fire again.
+  NavigateFrame(kNonAdUrl, main_frame);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.TotalUsage2"), 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,

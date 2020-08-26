@@ -222,6 +222,8 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
     <style>
      .container { overflow:scroll; width: 200px; height: 200px; }
      .box { overflow:scroll; width: 100px; height: 100px; }
+     /* to prevent the mock overlay scrollbar from affecting compositing. */
+     .box::-webkit-scrollbar { display: none; }
      .spacer { height: 1000px; }
      .composited { will-change: transform; }
     </style>

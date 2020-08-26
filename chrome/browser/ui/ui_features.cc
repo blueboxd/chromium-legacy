@@ -27,12 +27,6 @@ const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
 const base::Feature kForceEnableDevicesPage{"ForceEnableDevicesPage",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables tabs from different browser types (NORMAL vs APP) and different apps
-// to mix via dragging.
-// https://crbug.com/1012169
-const base::Feature kMixBrowserTypeTabs{"MixBrowserTypeTabs",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the new profile picker.
 // https:://crbug.com/1063856
 const base::Feature kNewProfilePicker{"NewProfilePicker",

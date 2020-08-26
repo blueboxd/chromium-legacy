@@ -75,6 +75,10 @@ class CHROMECAST_EXPORT RebootShlib {
 
     // A reboot is triggered due to successive OOM events.
     REPEATED_OOM = 13,
+
+    // A reboot is triggered when the utility process is found to be in
+    // crash loop.
+    UTILITY_PROCESS_CRASH = 14,
   };
 
   // Initializes any platform-specific reboot systems.

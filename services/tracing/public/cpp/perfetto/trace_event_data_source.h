@@ -180,8 +180,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   bool IsEnabled();
 
-  // Registered with base::StatisticsRecorder to receive a callback on every
-  // histogram sample which gets added.
+  // Records trace event for a histogram sample. When histogram_samples category
+  // is enabled, it is registered with base::StatisticsRecorder to monitor the
+  // histograms listed in the trace config. If there are no histograms listed in
+  // the trace config, all the histograms will be monitored.
   static void OnMetricsSampleCallback(const char* histogram_name,
                                       uint64_t name_hash,
                                       base::HistogramBase::Sample sample);
@@ -263,6 +265,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   bool flushing_trace_log_ = false;
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
+  // Stores all histogram names for which OnMetricsSampleCallback was set as an
+  // OnSampleCallback. This is done in order to avoid clearing callbacks for the
+  // other histograms.
+  std::vector<std::string> monitored_histograms_;
   bool privacy_filtering_enabled_ = false;
   std::string process_name_;
   int process_id_ = base::kNullProcessId;

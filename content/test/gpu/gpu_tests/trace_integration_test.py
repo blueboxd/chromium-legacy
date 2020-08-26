@@ -85,6 +85,8 @@ _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED = -1
 _GET_STATISTICS_EVENT_NAME = 'GetFrameStatisticsMedia'
 _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
 _PRESENT_TO_SWAP_CHAIN_EVENT_NAME = 'SwapChainPresenter::PresentToSwapChain'
+_PRESENT_MAIN_SWAP_CHAIN_EVENT_NAME =\
+    'DirectCompositionChildSurfaceWin::PresentSwapChain'
 
 
 class _TraceTestArguments(object):
@@ -167,6 +169,15 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                  test_harness_script=basic_test_harness_script,
                  finish_js_condition='domAutomationController._finished',
                  success_eval_func='CheckOverlayMode',
+                 other_args=p.other_args))
+    for p in namespace.ForceFullDamagePages('SwapChainTraceTest'):
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=p.browser_args,
+                 category='gpu',
+                 test_harness_script=basic_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckMainSwapChainPath',
                  other_args=p.other_args))
 
   def RunActualGpuTest(self, test_path, *args):
@@ -445,8 +456,45 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       if presentation_mode == 'swap chain':
         break
     else:
-      self.fail(
-          'Events with name %s were not found' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
+      self.fail('Events with name %s were not found' %
+                _PRESENT_TO_SWAP_CHAIN_EVENT_NAME)
+
+  def _EvaluateSuccess_CheckMainSwapChainPath(self, category, event_iterator,
+                                              other_args):
+    """Verified that Chrome's main swap chain is presented with full damage."""
+    os_name = self.browser.platform.GetOSName()
+    assert os_name and os_name.lower() == 'win'
+
+    overlay_bot_config = self.GetOverlayBotConfig()
+    if overlay_bot_config is None:
+      self.fail('Overlay bot config can not be determined')
+    assert overlay_bot_config.get('direct_composition', False)
+
+    expect_full_damage = other_args and other_args.get('full_damage', False)
+
+    partial_damage_encountered = False
+    full_damage_encountered = False
+    # Verify expectations through captured trace events.
+    for event in event_iterator:
+      if event.category != category:
+        continue
+      if event.name != _PRESENT_MAIN_SWAP_CHAIN_EVENT_NAME:
+        continue
+      dirty_rect = event.args.get('dirty_rect', None)
+      if dirty_rect is None:
+        continue
+      if dirty_rect == 'full_damage':
+        full_damage_encountered = True
+      else:
+        partial_damage_encountered = True
+
+    # Today Chrome either run with full damage or partial damage, but not both.
+    # This may change in the future.
+    if (expect_full_damage != full_damage_encountered
+        or expect_full_damage == partial_damage_encountered):
+      self.fail('Expected events with name %s of %s, got others' %
+                (_PRESENT_MAIN_SWAP_CHAIN_EVENT_NAME,
+                 'full damage' if expect_full_damage else 'partial damage'))
 
   @classmethod
   def ExpectationsFiles(cls):

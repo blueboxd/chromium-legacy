@@ -3486,10 +3486,6 @@ const char kImmersiveFullscreenName[] = "Immersive Fullscreen Toolbar";
 const char kImmersiveFullscreenDescription[] =
     "Automatically hide and show the toolbar in fullscreen.";
 
-const char kEnableCustomMacPaperSizesName[] = "Enable custom paper sizes";
-const char kEnableCustomMacPaperSizesDescription[] =
-    "Allow use of custom paper sizes in Print Preview.";
-
 const char kMacSyscallSandboxName[] = "Mac Syscall Filtering Sandbox";
 const char kMacSyscallSandboxDescription[] =
     "Controls whether the macOS sandbox filters syscalls.";
@@ -4274,11 +4270,6 @@ const char kStreamlinedUsbPrinterSetupDescription[] =
 const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
 const char kSyncWifiConfigurationsDescription[] =
     "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
-
-const char kTerminalSystemAppLegacySettingsName[] =
-    "Terminal System App Legacy Settings";
-const char kTerminalSystemAppLegacySettingsDescription[] =
-    "Use the legacy settings page for Terminal System App.";
 
 const char kPluginVmShowCameraPermissionsName[] =
     "Show Plugin VM camera permissions";

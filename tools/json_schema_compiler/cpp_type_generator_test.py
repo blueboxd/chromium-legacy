@@ -54,6 +54,18 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.objects_movable = self.models['objects_movable'].AddNamespace(
         self.objects_movable_idl[0], 'path/to/objects_movable.idl',
         include_compiler_options=True)
+    self.simple_api_json = CachedLoad('test/simple_api.json')
+    self.simple_api = self.models['simple_api'].AddNamespace(
+        self.simple_api_json[0], 'path/to/simple_api.json')
+    self.crossref_enums_json = CachedLoad('test/crossref_enums.json')
+    self.crossref_enums = self.models['crossref_enums'].AddNamespace(
+        self.crossref_enums_json[0], 'path/to/crossref_enums.json')
+    self.crossref_enums_array_json = CachedLoad(
+        'test/crossref_enums_array.json')
+    self.crossref_enums_array = (
+        self.models['crossref_enums_array'].AddNamespace(
+            self.crossref_enums_array_json[0],
+            'path/to/crossref_enums_array.json'))
 
   def testGenerateIncludesAndForwardDeclarations(self):
     m = model.Model()
@@ -201,6 +213,42 @@ class CppTypeGeneratorTest(unittest.TestCase):
         manager.GetCppType(
             self.permissions.functions['contains'].callback.params[0].type_,
         is_in_container=True))
+
+  def testHardIncludesForEnums(self):
+    """Tests that enums generate hard includes. Note that it's important to use
+    use a separate file (cross_enums) here to isolate the test case so that
+    other types don't cause the hard-dependency.
+    """
+    m = model.Model()
+    m.AddNamespace(self.crossref_enums_json[0],
+                   'path/to/crossref_enums.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    m.AddNamespace(self.simple_api_json[0],
+                   'path/to/simple_api.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    manager = CppTypeGenerator(self.models.get('crossref_enums'),
+                               _FakeSchemaLoader(m))
+
+    self.assertEquals('#include "path/to/simple_api.h"',
+                      manager.GenerateIncludes().Render())
+
+  def testHardIncludesForEnumArrays(self):
+    """Tests that enums in arrays generate hard includes. Note that it's
+    important to use a separate file (cross_enums_array) here to isolate the
+    test case so that other types don't cause the hard-dependency.
+    """
+    m = model.Model()
+    m.AddNamespace(self.crossref_enums_json[0],
+                   'path/to/crossref_enums_array.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    m.AddNamespace(self.simple_api_json[0],
+                   'path/to/simple_api.json',
+                   environment=CppNamespaceEnvironment('%(namespace)s'))
+    manager = CppTypeGenerator(self.models.get('crossref_enums_array'),
+                               _FakeSchemaLoader(m))
+
+    self.assertEquals('#include "path/to/simple_api.h"',
+                      manager.GenerateIncludes().Render())
 
 if __name__ == '__main__':
   unittest.main()

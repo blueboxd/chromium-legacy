@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
-class RenderProcessHost;
+class AgentSchedulingGroupHost;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostImpl;
 
@@ -27,7 +27,7 @@ class RenderWidgetHostFactory {
   // pointer will be passed to the caller.
   static std::unique_ptr<RenderWidgetHostImpl> Create(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden);
 
@@ -35,14 +35,14 @@ class RenderWidgetHostFactory {
   static bool has_factory() { return !!factory_; }
 
  protected:
-  RenderWidgetHostFactory() {}
-  virtual ~RenderWidgetHostFactory() {}
+  RenderWidgetHostFactory() = default;
+  virtual ~RenderWidgetHostFactory() = default;
 
   // You can derive from this class and specify an implementation for this
   // function to create a different kind of RenderWidgetHostImpl for testing.
   virtual std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden) = 0;
 

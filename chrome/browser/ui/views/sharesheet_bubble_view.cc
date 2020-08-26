@@ -43,19 +43,24 @@ constexpr int kButtonLineHeight = 20;
 constexpr int kButtonPadding = 8;
 
 constexpr int kBubbleTopPaddingFromWindow = 36;
-
 constexpr int kCornerRadius = 12;
 constexpr int kMaxTargetsPerRow = 4;
 // TargetViewHeight is 2*kButtonHeight + kButtonPadding
 constexpr int kTargetViewHeight = 216;
 constexpr int kDefaultBubbleWidth = 416;
+constexpr int kDefaultBubbleHeight = 328;
 constexpr int kShortSpacing = 20;
 constexpr int kSpacing = 24;
 constexpr int kTitleLineHeight = 24;
+
 constexpr char kTitle[] = "Share";
+constexpr char kTitleFont[] = "GoogleSans, Medium, 16px";
+constexpr char kButtonLabelFont[] = "Roboto, Medium, 14px";
+constexpr char kButtonSecondaryLabelFont[] = "Roboto, Regular, 13px";
 
 constexpr SkColor kShareTitleColor = gfx::kGoogleGrey900;
 constexpr SkColor kShareTargetTitleColor = gfx::kGoogleGrey700;
+constexpr SkColor kShareTargetSecondaryTitleColor = gfx::kGoogleGrey600;
 
 enum { COLUMN_SET_ID_TITLE, COLUMN_SET_ID_TARGETS };
 
@@ -68,6 +73,7 @@ class ShareSheetTargetButton : public views::Button {
  public:
   ShareSheetTargetButton(views::ButtonListener* listener,
                          const base::string16& display_name,
+                         const base::string16& secondary_display_name,
                          const gfx::ImageSkia* icon)
       : Button(listener) {
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -85,22 +91,42 @@ class ShareSheetTargetButton : public views::Button {
       image->SetImage(icon);
     }
 
-    auto* label = AddChildView(std::make_unique<views::Label>(display_name));
-    label->SetFontList(gfx::FontList("Roboto, Medium, 14px"));
-    label->SetLineHeight(kButtonLineHeight);
-    label->SetBackgroundColor(SK_ColorTRANSPARENT);
+    auto label_view = std::make_unique<views::View>();
+    label_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
+
+    auto* label =
+        label_view->AddChildView(std::make_unique<views::Label>(display_name));
+    label->SetFontList(gfx::FontList(kButtonLabelFont));
     label->SetEnabledColor(kShareTargetTitleColor);
-    label->SetHandlesTooltips(true);
-    label->SetTooltipText(display_name);
-    label->SetMultiLine(false);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    SetLabelProperties(label);
+
+    if (secondary_display_name != base::string16() &&
+        secondary_display_name != display_name) {
+      auto* secondary_label = label_view->AddChildView(
+          std::make_unique<views::Label>(secondary_display_name));
+      secondary_label->SetFontList(gfx::FontList(kButtonSecondaryLabelFont));
+      secondary_label->SetEnabledColor(kShareTargetSecondaryTitleColor);
+      SetLabelProperties(secondary_label);
+    }
+
+    AddChildView(std::move(label_view));
 
     SetFocusForPlatform();
   }
 
   ShareSheetTargetButton(const ShareSheetTargetButton&) = delete;
   ShareSheetTargetButton& operator=(const ShareSheetTargetButton&) = delete;
+
+  void SetLabelProperties(views::Label* label) {
+    label->SetLineHeight(kButtonLineHeight);
+    label->SetBackgroundColor(SK_ColorTRANSPARENT);
+    label->SetHandlesTooltips(true);
+    label->SetTooltipText(label->GetText());
+    label->SetMultiLine(false);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  }
 
   // Button is 76px width x 88px height + 8px padding along all sides.
   gfx::Size CalculatePreferredSize() const override {
@@ -158,7 +184,7 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
                         kTitleLineHeight);
   auto* title = main_layout->AddView(std::make_unique<views::Label>(
       base::UTF8ToUTF16(base::StringPiece(kTitle))));
-  title->SetFontList(gfx::FontList("GoogleSans, Medium, 24px"));
+  title->SetFontList(gfx::FontList(kTitleFont));
   title->SetLineHeight(kTitleLineHeight);
   title->SetEnabledColor(kShareTitleColor);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -186,8 +212,14 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
       scroll_layout->StartRow(views::GridLayout::kFixedSize,
                               COLUMN_SET_ID_TARGETS);
     }
+
+    auto secondary_display_name = base::string16();
+    if (target.secondary_display_name.has_value() &&
+        !target.secondary_display_name.value().empty()) {
+      secondary_display_name = target.secondary_display_name.value();
+    }
     auto target_view = std::make_unique<ShareSheetTargetButton>(
-        this, target.display_name, &target.icon);
+        this, target.display_name, secondary_display_name, &target.icon);
     target_view->set_tag(i++);
     scroll_layout->AddView(std::move(target_view));
   }
@@ -273,8 +305,10 @@ void SharesheetBubbleView::CreateBubble() {
 
   auto root_view = std::make_unique<views::View>();
   root_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(kSpacing), 0,
-      true));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(/* top */ kSpacing, /* left */ kSpacing,
+                  /* bottom */ kShortSpacing, /* right */ kSpacing),
+      0, true));
   root_view_ = AddChildView(std::move(root_view));
 
   auto main_view = std::make_unique<views::View>();
@@ -308,5 +342,5 @@ void SharesheetBubbleView::UpdateAnchorPosition() {
 
 void SharesheetBubbleView::SetToDefaultBubbleSizing() {
   width_ = kDefaultBubbleWidth;
-  height_ = GetHeightForWidth(width_);
+  height_ = kDefaultBubbleHeight;
 }

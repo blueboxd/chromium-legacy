@@ -6,15 +6,18 @@
 
 namespace sharesheet {
 
-TargetInfo::TargetInfo(TargetType type,
-                       const gfx::ImageSkia& icon,
-                       const base::string16& launch_name,
-                       const base::string16& display_name,
-                       const base::Optional<std::string>& activity_name)
+TargetInfo::TargetInfo(
+    TargetType type,
+    const gfx::ImageSkia& icon,
+    const base::string16& launch_name,
+    const base::string16& display_name,
+    const base::Optional<base::string16>& secondary_display_name,
+    const base::Optional<std::string>& activity_name)
     : type(type),
       icon(icon),
       launch_name(launch_name),
       display_name(display_name),
+      secondary_display_name(secondary_display_name),
       activity_name(activity_name) {}
 
 TargetInfo::~TargetInfo() = default;

@@ -700,6 +700,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI,
 
   // ui::ClipboardObserver
   void OnClipboardDataChanged() override;
+  void OnClipboardDataRead() override {}
 
   ScopedObserver<ui::ClipboardMonitor, ui::ClipboardObserver>
       clipboard_observer_;

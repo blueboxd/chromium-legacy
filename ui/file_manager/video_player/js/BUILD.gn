@@ -11,8 +11,6 @@ js_type_check("closure_compile_module") {
     ":background",
     ":closure_compile_externs",
     ":error_util",
-    ":media_controls",
-    ":mouse_inactivity_watcher",
     ":video_player",
     ":video_player_metrics",
     ":video_player_native_controls",
@@ -25,7 +23,6 @@ js_library("closure_compile_externs") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/media_player_private.js",
     "$externs_path/metrics_private.js",
-    "$externs_path/mediasession.js",
     "$externs_path/picture_in_picture.js",
     "//ui/file_manager/externs/chrome_cast.js",
     "//ui/file_manager/externs/platform.js",
@@ -41,17 +38,6 @@ js_library("background") {
 }
 
 js_library("error_util") {
-}
-
-js_library("media_controls") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:util",
-    "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
-    "//ui/webui/resources/js/cr/ui:menu_button",
-  ]
-}
-
-js_library("mouse_inactivity_watcher") {
 }
 
 js_library("video_player_native_controls") {
@@ -76,14 +62,9 @@ js_unittest("video_player_native_controls_unittest") {
 js_library("video_player") {
   deps = [
     ":error_util",
-    ":media_controls",
-    ":mouse_inactivity_watcher",
     ":video_player_metrics",
     ":video_player_native_controls",
-    "cast:cast_video_element",
-    "cast:media_manager",
     "//ui/file_manager/base/js:filtered_volume_manager",
-    "//ui/file_manager/base/js:mediasession_types",
     "//ui/file_manager/file_manager/common/js:metrics_base",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/image_loader:image_loader_client",

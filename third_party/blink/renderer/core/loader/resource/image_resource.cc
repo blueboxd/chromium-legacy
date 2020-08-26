@@ -30,6 +30,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -195,8 +195,8 @@ ImageResource* ImageResource::CreateForTest(const KURL& url) {
   // These are needed because some unittests don't go through the usual
   // request setting path in ResourceFetcher.
   request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
-  request.SetReferrerPolicy(
-      ReferrerPolicyResolveDefault(request.GetReferrerPolicy()));
+  request.SetReferrerPolicy(ReferrerUtils::MojoReferrerPolicyResolveDefault(
+      request.GetReferrerPolicy()));
   request.SetPriority(WebURLRequest::Priority::kLow);
 
   return Create(request, nullptr);

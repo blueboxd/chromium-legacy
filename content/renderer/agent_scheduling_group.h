@@ -20,7 +20,7 @@ namespace content {
 // and legacy IPC messages.
 class CONTENT_EXPORT AgentSchedulingGroup {
  public:
-  AgentSchedulingGroup();
+  explicit AgentSchedulingGroup();
   ~AgentSchedulingGroup();
 
   AgentSchedulingGroup(const AgentSchedulingGroup&) = delete;

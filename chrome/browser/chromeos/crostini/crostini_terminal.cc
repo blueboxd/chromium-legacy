@@ -102,10 +102,6 @@ Browser* LaunchTerminalSettings(Profile* profile, int64_t display_id) {
     return nullptr;
   }
   std::string path = "html/terminal_settings.html";
-  if (base::FeatureList::IsEnabled(
-          features::kTerminalSystemAppLegacySettings)) {
-    path = "html/nassh_preferences_editor.html";
-  }
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
   return web_app::LaunchSystemWebApp(

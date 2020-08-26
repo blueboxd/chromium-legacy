@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 
 #include <algorithm>
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -121,7 +121,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));
     resource_request.SetReferrerPolicy(
-        ReferrerPolicyResolveDefault(image.referrer.referrer_policy));
+        ReferrerUtils::MojoReferrerPolicyResolveDefault(
+            image.referrer.referrer_policy));
     resource_request.SetReferrerString(image.referrer.referrer);
     if (is_ad_related_)
       resource_request.SetIsAdResource();

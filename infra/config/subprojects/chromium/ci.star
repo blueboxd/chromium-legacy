@@ -624,6 +624,7 @@ ci.chromiumos_builder(
         short_name = "rel",
     ),
     main_console_view = settings.main_console_name,
+    execution_timeout = 4 * time.hour,
 )
 
 ci.chromiumos_builder(

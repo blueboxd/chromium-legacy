@@ -48,6 +48,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/display_util.h"
@@ -176,15 +177,12 @@ base::LazyInstance<RoutingIDWidgetMap>::DestructorAtExit
 // iteration (or NULL if there isn't any left).
 class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
  public:
-  RenderWidgetHostIteratorImpl()
-      : current_index_(0) {
-  }
-
-  ~RenderWidgetHostIteratorImpl() override {}
+  RenderWidgetHostIteratorImpl() = default;
+  ~RenderWidgetHostIteratorImpl() override = default;
 
   void Add(RenderWidgetHost* host) {
-    hosts_.push_back(RenderWidgetHostID(host->GetProcess()->GetID(),
-                                        host->GetRoutingID()));
+    hosts_.push_back(
+        RenderWidgetHostID(host->GetProcess()->GetID(), host->GetRoutingID()));
   }
 
   // RenderWidgetHostIterator:
@@ -200,7 +198,7 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
  private:
   std::vector<RenderWidgetHostID> hosts_;
-  size_t current_index_;
+  size_t current_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
@@ -391,12 +389,12 @@ base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(
     RenderWidgetHostDelegate* delegate,
-    RenderProcessHost* process,
+    AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id,
     bool hidden,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue)
     : delegate_(delegate),
-      process_(process),
+      agent_scheduling_group_(agent_scheduling_group),
       routing_id_(routing_id),
       clock_(base::DefaultTickClock::GetInstance()),
       is_hidden_(hidden),
@@ -411,7 +409,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
           base::ThreadTaskRunnerHandle::Get(),
 #endif
           frame_token_message_queue_.get()),
-      frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
+      frame_sink_id_(base::checked_cast<uint32_t>(
+                         agent_scheduling_group.GetProcess()->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)) {
   DCHECK(frame_token_message_queue_);
   frame_token_message_queue_->Init(this);
@@ -430,15 +429,18 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
-          RenderWidgetHostID(process->GetID(), routing_id_), this));
+          RenderWidgetHostID(agent_scheduling_group.GetProcess()->GetID(),
+                             routing_id_),
+          this));
   CHECK(result.second) << "Inserting a duplicate item!";
-  process_->AddRoute(routing_id_, this);
-  process_->AddObserver(this);
+  agent_scheduling_group_.AddRoute(routing_id_, this);
+  agent_scheduling_group.GetProcess()->AddObserver(this);
   render_process_blocked_state_changed_subscription_ =
-      process_->RegisterBlockStateChangedCallback(base::BindRepeating(
-          &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
-          base::Unretained(this)));
-  process_->AddPriorityClient(this);
+      agent_scheduling_group.GetProcess()->RegisterBlockStateChangedCallback(
+          base::BindRepeating(
+              &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
+              base::Unretained(this)));
+  agent_scheduling_group.GetProcess()->AddPriorityClient(this);
 
   SetupInputRouter();
 
@@ -531,7 +533,7 @@ const base::TimeDelta RenderWidgetHostImpl::kActivationNotificationExpireTime =
     base::TimeDelta::FromMilliseconds(300);
 
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
-  return process_;
+  return agent_scheduling_group_.GetProcess();
 }
 
 int RenderWidgetHostImpl::GetRoutingID() {
@@ -587,11 +589,11 @@ void RenderWidgetHostImpl::SetIntersectsViewport(bool intersects) {
 
 void RenderWidgetHostImpl::UpdatePriority() {
   if (!destroyed_)
-    process_->UpdateClientPriority(this);
+    GetProcess()->UpdateClientPriority(this);
 }
 
 void RenderWidgetHostImpl::Init() {
-  DCHECK(process_->IsInitializedAndNotDead());
+  DCHECK(GetProcess()->IsInitializedAndNotDead());
 
   set_renderer_initialized(true);
 
@@ -668,7 +670,7 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
 }
 
 void RenderWidgetHostImpl::InitForFrame() {
-  DCHECK(process_->IsInitializedAndNotDead());
+  DCHECK(GetProcess()->IsInitializedAndNotDead());
   set_renderer_initialized(true);
 
   // In situations where RenderFrameHostImpl::CreateNewFrame calls this
@@ -696,7 +698,7 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   RejectMouseLockOrUnlockIfNecessary(
       blink::mojom::PointerLockResult::kElementDestroyed);
 
-  if (process_->IsInitializedAndNotDead() && !owner_delegate()) {
+  if (GetProcess()->IsInitializedAndNotDead() && !owner_delegate()) {
     // Tell the RendererWidget to close. We only want to do this if the
     // RenderWidget is the root of the renderer object graph, which is for
     // pepper fullscreen and popups.
@@ -725,7 +727,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 }
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
-  return process_->Send(msg);
+  return agent_scheduling_group_.Send(msg);
 }
 
 void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
@@ -756,7 +758,7 @@ void RenderWidgetHostImpl::WasHidden() {
   Send(new WidgetMsg_WasHidden(routing_id_));
 
   // Tell the RenderProcessHost we were hidden.
-  process_->UpdateClientPriority(this);
+  GetProcess()->UpdateClientPriority(this);
 
   bool is_visible = false;
   NotificationService::current()->Notify(
@@ -790,7 +792,7 @@ void RenderWidgetHostImpl::WasShown(
       view_->is_evicted(), std::move(record_tab_switch_time_request)));
   view_->reset_is_evicted();
 
-  process_->UpdateClientPriority(this);
+  GetProcess()->UpdateClientPriority(this);
 
   bool is_visible = true;
   NotificationService::current()->Notify(
@@ -824,7 +826,7 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
     return;
   importance_ = importance;
-  process_->UpdateClientPriority(this);
+  GetProcess()->UpdateClientPriority(this);
 }
 
 void RenderWidgetHostImpl::AddImeInputEventObserver(
@@ -1088,9 +1090,9 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   // is being deleted, or if LocalSurfaceIdAllocation is suppressed, as we are
   // first updating our internal state from a child's request, before
   // subsequently merging ids to send.
-  if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
-      !view_ || !view_->HasSize() || !delegate_ ||
-      surface_id_allocation_suppressed_ ||
+  if (visual_properties_ack_pending_ ||
+      !GetProcess()->IsInitializedAndNotDead() || !view_ || !view_->HasSize() ||
+      !delegate_ || surface_id_allocation_suppressed_ ||
       !view_->CanSynchronizeVisualProperties()) {
     return false;
   }
@@ -1352,8 +1354,8 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   DCHECK_GE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeFirst);
   DCHECK_LE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeLast);
 
-  for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
-    if (mouse_event_callbacks_[i].Run(mouse_event))
+  for (auto& mouse_event_callback : mouse_event_callbacks_) {
+    if (mouse_event_callback.Run(mouse_event))
       return;
   }
 
@@ -1575,7 +1577,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   if (IsIgnoringInputEvents())
     return;
 
-  if (!process_->IsInitializedAndNotDead())
+  if (!GetProcess()->IsInitializedAndNotDead())
     return;
 
   // First, let keypress listeners take a shot at handling the event.  If a
@@ -2042,11 +2044,11 @@ void RenderWidgetHostImpl::OnStartDragging(
   storage::FileSystemContext* file_system_context =
       GetProcess()->GetStoragePartition()->GetFileSystemContext();
   filtered_data.file_system_files.clear();
-  for (size_t i = 0; i < drop_data.file_system_files.size(); ++i) {
+  for (const auto& file_system_file : drop_data.file_system_files) {
     storage::FileSystemURL file_system_url =
-        file_system_context->CrackURL(drop_data.file_system_files[i].url);
+        file_system_context->CrackURL(file_system_file.url);
     if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url))
-      filtered_data.file_system_files.push_back(drop_data.file_system_files[i]);
+      filtered_data.file_system_files.push_back(file_system_file);
   }
 
   float scale = GetScaleFactorForView(GetView());
@@ -2084,7 +2086,7 @@ void RenderWidgetHostImpl::RendererExited() {
   if (!is_hidden_) {
     is_hidden_ = true;
     if (!destroyed_)
-      process_->UpdateClientPriority(this);
+      GetProcess()->UpdateClientPriority(this);
   }
 
   if (view_) {
@@ -2269,11 +2271,11 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   }
 
   render_process_blocked_state_changed_subscription_.reset();
-  process_->RemovePriorityClient(this);
-  process_->RemoveObserver(this);
-  process_->RemoveRoute(routing_id_);
+  GetProcess()->RemovePriorityClient(this);
+  GetProcess()->RemoveObserver(this);
+  agent_scheduling_group_.RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(
-      RenderWidgetHostID(process_->GetID(), routing_id_));
+      RenderWidgetHostID(GetProcess()->GetID(), routing_id_));
 
   // The |delegate_| may have been destroyed (or is in the process of being
   // destroyed) and detached first.
@@ -2812,7 +2814,7 @@ blink::mojom::InputEventResultState RenderWidgetHostImpl::FilterInputEvent(
       event.GetType() != WebInputEvent::Type::kTouchCancel)
     return blink::mojom::InputEventResultState::kNoConsumerExists;
 
-  if (!process_->IsInitializedAndNotDead())
+  if (!GetProcess()->IsInitializedAndNotDead())
     return blink::mojom::InputEventResultState::kUnknown;
 
   if (delegate_) {
@@ -3003,7 +3005,7 @@ void RenderWidgetHostImpl::OnTouchEventAck(
 }
 
 bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
-  return process_->IsBlocked() || !delegate_ ||
+  return agent_scheduling_group_.GetProcess()->IsBlocked() || !delegate_ ||
          delegate_->ShouldIgnoreInputEvents();
 }
 

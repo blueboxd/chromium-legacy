@@ -38,9 +38,8 @@ class DeviceToDeviceSecureContext : public SecureContext {
 
   // SecureContext:
   void Decode(const std::string& encoded_message,
-              const MessageCallback& callback) override;
-  void Encode(const std::string& message,
-              const MessageCallback& callback) override;
+              MessageCallback callback) override;
+  void Encode(const std::string& message, MessageCallback callback) override;
   ProtocolVersion GetProtocolVersion() const override;
   std::string GetChannelBindingData() const override;
 
@@ -48,11 +47,10 @@ class DeviceToDeviceSecureContext : public SecureContext {
   // Callback for unwrapping a secure message. |callback| will be invoked with
   // the decrypted payload if the message is unwrapped successfully; otherwise
   // it will be invoked with an empty string.
-  void HandleUnwrapResult(
-      const DeviceToDeviceSecureContext::MessageCallback& callback,
-      bool verified,
-      const std::string& payload,
-      const securemessage::Header& header);
+  void HandleUnwrapResult(DeviceToDeviceSecureContext::MessageCallback callback,
+                          bool verified,
+                          const std::string& payload,
+                          const securemessage::Header& header);
 
   // Delegate for handling the creation and unwrapping of SecureMessages.
   std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;

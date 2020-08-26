@@ -40,8 +40,10 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     bool swapped_out) {
   return new TestRenderViewHost(
       instance,
-      TestRenderWidgetHost::Create(widget_delegate, instance->GetProcess(),
-                                   widget_routing_id, false),
+      TestRenderWidgetHost::Create(
+          widget_delegate,
+          static_cast<SiteInstanceImpl*>(instance)->GetAgentSchedulingGroup(),
+          widget_routing_id, false),
       delegate, routing_id, main_frame_routing_id, swapped_out);
 }
 

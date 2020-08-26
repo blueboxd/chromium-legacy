@@ -51,7 +51,6 @@ group("closure_compile") {
     "integration_tests:closure_compile",
     "integration_tests/file_manager:closure_compile",
     "video_player/js:closure_compile",
-    "video_player/js/cast:closure_compile",
   ]
 }
 

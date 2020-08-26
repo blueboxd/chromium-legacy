@@ -26,6 +26,7 @@ struct TargetInfo {
              const gfx::ImageSkia& icon,
              const base::string16& launch_name,
              const base::string16& display_name,
+             const base::Optional<base::string16>& secondary_display_name,
              const base::Optional<std::string>& activity_name);
   ~TargetInfo();
 
@@ -51,6 +52,11 @@ struct TargetInfo {
   // The string shown to the user to identify this target in the sharesheet
   // bubble.
   base::string16 display_name;
+
+  // A secondary string below the |display_name| shown to the user to provide
+  // additional information for this target. This will be populated by showing
+  // the activity name in ARC apps.
+  base::Optional<base::string16> secondary_display_name;
 
   // The activity of the app for the target. This only applies when the app type
   // is kArc.

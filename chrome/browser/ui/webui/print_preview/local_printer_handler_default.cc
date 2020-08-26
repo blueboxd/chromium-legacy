@@ -23,7 +23,6 @@
 
 #if defined(OS_MAC)
 #include "components/printing/browser/printer_capabilities_mac.h"
-#include "printing/printing_features.h"
 #endif
 
 #if defined(OS_WIN)
@@ -80,8 +79,7 @@ base::Value LocalPrinterHandlerDefault::FetchCapabilitiesAsync(
     const std::string& locale) {
   PrinterSemanticCapsAndDefaults::Papers user_defined_papers;
 #if defined(OS_MAC)
-  if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
-    user_defined_papers = GetMacCustomPaperSizes();
+  user_defined_papers = GetMacCustomPaperSizes();
 #endif
 
 #if defined(OS_WIN)

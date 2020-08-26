@@ -152,10 +152,15 @@ void SharesheetService::OnIconLoaded(
     base::OnceCallback<void(std::vector<TargetInfo> targets)> callback,
     apps::mojom::IconValuePtr icon_value) {
   const auto& launch_entry = intent_launch_info[index];
-  targets.emplace_back(TargetType::kApp, icon_value->uncompressed,
-                       base::UTF8ToUTF16(launch_entry.app_id),
-                       base::UTF8ToUTF16(launch_entry.activity_label),
-                       launch_entry.activity_name);
+  app_service_proxy_->AppRegistryCache().ForOneApp(
+      launch_entry.app_id,
+      [&launch_entry, &targets, &icon_value](const apps::AppUpdate& update) {
+        targets.emplace_back(TargetType::kApp, icon_value->uncompressed,
+                             base::UTF8ToUTF16(launch_entry.app_id),
+                             base::UTF8ToUTF16(update.Name()),
+                             base::UTF8ToUTF16(launch_entry.activity_label),
+                             launch_entry.activity_name);
+      });
 
   LoadAppIcons(std::move(intent_launch_info), std::move(targets), index + 1,
                std::move(callback));
@@ -178,7 +183,7 @@ void SharesheetService::ShowBubbleWithDelegate(
   while (iter != actions.end()) {
     targets.emplace_back(TargetType::kAction, (*iter)->GetActionIcon(),
                          (*iter)->GetActionName(), (*iter)->GetActionName(),
-                         base::nullopt);
+                         base::nullopt, base::nullopt);
     ++iter;
   }
 

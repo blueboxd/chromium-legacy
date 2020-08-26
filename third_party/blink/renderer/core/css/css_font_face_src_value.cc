@@ -27,6 +27,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -86,7 +86,8 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
   if (!fetched_ || fetched_->GetResource()->Options().world != world_) {
     ResourceRequest resource_request(absolute_resource_);
     resource_request.SetReferrerPolicy(
-        ReferrerPolicyResolveDefault(referrer_.referrer_policy));
+        ReferrerUtils::MojoReferrerPolicyResolveDefault(
+            referrer_.referrer_policy));
     resource_request.SetReferrerString(referrer_.referrer);
     if (is_ad_related_)
       resource_request.SetIsAdResource();

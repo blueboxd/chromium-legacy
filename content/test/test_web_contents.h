@@ -16,6 +16,7 @@
 
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
@@ -185,14 +186,14 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       bool is_new_browsing_instance,
       bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) override;
-  void CreateNewWidget(int32_t render_process_id,
+  void CreateNewWidget(AgentSchedulingGroupHost& agent_scheduling_group,
                        int32_t route_id,
                        mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
                            blink_widget_host,
                        mojo::PendingAssociatedRemote<blink::mojom::Widget>
                            blink_widget) override;
   void CreateNewFullscreenWidget(
-      int32_t render_process_id,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,

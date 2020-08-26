@@ -58,13 +58,14 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   InputRouter* input_router() { return input_router_.get(); }
 
-  static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
-                                      RenderProcessHost* process,
-                                      int32_t routing_id);
+  static MockRenderWidgetHost* Create(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t routing_id);
 
   static MockRenderWidgetHost* Create(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget);
 
@@ -81,7 +82,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
  private:
   MockRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget);
 

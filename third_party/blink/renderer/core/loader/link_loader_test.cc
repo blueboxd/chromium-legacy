@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -591,9 +592,8 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
     EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
               network::mojom::RedirectMode::kFollow);
     EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
-              RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()
-                  ? network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin
-                  : network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
+              ReferrerUtils::MojoReferrerPolicyResolveDefault(
+                  network::mojom::ReferrerPolicy::kDefault));
   }
 
   WebURLLoaderMockFactory::GetSingletonInstance()

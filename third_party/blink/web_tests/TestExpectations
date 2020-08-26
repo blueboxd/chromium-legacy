@@ -1811,10 +1811,6 @@ crbug.com/1020373 external/wpt/css/css-writing-modes/line-box-direction-vlr-016.
 crbug.com/1020373 external/wpt/css/css-writing-modes/line-box-direction-vrl-015.xht [ Failure ]
 crbug.com/1020373 external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
 crbug.com/1020373 external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-progression-vlr-003.html [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-progression-vlr-004.html [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Failure ]
-crbug.com/1020373 external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -2621,6 +2617,7 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
@@ -4528,8 +4525,7 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 
-# TODO(petermarshall): Re-enable after landing devtools piechart changes.
-crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Failure Pass Timeout ]
+crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
@@ -5320,6 +5316,9 @@ crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Fai
 
 # This test is not intended to pass on Plan B.
 crbug.com/740501 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure Timeout ]
+# Temporarily disable to unblock a WebRTC CL that makes more tests pass.
+crbug.com/1060083 external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure ]
+crbug.com/1060083 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
 
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
 
@@ -6578,6 +6577,3 @@ crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
 crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
 
 crbug.com/1119676 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure ]
-
-# Sheriff 2020-08-25
-crbug.com/1121429 fast/selectors/placeholder-shown-style-update.html [ Pass Crash ]

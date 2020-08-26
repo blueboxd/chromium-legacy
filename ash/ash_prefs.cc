@@ -8,6 +8,7 @@
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/clipboard/clipboard_nudge_controller.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/privacy_screen_controller.h"
@@ -50,6 +51,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   contextual_tooltip::RegisterProfilePrefs(registry);
+  ClipboardNudgeController::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
   DockedMagnifierControllerImpl::RegisterProfilePrefs(registry);
   GestureEducationNotificationController::RegisterProfilePrefs(registry,

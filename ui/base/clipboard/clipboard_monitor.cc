@@ -27,6 +27,14 @@ void ClipboardMonitor::NotifyClipboardDataChanged() {
     observer.OnClipboardDataChanged();
 }
 
+#if defined(OS_CHROMEOS)
+void ClipboardMonitor::NotifyClipboardDataRead() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (ClipboardObserver& observer : observers_)
+    observer.OnClipboardDataRead();
+}
+#endif
+
 void ClipboardMonitor::AddObserver(ClipboardObserver* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.AddObserver(observer);

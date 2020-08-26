@@ -1911,25 +1911,6 @@
             ]
         }
     ],
-    "DisableLatencyRecoveryDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DisabledImplDisabledMain",
-                    "disable_features": [
-                        "ImplLatencyRecovery",
-                        "MainLatencyRecovery"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisableMalwareExtensionsRemotely": [
         {
             "platforms": [
@@ -2563,6 +2544,27 @@
                     "name": "Enabled_20200406",
                     "enable_features": [
                         "FlexNG"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FlocIdComputedEventLogging": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FlocIdComputedEventLogging"
                     ]
                 }
             ]
@@ -3975,21 +3977,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MacAllowBackgroundingProcesses"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MacCustomPaperSize": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableCustomMacPaperSizes"
                     ]
                 }
             ]

@@ -79,6 +79,7 @@ class ClipboardFormatType;
 }
 
 namespace content {
+class AgentSchedulingGroupHost;
 class FrameTreeNode;
 class PageState;
 class RenderFrameHostImpl;
@@ -562,20 +563,20 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool HasSeenRecentScreenOrientationChange();
 
   // The page is trying to open a new widget (e.g. a select popup). The
-  // widget should be created associated with the given |widget_route_id| in the
-  // process |render_process_id|, but it should not be shown yet. That should
+  // widget should be created associated with the given
+  // |agent_scheduling_group|, but it should not be shown yet. That should
   // happen in response to ShowCreatedWidget.
   virtual void CreateNewWidget(
-      int32_t render_process_id,
-      int32_t widget_route_id,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {}
 
   // Creates a full screen RenderWidget. Similar to above.
   virtual void CreateNewFullscreenWidget(
-      int32_t render_process_id,
-      int32_t widget_route_id,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {}

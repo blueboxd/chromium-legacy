@@ -205,6 +205,8 @@ ASH_PUBLIC_EXPORT extern const char kXkbAutoRepeatInterval[];
 ASH_PUBLIC_EXPORT extern const char kNaturalScroll[];
 ASH_PUBLIC_EXPORT extern const char kMouseReverseScroll[];
 
+ASH_PUBLIC_EXPORT extern const char kMultipasteNudges[];
+
 }  // namespace prefs
 
 }  // namespace ash

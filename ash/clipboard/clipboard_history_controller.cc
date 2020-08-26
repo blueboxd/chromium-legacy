@@ -113,7 +113,9 @@ ClipboardHistoryController::ClipboardHistoryController()
       resource_manager_(std::make_unique<ClipboardHistoryResourceManager>(
           clipboard_history_.get())),
       accelerator_target_(std::make_unique<AcceleratorTarget>(this)),
-      menu_delegate_(std::make_unique<MenuDelegate>(this)) {}
+      menu_delegate_(std::make_unique<MenuDelegate>(this)),
+      nudge_controller_(std::make_unique<ClipboardNudgeController>(
+          clipboard_history_.get())) {}
 
 ClipboardHistoryController::~ClipboardHistoryController() = default;
 

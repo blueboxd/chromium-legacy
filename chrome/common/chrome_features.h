@@ -495,11 +495,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTeamfoodFlags;
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kTerminalSystemAppLegacySettings;
-#endif
-
 #if defined(OS_WIN)
 // Only has an effect in branded builds.
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -45,8 +45,7 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 // Used to group relevant providers together for mixing their results.
 class Mixer::Group {
  public:
-  Group(size_t max_results, double boost)
-      : max_results_(max_results), boost_(boost) {}
+  explicit Group(size_t max_results) : max_results_(max_results) {}
   ~Group() {}
 
   void AddProvider(SearchProvider* provider) {
@@ -62,9 +61,8 @@ class Mixer::Group {
 
         // We cannot rely on providers to give relevance scores in the range
         // [0.0, 1.0]. Clamp to that range.
-        const double relevance =
-            base::ClampToRange(result->relevance(), 0.0, 1.0);
-        results_.emplace_back(result.get(), relevance + boost_);
+        results_.emplace_back(
+            result.get(), base::ClampToRange(result->relevance(), 0.0, 1.0));
       }
     }
 
@@ -80,7 +78,6 @@ class Mixer::Group {
  private:
   typedef std::vector<SearchProvider*> Providers;
   const size_t max_results_;
-  const double boost_;
 
   Providers providers_;  // Not owned.
   SortedResults results_;
@@ -102,8 +99,8 @@ void Mixer::InitializeRankers(Profile* profile,
   }
 }
 
-size_t Mixer::AddGroup(size_t max_results, double boost) {
-  groups_.push_back(std::make_unique<Group>(max_results, boost));
+size_t Mixer::AddGroup(size_t max_results) {
+  groups_.push_back(std::make_unique<Group>(max_results));
   return groups_.size() - 1;
 }
 

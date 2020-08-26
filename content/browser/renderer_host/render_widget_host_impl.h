@@ -97,6 +97,7 @@ enum class DomCode;
 }
 
 namespace content {
+class AgentSchedulingGroupHost;
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class InputRouter;
@@ -154,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |delegate| goes away.
   RenderWidgetHostImpl(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_host,
       int32_t routing_id,
       bool hidden,
       std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue);
@@ -1065,7 +1066,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool destroyed_ = false;
 
   // Our delegate, which wants to know mainly about keyboard events.
-  // It will remain non-NULL until DetachDelegate() is called.
+  // It will remain non-null until DetachDelegate() is called.
   RenderWidgetHostDelegate* delegate_;
 
   // The delegate of the owner of this object.
@@ -1073,9 +1074,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // with a main frame RenderWidget.
   RenderWidgetHostOwnerDelegate* owner_delegate_ = nullptr;
 
-  // Created during construction and guaranteed never to be NULL, but its
-  // channel may be NULL if the renderer crashed, so one must always check that.
-  RenderProcessHost* const process_;
+  // AgentSchedulingGroupHost to be used for IPC with the corresponding
+  // (renderer-side) AgentSchedulingGroup. Its channel may be nullptr if the
+  // renderer crashed.
+  AgentSchedulingGroupHost& agent_scheduling_group_;
 
   // The ID of the corresponding object in the Renderer Instance.
   const int routing_id_;

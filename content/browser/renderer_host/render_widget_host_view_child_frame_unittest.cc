@@ -21,6 +21,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -115,14 +116,15 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         std::make_unique<TestImageTransportFactory>());
 #endif
 
-    MockRenderProcessHost* process_host =
-        new MockRenderProcessHost(browser_context_.get());
+    auto* process_host = new MockRenderProcessHost(browser_context_.get());
 
+    agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_host);
     int32_t routing_id = process_host->GetNextRoutingID();
     sink_ = &process_host->sink();
 
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id,
+        &delegate_, *agent_scheduling_group_host_, routing_id,
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
 
     mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
@@ -157,6 +159,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     if (view_)
       view_->Destroy();
     delete widget_host_;
+    agent_scheduling_group_host_ = nullptr;
     delete test_frame_connector_;
 
     browser_context_.reset();
@@ -181,6 +184,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   IPC::TestSink* sink_ = nullptr;
   MockRenderWidgetHostDelegate delegate_;
   MockWidget widget_;

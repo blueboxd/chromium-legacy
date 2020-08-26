@@ -18,7 +18,7 @@ class TestRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   static std::unique_ptr<RenderWidgetHostImpl> Create(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden);
   ~TestRenderWidgetHost() override;
@@ -30,7 +30,7 @@ class TestRenderWidgetHost : public RenderWidgetHostImpl {
 
  private:
   TestRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                       RenderProcessHost* process,
+                       AgentSchedulingGroupHost& agent_scheduling_group,
                        int32_t routing_id,
                        bool hidden);
   MockWidgetInputHandler input_handler_;

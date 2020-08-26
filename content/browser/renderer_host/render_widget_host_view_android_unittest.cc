@@ -9,6 +9,7 @@
 #include "cc/layers/deadline_policy.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/mock_render_widget_host.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -47,6 +48,7 @@ class RenderWidgetHostViewAndroidTest : public testing::Test {
  private:
   std::unique_ptr<TestBrowserContext> browser_context_;
   MockRenderProcessHost* process_;  // Deleted automatically by the widget.
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_;
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_refptr<cc::Layer> parent_layer_;
   scoped_refptr<cc::Layer> layer_;
@@ -80,8 +82,10 @@ void RenderWidgetHostViewAndroidTest::SetUp() {
   browser_context_.reset(new TestBrowserContext());
   delegate_.reset(new MockRenderWidgetHostDelegate());
   process_ = new MockRenderProcessHost(browser_context_.get());
-  host_.reset(MockRenderWidgetHost::Create(delegate_.get(), process_,
-                                           process_->GetNextRoutingID()));
+  agent_scheduling_group_ =
+      std::make_unique<AgentSchedulingGroupHost>(*process_);
+  host_.reset(MockRenderWidgetHost::Create(
+      delegate_.get(), *agent_scheduling_group_, process_->GetNextRoutingID()));
   parent_layer_ = cc::Layer::Create();
   parent_view_.SetLayer(parent_layer_);
   layer_ = cc::Layer::Create();
@@ -97,6 +101,7 @@ void RenderWidgetHostViewAndroidTest::TearDown() {
   render_widget_host_view_android_->Destroy();
   host_.reset();
   delegate_.reset();
+  agent_scheduling_group_ = nullptr;
   process_ = nullptr;
   browser_context_.reset();
 }

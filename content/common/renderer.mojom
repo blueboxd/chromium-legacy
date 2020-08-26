@@ -257,6 +257,9 @@ interface Renderer {
   // Tells the renderer to create a new RenderFrame.
   CreateFrame(CreateFrameParams params);
 
+  // Tells the renderer to create a new AgentSchedulingGroup.
+  CreateAgentSchedulingGroup();
+
   // Tells the renderer to create a new RenderFrameProxy object with
   // |routing_id|.  |render_view_routing_id| identifies the
   // RenderView to be associated with this proxy. The new proxy's opener should

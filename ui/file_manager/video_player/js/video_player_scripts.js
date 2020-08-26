@@ -27,12 +27,6 @@
 // <include src="../../../webui/resources/js/cr/event_target.js">
 
 // <include src="../../../webui/resources/js/cr/ui/array_data_model.js">
-// <include src="../../../webui/resources/js/cr/ui/position_util.js">
-// <include src="../../../webui/resources/js/cr/ui/menu_item.js">
-// <include src="../../../webui/resources/js/cr/ui/menu.js">
-// <include src="../../../webui/resources/js/cr/ui/menu_button.js">
-// <include src="../../../webui/resources/js/cr/ui/context_menu_handler.js">
-
 (function() {
 'use strict';
 
@@ -46,17 +40,8 @@
 /* TODO(tapted): Remove the util.js dependency */
 // <include src="../../file_manager/common/js/util.js">
 
-// <include src="../../base/js/mediasession_types.js">
 // <include src="../../base/js/volume_manager_types.js">
 // <include src="../../base/js/filtered_volume_manager.js">
-
-// <include src="cast/cast_extension_discoverer.js">
-// <include src="cast/cast_video_element.js">
-// <include src="cast/media_manager.js">
-// <include src="cast/caster.js">
-
-// <include src="media_controls.js">
-// <include src="mouse_inactivity_watcher.js">
 
 // <include src="video_player_native_controls.js">
 // <include src="video_player.js">

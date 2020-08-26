@@ -80,7 +80,10 @@ public class JavascriptInjectorImpl implements JavascriptInjector, UserData {
 
     @Override
     public void setAllowInspection(boolean allow) {
-        if (mNativePtr != 0) {
+        assert mUseMojo != null;
+        if (mUseMojo) {
+            mInjector.setAllowInspection(allow);
+        } else if (mNativePtr != 0) {
             JavascriptInjectorImplJni.get().setAllowInspection(
                     mNativePtr, JavascriptInjectorImpl.this, allow);
         }

@@ -7,6 +7,7 @@
 
 #include "base/supports_user_data.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/common/renderer.mojom.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {
@@ -20,6 +21,7 @@ using mojom::RouteProvider;
 
 static constexpr char kAgentGroupHostDataKey[] =
     "AgentSchedulingGroupHostUserDataKey";
+
 class AgentGroupHostUserData : public base::SupportsUserData::Data {
  public:
   explicit AgentGroupHostUserData(
@@ -54,8 +56,12 @@ AgentSchedulingGroupHost* AgentSchedulingGroupHost::Get(
 }
 
 AgentSchedulingGroupHost::AgentSchedulingGroupHost(RenderProcessHost& process)
-    : process_(process) {}
+    : process_(process) {
+  process_.GetRendererInterface()->CreateAgentSchedulingGroup();
+}
 
+// DO NOT USE |process_| HERE! At this point it (or at least parts of it) is no
+// longer valid.
 AgentSchedulingGroupHost::~AgentSchedulingGroupHost() = default;
 
 RenderProcessHost* AgentSchedulingGroupHost::GetProcess() {

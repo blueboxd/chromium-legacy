@@ -44,13 +44,6 @@ class NativeControlsVideoPlayer {
     this.videoElement_.style.pointerEvents = 'auto';
     getRequiredElement('video-container').appendChild(this.videoElement_);
 
-    // TODO: remove the element in html when remove the feature flag
-    getRequiredElement('controls-wrapper').style.display = 'none';
-    getRequiredElement('spinner-container').style.display = 'none';
-    getRequiredElement('error-wrapper').style.display = 'none';
-    getRequiredElement('thumbnail').style.display = 'none';
-    getRequiredElement('cast-container').style.display = 'none';
-
     this.videoElement_.addEventListener('pause', this.onPause_.bind(this));
 
     // Restore playback position when duration change.

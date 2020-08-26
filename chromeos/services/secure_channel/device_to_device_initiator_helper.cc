@@ -38,13 +38,13 @@ void DeviceToDeviceInitiatorHelper::CreateHelloMessage(
     const std::string& session_public_key,
     const std::string& persistent_symmetric_key,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const MessageCallback& callback) {
+    MessageCallback callback) {
   // Decode public key into the |initator_hello| proto.
   securegcm::InitiatorHello initiator_hello;
   if (!initiator_hello.mutable_public_dh_key()->ParseFromString(
           session_public_key)) {
     PA_LOG(ERROR) << "Unable to parse user's public key";
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
   initiator_hello.set_protocol_version(kD2DProtocolVersion);
@@ -60,7 +60,8 @@ void DeviceToDeviceInitiatorHelper::CreateHelloMessage(
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   initiator_hello.SerializeToString(&create_options.public_metadata);
   secure_message_delegate->CreateSecureMessage(
-      kPayloadFiller, persistent_symmetric_key, create_options, callback);
+      kPayloadFiller, persistent_symmetric_key, create_options,
+      std::move(callback));
 }
 
 void DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessage(
@@ -70,7 +71,7 @@ void DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessage(
     const std::string& session_private_key,
     const std::string& hello_message,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const ValidateResponderAuthCallback& callback) {
+    ValidateResponderAuthCallback callback) {
   // The [Responder Auth] message has the structure:
   // {
   //   header: <responder_public_key>,
@@ -91,8 +92,8 @@ void DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessage(
   ValidateResponderAuthMessageContext context(
       responder_auth_message, persistent_responder_public_key,
       persistent_symmetric_key, session_private_key, hello_message,
-      secure_message_delegate, callback);
-  BeginResponderAuthValidation(context);
+      secure_message_delegate);
+  BeginResponderAuthValidation(context, std::move(callback));
 }
 
 void DeviceToDeviceInitiatorHelper::CreateInitiatorAuthMessage(
@@ -100,7 +101,7 @@ void DeviceToDeviceInitiatorHelper::CreateInitiatorAuthMessage(
     const std::string& persistent_symmetric_key,
     const std::string& responder_auth_message,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const MessageCallback& callback) {
+    MessageCallback callback) {
   // The [Initiator Auth] message has the structure:
   // {
   //   header: Sig(payload1, session_symmetric_key)
@@ -119,10 +120,10 @@ void DeviceToDeviceInitiatorHelper::CreateInitiatorAuthMessage(
   create_options.associated_data = responder_auth_message;
   secure_message_delegate->CreateSecureMessage(
       kPayloadFiller, persistent_symmetric_key, create_options,
-      base::Bind(
+      base::BindOnce(
           &DeviceToDeviceInitiatorHelper::OnInnerMessageCreatedForInitiatorAuth,
           weak_ptr_factory_.GetWeakPtr(), session_keys, secure_message_delegate,
-          callback));
+          std::move(callback)));
 }
 
 DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessageContext ::
@@ -132,15 +133,13 @@ DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessageContext ::
         const std::string& persistent_symmetric_key,
         const std::string& session_private_key,
         const std::string& hello_message,
-        multidevice::SecureMessageDelegate* secure_message_delegate,
-        const ValidateResponderAuthCallback& callback)
+        multidevice::SecureMessageDelegate* secure_message_delegate)
     : responder_auth_message(responder_auth_message),
       persistent_responder_public_key(persistent_responder_public_key),
       persistent_symmetric_key(persistent_symmetric_key),
       session_private_key(session_private_key),
       hello_message(hello_message),
-      secure_message_delegate(secure_message_delegate),
-      callback(callback) {}
+      secure_message_delegate(secure_message_delegate) {}
 
 DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessageContext ::
     ValidateResponderAuthMessageContext(
@@ -151,7 +150,6 @@ DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessageContext ::
       session_private_key(other.session_private_key),
       hello_message(other.hello_message),
       secure_message_delegate(other.secure_message_delegate),
-      callback(other.callback),
       responder_session_public_key(other.responder_session_public_key),
       session_symmetric_key(other.session_symmetric_key) {}
 
@@ -161,11 +159,11 @@ DeviceToDeviceInitiatorHelper::ValidateResponderAuthMessageContext ::
 void DeviceToDeviceInitiatorHelper::OnInnerMessageCreatedForInitiatorAuth(
     const SessionKeys& session_keys,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const DeviceToDeviceInitiatorHelper::MessageCallback& callback,
+    DeviceToDeviceInitiatorHelper::MessageCallback callback,
     const std::string& inner_message) {
   if (inner_message.empty()) {
     PA_LOG(VERBOSE) << "Failed to create inner message for [Initiator Auth].";
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -185,11 +183,12 @@ void DeviceToDeviceInitiatorHelper::OnInnerMessageCreatedForInitiatorAuth(
   gcm_metadata.SerializeToString(&create_options.public_metadata);
   secure_message_delegate->CreateSecureMessage(
       device_to_device_message.SerializeAsString(),
-      session_keys.initiator_encode_key(), create_options, callback);
+      session_keys.initiator_encode_key(), create_options, std::move(callback));
 }
 
 void DeviceToDeviceInitiatorHelper::BeginResponderAuthValidation(
-    ValidateResponderAuthMessageContext context) {
+    ValidateResponderAuthMessageContext context,
+    ValidateResponderAuthCallback callback) {
   // Parse the encrypted SecureMessage so we can get plaintext data from the
   // header. Note that the payload will be encrypted.
   securemessage::SecureMessage encrypted_message;
@@ -197,7 +196,7 @@ void DeviceToDeviceInitiatorHelper::BeginResponderAuthValidation(
   if (!encrypted_message.ParseFromString(context.responder_auth_message) ||
       !header_and_body.ParseFromString(encrypted_message.header_and_body())) {
     PA_LOG(WARNING) << "Failed to parse [Responder Hello] message";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
@@ -210,7 +209,7 @@ void DeviceToDeviceInitiatorHelper::BeginResponderAuthValidation(
       gcm_metadata.version() != kGcmMetadataVersion) {
     PA_LOG(WARNING) << "Failed to validate cryptauth::GcmMetadata in "
                     << "[Responder Auth] header.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
@@ -221,19 +220,21 @@ void DeviceToDeviceInitiatorHelper::BeginResponderAuthValidation(
           &context.responder_session_public_key)) {
     PA_LOG(VERBOSE) << "Failed to extract responder session public key in "
                     << "[Responder Auth] header.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
   // Perform a Diffie-Helmann key exchange to get the session symmetric key.
   context.secure_message_delegate->DeriveKey(
       context.session_private_key, context.responder_session_public_key,
-      base::Bind(&DeviceToDeviceInitiatorHelper::OnSessionSymmetricKeyDerived,
-                 weak_ptr_factory_.GetWeakPtr(), context));
+      base::BindOnce(
+          &DeviceToDeviceInitiatorHelper::OnSessionSymmetricKeyDerived,
+          weak_ptr_factory_.GetWeakPtr(), context, std::move(callback)));
 }
 
 void DeviceToDeviceInitiatorHelper::OnSessionSymmetricKeyDerived(
     ValidateResponderAuthMessageContext context,
+    ValidateResponderAuthCallback callback,
     const std::string& session_symmetric_key) {
   context.session_symmetric_key = session_symmetric_key;
 
@@ -244,19 +245,21 @@ void DeviceToDeviceInitiatorHelper::OnSessionSymmetricKeyDerived(
   context.secure_message_delegate->UnwrapSecureMessage(
       context.responder_auth_message,
       SessionKeys(session_symmetric_key).responder_encode_key(), unwrap_options,
-      base::Bind(&DeviceToDeviceInitiatorHelper::
-                     OnOuterMessageUnwrappedForResponderAuth,
-                 weak_ptr_factory_.GetWeakPtr(), context));
+      base::BindOnce(&DeviceToDeviceInitiatorHelper::
+                         OnOuterMessageUnwrappedForResponderAuth,
+                     weak_ptr_factory_.GetWeakPtr(), context,
+                     std::move(callback)));
 }
 
 void DeviceToDeviceInitiatorHelper::OnOuterMessageUnwrappedForResponderAuth(
     const ValidateResponderAuthMessageContext& context,
+    ValidateResponderAuthCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified) {
     PA_LOG(VERBOSE) << "Failed to unwrap outer [Responder Auth] message.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
@@ -265,7 +268,7 @@ void DeviceToDeviceInitiatorHelper::OnOuterMessageUnwrappedForResponderAuth(
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
     PA_LOG(VERBOSE) << "Failed to validate DeviceToDeviceMessage payload.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
@@ -278,19 +281,21 @@ void DeviceToDeviceInitiatorHelper::OnOuterMessageUnwrappedForResponderAuth(
   context.secure_message_delegate->UnwrapSecureMessage(
       device_to_device_message.message(), context.persistent_symmetric_key,
       unwrap_options,
-      base::Bind(&DeviceToDeviceInitiatorHelper::
-                     OnMiddleMessageUnwrappedForResponderAuth,
-                 weak_ptr_factory_.GetWeakPtr(), context));
+      base::BindOnce(&DeviceToDeviceInitiatorHelper::
+                         OnMiddleMessageUnwrappedForResponderAuth,
+                     weak_ptr_factory_.GetWeakPtr(), context,
+                     std::move(callback)));
 }
 
 void DeviceToDeviceInitiatorHelper::OnMiddleMessageUnwrappedForResponderAuth(
     const ValidateResponderAuthMessageContext& context,
+    ValidateResponderAuthCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified) {
     PA_LOG(VERBOSE) << "Failed to unwrap middle [Responder Auth] message.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
@@ -302,14 +307,16 @@ void DeviceToDeviceInitiatorHelper::OnMiddleMessageUnwrappedForResponderAuth(
   unwrap_options.associated_data = context.hello_message;
   context.secure_message_delegate->UnwrapSecureMessage(
       payload, context.persistent_responder_public_key, unwrap_options,
-      base::Bind(&DeviceToDeviceInitiatorHelper::
-                     OnInnerMessageUnwrappedForResponderAuth,
-                 weak_ptr_factory_.GetWeakPtr(), context));
+      base::BindOnce(&DeviceToDeviceInitiatorHelper::
+                         OnInnerMessageUnwrappedForResponderAuth,
+                     weak_ptr_factory_.GetWeakPtr(), context,
+                     std::move(callback)));
 }
 
 // Called after the inner-most layer of [Responder Auth] is unwrapped.
 void DeviceToDeviceInitiatorHelper::OnInnerMessageUnwrappedForResponderAuth(
     const ValidateResponderAuthMessageContext& context,
+    ValidateResponderAuthCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
@@ -324,11 +331,11 @@ void DeviceToDeviceInitiatorHelper::OnInnerMessageUnwrappedForResponderAuth(
     PA_LOG(WARNING)
         << "Failed to validate cryptauth::GcmMetadata in inner-most "
         << "[Responder Auth] message.";
-    context.callback.Run(false, SessionKeys());
+    std::move(callback).Run(false, SessionKeys());
     return;
   }
 
-  context.callback.Run(verified, SessionKeys(context.session_symmetric_key));
+  std::move(callback).Run(verified, SessionKeys(context.session_symmetric_key));
 }
 
 }  // namespace secure_channel

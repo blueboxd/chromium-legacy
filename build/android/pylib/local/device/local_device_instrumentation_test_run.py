@@ -591,8 +591,10 @@ class LocalDeviceInstrumentationTestRun(
                                wpr_archive_path,
                                os.path.exists(wpr_archive_path)))
 
-      archive_path = os.path.join(wpr_archive_path,
-                                  self._GetUniqueTestName(test) + '.wprgo')
+      # Some linux version does not like # in the name. Replaces it with __.
+      archive_path = os.path.join(
+          wpr_archive_path,
+          _ReplaceUncommonChars(self._GetUniqueTestName(test)) + '.wprgo')
 
       if not os.path.exists(_WPR_GO_LINUX_X86_64_PATH):
         # If we got to this stage, then we should have
@@ -635,6 +637,7 @@ class LocalDeviceInstrumentationTestRun(
 
       if self._env.trace_output:
         self._SaveTraceData(trace_device_file, device, test['class'])
+
 
       def restore_flags():
         if flags_to_add:
@@ -1179,6 +1182,17 @@ def _GetWPRArchivePath(test):
   """Retrieves the archive path from the WPRArchiveDirectory annotation."""
   return test['annotations'].get(WPR_ARCHIVE_FILE_PATH_ANNOTATION,
                                  {}).get('value', ())
+
+
+def _ReplaceUncommonChars(original):
+  """Replaces uncommon characters with __."""
+  if not original:
+    raise ValueError('parameter should not be empty')
+
+  uncommon_chars = ['#']
+  for char in uncommon_chars:
+    original = original.replace(char, '__')
+  return original
 
 
 def _IsRenderTest(test):

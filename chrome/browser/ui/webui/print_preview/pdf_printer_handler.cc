@@ -47,7 +47,6 @@
 
 #if defined(OS_MAC)
 #include "components/printing/browser/printer_capabilities_mac.h"
-#include "printing/printing_features.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -203,21 +202,18 @@ void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_MAC)
-  if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes)) {
-    // Read the Mac custom paper sizes on a separate thread.
-    // USER_VISIBLE because the result is displayed in the print preview dialog.
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&GetMacCustomPaperSizes),
-        base::BindOnce(&ConstructCapabilitiesAndCompleteCallback,
-                       destination_id, std::move(callback)));
-    return;
-  }
-#endif
-
+  // Read the Mac custom paper sizes on a separate thread.
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetMacCustomPaperSizes),
+      base::BindOnce(&ConstructCapabilitiesAndCompleteCallback, destination_id,
+                     std::move(callback)));
+#else
   ConstructCapabilitiesAndCompleteCallback(
       destination_id, std::move(callback),
       PrinterSemanticCapsAndDefaults::Papers());
+#endif
 }
 
 void PdfPrinterHandler::StartPrint(

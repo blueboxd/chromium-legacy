@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_factory.h"
+#include "content/browser/site_instance_impl.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
@@ -37,9 +38,11 @@ RenderViewHost* RenderViewHostFactory::Create(
 
   RenderViewHostImpl* view_host = new RenderViewHostImpl(
       instance,
-      RenderWidgetHostFactory::Create(widget_delegate, instance->GetProcess(),
-                                      widget_routing_id,
-                                      /*hidden=*/true),
+      RenderWidgetHostFactory::Create(
+          widget_delegate,
+          static_cast<SiteInstanceImpl*>(instance)->GetAgentSchedulingGroup(),
+          widget_routing_id,
+          /*hidden=*/true),
       delegate, routing_id, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);
   return view_host;

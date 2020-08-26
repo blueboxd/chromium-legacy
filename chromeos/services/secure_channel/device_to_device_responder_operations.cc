@@ -33,18 +33,19 @@ const int kD2DProtocolVersion = 1;
 // Callback for DeviceToDeviceResponderOperations::ValidateHelloMessage(),
 // after the [Hello] message is unwrapped.
 void OnHelloMessageUnwrapped(
-    const DeviceToDeviceResponderOperations::ValidateHelloCallback& callback,
+    DeviceToDeviceResponderOperations::ValidateHelloCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
   securegcm::InitiatorHello initiator_hello;
   if (!verified || !initiator_hello.ParseFromString(header.public_metadata()) ||
       initiator_hello.protocol_version() != kD2DProtocolVersion) {
-    callback.Run(false, std::string());
+    std::move(callback).Run(false, std::string());
     return;
   }
 
-  callback.Run(true, initiator_hello.public_dh_key().SerializeAsString());
+  std::move(callback).Run(true,
+                          initiator_hello.public_dh_key().SerializeAsString());
 }
 
 // Helper struct containing all the context needed to create the [Responder
@@ -56,7 +57,6 @@ struct CreateResponderAuthMessageContext {
   std::string persistent_private_key;
   std::string persistent_symmetric_key;
   multidevice::SecureMessageDelegate* secure_message_delegate;
-  DeviceToDeviceResponderOperations::MessageCallback callback;
   std::string hello_public_key;
   std::string middle_message;
 };
@@ -65,26 +65,31 @@ struct CreateResponderAuthMessageContext {
 // message, declared in order in which they are called during the creation flow.
 void OnHelloMessageValidatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     bool hello_message_validated,
     const std::string& hello_public_key);
 void OnInnerMessageCreatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& inner_message);
 void OnMiddleMessageCreatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& middle_message);
 void OnSessionSymmetricKeyDerivedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& session_symmetric_key);
 
 // Called after the initiator's [Hello] message is unwrapped.
 void OnHelloMessageValidatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     bool hello_message_validated,
     const std::string& hello_public_key) {
   if (!hello_message_validated) {
     PA_LOG(VERBOSE) << "Invalid [Hello] while creating [Responder Auth]";
-    context.callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -103,16 +108,18 @@ void OnHelloMessageValidatedForResponderAuth(
 
   context.secure_message_delegate->CreateSecureMessage(
       kPayloadFiller, context.persistent_private_key, create_options,
-      base::Bind(&OnInnerMessageCreatedForResponderAuth, context));
+      base::BindOnce(&OnInnerMessageCreatedForResponderAuth, context,
+                     std::move(callback)));
 }
 
 // Called after the inner-most layer of [Responder Auth] is created.
 void OnInnerMessageCreatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& inner_message) {
   if (inner_message.empty()) {
     PA_LOG(VERBOSE) << "Failed to create middle message for [Responder Auth]";
-    context.callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -123,16 +130,18 @@ void OnInnerMessageCreatedForResponderAuth(
   create_options.associated_data = context.hello_message;
   context.secure_message_delegate->CreateSecureMessage(
       inner_message, context.persistent_symmetric_key, create_options,
-      base::Bind(&OnMiddleMessageCreatedForResponderAuth, context));
+      base::BindOnce(&OnMiddleMessageCreatedForResponderAuth, context,
+                     std::move(callback)));
 }
 
 // Called after the middle layer of [Responder Auth] is created.
 void OnMiddleMessageCreatedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& middle_message) {
   if (middle_message.empty()) {
     PA_LOG(ERROR) << "Error inner message while creating [Responder Auth]";
-    context.callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -141,17 +150,19 @@ void OnMiddleMessageCreatedForResponderAuth(
   context.middle_message = middle_message;
   context.secure_message_delegate->DeriveKey(
       context.session_private_key, context.hello_public_key,
-      base::Bind(&OnSessionSymmetricKeyDerivedForResponderAuth, context));
+      base::BindOnce(&OnSessionSymmetricKeyDerivedForResponderAuth, context,
+                     std::move(callback)));
 }
 
 // Called after the session symmetric key is derived, so we can create the outer
 // most layer of [Responder Auth].
 void OnSessionSymmetricKeyDerivedForResponderAuth(
     CreateResponderAuthMessageContext context,
+    DeviceToDeviceResponderOperations::MessageCallback callback,
     const std::string& session_symmetric_key) {
   if (session_symmetric_key.empty()) {
     PA_LOG(ERROR) << "Error inner message while creating [Responder Auth]";
-    context.callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -165,7 +176,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
           context.session_public_key)) {
     PA_LOG(ERROR) << "Error parsing public key while creating [Responder Auth]";
     PA_LOG(ERROR) << context.session_public_key;
-    context.callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
   responder_hello.set_protocol_version(kD2DProtocolVersion);
@@ -185,7 +196,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
   context.secure_message_delegate->CreateSecureMessage(
       device_to_device_message.SerializeAsString(),
       SessionKeys(session_symmetric_key).responder_encode_key(), create_options,
-      context.callback);
+      std::move(callback));
 }
 
 // Helper struct containing all the context needed to validate the [Initiator
@@ -194,29 +205,30 @@ struct ValidateInitiatorAuthMessageContext {
   std::string persistent_symmetric_key;
   std::string responder_auth_message;
   multidevice::SecureMessageDelegate* secure_message_delegate;
-  DeviceToDeviceResponderOperations::ValidationCallback callback;
 };
 
 // Called after the inner-most layer of [Initiator Auth] is unwrapped.
 void OnInnerMessageUnwrappedForInitiatorAuth(
     const ValidateInitiatorAuthMessageContext& context,
+    DeviceToDeviceResponderOperations::ValidationCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified)
     PA_LOG(VERBOSE) << "Failed to inner [Initiator Auth] message.";
-  context.callback.Run(verified);
+  std::move(callback).Run(verified);
 }
 
 // Called after the outer-most layer of [Initiator Auth] is unwrapped.
 void OnOuterMessageUnwrappedForInitiatorAuth(
     const ValidateInitiatorAuthMessageContext& context,
+    DeviceToDeviceResponderOperations::ValidationCallback callback,
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified) {
     PA_LOG(VERBOSE) << "Failed to verify outer [Initiator Auth] message";
-    context.callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -225,7 +237,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
     PA_LOG(VERBOSE) << "Failed to validate DeviceToDeviceMessage payload.";
-    context.callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -237,7 +249,8 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
   context.secure_message_delegate->UnwrapSecureMessage(
       device_to_device_message.message(), context.persistent_symmetric_key,
       unwrap_options,
-      base::Bind(&OnInnerMessageUnwrappedForInitiatorAuth, context));
+      base::BindOnce(&OnInnerMessageUnwrappedForInitiatorAuth, context,
+                     std::move(callback)));
 }
 
 }  // namespace
@@ -247,7 +260,7 @@ void DeviceToDeviceResponderOperations::ValidateHelloMessage(
     const std::string& hello_message,
     const std::string& persistent_symmetric_key,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const ValidateHelloCallback& callback) {
+    ValidateHelloCallback callback) {
   // The [Hello] message has the structure:
   // {
   //   header: <session_public_key>,
@@ -259,7 +272,7 @@ void DeviceToDeviceResponderOperations::ValidateHelloMessage(
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
   secure_message_delegate->UnwrapSecureMessage(
       hello_message, persistent_symmetric_key, unwrap_options,
-      base::Bind(&OnHelloMessageUnwrapped, callback));
+      base::BindOnce(&OnHelloMessageUnwrapped, std::move(callback)));
 }
 
 // static
@@ -270,7 +283,7 @@ void DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
     const std::string& persistent_private_key,
     const std::string& persistent_symmetric_key,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const MessageCallback& callback) {
+    MessageCallback callback) {
   // The [Responder Auth] message has the structure:
   // {
   //   header: <responder_public_key>,
@@ -293,14 +306,14 @@ void DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
                                                session_private_key,
                                                persistent_private_key,
                                                persistent_symmetric_key,
-                                               secure_message_delegate,
-                                               callback};
+                                               secure_message_delegate};
 
   // To create the [Responder Auth] message, we need to first parse the
   // initiator's [Hello] message and extract the initiator's session public key.
   DeviceToDeviceResponderOperations::ValidateHelloMessage(
       hello_message, persistent_symmetric_key, secure_message_delegate,
-      base::Bind(&OnHelloMessageValidatedForResponderAuth, context));
+      base::BindOnce(&OnHelloMessageValidatedForResponderAuth, context,
+                     std::move(callback)));
 }
 
 // static
@@ -310,7 +323,7 @@ void DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
     const std::string& persistent_symmetric_key,
     const std::string& responder_auth_message,
     multidevice::SecureMessageDelegate* secure_message_delegate,
-    const ValidationCallback& callback) {
+    DeviceToDeviceResponderOperations::ValidationCallback callback) {
   // The [Initiator Auth] message has the structure:
   // {
   //   header: Sig(payload1, session_symmetric_key)
@@ -323,9 +336,9 @@ void DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
   //     }
   //   }, session_symmetric_key)
   // }
-  ValidateInitiatorAuthMessageContext context = {
-      persistent_symmetric_key, responder_auth_message, secure_message_delegate,
-      callback};
+  ValidateInitiatorAuthMessageContext context = {persistent_symmetric_key,
+                                                 responder_auth_message,
+                                                 secure_message_delegate};
 
   multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
@@ -333,7 +346,8 @@ void DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
   secure_message_delegate->UnwrapSecureMessage(
       initiator_auth_message, session_keys.initiator_encode_key(),
       unwrap_options,
-      base::Bind(&OnOuterMessageUnwrappedForInitiatorAuth, context));
+      base::BindOnce(&OnOuterMessageUnwrappedForInitiatorAuth, context,
+                     std::move(callback)));
 }
 
 }  // namespace secure_channel

@@ -92,7 +92,7 @@ class SecureChannelDeviceToDeviceOperationsTest : public testing::Test {
     // Note: FakeSecureMessageDelegate functions are synchronous.
     secure_message_delegate_.DeriveKey(
         local_session_private_key_, remote_session_public_key_,
-        base::Bind(&SaveMessageResult, &session_symmetric_key_));
+        base::BindOnce(&SaveMessageResult, &session_symmetric_key_));
     session_keys_ = SessionKeys(session_symmetric_key_);
 
     persistent_symmetric_key_ = "persistent symmetric key";
@@ -103,10 +103,10 @@ class SecureChannelDeviceToDeviceOperationsTest : public testing::Test {
   // Creates the initator's [Hello] message.
   std::string CreateHelloMessage() {
     std::string hello_message;
-    helper_->CreateHelloMessage(local_session_public_key_,
-                                persistent_symmetric_key_,
-                                &secure_message_delegate_,
-                                base::Bind(&SaveMessageResult, &hello_message));
+    helper_->CreateHelloMessage(
+        local_session_public_key_, persistent_symmetric_key_,
+        &secure_message_delegate_,
+        base::BindOnce(&SaveMessageResult, &hello_message));
     EXPECT_FALSE(hello_message.empty());
     return hello_message;
   }
@@ -122,7 +122,7 @@ class SecureChannelDeviceToDeviceOperationsTest : public testing::Test {
         hello_message, remote_session_public_key_, remote_session_private_key_,
         persistent_responder_private_key, persistent_symmetric_key_,
         &secure_message_delegate_,
-        base::Bind(&SaveMessageResult, &remote_auth_message));
+        base::BindOnce(&SaveMessageResult, &remote_auth_message));
     EXPECT_FALSE(remote_auth_message.empty());
     return remote_auth_message;
   }
@@ -134,7 +134,7 @@ class SecureChannelDeviceToDeviceOperationsTest : public testing::Test {
     helper_->CreateInitiatorAuthMessage(
         session_keys_, persistent_symmetric_key_, remote_auth_message,
         &secure_message_delegate_,
-        base::Bind(&SaveMessageResult, &local_auth_message));
+        base::BindOnce(&SaveMessageResult, &local_auth_message));
     EXPECT_FALSE(local_auth_message.empty());
     return local_auth_message;
   }
@@ -161,8 +161,8 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
   DeviceToDeviceResponderOperations::ValidateHelloMessage(
       CreateHelloMessage(), persistent_symmetric_key_,
       &secure_message_delegate_,
-      base::Bind(&SaveValidationResultWithKey, &validation_success,
-                 &hello_public_key));
+      base::BindOnce(&SaveValidationResultWithKey, &validation_success,
+                     &hello_public_key));
 
   EXPECT_TRUE(validation_success);
   EXPECT_EQ(local_session_public_key_, hello_public_key);
@@ -175,8 +175,8 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
   DeviceToDeviceResponderOperations::ValidateHelloMessage(
       "some random string", persistent_symmetric_key_,
       &secure_message_delegate_,
-      base::Bind(&SaveValidationResultWithKey, &validation_success,
-                 &hello_public_key));
+      base::BindOnce(&SaveValidationResultWithKey, &validation_success,
+                     &hello_public_key));
 
   EXPECT_FALSE(validation_success);
   EXPECT_TRUE(hello_public_key.empty());
@@ -193,8 +193,8 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
       remote_auth_message, kResponderPersistentPublicKey,
       persistent_symmetric_key_, local_session_private_key_, hello_message,
       &secure_message_delegate_,
-      base::Bind(&SaveValidationResultWithSessionKeys, &validation_success,
-                 &session_keys));
+      base::BindOnce(&SaveValidationResultWithSessionKeys, &validation_success,
+                     &session_keys));
 
   EXPECT_TRUE(validation_success);
   EXPECT_EQ(session_keys_.initiator_encode_key(),
@@ -214,8 +214,8 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
       remote_auth_message, kResponderPersistentPublicKey,
       persistent_symmetric_key_, local_session_private_key_,
       "invalid hello message", &secure_message_delegate_,
-      base::Bind(&SaveValidationResultWithSessionKeys, &validation_success,
-                 &session_keys));
+      base::BindOnce(&SaveValidationResultWithSessionKeys, &validation_success,
+                     &session_keys));
 
   EXPECT_FALSE(validation_success);
   EXPECT_TRUE(session_keys.initiator_encode_key().empty());
@@ -233,8 +233,8 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
       remote_auth_message, kResponderPersistentPublicKey,
       "invalid persistent symmetric key", local_session_private_key_,
       hello_message, &secure_message_delegate_,
-      base::Bind(&SaveValidationResultWithSessionKeys, &validation_success,
-                 &session_keys));
+      base::BindOnce(&SaveValidationResultWithSessionKeys, &validation_success,
+                     &session_keys));
 
   EXPECT_FALSE(validation_success);
   EXPECT_TRUE(session_keys.initiator_encode_key().empty());
@@ -252,7 +252,7 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
   DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
       local_auth_message, session_keys_, persistent_symmetric_key_,
       remote_auth_message, &secure_message_delegate_,
-      base::Bind(&SaveValidationResult, &validation_success));
+      base::BindOnce(&SaveValidationResult, &validation_success));
 
   EXPECT_TRUE(validation_success);
 }
@@ -268,7 +268,7 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
   DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
       local_auth_message, session_keys_, persistent_symmetric_key_,
       "invalid remote auth", &secure_message_delegate_,
-      base::Bind(&SaveValidationResult, &validation_success));
+      base::BindOnce(&SaveValidationResult, &validation_success));
 
   EXPECT_FALSE(validation_success);
 }
@@ -284,7 +284,7 @@ TEST_F(SecureChannelDeviceToDeviceOperationsTest,
   DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
       local_auth_message, session_keys_, "invalid persistent symmetric key",
       remote_auth_message, &secure_message_delegate_,
-      base::Bind(&SaveValidationResult, &validation_success));
+      base::BindOnce(&SaveValidationResult, &validation_success));
 
   EXPECT_FALSE(validation_success);
 }

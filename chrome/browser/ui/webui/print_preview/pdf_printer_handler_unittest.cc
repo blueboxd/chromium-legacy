@@ -17,10 +17,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_MAC)
-#include "base/test/scoped_feature_list.h"
 #include "components/printing/browser/printer_capabilities_mac.h"
 #include "printing/backend/print_backend.h"
-#include "printing/printing_features.h"
 #include "ui/gfx/geometry/size.h"
 #endif
 
@@ -275,10 +273,6 @@ TEST_F(PdfPrinterHandlerGetCapabilityTest, GetCapability) {
 #if defined(OS_MAC)
 TEST_F(PdfPrinterHandlerGetCapabilityTest,
        GetMacCustomPaperSizesInCapabilities) {
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndEnableFeature(
-      printing::features::kEnableCustomMacPaperSizes);
-
   constexpr char kPaperOptionPath[] = "capabilities.printer.media_size.option";
   static const PrinterSemanticCapsAndDefaults::Papers kTestPapers = {
       {"printer1", "", gfx::Size(101600, 127000)},

@@ -40,17 +40,11 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass ]
 
-# With CompositeAfterPaint and LayoutNGFragmentItem enabled
-crbug.com/1103138 paint/invalidation/compositing/float-under-composited-inline.html [ Pass Crash ]
-
 # Raster invalidation doesn't work for huge layers.
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 
 # No composited scrolling for overflow:hidden (on marquee).
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-
-# Passes on bot, timeouts locally.
-virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Timeout ]
 
 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 
@@ -58,7 +52,6 @@ paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
-http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
 # CompositeAfterPaint positions and scales root scrollbars incorrectly when
 # a page scale factor is applied.

@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/seat_observer.h"
 #include "components/exo/surface.h"
@@ -66,6 +67,9 @@ class DataDevice : public WMHelper::DragDropObserver,
 
   // Overridden from ui::ClipboardObserver:
   void OnClipboardDataChanged() override;
+#if defined(OS_CHROMEOS)
+  void OnClipboardDataRead() override {}
+#endif
 
   // Overridden from SeatObserver:
   void OnSurfaceFocusing(Surface* surface) override;

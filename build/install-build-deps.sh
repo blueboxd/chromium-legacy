@@ -473,6 +473,9 @@ elif package_exists libssl1.0.2; then
 else
   nacl_list="${nacl_list} libssl1.0.0:i386"
 fi
+if package_exists libtinfo5; then
+  nacl_list="${nacl_list} libtinfo5"
+fi
 if package_exists libpng16-16; then
   lib_list="${lib_list} libpng16-16"
 else

@@ -99,6 +99,7 @@ class SyntheticBeginFrameSource;
 }  // namespace viz
 
 namespace content {
+class AgentSchedulingGroup;
 class AudioRendererMixerManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
@@ -442,6 +443,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void CreateView(mojom::CreateViewParamsPtr params) override;
   void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
+  void CreateAgentSchedulingGroup() override;
   void CreateFrameProxy(
       int32_t routing_id,
       int32_t render_view_routing_id,
@@ -613,6 +615,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
   mojo::AssociatedRemote<mojom::RenderMessageFilter> render_message_filter_;
+
+  std::set<std::unique_ptr<AgentSchedulingGroup>> agent_scheduling_groups_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   bool needs_to_record_first_active_paint_;

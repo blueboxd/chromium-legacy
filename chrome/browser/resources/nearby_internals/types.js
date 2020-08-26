@@ -63,7 +63,6 @@ export let HttpMessage;
  * The ContactUpdate message object sent by NearbyInternalsContactsHandler
  * chrome/browser/ui/webui/nearby_internals/nearby_internals_contact_handler.cc.
  * @typedef {{time: number,
- *            contactsPassed: boolean,
  *            contactsListChanged: boolean,
  *            contactsAddedToAllowlist: boolean,
  *            contactsRemovedFromAllowlist: boolean,

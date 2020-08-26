@@ -2882,10 +2882,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
      flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},
-    {"terminal-system-app-legacy-settings",
-     flag_descriptions::kTerminalSystemAppLegacySettingsName,
-     flag_descriptions::kTerminalSystemAppLegacySettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kTerminalSystemAppLegacySettings)},
     {"pluginvm-show-camera-permissions",
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
@@ -4960,13 +4956,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableStereoAudioInput)},
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_MAC)
-    {"enable-custom-mac-paper-sizes",
-     flag_descriptions::kEnableCustomMacPaperSizesName,
-     flag_descriptions::kEnableCustomMacPaperSizesDescription, kOsMac,
-     FEATURE_VALUE_TYPE(printing::features::kEnableCustomMacPaperSizes)},
-#endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

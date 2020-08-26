@@ -591,10 +591,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   ExpectNavigationChain({first_url, second_url});
 }
 
-// Flaky for reasons that likely have nothing to do with the test itself. See
-// crbug.com/1043899 and crbug.com/992207.
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       DISABLED_NavigationChainAlteredDestructively) {
+                       NavigationChainAlteredDestructively) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 

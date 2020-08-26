@@ -27,6 +27,7 @@
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -336,10 +337,12 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   MOCK_METHOD0(Blur, void());
 
   ui::LatencyInfo lastWheelEventLatencyInfo;
-  static MockRenderWidgetHostImpl* Create(RenderWidgetHostDelegate* delegate,
-                                          RenderProcessHost* process,
-                                          int32_t routing_id) {
-    return new MockRenderWidgetHostImpl(delegate, process, routing_id);
+  static MockRenderWidgetHostImpl* Create(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group_host,
+      int32_t routing_id) {
+    return new MockRenderWidgetHostImpl(delegate, agent_scheduling_group_host,
+                                        routing_id);
   }
 
   MockWidgetInputHandler* input_handler() { return &input_handler_; }
@@ -352,11 +355,12 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   }
 
  private:
-  MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
-                           RenderProcessHost* process,
-                           int32_t routing_id)
+  MockRenderWidgetHostImpl(
+      RenderWidgetHostDelegate* delegate,
+      AgentSchedulingGroupHost& agent_scheduling_group_host,
+      int32_t routing_id)
       : RenderWidgetHostImpl(delegate,
-                             process,
+                             agent_scheduling_group_host,
                              routing_id,
                              /*hidden=*/false,
                              std::make_unique<FrameTokenMessageQueue>()) {
@@ -480,8 +484,11 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     process_host_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
     process_host_->Init();
+    agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_host_);
     host_ = base::WrapUnique(MockRenderWidgetHostImpl::Create(
-        &delegate_, process_host_.get(), process_host_->GetNextRoutingID()));
+        &delegate_, *agent_scheduling_group_host_,
+        process_host_->GetNextRoutingID()));
     host_->set_owner_delegate(&mock_owner_delegate_);
     rwhv_mac_ = new RenderWidgetHostViewMac(host_.get());
     rwhv_cocoa_.reset([rwhv_mac_->GetInProcessNSView() retain]);
@@ -535,6 +542,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host_;
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   testing::NiceMock<MockRenderWidgetHostOwnerDelegate> mock_owner_delegate_;
   std::unique_ptr<MockRenderWidgetHostImpl> host_;
   RenderWidgetHostViewMac* rwhv_mac_ = nullptr;
@@ -1300,10 +1308,11 @@ TEST_F(RenderWidgetHostViewMacTest,
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
+  AgentSchedulingGroupHost agent_scheduling_group_host(*process_host);
   MockRenderWidgetHostDelegate delegate;
   int32_t routing_id = process_host->GetNextRoutingID();
-  MockRenderWidgetHostImpl* host =
-      MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
+  MockRenderWidgetHostImpl* host = MockRenderWidgetHostImpl::Create(
+      &delegate, agent_scheduling_group_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
@@ -1360,10 +1369,11 @@ TEST_F(RenderWidgetHostViewMacTest,
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
+  AgentSchedulingGroupHost agent_scheduling_group_host(*process_host);
   MockRenderWidgetHostDelegate delegate;
   int32_t routing_id = process_host->GetNextRoutingID();
-  MockRenderWidgetHostImpl* host =
-      MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
+  MockRenderWidgetHostImpl* host = MockRenderWidgetHostImpl::Create(
+      &delegate, agent_scheduling_group_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
@@ -1417,9 +1427,10 @@ TEST_F(RenderWidgetHostViewMacTest,
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
+  AgentSchedulingGroupHost agent_scheduling_group_host(*process_host);
   int32_t routing_id = process_host->GetNextRoutingID();
-  MockRenderWidgetHostImpl* host =
-      MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
+  MockRenderWidgetHostImpl* host = MockRenderWidgetHostImpl::Create(
+      &delegate, agent_scheduling_group_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
@@ -1734,8 +1745,10 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
     child_process_host_ =
         new MockRenderProcessHost(child_browser_context_.get());
     child_process_host_->Init();
+    child_agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*child_process_host_);
     child_widget_ = MockRenderWidgetHostImpl::Create(
-        &delegate_, child_process_host_,
+        &delegate_, *child_agent_scheduling_group_host_,
         child_process_host_->GetNextRoutingID());
     child_view_ = new TestRenderWidgetHostView(child_widget_);
     base::RunLoop().RunUntilIdle();
@@ -1773,6 +1786,7 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
 
  protected:
   MockRenderProcessHost* child_process_host_;
+  std::unique_ptr<AgentSchedulingGroupHost> child_agent_scheduling_group_host_;
   MockRenderWidgetHostImpl* child_widget_;
   TestRenderWidgetHostView* child_view_;
 

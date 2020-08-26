@@ -573,6 +573,10 @@ const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 // A boolean pref which is true if mouse reverse scroll is enabled.
 const char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
 
+// A dictionary storing the number of times and most recent time the multipaste
+// contextual nudge was shown.
+const char kMultipasteNudges[] = "ash.clipboard.multipaste_nudges";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

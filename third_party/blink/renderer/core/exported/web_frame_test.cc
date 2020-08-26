@@ -56,6 +56,7 @@
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
@@ -13615,7 +13616,7 @@ class TestLocalFrameHostForAnchorWithDownloadAttr : public FakeLocalFrameHost {
     referrer_ = params->referrer ? params->referrer->url : KURL();
     referrer_policy_ = params->referrer
                            ? params->referrer->policy
-                           : ReferrerPolicyResolveDefault(
+                           : ReferrerUtils::MojoReferrerPolicyResolveDefault(
                                  network::mojom::ReferrerPolicy::kDefault);
   }
 
@@ -13652,9 +13653,9 @@ TEST_F(WebFrameTest, DownloadReferrerPolicy) {
       frame, GetHTMLStringForReferrerPolicy(std::string(), std::string()),
       test_url);
   EXPECT_EQ(frame_host.referrer_, test_url);
-  EXPECT_EQ(
-      frame_host.referrer_policy_,
-      ReferrerPolicyResolveDefault(network::mojom::ReferrerPolicy::kDefault));
+  EXPECT_EQ(frame_host.referrer_policy_,
+            ReferrerUtils::MojoReferrerPolicyResolveDefault(
+                network::mojom::ReferrerPolicy::kDefault));
 
   // 4.referrerpolicy='origin'
   frame_test_helpers::LoadHTMLString(

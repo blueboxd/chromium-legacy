@@ -59,7 +59,7 @@ class SearchController {
                           int event_flags);
 
   // Adds a new mixer group. See Mixer::AddGroup.
-  size_t AddGroup(size_t max_results, double boost = 0.0f);
+  size_t AddGroup(size_t max_results);
 
   // Takes ownership of |provider| and associates it with given mixer group.
   void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);

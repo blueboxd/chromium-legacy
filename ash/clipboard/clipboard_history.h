@@ -10,6 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/clipboard/clipboard_history_item.h"
+#include "ash/public/cpp/session/session_observer.h"
+#include "ash/shell_observer.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -66,6 +68,7 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver {
 
   // ClipboardMonitor:
   void OnClipboardDataChanged() override;
+  void OnClipboardDataRead() override;
 
  private:
   // Adds `data` to the `history_list_` if it's supported. If `data` is not

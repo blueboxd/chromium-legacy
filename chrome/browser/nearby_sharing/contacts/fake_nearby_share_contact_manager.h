@@ -17,8 +17,10 @@
 
 // A fake implementation of NearbyShareContactManager, along with a fake
 // factory, to be used in tests. Stores parameters input into
-// NearbyShareContactManager method calls. Provides a method to notify
-// observers.
+// NearbyShareContactManager method calls. Use the notification methods from the
+// base class--NotifyAllowlistChanged(), NotifyContactsDownloaded(),
+// NotifyContactsUploaded()--to alert observers of changes; these methods are
+// made public in this fake class.
 class FakeNearbyShareContactManager : public NearbyShareContactManager {
  public:
   // Factory that creates FakeNearbyShareContactManager instances. Use in
@@ -45,14 +47,6 @@ class FakeNearbyShareContactManager : public NearbyShareContactManager {
   FakeNearbyShareContactManager();
   ~FakeNearbyShareContactManager() override;
 
-  void NotifyObservers(
-      bool contacts_list_changed,
-      bool contacts_added_to_allowlist,
-      bool contacts_removed_from_allowlist,
-      const std::set<std::string>& allowed_contact_ids,
-      const base::Optional<std::vector<nearbyshare::proto::ContactRecord>>&
-          contacts);
-
   // Returns inputs of all DownloadContacts() calls.
   const std::vector<bool>& download_contacts_calls() const {
     return download_contacts_calls_;
@@ -62,6 +56,11 @@ class FakeNearbyShareContactManager : public NearbyShareContactManager {
   const std::vector<std::set<std::string>>& set_allowed_contacts_calls() const {
     return set_allowed_contacts_calls_;
   }
+
+  // Make protected methods from base class public in this fake class.
+  using NearbyShareContactManager::NotifyAllowlistChanged;
+  using NearbyShareContactManager::NotifyContactsDownloaded;
+  using NearbyShareContactManager::NotifyContactsUploaded;
 
  private:
   // NearbyShareContactsManager:

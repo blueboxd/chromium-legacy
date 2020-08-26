@@ -43,7 +43,7 @@
     TestRunner.addResult(quotaStripped);
 
     TestRunner.addResult('Usage breakdown:');
-    const legendElement = view._pieChart.element.shadowRoot.querySelector('.pie-chart-legend');
+    const legendElement = view._pieChart.shadowRoot.querySelector('.pie-chart-legend');
 
     for (var i = 0; i < legendElement.children.length; i++) {
       var typeUsage = ': ';

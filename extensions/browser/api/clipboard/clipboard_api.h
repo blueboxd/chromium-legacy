@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/clipboard.h"
@@ -27,6 +28,9 @@ class ClipboardAPI : public BrowserContextKeyedAPI,
 
   // ui::ClipboardObserver implementation.
   void OnClipboardDataChanged() override;
+#if defined(OS_CHROMEOS)
+  void OnClipboardDataRead() override {}
+#endif
 
  private:
   friend class BrowserContextKeyedAPIFactory<ClipboardAPI>;

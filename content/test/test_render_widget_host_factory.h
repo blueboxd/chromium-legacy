@@ -25,7 +25,7 @@ class TestRenderWidgetHostFactory : public RenderWidgetHostFactory {
 
   std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden) override;
 

@@ -164,11 +164,17 @@ class CppTypeGenerator(object):
     c = Code()
     if self._default_namespace.manifest_keys:
       c.Append('#include "base/strings/string_piece.h"')
+
+    # Note: It's possible that there are multiple dependencies from the same
+    # API. Make sure to only include them once.
+    added_paths = set()
     for namespace, dependencies in self._NamespaceTypeDependencies().items():
       for dependency in dependencies:
         if dependency.hard or include_soft:
-          c.Append('#include "%s/%s.h"' % (namespace.source_file_dir,
-                                           namespace.unix_name))
+          path = '%s/%s.h' % (namespace.source_file_dir, namespace.unix_name)
+          if path not in added_paths:
+            added_paths.add(path)
+            c.Append('#include "%s"' % path)
     return c
 
   def _FindType(self, full_name):
@@ -232,7 +238,13 @@ class CppTypeGenerator(object):
     """
     deps = set()
     if type_.property_type == PropertyType.REF:
-      deps.add(_TypeDependency(self._FindType(type_.ref_type), hard=hard))
+      underlying_type = self._FindType(type_.ref_type)
+      # Enums from other namespaces are always hard dependencies, since
+      # optional enums are represented via the _NONE value instead of a
+      # pointer.
+      dep_is_hard = (True if underlying_type.property_type == PropertyType.ENUM
+                     else hard)
+      deps.add(_TypeDependency(underlying_type, hard=dep_is_hard))
     elif type_.property_type == PropertyType.ARRAY:
       # Types in containers are hard dependencies because they are stored
       # directly and use move semantics.

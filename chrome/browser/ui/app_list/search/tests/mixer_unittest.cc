@@ -152,11 +152,9 @@ class MixerTest : public testing::Test {
   void CreateMixer() {
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
 
-    // TODO(warx): when fullscreen app list is default enabled, modify this test
-    // to test answer card/apps group having relevance boost.
-    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 0.0);
-    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 0.0);
-    size_t playstore_group_id = mixer_->AddGroup(kMaxPlaystoreResults, 0.0);
+    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults);
+    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults);
+    size_t playstore_group_id = mixer_->AddGroup(kMaxPlaystoreResults);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());

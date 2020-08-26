@@ -435,20 +435,6 @@ TEST_F(OutOfMemoryDeathTest, CFAllocatorMallocZone) {
   });
 }
 
-#if !defined(ARCH_CPU_64_BITS)
-
-// See process_util_unittest_mac.mm for an explanation of why this test isn't
-// run in the 64-bit environment.
-
-TEST_F(OutOfMemoryDeathTest, PsychoticallyBigObjCObject) {
-  ASSERT_OOM_DEATH({
-    SetUpInDeathAssert();
-    while ((value_ = base::AllocatePsychoticallyBigObjCObject())) {
-    }
-  });
-}
-
-#endif  // !ARCH_CPU_64_BITS
 #endif  // OS_MAC
 
 class OutOfMemoryHandledTest : public OutOfMemoryTest {

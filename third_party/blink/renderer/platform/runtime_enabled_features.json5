@@ -1560,10 +1560,6 @@
       name: "RawClipboard",
     },
     {
-      name: "ReducedReferrerGranularity",
-      status: "experimental",
-    },
-    {
       name: "RemotePlayback",
       status: "stable",
     },

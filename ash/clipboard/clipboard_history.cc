@@ -4,7 +4,11 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
+#include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/clipboard/clipboard_history_util.h"
+#include "ash/clipboard/clipboard_nudge_controller.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/clipboard/clipboard_data_endpoint.h"
@@ -85,6 +89,8 @@ void ClipboardHistory::OnClipboardDataChanged() {
       base::BindOnce(&ClipboardHistory::MaybeCommitData,
                      commit_data_weak_factory_.GetWeakPtr(), *clipboard_data));
 }
+
+void ClipboardHistory::OnClipboardDataRead() {}
 
 void ClipboardHistory::MaybeCommitData(ui::ClipboardData data) {
   if (!ClipboardHistoryUtil::IsSupported(data))

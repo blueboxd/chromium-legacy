@@ -27,6 +27,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
@@ -491,12 +492,8 @@ class MockRenderWidgetHostOwnerDelegate
 
 class RenderWidgetHostTest : public testing::Test {
  public:
-  RenderWidgetHostTest()
-      : process_(nullptr),
-        handle_key_press_event_(false),
-        handle_mouse_event_(false),
-        last_simulated_event_time_(ui::EventTimeForNow()) {}
-  ~RenderWidgetHostTest() override {}
+  RenderWidgetHostTest() : last_simulated_event_time_(ui::EventTimeForNow()) {}
+  ~RenderWidgetHostTest() override = default;
 
   bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
     return handle_key_press_event_;
@@ -523,9 +520,11 @@ class RenderWidgetHostTest : public testing::Test {
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kValidateInputEventStream);
-    browser_context_.reset(new TestBrowserContext());
-    delegate_.reset(new MockRenderWidgetHostDelegate());
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    delegate_ = std::make_unique<MockRenderWidgetHostDelegate>();
     process_ = new RenderWidgetHostProcess(browser_context_.get());
+    agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_);
     sink_ = &process_->sink();
 #if defined(USE_AURA) || defined(OS_MAC)
     ImageTransportFactory::SetFactory(
@@ -539,9 +538,9 @@ class RenderWidgetHostTest : public testing::Test {
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     display::Screen::SetScreenInstance(screen_.get());
 #endif
-    host_.reset(MockRenderWidgetHost::Create(delegate_.get(), process_,
-                                             process_->GetNextRoutingID(),
-                                             widget_.GetNewRemote()));
+    host_.reset(MockRenderWidgetHost::Create(
+        delegate_.get(), *agent_scheduling_group_host_,
+        process_->GetNextRoutingID(), widget_.GetNewRemote()));
     // Set up the RenderWidgetHost as being for a main frame.
     host_->set_owner_delegate(&mock_owner_delegate_);
     // Act like there is no RenderWidget present in the renderer yet.
@@ -770,14 +769,16 @@ class RenderWidgetHostTest : public testing::Test {
   BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<TestBrowserContext> browser_context_;
-  RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
+  RenderWidgetHostProcess* process_ =
+      nullptr;  // Deleted automatically by the widget.
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
   testing::NiceMock<MockRenderWidgetHostOwnerDelegate> mock_owner_delegate_;
   std::unique_ptr<MockRenderWidgetHost> host_;
   std::unique_ptr<TestView> view_;
   std::unique_ptr<display::Screen> screen_;
-  bool handle_key_press_event_;
-  bool handle_mouse_event_;
+  bool handle_key_press_event_ = false;
+  bool handle_mouse_event_ = false;
   base::TimeTicks last_simulated_event_time_;
   base::TimeDelta simulated_event_time_delta_;
   IPC::TestSink* sink_;

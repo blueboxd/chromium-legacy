@@ -19,10 +19,11 @@ TestRenderWidgetHostFactory::~TestRenderWidgetHostFactory() {
 std::unique_ptr<RenderWidgetHostImpl>
 TestRenderWidgetHostFactory::CreateRenderWidgetHost(
     RenderWidgetHostDelegate* delegate,
-    RenderProcessHost* process,
+    AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id,
     bool hidden) {
-  return TestRenderWidgetHost::Create(delegate, process, routing_id, hidden);
+  return TestRenderWidgetHost::Create(delegate, agent_scheduling_group,
+                                      routing_id, hidden);
 }
 
 }  // namespace content

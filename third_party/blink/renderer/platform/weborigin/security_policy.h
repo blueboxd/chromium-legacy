@@ -46,14 +46,6 @@ enum ReferrerPolicyLegacyKeywordsSupport {
   kDoNotSupportReferrerPolicyLegacyKeywords,
 };
 
-// The ReferrerPolicy enum contains a member kDefault, which not a real referrer
-// policy, but instead a value Blink uses to fallback to
-// kNoReferrerWhenDowngrade at certain times. The function below is provided so
-// that a referrer policy which may be kDefault can be resolved to a valid
-// value.
-PLATFORM_EXPORT network::mojom::ReferrerPolicy ReferrerPolicyResolveDefault(
-    network::mojom::ReferrerPolicy);
-
 class PLATFORM_EXPORT SecurityPolicy {
   STATIC_ONLY(SecurityPolicy);
 

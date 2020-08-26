@@ -78,6 +78,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/plugin_content_origin_allowlist.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -3493,41 +3494,43 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
 }
 
 void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
-    int32_t widget_route_id,
+    AgentSchedulingGroupHost& agent_scheduling_group,
+    int32_t route_id,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
-  CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
-                  std::move(blink_widget_host), std::move(blink_widget));
+  CreateNewWidget(agent_scheduling_group, route_id,
+                  /*is_fullscreen=*/false, std::move(blink_widget_host),
+                  std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(
-    int32_t render_process_id,
-    int32_t widget_route_id,
+    AgentSchedulingGroupHost& agent_scheduling_group,
+    int32_t route_id,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
-  CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
-                  std::move(blink_widget_host), std::move(blink_widget));
+  CreateNewWidget(agent_scheduling_group, route_id,
+                  /*is_fullscreen=*/true, std::move(blink_widget_host),
+                  std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
+    AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t route_id,
     bool is_fullscreen,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
+  RenderProcessHost* process = agent_scheduling_group.GetProcess();
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
   // it is invalid and the process must be terminated.
-  if (!HasMatchingProcess(&frame_tree_, render_process_id)) {
+  if (!HasMatchingProcess(&frame_tree_, process->GetID())) {
     ReceivedBadMessage(process, bad_message::WCI_NEW_WIDGET_PROCESS_MISMATCH);
     return;
   }
 
-  RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(this, process, route_id, IsHidden(),
-                               std::make_unique<FrameTokenMessageQueue>());
+  RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
+      this, agent_scheduling_group, route_id, IsHidden(),
+      std::make_unique<FrameTokenMessageQueue>());
 
   widget_host->BindWidgetInterfaces(std::move(blink_widget_host),
                                     std::move(blink_widget));
@@ -3541,7 +3544,7 @@ void WebContentsImpl::CreateNewWidget(
   if (!is_fullscreen)
     widget_view->SetWidgetType(WidgetType::kPopup);
   // Save the created widget associated with the route so we can show it later.
-  pending_widget_views_[GlobalRoutingID(render_process_id, route_id)] =
+  pending_widget_views_[GlobalRoutingID(process->GetID(), route_id)] =
       widget_view;
 }
 

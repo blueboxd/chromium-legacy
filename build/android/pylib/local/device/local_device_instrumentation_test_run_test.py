@@ -143,6 +143,26 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     }
     self.assertFalse(local_device_instrumentation_test_run._IsRenderTest(test))
 
+  def testReplaceUncommonChars(self):
+    original = 'abc#edf'
+    self.assertEqual(
+        local_device_instrumentation_test_run._ReplaceUncommonChars(original),
+        'abc__edf')
+    original = 'abc#edf#hhf'
+    self.assertEqual(
+        local_device_instrumentation_test_run._ReplaceUncommonChars(original),
+        'abc__edf__hhf')
+    original = 'abcedfhhf'
+    self.assertEqual(
+        local_device_instrumentation_test_run._ReplaceUncommonChars(original),
+        'abcedfhhf')
+    original = None
+    with self.assertRaises(ValueError):
+      local_device_instrumentation_test_run._ReplaceUncommonChars(original)
+    original = ''
+    with self.assertRaises(ValueError):
+      local_device_instrumentation_test_run._ReplaceUncommonChars(original)
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

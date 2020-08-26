@@ -126,8 +126,6 @@ class CORE_EXPORT SVGImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
-  SkBitmap AsSkBitmapForCursor(float device_scale_factor);
-
  protected:
   // Whether or not size is available yet.
   bool IsSizeAvailable() override;

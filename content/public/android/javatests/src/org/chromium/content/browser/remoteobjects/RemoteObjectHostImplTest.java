@@ -77,8 +77,8 @@ public final class RemoteObjectHostImplTest {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testClosesPipeIfObjectDoesNotExist() {
-        RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                TestJavascriptInterface.class, /* auditor */ null, mRegistry);
+        RemoteObjectHostImpl host = new RemoteObjectHostImpl(TestJavascriptInterface.class,
+                /* auditor */ null, mRegistry, /* allowInspection */ true);
 
         Pair<RemoteObject.Proxy, InterfaceRequest<RemoteObject>> result =
                 RemoteObject.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
@@ -114,8 +114,8 @@ public final class RemoteObjectHostImplTest {
         };
         int id = mRegistry.getObjectId(o);
 
-        RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                TestJavascriptInterface.class, /* auditor */ null, mRegistry);
+        RemoteObjectHostImpl host = new RemoteObjectHostImpl(TestJavascriptInterface.class,
+                /* auditor */ null, mRegistry, /* allowInspection */ true);
 
         Pair<RemoteObject.Proxy, InterfaceRequest<RemoteObject>> result =
                 RemoteObject.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
@@ -142,8 +142,8 @@ public final class RemoteObjectHostImplTest {
         Object o = new Object();
         int id = mRegistry.getObjectId(o);
 
-        RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                TestJavascriptInterface.class, /* auditor */ null, mRegistry);
+        RemoteObjectHostImpl host = new RemoteObjectHostImpl(TestJavascriptInterface.class,
+                /* auditor */ null, mRegistry, /* allowInspection */ true);
 
         Assert.assertSame(o, mRegistry.getObjectById(id));
         host.releaseObject(id);
@@ -154,8 +154,8 @@ public final class RemoteObjectHostImplTest {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testClose() {
-        RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                TestJavascriptInterface.class, /* auditor */ null, mRegistry);
+        RemoteObjectHostImpl host = new RemoteObjectHostImpl(TestJavascriptInterface.class,
+                /* auditor */ null, mRegistry, /* allowInspection */ true);
         Assert.assertThat(mRegistry, isIn(mRetainingSet));
         host.close();
         Assert.assertThat(mRegistry, not(isIn(mRetainingSet)));

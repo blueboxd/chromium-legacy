@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/fling_scheduler.h"
 
 #include "build/build_config.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -75,11 +76,14 @@ class FlingSchedulerTest : public testing::Test,
     browser_context_ = std::make_unique<TestBrowserContext>();
     process_host_ = new MockRenderProcessHost(browser_context_.get());
     process_host_->Init();
+    agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_host_);
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegate_ = std::make_unique<MockRenderWidgetHostDelegate>();
-    widget_host_ = TestRenderWidgetHost::Create(delegate_.get(), process_host_,
-                                                routing_id, false)
-                       .release();
+    widget_host_ =
+        TestRenderWidgetHost::Create(
+            delegate_.get(), *agent_scheduling_group_host_, routing_id, false)
+            .release();
     delegate_->set_widget_host(widget_host_);
     return new TestRenderWidgetHostView(widget_host_);
   }
@@ -122,6 +126,7 @@ class FlingSchedulerTest : public testing::Test,
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostImpl* widget_host_;
   MockRenderProcessHost* process_host_;
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   TestRenderWidgetHostView* view_;
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
 #if defined(OS_WIN)

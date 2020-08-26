@@ -748,12 +748,6 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
 const base::Feature kTeamfoodFlags{"TeamfoodFlags",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-// Use the Terminal System App legacy settings page.
-const base::Feature kTerminalSystemAppLegacySettings{
-    "TerminalSystemAppLegacySettings", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_WIN)
 // Enables the blocking of third-party modules. This feature requires Windows 8
 // or higher because it depends on the ProcessExtensionPointDisablePolicy

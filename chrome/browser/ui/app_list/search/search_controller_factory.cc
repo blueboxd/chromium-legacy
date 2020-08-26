@@ -55,7 +55,7 @@ constexpr size_t kGenericMaxResults = 10;
 // in some UI, so we need to allow returning more results than actual maximum
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;
-constexpr size_t kMaxLauncherSearchResults = 2;
+constexpr size_t kMaxLauncherSearchResults = 4;
 // We need twice as many ZeroState and Drive file results as we need
 // duplicates of these results for the suggestion chips.
 constexpr size_t kMaxZeroStateFileResults = 20;
@@ -80,8 +80,6 @@ constexpr size_t kMaxAssistantResults = 1;
 // TODO(wutao): Need UX spec.
 constexpr size_t kMaxSettingsShortcutResults = 6;
 
-constexpr double kAppBoost = 8.0;
-
 }  // namespace
 
 std::unique_ptr<SearchController> CreateSearchController(
@@ -96,16 +94,8 @@ std::unique_ptr<SearchController> CreateSearchController(
   // Set up rankers for search results.
   controller->InitializeRankers();
 
-  // Add mixer groups. There are four main groups: answer card, apps
-  // and omnibox. Each group has a "soft" maximum number of results. However, if
-  // a query turns up very few results, the mixer may take more than this
-  // maximum from a particular group.
-
-  // For the fullscreen app list, apps appear above the answer card, which
-  // appears above other results. Set boosts to |kAppBoost| for apps of all
-  // kinds, 5.0 for answer card, and otherwise 0.0.
-  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, kAppBoost);
-  size_t answer_card_group_id = controller->AddGroup(1, 5.0);
+  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults);
+  size_t answer_card_group_id = controller->AddGroup(1);
 
   size_t omnibox_group_id = controller->AddGroup(
       ash::AppListConfig::instance().max_search_result_list_items());
@@ -127,8 +117,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   // The Assistant search provider currently only contributes search results
   // when launcher chip integration is enabled.
   if (chromeos::assistant::features::IsLauncherChipIntegrationEnabled()) {
-    size_t assistant_group_id =
-        controller->AddGroup(kMaxAssistantResults, kAppBoost);
+    size_t assistant_group_id = controller->AddGroup(kMaxAssistantResults);
     controller->AddProvider(assistant_group_id,
                             std::make_unique<AssistantSearchProvider>());
   }
@@ -146,7 +135,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (app_list_features::IsAppReinstallZeroStateEnabled() &&
       arc::IsArcAllowedForProfile(profile)) {
     size_t recommended_app_group_id =
-        controller->AddGroup(kMaxAppReinstallSearchResults, kAppBoost);
+        controller->AddGroup(kMaxAppReinstallSearchResults);
     controller->AddProvider(recommended_app_group_id,
                             std::make_unique<ArcAppReinstallSearchProvider>(
                                 profile, kMaxAppReinstallSearchResults));
@@ -155,8 +144,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (app_list_features::IsPlayStoreAppSearchEnabled()) {
     // Set same boost as apps group since Play store results are placed
     // with apps.
-    size_t playstore_api_group_id =
-        controller->AddGroup(kMaxPlayStoreResults, kAppBoost);
+    size_t playstore_api_group_id = controller->AddGroup(kMaxPlayStoreResults);
     controller->AddProvider(
         playstore_api_group_id,
         std::make_unique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
@@ -164,8 +152,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
   if (app_list_features::IsAppDataSearchEnabled()) {
-    size_t app_data_api_group_id =
-        controller->AddGroup(kMaxAppDataResults, kAppBoost);
+    size_t app_data_api_group_id = controller->AddGroup(kMaxAppDataResults);
     controller->AddProvider(app_data_api_group_id,
                             std::make_unique<ArcAppDataSearchProvider>(
                                 kMaxAppDataResults, list_controller));
@@ -182,8 +169,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
   if (arc::IsArcAllowedForProfile(profile)) {
-    size_t app_shortcut_group_id =
-        controller->AddGroup(kMaxAppShortcutResults, kAppBoost);
+    size_t app_shortcut_group_id = controller->AddGroup(kMaxAppShortcutResults);
     controller->AddProvider(
         app_shortcut_group_id,
         std::make_unique<ArcAppShortcutsSearchProvider>(

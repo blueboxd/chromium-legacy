@@ -243,16 +243,6 @@ void DownloadResponseHandler::OnComplete(
         ConvertInterruptReasonToMojoNetworkRequestStatus(reason));
   }
 
-  if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
-    base::UmaHistogramSparse("Download.MapErrorNetworkFailed.NetworkService",
-                             std::abs(status.error_code));
-    if (is_background_mode_) {
-      base::UmaHistogramSparse(
-          "Download.MapErrorNetworkFailed.NetworkService.BackgroundDownload",
-          std::abs(status.error_code));
-    }
-  }
-
   if (started_) {
     delegate_->OnResponseCompleted();
     return;

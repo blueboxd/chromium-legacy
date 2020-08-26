@@ -44,6 +44,7 @@ public final class RemoteObjectInjector extends WebContentsObserver {
             new HashMap<>();
     private final Map<RenderFrameHost, RemoteObjectGatewayHelper> mRemoteObjectGatewayHelpers =
             new HashMap<>();
+    private boolean mAllowInspection = true;
 
     public RemoteObjectInjector(WebContents webContents) {
         super(webContents);
@@ -81,6 +82,10 @@ public final class RemoteObjectInjector extends WebContentsObserver {
         addInterfaceForFrame(webContents.getMainFrame(), name, object, requiredAnnotation);
     }
 
+    public void setAllowInspection(boolean allow) {
+        mAllowInspection = allow;
+    }
+
     private void addInterfaceForFrame(RenderFrameHost frameHost, String name, Object object,
             Class<? extends Annotation> requiredAnnotation) {
         RemoteObjectGatewayHelper helper =
@@ -97,7 +102,7 @@ public final class RemoteObjectInjector extends WebContentsObserver {
 
             // Construct a RemoteObjectHost implementation.
             RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                    requiredAnnotation, new RemoteObjectAuditorImpl(), registry);
+                    requiredAnnotation, new RemoteObjectAuditorImpl(), registry, mAllowInspection);
 
             RemoteObjectGatewayFactory factory = frameHost.getRemoteInterfaces().getInterface(
                     RemoteObjectGatewayFactory.MANAGER);

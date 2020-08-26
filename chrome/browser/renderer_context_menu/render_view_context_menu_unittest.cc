@@ -562,7 +562,7 @@ TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
   // Verify that the ContextMenu source frame is set as the navigation
   // initiator.
   auto main_frame_id = content::GlobalFrameRoutingId(
-      main_frame->GetProcess()->GetID(), main_frame->GetFrameTreeNodeId());
+      main_frame->GetProcess()->GetID(), main_frame->GetRoutingID());
   EXPECT_EQ(main_frame_id,
             delegate.last_navigation_params()->initiator_routing_id);
 

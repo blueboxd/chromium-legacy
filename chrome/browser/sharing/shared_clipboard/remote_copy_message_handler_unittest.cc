@@ -56,6 +56,9 @@ class ClipboardObserver : public ui::ClipboardObserver {
 
   // ui::ClipboardObserver:
   void OnClipboardDataChanged() override { callback_.Run(); }
+#if defined(OS_CHROMEOS)
+  void OnClipboardDataRead() override {}
+#endif
 
  private:
   base::RepeatingClosure callback_;

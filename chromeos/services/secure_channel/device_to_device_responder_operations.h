@@ -43,15 +43,16 @@ class DeviceToDeviceResponderOperations {
  public:
   // Callback for operations that create a message. Invoked with the serialized
   // SecureMessage upon success or the empty string upon failure.
-  typedef base::Callback<void(const std::string&)> MessageCallback;
+  typedef base::OnceCallback<void(const std::string&)> MessageCallback;
 
   // Callback for operations that validates a message.
-  typedef base::Callback<void(bool)> ValidationCallback;
+  typedef base::OnceCallback<void(bool)> ValidationCallback;
 
   // Callback for ValidateHelloMessage. The first argument will be called with
   // the validation outcome. If validation succeeded, then the second argument
   // will contain the initiator's public key.
-  typedef base::Callback<void(bool, const std::string&)> ValidateHelloCallback;
+  typedef base::OnceCallback<void(bool, const std::string&)>
+      ValidateHelloCallback;
 
   // Validates that the [Hello] message, received from the initiator,
   // is properly signed and encrypted.
@@ -67,7 +68,7 @@ class DeviceToDeviceResponderOperations {
       const std::string& hello_message,
       const std::string& persistent_symmetric_key,
       multidevice::SecureMessageDelegate* secure_message_delegate,
-      const ValidateHelloCallback& callback);
+      ValidateHelloCallback callback);
 
   // Creates the [Responder Auth] message:
   // |hello_message|: The initial [Hello] message that was sent, which is used
@@ -91,7 +92,7 @@ class DeviceToDeviceResponderOperations {
       const std::string& persistent_private_key,
       const std::string& persistent_symmetric_key,
       multidevice::SecureMessageDelegate* secure_message_delegate,
-      const MessageCallback& callback);
+      MessageCallback callback);
 
   // Validates that the [Initiator Auth] message, received from the initiator,
   // is properly signed and encrypted.
@@ -110,7 +111,7 @@ class DeviceToDeviceResponderOperations {
       const std::string& persistent_symmetric_key,
       const std::string& responder_auth_message,
       multidevice::SecureMessageDelegate* secure_message_delegate,
-      const ValidationCallback& callback);
+      ValidationCallback callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DeviceToDeviceResponderOperations);

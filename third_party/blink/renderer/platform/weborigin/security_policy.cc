@@ -33,6 +33,7 @@
 #include "base/strings/pattern.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -68,19 +69,6 @@ static OriginSet& TrustworthyOriginSafelist() {
   return safelist;
 }
 
-network::mojom::ReferrerPolicy ReferrerPolicyResolveDefault(
-    network::mojom::ReferrerPolicy referrer_policy) {
-  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault) {
-    if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
-      return network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
-    } else {
-      return network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
-    }
-  }
-
-  return referrer_policy;
-}
-
 void SecurityPolicy::Init() {
   TrustworthyOriginSafelist();
 }
@@ -107,7 +95,7 @@ Referrer SecurityPolicy::GenerateReferrer(
     const KURL& url,
     const String& referrer) {
   network::mojom::ReferrerPolicy referrer_policy_no_default =
-      ReferrerPolicyResolveDefault(referrer_policy);
+      ReferrerUtils::MojoReferrerPolicyResolveDefault(referrer_policy);
   if (referrer == Referrer::NoReferrer())
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
   DCHECK(!referrer.IsEmpty());

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/cursor_manager.h"
+#include <memory>
 
 #include "build/build_config.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/mock_render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/cursors/webcursor.h"
@@ -28,7 +30,7 @@ class MockRenderWidgetHostViewForCursors : public TestRenderWidgetHostView {
   MockRenderWidgetHostViewForCursors(RenderWidgetHost* host, bool top_view)
       : TestRenderWidgetHostView(host) {
     if (top_view)
-      cursor_manager_.reset(new CursorManager(this));
+      cursor_manager_ = std::make_unique<CursorManager>(this);
   }
 
   void DisplayCursor(const WebCursor& cursor) override {
@@ -46,11 +48,14 @@ class MockRenderWidgetHostViewForCursors : public TestRenderWidgetHostView {
 
 class CursorManagerTest : public testing::Test {
  public:
-  CursorManagerTest() {}
+  CursorManagerTest() = default;
 
   void SetUp() override {
-    browser_context_.reset(new TestBrowserContext);
-    process_host_.reset(new MockRenderProcessHost(browser_context_.get()));
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    process_host_ =
+        std::make_unique<MockRenderProcessHost>(browser_context_.get());
+    agent_scheduling_group_host_ =
+        std::make_unique<AgentSchedulingGroupHost>(*process_host_);
     widget_host_.reset(MakeNewWidgetHost());
     top_view_ =
         new MockRenderWidgetHostViewForCursors(widget_host_.get(), true);
@@ -58,16 +63,17 @@ class CursorManagerTest : public testing::Test {
 
   RenderWidgetHostImpl* MakeNewWidgetHost() {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    return MockRenderWidgetHost::Create(&delegate_, process_host_.get(),
-                                        routing_id);
+    return MockRenderWidgetHost::Create(
+        &delegate_, *agent_scheduling_group_host_, routing_id);
   }
 
   void TearDown() override {
     if (top_view_)
       delete top_view_;
 
-    widget_host_.reset();
-    process_host_.reset();
+    widget_host_ = nullptr;
+    agent_scheduling_group_host_ = nullptr;
+    process_host_ = nullptr;
   }
 
  protected:
@@ -75,6 +81,7 @@ class CursorManagerTest : public testing::Test {
 
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host_;
+  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host_;
 
   // Tests should set this to nullptr if they've already triggered its

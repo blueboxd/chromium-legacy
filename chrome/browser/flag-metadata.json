@@ -4274,11 +4274,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "terminal-system-app-legacy-settings",
-    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "textfield-focus-on-tap-up",
     "owners": [ "collinbaker" ],
     "expiry_milestone": 86

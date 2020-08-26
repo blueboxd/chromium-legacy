@@ -799,3 +799,18 @@ class PixelTestPages(object):
             test_rect=[0, 0, 300, 300],
             browser_args=['--force-color-profile=hdr10']),
     ]
+
+  @staticmethod
+  def ForceFullDamagePages(base_name):
+    return [
+        PixelTestPage('wait_for_compositing.html',
+                      base_name + '_ForceFullDamage',
+                      test_rect=[0, 0, 0, 0],
+                      other_args={'full_damage': True},
+                      browser_args=[cba.ENABLE_FORCE_FULL_DAMAGE]),
+        PixelTestPage('wait_for_compositing.html',
+                      base_name + '_ForcePartialDamage',
+                      test_rect=[0, 0, 0, 0],
+                      other_args={'full_damage': False},
+                      browser_args=[cba.DISABLE_FORCE_FULL_DAMAGE]),
+    ]

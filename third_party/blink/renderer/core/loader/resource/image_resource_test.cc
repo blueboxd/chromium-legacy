@@ -33,6 +33,7 @@
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -69,7 +70,6 @@
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -311,7 +311,8 @@ TEST_F(ImageResourceTest, BitmapMultipartImage) {
   resource_request.SetInspectorId(CreateUniqueIdentifier());
   resource_request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
   resource_request.SetReferrerPolicy(
-      ReferrerPolicyResolveDefault(resource_request.GetReferrerPolicy()));
+      ReferrerUtils::MojoReferrerPolicyResolveDefault(
+          resource_request.GetReferrerPolicy()));
   resource_request.SetPriority(WebURLRequest::Priority::kLow);
   ImageResource* image_resource =
       ImageResource::Create(resource_request, nullptr /* world */);

@@ -80,7 +80,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   ~DeviceToDeviceAuthenticator() override;
 
   // Authenticator:
-  void Authenticate(const AuthenticationCallback& callback) override;
+  void Authenticate(AuthenticationCallback callback) override;
 
  protected:
   // Creates a base::OneShotTimer instance. Exposed for testing.

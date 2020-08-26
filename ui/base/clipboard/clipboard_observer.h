@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 
 namespace ui {
 
@@ -15,6 +16,11 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardObserver {
  public:
   // Called when clipboard data is changed.
   virtual void OnClipboardDataChanged() = 0;
+
+#if defined(OS_CHROMEOS)
+  // Called when clipboard data is read.
+  virtual void OnClipboardDataRead() = 0;
+#endif
 
  protected:
   virtual ~ClipboardObserver() = default;

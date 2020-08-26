@@ -28,7 +28,7 @@ class UsbContextTest : public testing::Test {
 
 }  // namespace
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Linux trybot does not support usb.
 #define MAYBE_GracefulShutdown DISABLED_GracefulShutdown
 #elif defined(OS_ANDROID)

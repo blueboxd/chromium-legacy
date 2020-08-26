@@ -13,19 +13,20 @@ namespace content {
 
 std::unique_ptr<RenderWidgetHostImpl> TestRenderWidgetHost::Create(
     RenderWidgetHostDelegate* delegate,
-    RenderProcessHost* process,
+    AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id,
     bool hidden) {
-  return base::WrapUnique(
-      new TestRenderWidgetHost(delegate, process, routing_id, hidden));
+  return base::WrapUnique(new TestRenderWidgetHost(
+      delegate, agent_scheduling_group, routing_id, hidden));
 }
 
-TestRenderWidgetHost::TestRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                                           RenderProcessHost* process,
-                                           int32_t routing_id,
-                                           bool hidden)
+TestRenderWidgetHost::TestRenderWidgetHost(
+    RenderWidgetHostDelegate* delegate,
+    AgentSchedulingGroupHost& agent_scheduling_group,
+    int32_t routing_id,
+    bool hidden)
     : RenderWidgetHostImpl(delegate,
-                           process,
+                           agent_scheduling_group,
                            routing_id,
                            hidden,
                            std::make_unique<FrameTokenMessageQueue>()) {

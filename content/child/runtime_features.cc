@@ -618,15 +618,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   WebRuntimeFeatures::EnableBackForwardCache(
       content::IsBackForwardCacheEnabled());
 
-  // Gate the ReducedReferrerGranularity runtime feature depending on whether
-  // content is configured to force a no-referrer-when-downgrade default policy.
-  // TODO(crbug.com/1016541): After M82, remove when the corresponding
-  // enterprise policy has been deleted.
-  WebRuntimeFeatures::EnableReducedReferrerGranularity(
-      base::FeatureList::IsEnabled(
-          blink::features::kReducedReferrerGranularity) &&
-      !blink::ReferrerUtils::ShouldForceLegacyDefaultReferrerPolicy());
-
   if (base::FeatureList::IsEnabled(
           blink::features::kAppCacheRequireOriginTrial)) {
     // The kAppCacheRequireOriginTrial is a flag that controls whether or not

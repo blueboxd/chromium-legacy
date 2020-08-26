@@ -24,20 +24,18 @@ class FakeSecureMessageDelegate : public SecureMessageDelegate {
   ~FakeSecureMessageDelegate() override;
 
   // SecureMessageDelegate:
-  void GenerateKeyPair(const GenerateKeyPairCallback& callback) override;
+  void GenerateKeyPair(GenerateKeyPairCallback callback) override;
   void DeriveKey(const std::string& private_key,
                  const std::string& public_key,
-                 const DeriveKeyCallback& callback) override;
-  void CreateSecureMessage(
-      const std::string& payload,
-      const std::string& key,
-      const CreateOptions& create_options,
-      const CreateSecureMessageCallback& callback) override;
-  void UnwrapSecureMessage(
-      const std::string& serialized_message,
-      const std::string& key,
-      const UnwrapOptions& unwrap_options,
-      const UnwrapSecureMessageCallback& callback) override;
+                 DeriveKeyCallback callback) override;
+  void CreateSecureMessage(const std::string& payload,
+                           const std::string& key,
+                           const CreateOptions& create_options,
+                           CreateSecureMessageCallback callback) override;
+  void UnwrapSecureMessage(const std::string& serialized_message,
+                           const std::string& key,
+                           const UnwrapOptions& unwrap_options,
+                           UnwrapSecureMessageCallback callback) override;
 
   // Returns the corresponding private key for the given |public_key|.
   std::string GetPrivateKeyForPublicKey(const std::string& public_key);

@@ -213,7 +213,6 @@ class ClipboardInternal {
     if (!HasFormat(ClipboardInternalFormat::kCustom) ||
         type != data->custom_data_format())
       return;
-
     *result = data->custom_data_data();
   }
 
@@ -503,6 +502,10 @@ void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadText(result);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
@@ -515,6 +518,10 @@ void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadAsciiText(result);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
@@ -530,6 +537,10 @@ void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kHtml);
   clipboard_internal_->ReadHTML(markup, src_url, fragment_start, fragment_end);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
@@ -542,6 +553,10 @@ void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kRtf);
   clipboard_internal_->ReadRTF(result);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
@@ -554,6 +569,10 @@ void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(clipboard_internal_->ReadImage());
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
@@ -567,6 +586,10 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
 
   RecordRead(ClipboardFormatMetric::kCustomData);
   clipboard_internal_->ReadCustomData(type, result);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadBookmark(const ClipboardDataEndpoint* data_dst,
@@ -579,6 +602,10 @@ void ClipboardNonBacked::ReadBookmark(const ClipboardDataEndpoint* data_dst,
 
   RecordRead(ClipboardFormatMetric::kBookmark);
   clipboard_internal_->ReadBookmark(title, url);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
@@ -591,6 +618,10 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
 
   RecordRead(ClipboardFormatMetric::kData);
   clipboard_internal_->ReadData(format.GetName(), result);
+
+#if defined(OS_CHROMEOS)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 bool ClipboardNonBacked::IsSelectionBufferAvailable() const {

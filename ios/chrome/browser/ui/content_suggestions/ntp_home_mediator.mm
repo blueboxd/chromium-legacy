@@ -681,13 +681,14 @@ const char kNTPHelpURL[] =
       identityService->GetAvatarForIdentity(identity, nil);
     }
   } else {
-    // User is not signed in, show default avatar.
-    image = [self defaultAvatar];
+    // User is not signed in, don't show any avatar.
+    image = nil;
   }
   // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
   // specification of different image sizes.
   CGFloat dimension = ntp_home::kIdentityAvatarDimension;
-  if (image.size.width != dimension || image.size.height != dimension) {
+  if (image &&
+      (image.size.width != dimension || image.size.height != dimension)) {
     image = ResizeImage(image, CGSizeMake(dimension, dimension),
                         ProjectionMode::kAspectFit);
   }

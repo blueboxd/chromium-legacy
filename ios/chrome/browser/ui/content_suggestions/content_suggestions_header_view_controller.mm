@@ -706,6 +706,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 #pragma mark - UserAccountImageUpdateDelegate
 
 - (void)updateAccountImage:(UIImage*)image {
+  self.identityDiscButton.hidden = !image;
   [self.identityDiscButton setImage:image forState:UIControlStateNormal];
   self.identityDiscButton.imageView.layer.cornerRadius = image.size.width / 2;
   self.identityDiscButton.imageView.layer.masksToBounds = YES;

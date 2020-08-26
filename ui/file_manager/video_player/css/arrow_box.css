@@ -17,8 +17,8 @@
   flex-grow: 1;
 }
 
-#video-player[tools]:not([first-video]) .arrow.left,
-#video-player[tools]:not([last-video]) .arrow.right {
+#video-player:not([first-video]) .arrow.left,
+#video-player:not([last-video]) .arrow.right {
   pointer-events: auto;
 }
 

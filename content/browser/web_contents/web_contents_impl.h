@@ -96,6 +96,7 @@ class InterfaceProvider;
 
 namespace content {
 enum class PictureInPictureResult;
+class AgentSchedulingGroupHost;
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class ConversionHost;
@@ -722,15 +723,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* source,
       blink::mojom::TextAutosizerPageInfoPtr page_info) override;
   bool HasSeenRecentScreenOrientationChange() override;
-  void CreateNewWidget(int32_t render_process_id,
+  void CreateNewWidget(AgentSchedulingGroupHost& agent_scheduling_group,
                        int32_t route_id,
                        mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
                            blink_widget_host,
                        mojo::PendingAssociatedRemote<blink::mojom::Widget>
                            blink_widget) override;
   void CreateNewFullscreenWidget(
-      int32_t render_process_id,
-      int32_t widget_route_id,
+      AgentSchedulingGroupHost& agent_scheduling_group,
+      int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
@@ -1579,7 +1580,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
   void CreateNewWidget(
-      int32_t render_process_id,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t route_id,
       bool is_fullscreen,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>

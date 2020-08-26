@@ -163,13 +163,13 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
 
     secure_message_delegate_->DeriveKey(
         remote_session_private_key_, local_session_public_key_,
-        base::Bind(&SaveStringResult, &session_symmetric_key_));
+        base::BindOnce(&SaveStringResult, &session_symmetric_key_));
   }
 
   // Begins authentication, and returns the [Hello] message sent from the local
   // device to the remote device.
   std::string BeginAuthentication() {
-    authenticator_.Authenticate(base::Bind(
+    authenticator_.Authenticate(base::BindOnce(
         &SecureChannelDeviceToDeviceAuthenticatorTest::OnAuthenticationResult,
         base::Unretained(this)));
 
@@ -182,8 +182,8 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
     DeviceToDeviceResponderOperations::ValidateHelloMessage(
         hello_message, remote_device_.persistent_symmetric_key(),
         secure_message_delegate_,
-        base::Bind(&SaveValidateHelloMessageResult, &validated,
-                   &local_session_public_key));
+        base::BindOnce(&SaveValidateHelloMessageResult, &validated,
+                       &local_session_public_key));
 
     EXPECT_TRUE(validated);
     EXPECT_EQ(local_session_public_key_, local_session_public_key);
@@ -202,7 +202,7 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
         hello_message, remote_session_public_key_, remote_session_private_key_,
         remote_device_private_key, remote_device_.persistent_symmetric_key(),
         secure_message_delegate_,
-        base::Bind(&SaveStringResult, &responder_auth_message));
+        base::BindOnce(&SaveStringResult, &responder_auth_message));
     EXPECT_FALSE(responder_auth_message.empty());
 
     WireMessage wire_message(responder_auth_message,
@@ -264,7 +264,7 @@ TEST_F(SecureChannelDeviceToDeviceAuthenticatorTest, AuthenticateSucceeds) {
       initiator_auth, SessionKeys(session_symmetric_key_),
       remote_device_.persistent_symmetric_key(), responder_auth_message,
       secure_message_delegate_,
-      base::Bind(&SaveBooleanResult, &initiator_auth_validated));
+      base::BindOnce(&SaveBooleanResult, &initiator_auth_validated));
   ASSERT_TRUE(initiator_auth_validated);
 }
 
@@ -304,7 +304,7 @@ TEST_F(SecureChannelDeviceToDeviceAuthenticatorTest, NotConnectedInitially) {
   connection_.Disconnect();
   EXPECT_CALL(*this,
               OnAuthenticationResultProxy(Authenticator::Result::DISCONNECTED));
-  authenticator_.Authenticate(base::Bind(
+  authenticator_.Authenticate(base::BindOnce(
       &SecureChannelDeviceToDeviceAuthenticatorTest::OnAuthenticationResult,
       base::Unretained(this)));
   EXPECT_FALSE(secure_context_);
@@ -314,7 +314,7 @@ TEST_F(SecureChannelDeviceToDeviceAuthenticatorTest, FailToSendHello) {
   connection_.set_connection_blocked(true);
   EXPECT_CALL(*this,
               OnAuthenticationResultProxy(Authenticator::Result::FAILURE));
-  authenticator_.Authenticate(base::Bind(
+  authenticator_.Authenticate(base::BindOnce(
       &SecureChannelDeviceToDeviceAuthenticatorTest::OnAuthenticationResult,
       base::Unretained(this)));
   EXPECT_FALSE(secure_context_);

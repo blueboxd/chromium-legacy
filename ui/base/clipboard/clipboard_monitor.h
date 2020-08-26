@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 
 namespace ui {
 
@@ -29,6 +30,11 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMonitor {
 
   // Notifies all observers for clipboard data change.
   virtual void NotifyClipboardDataChanged();
+
+#if defined(OS_CHROMEOS)
+  // Notifies all observers for clipboard data read.
+  virtual void NotifyClipboardDataRead();
+#endif
 
  private:
   friend class base::NoDestructor<ClipboardMonitor>;

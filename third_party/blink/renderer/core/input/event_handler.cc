@@ -97,6 +97,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -622,9 +623,11 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
       // If the image is an SVG, then adjust the scale to reflect the device
       // scale factor so that the SVG can be rasterized in the native
       // resolution and scaled down to the correct size for the cursor.
-      if (image && image->IsSVGImage()) {
-        scale *=
+      float device_scale_factor = 1;
+      if (image->IsSVGImage()) {
+        device_scale_factor =
             page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
+        scale *= device_scale_factor;
       }
 
       // Ensure no overflow possible in calculations above.
@@ -634,23 +637,21 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
       // Convert from logical pixels to physical pixels.
       hot_spot.Scale(scale, scale);
 
-      ui::Cursor cursor(ui::mojom::blink::CursorType::kCustom);
-      if (image) {
-        // Special case for SVG so that it can be rasterized in the appropriate
-        // resolution for high DPI displays.
-        if (image->IsSVGImage()) {
-          SVGImage* svg = static_cast<SVGImage*>(image);
-          cursor.set_custom_bitmap(
-              svg->AsSkBitmapForCursor(page->GetChromeClient()
-                                           .GetScreenInfo(*frame_)
-                                           .device_scale_factor));
-        } else {
-          cursor.set_custom_bitmap(
-              image->AsSkBitmapForCurrentFrame(kRespectImageOrientation));
-        }
-      } else {
-        cursor.set_custom_bitmap(SkBitmap());
+      // Special case for SVG so that it can be rasterized in the appropriate
+      // resolution for high DPI displays.
+      scoped_refptr<Image> svg_image_holder;
+      if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+        IntSize scaled_size(svg_image->Size());
+        scaled_size.Scale(device_scale_factor);
+        // TODO(fs): Should pass proper URL. Use StyleImage::GetImage.
+        svg_image_holder = SVGImageForContainer::Create(
+            svg_image, FloatSize(scaled_size), device_scale_factor, NullURL());
+        image = svg_image_holder.get();
       }
+
+      ui::Cursor cursor(ui::mojom::blink::CursorType::kCustom);
+      cursor.set_custom_bitmap(
+          image->AsSkBitmapForCurrentFrame(kRespectImageOrientation));
       cursor.set_custom_hotspot(
           DetermineHotSpot(*image, hot_spot_specified, hot_spot));
       cursor.set_image_scale_factor(scale);

@@ -2009,9 +2009,6 @@ extern const char kCupsIppPrintingBackendDescription[];
 extern const char kImmersiveFullscreenName[];
 extern const char kImmersiveFullscreenDescription[];
 
-extern const char kEnableCustomMacPaperSizesName[];
-extern const char kEnableCustomMacPaperSizesDescription[];
-
 extern const char kMacSyscallSandboxName[];
 extern const char kMacSyscallSandboxDescription[];
 
@@ -2289,9 +2286,6 @@ extern const char kEnableQuickAnswersRichUiDescription[];
 
 extern const char kEnableQuickAnswersTextAnnotatorName[];
 extern const char kEnableQuickAnswersTextAnnotatorDescription[];
-
-extern const char kTerminalSystemAppLegacySettingsName[];
-extern const char kTerminalSystemAppLegacySettingsDescription[];
 
 extern const char kPluginVmShowCameraPermissionsName[];
 extern const char kPluginVmShowCameraPermissionsDescription[];

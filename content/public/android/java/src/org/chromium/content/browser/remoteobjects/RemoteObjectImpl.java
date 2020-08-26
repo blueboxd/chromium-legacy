@@ -97,11 +97,17 @@ class RemoteObjectImpl implements RemoteObject {
      */
     private final SortedMap<String, List<Method>> mMethods = new TreeMap<>();
 
+    /**
+     * If true, allows an object context's inspection when {@link #getMethods} is called.
+     */
+    private final boolean mAllowInspection;
+
     public RemoteObjectImpl(Object target, Class<? extends Annotation> safeAnnotationClass,
-            Auditor auditor, ObjectIdAllocator objectIdAllocator) {
+            Auditor auditor, ObjectIdAllocator objectIdAllocator, boolean allowInspection) {
         mTarget = new WeakReference<>(target);
         mAuditor = auditor;
         mObjectIdAllocator = new WeakReference<>(objectIdAllocator);
+        mAllowInspection = allowInspection;
 
         for (Method method : target.getClass().getMethods()) {
             if (safeAnnotationClass != null && !method.isAnnotationPresent(safeAnnotationClass)) {
@@ -125,6 +131,10 @@ class RemoteObjectImpl implements RemoteObject {
 
     @Override
     public void getMethods(GetMethodsResponse callback) {
+        if (!mAllowInspection) {
+            callback.call(new String[0]);
+            return;
+        }
         Set<String> methodNames = mMethods.keySet();
         callback.call(methodNames.toArray(new String[methodNames.size()]));
     }

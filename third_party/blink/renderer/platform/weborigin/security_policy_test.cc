@@ -30,10 +30,13 @@
 
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -104,7 +107,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
   const char kInvalidURL[] = "not-a-valid-url";
 
   bool reduced_granularity =
-      RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled();
+      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity);
 
   TestCase inputs[] = {
       // HTTP -> HTTP: Same Origin
@@ -261,7 +264,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
 
     network::mojom::ReferrerPolicy expected_policy = test.policy;
     if (expected_policy == network::mojom::ReferrerPolicy::kDefault) {
-      if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
+      if (reduced_granularity) {
         expected_policy =
             network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
       } else {
@@ -613,13 +616,12 @@ TEST(SecurityPolicyTest, ReferrerForCustomScheme) {
   String kFullReferrer = "my-new-scheme://com.foo.me/this-should-be-truncated";
   String kTruncatedReferrer = "my-new-scheme://com.foo.me/";
 
-  bool initially_enabled =
-      RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled();
-
   {
     // With the feature off, the old default policy of
     // no-referrer-when-downgrade should preserve the entire URL.
-    RuntimeEnabledFeatures::SetReducedReferrerGranularityEnabled(false);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kReducedReferrerGranularity);
 
     EXPECT_EQ(SecurityPolicy::GenerateReferrer(
                   network::mojom::ReferrerPolicy::kDefault,
@@ -631,18 +633,18 @@ TEST(SecurityPolicyTest, ReferrerForCustomScheme) {
   {
     // With the feature on, the new default policy of
     // strict-origin-when-cross-origin should truncate the referrer.
-    RuntimeEnabledFeatures::SetReducedReferrerGranularityEnabled(true);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kReducedReferrerGranularity);
 
-    ASSERT_TRUE(RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled());
+    ASSERT_TRUE(ReferrerUtils::IsReducedReferrerGranularityEnabled());
+
     EXPECT_EQ(SecurityPolicy::GenerateReferrer(
                   network::mojom::ReferrerPolicy::kDefault,
                   KURL("https://www.example.com/"), kFullReferrer)
                   .referrer,
               kTruncatedReferrer);
   }
-
-  RuntimeEnabledFeatures::SetReducedReferrerGranularityEnabled(
-      initially_enabled);
 }
 
 }  // namespace blink

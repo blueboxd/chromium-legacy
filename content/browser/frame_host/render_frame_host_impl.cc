@@ -1011,7 +1011,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           site_instance->GetProcess()->GetNextRoutingID();
       DCHECK_EQ(nullptr, GetLocalRenderWidgetHost());
       owned_render_widget_host_ = RenderWidgetHostFactory::Create(
-          frame_tree_->render_widget_delegate(), GetProcess(),
+          frame_tree_->render_widget_delegate(), agent_scheduling_group_,
           widget_routing_id, /*hidden=*/true);
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
 #if defined(OS_ANDROID)
@@ -5199,7 +5199,7 @@ void RenderFrameHostImpl::CreateNewWidget(
     CreateNewWidgetCallback callback) {
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
   std::move(callback).Run(widget_route_id);
-  delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
+  delegate_->CreateNewWidget(agent_scheduling_group_, widget_route_id,
                              std::move(blink_widget_host),
                              std::move(blink_widget));
 }
@@ -5210,7 +5210,7 @@ void RenderFrameHostImpl::CreateNewFullscreenWidget(
     CreateNewFullscreenWidgetCallback callback) {
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
   std::move(callback).Run(widget_route_id);
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
+  delegate_->CreateNewFullscreenWidget(agent_scheduling_group_, widget_route_id,
                                        std::move(blink_widget_host),
                                        std::move(blink_widget));
 }

@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/public/browser/render_view_host.h"
@@ -76,15 +77,14 @@ namespace content {
 class TracingRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   TracingRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                          RenderProcessHost* process,
+                          AgentSchedulingGroupHost& agent_scheduling_group,
                           int32_t routing_id,
                           bool hidden)
       : RenderWidgetHostImpl(delegate,
-                             process,
+                             agent_scheduling_group,
                              routing_id,
                              hidden,
-                             std::make_unique<FrameTokenMessageQueue>()) {
-  }
+                             std::make_unique<FrameTokenMessageQueue>()) {}
 
   void OnMouseEventAck(
       const MouseEventWithLatencyInfo& event,
@@ -108,11 +108,11 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
 
   std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
+      AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t routing_id,
       bool hidden) override {
-    return std::make_unique<TracingRenderWidgetHost>(delegate, process,
-                                                     routing_id, hidden);
+    return std::make_unique<TracingRenderWidgetHost>(
+        delegate, agent_scheduling_group, routing_id, hidden);
   }
 
  private:

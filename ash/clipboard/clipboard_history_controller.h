@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/clipboard/clipboard_history_item.h"
+#include "ash/clipboard/clipboard_nudge_controller.h"
 #include "base/memory/weak_ptr.h"
 
 namespace gfx {
@@ -49,6 +50,10 @@ class ASH_EXPORT ClipboardHistoryController {
     return resource_manager_.get();
   }
 
+  ClipboardNudgeController* nudge_controller() const {
+    return nudge_controller_.get();
+  }
+
  private:
   class AcceleratorTarget;
   class MenuDelegate;
@@ -72,6 +77,8 @@ class ASH_EXPORT ClipboardHistoryController {
   std::unique_ptr<MenuDelegate> menu_delegate_;
   // The items we show in the contextual menu. Saved so we can paste them later.
   std::vector<ClipboardHistoryItem> clipboard_items_;
+  // Controller that shows contextual nudges for multipaste.
+  std::unique_ptr<ClipboardNudgeController> nudge_controller_;
 
   base::WeakPtrFactory<ClipboardHistoryController> weak_ptr_factory_{this};
 };

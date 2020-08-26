@@ -20,9 +20,9 @@ class FakeAuthenticator : public Authenticator {
   ~FakeAuthenticator() override;
 
   // Authenticator:
-  void Authenticate(const AuthenticationCallback& callback) override;
+  void Authenticate(AuthenticationCallback callback) override;
 
-  AuthenticationCallback last_callback() { return last_callback_; }
+  AuthenticationCallback last_callback() { return std::move(last_callback_); }
 
  private:
   AuthenticationCallback last_callback_;

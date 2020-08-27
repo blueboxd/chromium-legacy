@@ -275,7 +275,7 @@ ci.console_view(
 )
 
 # The chromium.clang console includes some entries for builders from the chrome project
-[luci.console_view_entry(
+[branches.console_view_entry(
     builder = "chrome:ci/{}".format(name),
     console_view = "chromium.clang",
     category = category,
@@ -291,7 +291,7 @@ ci.console_view(
 )]
 
 # The main console includes some entries for builders from the chrome project
-[luci.console_view_entry(
+[branches.console_view_entry(
     builder = "chrome:ci/{}".format(name),
     console_view = "main",
     category = "chrome",
@@ -1207,8 +1207,6 @@ ci.chromiumos_builder(
     ),
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
     main_console_view = settings.main_console_name,
-    # TODO(crbug.com/1104291): Enable tree closing.
-    tree_closing = False,
 )
 
 ci.chromiumos_builder(

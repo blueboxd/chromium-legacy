@@ -227,8 +227,7 @@
               "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
               "fast/forms/fieldset",
               "fast/multicol",
-              "fragmentation",
-              "printing"],
+              "fragmentation"],
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation,LayoutNGFieldset"]
   },
   {
@@ -238,6 +237,11 @@
               "fast/block",
               "fast/table"],
     "args": ["--enable-blink-features=LayoutNGFragmentTraversal"]
+  },
+  {
+    "prefix": "layout_ng_printing",
+    "bases": ["printing"],
+    "args": ["--enable-blink-features=LayoutNGPrinting"]
   },
   {
     "prefix": "layout-ng-grid",
@@ -722,12 +726,6 @@
     "prefix": "out-of-blink-cspee",
     "bases": [ "external/wpt/content-security-policy/embedded-enforcement" ],
     "args": [ "--enable-features=OutOfBlinkCSPEE" ]
-  },
-  {
-    "prefix": "subresource-web-bundles",
-    "bases": [ "external/wpt/web-bundle/subresource-loading",
-               "http/tests/loading/wbn/subresource-loading" ],
-    "args": [ "--enable-blink-features=SubresourceWebBundles" ]
   },
   {
     "prefix": "subresource-web-bundles-disabled",

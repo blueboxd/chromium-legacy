@@ -3116,12 +3116,6 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillKeyboardAccessoryFeatureVariations,
          "AutofillKeyboardAccessory")},
 #endif  // OS_ANDROID
-#if defined(OS_WIN)
-    {"try-supported-channel-layouts",
-     flag_descriptions::kTrySupportedChannelLayoutsName,
-     flag_descriptions::kTrySupportedChannelLayoutsDescription, kOsWin,
-     SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
-#endif  // OS_WIN
 #if defined(OS_MAC)
     {"mac-syscall-sandbox", flag_descriptions::kMacSyscallSandboxName,
      flag_descriptions::kMacSyscallSandboxDescription, kOsMac,
@@ -5228,6 +5222,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHideArcMediaNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHideArcMediaNotifications)},
 
+    {"media-notifications-counter",
+     flag_descriptions::kMediaNotificationsCounterName,
+     flag_descriptions::kMediaNotificationsCounterDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMediaNotificationsCounter)},
+
     {"reduce-display-notifications",
      flag_descriptions::kReduceDisplayNotificationsName,
      flag_descriptions::kReduceDisplayNotificationsDescription, kOsCrOS,
@@ -5560,10 +5559,16 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIUpgrader)},
 #endif  // OS_CHROMEOS
 
-    {"turn-off-streaming-media-caching",
-     flag_descriptions::kTurnOffStreamingMediaCachingName,
-     flag_descriptions::kTurnOffStreamingMediaCachingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCaching)},
+    {"turn-off-streaming-media-caching-on-battery",
+     flag_descriptions::kTurnOffStreamingMediaCachingOnBatteryName,
+     flag_descriptions::kTurnOffStreamingMediaCachingOnBatteryDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCachingOnBattery)},
+
+    {"turn-off-streaming-media-caching-always",
+     flag_descriptions::kTurnOffStreamingMediaCachingAlwaysName,
+     flag_descriptions::kTurnOffStreamingMediaCachingAlwaysDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCachingAlways)},
 
 #if defined(OS_ANDROID)
     {"password-manager-onboarding-android",

@@ -330,12 +330,13 @@ class MetadataLocaleFinder {
 };
 
 enum class PpdMetadataType {
-  LOCALES,
-  MANUFACTURERS,  // locale-sensitive
-  PRINTERS,       // locale-sensitive
-  INDEX,
-  REVERSE_INDEX,  // locale-sensitive
-  USB_INDEX,
+  kLocales,
+  kManufacturers,  // locale-sensitive
+  kPrinters,       // locale-sensitive
+  kForwardIndex,
+  kReverseIndex,  // locale-sensitive
+  kUsbIndex,
+  kUsbVendorIds,
 };
 
 // Control argument that fully specifies the basename and containing
@@ -349,10 +350,10 @@ struct PpdMetadataPathSpecifier {
   PpdMetadataType type;
 
   // Used in two different ways as needed:
-  // 1. if |type| == PRINTERS,
+  // 1. if |type| == kPrinters,
   //    then caller should populate this with the full basename of the
   //    target printers metadata file. Or,
-  // 2. if |type| is locale-sensitive and != PRINTERS,
+  // 2. if |type| is locale-sensitive and != kPrinters,
   //    then caller should populate this with the two-letter target
   //    locale (as previously advertised by the serving root).
   //
@@ -361,10 +362,10 @@ struct PpdMetadataPathSpecifier {
   const char* optional_tag;
 
   // Used in two different ways as needed:
-  // 1. if |type| != USB_INDEX,
+  // 1. if |type| != kUsbIndex,
   //    then this is the numerical shard of the target metadata
   //    basename, if needed. Or,
-  // 2. if |type| == USB_INDEX,
+  // 2. if |type| == kUsbIndex,
   //    then this is the vendor ID of the the device manufacturer being
   //    sought.
   int optional_shard;
@@ -376,16 +377,16 @@ struct PpdMetadataPathSpecifier {
 std::string PpdMetadataPathInServingRoot(
     const PpdMetadataPathSpecifier& options) {
   switch (options.type) {
-    case PpdMetadataType::LOCALES:
+    case PpdMetadataType::kLocales:
       return base::StringPrintf("%s/locales.json", kMetadataParentDirectory);
 
-    case PpdMetadataType::MANUFACTURERS:
+    case PpdMetadataType::kManufacturers:
       // This type is locale-sensitive; the tag carries the locale.
       DCHECK(!base::StringPiece(options.optional_tag).empty());
       return base::StringPrintf("%s/manufacturers-%s.json",
                                 kMetadataParentDirectory, options.optional_tag);
 
-    case PpdMetadataType::PRINTERS:
+    case PpdMetadataType::kPrinters:
       // This type is locale-sensitive; in this context, the tag carries
       // the full basename, which caller will have extracted from a leaf
       // in manufacturers metadata.
@@ -393,13 +394,13 @@ std::string PpdMetadataPathInServingRoot(
       return base::StringPrintf("%s/%s", kMetadataParentDirectory,
                                 options.optional_tag);
 
-    case PpdMetadataType::INDEX:
+    case PpdMetadataType::kForwardIndex:
       DCHECK(options.optional_shard >= 0 &&
              options.optional_shard < kNumShards);
       return base::StringPrintf("%s/index-%02d.json", kMetadataParentDirectory,
                                 options.optional_shard);
 
-    case PpdMetadataType::REVERSE_INDEX:
+    case PpdMetadataType::kReverseIndex:
       // This type is locale-sensitive; the tag carries the locale.
       DCHECK(!base::StringPiece(options.optional_tag).empty());
       DCHECK(options.optional_shard >= 0 &&
@@ -408,11 +409,15 @@ std::string PpdMetadataPathInServingRoot(
                                 kMetadataParentDirectory, options.optional_tag,
                                 options.optional_shard);
 
-    case PpdMetadataType::USB_INDEX:
+    case PpdMetadataType::kUsbIndex:
       DCHECK(options.optional_shard >= 0 &&
              options.optional_shard <= kSixteenBitsMaximum);
       return base::StringPrintf("%s/usb-%04x.json", kMetadataParentDirectory,
                                 options.optional_shard);
+
+    case PpdMetadataType::kUsbVendorIds:
+      return base::StringPrintf("%s/usb_vendor_ids.json",
+                                kMetadataParentDirectory);
   }
 
   // This function cannot fail except by maintainer error.
@@ -455,7 +460,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
       return;
     }
 
-    const PpdMetadataPathSpecifier options = {PpdMetadataType::LOCALES};
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kLocales};
     const std::string metadata_name = PpdMetadataPathInServingRoot(options);
 
     PrinterConfigCache::FetchCallback fetch_cb =
@@ -472,7 +477,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!metadata_locale_.empty());
 
-    const PpdMetadataPathSpecifier options = {PpdMetadataType::MANUFACTURERS,
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kManufacturers,
                                               metadata_locale_.c_str()};
     const std::string metadata_name = PpdMetadataPathInServingRoot(options);
 
@@ -548,7 +553,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
       return;
     }
 
-    const PpdMetadataPathSpecifier options = {PpdMetadataType::USB_INDEX,
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kUsbIndex,
                                               nullptr, vendor_id};
     const std::string metadata_name = PpdMetadataPathInServingRoot(options);
 
@@ -564,6 +569,24 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     config_cache_->Fetch(metadata_name, age, std::move(callback));
   }
 
+  void GetUsbManufacturerName(int vendor_id,
+                              base::TimeDelta age,
+                              GetUsbManufacturerNameCallback cb) override {
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kUsbVendorIds};
+    const std::string metadata_name = PpdMetadataPathInServingRoot(options);
+
+    if (MapHasValueFresherThan(cached_usb_vendor_id_map_, metadata_name,
+                               clock_->Now() - age)) {
+      OnUsbVendorIdMapAvailable(metadata_name, vendor_id, std::move(cb));
+      return;
+    }
+
+    auto fetch_cb =
+        base::BindOnce(&PpdMetadataManagerImpl::OnUsbVendorIdMapFetched,
+                       weak_factory_.GetWeakPtr(), vendor_id, std::move(cb));
+    config_cache_->Fetch(metadata_name, age, std::move(fetch_cb));
+  }
+
   void SplitMakeAndModel(base::StringPiece effective_make_and_model,
                          base::TimeDelta age,
                          PpdProvider::ReverseLookupCallback cb) override {
@@ -571,7 +594,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     DCHECK(!metadata_locale_.empty());
 
     const PpdMetadataPathSpecifier reverse_index_options = {
-        PpdMetadataType::REVERSE_INDEX, metadata_locale_.c_str(),
+        PpdMetadataType::kReverseIndex, metadata_locale_.c_str(),
         IndexShard(effective_make_and_model)};
     const std::string metadata_name =
         PpdMetadataPathInServingRoot(reverse_index_options);
@@ -609,7 +632,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     }
 
     // We need to name the manufacturers metadata manually to store it.
-    const PpdMetadataPathSpecifier options = {PpdMetadataType::MANUFACTURERS,
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kManufacturers,
                                               metadata_locale_.c_str()};
     const std::string manufacturers_name =
         PpdMetadataPathInServingRoot(options);
@@ -742,7 +765,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   base::Optional<std::string> GetPrintersMetadataName(
       base::StringPiece manufacturer) {
     const PpdMetadataPathSpecifier manufacturers_options = {
-        PpdMetadataType::MANUFACTURERS, metadata_locale_.c_str()};
+        PpdMetadataType::kManufacturers, metadata_locale_.c_str()};
     const std::string manufacturers_metadata_name =
         PpdMetadataPathInServingRoot(manufacturers_options);
     if (!cached_manufacturers_.contains(manufacturers_metadata_name)) {
@@ -759,7 +782,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     }
 
     const PpdMetadataPathSpecifier printers_options = {
-        PpdMetadataType::PRINTERS,
+        PpdMetadataType::kPrinters,
         manufacturers.value.at(manufacturer).c_str()};
     return PpdMetadataPathInServingRoot(printers_options);
   }
@@ -864,7 +887,8 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   ForwardIndexSearchStatus SearchForwardIndicesForOneEmm() {
     const ForwardIndexSearchContext& context =
         forward_index_search_queue_.CurrentContext();
-    const PpdMetadataPathSpecifier options = {PpdMetadataType::INDEX, nullptr,
+    const PpdMetadataPathSpecifier options = {PpdMetadataType::kForwardIndex,
+                                              nullptr,
                                               IndexShard(context.CurrentEmm())};
     const std::string forward_index_name =
         PpdMetadataPathInServingRoot(options);
@@ -964,6 +988,63 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   }
 
   // Called by one of
+  // *  GetUsbManufacturerName() or
+  // *  OnUsbVendorIdMapFetched().
+  //
+  // Searches the available USB vendor ID map (named by |metadata_name|)
+  // for |vendor_id| and invokes |cb| accordingly.
+  void OnUsbVendorIdMapAvailable(base::StringPiece metadata_name,
+                                 int vendor_id,
+                                 GetUsbManufacturerNameCallback cb) {
+    DCHECK(cached_usb_vendor_id_map_.contains(metadata_name));
+    ParsedUsbVendorIdMap usb_vendor_id_map =
+        cached_usb_vendor_id_map_.at(metadata_name).value;
+
+    std::string manufacturer_name;
+    const auto& iter = usb_vendor_id_map.find(vendor_id);
+    if (iter != usb_vendor_id_map.end()) {
+      manufacturer_name = iter->second;
+    }
+
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), manufacturer_name));
+  }
+
+  // Called by |config_cache_|->Fetch().
+  // Continues a prior call to GetUsbManufacturerName.
+  //
+  // Parses and updates our cached map of USB vendor IDs if |result|
+  // indicates a successful fetch.
+  //
+  // If we're haggling over bits, it is wasteful to have a map that
+  // only ever has at most one key-value pair. We willfully accept this
+  // inefficiency to maintain consistency with other metadata
+  // operations.
+  void OnUsbVendorIdMapFetched(
+      int vendor_id,
+      GetUsbManufacturerNameCallback cb,
+      const PrinterConfigCache::FetchResult& fetch_result) {
+    if (!fetch_result.succeeded) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(cb), std::string()));
+      return;
+    }
+
+    const base::Optional<ParsedUsbVendorIdMap> parsed =
+        ParseUsbVendorIdMap(fetch_result.contents);
+    if (!parsed.has_value()) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(cb), std::string()));
+      return;
+    }
+
+    ParsedMetadataWithTimestamp<ParsedUsbVendorIdMap> value = {clock_->Now(),
+                                                               parsed.value()};
+    cached_usb_vendor_id_map_.insert_or_assign(fetch_result.key, value);
+    OnUsbVendorIdMapAvailable(fetch_result.key, vendor_id, std::move(cb));
+  }
+
+  // Called by one of
   // *  SplitMakeAndModel() or
   // *  OnReverseIndexFetched().
   // Continues a prior call to SplitMakeAndModel().
@@ -1046,6 +1127,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
   CachedParsedMetadataMap<ParsedPrinters> cached_printers_;
   CachedParsedMetadataMap<ParsedIndex> cached_forward_indices_;
   CachedParsedMetadataMap<ParsedUsbIndex> cached_usb_indices_;
+  CachedParsedMetadataMap<ParsedUsbVendorIdMap> cached_usb_vendor_id_map_;
   CachedParsedMetadataMap<ParsedReverseIndex> cached_reverse_indices_;
 
   // Processing queue for FindAllEmmsAvailableInIndex().

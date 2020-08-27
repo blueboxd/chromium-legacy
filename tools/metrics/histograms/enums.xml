@@ -1317,6 +1317,11 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Google Photos No Albums"/>
 </enum>
 
+<enum name="AmbientUiMode">
+  <int value="0" label="Lock Screen"/>
+  <int value="1" label="In Session Idle"/>
+</enum>
+
 <enum name="Android.ChildProcessBindingStateCombination">
   <int value="0" label="No waived no moderate no strong"/>
   <int value="1" label="No waived no moderate has strong"/>
@@ -9744,6 +9749,30 @@ histogram as enum -->
 <enum name="ChromeSignInPageHashSaved">
   <int value="0" label="A password was typed, a hash is not saved"/>
   <int value="1" label="A hash is saved"/>
+</enum>
+
+<enum name="ChromeVoxGestureType">
+  <int value="1" label="click"/>
+  <int value="2" label="swipeDown1"/>
+  <int value="3" label="swipeDown2"/>
+  <int value="4" label="swipeDown3"/>
+  <int value="5" label="swipeDown4"/>
+  <int value="6" label="swipeLeft1"/>
+  <int value="7" label="swipeLeft2"/>
+  <int value="8" label="swipeLeft3"/>
+  <int value="9" label="swipeLeft4"/>
+  <int value="10" label="swipeRight1"/>
+  <int value="11" label="swipeRight2"/>
+  <int value="12" label="swipeRight3"/>
+  <int value="13" label="swipeRight4"/>
+  <int value="14" label="swipeUp1"/>
+  <int value="15" label="swipeUp2"/>
+  <int value="16" label="swipeUp3"/>
+  <int value="17" label="swipeUp4"/>
+  <int value="18" label="tap2"/>
+  <int value="19" label="tap3"/>
+  <int value="20" label="tap4"/>
+  <int value="21" label="touchExplore"/>
 </enum>
 
 <enum name="ChromiumAndroidLinkerBrowserState">
@@ -40207,6 +40236,7 @@ from previous Chrome versions.
   <int value="-2146832142" label="SyncPseudoUSSSearchEngines:enabled"/>
   <int value="-2146613579" label="V8Future:disabled"/>
   <int value="-2145472146" label="OfflinePagesResourceBasedSnapshot:disabled"/>
+  <int value="-2144796781" label="TurnOffStreamingMediaCachingAlways:enabled"/>
   <int value="-2143961262" label="D3DVsync:disabled"/>
   <int value="-2143681040" label="ViewsCastDialog:enabled"/>
   <int value="-2143328006"
@@ -40694,6 +40724,8 @@ from previous Chrome versions.
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:enabled"/>
+  <int value="-1675747412"
+      label="TurnOffStreamingMediaCachingOnBattery:enabled"/>
   <int value="-1674868343" label="DlcSettingsUi:enabled"/>
   <int value="-1672160462"
       label="SwapSideVolumeButtonsForOrientation:disabled"/>
@@ -40867,6 +40899,8 @@ from previous Chrome versions.
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1496106797" label="IPH_PasswordsAccountStorage:enabled"/>
   <int value="-1492934655" label="TabSwitcherOnReturn:enabled"/>
+  <int value="-1492609320"
+      label="TurnOffStreamingMediaCachingOnBattery:disabled"/>
   <int value="-1492589689" label="ContentSuggestionsCategories:enabled"/>
   <int value="-1492211482" label="EnableWindowsGamingInputDataFetcher:enabled"/>
   <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
@@ -42225,6 +42259,7 @@ from previous Chrome versions.
   <int value="-109569254" label="QueryTilesInOmnibox:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-108468535" label="ChromeColorsCustomColorPicker:disabled"/>
+  <int value="-106631643" label="TurnOffStreamingMediaCachingAlways:disabled"/>
   <int value="-106373261" label="PaintPreviewDemo:enabled"/>
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
@@ -42706,6 +42741,7 @@ from previous Chrome versions.
   <int value="413081240" label="enable-new-md-input-view"/>
   <int value="413695227" label="NTPSuggestionsStandaloneUI:enabled"/>
   <int value="414114078" label="LitePageServerPreviews:disabled"/>
+  <int value="414937629" label="MediaNotificationsCounter:enabled"/>
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="415395210" label="TrimOnMemoryPressure:enabled"/>
   <int value="416691040" label="SendTabToSelfOmniboxSendingAnimation:disabled"/>
@@ -43583,7 +43619,6 @@ from previous Chrome versions.
   <int value="1331513360" label="SafetyCheckAndroid:disabled"/>
   <int value="1332120969" label="ChromeDuet:disabled"/>
   <int value="1333847867" label="NoScriptPreviews:enabled"/>
-  <int value="1334185492" label="TurnOffStreamingMediaCaching:disabled"/>
   <int value="1338356182" label="AutofillAssistantChromeEntry:disabled"/>
   <int value="1338864675" label="EnableTouchableAppContextMenu:disabled"/>
   <int value="1339191800" label="OmniboxMaxZeroSuggestMatches:disabled"/>
@@ -44043,6 +44078,7 @@ from previous Chrome versions.
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
   <int value="1830460973" label="disable-network-settings-config"/>
+  <int value="1831103529" label="MediaNotificationsCounter:disabled"/>
   <int value="1831545645" label="query-tiles-single-tier"/>
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
@@ -44096,7 +44132,6 @@ from previous Chrome versions.
   <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
-  <int value="1885368291" label="TurnOffStreamingMediaCaching:enabled"/>
   <int value="1887031213" label="AutofillManualFallbackAndroid:disabled"/>
   <int value="1887882558" label="RTCUnifiedPlanByDefault:enabled"/>
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>

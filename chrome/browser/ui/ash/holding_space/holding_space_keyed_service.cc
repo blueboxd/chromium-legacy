@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 
+#include "ash/public/cpp/file_icon_util.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/files/file_path.h"
@@ -33,11 +34,12 @@ constexpr char HoldingSpaceKeyedService::kPersistencePath[];
 HoldingSpaceKeyedService::HoldingSpaceKeyedService(
     content::BrowserContext* context,
     const AccountId& account_id)
-    : browser_context_(context) {
+    : browser_context_(context),
+      holding_space_client_(Profile::FromBrowserContext(context)) {
   RestoreModel();
   holding_space_model_observer_.Add(&holding_space_model_);
-  HoldingSpaceController::Get()->RegisterModelForUser(account_id,
-                                                      &holding_space_model_);
+  HoldingSpaceController::Get()->RegisterClientAndModelForUser(
+      account_id, &holding_space_client_, &holding_space_model_);
 }
 
 HoldingSpaceKeyedService::~HoldingSpaceKeyedService() = default;
@@ -112,10 +114,10 @@ GURL HoldingSpaceKeyedService::ResolveFileSystemUrl(
   return file_system_url;
 }
 
-// TODO(dmblack): Implement.
+// TODO(dmblack): Use thumbnail service to asynchronously replace placeholders.
 gfx::ImageSkia HoldingSpaceKeyedService::ResolveImage(
     const base::FilePath& file_path) const {
-  return gfx::ImageSkia();
+  return GetIconForPath(file_path);
 }
 
 }  // namespace ash

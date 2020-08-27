@@ -2975,6 +2975,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "media-notifications-counter",
+    "owners": [ "gzadina@google.com", "joelhockey", "tengs" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "media-router-cast-allow-all-ips",
     "owners": [ "mfoltz" ],
     // This flag is used by users with unusual network configurations to allow
@@ -4360,14 +4365,14 @@
     "expiry_milestone": 86
   },
   {
-    "name": "try-supported-channel-layouts",
-    "owners": [ "dalecurtis" ],
-    "expiry_milestone": 76
+    "name": "turn-off-streaming-media-caching-always",
+    "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
+    "expiry_milestone": 87
   },
   {
-    "name": "turn-off-streaming-media-caching",
-    "owners": [ "shawnpi@microsoft.com" ],
-    "expiry_milestone": 86
+    "name": "turn-off-streaming-media-caching-on-battery",
+    "owners": [ "shawnpi@microsoft.com", "cassew@google.com" ],
+    "expiry_milestone": 87
   },
   {
     "name": "ui-disable-partial-swap",

@@ -1373,11 +1373,11 @@ extern const char kTreatUnsafeDownloadsAsActiveDescription[];
 extern const char kTrustTokensName[];
 extern const char kTrustTokensDescription[];
 
-extern const char kTrySupportedChannelLayoutsName[];
-extern const char kTrySupportedChannelLayoutsDescription[];
+extern const char kTurnOffStreamingMediaCachingOnBatteryName[];
+extern const char kTurnOffStreamingMediaCachingOnBatteryDescription[];
 
-extern const char kTurnOffStreamingMediaCachingName[];
-extern const char kTurnOffStreamingMediaCachingDescription[];
+extern const char kTurnOffStreamingMediaCachingAlwaysName[];
+extern const char kTurnOffStreamingMediaCachingAlwaysDescription[];
 
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
@@ -2438,6 +2438,9 @@ extern const char kLockScreenNotificationDescription[];
 
 extern const char kMediaAppName[];
 extern const char kMediaAppDescription[];
+
+extern const char kMediaNotificationsCounterName[];
+extern const char kMediaNotificationsCounterDescription[];
 
 extern const char kMediaSessionNotificationsName[];
 extern const char kMediaSessionNotificationsDescription[];

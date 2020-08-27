@@ -2376,18 +2376,15 @@ const char kTrustTokensDescription[] =
     "Enables the prototype Trust Token API "
     "(https://github.com/wicg/trust-token-api).";
 
-const char kTrySupportedChannelLayoutsName[] =
-    "Causes audio output streams to check if channel layouts other than the "
-    "default hardware layout are available.";
-const char kTrySupportedChannelLayoutsDescription[] =
-    "Causes audio output streams to check if channel layouts other than the "
-    "default hardware layout are available. Turning this on will allow the OS "
-    "to do stereo to surround expansion if supported. May expose third party "
-    "driver bugs, use with caution.";
+const char kTurnOffStreamingMediaCachingOnBatteryName[] =
+    "Turn off caching of streaming media to disk while on battery power.";
+const char kTurnOffStreamingMediaCachingOnBatteryDescription[] =
+    "Reduces disk activity during media playback, which can result in "
+    "power savings.";
 
-const char kTurnOffStreamingMediaCachingName[] =
+const char kTurnOffStreamingMediaCachingAlwaysName[] =
     "Turn off caching of streaming media to disk.";
-const char kTurnOffStreamingMediaCachingDescription[] =
+const char kTurnOffStreamingMediaCachingAlwaysDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
@@ -4183,6 +4180,11 @@ const char kLockScreenNotificationDescription[] =
 const char kMediaAppName[] = "Media App";
 const char kMediaAppDescription[] =
     "Enables the chrome://media-app System Web App (SWA)";
+
+const char kMediaNotificationsCounterName[] = "Media Notifications Counter";
+const char kMediaNotificationsCounterDescription[] =
+    "Remove media notifications from the notification counter in the status "
+    "area";
 
 const char kMediaSessionNotificationsName[] = "Media session notifications";
 const char kMediaSessionNotificationsDescription[] =

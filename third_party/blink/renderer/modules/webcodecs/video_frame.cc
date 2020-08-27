@@ -13,7 +13,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "media/renderers/yuv_util.h"
+#include "media/renderers/video_frame_yuv_converter.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -94,9 +94,9 @@ VideoFrame* VideoFrame::Create(ImageBitmap* source,
   base::TimeDelta timestamp =
       base::TimeDelta::FromMicroseconds(init->timestamp());
 
-  auto sk_image =
-      source->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
-  auto sk_color_space = sk_image->refColorSpace();
+  auto sk_image_info =
+      source->BitmapImage()->PaintImageForCurrentFrame().GetSkImageInfo();
+  auto sk_color_space = sk_image_info.refColorSpace();
   if (!sk_color_space) {
     sk_color_space = SkColorSpace::MakeSRGB();
   }
@@ -105,7 +105,7 @@ VideoFrame* VideoFrame::Create(ImageBitmap* source,
                                       "Invalid color space");
     return nullptr;
   }
-  auto sk_color_type = sk_image->colorType();
+  auto sk_color_type = sk_image_info.colorType();
   if (!IsValidSkColorType(sk_color_type)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid pixel format");
@@ -393,8 +393,8 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
       dest_holder.sync_token = shared_image_interface->GenUnverifiedSyncToken();
       dest_holder.texture_target = GL_TEXTURE_2D;
 
-      media::ConvertFromVideoFrameYUV(local_frame.get(),
-                                      raster_context_provider, dest_holder);
+      media::VideoFrameYUVConverter::ConvertYUVVideoFrameNoCaching(
+          local_frame.get(), raster_context_provider, dest_holder);
       gpu::SyncToken sync_token;
       raster_context_provider->RasterInterface()
           ->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());

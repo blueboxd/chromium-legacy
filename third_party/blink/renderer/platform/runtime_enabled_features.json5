@@ -146,7 +146,6 @@
     },
     {
       name: "AllowContentInitiatedDataUrlNavigations",
-      status: "stable",
     },
     {
       name: "AllowSyncXHRInPageDismissal",
@@ -859,7 +858,6 @@
     },
     {
       name: "FractionalScrollOffsets",
-      status: "experimental",
     },
     {
       name: "FreezeFramesOnVisibility",

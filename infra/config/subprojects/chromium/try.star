@@ -37,7 +37,7 @@ try_.list_view(
 
 try_.list_view(
     name = "tryserver.chromium.chromiumos",
-    branch_selector = branches.STANDARD_RELEASES,
+    branch_selector = branches.ALL_RELEASES,
 )
 
 try_.list_view(
@@ -423,6 +423,9 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android_cronet",
     branch_selector = branches.STANDARD_RELEASES,
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.android",
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(),
 )
@@ -538,7 +541,10 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.STANDARD_RELEASES,
+    branch_selector = branches.ALL_RELEASES,
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.chromiumos",
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(),
 )
@@ -549,7 +555,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.STANDARD_RELEASES,
+    branch_selector = branches.ALL_RELEASES,
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(),
 )
@@ -567,6 +573,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-kevin-rel",
+    branch_selector = branches.ALL_RELEASES,
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(
         location_regexp = [
@@ -579,7 +586,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.STANDARD_RELEASES,
+    branch_selector = branches.ALL_RELEASES,
     goma_jobs = goma.jobs.J150,
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(cancel_stale = False),
@@ -778,6 +785,9 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "fuchsia-x64-cast",
     branch_selector = branches.STANDARD_RELEASES,
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.linux",
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(),
 )
@@ -1098,6 +1108,9 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac-rel",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.mac",
     branch_selector = branches.STANDARD_RELEASES,
     goma_jobs = goma.jobs.J150,
     main_list_view = settings.main_list_view_name,
@@ -1193,6 +1206,9 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_RELEASES,
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.mac",
     executable = "recipe:chromium_trybot",
     main_list_view = settings.main_list_view_name,
     properties = {
@@ -1385,6 +1401,9 @@ try_.chromium_win_builder(
 try_.chromium_win_builder(
     name = "win10_chromium_x64_rel_ng",
     branch_selector = branches.STANDARD_RELEASES,
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.win",
     goma_jobs = goma.jobs.J150,
     os = os.WINDOWS_10,
     ssd = True,

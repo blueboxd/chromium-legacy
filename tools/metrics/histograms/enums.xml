@@ -4799,6 +4799,14 @@ Unknown properties are collapsed to zero. -->
   <int value="1681" label="ADDRESS_HOME_FLOOR: accepted"/>
   <int value="1696" label="ADDRESS_HOME_OTHER_SUBUNIT: edited"/>
   <int value="1697" label="ADDRESS_HOME_OTHER_SUBUNIT: accepted"/>
+  <int value="1712" label="NAME_LAST_FIRST: edited"/>
+  <int value="1713" label="NAME_LAST_FIRST: accepted"/>
+  <int value="1728" label="NAME_LAST_CONJUNCTION: edited"/>
+  <int value="1729" label="NAME_LAST_CONJUNCTION: accepted"/>
+  <int value="1744" label="NAME_LAST_SECOND: edited"/>
+  <int value="1745" label="NAME_LAST_SECOND: accepted"/>
+  <int value="1760" label="NAME_HONORIFIC_PREFIX: edited"/>
+  <int value="1761" label="NAME_HONORIFIC_PREFIX: accepted"/>
 </enum>
 
 <enum name="AutofillExperimentId">
@@ -12667,6 +12675,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorePageTransition">
+  <obsolete>
+    Removed 08/2020
+  </obsolete>
   <summary>
     The core value of PageTransition. See ui/base/page_transition_types.h.
   </summary>
@@ -24406,6 +24417,7 @@ Called by update_extension_histograms.py.-->
   <int value="1497" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMIMETYPE"/>
   <int value="1498" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMETADATA"/>
   <int value="1499" label="SEARCH_QUERY"/>
+  <int value="1500" label="FILEMANAGERPRIVATEINTERNAL_COPYIMAGETOCLIPBOARD"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29009,6 +29021,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3459" label="WebCodecsVideoTrackReader"/>
   <int value="3460" label="WebCodecsImageDecoder"/>
   <int value="3461" label="BackForwardCacheExperimentHTTPHeader"/>
+  <int value="3462" label="V8Navigator_OpenTCPSocket_Method"/>
+  <int value="3463" label="V8Navigator_OpenUDPSocket_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

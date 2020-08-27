@@ -8,9 +8,10 @@
 
 namespace updater {
 
-void InstallUpdater() {
+int InstallUpdater() {
   // TODO(1068693): Implement TestApp Functionality.
   NOTIMPLEMENTED();
+  return 0;
 }
 
 }  // namespace updater

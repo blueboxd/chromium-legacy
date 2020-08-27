@@ -2705,6 +2705,8 @@ source_set("chromeos") {
     "extensions/file_manager/file_manager_private_api_functions.h",
     "extensions/file_manager/file_stream_md5_digester.cc",
     "extensions/file_manager/file_stream_md5_digester.h",
+    "extensions/file_manager/file_stream_string_converter.cc",
+    "extensions/file_manager/file_stream_string_converter.h",
     "extensions/file_manager/private_api_base.cc",
     "extensions/file_manager/private_api_base.h",
     "extensions/file_manager/private_api_dialog.cc",
@@ -2818,7 +2820,7 @@ source_set("chromeos") {
 
   if (!is_official_build) {
     deps += [
-      "//chromeos/components/sample_system_web_app_ui:sample_system_web_app_ui",
+      "//chromeos/components/sample_system_web_app_ui",
       "//chromeos/components/telemetry_extension_ui",
       "//chromeos/resources:sample_system_web_app_resources_grit",
       "//chromeos/resources:telemetry_extension_resources",

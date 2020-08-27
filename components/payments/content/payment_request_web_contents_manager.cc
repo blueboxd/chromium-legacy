@@ -7,12 +7,10 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/feature_list.h"
 #include "components/payments/content/content_payment_request_delegate.h"
-#include "components/payments/content/payment_credential.h"
+#include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_display_manager.h"
-#include "components/payments/content/secure_payment_confirmation_payment_request_delegate.h"
 #include "components/payments/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -36,13 +34,6 @@ void PaymentRequestWebContentsManager::CreatePaymentRequest(
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
     PaymentRequest::ObserverForTest* observer_for_testing) {
-  if (base::FeatureList::IsEnabled(
-          features::kForceSecurePaymentConfirmationDialog)) {
-    delegate =
-        std::make_unique<SecurePaymentConfirmationPaymentRequestDelegate>(
-            std::move(delegate));
-  }
-
   auto new_request = std::make_unique<PaymentRequest>(
       render_frame_host, web_contents, std::move(delegate), /*manager=*/this,
       delegate->GetDisplayManager(), std::move(receiver), observer_for_testing);
@@ -90,9 +81,10 @@ void PaymentRequestWebContentsManager::DestroyRequest(PaymentRequest* request) {
 }
 
 void PaymentRequestWebContentsManager::CreatePaymentCredential(
+    scoped_refptr<PaymentManifestWebDataService> web_data_sevice,
     mojo::PendingReceiver<payments::mojom::PaymentCredential> receiver) {
   payment_credential_ =
-      std::make_unique<PaymentCredential>(std::move(receiver));
+      std::make_unique<PaymentCredential>(web_data_sevice, std::move(receiver));
 }
 
 PaymentRequestWebContentsManager::PaymentRequestWebContentsManager(

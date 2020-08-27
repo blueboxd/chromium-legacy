@@ -1728,9 +1728,6 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   KURL link_url = anchor->HrefURL();
   if (!link_url.IsValid())
     return AXObject::InPageLinkTarget();
-  String fragment = link_url.FragmentIdentifier();
-  if (fragment.IsEmpty())
-    return AXObject::InPageLinkTarget();
 
   KURL document_url = GetDocument()->Url();
   if (!document_url.IsValid() ||
@@ -1738,8 +1735,9 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
     return AXObject::InPageLinkTarget();
   }
 
+  String fragment = link_url.FragmentIdentifier();
   TreeScope& tree_scope = anchor->GetTreeScope();
-  Element* target = tree_scope.FindAnchor(fragment);
+  Node* target = tree_scope.FindAnchor(fragment);
   if (!target)
     return AXObject::InPageLinkTarget();
   // If the target is not in the accessibility tree, get the first unignored
@@ -2669,14 +2667,8 @@ String AXNodeObject::TextAlternative(bool recursive,
       return String();
   }
 
-  String text_alternative = AriaTextAlternative(
-      recursive, in_aria_labelled_by_traversal, visited, name_from,
-      related_objects, name_sources, &found_text_alternative);
-  if (found_text_alternative && !name_sources)
-    return text_alternative;
-
   // Step 2E from: http://www.w3.org/TR/accname-aam-1.1 -- value from control
-  if (recursive && !in_aria_labelled_by_traversal && CanSetValueAttribute()) {
+  if (recursive && CanSetValueAttribute()) {
     // No need to set any name source info in a recursive call.
     if (IsTextControl())
       return GetText();
@@ -2708,6 +2700,12 @@ String AXNodeObject::TextAlternative(bool recursive,
     }
     return accumulated_text.ToString();
   }
+
+  String text_alternative = AriaTextAlternative(
+      recursive, in_aria_labelled_by_traversal, visited, name_from,
+      related_objects, name_sources, &found_text_alternative);
+  if (found_text_alternative && !name_sources)
+    return text_alternative;
 
   // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
   text_alternative =

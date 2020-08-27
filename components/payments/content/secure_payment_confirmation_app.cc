@@ -4,13 +4,18 @@
 
 #include "components/payments/content/secure_payment_confirmation_app.h"
 
+#include <sstream>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/containers/flat_tree.h"
+#include "base/json/json_writer.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payer_data.h"
@@ -30,7 +35,7 @@ SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
     const std::string& effective_relying_party_identity,
     std::unique_ptr<SkBitmap> icon,
     const base::string16& label,
-    std::vector<std::unique_ptr<std::vector<uint8_t>>> credential_ids,
+    std::vector<uint8_t> credential_id,
     const url::Origin& merchant_origin,
     const mojom::PaymentCurrencyAmountPtr& total,
     mojom::SecurePaymentConfirmationRequestPtr request,
@@ -39,14 +44,13 @@ SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
       effective_relying_party_identity_(effective_relying_party_identity),
       icon_(std::move(icon)),
       label_(label),
-      credential_ids_(std::move(credential_ids)),
+      credential_id_(std::move(credential_id)),
+      encoded_credential_id_(base::Base64Encode(credential_id_)),
       merchant_origin_(merchant_origin),
       total_(total.Clone()),
       request_(std::move(request)),
       authenticator_(std::move(authenticator)) {
-  DCHECK(!credential_ids_.empty());
-  DCHECK(credential_ids_.front());
-  DCHECK(!credential_ids_.front()->empty());
+  DCHECK(!credential_id_.empty());
 
   app_method_names_.insert(methods::kSecurePaymentConfirmation);
 }
@@ -55,11 +59,9 @@ SecurePaymentConfirmationApp::~SecurePaymentConfirmationApp() = default;
 
 void SecurePaymentConfirmationApp::InvokePaymentApp(Delegate* delegate) {
   std::vector<device::PublicKeyCredentialDescriptor> credentials;
-  for (const auto& credential_id : credential_ids_) {
-    credentials.emplace_back(device::CredentialType::kPublicKey, *credential_id,
-                             base::flat_set<device::FidoTransportProtocol>{
-                                 device::FidoTransportProtocol::kInternal});
-  }
+  credentials.emplace_back(device::CredentialType::kPublicKey, credential_id_,
+                           base::flat_set<device::FidoTransportProtocol>{
+                               device::FidoTransportProtocol::kInternal});
 
   auto options = blink::mojom::PublicKeyCredentialRequestOptions::New();
   options->relying_party_id = effective_relying_party_identity_;
@@ -119,7 +121,7 @@ bool SecurePaymentConfirmationApp::NeedsInstallation() const {
 }
 
 std::string SecurePaymentConfirmationApp::GetId() const {
-  return request_->instrument_id;
+  return encoded_credential_id_;
 }
 
 base::string16 SecurePaymentConfirmationApp::GetLabel() const {
@@ -178,24 +180,60 @@ void SecurePaymentConfirmationApp::OnPaymentDetailsNotUpdated() {
 
 void SecurePaymentConfirmationApp::AbortPaymentApp(
     base::OnceCallback<void(bool)> abort_callback) {
-  authenticator_->Cancel();
-  std::move(abort_callback).Run(/*abort_success=*/true);
+  std::move(abort_callback).Run(/*abort_success=*/false);
 }
 
 void SecurePaymentConfirmationApp::OnGetAssertion(
     Delegate* delegate,
     blink::mojom::AuthenticatorStatus status,
     blink::mojom::GetAssertionAuthenticatorResponsePtr response) {
-  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
-    delegate->OnInstrumentDetailsError("Authentication failure.");
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS || !response) {
+    std::stringstream status_string_stream;
+    status_string_stream << status;
+    delegate->OnInstrumentDetailsError(base::StringPrintf(
+        "Authenticator returned %s.", status_string_stream.str().c_str()));
     return;
   }
 
-  // TODO(https://crbug.com/1110324): Serialize response into a JSON string.
-  // Browser will pass this string over Mojo IPC into Blink, which will parse it
-  // into a JavaScript object for the merchant.
-  std::string json_serialized_response = "{\"status\": \"success\"}";
+  // Serialize response into a JSON string. Browser will pass this string over
+  // Mojo IPC into Blink, which will parse it into a JavaScript object for the
+  // merchant.
+  auto info_json = std::make_unique<base::DictionaryValue>();
+  if (response->info) {
+    info_json->SetString("id", response->info->id);
+    info_json->SetString("client_data_json",
+                         base::Base64Encode(response->info->client_data_json));
+    info_json->SetString(
+        "authenticator_data",
+        base::Base64Encode(response->info->authenticator_data));
+  }
 
+  auto prf_results_json = std::make_unique<base::DictionaryValue>();
+  if (response->prf_results) {
+    DCHECK(!response->prf_results->id.has_value());
+    prf_results_json->SetString(
+        "first", base::Base64Encode(response->prf_results->first));
+    if (response->prf_results->second) {
+      prf_results_json->SetString(
+          "second", base::Base64Encode(*response->prf_results->second));
+    }
+  }
+
+  base::DictionaryValue json;
+  json.Set("info", std::move(info_json));
+  json.SetString("signature", base::Base64Encode(response->signature));
+  if (response->user_handle.has_value()) {
+    json.SetString("user_handle",
+                   base::Base64Encode(response->user_handle.value()));
+  }
+  json.SetBoolean("echo_appid_extension", response->echo_appid_extension);
+  json.SetBoolean("appid_extension", response->appid_extension);
+  json.SetBoolean("echo_prf", response->echo_prf);
+  json.Set("prf_results", std::move(prf_results_json));
+  json.SetBoolean("prf_not_evaluated", response->echo_prf);
+
+  std::string json_serialized_response;
+  base::JSONWriter::Write(json, &json_serialized_response);
   delegate->OnInstrumentDetailsReady(methods::kSecurePaymentConfirmation,
                                      json_serialized_response, PayerData());
 }

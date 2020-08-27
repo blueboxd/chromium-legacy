@@ -61,6 +61,7 @@ static_library("content") {
     "//components/strings:components_strings_grit",
     "//components/ukm/content",
     "//components/url_formatter",
+    "//components/webdata/common",
     "//content/public/browser",
     "//device/fido",
     "//third_party/blink/public:blink_headers",
@@ -102,8 +103,6 @@ static_library("content") {
       "secure_payment_confirmation_controller.h",
       "secure_payment_confirmation_model.cc",
       "secure_payment_confirmation_model.h",
-      "secure_payment_confirmation_payment_request_delegate.cc",
-      "secure_payment_confirmation_payment_request_delegate.h",
     ]
   }
 }

@@ -1844,6 +1844,24 @@
             ]
         }
     ],
+    "DesktopTabGroupsCollapse": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGroupsCollapse"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesynchronizedScrolling": [
         {
             "platforms": [
@@ -2965,30 +2983,6 @@
                     "enable_features": [
                         "GwpAsanMalloc",
                         "GwpAsanPartitionAlloc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HTTPDangerWarning": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "enabled",
-                    "params": {
-                        "treatment": "danger-warning"
-                    },
-                    "enable_features": [
-                        "MarkHttpAs"
                     ]
                 }
             ]
@@ -4818,27 +4812,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxSuggestionsWrapAround"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptOutWebRTCFromAllThrottling": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OptOutWebRTCFromAllThrottling"
                     ]
                 }
             ]

@@ -517,6 +517,71 @@ TEST_F(AccessibilityTest, AxNodeObjectContainsInPageLinkTarget) {
   EXPECT_EQ(anchor->Url(), KURL("http://test.com/#target"));
 }
 
+TEST_F(AccessibilityTest, AxNodeObjectInPageLinkTargetNonAscii) {
+  GetDocument().SetURL(KURL("http://test.com"));
+  // ö is U+00F6 which URI encodes to %C3%B6
+  //
+  // This file is forced to be UTF-8 by the build system,
+  // the uR"" will create char16_t[] of UTF-16,
+  // WTF::String will wrap the char16_t* as UTF-16.
+  // All this is checked by ensuring a match against u"\u00F6".
+  //
+  // TODO(1117212): The escaped version currently takes precedence.
+  //  <h1 id="%C3%B6">O2</h1>
+  SetBodyInnerHTML(
+      uR"HTML(
+    <a href="#ö" id="anchor">O</a>
+    <h1 id="ö">O</h1>"
+    <a href="#t%6Fp" id="top_test">top</a>"
+    <a href="#" id="empty_test">also top</a>");
+  )HTML");
+
+  {
+    // anchor
+    const AXObject* anchor = GetAXObjectByElementId("anchor");
+    ASSERT_NE(nullptr, anchor);
+
+    EXPECT_FALSE(anchor->Url().IsEmpty());
+    EXPECT_EQ(anchor->Url(), KURL(u"http://test.com/#\u00F6"));
+
+    const AXObject* target = anchor->InPageLinkTarget();
+    ASSERT_NE(nullptr, target);
+
+    auto* targetElement = DynamicTo<Element>(target->GetNode());
+    ASSERT_NE(nullptr, target);
+    ASSERT_TRUE(targetElement->HasID());
+    EXPECT_EQ(targetElement->IdForStyleResolution(), String(u"\u00F6"));
+  }
+
+  {
+    // top_test
+    const AXObject* anchor = GetAXObjectByElementId("top_test");
+    ASSERT_NE(nullptr, anchor);
+
+    EXPECT_FALSE(anchor->Url().IsEmpty());
+    EXPECT_EQ(anchor->Url(), KURL(u"http://test.com/#t%6Fp"));
+
+    const AXObject* target = anchor->InPageLinkTarget();
+    ASSERT_NE(nullptr, target);
+
+    EXPECT_EQ(&GetDocument(), target->GetNode());
+  }
+
+  {
+    // empty_test
+    const AXObject* anchor = GetAXObjectByElementId("empty_test");
+    ASSERT_NE(nullptr, anchor);
+
+    EXPECT_FALSE(anchor->Url().IsEmpty());
+    EXPECT_EQ(anchor->Url(), KURL(u"http://test.com/#"));
+
+    const AXObject* target = anchor->InPageLinkTarget();
+    ASSERT_NE(nullptr, target);
+
+    EXPECT_EQ(&GetDocument(), target->GetNode());
+  }
+}
+
 TEST_P(ParameterizedAccessibilityTest, NextOnLine) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -614,21 +679,17 @@ TEST_F(AccessibilityTest, CheckNoDuplicateChildren) {
       ax_select->FirstChildIncludingIgnored()->ChildCountIncludingIgnored(), 1);
 }
 
-TEST_F(AccessibilityTest, InitRelationCache) {
-  // All of the other tests already have accessibility initialized
+TEST_F(AccessibilityTest, InitRelationCacheLabelFor) {
+  // Most other tests already have accessibility initialized
   // first, but we don't want to in this test.
   //
   // Get rid of the AXContext so the AXObjectCache is destroyed.
   ax_context_.reset(nullptr);
 
   SetBodyInnerHTML(R"HTML(
-      <ul id="ul" aria-owns="li"></ul>
       <label for="a"></label>
       <input id="a">
       <input id="b">
-      <div role="section" id="div">
-        <li id="li"></li>
-      </div>
     )HTML");
 
   // Now recreate an AXContext, simulating what happens if accessibility
@@ -641,11 +702,32 @@ TEST_F(AccessibilityTest, InitRelationCache) {
   ASSERT_NE(nullptr, input_a);
   const AXObject* input_b = GetAXObjectByElementId("b");
   ASSERT_NE(nullptr, input_b);
+}
 
-  EXPECT_TRUE(GetAXObjectCache().MayHaveHTMLLabel(
-      To<HTMLElement>(*input_a->GetNode())));
-  EXPECT_FALSE(GetAXObjectCache().MayHaveHTMLLabel(
-      To<HTMLElement>(*input_b->GetNode())));
+TEST_F(AccessibilityTest, InitRelationCacheAriaOwns) {
+  // Most other tests already have accessibility initialized
+  // first, but we don't want to in this test.
+  //
+  // Get rid of the AXContext so the AXObjectCache is destroyed.
+  ax_context_.reset(nullptr);
+
+  SetBodyInnerHTML(R"HTML(
+      <ul id="ul" aria-owns="li"></ul>
+      <div role="section" id="div">
+        <li id="li"></li>
+      </div>
+    )HTML");
+
+  // Now recreate an AXContext, simulating what happens if accessibility
+  // is enabled after the document is loaded.
+  ax_context_.reset(new AXContext(GetDocument()));
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+
+  // Perform deferred processing so that aria-owns children are attached.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInAccessibility);
+  GetAXObjectCache().ProcessDeferredAccessibilityEvents(GetDocument());
 
   // Note: retrieve the LI first and check that its parent is not
   // the paragraph element. If we were to retrieve the UL element,

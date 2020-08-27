@@ -294,29 +294,6 @@
             ]
         }
     ],
-    "AutofillCompany": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "RejectBirthyearAndSocialTitleAsCompany_20200210",
-                    "enable_features": [
-                        "AutofillEnableCompanyName",
-                        "AutofillRejectCompanyBirthyear",
-                        "AutofillRejectCompanySocialTitle"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillCreditCardAuthentication": [
         {
             "platforms": [
@@ -488,6 +465,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillRefreshStyleAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillSkipFillingFieldsWithChangedValues": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled",
+                    "enable_features": [
+                        "AutofillSkipFillingFieldsWithChangedValues"
                     ]
                 }
             ]
@@ -2236,6 +2234,21 @@
                     "enable_features": [
                         "EduCoexistence",
                         "EduCoexistenceConsentLog"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableAutofillPasswordReauthIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableAutofillPasswordReauthIOS"
                     ]
                 }
             ]
@@ -6084,6 +6097,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabledForAllAndroidDevices"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupEnabledIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabled"
                     ]
                 }
             ]

@@ -1428,8 +1428,8 @@ const char kTextureLayerSkipWaitForActivationDescription[] =
 
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
-    "Enable notification indicators, which appear on shelf app icons when a "
-    "notification is active.";
+    "Enable notification indicators, which appear on shelf app icons and "
+    "launcher apps when a notification is active.";
 
 const char kNotificationSchedulerDebugOptionName[] =
     "Notification scheduler debug options";
@@ -1572,6 +1572,11 @@ const char kOmniboxRichAutocompletionShowAdditionalTextName[] =
 const char kOmniboxRichAutocompletionShowAdditionalTextDescription[] =
     "Show the suggestion title or URL additional text when the input matches "
     "the URL or title respectively. Defaults to true.";
+const char kOmniboxRichAutocompletionPromisingName[] =
+    "Omnibox Rich Autocompletion Promising Combinations";
+const char kOmniboxRichAutocompletionPromisingDescription[] =
+    "Allow autocompletion for titles and non-prefixes; see Omnibox Rich "
+    "Autocompletion.";
 
 const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
 const char kOmniboxOnFocusSuggestionsDescription[] =

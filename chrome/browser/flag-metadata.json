@@ -3411,6 +3411,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-rich-autocompletion-promising",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-rich-autocompletion-show-additional-text",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -3796,7 +3801,7 @@
   {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "raw-clipboard",

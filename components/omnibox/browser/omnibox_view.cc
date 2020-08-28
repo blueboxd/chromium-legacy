@@ -164,13 +164,13 @@ bool OmniboxView::IsEditingOrEmpty() const {
 // icons. OmniboxPopupModel::GetMatchIcon also doesn't display default search
 // provider icons. It's possible they have other inconsistencies as well. We may
 // want to consider reusing the same code for both the popup and omnibox icons.
-gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
+ui::ImageModel OmniboxView::GetIcon(int dip_size,
                                     SkColor color,
                                     IconFetchedCallback on_icon_fetched) const {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // This is used on desktop only.
   NOTREACHED();
-  return gfx::ImageSkia();
+  return ui::ImageModel();
 #else
 
   // For tests, model_ will be null.
@@ -178,13 +178,13 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     AutocompleteMatch fake_match;
     fake_match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
     const gfx::VectorIcon& vector_icon = fake_match.GetVectorIcon(false);
-    return gfx::CreateVectorIcon(vector_icon, dip_size, color);
+    return ui::ImageModel::FromVectorIcon(vector_icon, dip_size, color);
   }
 
   if (model_->ShouldShowCurrentPageIcon()) {
     LocationBarModel* location_bar_model = controller_->GetLocationBarModel();
-    return gfx::CreateVectorIcon(location_bar_model->GetVectorIcon(), dip_size,
-                                 color);
+    return ui::ImageModel::FromVectorIcon(location_bar_model->GetVectorIcon(),
+                                          dip_size, color);
   }
 
   gfx::Image favicon;
@@ -201,7 +201,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   }
 
   if (!favicon.IsEmpty())
-    return model_->client()->GetSizedIcon(favicon).AsImageSkia();
+    return ui::ImageModel::FromImage(model_->client()->GetSizedIcon(favicon));
   // If the client returns an empty favicon, fall through to provide the
   // generic vector icon. |on_icon_fetched| may or may not be called later.
   // If it's never called, the vector icon we provide below should remain.
@@ -214,7 +214,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
 
   const gfx::VectorIcon& vector_icon = match.GetVectorIcon(is_bookmarked);
 
-  return gfx::CreateVectorIcon(vector_icon, dip_size, color);
+  return ui::ImageModel::FromVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
@@ -262,7 +262,9 @@ void OmniboxView::GetState(State* state) {
   state->keyword = model()->keyword();
   state->is_keyword_selected = model()->is_keyword_selected();
   GetSelectionBounds(&state->sel_start, &state->sel_end);
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix())
+  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixAll() ||
+      OmniboxFieldTrial::
+          RichAutocompletionAutocompleteNonPrefixShortcutProvider())
     state->all_sel_length = GetAllSelectionsLength();
 }
 
@@ -296,7 +298,9 @@ OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
   state_changes.just_deleted_text =
       before.text.length() > after.text.length() &&
       after.sel_start <= std::min(before.sel_start, before.sel_end);
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix()) {
+  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixAll() ||
+      OmniboxFieldTrial::
+          RichAutocompletionAutocompleteNonPrefixShortcutProvider()) {
     state_changes.just_deleted_text =
         state_changes.just_deleted_text &&
         after.sel_start <=

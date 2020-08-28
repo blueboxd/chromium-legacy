@@ -18,6 +18,7 @@
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -203,6 +204,9 @@ void AmbientController::OnAmbientUiVisibilityChanged(
           /*ui_mode=*/ambient_ui_model_.ui_mode(),
           /*tablet_mode=*/Shell::Get()->IsInTabletMode());
 
+      DCHECK(!start_time_);
+      start_time_ = base::Time::Now();
+
       // Resets the monitor and cancels the timer upon shown.
       inactivity_monitor_.reset();
 
@@ -236,6 +240,17 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // Should do nothing if the wake lock has already been released.
       ReleaseWakeLock();
 
+      // |start_time_| may be empty in case of |AmbientUiVisibility::kHidden| if
+      // ambient mode has just started.
+      if (start_time_) {
+        auto elapsed = base::Time::Now() - start_time_.value();
+        DVLOG(2) << "Exit ambient mode. Elapsed time: " << elapsed;
+        ambient::RecordAmbientModeTimeElapsed(
+            /*time_delta=*/elapsed,
+            /*tablet_mode=*/Shell::Get()->IsInTabletMode());
+        start_time_.reset();
+      }
+
       if (visibility == AmbientUiVisibility::kHidden) {
         // Creates the monitor and starts the auto-show timer upon hidden.
         DCHECK(!inactivity_monitor_);
@@ -262,6 +277,16 @@ void AmbientController::OnAutoShowTimeOut() {
 
   // Show ambient screen after time out.
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
+}
+
+void AmbientController::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  // Only registers for primary prefs as Ambient Mode is only available for
+  // primary profile.
+  PrefService* primary_user_prefs =
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  if (primary_user_prefs == pref_service)
+    RegisterPrefChanges(primary_user_prefs);
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
@@ -531,6 +556,31 @@ void AmbientController::StartRefreshingImages() {
 
 void AmbientController::StopRefreshingImages() {
   ambient_photo_controller_.StopScreenUpdate();
+}
+
+void AmbientController::RegisterPrefChanges(PrefService* pref_service) {
+  DCHECK(pref_service);
+
+  // Registers preference changes.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service);
+  pref_change_registrar_->Add(
+      ash::ambient::prefs::kAmbientModeEnabled,
+      base::BindRepeating(&AmbientController::OnEnabledStateChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AmbientController::OnEnabledStateChanged() {
+  auto enabled = pref_change_registrar_->prefs()->GetBoolean(
+      ash::ambient::prefs::kAmbientModeEnabled);
+
+  // Initiates settings for ambient service upon enabled.
+  if (enabled) {
+    ambient_backend_controller_->InitSettings(base::BindOnce([](bool success) {
+      if (!success)
+        LOG(ERROR) << "Failed to initiate settings for ambient service.";
+    }));
+  }
 }
 
 void AmbientController::set_backend_controller_for_testing(

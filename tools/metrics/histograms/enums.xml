@@ -8032,6 +8032,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Present"/>
 </enum>
 
+<enum name="BooleanPreviouslyShown">
+  <int value="0" label="Never shown"/>
+  <int value="1" label="Previously shown"/>
+</enum>
+
 <enum name="BooleanPreviouslyVisited">
   <int value="0" label="Was not visited before"/>
   <int value="1" label="Was visited before"/>
@@ -22087,6 +22092,7 @@ Called by update_document_policy_enum.py.-->
   <int value="17" label="GestureTapDown"/>
   <int value="18" label="GestureTapUnconfirmed"/>
   <int value="19" label="GestureTwoFingerTap"/>
+  <int value="20" label="FirstGestureScrollUpdate"/>
 </enum>
 
 <enum name="EventLatencyScrollInputType">

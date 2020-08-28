@@ -2556,6 +2556,11 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-overflow/clip-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-lists/counter-list-item-2.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/clip-005.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/clip-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/clip-003.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/pageshow-event.window.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
@@ -6639,3 +6644,5 @@ crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-feat
 # Sheriff 2020-08-26
 crbug.com/1122106 external/wpt/webrtc/protocol/crypto-suite.https.html [ Pass Timeout ]
 crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
+
+crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Pass Failure ]

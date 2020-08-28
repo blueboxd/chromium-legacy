@@ -125,7 +125,6 @@
     },
     {
       name: "AccessibilityExposeHTMLElement",
-      status: "experimental",
     },
     {
       name: "AccessibilityObjectModel",
@@ -1973,6 +1972,10 @@
       name: "VisibilityCollapseColumn",
     },
     {
+      name: "VisibilityStateEntry",
+      status: "experimental",
+    },
+    {
       name: "WakeLock",
       origin_trial_feature_name: "WakeLock",
       implied_by: ['ScreenWakeLock', 'SystemWakeLock'],
@@ -2085,9 +2088,10 @@
       origin_trial_feature_name: "WebScheduler",
       status: "experimental",
     },
+    // WebShare is enabled by default on Android.
     {
       name: "WebShare",
-      status:  {"Android": "stable", "default": "test"},
+      status: "test",
     },
     {
       name: "WebSocketStream",

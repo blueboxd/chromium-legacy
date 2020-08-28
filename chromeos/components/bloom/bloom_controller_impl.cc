@@ -4,40 +4,69 @@
 
 #include "chromeos/components/bloom/bloom_controller_impl.h"
 
-#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "base/logging.h"
+#include "chromeos/components/bloom/bloom_interaction.h"
+#include "chromeos/components/bloom/screenshot_grabber.h"
 
 namespace chromeos {
 namespace bloom {
 
 BloomControllerImpl::BloomControllerImpl(
     signin::IdentityManager* identity_manager,
-    ash::AssistantInteractionController* assistant_interaction_controller)
+    std::unique_ptr<ScreenshotGrabber> screenshot_grabber)
     : identity_manager_(identity_manager),
-      assistant_interaction_controller_(assistant_interaction_controller) {
+      screenshot_grabber_(std::move(screenshot_grabber)) {
   DCHECK(identity_manager_);
-  DCHECK(assistant_interaction_controller_);
+  DCHECK(screenshot_grabber_);
 }
 
 BloomControllerImpl::~BloomControllerImpl() = default;
 
 void BloomControllerImpl::StartInteraction() {
-  // TODO(jeroendh): Implement
+  DCHECK(!current_interaction_);
+
+  DVLOG(1) << "Starting Bloom interaction";
+
+  current_interaction_ = std::make_unique<BloomInteraction>(this);
+  current_interaction_->Start();
+
+  for (auto& observer : interaction_observers_)
+    observer.OnInteractionStarted();
 }
 
-bool BloomControllerImpl::HasInteraction() const {
-  // TODO(jeroendh): Implement
-  return true;
+void BloomControllerImpl::ShowUI() {
+  for (auto& observer : interaction_observers_)
+    observer.OnShowUI();
 }
 
 void BloomControllerImpl::StopInteraction(
     BloomInteractionResolution resolution) {
-  // TODO(jeroendh): Implement
-  last_interaction_resolution_ = resolution;
+  DCHECK(current_interaction_);
+
+  DVLOG(1) << "Stopping Bloom interaction with resolution "
+           << ToString(resolution);
+
+  current_interaction_ = nullptr;
+
+  for (auto& observer : interaction_observers_)
+    observer.OnInteractionFinished(resolution);
 }
 
-BloomInteractionResolution BloomControllerImpl::GetLastInteractionResolution()
-    const {
-  return last_interaction_resolution_;
+void BloomControllerImpl::AddObserver(BloomInteractionObserver* observer) {
+  DCHECK(observer);
+  interaction_observers_.AddObserver(observer);
+}
+
+void BloomControllerImpl::AddObserver(
+    std::unique_ptr<BloomInteractionObserver> observer) {
+  AddObserver(observer.get());
+  owned_interaction_observers_.push_back(std::move(observer));
+}
+
+void BloomControllerImpl::SetScreenshotGrabberForTesting(
+    std::unique_ptr<ScreenshotGrabber> screenshot_grabber) {
+  DCHECK(screenshot_grabber);
+  screenshot_grabber_ = std::move(screenshot_grabber);
 }
 
 }  // namespace bloom

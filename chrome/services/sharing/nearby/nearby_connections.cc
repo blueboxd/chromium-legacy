@@ -24,7 +24,7 @@ ConnectionRequestInfo CreateConnectionRequestInfo(
   mojo::SharedRemote<mojom::ConnectionLifecycleListener> remote(
       std::move(listener));
   return ConnectionRequestInfo{
-      .name = std::string(endpoint_info.begin(), endpoint_info.end()),
+      .endpoint_info = ByteArrayFromMojom(endpoint_info),
       .listener = {
           .initiated_cb =
               [remote](const std::string& endpoint_id,
@@ -37,7 +37,7 @@ ConnectionRequestInfo CreateConnectionRequestInfo(
                     mojom::ConnectionInfo::New(
                         info.authentication_token,
                         ByteArrayToMojom(info.raw_authentication_token),
-                        ByteArrayToMojom(info.endpoint_info),
+                        ByteArrayToMojom(info.remote_endpoint_info),
                         info.is_incoming_connection));
               },
           .accepted_cb =
@@ -196,14 +196,9 @@ void NearbyConnections::StartAdvertising(
     mojom::AdvertisingOptionsPtr options,
     mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
     StartAdvertisingCallback callback) {
-  BooleanMediumSelector allowed_mediums = {
-      .bluetooth = options->allowed_mediums->bluetooth,
-      .web_rtc = options->allowed_mediums->web_rtc,
-      .wifi_lan = options->allowed_mediums->wifi_lan,
-  };
   ConnectionOptions connection_options{
       .strategy = StrategyFromMojom(options->strategy),
-      .allowed = std::move(allowed_mediums),
+      .allowed = MediumSelectorFromMojom(options->allowed_mediums.get()),
       .auto_upgrade_bandwidth = options->auto_upgrade_bandwidth,
       .enforce_topology_constraints = options->enforce_topology_constraints,
   };
@@ -230,7 +225,7 @@ void NearbyConnections::StartDiscovery(
   DiscoveryListener discovery_listener{
       .endpoint_found_cb =
           [remote](const std::string& endpoint_id,
-                   const std::string& endpoint_name,
+                   const ByteArray& endpoint_info,
                    const std::string& service_id) {
             if (!remote) {
               return;
@@ -238,9 +233,7 @@ void NearbyConnections::StartDiscovery(
 
             remote->OnEndpointFound(
                 endpoint_id, mojom::DiscoveredEndpointInfo::New(
-                                 std::vector<uint8_t>(endpoint_name.begin(),
-                                                      endpoint_name.end()),
-                                 service_id));
+                                 ByteArrayToMojom(endpoint_info), service_id));
           },
       .endpoint_lost_cb =
           [remote](const std::string& endpoint_id) {
@@ -264,11 +257,19 @@ void NearbyConnections::StopDiscovery(StopDiscoveryCallback callback) {
 void NearbyConnections::RequestConnection(
     const std::vector<uint8_t>& endpoint_info,
     const std::string& endpoint_id,
+    mojom::ConnectionOptionsPtr options,
     mojo::PendingRemote<mojom::ConnectionLifecycleListener> listener,
     RequestConnectionCallback callback) {
+  ConnectionOptions connection_options{
+      .allowed = MediumSelectorFromMojom(options->allowed_mediums.get())};
+  if (options->remote_bluetooth_mac_address) {
+    connection_options.remote_bluetooth_mac_address =
+        ByteArrayFromMojom(*options->remote_bluetooth_mac_address);
+  }
   core_->RequestConnection(
       endpoint_id,
       CreateConnectionRequestInfo(endpoint_info, std::move(listener)),
+      std::move(connection_options),
       ResultCallbackFromMojom(std::move(callback)));
 }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/constants/chromeos_features.h"
+#include "base/feature_list.h"
 
 namespace chromeos {
 namespace features {
@@ -70,7 +71,7 @@ extern const base::Feature kAvatarToolbarButton{
 // estimates of the update stages.
 // https://crbug.com/1101317
 const base::Feature kBetterUpdateScreen{"BetterUpdateScreen",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
@@ -229,6 +230,11 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 // v.
 const base::Feature kClipboardHistory{"ClipboardHistory",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables copying an image to the system clipboard to support pasting onto
+// different surfaces
+const base::Feature kEnableFilesAppCopyImage{"EnableFilesAppCopyImage",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to launch IME service with an 'ime' sandbox.
 const base::Feature kEnableImeSandbox{"EnableImeSandbox",

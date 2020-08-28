@@ -1173,6 +1173,9 @@ extern const char kScrollableTabStripDescription[];
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
 
+extern const char kSecurePaymentConfirmationDebugName[];
+extern const char kSecurePaymentConfirmationDebugDescription[];
+
 extern const char kSendTabToSelfOmniboxSendingAnimationName[];
 extern const char kSendTabToSelfOmniboxSendingAnimationDescription[];
 
@@ -2338,6 +2341,9 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
 extern const char kExperimentalAccessibilityCursorColorsName[];
 extern const char kExperimentalAccessibilityCursorColorsDescription[];
+
+extern const char kFilesAppCopyImageName[];
+extern const char kFilesAppCopyImageDescription[];
 
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];

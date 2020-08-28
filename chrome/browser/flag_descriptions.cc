@@ -2025,6 +2025,13 @@ const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
     "Does not affect behavior or performance.";
 
+const char kSecurePaymentConfirmationDebugName[] =
+    "Secure Payment Confirmation Debug Mode";
+const char kSecurePaymentConfirmationDebugDescription[] =
+    "This flag removes the restriction that PaymentCredential in WebAuthn and "
+    "secure payment confirmation in PaymentRequest API must use user verifying "
+    "platform authenticators.";
+
 const char kSendTabToSelfOmniboxSendingAnimationName[] =
     "Send tab to self omnibox sending animation";
 const char kSendTabToSelfOmniboxSendingAnimationDescription[] =
@@ -4031,6 +4038,10 @@ const char kExperimentalAccessibilityCursorColorsName[] =
 const char kExperimentalAccessibilityCursorColorsDescription[] =
     "Enable experimental feature which allows setting cursor color in "
     "Accessibility settings.";
+
+const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
+const char kFilesAppCopyImageDescription[] =
+    "Enables the Files App to copy images selected to the system clipboard";
 
 const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =

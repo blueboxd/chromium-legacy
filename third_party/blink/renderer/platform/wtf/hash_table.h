@@ -219,12 +219,6 @@ template <typename Key,
           typename KeyTraits,
           typename Allocator>
 class HashTableConstIterator;
-// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
-template <typename Value,
-          typename HashFunctions,
-          typename HashTraits,
-          typename Allocator>
-class LegacyLinkedHashSet;
 template <WeakHandlingFlag x,
           typename T,
           typename U,
@@ -1019,9 +1013,6 @@ class HashTable final
             typename Y,
             typename Z>
   friend struct WeakProcessingHashTableHelper;
-  // TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
-  template <typename T, typename U, typename V, typename W>
-  friend class LegacyLinkedHashSet;
   template <typename T, size_t, typename U, typename V>
   friend class ListHashSet;
 };
@@ -1795,7 +1786,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     }
   }
   table_ = temporary_table;
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
+  Allocator::template BackingWriteBarrier(&table_);
 
   if (Traits::kEmptyValueIsZero) {
     memset(original_table, 0, new_table_size * sizeof(ValueType));
@@ -1853,7 +1844,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   // This swaps the newly allocated buffer with the current one. The store to
   // the current table has to be atomic to prevent races with concurrent marker.
   AsAtomicPtr(&table_)->store(new_hash_table.table_, std::memory_order_relaxed);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
+  Allocator::template BackingWriteBarrier(&table_);
   table_size_ = new_table_size;
 
   new_hash_table.table_ = old_table;
@@ -2021,8 +2012,8 @@ void HashTable<Key,
   // on the mutator thread, which is also the only one that writes to them, so
   // there is *no* risk of data races when reading.
   AtomicWriteSwap(table_, other.table_);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&other.table_);
+  Allocator::template BackingWriteBarrier(&table_);
+  Allocator::template BackingWriteBarrier(&other.table_);
   if (IsWeak<ValueType>::value) {
     // Weak processing is omitted when no backing store is present. In case such
     // an empty table is later on used it needs to be strongified.

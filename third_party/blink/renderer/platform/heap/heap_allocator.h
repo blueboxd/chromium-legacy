@@ -108,14 +108,6 @@ class PLATFORM_EXPORT HeapAllocator {
     MarkingVisitor::WriteBarrier(slot);
   }
 
-  template <typename HashTable, typename T>
-  static void BackingWriteBarrierForHashTable(T** slot) {
-    if (MarkingVisitor::WriteBarrier(slot)) {
-      AddMovingCallback<HashTable>(
-          static_cast<typename HashTable::ValueType*>(*slot));
-    }
-  }
-
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
     return reinterpret_cast<Return>(
@@ -271,22 +263,6 @@ class PLATFORM_EXPORT HeapAllocator {
         ->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
     return address;
   }
-
-  template <
-      typename HashTable,
-      std::enable_if_t<HashTable::ValueTraits::kHasMovingCallback>* = nullptr>
-  static void AddMovingCallback(typename HashTable::ValueType* memory) {
-    ThreadState* thread_state = ThreadState::Current();
-    auto* visitor = thread_state->CurrentVisitor();
-    DCHECK(visitor);
-    HashTable::ValueTraits::template RegisterMovingCallback<HashTable>(visitor,
-                                                                       memory);
-  }
-
-  template <
-      typename HashTable,
-      std::enable_if_t<!HashTable::ValueTraits::kHasMovingCallback>* = nullptr>
-  static void AddMovingCallback(typename HashTable::ValueType*) {}
 
   static void BackingFree(void*);
   static bool BackingExpand(void*, size_t);
@@ -473,48 +449,6 @@ class HeapHashSet
 template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V>>
     : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {};
-
-// IMPORTANT! Do not use this class, unless you need to work around a
-// HeapLinkedHashSet issue. Contact chrome-memory-tok@ if you do.
-// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
-template <typename ValueArg,
-          typename HashArg = typename DefaultHash<ValueArg>::Hash,
-          typename TraitsArg = HashTraits<ValueArg>>
-class HeapLegacyLinkedHashSet
-    : public LegacyLinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
-  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
-  DISALLOW_NEW();
-  // HeapLegacyLinkedHashSet is using custom callbacks for compaction that rely
-  // on the fact that the container itself does not move.
-  DISALLOW_IN_CONTAINER();
-
-  static void CheckType() {
-    static_assert(
-        internal::IsMemberOrWeakMemberType<ValueArg>,
-        "HeapLegacyLinkedHashSet supports only Member and WeakMember.");
-    static_assert(
-        IsAllowedInContainer<ValueArg>::value,
-        "Not allowed to directly nest type. Use Member<> indirection instead.");
-    static_assert(
-        WTF::IsTraceable<ValueArg>::value,
-        "For sets without traceable elements, use LegacyLinkedHashSet<> "
-        "instead of HeapLegacyLinkedHashSet<>.");
-  }
-
- public:
-  template <typename>
-  static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<
-        HeapLegacyLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size);
-  }
-
-  HeapLegacyLinkedHashSet() { CheckType(); }
-};
-
-// TODO(bartekn): Remove once fully transitioned to LinkedHashSet.
-template <typename T, typename U, typename V>
-struct GCInfoTrait<HeapLegacyLinkedHashSet<T, U, V>>
-    : public GCInfoTrait<LegacyLinkedHashSet<T, U, V, HeapAllocator>> {};
 
 template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
 class HeapLinkedHashSet

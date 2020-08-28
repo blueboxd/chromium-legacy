@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -66,10 +67,21 @@ base::ScopedFD CreateLogFile() {
       PLOG(ERROR) << "Failed to unlink the log file " << log_path;
       return base::ScopedFD();
     }
+
+    // If log file does not exist, most likely the user directory does not exist
+    // either. So create it here.
+    base::File::Error error;
+    if (!base::CreateDirectoryAndGetError(browser_util::GetUserDataDir(),
+                                          &error)) {
+      LOG(ERROR) << "Failed to make directory "
+                 << browser_util::GetUserDataDir()
+                 << base::File::ErrorToString(error);
+      return base::ScopedFD();
+    }
   }
 
   int fd =
-      HANDLE_EINTR(open(log_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 644));
+      HANDLE_EINTR(open(log_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644));
 
   if (fd < 0) {
     PLOG(ERROR) << "Failed to get file descriptor for " << log_path;
@@ -281,6 +293,7 @@ void BrowserManager::StartWithLogFile(base::ScopedFD logfd) {
           invitation.AttachMessagePipe(0), /*version=*/0));
   lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
       &BrowserManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
+  lacros_chrome_service_->Init(crosapi::mojom::LacrosInitParams::New());
   lacros_chrome_service_->RequestAshChromeServiceReceiver(
       base::BindOnce(&BrowserManager::OnAshChromeServiceReceiverReceived,
                      weak_factory_.GetWeakPtr()));

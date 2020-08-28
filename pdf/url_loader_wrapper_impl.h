@@ -17,18 +17,13 @@
 #include "pdf/url_loader_wrapper.h"
 #include "ui/gfx/range/range.h"
 
-namespace pp {
-class Instance;
-}
-
 namespace chrome_pdf {
 
 class UrlLoader;
 
 class URLLoaderWrapperImpl : public URLLoaderWrapper {
  public:
-  URLLoaderWrapperImpl(pp::Instance* plugin_instance,
-                       scoped_refptr<UrlLoader> url_loader);
+  explicit URLLoaderWrapperImpl(scoped_refptr<UrlLoader> url_loader);
   URLLoaderWrapperImpl(const URLLoaderWrapperImpl&) = delete;
   URLLoaderWrapperImpl& operator=(const URLLoaderWrapperImpl&) = delete;
   ~URLLoaderWrapperImpl() override;
@@ -42,8 +37,8 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
   int GetStatusCode() const override;
   bool IsMultipart() const override;
   bool GetByteRangeStart(int* start) const override;
-  bool GetDownloadProgress(int64_t* bytes_received,
-                           int64_t* total_bytes_to_be_received) const override;
+  bool GetDownloadProgress(int64_t& bytes_received,
+                           int64_t& total_bytes_to_be_received) const override;
   void Close() override;
   void OpenRange(const std::string& url,
                  const std::string& referrer_url,
@@ -64,7 +59,6 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
 
   void ReadResponseBodyImpl(ResultCallback callback);
 
-  pp::Instance* const plugin_instance_;
   scoped_refptr<UrlLoader> url_loader_;
   std::string response_headers_;
 

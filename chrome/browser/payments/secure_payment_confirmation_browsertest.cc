@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -46,26 +49,45 @@ std::string getInvokePaymentRequestSnippet() {
   return base::StringPrintf("getStatusForMethodData(%s)", kTestMethodData);
 }
 
+std::vector<uint8_t> GetEncodedIcon(const std::string& icon_file_name) {
+  base::FilePath base_path;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
+  std::string icon_as_string;
+  base::FilePath icon_file_path =
+      base_path.AppendASCII("components/test/data/payments")
+          .AppendASCII(icon_file_name);
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::PathExists(icon_file_path));
+    CHECK(base::ReadFileToString(icon_file_path, &icon_as_string));
+  }
+
+  return std::vector<uint8_t>(icon_as_string.begin(), icon_as_string.end());
+}
+
 #if !defined(OS_ANDROID)
-static constexpr char kPaymentCreationOptions[] =
-    "var PAYMENT_INSTRUMENT = {"
-    "    displayName: 'display_name_for_instrument',"
-    "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'"
-    "};"
-    "var PUBLIC_KEY_RP = {"
-    "    id: 'a.com',"
-    "    name: 'Acme'"
-    "};"
-    "var PUBLIC_KEY_PARAMETERS =  [{"
-    "    type: 'public-key',"
-    "    alg: -7,"
-    "},];"
-    "var PAYMENT_CREATION_OPTIONS = {"
-    "    rp: PUBLIC_KEY_RP,"
-    "    instrument: PAYMENT_INSTRUMENT,"
-    "    challenge: new TextEncoder().encode('climb a mountain'),"
-    "    pubKeyCredParams: PUBLIC_KEY_PARAMETERS,"
-    "};";
+std::string getPaymentCreationOptions(const std::string& icon_url) {
+  return base::StrCat(
+      {"var PAYMENT_INSTRUMENT = {"
+       "    displayName: 'display_name_for_instrument',"
+       "    icon: '",
+       icon_url,
+       "'};"
+       "var PUBLIC_KEY_RP = {"
+       "    id: 'a.com',"
+       "    name: 'Acme'"
+       "};"
+       "var PUBLIC_KEY_PARAMETERS =  [{"
+       "    type: 'public-key',"
+       "    alg: -7,"
+       "},];"
+       "var PAYMENT_CREATION_OPTIONS = {"
+       "    rp: PUBLIC_KEY_RP,"
+       "    instrument: PAYMENT_INSTRUMENT,"
+       "    challenge: new TextEncoder().encode('climb a mountain'),"
+       "    pubKeyCredParams: PUBLIC_KEY_PARAMETERS,"
+       "};"});
+}
 
 static constexpr char kCreatePaymentCredential[] =
     "navigator.credentials.create({ payment : PAYMENT_CREATION_OPTIONS })"
@@ -135,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/payment_handler_status.html");
   std::vector<uint8_t> credential_id = {'c', 'r', 'e', 'd'};
-  std::vector<uint8_t> icon = {0, 1, 2, 3};
+  std::vector<uint8_t> icon = GetEncodedIcon("icon.png");
   WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()),
       ServiceAccessType::EXPLICIT_ACCESS)
@@ -269,6 +291,10 @@ class SecurePaymentConfirmationCreationTest
     config.internal_uv_support = true;
     virtual_device_factory->SetCtap2Config(config);
   }
+
+  const std::string GetDefaultIconURL() {
+    return https_server()->GetURL("a.com", "/icon.png").spec();
+  }
 };
 
 #if defined(OS_WIN)
@@ -289,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       GetActiveWebContents(),
-      base::StrCat({kPaymentCreationOptions, kCreatePaymentCredential}),
+      base::StrCat({getPaymentCreationOptions(GetDefaultIconURL()),
+                    kCreatePaymentCredential}),
       &result));
   EXPECT_EQ(result, "paymentCredential: OK");
 }
@@ -303,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
           GetActiveWebContents(),
           base::StrCat(
               {"async function createPaymentCredential() {",
-               kPaymentCreationOptions,
+               getPaymentCreationOptions(GetDefaultIconURL()),
                "  const c = await navigator.credentials.create("
                "    {payment: PAYMENT_CREATION_OPTIONS});"
                "  return btoa(String.fromCharCode(...new Uint8Array(c.rawId)));"

@@ -39,6 +39,8 @@ class GroupPolicyManager : public PolicyManagerInterface {
                                         int* install_policy) const override;
   bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
                                        int* update_policy) const override;
+  bool GetTargetChannel(const std::string& app_id,
+                        std::string* channel) const override;
   bool GetTargetVersionPrefix(
       const std::string& app_id,
       std::string* target_version_prefix) const override;

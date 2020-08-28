@@ -111,8 +111,7 @@
               "compositing/filters"
               ],
     "args": ["--stable-release-mode",
-             "--disable-auto-wpt-origin-isolation",
-             "--enable-blink-features=CompositingOptimizations"]
+             "--disable-auto-wpt-origin-isolation"]
   },
   {
     "prefix": "feature-policy-permissions",
@@ -377,9 +376,9 @@
     "args": ["--autoplay-policy=document-user-activation-required"]
   },
   {
-    "prefix": "sxg-subresource",
-    "bases": ["external/wpt/signed-exchange"],
-    "args": ["--enable-features=SignedExchangeSubresourcePrefetch"]
+    "prefix": "sxg-subresource-disabled",
+    "bases": ["http/tests/loading/sxg/sxg-subresource-origin-trial.https.html"],
+    "args": ["--disable-blink-features=SignedExchangeSubresourcePrefetch"]
   },
   {
     "prefix": "wbn-from-network",

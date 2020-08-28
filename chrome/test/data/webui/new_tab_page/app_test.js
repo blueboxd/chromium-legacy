@@ -51,6 +51,7 @@ suite('NewTabPageAppTest', () => {
     testProxy.handler.setResultFor('getOneGoogleBarParts', Promise.resolve({
       parts: null,
     }));
+    testProxy.handler.setResultFor('getPromo', Promise.resolve({promo: null}));
     testProxy.setResultMapperFor('matchMedia', () => ({
                                                  addListener() {},
                                                  removeListener() {},
@@ -411,8 +412,10 @@ suite('NewTabPageAppTest', () => {
       data: {
         frameType: 'one-google-bar',
         messageType: 'execute-browser-command',
-        commandId,
-        clickInfo,
+        data: {
+          commandId,
+          clickInfo,
+        },
       },
       source: window,
       origin: window.origin,

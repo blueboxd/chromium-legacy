@@ -261,7 +261,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   WebContentsView* GetView() const;
 
-  void OnScreensChange();
+  // Called on screen information changes; |is_multi_screen_changed| is true iff
+  // the plurality of connected screens changed (e.g. 1 screen <-> 2 screens).
+  void OnScreensChange(bool is_multi_screen_changed);
+
   void OnScreenOrientationChange();
 
   ScreenOrientationProvider* GetScreenOrientationProviderForTesting() const {
@@ -641,7 +644,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHost* GetFocusedFrameIncludingInnerWebContents() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
-      const gfx::Rect& bounds_in_root_view) override;
+      const gfx::Rect& bounds_in_root_view,
+      blink::mojom::FocusType focus_type) override;
   void OnAdvanceFocus(RenderFrameHostImpl* source_rfh) override;
   RenderFrameHostDelegate* CreateNewWindow(
       RenderFrameHost* opener,

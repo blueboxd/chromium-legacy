@@ -217,6 +217,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRHitTest, features::kWebXrHitTest, kUseFeatureState},
     {wf::EnableWebXRAnchors, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableWebXRCameraAccess, features::kWebXrIncubations, kEnableOnly},
+    {wf::EnableWebXRDepth, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableWebXRLightEstimation, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableWebXRReflectionEstimation, features::kWebXrIncubations,
@@ -603,7 +604,10 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // TODO(rodneyding): Investigate more on proper treatments of
   // these features.
   if (enable_experimental_web_platform_features) {
+    WebRuntimeFeatures::EnableCompositingOptimizations(true);
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
+    WebRuntimeFeatures::EnableSignedExchangePrefetchCacheForNavigations(true);
+    WebRuntimeFeatures::EnableSignedExchangeSubresourcePrefetch(true);
   }
 
   if (enable_blink_test_features) {

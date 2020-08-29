@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5d3314c53ce5c966591f0b02349103f51f986e6e',
+  'skia_revision': '8702b8f4444f849d15b64a3aeccbfcea099b635d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b4efc051da9dc884087f1ace8185d410d4349d02',
+  'angle_revision': 'f71283c987e895f3d004c7472d1d6ad8a74cdcb4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bb9ebe49ad3bf598225dcc1fd4e8e34725ea14ee',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5692b2cbc2f8a4bc16c416b8ec2bb4e0d8dc613b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1551,7 +1551,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'e6UISBIfdcTS7sATnTUvRDyO7rV3PGA8ubhN8f-RejgC',
+        'version': 'R04rsBEeH2QD52I6NpNlr89kXmUPZPdVo_ElSJ4y9_sC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1562,7 +1562,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'MnmDAUwQadNlsA_kV1-e9jcBLwfneTyY3-p7R76j8GAC',
+        'version': 'VabimoNbXIh6u61XiMd1LCTqdNfFPCZq40c1l-IF2fAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

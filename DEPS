@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fc1eb95f39a36483f9b1e790100a1df92fc8e37b',
+  'skia_revision': 'ae1672bdb5c31c6d1a0544ae27eab0f867ff9757',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8aa817bf54f848af3025f39f581d65e1d2f5e41f',
+  'v8_revision': 'fb7c6ea5b0902d0b6de271e61c3cc04f90ad2439',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '167a0f22e2ee3d56fd1439b139947f6bd9887143',
+  'angle_revision': '9100465414a995f418914fdad0503e06ea951266',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '2014e7b9290e36808589eecb5539ab4c1a4843f8',
+  'swiftshader_revision': 'a2e6c1a149f4ee03f46e11afbb72cfa10e5526e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '9ed8d518cacf778853db3af09158a5dfbb85e6c3',
+  'dawn_revision': '0b89b27263b127a46371641b299fdf0f2cd7caff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'e447bc6090479a4b89a2689768a8b05bafffe50c',
+  'quiche_revision': '79b266156ffbd3571ece2abf89bc09091e2e9847',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '68450098ecb0cd7f117603edb0ede50ce3438c81',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'ac3c854dc494a0e15e8b47304ca4ee89b31f528a',
       'condition': 'checkout_ios',
   },
 
@@ -896,7 +896,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '02f6b66357ebdef8675017d91ac2fdef51f78f51',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6c484875cdcbfeba43a4fae0106a1be8ca65eff1',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b1e3f57ef7c09a762b6a621be70b117fc5e73824',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '79257bae3c9a05d9c04220cd9a12f93d90a2d8e7',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7bc80aa34110d6fed4723f3d819f451a7fde3534',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bb235b33d3dde3c131444a412a9db0536eb453fe',
     'condition': 'checkout_src_internal',
   },
 

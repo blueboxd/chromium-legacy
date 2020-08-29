@@ -265,10 +265,6 @@
       status: "stable",
     },
     {
-      name: "BlockFlowHandlesWebkitLineClamp",
-      status: "stable",
-    },
-    {
       name: "BlockHTMLParserOnStyleSheets",
     },
     {
@@ -326,6 +322,10 @@
     },
     {
       name: "ClickRetargetting",
+      status: "experimental",
+    },
+    {
+      name: "ClipboardSvg",
       status: "experimental",
     },
     {

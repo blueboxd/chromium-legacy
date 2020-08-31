@@ -65,6 +65,7 @@ constexpr const char kArcVmMountMyFilesJobName[] = "arcvm_2dmount_2dmyfiles";
 constexpr const char kArcVmMountRemovableMediaJobName[] =
     "arcvm_2dmount_2dremovable_2dmedia";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+constexpr const char kArcVmAdbdJobName[] = "arcvm_2dadbd";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
 constexpr const char kArcVmBootNotificationServerJobName[] =
@@ -83,6 +84,7 @@ constexpr base::TimeDelta kConnectSleepDurationInitial =
 
 base::Optional<base::TimeDelta> g_connect_timeout_limit_for_testing;
 base::Optional<base::TimeDelta> g_connect_sleep_duration_initial_for_testing;
+bool g_enable_adb_over_usb_for_testing = false;
 
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
@@ -367,6 +369,10 @@ std::string DecodeJobName(const std::string& raw_job_name) {
 enum class UpstartOperation {
   JOB_START = 0,
   JOB_STOP,
+  // This sends STOP D-Bus message, then sends START. Unlike 'initctl restart',
+  // this starts the job even when the job hasn't been started yet (and
+  // therefore the stop operation fails.)
+  JOB_STOP_AND_START,
 };
 
 struct JobDesc {
@@ -390,6 +396,13 @@ void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
     return;
   }
 
+  if (jobs.front().operation == UpstartOperation::JOB_STOP_AND_START) {
+    // Expand the restart operation into two, stop and start.
+    jobs.front().operation = UpstartOperation::JOB_START;
+    jobs.push_front({jobs.front().job_name, UpstartOperation::JOB_STOP,
+                     jobs.front().environment});
+  }
+
   const auto& job_name = jobs.front().job_name;
   const auto& operation = jobs.front().operation;
   const auto& environment = jobs.front().environment;
@@ -408,6 +421,9 @@ void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
     case UpstartOperation::JOB_STOP:
       chromeos::UpstartClient::Get()->StopJob(job_name, environment,
                                               std::move(wrapped_callback));
+      break;
+    case UpstartOperation::JOB_STOP_AND_START:
+      NOTREACHED();
       break;
   }
 }
@@ -431,6 +447,16 @@ void OnConfigureUpstartJobs(std::deque<JobDesc> jobs,
           << (is_start ? " started" : (result ? " stopped " : " not running?"));
   jobs.pop_front();
   ConfigureUpstartJobs(std::move(jobs), std::move(callback));
+}
+
+// Returns true if the daemon for adb-over-usb should be started on the device.
+bool ShouldStartAdbd(bool is_dev_mode,
+                     bool is_host_on_vm,
+                     bool has_adbd_json,
+                     bool is_adb_over_usb_disabled) {
+  // Do the same check as ArcSetup::MaybeStartAdbdProxy().
+  return is_dev_mode && !is_host_on_vm && has_adbd_json &&
+         !is_adb_over_usb_disabled;
 }
 
 }  // namespace
@@ -576,6 +602,20 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
     is_dev_mode_ = is_dev_mode;
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce([]() {
+          std::string output;
+          return base::GetAppOutput({"crossystem", "dev_enable_udc?0"},
+                                    &output);
+        }),
+        base::BindOnce(&ArcVmClientAdapter::OnIsAdbOverUsbDisabled,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnIsAdbOverUsbDisabled(chromeos::VoidDBusMethodCallback callback,
+                              bool is_adb_over_usb_disabled) {
+    is_adb_over_usb_disabled_ = is_adb_over_usb_disabled;
     std::deque<JobDesc> jobs{
         // Note: the first Upstart job is a task, and the callback for the start
         // request won't be called until the task finishes. When the callback is
@@ -587,15 +627,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         JobDesc{kArcVmMountMyFilesJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{
             kArcVmMountRemovableMediaJobName, UpstartOperation::JOB_STOP, {}},
-        JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_STOP, {}},
-        JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_START, {}},
-        JobDesc{kArcSensorServiceJobName, UpstartOperation::JOB_STOP, {}},
-        JobDesc{kArcSensorServiceJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_STOP_AND_START, {}},
+        JobDesc{
+            kArcSensorServiceJobName, UpstartOperation::JOB_STOP_AND_START, {}},
         JobDesc{kArcVmBootNotificationServerJobName,
-                UpstartOperation::JOB_STOP,
-                {}},
-        JobDesc{kArcVmBootNotificationServerJobName,
-                UpstartOperation::JOB_START,
+                UpstartOperation::JOB_STOP_AND_START,
                 {}},
     };
     ConfigureUpstartJobs(
@@ -642,34 +678,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    std::vector<std::string> environment = {
-        "CHROMEOS_USER=" +
-        cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
-            .account_id()};
-    std::deque<JobDesc> jobs{
-        JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_START, {}},
-        JobDesc{kArcCreateDataJobName, UpstartOperation::JOB_START,
-                std::move(environment)},
-        JobDesc{kArcVmMountMyFilesJobName, UpstartOperation::JOB_START, {}},
-        JobDesc{
-            kArcVmMountRemovableMediaJobName, UpstartOperation::JOB_START, {}},
-    };
-    ConfigureUpstartJobs(
-        std::move(jobs),
-        base::BindOnce(&ArcVmClientAdapter::OnConfigureUpstartJobsOnUpgradeArc,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
-
-  void OnConfigureUpstartJobsOnUpgradeArc(
-      UpgradeParams params,
-      chromeos::VoidDBusMethodCallback callback,
-      bool result) {
-    if (!result) {
-      LOG(ERROR) << "ConfigureUpstartJobs (on upgrading ARCVM) failed";
-      std::move(callback).Run(false);
-      return;
-    }
     VLOG(2) << "Checking file system status";
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -693,6 +701,47 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
     if (serial_number_.empty()) {
       LOG(ERROR) << "Serial number is not set";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    std::vector<std::string> environment_for_create_data = {
+        "CHROMEOS_USER=" +
+        cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
+            .account_id()};
+    std::deque<JobDesc> jobs{
+        JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{kArcCreateDataJobName, UpstartOperation::JOB_START,
+                std::move(environment_for_create_data)},
+        JobDesc{kArcVmMountMyFilesJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{
+            kArcVmMountRemovableMediaJobName, UpstartOperation::JOB_START, {}},
+    };
+    if (ShouldStartAdbd(*is_dev_mode_, is_host_on_vm_,
+                        file_system_status.has_adbd_json(),
+                        *is_adb_over_usb_disabled_) ||
+        g_enable_adb_over_usb_for_testing) {
+      // Start the daemon for supporting adb-over-usb.
+      std::vector<std::string> environment_for_adbd = {"SERIALNUMBER=" +
+                                                       serial_number_};
+      jobs.emplace_back(JobDesc{kArcVmAdbdJobName,
+                                UpstartOperation::JOB_STOP_AND_START,
+                                std::move(environment_for_adbd)});
+    }
+    ConfigureUpstartJobs(
+        std::move(jobs),
+        base::BindOnce(&ArcVmClientAdapter::OnConfigureUpstartJobsOnUpgradeArc,
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(file_system_status), std::move(callback)));
+  }
+
+  void OnConfigureUpstartJobsOnUpgradeArc(
+      UpgradeParams params,
+      FileSystemStatus file_system_status,
+      chromeos::VoidDBusMethodCallback callback,
+      bool result) {
+    if (!result) {
+      LOG(ERROR) << "ConfigureUpstartJobs (on upgrading ARCVM) failed";
       std::move(callback).Run(false);
       return;
     }
@@ -777,6 +826,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   base::Optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
+  // True when adb-over-usb is disabled.
+  base::Optional<bool> is_adb_over_usb_disabled_;
 
   // A cryptohome ID of the primary profile.
   cryptohome::Identification cryptohome_id_;
@@ -822,6 +873,10 @@ void SetArcVmBootNotificationServerAddressForTesting(
 
   g_connect_timeout_limit_for_testing = connect_timeout_limit;
   g_connect_sleep_duration_initial_for_testing = connect_sleep_duration_initial;
+}
+
+void EnableAdbOverUsbForTesting() {
+  g_enable_adb_over_usb_for_testing = true;
 }
 
 std::vector<std::string> GenerateUpgradeProps(

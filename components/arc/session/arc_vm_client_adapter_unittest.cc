@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -48,6 +49,7 @@ constexpr const char kArcVmMountMyFilesJobName[] = "arcvm_2dmount_2dmyfiles";
 constexpr const char kArcVmMountRemovableMediaJobName[] =
     "arcvm_2dmount_2dremovable_2dmedia";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+constexpr const char kArcVmAdbdJobName[] = "arcvm_2dadbd";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
 constexpr const char kArcVmBootNotificationServerJobName[] =
@@ -280,10 +282,10 @@ class ArcVmClientAdapterTest : public testing::Test,
     SetArcVmBootNotificationServerAddressForTesting(
         std::string(kArcVmBootNotificationServerAddress,
                     sizeof(kArcVmBootNotificationServerAddress)),
-        base::TimeDelta::FromMilliseconds(100) /* connect_timeout_limit */,
-        base::TimeDelta::FromMilliseconds(
-            20) /* connect_sleep_duration_initial */
-    );
+        // connect_timeout_limit
+        base::TimeDelta::FromMilliseconds(100),
+        // connect_sleep_duration_initial
+        base::TimeDelta::FromMilliseconds(20));
   }
 
   void TearDown() override {
@@ -412,6 +414,22 @@ class ArcVmClientAdapterTest : public testing::Test,
         }));
   }
 
+  void StartRecordingUpstartOperations() {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(
+        base::BindLambdaForTesting([this](const std::string& job_name,
+                                          const std::vector<std::string>& env) {
+          upstart_operations_.emplace_back(job_name, true);
+          return true;
+        }));
+    upstart_client->set_stop_job_cb(
+        base::BindLambdaForTesting([this](const std::string& job_name,
+                                          const std::vector<std::string>& env) {
+          upstart_operations_.emplace_back(job_name, false);
+          return true;
+        }));
+  }
+
   void RemoveUpstartStartStopJobFailures() {
     auto* upstart_client = chromeos::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
@@ -430,6 +448,9 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
   void reset_arc_instance_stopped_called() {
     arc_instance_stopped_called_ = false;
+  }
+  const std::vector<std::pair<std::string, bool>>& upstart_operations() const {
+    return upstart_operations_;
   }
   TestConciergeClient* GetTestConciergeClient() {
     return static_cast<TestConciergeClient*>(
@@ -454,7 +475,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
  private:
-
   void RewriteStatus(FileSystemStatus* status) {
     status->set_host_rootfs_writable_for_testing(host_rootfs_writable_);
     status->set_system_image_ext_format_for_testing(system_image_ext_format_);
@@ -470,6 +490,10 @@ class ArcVmClientAdapterTest : public testing::Test,
   // Variables to override the value in FileSystemStatus.
   bool host_rootfs_writable_;
   bool system_image_ext_format_;
+
+  // List of upstart operations recorded. When it's "start" the boolean is set
+  // to true.
+  std::vector<std::pair<std::string, bool>> upstart_operations_;
 
   std::unique_ptr<TestArcVmBootNotificationServer> boot_server_;
 
@@ -581,6 +605,25 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_StartArcVmPerBoardFeaturesJobFail) {
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
 }
 
+// Tests that StartMiniArc()'s JOB_RESTART for |kArcSensorServiceJobName| is
+// properly implemented.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_JobRestart) {
+  StartRecordingUpstartOperations();
+  StartMiniArc();
+
+  const auto& ops = upstart_operations();
+  // Find the STOP operation for the job.
+  auto it =
+      std::find(ops.begin(), ops.end(),
+                std::make_pair(std::string(kArcSensorServiceJobName), false));
+  ASSERT_NE(ops.end(), it);
+  ++it;
+  ASSERT_NE(ops.end(), it);
+  // The next operation must be START for the job.
+  EXPECT_EQ(it->first, kArcSensorServiceJobName);
+  EXPECT_TRUE(it->second);  // true means START.
+}
+
 // Tests that StopArcInstance() eventually notifies the observer.
 TEST_F(ArcVmClientAdapterTest, StopArcInstance) {
   SetValidUserInfo();
@@ -687,6 +730,47 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
   // Inject failure to FakeUpstartClient.
   InjectUpstartStartJobFailure(kArcVmServerProxyJobName);
 
+  UpgradeArc(false);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance(/*on_shutdown=*/false,
+                             /*should_backup_log=*/false);
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that UpgradeArc() handles arcvm-adbd stop failures properly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_StopArcVmAdbdFailure) {
+  SetValidUserInfo();
+  StartMiniArc();
+
+  // Inject failure to FakeUpstartClient.
+  InjectUpstartStopJobFailure(kArcVmAdbdJobName);
+
+  // Upgrade should still succeed.
+  UpgradeArc(true);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+}
+
+// Tests that UpgradeArc() handles arcvm-adbd startup failures properly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmAdbdFailure) {
+  SetValidUserInfo();
+  StartMiniArc();
+
+  // Inject failure to FakeUpstartClient.
+  InjectUpstartStartJobFailure(kArcVmAdbdJobName);
+
+  EnableAdbOverUsbForTesting();
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());

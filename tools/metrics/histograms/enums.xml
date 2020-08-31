@@ -24433,6 +24433,7 @@ Called by update_extension_histograms.py.-->
   <int value="1503"
       label="FILEMANAGERPRIVATEINTERNAL_TOGGLEADDEDTOHOLDINGSPACE"/>
   <int value="1504" label="FILEMANAGERPRIVATEINTERNAL_GETHOLDINGSPACESTATE"/>
+  <int value="1505" label="INPUTMETHODPRIVATE_SETCOMPOSINGRANGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29039,6 +29040,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3462" label="V8Navigator_OpenTCPSocket_Method"/>
   <int value="3463" label="V8Navigator_OpenUDPSocket_Method"/>
   <int value="3464" label="WebCodecs"/>
+  <int value="3465" label="CredentialManagerCrossOriginPublicKeyGetRequest"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

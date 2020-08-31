@@ -7,13 +7,12 @@
 
 #include <algorithm>
 
-#include "base/allocator/partition_allocator/address_pool_manager.h"
+#include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/base_export.h"
 #include "base/bits.h"
-#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
@@ -24,15 +23,7 @@ namespace base {
 namespace internal {
 
 // The feature is not applicable to 32-bit address space.
-// ARCH_CPU_64_BITS implies 64-bit instruction set, but not necessarily 64-bit
-// address space. The only known case where address space is 32-bit is NaCl, so
-// eliminate it explicitly. static_assert below ensures that other won't slip
-// through.
-// TODO(tasak): define ADDRESS_SPACE_64_BITS as "defined(ARCH_CPU_64_BITS) &&
-// !defined(OS_NACL)" and use it.
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-
-static_assert(sizeof(size_t) >= 8, "Nee more than 32-bit address space");
+#if defined(PA_HAS_64_BITS_POINTERS)
 
 // Reserves address space for PartitionAllocator.
 class BASE_EXPORT PartitionAddressSpace {
@@ -144,16 +135,21 @@ class BASE_EXPORT PartitionAddressSpace {
 };
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
-  PA_DCHECK(IsPartitionAllocGigaCageEnabled());
+  // This file is included from checked_ptr.h. This will result in a cycle if it
+  // includes partition_alloc_features.h where IsPartitionAllocGigaCageEnabled
+  // resides, because it includes Finch headers which may include checked_ptr.h.
+  // TODO(bartekn): Uncomment once Finch is no longer used there.
+  // PA_DCHECK(IsPartitionAllocGigaCageEnabled());
   return PartitionAddressSpace::GetDirectMapPool();
 }
 
 ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
-  PA_DCHECK(IsPartitionAllocGigaCageEnabled());
+  // TODO(bartekn): Uncomment once Finch is no longer used there (see above).
+  // PA_DCHECK(IsPartitionAllocGigaCageEnabled());
   return PartitionAddressSpace::GetNormalBucketPool();
 }
 
-#else  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#else  // defined(PA_HAS_64_BITS_POINTERS)
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
   NOTREACHED();
@@ -165,12 +161,12 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   return 0;
 }
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#endif  // defined(PA_HAS_64_BITS_POINTERS)
 
 }  // namespace internal
 
 ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(PA_HAS_64_BITS_POINTERS)
   return internal::PartitionAddressSpace::IsInDirectMapPool(address);
 #else
   return false;
@@ -178,7 +174,7 @@ ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
 }
 
 ALWAYS_INLINE bool IsManagedByPartitionAllocNormalBuckets(const void* address) {
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(PA_HAS_64_BITS_POINTERS)
   return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
 #else
   return false;

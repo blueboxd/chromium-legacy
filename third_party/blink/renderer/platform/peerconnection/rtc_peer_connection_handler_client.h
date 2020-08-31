@@ -72,18 +72,19 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerClient {
       RTCSessionDescriptionPlatform* current_local_description,
       RTCSessionDescriptionPlatform* pending_remote_description,
       RTCSessionDescriptionPlatform* current_remote_description) = 0;
-  virtual void DidChangeSignalingState(
-      webrtc::PeerConnectionInterface::SignalingState) = 0;
   virtual void DidChangeIceGatheringState(
       webrtc::PeerConnectionInterface::IceGatheringState) = 0;
   virtual void DidChangeIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState) = 0;
   virtual void DidChangePeerConnectionState(
       webrtc::PeerConnectionInterface::PeerConnectionState) {}
-  virtual void DidAddReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) = 0;
-  virtual void DidRemoveReceiverPlanB(
-      std::unique_ptr<RTCRtpReceiverPlatform>) = 0;
+  virtual void DidModifyReceiversPlanB(
+      webrtc::PeerConnectionInterface::SignalingState,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>> platform_receivers_added,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>>
+          platform_receivers_removed) = 0;
   virtual void DidModifyTransceivers(
+      webrtc::PeerConnectionInterface::SignalingState,
       Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
       Vector<uintptr_t>,
       bool is_remote_description) = 0;

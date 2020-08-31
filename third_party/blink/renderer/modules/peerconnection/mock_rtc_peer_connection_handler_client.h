@@ -40,8 +40,6 @@ class MockRTCPeerConnectionHandlerClient
                     RTCSessionDescriptionPlatform*,
                     RTCSessionDescriptionPlatform*,
                     RTCSessionDescriptionPlatform*));
-  MOCK_METHOD1(DidChangeSignalingState,
-               void(webrtc::PeerConnectionInterface::SignalingState state));
   MOCK_METHOD1(DidChangeIceGatheringState,
                void(webrtc::PeerConnectionInterface::IceGatheringState state));
   MOCK_METHOD1(DidChangeIceConnectionState,
@@ -49,21 +47,23 @@ class MockRTCPeerConnectionHandlerClient
   MOCK_METHOD1(
       DidChangePeerConnectionState,
       void(webrtc::PeerConnectionInterface::PeerConnectionState state));
-  void DidAddReceiverPlanB(
-      std::unique_ptr<RTCRtpReceiverPlatform> web_rtp_receiver) override {
-    DidAddReceiverPlanBForMock(&web_rtp_receiver);
-  }
-  void DidRemoveReceiverPlanB(
-      std::unique_ptr<RTCRtpReceiverPlatform> web_rtp_receiver) override {
-    DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
+  void DidModifyReceiversPlanB(
+      webrtc::PeerConnectionInterface::SignalingState signaling_state,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_added,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_removed)
+      override {
+    DidModifyReceiversPlanBForMock(signaling_state, &receivers_added,
+                                   &receivers_removed);
   }
   MOCK_METHOD1(DidModifySctpTransport,
                void(blink::WebRTCSctpTransportSnapshot snapshot));
   void DidModifyTransceivers(
+      webrtc::PeerConnectionInterface::SignalingState signaling_state,
       Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers,
       Vector<uintptr_t> removed_transceivers,
       bool is_remote_description) override {
-    DidModifyTransceiversForMock(&platform_transceivers, is_remote_description);
+    DidModifyTransceiversForMock(signaling_state, &platform_transceivers,
+                                 is_remote_description);
   }
   MOCK_METHOD1(DidAddRemoteDataChannel,
                void(scoped_refptr<webrtc::DataChannelInterface>));
@@ -72,18 +72,20 @@ class MockRTCPeerConnectionHandlerClient
 
   // Move-only arguments do not play nicely with MOCK, the workaround is to
   // EXPECT_CALL with these instead.
-  MOCK_METHOD1(DidAddReceiverPlanBForMock,
-               void(std::unique_ptr<RTCRtpReceiverPlatform>*));
-  MOCK_METHOD1(DidRemoveReceiverPlanBForMock,
-               void(std::unique_ptr<RTCRtpReceiverPlatform>*));
-  MOCK_METHOD2(DidModifyTransceiversForMock,
-               void(Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>*, bool));
+  MOCK_METHOD3(DidModifyReceiversPlanBForMock,
+               void(webrtc::PeerConnectionInterface::SignalingState,
+                    Vector<std::unique_ptr<RTCRtpReceiverPlatform>>*,
+                    Vector<std::unique_ptr<RTCRtpReceiverPlatform>>*));
+  MOCK_METHOD3(DidModifyTransceiversForMock,
+               void(webrtc::PeerConnectionInterface::SignalingState,
+                    Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>*,
+                    bool));
 
   void didGenerateICECandidateWorker(RTCIceCandidatePlatform* candidate);
-  void didAddReceiverWorker(
-      std::unique_ptr<RTCRtpReceiverPlatform>* stream_web_rtp_receivers);
-  void didRemoveReceiverWorker(
-      std::unique_ptr<RTCRtpReceiverPlatform>* stream_web_rtp_receivers);
+  void didModifyReceiversWorker(
+      webrtc::PeerConnectionInterface::SignalingState,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>>* receivers_added,
+      Vector<std::unique_ptr<RTCRtpReceiverPlatform>>* receivers_removed);
 
   const std::string& candidate_sdp() const { return candidate_sdp_; }
   const base::Optional<uint16_t>& candidate_mlineindex() const {

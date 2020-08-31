@@ -4,6 +4,7 @@
 
 #include "base/allocator/partition_allocator/partition_address_space.h"
 
+#include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
@@ -14,7 +15,7 @@ namespace base {
 
 namespace internal {
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(PA_HAS_64_BITS_POINTERS)
 
 uintptr_t PartitionAddressSpace::reserved_base_address_ = 0;
 // Before PartitionAddressSpace::Init(), no allocation are allocated from a
@@ -74,7 +75,7 @@ void PartitionAddressSpace::UninitForTesting() {
   internal::AddressPoolManager::GetInstance()->ResetForTesting();
 }
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#endif  // defined(PA_HAS_64_BITS_POINTERS)
 
 }  // namespace internal
 

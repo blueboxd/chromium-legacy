@@ -610,10 +610,6 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
       mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
   pc_handler_->observer()->OnIceCandidate(native_candidate.get());
 
-  EXPECT_CALL(*mock_client_.get(), DidChangeSignalingState(_)).Times(0);
-  pc_handler_->observer()->OnSignalingChange(
-      webrtc::PeerConnectionInterface::kHaveRemoteOffer);
-
   EXPECT_CALL(*mock_client_.get(), DidChangeIceGatheringState(_)).Times(0);
   pc_handler_->observer()->OnIceGatheringChange(
       webrtc::PeerConnectionInterface::kIceGatheringNew);
@@ -622,12 +618,14 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
   pc_handler_->observer()->OnIceConnectionChange(
       webrtc::PeerConnectionInterface::kIceConnectionDisconnected);
 
-  EXPECT_CALL(*mock_client_.get(), DidAddReceiverPlanBForMock(_)).Times(0);
+  EXPECT_CALL(*mock_client_.get(), DidModifyReceiversPlanBForMock(_, _, _))
+      .Times(0);
   rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
   InvokeOnAddStream(remote_stream);
 
-  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverPlanBForMock(_)).Times(0);
+  EXPECT_CALL(*mock_client_.get(), DidModifyReceiversPlanBForMock(_, _, _))
+      .Times(0);
   InvokeOnRemoveStream(remote_stream);
 
   EXPECT_CALL(*mock_client_.get(), DidAddRemoteDataChannel(_)).Times(0);
@@ -1193,13 +1191,25 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {
 TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
   rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
-  // Grab the added receivers when it's been successfully added to the PC.
+  // Grab receivers when they're added to/removed from the PC.
   std::vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_added;
-  EXPECT_CALL(*mock_client_.get(), DidAddReceiverPlanBForMock(_))
-      .WillRepeatedly(
-          Invoke([&receivers_added](
-                     std::unique_ptr<RTCRtpReceiverPlatform>* receiver) {
-            receivers_added.push_back(std::move(*receiver));
+  std::vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_removed;
+  EXPECT_CALL(*mock_client_.get(), DidModifyReceiversPlanBForMock(_, _, _))
+      .WillRepeatedly(Invoke(
+          [&receivers_added, &receivers_removed](
+              webrtc::PeerConnectionInterface::SignalingState signaling_state,
+              Vector<std::unique_ptr<RTCRtpReceiverPlatform>>*
+                  platform_receivers_added,
+              Vector<std::unique_ptr<RTCRtpReceiverPlatform>>*
+                  platform_receivers_removed) {
+            if (!platform_receivers_added->IsEmpty()) {
+              receivers_added.push_back(
+                  std::move((*platform_receivers_added)[0]));
+            }
+            if (!platform_receivers_removed->IsEmpty()) {
+              receivers_removed.push_back(
+                  std::move((*platform_receivers_removed)[0]));
+            }
           }));
   EXPECT_CALL(
       *mock_tracker_.get(),
@@ -1207,20 +1217,12 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
           pc_handler_.get(),
           PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack, _, _))
       .Times(2);
-  // Grab the removed receivers when it's been successfully added to the PC.
-  std::vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_removed;
   EXPECT_CALL(
       *mock_tracker_.get(),
       TrackRemoveTransceiver(
           pc_handler_.get(),
           PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack, _, _))
       .Times(2);
-  EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverPlanBForMock(_))
-      .WillRepeatedly(
-          Invoke([&receivers_removed](
-                     std::unique_ptr<RTCRtpReceiverPlatform>* receiver) {
-            receivers_removed.push_back(std::move(*receiver));
-          }));
 
   InvokeOnAddStream(remote_stream);
   RunMessageLoopsUntilIdle();
@@ -1255,7 +1257,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
   EXPECT_CALL(*mock_tracker_.get(),
               TrackOnRenegotiationNeeded(pc_handler_.get()));
   EXPECT_CALL(*mock_client_.get(), NegotiationNeeded());
-  pc_handler_->observer()->OnRenegotiationNeeded();
+  pc_handler_->observer()->OnNegotiationNeededEvent(42);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {

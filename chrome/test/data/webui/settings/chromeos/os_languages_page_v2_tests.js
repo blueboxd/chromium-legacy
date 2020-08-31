@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from 'chrome://os-settings/chromeos/lazy_load.js';
+// #import {LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl, LanguagesPageInteraction, LifetimeBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 // #import {CrSettingsPrefs, Router} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
 // #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
 // #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
 // #import {TestLanguagesMetricsProxy} from './test_os_languages_metrics_proxy.m.js';
+// #import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {fakeDataBind} from '../../test_util.m.js';
 // clang-format on
@@ -26,6 +28,8 @@ suite('languages page', () => {
   let actionMenu;
   /** @type {!settings.LanguagesBrowserProxy} */
   let browserProxy;
+  /** @type {!settings.TestLifetimeBrowserProxy} */
+  let lifetimeProxy;
   /** @type {!settings.LanguagesMetricsProxy} */
   let metricsProxy;
 
@@ -52,6 +56,9 @@ suite('languages page', () => {
     // Sets up test browser proxy.
     browserProxy = new settings.TestLanguagesBrowserProxy();
     settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+
+    lifetimeProxy = new settings.TestLifetimeBrowserProxy();
+    settings.LifetimeBrowserProxyImpl.instance_ = lifetimeProxy;
 
     // Sets up test metrics proxy.
     metricsProxy = new settings.TestLanguagesMetricsProxy();
@@ -254,7 +261,7 @@ suite('languages page', () => {
       assertTrue(actionButton.disabled);
     });
 
-    test('sets device language', async () => {
+    test('sets device language and restarts device', async () => {
       // selects a language
       dialogItems[0].click();  // en-CA
       assertFalse(actionButton.disabled);
@@ -262,6 +269,55 @@ suite('languages page', () => {
       actionButton.click();
       assertEquals(
           'en-CA', await browserProxy.whenCalled('setProspectiveUILanguage'));
+      assertEquals(
+          settings.LanguagesPageInteraction.RESTART,
+          await metricsProxy.whenCalled('recordInteraction'));
+      await lifetimeProxy.whenCalled('signOutAndRestart');
+    });
+
+    // Test that searching languages works whether the displayed or native
+    // language name is queried.
+    test('searches languages', function() {
+      const searchInput = dialog.$$('cr-search-field');
+
+      const getItems = function() {
+        return dialog.$.dialog.querySelectorAll('.list-item:not([hidden])');
+      };
+
+      // Expecting a few languages to be displayed when no query exists.
+      assertGE(getItems().length, 1);
+
+      // Issue query that matches the |displayedName| in lowercase.
+      searchInput.setValue('greek');
+      Polymer.dom.flush();
+      assertEquals(1, getItems().length);
+      assertTrue(getItems()[0].textContent.includes('Greek'));
+
+      // Issue query that matches the |nativeDisplayedName|.
+      searchInput.setValue('Ελληνικά');
+      Polymer.dom.flush();
+      assertEquals(1, getItems().length);
+
+      // Issue query that does not match any language.
+      searchInput.setValue('egaugnal');
+      Polymer.dom.flush();
+      assertEquals(0, getItems().length);
+    });
+
+    test('has escape key behavior working correctly', function() {
+      const searchInput = dialog.$$('cr-search-field');
+      searchInput.setValue('dummyquery');
+
+      // Test that dialog is not closed if 'Escape' is pressed on the input
+      // and a search query exists.
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertTrue(dialog.$.dialog.open);
+
+      // Test that dialog is closed if 'Escape' is pressed on the input and no
+      // search query exists.
+      searchInput.setValue('');
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertFalse(dialog.$.dialog.open);
     });
   });
 

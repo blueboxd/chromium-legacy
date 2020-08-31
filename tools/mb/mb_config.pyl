@@ -521,6 +521,7 @@
       'Android arm64 Builder Perf': 'official_goma_minimal_symbols_android_arm64',
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
+      'chromeos-amd64-generic-lacros-builder-perf': 'chromeos_amd64-generic_lacros',
       'linux-builder-perf': 'official_goma_linux_perf',
       'mac-builder-perf': 'official_goma_mac_perf',
       'win32-builder-perf': 'official_goma_x86_perf',
@@ -2590,6 +2591,7 @@
       'mixins': ['cronet_common'],
       'gn_args': ('use_partition_alloc=false enable_reporting=true '
                   'use_hashed_jni_names=true '
+                  'default_min_sdk_version=16 '
                   'clang_use_default_sample_profile=false '
                   'enable_resource_whitelist_generation=false'),
     },

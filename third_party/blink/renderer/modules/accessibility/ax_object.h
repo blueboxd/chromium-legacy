@@ -8,14 +8,12 @@
  *
  * 1.  Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
- * 2.
- * Redistributiothird_party/blink/renderer/modules/exported/web_ax_object.ccns
- * in binary form must reproduce the above copyright notice, this list of
- * conditions and the following disclaimer in the documentation and/or other
- * materials provided with the distribution. 3.  Neither the name of Apple
- * Computer, Inc. ("Apple") nor the names of its contributors may be used to
- * endorse or promote products derived from this software without specific
- * prior written permission.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -542,9 +540,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
   const AXObject* DisabledAncestor() const;
   bool LastKnownIsIgnoredValue() const;
-  void SetLastKnownIsIgnoredValue(bool);
   bool LastKnownIsIgnoredButIncludedInTreeValue() const;
-  void SetLastKnownIsIgnoredButIncludedInTreeValue(bool);
   bool HasInheritedPresentationalRole() const;
   bool IsPresentationalChild() const;
   bool CanBeActiveDescendant() const;
@@ -1198,8 +1194,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable bool have_children_;
   ax::mojom::blink::Role role_;
   ax::mojom::blink::Role aria_role_;
-  mutable AXObjectInclusion last_known_is_ignored_value_;
-  mutable AXObjectInclusion last_known_is_ignored_but_included_in_tree_value_;
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
 

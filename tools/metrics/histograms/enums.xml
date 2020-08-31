@@ -7523,6 +7523,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="User edited the generated password"/>
 </enum>
 
+<enum name="BooleanGreaterOrEqualThan200MB">
+  <int value="0" label="lt; 200MB"/>
+  <int value="1" label="gt;= 200MB"/>
+</enum>
+
 <enum name="BooleanHadAddress">
   <int value="0" label="Did not have address."/>
   <int value="1" label="Had address."/>
@@ -9245,6 +9250,7 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsInfo">
+  <int value="-1" label="Default"/>
   <int value="0" label="Other"/>
   <int value="1" label="Warm grey"/>
   <int value="2" label="Cool grey"/>
@@ -29041,6 +29047,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3463" label="V8Navigator_OpenUDPSocket_Method"/>
   <int value="3464" label="WebCodecs"/>
   <int value="3465" label="CredentialManagerCrossOriginPublicKeyGetRequest"/>
+  <int value="3466" label="CSSContainStrictWithoutContentVisibility"/>
+  <int value="3467" label="CSSContainAllWithoutContentVisibility"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29321,6 +29329,9 @@ Called by update_feature_policy_enum.py.-->
   <int value="13"
       label="Ephemeral change undone, likely due to pressing 'undo' on the
              snackbar"/>
+  <int value="14" label="Turn on"/>
+  <int value="15" label="Turn off"/>
+  <int value="16" label="Tapped Manage Activity"/>
 </enum>
 
 <enum name="FeedZeroStateShowReason">
@@ -39987,6 +39998,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Blocklisted due to frequent reloads/back-forwards"/>
   <int value="5" label="Blocklisted because page transition was a reload"/>
   <int value="6" label="Blocklisted because page transition was back-forwards"/>
+  <int value="7" label="Blocklisted because the host was permanently blocked"/>
 </enum>
 
 <enum name="LiteVideoDecision">
@@ -40002,7 +40014,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Throttled but stopped due to rebuffer"/>
 </enum>
 
-<enum name="LiveCaptionsSessionEvent">
+<enum name="LiveCaptionSessionEvent">
   <int value="0" label="Stream started"/>
   <int value="1" label="Stream finished"/>
   <int value="2" label="User closed bubble"/>
@@ -58594,6 +58606,21 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="7" label="Switch to locked profile via User Manager"/>
   <int value="8" label="Switch to Guest profile"/>
   <int value="9" label="Switch to profile from context menu"/>
+</enum>
+
+<enum name="ProfilePickerAction">
+  <int value="0" label="Launch existing profile"/>
+  <int value="1" label="Launch existing profile on customize settings page"/>
+  <int value="2" label="Launch guest profile"/>
+  <int value="3" label="Launch new profile"/>
+  <int value="4" label="Delete profile"/>
+</enum>
+
+<enum name="ProfilePickerEntryPoint">
+  <int value="0" label="On startup"/>
+  <int value="1" label="Manage profile button in the profile menu"/>
+  <int value="2" label="Add new profile button in the profile menu"/>
+  <int value="3" label="Open new window after profile deletion"/>
 </enum>
 
 <enum name="ProfileResetRequestOriginEnum">

@@ -79,7 +79,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
@@ -248,8 +248,8 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<TestFrameData> frame(new TestFrameData);
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(frame.get()));
     last_on_draw_render_passes_.clear();
-    viz::RenderPass::CopyAllForTest(frame->render_passes,
-                                    &last_on_draw_render_passes_);
+    viz::CompositorRenderPass::CopyAllForTest(frame->render_passes,
+                                              &last_on_draw_render_passes_);
     host_impl_->DrawLayers(frame.get());
     host_impl_->DidDrawAllLayers(*frame);
     last_on_draw_frame_ = std::move(frame);
@@ -848,7 +848,7 @@ class LayerTreeHostImplTest : public testing::Test,
   base::OnceClosure animation_task_;
   base::TimeDelta requested_animation_delay_;
   std::unique_ptr<TestFrameData> last_on_draw_frame_;
-  viz::RenderPassList last_on_draw_render_passes_;
+  viz::CompositorRenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
   std::unique_ptr<base::Thread> image_worker_;
   int next_layer_id_ = 2;
@@ -3407,7 +3407,7 @@ class MissingTilesLayer : public LayerImpl {
     has_missing_tiles_ = has_missing_tiles;
   }
 
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     append_quads_data->num_missing_tiles += has_missing_tiles_;
   }
@@ -6044,7 +6044,7 @@ class DidDrawCheckLayer : public LayerImpl {
     return true;
   }
 
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     append_quads_called_ = true;
     LayerImpl::AppendQuads(render_pass, append_quads_data);
@@ -6301,7 +6301,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
         tree_impl, id, tile_missing, had_incomplete_tile, animating, timeline));
   }
 
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     LayerImpl::AppendQuads(render_pass, append_quads_data);
     if (had_incomplete_tile_)
@@ -10263,7 +10263,7 @@ class BlendStateCheckLayer : public LayerImpl {
     resource_provider_->RemoveImportedResource(resource_id_);
   }
 
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     quads_appended_ = true;
 
@@ -10607,7 +10607,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Expect fullscreen gutter rect.
   void SetUpEmptylayer() { SetLayerGeometry(gfx::Rect()); }
 
-  void VerifyEmptyLayerRenderPasses(const viz::RenderPassList& render_passes) {
+  void VerifyEmptyLayerRenderPasses(
+      const viz::CompositorRenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(1u, CountGutterQuads(render_passes[0]->quad_list));
@@ -10636,7 +10637,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     SetLayerGeometry(gfx::Rect(500, 500, 200, 200));
   }
 
-  void VerifyLayerInMiddleOfViewport(const viz::RenderPassList& render_passes) {
+  void VerifyLayerInMiddleOfViewport(
+      const viz::CompositorRenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(4u, CountGutterQuads(render_passes[0]->quad_list));
@@ -10667,7 +10669,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   void VerifyLayerIsLargerThanViewport(
-      const viz::RenderPassList& render_passes) {
+      const viz::CompositorRenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(0u, CountGutterQuads(render_passes[0]->quad_list));
@@ -10939,7 +10941,7 @@ class FakeLayerWithQuads : public LayerImpl {
     return base::WrapUnique(new FakeLayerWithQuads(tree_impl, id));
   }
 
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     viz::SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
@@ -11077,7 +11079,7 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
       ASSERT_EQ(1u, frame.render_passes.size());
 
       // Verify the damage rect for the root render pass.
-      const viz::RenderPass* root_render_pass =
+      const viz::CompositorRenderPass* root_render_pass =
           frame.render_passes.back().get();
       EXPECT_EQ(expected_damage, root_render_pass->damage_rect);
 
@@ -11368,7 +11370,8 @@ void ExpectFullDamageAndDraw(LayerTreeHostImpl* host_impl) {
   host_impl->WillBeginImplFrame(args);
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   ASSERT_EQ(1u, frame.render_passes.size());
-  const viz::RenderPass* root_render_pass = frame.render_passes.back().get();
+  const viz::CompositorRenderPass* root_render_pass =
+      frame.render_passes.back().get();
   EXPECT_EQ(full_frame_damage, root_render_pass->damage_rect);
   EXPECT_TRUE(host_impl->DrawLayers(&frame));
   host_impl->DidDrawAllLayers(frame);
@@ -13865,6 +13868,77 @@ TEST_F(LayerTreeHostImplTest,
   // there is less than 20 frames in its pending frames list.
 }
 
+// Test that DroppedFrameCounter and TotalFrameCounter reset themselves under
+// certain conditions
+TEST_F(LayerTreeHostImplTest, FrameCounterReset) {
+  TotalFrameCounter* total_frame_counter =
+      host_impl_->total_frame_counter_for_testing();
+  DroppedFrameCounter* dropped_frame_counter =
+      host_impl_->dropped_frame_counter_for_testing();
+  EXPECT_EQ(total_frame_counter->total_frames(), 0u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 0u);
+  total_frame_counter->set_total_frames_for_testing(1u);
+  EXPECT_EQ(total_frame_counter->total_frames(), 1u);
+  dropped_frame_counter->AddGoodFrame();
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 1u);
+
+  auto interval = base::TimeDelta::FromMilliseconds(16);
+  base::TimeTicks now = base::TimeTicks::Now();
+  auto deadline = now + interval;
+  viz::BeginFrameArgs args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 1u /*source_id*/, 1u /*sequence_number*/, now,
+      deadline, interval, viz::BeginFrameArgs::NORMAL);
+  BeginMainFrameMetrics begin_frame_metrics;
+  begin_frame_metrics.should_measure_smoothness = true;
+  host_impl_->ReadyToCommit(args, &begin_frame_metrics);
+  EXPECT_EQ(total_frame_counter->total_frames(), 0u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 0u);
+
+  total_frame_counter->set_total_frames_for_testing(1u);
+  dropped_frame_counter->AddGoodFrame();
+  host_impl_->SetActiveURL(GURL(), 1u);
+  EXPECT_EQ(total_frame_counter->total_frames(), 0u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 0u);
+}
+
+// Test that DroppedFrameCounter and TotalFrameCounter do not reset themselves
+// under certain conditions
+TEST_F(LayerTreeHostImplTest, FrameCounterNotReset) {
+  TotalFrameCounter* total_frame_counter =
+      host_impl_->total_frame_counter_for_testing();
+  DroppedFrameCounter* dropped_frame_counter =
+      host_impl_->dropped_frame_counter_for_testing();
+  EXPECT_EQ(total_frame_counter->total_frames(), 0u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 0u);
+
+  auto interval = base::TimeDelta::FromMilliseconds(16);
+  base::TimeTicks now = base::TimeTicks::Now();
+  auto deadline = now + interval;
+  viz::BeginFrameArgs arg1 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 1u /*source_id*/, 1u /*sequence_number*/, now,
+      deadline, interval, viz::BeginFrameArgs::NORMAL);
+  BeginMainFrameMetrics begin_frame_metrics;
+  begin_frame_metrics.should_measure_smoothness = true;
+  host_impl_->ReadyToCommit(arg1, &begin_frame_metrics);
+  EXPECT_EQ(total_frame_counter->total_frames(), 0u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 0u);
+  total_frame_counter->set_total_frames_for_testing(1u);
+  EXPECT_EQ(total_frame_counter->total_frames(), 1u);
+  dropped_frame_counter->AddGoodFrame();
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 1u);
+
+  now = deadline;
+  deadline = now + interval;
+  viz::BeginFrameArgs arg2 = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 1u /*source_id*/, 2u /*sequence_number*/, now,
+      deadline, interval, viz::BeginFrameArgs::NORMAL);
+  // Consecutive BeginFrameMetrics with the same |should_measure_smoothness|
+  // flag should not reset the counter.
+  host_impl_->ReadyToCommit(arg2, &begin_frame_metrics);
+  EXPECT_EQ(total_frame_counter->total_frames(), 1u);
+  EXPECT_EQ(dropped_frame_counter->total_frames(), 1u);
+}
+
 // Tests that the scheduled autoscroll task aborts if a 2nd mousedown occurs in
 // the same frame.
 TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
@@ -15056,27 +15130,29 @@ TEST_F(LayerTreeHostImplCountingLostSurfaces, TwiceLostSurface) {
   EXPECT_EQ(1, num_lost_surfaces_);
 }
 
-size_t CountRenderPassesWithId(const viz::RenderPassList& list,
-                               viz::RenderPassId id) {
+size_t CountRenderPassesWithId(const viz::CompositorRenderPassList& list,
+                               viz::CompositorRenderPassId id) {
   return std::count_if(
       list.begin(), list.end(),
-      [id](const std::unique_ptr<viz::RenderPass>& p) { return p->id == id; });
+      [id](const std::unique_ptr<viz::CompositorRenderPass>& p) {
+        return p->id == id;
+      });
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+  pass1->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+  pass2->SetNew(viz::CompositorRenderPassId{2}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+  pass3->SetNew(viz::CompositorRenderPassId{3}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
 
   // Add a quad to each pass so they aren't empty.
@@ -15088,36 +15164,37 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   color_quad->material = viz::DrawQuad::Material::kSolidColor;
 
   // pass3 is referenced by pass2.
-  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  auto* rpdq =
+      pass2->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::Material::kCompositorRenderPass;
   rpdq->render_pass_id = pass3->id;
 
   // But pass2 is not referenced by pass1. So pass2 and pass3 should be culled.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(
-      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
-  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
+  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{1u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{2u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{3u}));
+  EXPECT_EQ(viz::CompositorRenderPassId{1u}, frame.render_passes[0]->id);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+  pass1->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+  pass2->SetNew(viz::CompositorRenderPassId{2}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+  pass3->SetNew(viz::CompositorRenderPassId{3}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
 
   // pass1 is not empty, but pass2 and pass3 are.
@@ -15125,12 +15202,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
   color_quad->material = viz::DrawQuad::Material::kSolidColor;
 
   // pass3 is referenced by pass2.
-  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  auto* rpdq =
+      pass2->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::Material::kCompositorRenderPass;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
-  rpdq = pass1->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  rpdq = pass1->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::Material::kCompositorRenderPass;
   rpdq->render_pass_id = pass2->id;
 
@@ -15138,14 +15216,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
   // should be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(
-      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
-  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
-  // The viz::RenderPassDrawQuad should be removed from pass1.
+  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{1u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{2u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{3u}));
+  EXPECT_EQ(viz::CompositorRenderPassId{1u}, frame.render_passes[0]->id);
+  // The viz::CompositorRenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(1u, pass1->quad_list.size());
   EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
             pass1->quad_list.ElementAt(0)->material);
@@ -15153,27 +15231,28 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(viz::RenderPass::Create());
-  viz::RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::CompositorRenderPass::Create());
+  viz::CompositorRenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+  pass1->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+  pass2->SetNew(viz::CompositorRenderPassId{2}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
-  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+  pass3->SetNew(viz::CompositorRenderPassId{3}, gfx::Rect(), gfx::Rect(),
                 gfx::Transform());
 
   // pass3 is referenced by pass2.
-  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  auto* rpdq =
+      pass2->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::Material::kCompositorRenderPass;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
-  rpdq = pass1->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  rpdq = pass1->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::Material::kCompositorRenderPass;
   rpdq->render_pass_id = pass2->id;
 
@@ -15182,14 +15261,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   // not be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(
-      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
-  EXPECT_EQ(
-      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
-  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
-  // The viz::RenderPassDrawQuad should be removed from pass1.
+  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{1u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{2u}));
+  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes,
+                                        viz::CompositorRenderPassId{3u}));
+  EXPECT_EQ(viz::CompositorRenderPassId{1u}, frame.render_passes[0]->id);
+  // The viz::CompositorRenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(0u, pass1->quad_list.size());
 }
 

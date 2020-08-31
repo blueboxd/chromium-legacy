@@ -213,20 +213,25 @@ MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
   // This view will become visible when devices are discovered.
   SetVisible(false);
 
-  // Get a list of the connected audio output devices
+  // Get a list of the connected audio output devices.
   audio_device_subscription_ =
       delegate->RegisterAudioOutputDeviceDescriptionsCallback(
           base::BindRepeating(
               &MediaNotificationDeviceSelectorView::UpdateAvailableAudioDevices,
               weak_ptr_factory_.GetWeakPtr()));
+
+  // Get the availability of audio output device switching.
+  is_device_switching_enabled_subscription_ =
+      delegate_->RegisterIsAudioOutputDeviceSwitchingSupportedCallback(
+          base::BindRepeating(&MediaNotificationDeviceSelectorView::
+                                  UpdateIsAudioDeviceSwitchingEnabled,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MediaNotificationDeviceSelectorView::UpdateCurrentAudioDevice(
     const std::string& current_device_id) {
-  if (current_device_entry_view_) {
+  if (current_device_entry_view_)
     current_device_entry_view_->SetHighlighted(false);
-    current_device_entry_view_ = nullptr;
-  }
 
   auto it = util::ranges::find_if(
       audio_device_entries_container_->children(),
@@ -235,9 +240,13 @@ void MediaNotificationDeviceSelectorView::UpdateCurrentAudioDevice(
                current_device_id;
       });
 
-  if (it == audio_device_entries_container_->children().end())
+  if (it == audio_device_entries_container_->children().end()) {
+    current_device_entry_view_ = nullptr;
+    current_device_id_ = "";
     return;
+  }
 
+  current_device_id_ = current_device_id;
   current_device_entry_view_ = static_cast<DeviceEntryView*>(*it);
   current_device_entry_view_->SetHighlighted(true);
   audio_device_entries_container_->ReorderChildView(current_device_entry_view_,
@@ -273,8 +282,7 @@ void MediaNotificationDeviceSelectorView::UpdateAvailableAudioDevices(
           ? current_device_id_
           : media::AudioDeviceDescription::kDefaultDeviceId);
 
-  SetVisible(ShouldBeVisible(device_descriptions));
-  delegate_->OnDeviceSelectorViewSizeChanged();
+  UpdateVisibility();
 }
 
 void MediaNotificationDeviceSelectorView::OnColorsChanged(
@@ -344,8 +352,15 @@ void MediaNotificationDeviceSelectorView::HideDevices() {
   PreferredSizeChanged();
 }
 
-bool MediaNotificationDeviceSelectorView::ShouldBeVisible(
-    const media::AudioDeviceDescriptions& device_descriptions) {
+void MediaNotificationDeviceSelectorView::UpdateVisibility() {
+  SetVisible(ShouldBeVisible());
+  delegate_->OnDeviceSelectorViewSizeChanged();
+}
+
+bool MediaNotificationDeviceSelectorView::ShouldBeVisible() {
+  if (!is_audio_device_switching_enabled_)
+    return false;
+
   // The UI should be visible if there are more than one unique devices. That is
   // when:
   // * There are at least three devices
@@ -361,5 +376,14 @@ bool MediaNotificationDeviceSelectorView::ShouldBeVisible(
                      media::AudioDeviceDescription::GetDefaultDeviceName();
         });
   }
-  return device_descriptions.size() > 2;
+  return audio_device_entries_container_->children().size() > 2;
+}
+
+void MediaNotificationDeviceSelectorView::UpdateIsAudioDeviceSwitchingEnabled(
+    bool enabled) {
+  if (enabled == is_audio_device_switching_enabled_)
+    return;
+
+  is_audio_device_switching_enabled_ = enabled;
+  UpdateVisibility();
 }

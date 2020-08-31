@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
-import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.SelectionResult;
@@ -54,7 +53,6 @@ import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.CanMakePaymentQuery;
 import org.chromium.components.payments.CheckoutFunnelStep;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
-import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.Event;
@@ -292,14 +290,6 @@ public class PaymentRequestImpl
      */
     private boolean mHasNonAutofillApp;
 
-    /**
-     * True if we should skip showing PaymentRequest UI.
-     *
-     * <p>In cases where there is a single payment app and the merchant does not request shipping
-     * or billing, we can skip showing UI as Payment Request UI is not benefiting the user at all.
-     */
-    private boolean mShouldSkipShowingPaymentRequestUi;
-
     /** Whether PaymentRequest.show() was invoked with a user gesture. */
     private boolean mIsUserGestureShow;
 
@@ -411,7 +401,13 @@ public class PaymentRequestImpl
             mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return false;
+        if (parseAndValidateDetails(details)) {
+            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(details, mRawTotal, mRawLineItems);
+        } else {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
+            return false;
+        }
         mSpec = new PaymentRequestSpec(mPaymentOptions, details, mMethodData.values(),
                 LocaleUtils.getDefaultLocaleString());
 
@@ -463,38 +459,6 @@ public class PaymentRequestImpl
                 /*requestedBasicCard=*/mPaymentUIsManager.merchantSupportsAutofillCards(),
                 requestedMethodGoogle, requestedMethodOther);
         return true;
-    }
-
-    /**
-     * Calculate whether the browser payment sheet should be skipped directly into the payment app.
-     */
-    private void calculateWhetherShouldSkipShowingPaymentRequestUi() {
-        // This should be called after all payment apps are ready and request.show() is called,
-        // since only then whether or not should skip payment sheet UI is determined.
-        assert mIsFinishedQueryingPaymentApps;
-        assert mIsCurrentPaymentRequestShowing;
-
-        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
-        PaymentApp selectedApp =
-                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
-
-        // If there is only a single payment app which can provide all merchant requested
-        // information, we can safely go directly to the payment app instead of showing Payment
-        // Request UI.
-        mShouldSkipShowingPaymentRequestUi =
-                PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
-                // Only allowing payment apps that own their own UIs.
-                // This excludes AutofillPaymentInstrument as its UI is rendered inline in
-                // the payment request UI, thus can't be skipped.
-                && (mURLPaymentMethodIdentifiersSupported
-                        || mComponentPaymentRequestImpl.skipUiForNonUrlPaymentMethodIdentifiers())
-                && mPaymentUIsManager.getPaymentMethodsSection().getSize() >= 1
-                && mPaymentUIsManager.onlySingleAppCanProvideAllRequiredInformation()
-                // Skip to payment app only if it can be pre-selected.
-                && selectedApp != null
-                // Skip to payment app only if user gesture is provided when it is required to
-                // skip-UI.
-                && (mIsUserGestureShow || !selectedApp.isUserGestureRequiredToSkipUi());
     }
 
     /** @return Whether the UI was built. */
@@ -617,9 +581,12 @@ public class PaymentRequestImpl
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
             // request.show() is called.
-            calculateWhetherShouldSkipShowingPaymentRequestUi();
+            mPaymentUIsManager.calculateWhetherShouldSkipShowingPaymentRequestUi(mIsUserGestureShow,
+                    mURLPaymentMethodIdentifiersSupported,
+                    mComponentPaymentRequestImpl.skipUiForNonUrlPaymentMethodIdentifiers());
             if (!buildUI(chromeActivity)) return;
-            if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
+            if (!mPaymentUIsManager.shouldSkipShowingPaymentRequestUi()
+                    && mSkipToGPayHelper == null) {
                 mPaymentUIsManager.getPaymentRequestUI().show();
             }
         }
@@ -646,7 +613,7 @@ public class PaymentRequestImpl
     private void triggerPaymentAppUiSkipIfApplicable(ChromeActivity chromeActivity) {
         // If we are skipping showing the Payment Request UI, we should call into the payment app
         // immediately after we determine the apps are ready and UI is shown.
-        if ((mShouldSkipShowingPaymentRequestUi || mSkipToGPayHelper != null)
+        if ((mPaymentUIsManager.shouldSkipShowingPaymentRequestUi() || mSkipToGPayHelper != null)
                 && mIsFinishedQueryingPaymentApps && mIsCurrentPaymentRequestShowing
                 && !mWaitForUpdatedDetails) {
             assert !mPaymentUIsManager.getPaymentMethodsSection().isEmpty();
@@ -969,7 +936,13 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        if (parseAndValidateDetails(details)) {
+            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(details, mRawTotal, mRawLineItems);
+        } else {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
+            return;
+        }
         mSpec.updateWith(details);
 
         if (mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
@@ -1008,7 +981,13 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        if (parseAndValidateDetails(details)) {
+            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(details, mRawTotal, mRawLineItems);
+        } else {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
+            return;
+        }
         mSpec.updateWith(details);
 
         if (!TextUtils.isEmpty(details.error)) {
@@ -1038,7 +1017,8 @@ public class PaymentRequestImpl
 
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
 
-        if (mIsFinishedQueryingPaymentApps && !mShouldSkipShowingPaymentRequestUi) {
+        if (mIsFinishedQueryingPaymentApps
+                && !mPaymentUIsManager.shouldSkipShowingPaymentRequestUi()) {
             boolean providedInformationToPaymentRequestUI =
                     mPaymentUIsManager.enableAndUpdatePaymentRequestUIWithPaymentInfo();
             if (providedInformationToPaymentRequestUI) recordShowEventAndTransactionAmount();
@@ -1092,12 +1072,8 @@ public class PaymentRequestImpl
      *                member variables.
      * @return True if the data is valid. False if the data is invalid.
      */
-    private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
-        if (!PaymentValidator.validatePaymentDetails(details)) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
-            return false;
-        }
+    private boolean parseAndValidateDetails(PaymentDetails details) {
+        if (!PaymentValidator.validatePaymentDetails(details)) return false;
 
         if (details.total != null) {
             mRawTotal = details.total;
@@ -1109,26 +1085,7 @@ public class PaymentRequestImpl
                             : new ArrayList<>());
         }
 
-        mPaymentUIsManager.loadCurrencyFormattersForPaymentDetails(details);
-
-        // Total is never pending.
-        CurrencyFormatter formatter =
-                mPaymentUIsManager.getOrCreateCurrencyFormatter(mRawTotal.amount);
-        LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
-                formatter.format(mRawTotal.amount.value), /* isPending */ false);
-
-        List<LineItem> uiLineItems = mPaymentUIsManager.getLineItems(mRawLineItems);
-
-        mPaymentUIsManager.setUiShoppingCart(new ShoppingCart(uiTotal, uiLineItems));
-
-        if (mPaymentUIsManager.getUiShippingOptions() == null || details.shippingOptions != null) {
-            mPaymentUIsManager.setUiShippingOptions(
-                    mPaymentUIsManager.getShippingOptions(details.shippingOptions));
-        }
-
         if (mSkipToGPayHelper != null && !mSkipToGPayHelper.setShippingOptionIfValid(details)) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return false;
         }
 
@@ -1148,8 +1105,6 @@ public class PaymentRequestImpl
         } else if (mRawShippingOptions == null) {
             mRawShippingOptions = Collections.unmodifiableList(new ArrayList<>());
         }
-
-        mPaymentUIsManager.updateAppModifiedTotals();
 
         assert mRawTotal != null;
         assert mRawLineItems != null;
@@ -1905,10 +1860,15 @@ public class PaymentRequestImpl
                         mPaymentUIsManager.getPaymentMethodsSection().getItems(), mRawTotal);
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
-            // request.show() is called.
-            calculateWhetherShouldSkipShowingPaymentRequestUi();
+            // request.show() is called, since only then whether or not should skip payment sheet UI
+            // is determined.
+            assert mIsFinishedQueryingPaymentApps;
+            mPaymentUIsManager.calculateWhetherShouldSkipShowingPaymentRequestUi(mIsUserGestureShow,
+                    mURLPaymentMethodIdentifiersSupported,
+                    mComponentPaymentRequestImpl.skipUiForNonUrlPaymentMethodIdentifiers());
             if (!buildUI(chromeActivity)) return;
-            if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
+            if (!mPaymentUIsManager.shouldSkipShowingPaymentRequestUi()
+                    && mSkipToGPayHelper == null) {
                 mPaymentUIsManager.getPaymentRequestUI().show();
             }
         }
@@ -2024,7 +1984,7 @@ public class PaymentRequestImpl
 
         // Showing the payment request UI if we were previously skipping it so the loading
         // spinner shows up until the merchant notifies that payment was completed.
-        if (mShouldSkipShowingPaymentRequestUi
+        if (mPaymentUIsManager.shouldSkipShowingPaymentRequestUi()
                 && mPaymentUIsManager.getPaymentRequestUI() != null) {
             mPaymentUIsManager.getPaymentRequestUI().showProcessingMessageAfterUiSkip();
         }
@@ -2061,7 +2021,7 @@ public class PaymentRequestImpl
         }
 
         // When skipping UI, any errors/cancel from fetching payment details should abort payment.
-        if (mShouldSkipShowingPaymentRequestUi) {
+        if (mPaymentUIsManager.shouldSkipShowingPaymentRequestUi()) {
             assert !TextUtils.isEmpty(errorMessage);
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
             disconnectFromClientWithDebugMessage(errorMessage);

@@ -1009,7 +1009,7 @@
     {
       name: "LayoutNGFragmentItem",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal", "EditingNG"],
-      status: "test",
+      status: "stable",
     },
     {
       // Traverse the fragment tree when painting and hit-testing, instead of
@@ -1374,6 +1374,9 @@
     },
     {
       name: "OutOfBlinkCors",
+    },
+    {
+      name: "OverflowClip",
     },
     {
       name: "OverflowIconsForMediaControls",
@@ -1939,7 +1942,7 @@
     },
     {
       name: "UserAgentClientHint",
-      status: "stable"
+      status: "experimental",
     },
     {
       name: "V8IdleTasks",
@@ -2010,6 +2013,10 @@
     },
     {
       name: "WebAuthenticationGetAssertionFeaturePolicy",
+      status: "experimental",
+    },
+    {
+      name: "WebAuthenticationResidentKeyRequirement",
       status: "experimental",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
@@ -121,6 +122,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetProgress(int progress) override;
   void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetProgressBarErrorState(bool error) override;
   void SetStepProgressBarConfiguration(
       const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
       override;
@@ -221,6 +223,10 @@ class Controller : public ScriptExecutorDelegate,
   void MaybeReportFirstCheckDone();
   ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  BottomSheetState GetBottomSheetState() override;
+  void SetBottomSheetState(BottomSheetState state) override;
+  bool IsTabSelected() override;
+  void SetTabSelected(bool selected) override;
   void GetOverlayColors(OverlayColors* colors) const override;
   const ClientSettings& GetClientSettings() const override;
   const FormProto* GetForm() const override;
@@ -332,8 +338,6 @@ class Controller : public ScriptExecutorDelegate,
   // Clear out visible state and enter the stopped state.
   void EnterStoppedState();
 
-  void SetProgressBarErrorState(bool error);
-
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
   bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
@@ -420,6 +424,12 @@ class Controller : public ScriptExecutorDelegate,
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
   bool auto_change_peek_mode_ = false;
+
+  // The latest bottom sheet state stored.
+  BottomSheetState bottom_sheet_state_ = BottomSheetState::UNDEFINED;
+
+  // Whether the tab associated with this controller is currently selected.
+  bool tab_selected_ = true;
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 

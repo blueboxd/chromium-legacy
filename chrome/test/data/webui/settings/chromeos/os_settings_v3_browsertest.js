@@ -49,6 +49,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
  ['OsLanguagesPage', 'os_languages_page_tests.m.js'],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.m.js'],
+ ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.m.js'],
  ['NearbyShareSubPage', 'nearby_share_subpage_tests.m.js'],
  ['ParentalControlsPage', 'parental_controls_page_test.m.js'],
  ['PeoplePage', 'os_people_page_test.m.js'],
@@ -79,7 +80,7 @@ function registerTest(testName, module, caseName) {
   };
 
   // AboutPage has a test suite that can only succeed on official builds where
-  // the is_chrome_branded build flag is enabled
+  // the is_chrome_branded build flag is enabled.
   if (testName === 'AboutPage') {
     TEST_F(className, 'AllBuilds' || 'All', () => {
       mocha.grep('/^(?!AboutPageTest_OfficialBuild).*$/').run();
@@ -88,6 +89,18 @@ function registerTest(testName, module, caseName) {
     GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
     TEST_F(className, 'OfficialBuild' || 'All', () => {
       mocha.grep('AboutPageTest_OfficialBuild').run();
+    });
+    GEN('#endif');
+  } else if (testName === 'PrivacyPage') {
+    // PrivacyPage has a test suite that can only succeed on official builds
+    // where the is_chrome_branded build flag is enabled.
+    TEST_F(className, 'AllBuilds' || 'All', () => {
+      mocha.grep('/^(?!PrivacePageTest_OfficialBuild).*$/').run();
+    });
+
+    GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+    TEST_F(className, 'OfficialBuild' || 'All', () => {
+      mocha.grep('PrivacePageTest_OfficialBuild').run();
     });
     GEN('#endif');
   } else {

@@ -9594,6 +9594,12 @@ histogram as enum -->
   <int value="11" label="salesforce"/>
 </enum>
 
+<enum name="ChromeOSSharesheetAction">
+  <summary>Defines Chrome OS sharesheet actions.</summary>
+  <int value="0" label="Cancelled by user"/>
+  <int value="1" label="Launch ARC app"/>
+</enum>
+
 <enum name="ChromeOSUICommands">
 <!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
 
@@ -24440,6 +24446,7 @@ Called by update_extension_histograms.py.-->
       label="FILEMANAGERPRIVATEINTERNAL_TOGGLEADDEDTOHOLDINGSPACE"/>
   <int value="1504" label="FILEMANAGERPRIVATEINTERNAL_GETHOLDINGSPACESTATE"/>
   <int value="1505" label="INPUTMETHODPRIVATE_SETCOMPOSINGRANGE"/>
+  <int value="1506" label="AUTOTESTPRIVATE_LAUNCHSYSTEMWEBAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -37688,6 +37695,21 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Download Failed">
     Download failed either by getting a corrupted file or no file at all.
   </int>
+</enum>
+
+<enum name="IOSOpenInMimeType">
+  <int value="0" label="Not handled"/>
+  <int value="1" label="PDF"/>
+  <int value="2" label="Microsof tWord"/>
+  <int value="3" label="Microsoft Word OpenXML"/>
+  <int value="4" label="JPEG"/>
+  <int value="5" label="PNG"/>
+  <int value="6" label="Microsoft PowerPoint"/>
+  <int value="7" label="Microsoft PowerPoint OpenXML"/>
+  <int value="8" label="RTF"/>
+  <int value="9" label="SVG"/>
+  <int value="10" label="Microsoft Excel"/>
+  <int value="11" label="Microsoft Excel OpenXML"/>
 </enum>
 
 <enum name="IOSOutOfSyncURLAction">

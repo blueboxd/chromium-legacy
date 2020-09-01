@@ -1056,6 +1056,29 @@ TEST_F('OSSettingsMultideviceSubpageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the Nearby Share receive dialog.
+// eslint-disable-next-line no-var
+var OSSettingsNearbyShareReceiveDialogTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/nearby_share_page/nearby_share_receive_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../../test_util.js',
+      'nearby_share_receive_dialog_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsNearbyShareReceiveDialogTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Test fixture for the Nearby Share settings subpage.
 // eslint-disable-next-line no-var
 var OSSettingsNearbyShareSubPageTest = class extends OSSettingsBrowserTest {
@@ -1319,13 +1342,22 @@ var OSSettingsPrivacyPageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat(['os_privacy_page_test.js']);
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'os_privacy_page_test.js',
+    ]);
   }
 };
 
-TEST_F('OSSettingsPrivacyPageTest', 'AllJsTests', () => {
-  mocha.run();
+TEST_F('OSSettingsPrivacyPageTest', 'AllBuilds', () => {
+  mocha.grep('/^(?!PrivacePageTest_OfficialBuild).*$/').run();
 });
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+TEST_F('OSSettingsPrivacyPageTest', 'PrivacePage_OfficialBuild', () => {
+  mocha.grep('PrivacePageTest_OfficialBuild').run();
+});
+GEN('#endif');
 
 // Tests for the Files section.
 // eslint-disable-next-line no-var

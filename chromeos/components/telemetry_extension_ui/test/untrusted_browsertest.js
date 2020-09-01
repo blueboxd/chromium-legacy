@@ -137,6 +137,14 @@ UNTRUSTED_TEST(
       assertDeepEquals(response, {id: 123456789, status: 'ready'});
     });
 
+// Tests that runBatteryHealthRoutine returns the correct Object.
+UNTRUSTED_TEST(
+    'UntrustedDiagnosticsRequestRunBatteryHealthRoutine', async () => {
+      const response =
+          await chromeos.diagnostics.runBatteryHealthRoutine(10, 5);
+      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+    });
+
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
@@ -210,6 +218,12 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
           },
           {modelName: 'i9-low-powered', logicalCpus: []}
         ]
+      }
+    },
+    timezoneResult: {
+      timezoneInfo: {
+        posix: 'MST7MDT,M3.2.0,M11.1.0',
+        region: 'America/Denver',
       }
     }
   });

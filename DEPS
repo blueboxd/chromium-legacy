@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a551fd288101fe082fb9fde12a21fbb0b9765d03',
+  'skia_revision': '928a02b1527da2a47bec23e98aa6c06c3277f760',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4b3de99d978c746f47a9da42eb275d4ea3300b5a',
+  'v8_revision': 'f2e5606d3df2e14468616c64b362a7d09364e06d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c21fdb07d60c31e961751cf701a554a1589ce9df',
+  'angle_revision': '736c43a1bb8fd492274a7c1c1e944b9ef9698804',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a2e6c1a149f4ee03f46e11afbb72cfa10e5526e3',
+  'swiftshader_revision': '4953712980a299d5147255c4821ebf2278856e00',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4977f960c9501f759e6ebca337be1836cdd6a749',
+  'devtools_frontend_revision': 'feb4151c5a110ee84ece98cba10fbbfe826b2b7f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,11 +314,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'b6c82a149ed87cab37f2364ecd6f27423cfab8ba',
+  'shaderc_revision': '482642324c4eaae1c4a0ccc115f71a911540179e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1c4a7f780f10ba4ebd1718b08d4d986aaa344c66',
+  'dawn_revision': 'be53792880bc1d84d71d45c32cb2391acb76ca77',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -342,7 +342,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '94ac5b4c721597f739ee4b6fadee5c56bf952c73',
+  'libavif_revision': 'f88383daa8de92d57e898cce9c2d23a9fe87802c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -357,7 +357,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'f70065f6222776f60738099b1c1319c9fbc36627',
+  'tint_revision': '11eda3cc3e50643342d1e53f827272b7adaca0f3',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -876,7 +876,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a4ec7f6e5af7f92ff82e543245977d7d36701c77',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '168986591cc17b4eea1e6335be3ae38ec38a8d07',
       'condition': 'checkout_chromeos',
   },
 
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '64e4b1e8e2e8a178818a00269de1e354f1028ecd',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '816506e1c600a93c19de1606998e010a05826154',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1471,7 +1471,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c2302e8e2eb6d5b51c273bdd4986c7b61867da32',
+    Var('webrtc_git') + '/src.git' + '@' + '2bca0089149c79355602a8efebc13e087ccfbe3c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d397f7662abb127dc16e3dc74c0bfbd8cac84d01',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8ef8112b0c27043c674b37cb18f70b1bd4e9b17a',
     'condition': 'checkout_src_internal',
   },
 
@@ -1551,7 +1551,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'R04rsBEeH2QD52I6NpNlr89kXmUPZPdVo_ElSJ4y9_sC',
+        'version': 'KrYfqVB6LhkjazZLnT1OKxOSEdYeE1SUB-xcQF7oD-MC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1562,7 +1562,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'qWERs0_B9Z--fvL8HtwVcESrcvhGQn_WW5tYzLXvrvsC',
+        'version': 'hpvLwAWDVkSoL-uwAv5VXFc-bqnqhg1pfnTdcLgdoBAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

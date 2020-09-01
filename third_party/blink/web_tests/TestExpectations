@@ -2202,7 +2202,10 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 crbug.com/893480 external/wpt/pointerevents/pointerevent_touch-action-keyboard.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure Timeout ]
-crbug.com/893480 external/wpt/is-input-pending/tentative/* [ Failure Timeout ]
+
+# isInputPending requires threaded compositing and layerized iframes
+crbug.com/910421 external/wpt/is-input-pending/* [ Skip ]
+crbug.com/910421 virtual/threaded-composited-iframes/external/wpt/is-input-pending/* [ Pass ]
 
 # Need to support 'direction: rtl' for scroll snap
 crbug.com/1012173 external/wpt/css/css-scroll-snap/snap-after-initial-layout/direction-rtl.html [ Failure ]
@@ -6642,3 +6645,6 @@ crbug.com/1122106 external/wpt/webrtc/protocol/crypto-suite.https.html [ Pass Ti
 crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
 
 crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Pass Failure ]
+
+# Sheriff 2020-09-01
+crbug.com/1123558 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Pass Timeout ]

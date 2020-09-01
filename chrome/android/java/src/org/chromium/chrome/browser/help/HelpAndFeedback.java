@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
+ * TODO(crbug.com/1117343): Remove this class when downstream dependency is removed.
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
  */
 public class HelpAndFeedback implements HelpAndFeedbackLauncher {
@@ -149,11 +150,13 @@ public class HelpAndFeedback implements HelpAndFeedbackLauncher {
             return context.getString(R.string.help_context_bookmarks);
         } else if (url.equals(UrlConstants.HISTORY_URL)) {
             return context.getString(R.string.help_context_history);
+        }
         // Note: For www.google.com the following function returns false.
-        } else if (UrlUtilitiesJni.get().isGoogleSearchUrl(url)) {
+        else if (UrlUtilitiesJni.get().isGoogleSearchUrl(url)) {
             return context.getString(R.string.help_context_search_results);
+        }
         // For incognito NTP, we want to show incognito help.
-        } else if (isIncognito) {
+        else if (isIncognito) {
             return context.getString(R.string.help_context_incognito);
         } else if (url.equals(UrlConstants.NTP_URL)) {
             return context.getString(R.string.help_context_new_tab);

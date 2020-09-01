@@ -592,6 +592,7 @@ var OSSettingsDateTimePageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'date_time_page_tests.js',
     ]);
   }
@@ -1722,11 +1723,6 @@ var OSSettingsSwitchAccessSubpageTest = class extends OSSettingsBrowserTest {
   }
 
   /** @override */
-  get commandLineSwitches() {
-    return ['enable-experimental-accessibility-switch-access'];
-  }
-
-  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
@@ -1769,7 +1765,10 @@ var OSSettingsTimezoneSubpageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat(['timezone_subpage_test.js']);
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'timezone_subpage_test.js',
+    ]);
   }
 };
 

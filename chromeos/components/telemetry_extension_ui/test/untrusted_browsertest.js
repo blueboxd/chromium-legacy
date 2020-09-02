@@ -153,6 +153,10 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
     'timezone', 'memory', 'backlight', 'fan', 'stateful-partition', 'bluetooth'
   ]);
 
+  // Rounded down to the nearest 100MiB due to privacy requirement.
+  const availableSpace =
+      Math.floor(1125899906842624 / (100 * 1024 * 1024)) * (100 * 1024 * 1024);
+
   assertDeepEquals(response, {
     batteryResult: {
       batteryInfo: {
@@ -225,6 +229,40 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
         posix: 'MST7MDT,M3.2.0,M11.1.0',
         region: 'America/Denver',
       }
+    },
+    memoryResult: {
+      memoryInfo: {
+        totalMemoryKib: 2147483648,
+        freeMemoryKib: 2147573648,
+        availableMemoryKib: 2147571148,
+        pageFaultsSinceLastBoot: 2199971148
+      }
+    },
+    backlightResult: {
+      backlightInfo: [{
+        path: '/sys/backlight',
+        maxBrightness: 536880912,
+        brightness: 436880912,
+      }]
+    },
+    fanResult: {
+      fanInfo: [{
+        speedRpm: 999880912,
+      }]
+    },
+    statefulPartitionResult: {
+      partitionInfo: {
+        availableSpace: availableSpace,
+        totalSpace: 1125900006842624,
+      }
+    },
+    bluetoothResult: {
+      bluetoothAdapterInfo: [{
+        name: 'hci0',
+        address: 'ab:cd:ef:12:34:56',
+        powered: true,
+        numConnectedDevices: 4294967295
+      }]
     }
   });
 });

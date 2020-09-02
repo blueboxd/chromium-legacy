@@ -14,10 +14,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "third_party/blink/public/common/features.h"
 
-#if defined(OS_WIN)
-#include "content/browser/font_access/font_enumeration_cache_win.h"
-#endif
-
 namespace content {
 
 FontAccessManagerImpl::FontAccessManagerImpl() {
@@ -47,9 +43,6 @@ void FontAccessManagerImpl::RequestPermission(
   const BindingContext& context = receivers_.current_context();
   RenderFrameHost* rfh = RenderFrameHost::FromID(context.frame_id);
 
-  // Double checking: renderer processes should already have checked for user
-  // activation before the RPC has been made. It is not an error, because it is
-  // possible that user activation has lapsed before reaching here.
   if (!rfh->HasTransientUserActivation()) {
     std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
     return;
@@ -74,13 +67,21 @@ void FontAccessManagerImpl::EnumerateLocalFonts(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   const BindingContext& context = receivers_.current_context();
   RenderFrameHost* rfh = RenderFrameHost::FromID(context.frame_id);
 
-  // Double checking: renderer processes should already have checked for user
-  // activation before the RPC has been made. It is not an error, because it is
-  // possible that user activation has lapsed before reaching here.
+  auto status = PermissionControllerImpl::FromBrowserContext(
+                    rfh->GetProcess()->GetBrowserContext())
+                    ->GetPermissionStatusForFrame(PermissionType::FONT_ACCESS,
+                                                  rfh, context.origin.GetURL());
+
+  if (status != blink::mojom::PermissionStatus::ASK) {
+    // Permission has been requested before.
+    DidRequestPermission(std::move(callback), std::move(status));
+    return;
+  }
+
   if (!rfh->HasTransientUserActivation()) {
     std::move(callback).Run(
         blink::mojom::FontEnumerationStatus::kPermissionDenied,
@@ -114,12 +115,12 @@ void FontAccessManagerImpl::DidRequestPermission(
 
 // Per-platform delegation for obtaining cached font enumeration data occurs
 // here, after the permission has been granted.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   ipc_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(
                      [](EnumerateLocalFontsCallback callback,
                         scoped_refptr<base::TaskRunner> results_task_runner) {
-                       FontEnumerationCacheWin::GetInstance()
+                       FontEnumerationCache::GetInstance()
                            ->QueueShareMemoryRegionWhenReady(
                                results_task_runner, std::move(callback));
                      },

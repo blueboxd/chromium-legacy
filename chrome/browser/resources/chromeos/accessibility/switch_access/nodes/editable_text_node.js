@@ -71,19 +71,28 @@ class EditableTextNode extends NodeWrapper {
         NavigationManager.enterKeyboard();
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SwitchAccessMenuAction.DICTATION:
-        chrome.accessibilityPrivate.toggleDictation();
+        if (this.automationNode.state[chrome.automation.StateType.FOCUSED]) {
+          chrome.accessibilityPrivate.toggleDictation();
+        } else {
+          new EventHandler(
+              this.automationNode, chrome.automation.EventType.FOCUS,
+              () => chrome.accessibilityPrivate.toggleDictation(),
+              {exactMatch: true, listenOnce: true})
+              .start();
+          this.automationNode.focus();
+        }
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SwitchAccessMenuAction.MOVE_CURSOR:
         return SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU;
 
       case SwitchAccessMenuAction.CUT:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
+        EventGenerator.sendKeyPress(KeyCode.X, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
       case SwitchAccessMenuAction.COPY:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
+        EventGenerator.sendKeyPress(KeyCode.C, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
       case SwitchAccessMenuAction.PASTE:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
+        EventGenerator.sendKeyPress(KeyCode.V, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
 
       case SwitchAccessMenuAction.START_TEXT_SELECTION:

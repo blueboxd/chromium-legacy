@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
@@ -58,13 +59,16 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.RecyclerViewActions;
@@ -80,6 +84,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -106,6 +111,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.concurrent.ExecutionException;
 
@@ -594,7 +600,7 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 2,
                 cta.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, 2, 2));
-        editDialogTitle(cta, CUSTOMIZED_TITLE1);
+        editDialogTitle(CUSTOMIZED_TITLE1);
 
         // Verify the title is updated in both tab switcher and dialog.
         clickScrimToExitDialog(cta);
@@ -605,7 +611,7 @@ public class TabGridDialogTest {
         // Modify title in dialog from tab strip.
         clickFirstTabInDialog(cta);
         openDialogFromStripAndVerify(cta, 2, CUSTOMIZED_TITLE1);
-        editDialogTitle(cta, CUSTOMIZED_TITLE2);
+        editDialogTitle(CUSTOMIZED_TITLE2);
 
         clickScrimToExitDialog(cta);
         waitForDialogHidingAnimation(cta);
@@ -770,7 +776,7 @@ public class TabGridDialogTest {
 
         // Content description should update with group title.
         openDialogFromTabSwitcherAndVerify(cta, 3, null);
-        editDialogTitle(cta, CUSTOMIZED_TITLE1);
+        editDialogTitle(CUSTOMIZED_TITLE1);
         clickScrimToExitDialog(cta);
         waitForDialogHidingAnimationInTabSwitcher(cta);
         verifyFirstCardTitle(CUSTOMIZED_TITLE1);
@@ -928,6 +934,26 @@ public class TabGridDialogTest {
         onView(allOf(withParent(withId(R.id.dialog_parent_view)),
                        withId(R.id.dialog_animation_card_view)))
                 .check((v, e) -> assertEquals(0f, v.getAlpha(), 0.0));
+
+        // For devices with version higher or equal to O_MR1 and use light color navigation bar,
+        // make sure that the color of navigation bar is changed by dialog scrim.
+        Resources resources = cta.getResources();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1
+                || !resources.getBoolean(R.bool.window_light_navigation_bar)) {
+            return;
+        }
+        @ColorInt
+        int scrimDefaultColor = ApiCompatibilityUtils.getColor(resources, R.color.black_alpha_65);
+        @ColorInt
+        int navigationBarColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.bottom_system_nav_color);
+        float scrimColorAlpha = (scrimDefaultColor >>> 24) / 255f;
+        int scrimColorOpaque = scrimDefaultColor & 0xFF000000;
+        int navigationBarColorWithScrimOverlay = ColorUtils.getColorWithOverlay(
+                navigationBarColor, scrimColorOpaque, scrimColorAlpha, true);
+
+        assertEquals(cta.getWindow().getNavigationBarColor(), navigationBarColorWithScrimOverlay);
+        assertNotEquals(navigationBarColor, navigationBarColorWithScrimOverlay);
     }
 
     private boolean isDialogShowing(ChromeTabbedActivity cta) {
@@ -1070,9 +1096,16 @@ public class TabGridDialogTest {
                 });
     }
 
-    private void editDialogTitle(ChromeTabbedActivity cta, String title) {
+    private void editDialogTitle(String title) {
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
-                .perform(click(), replaceText(title));
+                .perform(click())
+                .check((v, e) -> {
+                    // Verify all texts in the field are selected.
+                    EditText titleView = (EditText) v;
+                    assertEquals(titleView.getText().length(),
+                            titleView.getSelectionEnd() - titleView.getSelectionStart());
+                })
+                .perform(replaceText(title));
     }
 
     private void verifyFirstCardTitle(String title) {

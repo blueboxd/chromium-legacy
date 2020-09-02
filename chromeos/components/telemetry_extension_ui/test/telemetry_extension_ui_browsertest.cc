@@ -62,52 +62,6 @@ void TelemetryExtensionUiBrowserTest::SetUpCommandLine(
   SandboxedWebUiAppTestBase::SetUpCommandLine(command_line);
 }
 
-void TelemetryExtensionUiBrowserTest::
-    ConfigureDiagnosticsForInteractiveUpdate() {
-  namespace cros_healthd = ::chromeos::cros_healthd::mojom;
-
-  auto input = cros_healthd::RoutineUpdate::New();
-  auto routineUpdateUnion = cros_healthd::RoutineUpdateUnion::New();
-  auto interactiveRoutineUpdate = cros_healthd::InteractiveRoutineUpdate::New();
-
-  interactiveRoutineUpdate->user_message =
-      cros_healthd::DiagnosticRoutineUserMessageEnum::kUnplugACPower;
-
-  routineUpdateUnion->set_interactive_update(
-      std::move(interactiveRoutineUpdate));
-
-  input->progress_percent = 0;
-  input->output = chromeos::MojoUtils::CreateReadOnlySharedMemoryMojoHandle(
-      "This routine is running!");
-  input->routine_update_union = std::move(routineUpdateUnion);
-
-  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetGetRoutineUpdateResponseForTesting(input);
-}
-
-void TelemetryExtensionUiBrowserTest::
-    ConfigureDiagnosticsForNonInteractiveUpdate() {
-  namespace cros_healthd = ::chromeos::cros_healthd::mojom;
-
-  auto input = cros_healthd::RoutineUpdate::New();
-  auto routineUpdateUnion = cros_healthd::RoutineUpdateUnion::New();
-  auto nonInteractiveRoutineUpdate =
-      cros_healthd::NonInteractiveRoutineUpdate::New();
-
-  nonInteractiveRoutineUpdate->status =
-      cros_healthd::DiagnosticRoutineStatusEnum::kReady;
-  nonInteractiveRoutineUpdate->status_message = "Routine ran by Google.";
-
-  routineUpdateUnion->set_noninteractive_update(
-      std::move(nonInteractiveRoutineUpdate));
-
-  input->progress_percent = 3147483771;
-  input->routine_update_union = std::move(routineUpdateUnion);
-
-  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetGetRoutineUpdateResponseForTesting(input);
-}
-
 void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
   {
     namespace cros_diagnostics = ::chromeos::cros_healthd::mojom;
@@ -263,6 +217,64 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
         chromeos::cros_healthd::mojom::TimezoneResult::NewTimezoneInfo(
             std::move(timezone_info));
   }
+  {
+    auto memory_info = chromeos::cros_healthd::mojom::MemoryInfo::New();
+    memory_info->total_memory_kib = 2147483648;
+    memory_info->free_memory_kib = 2147573648;
+    memory_info->available_memory_kib = 2147571148;
+    memory_info->page_faults_since_last_boot = 2199971148;
+
+    telemetry_info->memory_result =
+        chromeos::cros_healthd::mojom::MemoryResult::NewMemoryInfo(
+            std::move(memory_info));
+  }
+  {
+    auto backlight_info = chromeos::cros_healthd::mojom::BacklightInfo::New();
+    backlight_info->path = "/sys/backlight";
+    backlight_info->max_brightness = 536880912;
+    backlight_info->brightness = 436880912;
+
+    std::vector<chromeos::cros_healthd::mojom::BacklightInfoPtr> infos;
+    infos.push_back(std::move(backlight_info));
+
+    telemetry_info->backlight_result =
+        chromeos::cros_healthd::mojom::BacklightResult::NewBacklightInfo(
+            std::move(infos));
+  }
+  {
+    auto fan_info = chromeos::cros_healthd::mojom::FanInfo::New();
+    fan_info->speed_rpm = 999880912;
+
+    std::vector<chromeos::cros_healthd::mojom::FanInfoPtr> infos;
+    infos.push_back(std::move(fan_info));
+
+    telemetry_info->fan_result =
+        chromeos::cros_healthd::mojom::FanResult::NewFanInfo(std::move(infos));
+  }
+  {
+    auto partition_info =
+        chromeos::cros_healthd::mojom::StatefulPartitionInfo::New();
+    partition_info->available_space = 1125899906842624;
+    partition_info->total_space = 1125900006842624;
+
+    telemetry_info->stateful_partition_result = chromeos::cros_healthd::mojom::
+        StatefulPartitionResult::NewPartitionInfo(std::move(partition_info));
+  }
+  {
+    auto bluetooth_info =
+        chromeos::cros_healthd::mojom::BluetoothAdapterInfo::New();
+    bluetooth_info->name = "hci0";
+    bluetooth_info->address = "ab:cd:ef:12:34:56";
+    bluetooth_info->powered = true;
+    bluetooth_info->num_connected_devices = 4294967295;
+
+    std::vector<chromeos::cros_healthd::mojom::BluetoothAdapterInfoPtr> infos;
+    infos.push_back(std::move(bluetooth_info));
+
+    telemetry_info->bluetooth_result =
+        chromeos::cros_healthd::mojom::BluetoothResult::NewBluetoothAdapterInfo(
+            std::move(infos));
+  }
 
   DCHECK(chromeos::cros_healthd::FakeCrosHealthdClient::Get());
 
@@ -270,4 +282,50 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
       ->SetProbeTelemetryInfoResponseForTesting(telemetry_info);
 
   SandboxedWebUiAppTestBase::SetUpOnMainThread();
+}
+
+void TelemetryExtensionUiBrowserTest::
+    ConfigureDiagnosticsForInteractiveUpdate() {
+  namespace cros_healthd = ::chromeos::cros_healthd::mojom;
+
+  auto input = cros_healthd::RoutineUpdate::New();
+  auto routineUpdateUnion = cros_healthd::RoutineUpdateUnion::New();
+  auto interactiveRoutineUpdate = cros_healthd::InteractiveRoutineUpdate::New();
+
+  interactiveRoutineUpdate->user_message =
+      cros_healthd::DiagnosticRoutineUserMessageEnum::kUnplugACPower;
+
+  routineUpdateUnion->set_interactive_update(
+      std::move(interactiveRoutineUpdate));
+
+  input->progress_percent = 0;
+  input->output = chromeos::MojoUtils::CreateReadOnlySharedMemoryMojoHandle(
+      "This routine is running!");
+  input->routine_update_union = std::move(routineUpdateUnion);
+
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetGetRoutineUpdateResponseForTesting(input);
+}
+
+void TelemetryExtensionUiBrowserTest::
+    ConfigureDiagnosticsForNonInteractiveUpdate() {
+  namespace cros_healthd = ::chromeos::cros_healthd::mojom;
+
+  auto input = cros_healthd::RoutineUpdate::New();
+  auto routineUpdateUnion = cros_healthd::RoutineUpdateUnion::New();
+  auto nonInteractiveRoutineUpdate =
+      cros_healthd::NonInteractiveRoutineUpdate::New();
+
+  nonInteractiveRoutineUpdate->status =
+      cros_healthd::DiagnosticRoutineStatusEnum::kReady;
+  nonInteractiveRoutineUpdate->status_message = "Routine ran by Google.";
+
+  routineUpdateUnion->set_noninteractive_update(
+      std::move(nonInteractiveRoutineUpdate));
+
+  input->progress_percent = 3147483771;
+  input->routine_update_union = std::move(routineUpdateUnion);
+
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetGetRoutineUpdateResponseForTesting(input);
 }

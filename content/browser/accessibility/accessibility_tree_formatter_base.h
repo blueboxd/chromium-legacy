@@ -104,7 +104,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   AccessibilityTreeFormatterBase();
   ~AccessibilityTreeFormatterBase() override;
 
-  static base::string16 DumpAccessibilityTreeFromManager(
+  static std::string DumpAccessibilityTreeFromManager(
       BrowserAccessibilityManager* ax_mgr,
       bool internal,
       std::vector<PropertyFilter> property_filters);
@@ -139,9 +139,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(
       const base::DictionaryValue& dict) override;
   void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
-                               base::string16* contents) override;
+                               std::string* contents) override;
   void FormatAccessibilityTreeForTesting(ui::AXPlatformNodeDelegate* root,
-                                         base::string16* contents) override;
+                                         std::string* contents) override;
   void SetPropertyFilters(
       const std::vector<PropertyFilter>& property_filters) override;
   void SetNodeFilters(const std::vector<NodeFilter>& node_filters) override;
@@ -168,7 +168,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // - Returns a filtered text view as one large string.
   // - Provides a filtered version of the dictionary in an out param,
   //   (only if the out param is provided).
-  virtual base::string16 ProcessTreeForOutput(
+  virtual std::string ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) = 0;
 
@@ -193,18 +193,15 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Returns false if the attribute was filtered out.
   bool WriteAttribute(bool include_by_default,
                       const std::string& attr,
-                      base::string16* line);
+                      std::string* line);
   void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
                          std::string filter,
                          PropertyFilter::Type type = PropertyFilter::ALLOW);
   bool show_ids() { return show_ids_; }
 
  private:
-  void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
-                                        base::string16* contents,
-                                        int indent);
   void RecursiveFormatAccessibilityTree(const base::DictionaryValue& tree_node,
-                                        base::string16* contents,
+                                        std::string* contents,
                                         int depth = 0);
 
   bool MatchesPropertyFilters(const std::string& text,

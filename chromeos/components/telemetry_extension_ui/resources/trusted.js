@@ -317,6 +317,14 @@ class DiagnosticsProxy {
     return await getOrCreateDiagnosticsService().runBatteryHealthRoutine(
         request.maximumCycleCount, request.percentBatteryWearAllowed);
   };
+
+  /**
+   * Runs smartctl check routine.
+   * @return { !RunRoutineResponsePromise }
+   */
+  async handleRunSmartctlCheckRoutine() {
+    return await getOrCreateDiagnosticsService().runSmartctlCheckRoutine();
+  };
 };
 
 const diagnosticsProxy = new DiagnosticsProxy();
@@ -347,6 +355,24 @@ class TelemetryProxy {
 
     if (this.categoryToEnum_.size != categoryEnum.MAX_VALUE + 1) {
       throw RangeError('categoryToEnum_ does not contain all items from enum!');
+    }
+
+    const errorEnum = chromeos.health.mojom.ErrorType;
+
+    /**
+     * @type { !Map<!chromeos.health.mojom.ErrorType, !string > }
+     * @const
+     */
+    this.errorTypeToString_ = new Map([
+      [errorEnum.kFileReadError, 'file-read-error'],
+      [errorEnum.kParseError, 'parse-error'],
+      [errorEnum.kSystemUtilityError, 'system-utility-error'],
+      [errorEnum.kServiceUnavailable, 'service-unavailable'],
+    ]);
+
+    if (this.errorTypeToString_.size != errorEnum.MAX_VALUE + 1) {
+      throw RangeError(
+          'errorTypeToString_ does not contain all items from enum!');
     }
 
     const cpuArchEnum = chromeos.health.mojom.CpuArchitectureEnum;
@@ -382,6 +408,17 @@ class TelemetryProxy {
   }
 
   /**
+   * @param { !chromeos.health.mojom.ErrorType } errorType
+   * @return { !string }
+   */
+  convertErrorType(errorType) {
+    if (!this.errorTypeToString_.has(errorType)) {
+      throw TypeError(`Error type '${errorType}' is unknown.`);
+    }
+    return this.errorTypeToString_.get(errorType);
+  }
+
+  /**
    * @param { !chromeos.health.mojom.CpuArchitectureEnum } cpuArch
    * @return { !string }
    */
@@ -397,12 +434,76 @@ class TelemetryProxy {
    * @return { !Object }
    */
   convertAllEnums(telemetryInfo) {
+    // Convert CPU arch.
     if (telemetryInfo && telemetryInfo.cpuResult &&
         telemetryInfo.cpuResult.cpuInfo) {
       /** @suppress {checkTypes} */
       telemetryInfo.cpuResult.cpuInfo.architecture =
           this.convertCpuArch(telemetryInfo.cpuResult.cpuInfo.architecture);
     }
+
+    // Convert errors.
+    if (telemetryInfo && telemetryInfo.batteryResult &&
+        telemetryInfo.batteryResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.batteryResult.error.type =
+          this.convertErrorType(telemetryInfo.batteryResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.blockDeviceResult &&
+        telemetryInfo.blockDeviceResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.blockDeviceResult.error.type =
+          this.convertErrorType(telemetryInfo.blockDeviceResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.vpdResult &&
+        telemetryInfo.vpdResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.vpdResult.error.type =
+          this.convertErrorType(telemetryInfo.vpdResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.cpuResult &&
+        telemetryInfo.cpuResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.cpuResult.error.type =
+          this.convertErrorType(telemetryInfo.cpuResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.timezoneResult &&
+        telemetryInfo.timezoneResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.timezoneResult.error.type =
+          this.convertErrorType(telemetryInfo.timezoneResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.memoryResult &&
+        telemetryInfo.memoryResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.memoryResult.error.type =
+          this.convertErrorType(telemetryInfo.memoryResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.backlightResult &&
+        telemetryInfo.backlightResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.backlightResult.error.type =
+          this.convertErrorType(telemetryInfo.backlightResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.fanResult &&
+        telemetryInfo.fanResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.fanResult.error.type =
+          this.convertErrorType(telemetryInfo.fanResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.statefulPartitionResult &&
+        telemetryInfo.statefulPartitionResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.statefulPartitionResult.error.type = this.convertErrorType(
+          telemetryInfo.statefulPartitionResult.error.type);
+    }
+    if (telemetryInfo && telemetryInfo.bluetoothResult &&
+        telemetryInfo.bluetoothResult.error) {
+      /** @suppress {checkTypes} */
+      telemetryInfo.bluetoothResult.error.type =
+          this.convertErrorType(telemetryInfo.bluetoothResult.error.type);
+    }
+
     return telemetryInfo;
   }
 
@@ -515,6 +616,11 @@ untrustedMessagePipe.registerHandler(
     (message) => diagnosticsProxy.genericRunRoutineHandler(
         (message) => diagnosticsProxy.handleRunBatteryHealthRoutine(message),
         message));
+
+untrustedMessagePipe.registerHandler(
+    dpsl_internal.Message.DIAGNOSTICS_RUN_SMARTCTL_CHECK_ROUTINE,
+    (message) => diagnosticsProxy.genericRunRoutineHandler(
+        () => diagnosticsProxy.handleRunSmartctlCheckRoutine(), message));
 
 untrustedMessagePipe.registerHandler(
     dpsl_internal.Message.PROBE_TELEMETRY_INFO,

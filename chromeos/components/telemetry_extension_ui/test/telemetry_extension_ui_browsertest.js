@@ -136,6 +136,12 @@ TEST_F('TelemetryExtensionUIBrowserTest', 'ConvertTelemetryEnums', () => {
   assertDeepEquals(
       telemetryProxy.convertAllEnums({
         cpuResult:
+            {cpuInfo: {architecture: cpuArchEnum.kUnknown, physicalCpus: []}}
+      }),
+      {cpuResult: {cpuInfo: {architecture: 'unknown', physicalCpus: []}}});
+  assertDeepEquals(
+      telemetryProxy.convertAllEnums({
+        cpuResult:
             {cpuInfo: {architecture: cpuArchEnum.kX86_64, physicalCpus: []}}
       }),
       {cpuResult: {cpuInfo: {architecture: 'x86-64', physicalCpus: []}}});
@@ -257,7 +263,7 @@ TEST_F(
       testDone();
     });
 
-var DiagnosticsInteractiveRoutineUpdate =
+var TelemetryExtensionUIWithInteractiveRoutineUpdateBrowserTest =
     class extends TelemetryExtensionUIBrowserTest {
   /** @override */
   testGenPreamble() {
@@ -266,14 +272,14 @@ var DiagnosticsInteractiveRoutineUpdate =
 }
 
 TEST_F(
-    'DiagnosticsInteractiveRoutineUpdate',
+    'TelemetryExtensionUIWithInteractiveRoutineUpdateBrowserTest',
     'UntrustedDiagnosticsRequestInteractiveRoutineUpdate', async () => {
       await runTestInUntrusted(
           'UntrustedDiagnosticsRequestInteractiveRoutineUpdate');
       testDone();
     });
 
-var DiagnosticsNonInteractiveRoutineUpdate =
+var TelemetryExtensionUIWithNonInteractiveRoutineUpdateBrowserTest =
     class extends TelemetryExtensionUIBrowserTest {
   /** @override */
   testGenPreamble() {
@@ -282,7 +288,7 @@ var DiagnosticsNonInteractiveRoutineUpdate =
 }
 
 TEST_F(
-    'DiagnosticsNonInteractiveRoutineUpdate',
+    'TelemetryExtensionUIWithNonInteractiveRoutineUpdateBrowserTest',
     'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate', async () => {
       await runTestInUntrusted(
           'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate');

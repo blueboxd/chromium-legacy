@@ -487,7 +487,6 @@
     {
       name: "CSSLogical",
       status: "experimental",
-      settable_from_internals: true,
     },
     {
       name: "CSSLogicalOverflow",
@@ -1055,11 +1054,6 @@
     {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
-    },
-    {
-      // Used for API surface that will be removed when the Native File System
-      // API is no longer guarded by an origin trial.
-      name: "LegacyNativeFileSystem",
     },
     {
       name: "LegacyWindowsDWriteFontFallback",

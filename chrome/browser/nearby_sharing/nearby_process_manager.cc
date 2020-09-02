@@ -136,7 +136,6 @@ ProfileAttributesEntry* NearbyProcessManager::GetActiveProfile() const {
 
 bool NearbyProcessManager::IsActiveProfile(Profile* profile) const {
   // If the active profile is not loaded yet, try looking in prefs.
-  // TODO(knollr): Add a test for this.
   if (!active_profile_)
     return IsStoredNearbyProfile(profile);
 
@@ -241,7 +240,7 @@ void NearbyProcessManager::LaunchNewProcess() {
   StopProcess(active_profile_);
 
   // Launch a new sandboxed process.
-  // TODO(knollr): Set process name to "Nearby Sharing".
+  // TODO(crbug.com/1095650): Set process name to "Nearby Sharing".
   BindSharingProcess(sharing::LaunchSharing());
 }
 

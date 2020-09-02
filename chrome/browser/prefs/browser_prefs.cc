@@ -351,7 +351,7 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/device_sync/device_sync_impl.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_prefs.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/arc/arc_prefs.h"
@@ -566,9 +566,6 @@ const char kHashedAvailablePages[] = "previews.offline_helper.available_pages";
 // Deprecated 7/2020
 const char kObservedSessionTime[] = "profile.observed_session_time";
 
-// Deprecated 9/2020
-const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
-
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -677,8 +674,6 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kHashedAvailablePages);
 
   registry->RegisterDictionaryPref(kObservedSessionTime);
-
-  registry->RegisterBooleanPref(kBlockThirdPartyCookies, false);
 }
 
 }  // namespace
@@ -1065,7 +1060,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::bluetooth::DebugLogsManager::RegisterPrefs(registry);
   chromeos::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
-  chromeos::device_sync::DeviceSyncImpl::RegisterProfilePrefs(registry);
+  chromeos::device_sync::RegisterProfilePrefs(registry);
   chromeos::FamilyUserMetricsService::RegisterProfilePrefs(registry);
   chromeos::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
@@ -1344,7 +1339,4 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 7/2020
   profile_prefs->ClearPref(kObservedSessionTime);
-
-  // Added 9/2020
-  profile_prefs->ClearPref(kBlockThirdPartyCookies);
 }

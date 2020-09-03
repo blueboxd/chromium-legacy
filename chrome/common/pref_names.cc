@@ -1054,6 +1054,12 @@ const char kUpdateRequiredWarningPeriod[] = "update_required_warning_period";
 // when System-proxy and ARC++ are enabled by policy.
 const char kSystemProxyUserTrafficHostAndPort[] =
     "system_proxy.user_traffic_host_and_port";
+
+// Boolean pref indicating whether the supervised user has migrated EDU
+// secondary account to ARC++.
+const char kEduCoexistenceArcMigrationCompleted[] =
+    "account_manager.edu_coexistence_arc_migration_completed";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -2148,6 +2154,11 @@ const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
 // it's not the default value; otherwise, no auto-enrollment decision has been
 // made yet.
 const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
+
+// A boolean pref of the private-set-membership decision. Its value is only
+// valid if it's not the default value; otherwise, no private-set-membership
+// decision has been made yet.
+const char kShouldRetrieveDeviceState[] = "ShouldRetrieveDeviceState";
 
 // An integer pref with the maximum number of bits used by the client in a
 // previous auto-enrollment request. If the client goes through an auto update

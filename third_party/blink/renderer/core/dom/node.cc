@@ -1358,8 +1358,8 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     // will be done when the lock is committed.
     if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
       auto* ancestor_element = DynamicTo<Element>(ancestor);
-      if (ancestor_element && ancestor_element->StyleRecalcBlockedByDisplayLock(
-                                  DisplayLockLifecycleTarget::kChildren)) {
+      if (ancestor_element &&
+          ancestor_element->ChildStyleRecalcBlockedByDisplayLock()) {
         break;
       }
     }
@@ -1396,8 +1396,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
          ancestor_copy = ancestor_copy->GetStyleRecalcParent()) {
       auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
       if (ancestor_copy_element &&
-          ancestor_copy_element->StyleRecalcBlockedByDisplayLock(
-              DisplayLockLifecycleTarget::kChildren)) {
+          ancestor_copy_element->ChildStyleRecalcBlockedByDisplayLock()) {
         return;
       }
     }
@@ -1475,9 +1474,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
     SetStyleChange(change_type);
 
   auto* this_element = DynamicTo<Element>(this);
-  if (existing_change_type == kNoStyleChange &&
-      (!this_element || !this_element->StyleRecalcBlockedByDisplayLock(
-                            DisplayLockLifecycleTarget::kSelf)))
+  if (existing_change_type == kNoStyleChange)
     MarkAncestorsWithChildNeedsStyleRecalc();
 
   if (this_element && HasRareData())
@@ -2329,6 +2326,17 @@ uint16_t Node::compareDocumentPosition(const Node* other_node,
                                kDocumentPositionContains | connection;
 }
 
+void Node::InvalidateIfHasEffectiveAppearance() const {
+  auto* layout_object = GetLayoutObject();
+  if (!layout_object)
+    return;
+
+  if (!layout_object->StyleRef().HasEffectiveAppearance())
+    return;
+
+  layout_object->SetSubtreeShouldDoFullPaintInvalidation();
+}
+
 String Node::DebugName() const {
   StringBuilder name;
   AppendUnsafe(name, DebugNodeName());
@@ -3060,10 +3068,9 @@ void Node::UpdateHadKeyboardEvent(const Event& event) {
   GetDocument().SetHadKeyboardEvent(true);
 
   // Changes to HadKeyboardEvent may affect :focus-visible matching,
-  // ShouldHaveFocusAppearance and LayoutTheme::IsFocused().
-  // Inform LayoutTheme if HadKeyboardEvent changes.
+  // ShouldHaveFocusAppearance and theme painting.
   if (GetLayoutObject()) {
-    GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
+    InvalidateIfHasEffectiveAppearance();
 
     auto* this_node = DynamicTo<ContainerNode>(this);
     if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled() && this_node)

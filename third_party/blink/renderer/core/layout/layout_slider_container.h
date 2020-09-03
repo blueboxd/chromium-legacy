@@ -38,17 +38,9 @@ namespace blink {
 
 class SliderContainerElement;
 
-// FIXME: Find a way to cascade appearance and adjust heights, and get rid of
-// this class. See http://webkit.org/b/62535
 class LayoutSliderContainer final : public LayoutFlexibleBox {
  public:
-  static const int kDefaultTrackLength;
-
-  LayoutSliderContainer(SliderContainerElement*);
-  void ComputeLogicalHeight(LayoutUnit logical_height,
-                            LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const override;
-  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
+  explicit LayoutSliderContainer(SliderContainerElement*);
 
  private:
   void UpdateLayout() override;

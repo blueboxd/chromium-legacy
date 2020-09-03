@@ -40674,6 +40674,7 @@ from previous Chrome versions.
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1830472348" label="CryptAuthV2DeviceSync:enabled"/>
   <int value="-1830199297" label="force-empty-corb-allowlist"/>
+  <int value="-1827599944" label="QueryTilesLocalOrdering:enabled"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
   <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
@@ -43191,6 +43192,7 @@ from previous Chrome versions.
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="779703052" label="ChromeOSAmbientMode:enabled"/>
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
+  <int value="780743733" label="QueryTilesLocalOrdering:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
@@ -44750,6 +44752,21 @@ from previous Chrome versions.
   <int value="7" label="UNKNOWN_OUTPUT_ERROR"/>
   <int value="8" label="DUPLICATE_OUTPUT_ERROR"/>
   <int value="9" label="EXECUTION_ERROR"/>
+</enum>
+
+<enum name="MachineLearningServiceLoadHandwritingModelResultEvent">
+  <int value="0" label="OK"/>
+  <int value="1" label="DEPRECATED_MODEL_SPEC_ERROR"/>
+  <int value="2" label="LOAD_MODEL_ERROR"/>
+  <int value="3" label="FEATURE_NOT_SUPPORTED_ERROR"/>
+  <int value="4" label="LANGUAGE_NOT_SUPPORTED_ERROR"/>
+  <int value="5" label="FEATURE_DISABLED_BY_USER"/>
+  <int value="6" label="DLC_DOES_NOT_EXIST"/>
+  <int value="7" label="DLC_INSTALL_ERROR"/>
+  <int value="8" label="DLC_GET_PATH_ERROR"/>
+  <int value="9" label="LOAD_NATIVE_LIB_ERROR"/>
+  <int value="10" label="LOAD_FUNC_PTR_ERROR"/>
+  <int value="11" label="LOAD_MODEL_FILES_ERROR"/>
 </enum>
 
 <enum name="MachineLearningServiceLoadModelResultEvent">
@@ -77598,6 +77615,9 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="ZeroSuggestEligibleOnFocusForRemoteNoUrlOnNTP">
+  <obsolete>
+    Removed from code as of M87 / September 2020. This is no longer useful.
+  </obsolete>
   <int value="0" label="Eligible"/>
   <int value="1" label="Ineligible: Off the Record">
     The user is in incognito mode.

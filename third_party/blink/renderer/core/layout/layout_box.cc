@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
@@ -66,7 +67,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_slider_container.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
@@ -158,10 +158,9 @@ LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
       ceilf(std::max(min_default_label_width, default_label_width)));
 }
 
-LayoutUnit SliderIntrinsicInlineSize(const HTMLInputElement& input,
-                                     const LayoutBox& box) {
-  return LayoutUnit(LayoutSliderContainer::kDefaultTrackLength *
-                    box.StyleRef().EffectiveZoom());
+LayoutUnit SliderIntrinsicInlineSize(const LayoutBox& box) {
+  constexpr int kDefaultTrackLength = 129;
+  return LayoutUnit(kDefaultTrackLength * box.StyleRef().EffectiveZoom());
 }
 
 LayoutUnit ListBoxDefaultItemHeight(const LayoutBox& box) {
@@ -708,7 +707,7 @@ void LayoutBox::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+  if (ChildLayoutBlockedByDisplayLock())
     return;
 
   LayoutObject* child = SlowFirstChild();
@@ -725,7 +724,7 @@ void LayoutBox::UpdateLayout() {
   }
   UpdateAfterLayout();
   ClearNeedsLayout();
-  NotifyDisplayLockDidLayout(DisplayLockLifecycleTarget::kChildren);
+  NotifyDisplayLockDidLayoutChildren();
 }
 
 // ClientWidth and ClientHeight represent the interior of an object excluding
@@ -1007,18 +1006,25 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
   // get here.
   DCHECK(!HasOverrideIntrinsicContentLogicalWidth());
 
-  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (!IsA<Element>(GetNode()))
+    return kIndefiniteSize;
+  const Element& element = *To<Element>(GetNode());
+
+  auto* select = DynamicTo<HTMLSelectElement>(element);
   if (UNLIKELY(select && select->UsesMenuList())) {
     return MenuListIntrinsicInlineSize(*select, *this);
   }
-  auto* input = DynamicTo<HTMLInputElement>(GetNode());
+  auto* input = DynamicTo<HTMLInputElement>(element);
   if (UNLIKELY(input)) {
     const AtomicString& type = input->type();
     if (type == input_type_names::kFile)
       return FileUploadControlIntrinsicInlineSize(*input, *this);
     else if (type == input_type_names::kRange)
-      return SliderIntrinsicInlineSize(*input, *this);
+      return SliderIntrinsicInlineSize(*this);
+    return kIndefiniteSize;
   }
+  if (IsSliderContainer(element))
+    return SliderIntrinsicInlineSize(*this);
   return kIndefiniteSize;
 }
 
@@ -1881,9 +1887,8 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
       HitTestOverflowControl(result, hit_test_location, accumulated_offset))
     return true;
 
-  bool skip_children =
-      (result.GetHitTestRequest().GetStopNode() == this) ||
-      PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren);
+  bool skip_children = (result.GetHitTestRequest().GetStopNode() == this) ||
+                       ChildPaintBlockedByDisplayLock();
   if (!skip_children && ShouldClipOverflow()) {
     // PaintLayer::HitTestContentsForFragments checked the fragments'
     // foreground rect for intersection if a layer is self painting,
@@ -2835,7 +2840,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // layout bits. However, we can still use the cached result, since we will
   // re-layout when unlocking.
   bool child_needs_layout_unless_locked =
-      !LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren) &&
+      !ChildLayoutBlockedByDisplayLock() &&
       (PosChildNeedsLayout() || NormalChildNeedsLayout());
 
   const NGPhysicalBoxFragment& physical_fragment =
@@ -6007,8 +6012,7 @@ bool LayoutBox::ChildNeedsRelayoutForPagination(const LayoutBox& child) const {
 void LayoutBox::MarkChildForPaginationRelayoutIfNeeded(
     LayoutBox& child,
     SubtreeLayoutScope& layout_scope) {
-  DCHECK(!child.NeedsLayout() || child.LayoutBlockedByDisplayLock(
-                                     DisplayLockLifecycleTarget::kChildren));
+  DCHECK(!child.NeedsLayout() || child.ChildLayoutBlockedByDisplayLock());
   LayoutState* layout_state = View()->GetLayoutState();
 
   if (layout_state->PaginationStateChanged() ||
@@ -6099,7 +6103,7 @@ void LayoutBox::AddVisualOverflowFromChild(const LayoutBox& child,
 DISABLE_CFI_PERF
 void LayoutBox::AddLayoutOverflowFromChild(const LayoutBox& child,
                                            const LayoutSize& delta) {
-  DCHECK(!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
+  DCHECK(!ChildLayoutBlockedByDisplayLock());
 
   // Never allow flow threads to propagate overflow up to a parent.
   if (child.IsLayoutFlowThread())

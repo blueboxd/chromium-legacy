@@ -134,7 +134,7 @@ bool IsValidTransferToken(NativeFileSystemTransferTokenImpl* token,
     return false;
   }
 
-  if (token->url().origin() != expected_origin) {
+  if (token->origin() != expected_origin) {
     return false;
   }
 
@@ -448,9 +448,10 @@ void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
   switch (url.type()) {
     case storage::kFileSystemTypeNativeLocal: {
       DCHECK_EQ(url.mount_type(), storage::kFileSystemTypeIsolated);
-      base::FilePath root_path;
-      storage::IsolatedContext::GetInstance()->GetRegisteredPath(
-          url.filesystem_id(), &root_path);
+      base::FilePath root_path = resolved_token->GetWriteGrant()->GetPath();
+      if (root_path.empty())
+        root_path = url.path();
+
       data.mutable_native()->set_root_path(SerializePath(root_path));
 
       base::FilePath relative_path;
@@ -512,9 +513,10 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
 
       auto permission_grant =
           base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-              PermissionStatus::GRANTED);
+              PermissionStatus::GRANTED, base::FilePath());
       CreateTransferTokenImpl(
-          url, SharedHandleState(permission_grant, permission_grant, {}),
+          url, origin,
+          SharedHandleState(permission_grant, permission_grant, {}),
           data.handle_type() == NativeFileSystemHandleData::kDirectory
               ? HandleType::kDirectory
               : HandleType::kFile,
@@ -545,7 +547,7 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
 
       CreateTransferTokenImpl(
-          child, handle_state,
+          child, origin, handle_state,
           is_directory ? HandleType::kDirectory : HandleType::kFile,
           std::move(token));
       break;
@@ -653,15 +655,17 @@ void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemFileHandleImpl& file,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
         receiver) {
-  return CreateTransferTokenImpl(file.url(), file.handle_state(),
-                                 HandleType::kFile, std::move(receiver));
+  return CreateTransferTokenImpl(file.url(), file.context().origin,
+                                 file.handle_state(), HandleType::kFile,
+                                 std::move(receiver));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemDirectoryHandleImpl& directory,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
         receiver) {
-  return CreateTransferTokenImpl(directory.url(), directory.handle_state(),
+  return CreateTransferTokenImpl(directory.url(), directory.context().origin,
+                                 directory.handle_state(),
                                  HandleType::kDirectory, std::move(receiver));
 }
 
@@ -751,7 +755,7 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
 
   auto permission_grant =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-          PermissionStatus::GRANTED);
+          PermissionStatus::GRANTED, base::FilePath());
 
   std::move(callback).Run(
       native_file_system_error::Ok(),
@@ -912,6 +916,7 @@ void NativeFileSystemManagerImpl::DidChooseDirectory(
 
 void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
     const storage::FileSystemURL& url,
+    const url::Origin& origin,
     const SharedHandleState& handle_state,
     HandleType handle_type,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
@@ -919,7 +924,7 @@ void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto token_impl = std::make_unique<NativeFileSystemTransferTokenImpl>(
-      url, handle_state, handle_type, this, std::move(receiver));
+      url, origin, handle_state, handle_type, this, std::move(receiver));
   auto token = token_impl->token();
   transfer_tokens_.emplace(token, std::move(token_impl));
 }
@@ -1033,7 +1038,8 @@ NativeFileSystemManagerImpl::GetSharedHandleStateForPath(
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalWebPlatformFeatures)
             ? PermissionStatus::GRANTED
-            : PermissionStatus::DENIED);
+            : PermissionStatus::DENIED,
+        path);
     if (user_action ==
         NativeFileSystemPermissionContext::UserAction::kLoadFromStorage) {
       read_grant = write_grant;
@@ -1041,7 +1047,7 @@ NativeFileSystemManagerImpl::GetSharedHandleStateForPath(
       // Grant read permission even without a permission_context_, as the picker
       // itself is enough UI to assume user intent.
       read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-          PermissionStatus::GRANTED);
+          PermissionStatus::GRANTED, path);
     }
   }
   return SharedHandleState(std::move(read_grant), std::move(write_grant),

@@ -447,6 +447,9 @@ void HTMLInputElement::UpdateType() {
     PseudoStateChanged(CSSSelector::kPseudoInRange);
     PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
   }
+  if (input_type_->ShouldRespectListAttribute() !=
+      new_type->ShouldRespectListAttribute())
+    PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
 
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
@@ -882,6 +885,7 @@ void HTMLInputElement::ParseAttribute(
       ResetListAttributeTargetObserver();
       ListAttributeTargetChanged();
     }
+    PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
     UseCounter::Count(GetDocument(), WebFeature::kListAttribute);
   } else if (name == html_names::kWebkitdirectoryAttr) {
     TextControlElement::ParseAttribute(params);
@@ -1025,8 +1029,7 @@ void HTMLInputElement::setChecked(bool now_checked,
 
   if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
     scope->UpdateCheckedState(this);
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kCheckedControlState);
+  InvalidateIfHasEffectiveAppearance();
   SetNeedsValidityCheck();
 
   // Ideally we'd do this from the layout tree (matching
@@ -1060,8 +1063,7 @@ void HTMLInputElement::setIndeterminate(bool new_value) {
 
   PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
 
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kCheckedControlState);
+  InvalidateIfHasEffectiveAppearance();
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->CheckedStateChanged(this);
@@ -1754,6 +1756,7 @@ void HTMLInputElement::ResetListAttributeTargetObserver() {
 
 void HTMLInputElement::ListAttributeTargetChanged() {
   input_type_view_->ListAttributeTargetChanged();
+  PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
 }
 
 bool HTMLInputElement::IsSteppable() const {

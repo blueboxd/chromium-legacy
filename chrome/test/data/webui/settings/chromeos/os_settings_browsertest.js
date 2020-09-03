@@ -1370,7 +1370,10 @@ var OSSettingsFilesPageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat(['os_files_page_test.js']);
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'os_files_page_test.js',
+    ]);
   }
 };
 
@@ -1442,7 +1445,7 @@ GEN('#endif');
 
 // Tests for the CUPS printer entry.
 // eslint-disable-next-line no-var
-var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
+var OSSettingsCupsPrinterEntryTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return super.browsePreload +
@@ -1460,13 +1463,13 @@ var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPrinterEntryTest', 'AllJsTests', () => {
+TEST_F('OSSettingsCupsPrinterEntryTest', 'AllJsTests', () => {
   mocha.run();
 });
 
 // Tests for the CUPS printer landing page.
 // eslint-disable-next-line no-var
-var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
+var OSSettingsCupsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return super.browsePreload + 'chromeos/os_printing_page/cups_printers.html';
@@ -1488,13 +1491,13 @@ var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPrinterLandingPageTest', 'AllJsTests', () => {
+TEST_F('OSSettingsCupsPrinterLandingPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the CUPS page.
+// Tests for the CUPS page, primarily the (edit/add) dialogs.
 // eslint-disable-next-line no-var
-var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
+var OSSettingsCupsPrinterPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return super.browsePreload + 'chromeos/os_printing_page/cups_printers.html';
@@ -1520,7 +1523,7 @@ var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPrintingPageTest', 'AllJsTests', () => {
+TEST_F('OSSettingsCupsPrinterPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 

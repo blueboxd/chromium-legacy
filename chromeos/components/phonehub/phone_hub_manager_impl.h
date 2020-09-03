@@ -22,7 +22,13 @@ namespace multidevice_setup {
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace phonehub {
+
+class ConnectionManager;
 
 // Implemented as a KeyedService which is keyed by the primary Profile.
 class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
@@ -30,12 +36,14 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   PhoneHubManagerImpl(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~PhoneHubManagerImpl() override;
 
   // PhoneHubManager:
   DoNotDisturbController* GetDoNotDisturbController() override;
   FeatureStatusProvider* GetFeatureStatusProvider() override;
+  FindMyDeviceController* GetFindMyDeviceController() override;
   NotificationAccessManager* GetNotificationAccessManager() override;
   NotificationManager* GetNotificationManager() override;
   PhoneModel* GetPhoneModel() override;
@@ -46,7 +54,9 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   void Shutdown() override;
 
   std::unique_ptr<DoNotDisturbController> do_not_disturb_controller_;
+  std::unique_ptr<ConnectionManager> connection_manager_;
   std::unique_ptr<FeatureStatusProvider> feature_status_provider_;
+  std::unique_ptr<FindMyDeviceController> find_my_device_controller_;
   std::unique_ptr<NotificationAccessManager> notification_access_manager_;
   std::unique_ptr<NotificationManager> notification_manager_;
   std::unique_ptr<PhoneModel> phone_model_;

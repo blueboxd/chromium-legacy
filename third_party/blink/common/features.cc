@@ -54,6 +54,11 @@ const base::Feature kFreezePurgeMemoryAllPagesFrozen{
 const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support for FTP URLs. When disabled FTP URLs will behave the same as
+// any other URL scheme that's unknown to the UA. See https://crbug.com/333943
+const base::Feature kFtpProtocol{"FtpProtocol",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kMeasureMemoryExperiment{"MeasureMemoryExperiment",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -311,8 +316,8 @@ const char kMixedContentAutoupgradeModeAllPassive[] = "all-passive";
 // Decodes jpeg 4:2:0 formatted images to YUV instead of RGBX and stores in this
 // format in the image decode cache. See crbug.com/919627 for details on the
 // feature.
-const base::Feature kDecodeJpeg420ImagesToYUV{
-    "DecodeJpeg420ImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDecodeJpeg420ImagesToYUV{"DecodeJpeg420ImagesToYUV",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Decodes lossy WebP images to YUV instead of RGBX and stores in this format
 // in the image decode cache. See crbug.com/900264 for details on the feature.

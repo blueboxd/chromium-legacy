@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -128,11 +129,9 @@ ControlPart AutoAppearanceFor(const Element& element) {
       return kSearchFieldCancelButtonPart;
 
     // Slider container elements and -webkit-meter-inner-element don't have IDs.
-    const AtomicString& shadow_pseudo = element.ShadowPseudoId();
-    if (shadow_pseudo == "-webkit-media-slider-container" ||
-        shadow_pseudo == "-webkit-slider-container")
+    if (IsSliderContainer(element))
       return kSliderHorizontalPart;
-    if (shadow_pseudo == "-webkit-meter-inner-element")
+    if (element.ShadowPseudoId() == "-webkit-meter-inner-element")
       return kMeterPart;
   }
   return kNoControlPart;
@@ -430,19 +429,6 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
   // specified to non-:focus rulesets.
   if (node->IsFocused() && !node->ShouldHaveFocusAppearance())
     return false;
-  return true;
-}
-
-bool LayoutTheme::ControlStateChanged(const Node* node,
-                                      const ComputedStyle& style,
-                                      ControlState state) const {
-  if (!style.HasEffectiveAppearance())
-    return false;
-
-  // Assume pressed state is only responded to if the control is enabled.
-  if (state == kPressedControlState && !IsEnabled(node))
-    return false;
-
   return true;
 }
 

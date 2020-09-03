@@ -986,12 +986,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled8_v4",
+                    "name": "Enabled6_v7",
                     "params": {
-                        "max_shared_ops": "8"
+                        "min": "6"
                     },
                     "enable_features": [
-                        "CacheStorageParallelOps",
+                        "BrowserThreadPoolAdjustment",
                         "CacheStorageSequence"
                     ]
                 }
@@ -1702,27 +1702,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DataReductionProxyLowMemoryDevicePromo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DecodeJpegToYuv": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment",
-                    "enable_features": [
-                        "DecodeJpeg420ImagesToYUV"
                     ]
                 }
             ]
@@ -4832,6 +4811,27 @@
             ]
         }
     ],
+    "OneCopyRasterBufferPlaybackNormalThreadPriority": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OneCopyRasterBufferPlaybackNormalThreadPriority"
+                    ]
+                }
+            ]
+        }
+    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
@@ -5243,7 +5243,6 @@
     "PreconnectToSearch": [
         {
             "platforms": [
-                "android",
                 "linux",
                 "windows",
                 "chromeos",

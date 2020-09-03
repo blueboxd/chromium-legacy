@@ -990,8 +990,7 @@ void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
   auto* element = DynamicTo<Element>(this);
-  if (element && element->StyleRecalcBlockedByDisplayLock(
-                     DisplayLockLifecycleTarget::kChildren)) {
+  if (element && element->ChildStyleRecalcBlockedByDisplayLock()) {
     // Since we block style recalc on descendants of this node due to display
     // locking, none of its descendants should have the NeedsReattachLayoutTree
     // bit set.
@@ -1081,7 +1080,7 @@ void ContainerNode::FocusStateChanged() {
   if (this_element && this_element->ChildrenOrSiblingsAffectedByFocus())
     this_element->PseudoStateChanged(CSSSelector::kPseudoFocus);
 
-  GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
+  InvalidateIfHasEffectiveAppearance();
   FocusVisibleStateChanged();
   FocusWithinStateChanged();
 }

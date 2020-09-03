@@ -3266,6 +3266,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
      flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInOmnibox)},
+    {"query-tiles-local-ordering",
+     flag_descriptions::kQueryTilesLocalOrderingName,
+     flag_descriptions::kQueryTilesLocalOrderingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesLocalOrdering)},
     {"query-tiles-single-tier", flag_descriptions::kQueryTilesSingleTierName,
      flag_descriptions::kQueryTilesSingleTierDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesSingleTier)},
@@ -5878,7 +5882,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     {"enable-ftp", flag_descriptions::kEnableFtpName,
      flag_descriptions::kEnableFtpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFtpProtocol)},
+     FEATURE_VALUE_TYPE(blink::features::kFtpProtocol)},
 #endif
 
 #if defined(OS_CHROMEOS)

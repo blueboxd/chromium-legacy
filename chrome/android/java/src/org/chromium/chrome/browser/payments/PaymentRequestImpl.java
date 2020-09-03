@@ -71,6 +71,7 @@ import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
+import org.chromium.components.payments.PaymentUIsObserver;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.Section;
 import org.chromium.components.payments.UrlUtil;
@@ -114,7 +115,7 @@ public class PaymentRequestImpl
                    PaymentApp.AbortCallback, PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate,
                    NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
-                   PaymentUIsManager.Delegate {
+                   PaymentUIsManager.Delegate, PaymentUIsObserver {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -161,6 +162,9 @@ public class PaymentRequestImpl
      */
     private static PaymentRequestImpl sShowingPaymentRequest;
 
+    // Null-check is necessary because retainers of PaymentRequestImpl could still reference
+    // PaymentRequestImpl after mComponentPaymentRequestImpl is set null, e.g., crbug.com/1122148.
+    @Nullable
     private ComponentPaymentRequestImpl mComponentPaymentRequestImpl;
 
     /** Monitors changes in the TabModelSelector. */
@@ -193,9 +197,17 @@ public class PaymentRequestImpl
     };
 
     private final Handler mHandler = new Handler();
+    private final RenderFrameHost mRenderFrameHost;
     private final Delegate mDelegate;
     private final WebContents mWebContents;
+    private final String mTopLevelOrigin;
+    private final String mPaymentRequestOrigin;
+    private final Origin mPaymentRequestSecurityOrigin;
+    private final String mMerchantName;
+    @Nullable
+    private final byte[][] mCertificateChain;
     private final JourneyLogger mJourneyLogger;
+    private final boolean mIsOffTheRecord;
 
     private final PaymentUIsManager mPaymentUIsManager;
 
@@ -319,14 +331,26 @@ public class PaymentRequestImpl
         assert componentPaymentRequestImpl != null;
         assert delegate != null;
 
+        mComponentPaymentRequestImpl = componentPaymentRequestImpl;
+        mRenderFrameHost = componentPaymentRequestImpl.getRenderFrameHost();
+        assert mRenderFrameHost != null;
+        mPaymentRequestOrigin = componentPaymentRequestImpl.getPaymentRequestOrigin();
+        assert mPaymentRequestOrigin != null;
+        mPaymentRequestSecurityOrigin =
+                componentPaymentRequestImpl.getPaymentRequestSecurityOrigin();
+        assert mPaymentRequestSecurityOrigin != null;
+        mTopLevelOrigin = componentPaymentRequestImpl.getTopLevelOrigin();
+        assert mTopLevelOrigin != null;
+        mCertificateChain = componentPaymentRequestImpl.getCertificateChain();
+        mIsOffTheRecord = componentPaymentRequestImpl.isOffTheRecord();
         mDelegate = delegate;
         mWebContents = componentPaymentRequestImpl.getWebContents();
+        mMerchantName = mWebContents.getTitle();
         mJourneyLogger = componentPaymentRequestImpl.getJourneyLogger();
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
-                /*params=*/this, mWebContents, mComponentPaymentRequestImpl.isOffTheRecord(),
-                mJourneyLogger, mComponentPaymentRequestImpl.getTopLevelOrigin(),
-                mComponentPaymentRequestImpl);
+                /*params=*/this, mWebContents, mIsOffTheRecord, mJourneyLogger, mTopLevelOrigin,
+                /*observer=*/this);
         mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
     }
 
@@ -892,6 +916,8 @@ public class PaymentRequestImpl
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
 
+        if (mComponentPaymentRequestImpl == null) return false;
+
         boolean success = mPaymentUIsManager.showPaymentHandlerUI(mWebContents, url,
                 paymentHandlerWebContentsObserver, mComponentPaymentRequestImpl.isOffTheRecord());
         if (success) {
@@ -1332,13 +1358,10 @@ public class PaymentRequestImpl
                 mInvokedPaymentApp.handlesShippingAddress()
                 ? mRawShippingOptions
                 : Collections.unmodifiableList(new ArrayList<>());
-        mInvokedPaymentApp.invokePaymentApp(mId, mComponentPaymentRequestImpl.getMerchantName(),
-                mComponentPaymentRequestImpl.getTopLevelOrigin(),
-                mComponentPaymentRequestImpl.getPaymentRequestOrigin(),
-                mComponentPaymentRequestImpl.getCertificateChain(),
-                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
-                Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
-                this);
+        mInvokedPaymentApp.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin,
+                mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
+                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), paymentOptions,
+                redactedShippingOptions, this);
 
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         boolean isAutofillCard = mInvokedPaymentApp.isAutofillInstrument();
@@ -1553,9 +1576,8 @@ public class PaymentRequestImpl
 
         mIsHasEnrolledInstrumentResponsePending = false;
 
-        if (CanMakePaymentQuery.canQuery(mWebContents,
-                    mComponentPaymentRequestImpl.getTopLevelOrigin(),
-                    mComponentPaymentRequestImpl.getPaymentRequestOrigin(), mQueryForQuota)) {
+        if (CanMakePaymentQuery.canQuery(
+                    mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mQueryForQuota)) {
             mComponentPaymentRequestImpl.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
@@ -1568,8 +1590,7 @@ public class PaymentRequestImpl
                             : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
 
-        mJourneyLogger.setHasEnrolledInstrumentValue(
-                response || mComponentPaymentRequestImpl.isOffTheRecord());
+        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
 
         if (ComponentPaymentRequestImpl.getObserverForTest() != null) {
             ComponentPaymentRequestImpl.getObserverForTest()
@@ -1616,7 +1637,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryParams implementation.
     @Override
     public RenderFrameHost getRenderFrameHost() {
-        return mComponentPaymentRequestImpl.getRenderFrameHost();
+        return mRenderFrameHost;
     }
 
     // PaymentAppFactoryParams implementation.
@@ -1634,26 +1655,26 @@ public class PaymentRequestImpl
     // PaymentAppFactoryParams implementation.
     @Override
     public String getTopLevelOrigin() {
-        return mComponentPaymentRequestImpl.getTopLevelOrigin();
+        return mTopLevelOrigin;
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     public String getPaymentRequestOrigin() {
-        return mComponentPaymentRequestImpl.getPaymentRequestOrigin();
+        return mPaymentRequestOrigin;
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     public Origin getPaymentRequestSecurityOrigin() {
-        return mComponentPaymentRequestImpl.getPaymentRequestSecurityOrigin();
+        return mPaymentRequestSecurityOrigin;
     }
 
     // PaymentAppFactoryParams implementation.
     @Override
     @Nullable
     public byte[][] getCertificateChain() {
-        return mComponentPaymentRequestImpl.getCertificateChain();
+        return mCertificateChain;
     }
 
     // PaymentAppFactoryParams implementation.
@@ -1898,7 +1919,7 @@ public class PaymentRequestImpl
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
                 disconnectFromClientWithDebugMessage(
                         mRejectShowErrorMessage, PaymentErrorReason.NOT_SUPPORTED);
-            } else if (mComponentPaymentRequestImpl.isOffTheRecord()) {
+            } else if (mIsOffTheRecord) {
                 // If the user is in the OffTheRecord mode, hide the absence of their payment
                 // methods from the merchant site.
                 disconnectFromClientWithDebugMessage(
@@ -2188,5 +2209,12 @@ public class PaymentRequestImpl
     @VisibleForTesting
     public static void setIsLocalCanMakePaymentQueryQuotaEnforcedForTest() {
         sIsLocalCanMakePaymentQueryQuotaEnforcedForTest = true;
+    }
+
+    // Implement PaymentUIsObserver:
+    @Override
+    public void onPaymentRequestUIFaviconNotAvailable() {
+        if (mComponentPaymentRequestImpl == null) return;
+        mComponentPaymentRequestImpl.warnNoFavicon();
     }
 }

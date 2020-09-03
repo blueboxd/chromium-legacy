@@ -115,7 +115,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
-  bool IsScrollOffsetAtTop() override;
   float GetDeviceScaleFactor() final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
@@ -157,14 +156,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetWidgetType(WidgetType widget_type);
 
   WidgetType GetWidgetType();
-
-  // Return a value that is incremented each time the renderer swaps a new frame
-  // to the view.
-  uint32_t RendererFrameNumber();
-
-  // Called each time the RenderWidgetHost receives a new frame for display from
-  // the renderer.
-  void DidReceiveRendererFrame();
 
   // Notification that a resize or move session ended on the native widget.
   void UpdateScreenInfo(gfx::NativeView view);
@@ -661,8 +652,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   }
 
   gfx::Rect current_display_area_;
-
-  uint32_t renderer_frame_number_ = 0;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 

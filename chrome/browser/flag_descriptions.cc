@@ -1998,6 +1998,12 @@ const char kPrinterStatusName[] = "Show printer Status";
 const char kPrinterStatusDescription[] =
     "Enables printer status icons and labels for saved and nearby printers";
 
+const char kPrinterStatusDialogName[] =
+    "Show printer status on destination dialog";
+const char kPrinterStatusDialogDescription[] =
+    "Enables printer status icons and labels for saved printers on the Print "
+    "Preview destination dialog";
+
 const char kSafetyTipName[] =
     "Show Safety Tip UI when visiting low-reputation websites";
 const char kSafetyTipDescription[] =
@@ -2631,14 +2637,6 @@ const char kCCTTargetTranslateLanguageDescription[] =
     "Enables specify target language the page should be translated to "
     "in Chrome Custom Tabs.";
 
-const char kChromeDuetName[] = "Chrome Duet";
-const char kChromeDuetDescription[] =
-    "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
-
-const char kChromeDuetLabelsName[] = "Chrome Duet Labels";
-const char kChromeDuetLabelsDescription[] =
-    "Enables Chrome Duet (split toolbar) labels.";
-
 const char kChromeShareHighlightsAndroidName[] =
     "Chrome Share text highlights on Android";
 const char kChromeShareHighlightsAndroidDescription[] =
@@ -2855,6 +2853,13 @@ const char kInterestFeedV2Description[] =
 const char kInterestFeedFeedbackDescription[] =
     "Allow the user to provide feedback from a feed card.";
 const char kInterestFeedFeedbackName[] = "Interest Feed Feedback";
+
+const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
+const char kMessagesForAndroidInfrastructureDescription[] =
+    "When enabled, will initialize Messages UI infrastructure";
+const char kMessagesForAndroidPasswordsName[] = "Passwords Messages UI";
+const char kMessagesForAndroidPasswordsDescription[] =
+    "When enabled, password infobars will use the new Messages UI.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =

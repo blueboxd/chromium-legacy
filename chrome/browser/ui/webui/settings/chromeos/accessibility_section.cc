@@ -152,7 +152,7 @@ const std::vector<SearchConcept>& GetA11ySearchConcepts() {
        mojom::SearchResultIcon::kA11y,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSpeakToType}},
+       {.setting = mojom::Setting::kHighlightKeyboardFocus}},
       {IDS_OS_SETTINGS_TAG_A11Y_STARTUP_SOUND,
        mojom::kManageAccessibilitySubpagePath,
        mojom::SearchResultIcon::kA11y,
@@ -569,6 +569,8 @@ std::string AccessibilitySection::GetSectionPath() const {
 void AccessibilitySection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kA11yQuickSettings);
+  generator->RegisterTopLevelSetting(
+      mojom::Setting::kGetImageDescriptionsFromGoogle);
 
   // Manage accessibility.
   generator->RegisterTopLevelSubpage(
@@ -585,7 +587,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kStickyKeys,
       mojom::Setting::kOnScreenKeyboard,
       mojom::Setting::kDictation,
-      mojom::Setting::kSpeakToType,
+      mojom::Setting::kHighlightKeyboardFocus,
       mojom::Setting::kEnableSwitchAccess,
       mojom::Setting::kHighlightTextCaret,
       mojom::Setting::kAutoClickWhenCursorStops,
@@ -594,7 +596,6 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kTabletNavigationButtons,
       mojom::Setting::kMonoAudio,
       mojom::Setting::kStartupSound,
-      mojom::Setting::kGetImageDescriptionsFromGoogle,
       mojom::Setting::kLiveCaptions,
       mojom::Setting::kEnableCursorColor,
   };

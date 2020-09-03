@@ -128,8 +128,11 @@ void MathMLOperatorElement::ParseAttribute(
     SetOperatorPropertyDirtyFlagIfNeeded(
         param, MathMLOperatorElement::kMovableLimits, needs_layout);
   }
-  if (needs_layout && GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  if (needs_layout && GetLayoutObject() && GetLayoutObject()->IsMathML()) {
+    GetLayoutObject()
+        ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+            layout_invalidation_reason::kAttributeChanged);
+  }
   MathMLElement::ParseAttribute(param);
 }
 
@@ -190,16 +193,6 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
       properties_.dictionary_category = MathMLOperatorDictionaryCategory::kNone;
     }
   }
-}
-
-base::Optional<bool> MathMLOperatorElement::BooleanAttribute(
-    const QualifiedName& name) const {
-  const AtomicString& value = FastGetAttribute(name);
-  if (EqualIgnoringASCIICase(value, "true"))
-    return true;
-  if (EqualIgnoringASCIICase(value, "false"))
-    return false;
-  return base::nullopt;
 }
 
 void MathMLOperatorElement::ComputeOperatorProperty(OperatorPropertyFlag flag) {

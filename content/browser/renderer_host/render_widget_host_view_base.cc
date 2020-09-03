@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -120,12 +119,6 @@ void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
   const cc::RenderFrameMetadata& metadata =
       host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  is_scroll_offset_at_top_ = metadata.is_scroll_offset_at_top;
-
-  BrowserAccessibilityManager* manager =
-      host()->GetRootBrowserAccessibilityManager();
-  if (manager)
-    manager->SetPageScaleFactor(metadata.page_scale_factor);
 
   is_drawing_delegated_ink_trails_ = metadata.has_delegated_ink_metadata;
 }
@@ -532,10 +525,6 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   host()->SynchronizeVisualProperties();
 }
 
-bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() {
-  return is_scroll_offset_at_top_;
-}
-
 viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewBase::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
@@ -559,14 +548,6 @@ float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
   blink::ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
-}
-
-uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
-  return renderer_frame_number_;
-}
-
-void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
-  ++renderer_frame_number_;
 }
 
 void RenderWidgetHostViewBase::OnAutoscrollStart() {

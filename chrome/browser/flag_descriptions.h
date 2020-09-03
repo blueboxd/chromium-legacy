@@ -1157,6 +1157,9 @@ extern const char kIntensiveWakeUpThrottlingDescription[];
 extern const char kPrinterStatusName[];
 extern const char kPrinterStatusDescription[];
 
+extern const char kPrinterStatusDialogName[];
+extern const char kPrinterStatusDialogDescription[];
+
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 
@@ -1523,12 +1526,6 @@ extern const char kCCTIncognitoDescription[];
 extern const char kCCTTargetTranslateLanguageName[];
 extern const char kCCTTargetTranslateLanguageDescription[];
 
-extern const char kChromeDuetName[];
-extern const char kChromeDuetDescription[];
-
-extern const char kChromeDuetLabelsName[];
-extern const char kChromeDuetLabelsDescription[];
-
 extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
 
@@ -1653,6 +1650,12 @@ extern const char kInterestFeedV2Description[];
 
 extern const char kInterestFeedFeedbackName[];
 extern const char kInterestFeedFeedbackDescription[];
+
+extern const char kMessagesForAndroidInfrastructureName[];
+extern const char kMessagesForAndroidInfrastructureDescription[];
+
+extern const char kMessagesForAndroidPasswordsName[];
+extern const char kMessagesForAndroidPasswordsDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];

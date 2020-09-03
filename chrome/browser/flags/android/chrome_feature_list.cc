@@ -28,6 +28,7 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/messages/android/messages_feature.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -95,9 +96,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kShowTrustedPublisherURL,
     &features::kWebAuth,
     &features::kWebNfc,
-    &feature_engagement::kIPHChromeDuetHomeButtonFeature,
-    &feature_engagement::kIPHChromeDuetSearchFeature,
-    &feature_engagement::kIPHChromeDuetTabSwitcherFeature,
     &feature_engagement::kIPHHomepagePromoCardFeature,
     &feed::kInterestFeedContentSuggestions,
     &feed::kInterestFeedFeedback,
@@ -126,11 +124,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
     &kCCTTargetTranslateLanguage,
-    &kChromeDuetFeature,
-    &kChromeDuetAdaptive,
     &kDarkenWebsitesCheckboxInThemesSetting,
     &kDontAutoHideBrowserControls,
-    &kChromeDuetLabeled,
     &kChromeShareHighlightsAndroid,
     &kChromeShareQRCode,
     &kChromeShareScreenshot,
@@ -233,6 +228,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewShowOnStartup,
     &language::kDetailedLanguageSettings,
     &language::kExplicitLanguageAsk,
+    &messages::kMessagesForAndroidInfrastructure,
     &ntp_snippets::kArticleSuggestionsFeature,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature,
@@ -368,17 +364,8 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
 const base::Feature kCCTTargetTranslateLanguage{
     "CCTTargetTranslateLanguage", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kChromeDuetFeature{"ChromeDuet",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeDuetAdaptive{"ChromeDuetAdaptive",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDontAutoHideBrowserControls{
     "DontAutoHideBrowserControls", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeDuetLabeled{"ChromeDuetLabeled",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeShareHighlightsAndroid{
     "ChromeShareHighlightsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

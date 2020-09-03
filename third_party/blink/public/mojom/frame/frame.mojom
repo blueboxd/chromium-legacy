@@ -353,10 +353,6 @@ interface LocalFrameHost {
   [Sync]
   RunBeforeUnloadConfirm(bool is_reload) => (bool success);
 
-  // A request to check whether WebGL is explicitly blocked.
-  [Sync]
-  Are3DAPIsBlocked() => (bool blocked);
-
   // Notifies that the urls for the favicon of a site has been determined.
   UpdateFaviconURL(array<FaviconURL> favicon_urls);
 
@@ -921,8 +917,7 @@ interface LocalMainFrame {
   // Forwards a message from a portal's host to the main frame in the portal's
   // guest contents.
   ForwardMessageFromHost(blink.mojom.TransferableMessage message,
-                         url.mojom.Origin source_origin,
-                         url.mojom.Origin? target_origin);
+                         url.mojom.Origin source_origin);
 };
 
 // Implemented in Blink, this interface defines remote main-frame-specific

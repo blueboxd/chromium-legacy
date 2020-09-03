@@ -29,8 +29,8 @@
 
     <org.chromium.components.browser_ui.widget.listmenu.ListMenuButton
         android:id="@+id/header_menu"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/snippets_article_header_menu_size"
+        android:layout_height="@dimen/snippets_article_header_menu_size"
         android:scaleType="fitXY"
         android:padding="15dp"
         android:background="@null"

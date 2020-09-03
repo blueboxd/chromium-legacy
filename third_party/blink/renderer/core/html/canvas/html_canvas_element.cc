@@ -44,6 +44,9 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/gpu/gpu.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -457,12 +460,11 @@ bool HTMLCanvasElement::IsWebGL2Enabled() const {
 
 bool HTMLCanvasElement::IsWebGLBlocked() const {
   Document& document = GetDocument();
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return false;
-
   bool blocked = false;
-  frame->GetLocalFrameHostRemote().Are3DAPIsBlocked(&blocked);
+  mojo::Remote<mojom::blink::GpuDataManager> gpu_data_manager;
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+      gpu_data_manager.BindNewPipeAndPassReceiver());
+  gpu_data_manager->Are3DAPIsBlockedForUrl(document.Url(), &blocked);
   return blocked;
 }
 
@@ -1270,11 +1272,25 @@ void HTMLCanvasElement::ContextDestroyed() {
     context_->Stop();
 }
 
+bool HTMLCanvasElement::StyleChangeNeedsDidDraw(
+    const ComputedStyle* old_style,
+    const ComputedStyle& new_style) {
+  // It will only need to redraw for a style change, if the new imageRendering
+  // is different than the previous one, and only if one of the two ir
+  // pixelated.
+  return old_style &&
+         old_style->ImageRendering() != new_style.ImageRendering() &&
+         (old_style->ImageRendering() == EImageRendering::kPixelated ||
+          new_style.ImageRendering() == EImageRendering::kPixelated);
+}
+
 void HTMLCanvasElement::StyleDidChange(const ComputedStyle* old_style,
                                        const ComputedStyle& new_style) {
   UpdateFilterQuality(FilterQualityFromStyle(&new_style));
   if (context_)
     context_->StyleDidChange(old_style, new_style);
+  if (StyleChangeNeedsDidDraw(old_style, new_style))
+    DidDraw();
 }
 
 void HTMLCanvasElement::LayoutObjectDestroyed() {

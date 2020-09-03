@@ -63,7 +63,11 @@ class SecureChannelImpl : public mojom::SecureChannel,
   explicit SecureChannelImpl(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
-  enum class InvalidRemoteDeviceReason { kInvalidPublicKey, kInvalidPsk };
+  enum class InvalidRemoteDeviceReason {
+    kInvalidPublicKey,
+    kInvalidPsk,
+    kInvalidBluetoothAddress
+  };
 
   enum class ApiFunctionName { kListenForConnection, kInitiateConnection };
   friend std::ostream& operator<<(std::ostream& stream,
@@ -96,12 +100,14 @@ class SecureChannelImpl : public mojom::SecureChannel,
       const multidevice::RemoteDevice& device_to_connect,
       const multidevice::RemoteDevice& local_device,
       const std::string& feature,
+      ConnectionMedium connection_medium,
       ConnectionPriority connection_priority,
       mojo::PendingRemote<mojom::ConnectionDelegate> delegate) override;
   void InitiateConnectionToDevice(
       const multidevice::RemoteDevice& device_to_connect,
       const multidevice::RemoteDevice& local_device,
       const std::string& feature,
+      ConnectionMedium connection_medium,
       ConnectionPriority connection_priority,
       mojo::PendingRemote<mojom::ConnectionDelegate> delegate) override;
 
@@ -139,7 +145,15 @@ class SecureChannelImpl : public mojom::SecureChannel,
       ApiFunctionName api_fn_name,
       const multidevice::RemoteDevice& device,
       ClientConnectionParameters* client_connection_parameters,
+      ConnectionMedium connection_medium,
       bool is_local_device);
+
+  // Checks for whether |connection_role| is valid for a connection via the
+  // Nearby Connections library.
+  bool CheckForInvalidNearbyRole(
+      ApiFunctionName api_fn_name,
+      ClientConnectionParameters* client_connection_parameters,
+      ConnectionRole connection_role);
 
   // Checks if |bluetooth_adapter_| is disabled or not present and rejects the
   // connection request if so. Returns whether the request was rejected.
@@ -152,7 +166,8 @@ class SecureChannelImpl : public mojom::SecureChannel,
   // device is not added to the cache.
   base::Optional<InvalidRemoteDeviceReason> AddDeviceToCacheIfPossible(
       ApiFunctionName api_fn_name,
-      const multidevice::RemoteDevice& device);
+      const multidevice::RemoteDevice& device,
+      ConnectionMedium connection_medium);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TimerFactory> timer_factory_;

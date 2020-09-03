@@ -1211,8 +1211,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called on the main frame of a page embedded in a Portal to forward a
   // message from the host of a portal.
   void ForwardMessageFromHost(blink::TransferableMessage message,
-                              const url::Origin& source_origin,
-                              const base::Optional<url::Origin>& target_origin);
+                              const url::Origin& source_origin);
 
   // Returns true if the frame is embedded in a Portal.
   bool InsidePortal();
@@ -1621,7 +1620,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
-  void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
   void UpdateFaviconURL(
       std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
@@ -2832,8 +2830,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A collection of non-network URLLoaderFactory implementations which are used
   // to service any supported non-network subresource requests for the currently
   // committed navigation.
-  ContentBrowserClient::NonNetworkURLLoaderFactoryMap
-      non_network_url_loader_factories_;
+  ContentBrowserClient::NonNetworkURLLoaderFactoryDeprecatedMap
+      non_network_uniquely_owned_factories_;
 
   // Renderer-side states that blocks fast shutdown of the frame.
   bool has_before_unload_handler_ = false;

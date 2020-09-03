@@ -1196,7 +1196,6 @@ ci.chromiumos_builder(
     ),
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
     main_console_view = settings.main_console_name,
-    execution_timeout = 4 * time.hour,
 )
 
 ci.chromiumos_builder(
@@ -2399,6 +2398,46 @@ ci.fyi_builder(
         short_name = "VF",
     ),
     notifies = ["linux-blink-heap-verification"],
+)
+
+# For testing impact of builderful: https://crbug.com/1123673
+# remove by 2020-10-05 gatong
+ci.fyi_builder(
+    name = "linux-builderful-fast-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "build test",
+        short_name = "bff",
+    ),
+    builderless = False,
+)
+
+ci.fyi_builder(
+    name = "linux-builderful-slow-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "build test",
+        short_name = "bfs",
+    ),
+    builderless = False,
+    schedule = "with 2h interval",
+    triggered_by = [],
+)
+
+ci.fyi_builder(
+    name = "linux-builderless-fast-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "build test",
+        short_name = "blf",
+    ),
+)
+
+ci.fyi_builder(
+    name = "linux-builderless-slow-fyi-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "build test",
+        short_name = "bls",
+    ),
+    schedule = "with 2h interval",
+    triggered_by = [],
 )
 
 ci.fyi_builder(

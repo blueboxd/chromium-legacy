@@ -359,6 +359,10 @@
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins_v2">36dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
+    <dimen name="snippets_article_header_menu_size">48dp</dimen>
+    <dimen name="feed_v2_header_menu_vertical_inset">-4dp</dimen>
+    <!-- This should match |ntp_header_lateral_margins_v2|. -->
+    <dimen name="feed_v2_header_menu_end_inset">-16dp</dimen>
     <dimen name="ntp_header_lateral_margins_v2">16dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
     <dimen name="content_suggestions_card_modern_margin">12dp</dimen>
@@ -574,4 +578,12 @@
     <dimen name="status_indicator_min_height">21dp</dimen>
     <dimen name="status_indicator_icon_padding">8dp</dimen>
     <dimen name="status_indicator_icon_size">12dp</dimen>
+
+    <!-- Overflow Menu Dimensions -->
+    <dimen name="overflow_menu_divider_line_padding">5dp</dimen>
+    <!-- top padding(12dp) + icon size(20dp) + bottom padding(12dp) -->
+    <dimen name="overflow_menu_managed_by_min_height">44dp</dimen>
+    <dimen name="overflow_menu_update_min_height">40sp</dimen>
+    <dimen name="overflow_menu_update_padding">12dp</dimen>
+
 </resources>

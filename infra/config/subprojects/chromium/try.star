@@ -252,7 +252,9 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_RELEASES,
-    goma_jobs = goma.jobs.J150,
+    cores = 16,
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
     tryjob = try_.job(
         experiment_percentage = 5,
     ),
@@ -1084,8 +1086,10 @@ try_.chromium_linux_builder(
 
 try_.chromium_mac_builder(
     name = "mac-coverage-rel",
+    builderless = False,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(experiment_percentage = 3),
 )
 
 try_.chromium_mac_builder(

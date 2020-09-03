@@ -40465,6 +40465,7 @@ from previous Chrome versions.
   <int value="-2033950090" label="AutofillNoLocalSaveOnUploadSuccess:disabled"/>
   <int value="-2033908928" label="NightLight:enabled"/>
   <int value="-2033225430" label="NTPMostLikelyFaviconsFromServer:disabled"/>
+  <int value="-2033136855" label="MessagesForAndroidPasswords:disabled"/>
   <int value="-2030217301" label="password-export:disabled"/>
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2028232016" label="spurious-power-button-lid-angle-change"/>
@@ -42067,6 +42068,7 @@ from previous Chrome versions.
   <int value="-419733676" label="IsolatePrerendersMustProbeOrigin:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-418676305" label="ScanningUI:enabled"/>
+  <int value="-417633330" label="MessagesForAndroidInfrastructure:enabled"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
   <int value="-415186532" label="AndroidSiteSettingsUIRefresh:enabled"/>
   <int value="-412736561" label="EnableZeroStateMixedTypesRanker:enabled"/>
@@ -42844,6 +42846,7 @@ from previous Chrome versions.
   <int value="409566604" label="IntentPickerPWAPersistence:enabled"/>
   <int value="411250226" label="AutoplayMutedVideos:disabled"/>
   <int value="412957264" label="tab-close-buttons-hidden-with-touch"/>
+  <int value="413062443" label="MessagesForAndroidInfrastructure:disabled"/>
   <int value="413081240" label="enable-new-md-input-view"/>
   <int value="413695227" label="NTPSuggestionsStandaloneUI:enabled"/>
   <int value="414114078" label="LitePageServerPreviews:disabled"/>
@@ -43278,6 +43281,7 @@ from previous Chrome versions.
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
+  <int value="869770301" label="MessagesForAndroidPasswords:enabled"/>
   <int value="870568550" label="LimitAltTabToActiveDesk:disabled"/>
   <int value="870664435" label="DownloadProgressInfoBar:disabled"/>
   <int value="871435095" label="EnableAggregatedMlAppRanking:disabled"/>
@@ -43789,6 +43793,7 @@ from previous Chrome versions.
   <int value="1392935139" label="KidsManagementUrlClassification:enabled"/>
   <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
+  <int value="1394896630" label="PrinterStatusDialog:enabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1398148960" label="LanguageSettingsUpdate:disabled"/>
   <int value="1398333721" label="ForceEnableDevicesPage:disabled"/>
@@ -44116,6 +44121,7 @@ from previous Chrome versions.
   <int value="1750693293" label="AutofillPreventMixedFormsFilling:enabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
+  <int value="1757894817" label="PrinterStatusDialog:disabled"/>
   <int value="1758262950"
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
@@ -53180,7 +53186,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1511" label="Sticky Keys"/>
   <int value="1512" label="On Screen Keyboard"/>
   <int value="1513" label="Dictation"/>
-  <int value="1514" label="Speak-To-Type"/>
+  <int value="1514" label="Highlight Keyboard Focus"/>
   <int value="1515" label="Highlight Text Caret"/>
   <int value="1516" label="Auto-Click When Cursor Stops"/>
   <int value="1517" label="Large Cursor"/>

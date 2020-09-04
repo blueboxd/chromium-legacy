@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_AUDIO_INPUT_IPC_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_AUDIO_INPUT_IPC_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_WEB_AUDIO_INPUT_IPC_FACTORY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_WEB_AUDIO_INPUT_IPC_FACTORY_H_
 
 #include <memory>
 
@@ -24,18 +24,14 @@ struct AudioSourceParameters;
 namespace blink {
 
 // This is a thread-safe factory for AudioInputIPC objects.
-class BLINK_MODULES_EXPORT AudioInputIPCFactory {
+class BLINK_MODULES_EXPORT WebAudioInputIPCFactory {
  public:
-  AudioInputIPCFactory(
+  WebAudioInputIPCFactory(
       scoped_refptr<base::SequencedTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  ~WebAudioInputIPCFactory();
 
-  ~AudioInputIPCFactory();
-
-  static AudioInputIPCFactory* get() {
-    DCHECK(instance_);
-    return instance_;
-  }
+  static WebAudioInputIPCFactory& GetInstance();
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
@@ -50,12 +46,9 @@ class BLINK_MODULES_EXPORT AudioInputIPCFactory {
   const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Global instance, set in constructor and unset in destructor.
-  static AudioInputIPCFactory* instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioInputIPCFactory);
+  DISALLOW_COPY_AND_ASSIGN(WebAudioInputIPCFactory);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_AUDIO_INPUT_IPC_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIA_AUDIO_WEB_AUDIO_INPUT_IPC_FACTORY_H_

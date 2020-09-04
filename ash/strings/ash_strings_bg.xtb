@@ -146,6 +146,7 @@
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="2473177541599297363">Потвърждаване на разделителната способност</translation>
+<translation id="2475982808118771221">Възникна грешка</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
@@ -528,6 +529,7 @@
 <translation id="6818242057446442178">Придвижване назад с една дума</translation>
 <translation id="6820676911989879663">Време е за почивка!</translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
+<translation id="685782768769951078">{NUM_DIGITS,plural, =1{Остава една цифра}other{Остават # цифри}}</translation>
 <translation id="6878400149835617132">Прекият път е изключен</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6910714959251846841">Тази актуализация изисква Powerwash на устройството ви. Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" />.</translation>

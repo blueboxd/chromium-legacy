@@ -146,6 +146,7 @@
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">የይለፍ ቃል አሳይ</translation>
 <translation id="2473177541599297363">ጥራትን ያረጋግጡ</translation>
+<translation id="2475982808118771221">ስህተት ተከስቷል</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2484513351006226581">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር <ph name="KEYBOARD_SHORTCUT" />ን ይጫኑ</translation>
 <translation id="2501920221385095727">ተጣባቂ ቁልፎች</translation>
@@ -528,6 +529,7 @@
 <translation id="6818242057446442178">በቃል ይመለሱ</translation>
 <translation id="6820676911989879663">እረፍት ይውሰዱ!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ን አግብር</translation>
+<translation id="685782768769951078">{NUM_DIGITS,plural, =1{አንድ አሃዝ ይቀራል}one{# አሃዞች ይቀራሉ}other{# አሃዞች ይቀራሉ}}</translation>
 <translation id="6878400149835617132">አቋራጭ ጠፍቷል</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6910714959251846841">ይህ ዝማኔ የመሣሪያዎን powerwashing ይጠይቃል። ስለቅርብ ጊዜው <ph name="SYSTEM_APP_NAME" /> ዝማኔ የበለጠ ይረዱ።</translation>

@@ -18669,6 +18669,7 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="LOCATION_NOT_FOUND"/>
   <int value="4" label="NAME_CONFLICT"/>
   <int value="5" label="NAME_TOO_LONG"/>
+  <int value="6" label="LOCATION_SUGGESTION"/>
 </enum>
 
 <enum name="DownloadLocationDirectoryType">
@@ -24464,6 +24465,7 @@ Called by update_extension_histograms.py.-->
   <int value="1504" label="FILEMANAGERPRIVATEINTERNAL_GETHOLDINGSPACESTATE"/>
   <int value="1505" label="INPUTMETHODPRIVATE_SETCOMPOSINGRANGE"/>
   <int value="1506" label="AUTOTESTPRIVATE_LAUNCHSYSTEMWEBAPP"/>
+  <int value="1507" label="ACCESSIBILITY_PRIVATE_PERFORMACCELERATORACTION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -53304,6 +53306,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="701" label="App Details"/>
   <int value="702" label="Google Play Store"/>
   <int value="703" label="Plugin Vm Shared Paths"/>
+  <int value="704" label="Plugin Vm USB Preferences"/>
   <int value="800" label="Crostini Details"/>
   <int value="801" label="Crostini Manage Shared Folders"/>
   <int value="802" label="Crostini Usb Preferences"/>

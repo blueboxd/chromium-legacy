@@ -80,7 +80,6 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomTabSwitcherActionMenuCoo
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressCoordinator;
-import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -224,6 +223,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * TODO(https://crbug.com/1084528): Use OneShotSupplier once it is ready.
      * @param overviewModeBehaviorSupplier Supplier of the overview mode manager for the current
      *                                     profile.
+     * @param tabModelSelectorSupplier Supplier of the {@link TabModelSelector}.
      */
     public ToolbarManager(ChromeActivity activity, BrowserControlsSizer controlsSizer,
             FullscreenManager fullscreenManager, ToolbarControlContainer controlContainer,
@@ -239,7 +239,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             @Nullable Supplier<Boolean> canAnimateNativeBrowserControls,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ObservableSupplier<AppMenuCoordinator> appMenuCoordinatorSupplier,
-            boolean shouldShowUpdateBadge) {
+            boolean shouldShowUpdateBadge,
+            ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
         TraceEvent.begin("ToolbarManager.ToolbarManager");
         mActivity = activity;
         mBrowserControlsSizer = controlsSizer;
@@ -307,13 +308,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
-        MenuButton menuButton = mActivity.findViewById(R.id.menu_button_wrapper);
         mMenuButtonCoordinator = new MenuButtonCoordinator(appMenuCoordinatorSupplier,
                 mControlsVisibilityDelegate, mActivity,
                 (focus, type)
                         -> setUrlBarFocus(focus, type),
                 mActivity.getCompositorViewHolder()::requestFocus, shouldShowUpdateBadge,
-                mActivity::isInOverviewMode, menuButton);
+                mActivity::isInOverviewMode);
 
         mToolbar = new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar),
                 identityDiscController, mLocationBarModel, mToolbarTabController,
@@ -334,7 +334,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mLocationBar.setDefaultTextEditActionModeCallback(
                 mActionModeController.getActionModeCallback());
         mLocationBar.initializeControls(new WindowDelegate(mActivity.getWindow()),
-                mActivity.getWindowAndroid(), mActivityTabProvider,
+                mActivity.getWindowAndroid(), mActivityTabProvider, tabModelSelectorSupplier,
                 mActivity::getModalDialogManager, mActivity.getShareDelegateSupplier(),
                 mIncognitoStateProvider);
         Runnable clickDelegate =

@@ -27,7 +27,7 @@
 <translation id="3472200483164753384">No es compatible en Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium puede revisar las contraseñas cuando accedes con tu Cuenta de Google.</translation>
 <translation id="3805899903892079518">Chromium no tiene acceso a tus fotos o videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
-<translation id="4099085513035183040">No es compatible en la versión Beta de Chromium</translation>
+<translation id="4099085513035183040">No es compatible en la versión beta de Chromium</translation>
 <translation id="4166206055865952171">Establece Chromium como tu navegador predeterminado</translation>
 <translation id="4555020257205549924">Si activas esta función, Chromium te preguntará si deseas usar Google Traductor para traducir páginas en otros idiomas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activar el escáner de Chromium</translation>
@@ -65,6 +65,7 @@
 <translation id="8013573822802650211">Para ver tus pestañas donde sea que uses Chromium, accede a tu cuenta en todos los dispositivos</translation>
 <translation id="8073677936375100957">¿Quieres borrar tus datos de Chromium de este dispositivo?</translation>
 <translation id="8175055321229419309">Sugerencia: <ph name="BEGIN_LINK" />Lleva Chromium a tu Dock<ph name="END_LINK" /></translation>
+<translation id="8235785158661376110">Para establecer Chromium como navegador predeterminado, abre Configuración y Default Browser App (Aplicación de navegador predeterminada); luego, selecciona Chromium.</translation>
 <translation id="8240981428553046115">Chromium no pudo buscar actualizaciones. Vuelve a intentarlo más tarde.</translation>
 <translation id="8252885722420466166">Obtén una mejor experiencia de Google en Chromium según tu ubicación.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Los autores de Chromium. Todos los derechos reservados.</translation>

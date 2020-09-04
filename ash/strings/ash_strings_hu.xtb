@@ -146,6 +146,7 @@
 <translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
 <translation id="2473177541599297363">Felbontás megerősítése</translation>
+<translation id="2475982808118771221">Hiba történt</translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2484513351006226581">A billentyűzetkiosztás átváltásához nyomja meg a(z) <ph name="KEYBOARD_SHORTCUT" /> billentyűparancsot.</translation>
 <translation id="2501920221385095727">Beragadó billentyűk</translation>
@@ -529,6 +530,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6818242057446442178">Visszalépés szavanként</translation>
 <translation id="6820676911989879663">Tartson egy kis szünetet!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
+<translation id="685782768769951078">{NUM_DIGITS,plural, =1{1 számjegy maradt}other{# számjegy maradt}}</translation>
 <translation id="6878400149835617132">A billentyűparancs ki van kapcsolva</translation>
 <translation id="6896758677409633944">Másolás</translation>
 <translation id="6910714959251846841">Eszköze frissítéséhez powerwash szükséges. További információ a legújabb <ph name="SYSTEM_APP_NAME" />-frissítésről.</translation>

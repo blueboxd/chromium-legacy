@@ -4,20 +4,27 @@
 
 #include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_attachment.h"
 
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source.h"
-#include "third_party/blink/renderer/modules/mediasource/media_source_tracer_impl.h"
+#include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_tracer.h"
 
 namespace {
 // Downcasts |tracer| to the expected same-thread attachment's tracer type.
 // Includes a debug-mode check that the tracer matches the expected attachment
 // semantic.
-blink::MediaSourceTracerImpl* GetTracerImpl(blink::MediaSourceTracer* tracer) {
+blink::SameThreadMediaSourceTracer* GetTracerImpl(
+    blink::MediaSourceTracer* tracer) {
   DCHECK(!tracer || !tracer->IsCrossThreadForDebugging());
-  return static_cast<blink::MediaSourceTracerImpl*>(tracer);
+  return static_cast<blink::SameThreadMediaSourceTracer*>(tracer);
 }
 
 blink::MediaSource* GetMediaSource(blink::MediaSourceTracer* tracer) {
   return GetTracerImpl(tracer)->GetMediaSource();
+}
+
+blink::HTMLMediaElement* GetMediaElement(blink::MediaSourceTracer* tracer) {
+  return GetTracerImpl(tracer)->GetMediaElement();
 }
 
 }  // namespace
@@ -26,7 +33,7 @@ namespace blink {
 
 SameThreadMediaSourceAttachment::SameThreadMediaSourceAttachment(
     MediaSource* media_source)
-    : registered_media_source_(media_source) {
+    : MediaSourceAttachmentSupplement(media_source) {
   // This kind of attachment only operates on the main thread.
   DCHECK(IsMainThread());
 
@@ -37,20 +44,17 @@ SameThreadMediaSourceAttachment::SameThreadMediaSourceAttachment(
   DCHECK(HasOneRef());
 }
 
-SameThreadMediaSourceAttachment::~SameThreadMediaSourceAttachment() = default;
-
-void SameThreadMediaSourceAttachment::Unregister() {
+SameThreadMediaSourceAttachment::~SameThreadMediaSourceAttachment() {
   DVLOG(1) << __func__ << " this=" << this;
+}
 
-  // The only expected caller is a MediaSourceRegistryImpl on the main thread.
-  DCHECK(IsMainThread());
+void SameThreadMediaSourceAttachment::NotifyDurationChanged(
+    MediaSourceTracer* tracer,
+    double duration) {
+  HTMLMediaElement* element = GetMediaElement(tracer);
 
-  // Release our strong reference to the MediaSource. Note that revokeObjectURL
-  // of the url associated with this attachment could commonly follow this path
-  // while the MediaSource (and any attachment to an HTMLMediaElement) may still
-  // be alive/active.
-  DCHECK(registered_media_source_);
-  registered_media_source_ = nullptr;
+  bool request_seek = element->currentTime() > duration;
+  element->DurationChanged(duration, request_seek);
 }
 
 MediaSourceTracer*
@@ -59,7 +63,8 @@ SameThreadMediaSourceAttachment::StartAttachingToMediaElement(
   if (!registered_media_source_)
     return nullptr;
 
-  return registered_media_source_->StartAttachingToMediaElement(element);
+  return registered_media_source_->StartAttachingToMediaElement(
+      WrapRefCounted(this), element);
 }
 
 void SameThreadMediaSourceAttachment::CompleteAttachingToMediaElement(

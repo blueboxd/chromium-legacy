@@ -146,6 +146,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
 <translation id="2473177541599297363">Potvrďte rozlíšenie</translation>
+<translation id="2475982808118771221">Vyskytla sa chyba</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2484513351006226581">Stlačením klávesov <ph name="KEYBOARD_SHORTCUT" /> zmeníte rozloženie klávesnice.</translation>
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
@@ -528,6 +529,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="6818242057446442178">Dozadu o slovo</translation>
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
+<translation id="685782768769951078">{NUM_DIGITS,plural, =1{Zostáva jedna číslica}few{Zostávajú # číslice}many{# digits remaining}other{Zostáva # číslic}}</translation>
 <translation id="6878400149835617132">Skratka je vypnutá</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
 <translation id="6910714959251846841">Táto aktualizácia vyžaduje vykonať v zariadení obnovenie Powerwash. Prečítajte si ďalšie informácie o najnovšej aktualizácii aplikácie <ph name="SYSTEM_APP_NAME" />.</translation>

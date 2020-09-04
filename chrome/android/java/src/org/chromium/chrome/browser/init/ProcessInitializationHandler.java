@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.init;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
@@ -63,6 +64,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.photo_picker.DecoderService;
 import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -77,6 +79,7 @@ import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.browser_ui.contacts_picker.ContactsPickerDialog;
+import org.chromium.components.browser_ui.photo_picker.DecoderServiceHost;
 import org.chromium.components.browser_ui.photo_picker.PhotoPickerDialog;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.components.browser_ui.util.ConversionUtils;
@@ -89,7 +92,6 @@ import org.chromium.components.viz.common.display.DeJellyUtils;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.ContactsPicker;
-import org.chromium.content_public.browser.ContactsPickerDelegate;
 import org.chromium.content_public.browser.ContactsPickerListener;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
@@ -215,6 +217,10 @@ public class ProcessInitializationHandler {
         Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
+            DecoderServiceHost.setIntentSupplier(() -> {
+                return new Intent(ContextUtils.getApplicationContext(), DecoderService.class);
+            });
+
             SelectFileDialog.setPhotoPickerDelegate(new PhotoPickerDelegate() {
                 @Override
                 public PhotoPicker showPhotoPicker(WindowAndroid windowAndroid,
@@ -237,27 +243,19 @@ public class ProcessInitializationHandler {
             });
         }
 
-        ContactsPicker.setContactsPickerDelegate(new ContactsPickerDelegate() {
-            private ContactsPickerDialog mDialog;
-
-            @Override
-            public void showContactsPicker(WindowAndroid windowAndroid,
-                    ContactsPickerListener listener, boolean allowMultiple, boolean includeNames,
-                    boolean includeEmails, boolean includeTel, boolean includeAddresses,
-                    boolean includeIcons, String formattedOrigin) {
-                mDialog = new ContactsPickerDialog(windowAndroid, new ChromePickerAdapter(),
-                        listener, allowMultiple, includeNames, includeEmails, includeTel,
-                        includeAddresses, includeIcons, formattedOrigin);
-                mDialog.getWindow().getAttributes().windowAnimations =
-                        R.style.PickerDialogAnimation;
-                mDialog.show();
-            }
-
-            @Override
-            public void onContactsPickerDismissed() {
-                mDialog = null;
-            }
-        });
+        ContactsPicker.setContactsPickerDelegate(
+                (WindowAndroid windowAndroid, ContactsPickerListener listener,
+                        boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                        boolean includeTel, boolean includeAddresses, boolean includeIcons,
+                        String formattedOrigin) -> {
+                    ContactsPickerDialog dialog =
+                            new ContactsPickerDialog(windowAndroid, new ChromePickerAdapter(),
+                                    listener, allowMultiple, includeNames, includeEmails,
+                                    includeTel, includeAddresses, includeIcons, formattedOrigin);
+                    dialog.getWindow().getAttributes().windowAnimations =
+                            R.style.PickerDialogAnimation;
+                    return dialog;
+                });
 
         SearchWidgetProvider.initialize();
         HistoryDeletionBridge.getInstance().addObserver(

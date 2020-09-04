@@ -16,6 +16,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
@@ -42,15 +43,28 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.components.browser_ui.contacts_picker.ContactDetails;
+import org.chromium.components.browser_ui.contacts_picker.ContactsPickerDialog;
+import org.chromium.components.browser_ui.contacts_picker.PickerAdapter;
+import org.chromium.components.browser_ui.photo_picker.DecoderServiceHost;
+import org.chromium.components.browser_ui.photo_picker.ImageDecoder;
+import org.chromium.components.browser_ui.photo_picker.PhotoPickerDialog;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
+import org.chromium.content_public.browser.ContactsPicker;
+import org.chromium.content_public.browser.ContactsPickerListener;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.PhotoPicker;
+import org.chromium.ui.base.PhotoPickerDelegate;
+import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.ui.base.SelectFileDialog;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
@@ -255,6 +269,46 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         MediaStreamManager.onWebLayerInit();
         WebLayerNotificationChannels.updateChannelsIfNecessary();
+
+        ContactsPicker.setContactsPickerDelegate(
+                (WindowAndroid windowAndroid, ContactsPickerListener listener,
+                        boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                        boolean includeTel, boolean includeAddresses, boolean includeIcons,
+                        String formattedOrigin) -> {
+                    ContactsPickerDialog dialog = new ContactsPickerDialog(windowAndroid,
+                            // TODO(estade): implement owner email.
+                            new PickerAdapter() {
+                                @Override
+                                protected String findOwnerEmail() {
+                                    return null;
+                                }
+                                @Override
+                                protected void addOwnerInfoToContacts(
+                                        ArrayList<ContactDetails> contacts) {}
+                            },
+                            listener, allowMultiple, includeNames, includeEmails, includeTel,
+                            includeAddresses, includeIcons, formattedOrigin);
+                    dialog.show();
+                    return dialog;
+                });
+
+        DecoderServiceHost.setIntentSupplier(() -> { return createImageDecoderServiceIntent(); });
+        SelectFileDialog.setPhotoPickerDelegate(new PhotoPickerDelegate() {
+            @Override
+            public PhotoPicker showPhotoPicker(WindowAndroid windowAndroid,
+                    PhotoPickerListener listener, boolean allowMultiple, List<String> mimeTypes) {
+                PhotoPickerDialog dialog = new PhotoPickerDialog(windowAndroid,
+                        windowAndroid.getContext().get().getContentResolver(), listener,
+                        allowMultiple, mimeTypes);
+                dialog.show();
+                return dialog;
+            }
+
+            @Override
+            public boolean supportsVideos() {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -300,7 +354,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             IObjectWrapper appContext, IObjectWrapper remoteContext) {
         StrictModeWorkaround.apply();
         // This is a no-op if init has already happened.
-        WebLayerImpl.minimalInitForContext(ObjectWrapper.unwrap(appContext, Context.class),
+        minimalInitForContext(ObjectWrapper.unwrap(appContext, Context.class),
                 processRemoteContext(ObjectWrapper.unwrap(remoteContext, Context.class)));
         return CrashReporterControllerImpl.getInstance();
     }
@@ -330,6 +384,23 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     public void onMediaSessionServiceDestroyed() {
         StrictModeWorkaround.apply();
         MediaSessionManager.serviceDestroyed();
+    }
+
+    @Override
+    public IBinder initializeImageDecoder(IObjectWrapper appContext, IObjectWrapper remoteContext) {
+        StrictModeWorkaround.apply();
+
+        assert ContextUtils.getApplicationContext() == null;
+        CommandLine.init(null);
+        minimalInitForContext(ObjectWrapper.unwrap(appContext, Context.class),
+                processRemoteContext(ObjectWrapper.unwrap(remoteContext, Context.class)));
+        LibraryLoader.getInstance().setLibraryProcessType(
+                LibraryProcessType.PROCESS_WEBLAYER_CHILD);
+        LibraryLoader.getInstance().ensureInitialized();
+
+        ImageDecoder imageDecoder = new ImageDecoder();
+        imageDecoder.initializeSandbox();
+        return imageDecoder;
     }
 
     @Override
@@ -377,6 +448,18 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         try {
             return sClient.createMediaSessionServiceIntent();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public static Intent createImageDecoderServiceIntent() {
+        if (sClient == null) {
+            throw new IllegalStateException("WebLayer should have been initialized already.");
+        }
+
+        try {
+            return sClient.createImageDecoderServiceIntent();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

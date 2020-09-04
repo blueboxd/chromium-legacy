@@ -92,8 +92,6 @@ bool PrintManager::OnMessageReceived(
                                     FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_DidPrintDocument, &helper,
                                     FrameDispatchHelper::OnDidPrintDocument);
-
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -117,7 +115,9 @@ void PrintManager::DidGetDocumentCookie(int32_t cookie) {
 
 void PrintManager::DidShowPrintDialog() {}
 
-void PrintManager::OnPrintingFailed(int cookie) {
+void PrintManager::ShowInvalidPrinterSettingsError() {}
+
+void PrintManager::PrintingFailed(int32_t cookie) {
   if (cookie != cookie_) {
     NOTREACHED();
     return;

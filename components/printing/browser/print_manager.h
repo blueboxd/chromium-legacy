@@ -39,10 +39,12 @@ class PrintManager : public content::WebContentsObserver,
   virtual void PdfWritingDone(int page_count) = 0;
 #endif
 
-  // printing::mojom::PrintManager:
+  // printing::mojom::PrintManagerHost:
   void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override;
   void DidGetDocumentCookie(int32_t cookie) override;
   void DidShowPrintDialog() override;
+  void ShowInvalidPrinterSettingsError() override;
+  void PrintingFailed(int32_t cookie) override;
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -98,7 +100,6 @@ class PrintManager : public content::WebContentsObserver,
   virtual void OnGetDefaultPrintSettings(
       content::RenderFrameHost* render_frame_host,
       IPC::Message* reply_msg) = 0;
-  virtual void OnPrintingFailed(int cookie);
   virtual void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
                                const mojom::ScriptedPrintParams& params,
                                IPC::Message* reply_msg) = 0;

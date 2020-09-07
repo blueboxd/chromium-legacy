@@ -1559,6 +1559,9 @@ component("platform") {
 
   include_dirs = []
 
+  allow_circular_includes_from =
+      [ "//third_party/blink/renderer/platform/blob" ]
+
   public_deps = [
     ":blink_platform_public_deps",
     ":platform_export",
@@ -1742,6 +1745,7 @@ static_library("test_support") {
     "testing/layer_tree_host_embedder.cc",
     "testing/layer_tree_host_embedder.h",
     "testing/message_loop_for_mojo.h",
+    "testing/mock_context_lifecycle_notifier.h",
     "testing/paint_property_test_helpers.h",
     "testing/paint_test_configurations.h",
     "testing/picture_matchers.cc",
@@ -1796,6 +1800,7 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest:gtest",
     "//testing/perf",
+    "//third_party/blink/renderer/platform/blob:test_support",
   ]
 
   deps = [
@@ -1806,7 +1811,6 @@ static_library("test_support") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/blink/public/common:common",
-    "//third_party/blink/renderer/platform/blob:test_support",
     "//third_party/blink/renderer/platform/heap:test_support",
     "//third_party/blink/renderer/platform/loader:test_support",
     "//third_party/blink/renderer/platform/network:test_support",

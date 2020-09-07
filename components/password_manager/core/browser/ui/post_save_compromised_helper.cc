@@ -27,17 +27,25 @@ PostSaveCompromisedHelper::PostSaveCompromisedHelper(
 PostSaveCompromisedHelper::~PostSaveCompromisedHelper() = default;
 
 void PostSaveCompromisedHelper::AnalyzeLeakedCredentials(
-    PasswordStore* store,
+    PasswordStore* profile_store,
+    PasswordStore* account_store,
     PrefService* prefs,
     BubbleCallback callback) {
-  DCHECK(store);
+  DCHECK(profile_store);
   DCHECK(prefs);
   callback_ = std::move(callback);
   prefs_ = prefs;
-  store->GetAllCompromisedCredentials(this);
+  compromised_credentials_reader_ =
+      std::make_unique<CompromisedCredentialsReader>(profile_store,
+                                                     account_store);
+  // Unretained(this) is safe here since `this` outlives
+  // `compromised_credentials_reader_`.
+  compromised_credentials_reader_->GetAllCompromisedCredentials(
+      base::BindOnce(&PostSaveCompromisedHelper::OnGetAllCompromisedCredentials,
+                     base::Unretained(this)));
 }
 
-void PostSaveCompromisedHelper::OnGetCompromisedCredentials(
+void PostSaveCompromisedHelper::OnGetAllCompromisedCredentials(
     std::vector<CompromisedCredentials> compromised_credentials) {
   const bool compromised_password_changed =
       current_leak_ && !base::Contains(compromised_credentials, *current_leak_);

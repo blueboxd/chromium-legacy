@@ -1661,6 +1661,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void TextAutosizerPageInfoChanged(
       blink::mojom::TextAutosizerPageInfoPtr page_info) override;
   void FocusPage() override;
+  void UpdateTargetURL(const GURL& url,
+                       blink::mojom::LocalMainFrameHost::UpdateTargetURLCallback
+                           callback) override;
 
   void ReportNoBinderForInterface(const std::string& error);
 
@@ -1945,8 +1948,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            AttemptDuplicateRenderWidgetHost);
   FRIEND_TEST_ALL_PREFIXES(RenderDocumentHostUserDataTest,
                            CheckInPendingDeletionState);
-  FRIEND_TEST_ALL_PREFIXES(AncestorThrottleNavigationTest,
-                           WillStartRequestAddsSecRequiredCSPHeader);
 
   class DroppedInterfaceRequestLogger;
 

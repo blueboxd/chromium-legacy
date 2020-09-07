@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd0fe7d37d678fc3a8726b73c265ced5a82ae4bfa',
+  'skia_revision': '611a52108b01e0908ece02138d06eea0b810a5bc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f184cb61cea6c70204154a24477f67c2f1a7d6b4',
+  'angle_revision': '07d44b97cf6511e0affba380d724aa6f441dada8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a02d5dc9584e3476f02a2c03b4fa186134bd0c16',
+  'catapult_revision': 'aa2b76a46973a01458118fd3898eba03c2cd138a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9de988b61cfc951e08c904f6366023e0d3d6c0dd',
+  'devtools_frontend_revision': '1e6d9c6358287331a6181d4281b62f5fb14d1706',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -896,7 +896,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a070dd18d79dfa236d16ece74e0dcd514851331f',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9218ba277ab5a561b3968c3b4ae1520ebad51c7b',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '27e1867266a06af0c92e8b69f3a835403dca70e3',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7026a1db5b74ba701a9990d17e1d61354eb643ff',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

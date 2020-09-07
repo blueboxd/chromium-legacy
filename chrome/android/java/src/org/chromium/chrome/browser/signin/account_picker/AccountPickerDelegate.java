@@ -58,6 +58,7 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
      */
     public void onDismiss() {
         destroyWebSigninBridge();
+        mOnSignInErrorCallback = null;
     }
 
     /**
@@ -107,7 +108,7 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
                     } else {
                         // AccountManagerFacade couldn't create intent, use SigninUtils to open
                         // settings instead.
-                        SigninUtils.openSettingsForAllAccounts(mChromeActivity);
+                        SigninUtils.openSettingsForAllAccounts(mWindowAndroid.getContext().get());
                     }
                 });
     }

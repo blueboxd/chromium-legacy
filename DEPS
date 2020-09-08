@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cd54c8385c318ecf74f9d1d1b3f5bf37ee4e9b0e',
+  'skia_revision': 'b6030fb2c818ceea64469a613a8f3fe66cc32595',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '0485634fe3f98cfe8976e7a820f73df65b75c286',
+  'angle_revision': 'e5882825af724d253f473dca7847eeb4c25ee3b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7f6cd0ad669be9d86b8d770666188efd44d555c1',
+  'catapult_revision': '9dd5f6257f3ebb99e29cbd1977b608cd97ab7ec0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e9eaf5ce5d8145bde172dff62dcf67744badccf9',
+  'devtools_frontend_revision': '4b505928d537d239e6d5ee295441d621ab537b4e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -342,7 +342,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': 'f88383daa8de92d57e898cce9c2d23a9fe87802c',
+  'libavif_revision': '616bd4f9aecaa38c1e1f83b4f79fd6df5d4b1467',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -896,7 +896,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9218ba277ab5a561b3968c3b4ae1520ebad51c7b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '72d35030231eec28fd32e130ce59e364ef55923c',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c107c7e93630ea3d9c587c128d749acf04b9e744',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9d7944292456ee9f3faaab9b19e46e82c8796fcc',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c0ee2b2ab51b31b4996ce537fb0fc10d61bab5d3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@76c7a195fd79d0066f273ccc508a593fe87aea98',
     'condition': 'checkout_src_internal',
   },
 
@@ -1562,7 +1562,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'MBa6MCxB3WE7lJhgKj4RgNE3r2vfNGc3LuUAsnjqIKsC',
+        'version': 'rUtprFyuBDz2yCzSepkGBxhzVtRer7AGDgUw2DZL4KgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

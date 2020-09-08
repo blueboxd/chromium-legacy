@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "net/nqe/effective_connection_type.h"
+#include "ui/base/page_transition_types.h"
 
 namespace base {
 class Value;
@@ -69,6 +70,14 @@ int MaxOptimizationGuideHintCacheSize();
 // Return the set of hosts that LiteVideos are permanently blocked from
 // being applied on.
 base::flat_set<std::string> GetLiteVideoPermanentBlocklist();
+
+// Return if the page transition is forward-back and LiteVideos
+// are not allowed on those navigations.
+bool IsLiteVideoNotAllowedForPageTransition(ui::PageTransition page_transition);
+
+// The number of media rebuffers before all throttling within the frame
+// should be stopped.
+int GetMaxRebuffersPerFrame();
 
 }  // namespace features
 }  // namespace lite_video

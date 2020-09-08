@@ -973,6 +973,8 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-000.
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-004.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-003.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-004.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Pass ]
@@ -2527,6 +2529,30 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-043.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-048.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/inset/shape-outside-inset-023.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/inset/shape-outside-inset-027.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/inset/shape-outside-inset-022.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-008.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-024.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-011.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-046.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-052.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-051.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/inset/shape-outside-inset-026.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-012.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-049.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-047.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-009.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-053.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/ellipse/shape-outside-ellipse-050.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-006.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/circle/shape-outside-circle-037.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-025.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-007.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-005.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Timeout Pass Failure ]
@@ -2945,30 +2971,6 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation-001.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-026.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-051.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-037.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-052.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-053.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-009.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-050.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-047.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-010.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-023.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-025.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-027.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-046.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-043.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-022.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-049.html [ Failure ]
 crbug.com/843084 external/wpt/css/css-masking/clip-path/clip-path-polygon-007.html [ Failure ]
 crbug.com/843084 external/wpt/css/css-masking/clip-path/clip-path-circle-008.html [ Failure ]
 crbug.com/843084 external/wpt/css/css-masking/clip-path/clip-path-polygon-012.html [ Failure ]
@@ -3187,6 +3189,8 @@ crbug.com/829028 external/wpt/css/css-break/break-between-avoid-000.html [ Failu
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-004.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/fieldset-003.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/fieldset-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/forced-break-at-fragmentainer-start-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Failure ]
@@ -4969,10 +4973,6 @@ crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.h
 crbug.com/919639 [ Fuchsia ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] webmidi/permission.html [ Failure ]
 
-# These tests enforce that <select> with appearance:button should look like a button.
-crbug.com/1108797 external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
-crbug.com/1108797 external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
-
 # These tests timeout when using Scenic ozone platform.
 crbug.com/1067477 [ Fuchsia ] compositing/sibling-positioning.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] css3/selectors3/html/css3-modsel-18.html [ Skip ]
@@ -5706,8 +5706,14 @@ crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.h
 crbug.com/970285 external/wpt/forced-colors-mode/* [ Failure ]
 
 # Virtual forced colors mode tests should fail on macOS since macOS high
-# contrast does not imply forced colors mode.
+# contrast does not imply forced colors mode. The tests should pass on all other
+# platforms.
 crbug.com/970285 [ Mac ] virtual/forced-high-contrast-colors/* [ Failure ]
+crbug.com/970285 [ Win ] virtual/forced-high-contrast-colors/* [ Pass ]
+crbug.com/970285 [ Linux ] virtual/forced-high-contrast-colors/* [ Pass ]
+crbug.com/970285 [ Android ] virtual/forced-high-contrast-colors/* [ Pass ]
+
+crbug.com/1081945 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-13.html [ Crash ]
 
 # Expected failures for dark mode tests when the corresponding flags
 # are not enabled.
@@ -6616,3 +6622,6 @@ crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-
 
 # Sheriff 2020-09-02
 crbug.com/1115091 [ Linux ] external/wpt/payment-request/secure-payment-confirmation.https.html [ Pass Timeout ]
+
+# Sheriff 2020-09-08
+crbug.com/1124978 [ Mac ] virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass Failure ]

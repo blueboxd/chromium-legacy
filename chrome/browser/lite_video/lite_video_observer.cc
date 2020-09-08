@@ -242,14 +242,6 @@ void LiteVideoObserver::MediaBufferUnderflow(const content::MediaPlayerId& id) {
   if (!render_frame_host || !render_frame_host->GetProcess())
     return;
 
-  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
-      loading_hints_agent;
-
-  if (render_frame_host->GetRemoteAssociatedInterfaces()) {
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-        &loading_hints_agent);
-    loading_hints_agent->StopThrottlingMediaRequests();
-  }
   // Only consider a rebuffer event related to LiteVideos if they
   // were allowed on current navigation.
   if (!nav_metrics_ ||
@@ -257,13 +249,24 @@ void LiteVideoObserver::MediaBufferUnderflow(const content::MediaPlayerId& id) {
     return;
   }
 
-  nav_metrics_->SetThrottleResult(
-      lite_video::LiteVideoThrottleResult::kThrottleStoppedOnRebuffer);
+  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+      loading_hints_agent;
+
+  if (!render_frame_host->GetRemoteAssociatedInterfaces())
+    return;
+
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &loading_hints_agent);
+
+  if (nav_metrics_->ShouldStopOnRebufferForFrame(
+          render_frame_host->GetRoutingID())) {
+    loading_hints_agent->StopThrottlingMediaRequests();
+  }
 
   if (!lite_video_decider_)
     return;
 
-  // Determine if the rebuffer happened in the mainframe.
+  // Determine and log if the rebuffer happened in the mainframe.
   render_frame_host->GetMainFrame() == render_frame_host
       ? lite_video_decider_->DidMediaRebuffer(
             render_frame_host->GetLastCommittedURL(), base::nullopt, true)

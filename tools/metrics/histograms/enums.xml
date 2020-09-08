@@ -2097,6 +2097,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidWebViewSslErrorType">
+  <obsolete>
+    Removed 09/2020. These are no longer being tracked.
+  </obsolete>
   <int value="0" label="SSL_NOTYETVALID">The certificate is not yet valid.</int>
   <int value="1" label="SSL_EXPIRED">The certificate has expired.</int>
   <int value="2" label="SSL_IDMISMATCH">Hostname mismatch.</int>
@@ -24485,6 +24488,7 @@ Called by update_extension_histograms.py.-->
   <int value="1504" label="FILEMANAGERPRIVATEINTERNAL_GETHOLDINGSPACESTATE"/>
   <int value="1505" label="INPUTMETHODPRIVATE_SETCOMPOSINGRANGE"/>
   <int value="1506" label="AUTOTESTPRIVATE_LAUNCHSYSTEMWEBAPP"/>
+  <int value="1507" label="ACCESSIBILITY_PRIVATE_PERFORMACCELERATORACTION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -40902,6 +40906,7 @@ from previous Chrome versions.
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
+  <int value="-1615901413" label="NewMacNotificationAPI:enabled"/>
   <int value="-1615727417" label="OmniboxSearchReadyIncognito:enabled"/>
   <int value="-1615704396"
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:disabled"/>
@@ -43740,6 +43745,7 @@ from previous Chrome versions.
   <int value="1318073661" label="MaterialDesignExtensions:enabled"/>
   <int value="1319024729" label="ServiceWorkerServicification:disabled"/>
   <int value="1319068611" label="SecondaryUiMd:disabled"/>
+  <int value="1319498514" label="NewMacNotificationAPI:disabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
   <int value="1320450434" label="ArcUsbStorageUI:disabled"/>

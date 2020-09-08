@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '07d44b97cf6511e0affba380d724aa6f441dada8',
+  'angle_revision': '0485634fe3f98cfe8976e7a820f73df65b75c286',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '69e45dc92bd02c0803a1130117ffa156d6fcd969',
+  'catapult_revision': '7f6cd0ad669be9d86b8d770666188efd44d555c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5422981b71e391a5261bcda443ab539cb671bd8b',
+  'devtools_frontend_revision': 'e9eaf5ce5d8145bde172dff62dcf67744badccf9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -947,7 +947,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'dc1b9762731ebca934143f1852637a48cd5b0656',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '6a6e311d81ddfa6debf5659f05c311e3b57b5f77',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6f29c57c715c579c1c305eb7cc36ffb96583c464',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c107c7e93630ea3d9c587c128d749acf04b9e744',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e46a2aea147843e0d2f06cc8e5efea26d38e6772',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c0ee2b2ab51b31b4996ce537fb0fc10d61bab5d3',
     'condition': 'checkout_src_internal',
   },
 

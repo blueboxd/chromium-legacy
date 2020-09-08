@@ -65,6 +65,26 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
         profile_->GetPrefs());
   }
 
+  // syncer::DeviceInfoSyncClient:
+  std::string GetFCMRegistrationToken() const override {
+    syncer::SyncInvalidationsService* service =
+        SyncInvalidationsServiceFactory::GetForProfile(profile_);
+    if (service) {
+      return service->GetFCMRegistrationToken();
+    }
+    return std::string();
+  }
+
+  // syncer::DeviceInfoSyncClient:
+  syncer::ModelTypeSet GetInterestedDataTypes() const override {
+    syncer::SyncInvalidationsService* service =
+        SyncInvalidationsServiceFactory::GetForProfile(profile_);
+    if (service) {
+      return service->GetInterestedDataTypes();
+    }
+    return syncer::ModelTypeSet();
+  }
+
  private:
   Profile* const profile_;
 };
@@ -123,8 +143,7 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          device_info_sync_client.get(),
-          SyncInvalidationsServiceFactory::GetForProfile(profile));
+          device_info_sync_client.get());
 
   auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
       profile->GetPrefs(), base::DefaultClock::GetInstance());
@@ -132,5 +151,6 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),
       std::move(local_device_info_provider), std::move(device_prefs),
-      std::move(device_info_sync_client));
+      std::move(device_info_sync_client),
+      SyncInvalidationsServiceFactory::GetForProfile(profile));
 }

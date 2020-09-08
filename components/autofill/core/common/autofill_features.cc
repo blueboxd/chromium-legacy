@@ -103,6 +103,11 @@ const base::Feature kAutofillEnableSupportForMergingSubsetNames{
     "AutofillEnableSupportForMergingSubsetNames",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables filling support for separate house number fields.
+// TODO(crbug.com/1125978): Remove once launched.
+const base::Feature kAutofillEnableSupportForHouseNumbers{
+    "AutofillEnableSupportForHouseNumbers", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{
@@ -230,6 +235,11 @@ const base::Feature kAutofillSaveAndFillVPA{"AutofillSaveAndFillVPA",
 
 const base::Feature kAutofillSaveOnProbablySubmitted{
     "AutofillSaveOnProbablySubmitted", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables creating a new form section when an unstructured name input 
+// containing a |NAME_LAST| field is encountered after a structured name input.
+const base::Feature kAutofillSectionUponRedundantNameInfo{
+    "AutofillSectionUponRedundantNameInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or Disables (mostly for hermetic testing) autofill server
 // communication. The URL of the autofill server can further be controlled via

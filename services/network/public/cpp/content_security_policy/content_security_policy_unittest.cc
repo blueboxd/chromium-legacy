@@ -1253,12 +1253,8 @@ TEST(ContentSecurityPolicy, Subsumes) {
   };
 
   for (auto& test : cases) {
-    std::vector<mojom::ContentSecurityPolicyPtr> required_csp;
-    auto required_csp_headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-    required_csp_headers->SetHeader("Content-Security-Policy", test.required);
-    AddContentSecurityPolicyFromHeaders(
-        *required_csp_headers, GURL("https://example.com/"), &required_csp);
+    std::vector<mojom::ContentSecurityPolicyPtr> required_csp =
+        ParseCSP(test.required);
 
     auto returned_csp_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
@@ -1274,6 +1270,243 @@ TEST(ContentSecurityPolicy, Subsumes) {
               Subsumes(*required_csp[0], returned_csp,
                        url::Origin::Create(GURL("https://a.com"))))
         << test.name;
+  }
+}
+
+TEST(ContentSecurityPolicy, SubsumesBasedOnCSPSourcesOnly) {
+  const char* csp_a =
+      "script-src http://*.one.com; img-src https://sub.one.com "
+      "http://two.com/imgs/";
+
+  struct TestCase {
+    const char* policies;
+    bool expected;
+    bool expected_first_policy_opposite;
+  } cases[] = {
+      // `listB`, which is not as restrictive as `A`, is not subsumed.
+      {"", false, true},
+      {"script-src http://example.com", false, false},
+      {"img-src http://example.com", false, false},
+      {"script-src http://*.one.com", false, true},
+      {"img-src https://sub.one.com http://two.com/imgs/", false, true},
+      {"default-src http://example.com", false, false},
+      {"default-src https://sub.one.com http://two.com/imgs/", false, false},
+      {"default-src http://sub.one.com", false, false},
+      {"script-src http://*.one.com; img-src http://two.com/", false, false},
+      {"script-src http://*.one.com, img-src http://sub.one.com", false, true},
+      {"script-src http://*.one.com, script-src https://two.com", false, true},
+      {"script-src http://*.random.com,"
+       "script-src https://random.com",
+       false, false},
+      {"script-src http://sub.one.com,"
+       "script-src https://random.com",
+       false, false},
+      {"script-src http://*.random.com; default-src http://sub.one.com "
+       "http://two.com/imgs/,"
+       "default-src https://sub.random.com",
+       false, false},
+      // `listB`, which is as restrictive as `A`, is subsumed.
+      {"default-src https://sub.one.com", true, false},
+      {"default-src http://random.com,"
+       "default-src https://non-random.com:*",
+       true, false},
+      {"script-src http://*.one.com; img-src https://sub.one.com", true, false},
+      {"script-src http://*.one.com; img-src https://sub.one.com "
+       "http://two.com/imgs/",
+       true, true},
+      {"script-src http://*.one.com,"
+       "img-src https://sub.one.com http://two.com/imgs/",
+       true, true},
+      {"script-src http://*.random.com; default-src https://sub.one.com "
+       "http://two.com/imgs/,"
+       "default-src https://else.com",
+       true, false},
+      {"script-src http://*.random.com; default-src https://sub.one.com "
+       "http://two.com/imgs/,"
+       "default-src https://sub.one.com",
+       true, false},
+  };
+
+  std::vector<mojom::ContentSecurityPolicyPtr> policy_a = ParseCSP(csp_a);
+
+  for (const auto& test : cases) {
+    std::vector<mojom::ContentSecurityPolicyPtr> policies_b =
+        ParseCSP(test.policies);
+    EXPECT_EQ(Subsumes(*policy_a[0], policies_b,
+                       url::Origin::Create(GURL("https://a.com"))),
+              test.expected)
+        << csp_a << " should " << (test.expected ? "" : "not ") << "subsume "
+        << test.policies;
+
+    if (!policies_b.empty()) {
+      // Check if first policy of `listB` subsumes `A`.
+      EXPECT_EQ(Subsumes(*policies_b[0], policy_a,
+                         url::Origin::Create(GURL("https://a.com"))),
+                test.expected_first_policy_opposite)
+          << csp_a << " should "
+          << (test.expected_first_policy_opposite ? "" : "not ") << "subsume "
+          << test.policies;
+    }
+  }
+}
+
+TEST(ContentSecurityPolicy, SubsumesIfNoneIsPresent) {
+  struct TestCase {
+    const char* policy_a;
+    const char* policies_b;
+    bool expected;
+  } cases[] = {
+      // `policyA` is 'none', but no policy in `policiesB` is.
+      {"script-src ", "", false},
+      {"script-src 'none'", "", false},
+      {"script-src ", "script-src http://example.com", false},
+      {"script-src 'none'", "script-src http://example.com", false},
+      {"script-src ", "img-src 'none'", false},
+      {"script-src 'none'", "img-src 'none'", false},
+      {"script-src ", "script-src http://*.one.com, img-src https://two.com",
+       false},
+      {"script-src 'none'",
+       "script-src http://*.one.com, img-src https://two.com", false},
+      {"script-src 'none'",
+       "script-src http://*.one.com, script-src https://two.com", true},
+      {"script-src 'none'", "script-src http://*.one.com, script-src 'self'",
+       true},
+      // `policyA` is not 'none', but at least effective result of `policiesB`
+      // is.
+      {"script-src http://example.com 'none'", "script-src 'none'", true},
+      {"script-src http://example.com", "script-src 'none'", true},
+      {"script-src http://example.com 'none'",
+       "script-src http://*.one.com, script-src http://sub.one.com,"
+       "script-src 'none'",
+       true},
+      {"script-src http://example.com",
+       "script-src http://*.one.com, script-src http://sub.one.com,"
+       "script-src 'none'",
+       true},
+      {"script-src http://one.com 'none'",
+       "script-src http://*.one.com, script-src http://sub.one.com,"
+       "script-src https://one.com",
+       true},
+      // `policyA` is `none` and at least effective result of `policiesB` is
+      // too.
+      {"script-src ", "script-src , script-src ", true},
+      {"script-src 'none'", "script-src, script-src 'none'", true},
+      {"script-src ", "script-src 'none', script-src 'none'", true},
+      {"script-src ",
+       "script-src 'none' http://example.com,"
+       "script-src 'none' http://example.com",
+       false},
+      {"script-src 'none'", "script-src 'none', script-src 'none'", true},
+      {"script-src 'none'",
+       "script-src 'none', script-src 'none', script-src 'none'", true},
+      {"script-src 'none'",
+       "script-src http://*.one.com, script-src http://sub.one.com,"
+       "script-src 'none'",
+       true},
+      {"script-src 'none'",
+       "script-src http://*.one.com, script-src http://two.com,"
+       "script-src http://three.com",
+       true},
+      // Policies contain special keywords.
+      {"script-src ", "script-src , script-src 'unsafe-eval'", true},
+      {"script-src 'none'", "script-src 'unsafe-inline', script-src 'none'",
+       true},
+      {"script-src ",
+       "script-src 'none' 'unsafe-inline',"
+       "script-src 'none' 'unsafe-inline'",
+       false},
+      {"script-src ",
+       "script-src 'none' 'unsafe-inline',"
+       "script-src 'unsafe-inline' 'strict-dynamic'",
+       false},
+      {"script-src 'unsafe-eval'",
+       "script-src 'unsafe-eval', script 'unsafe-inline'", true},
+      {"script-src 'unsafe-inline'", "script-src  , script http://example.com",
+       true},
+  };
+
+  for (const auto& test : cases) {
+    std::vector<mojom::ContentSecurityPolicyPtr> policy_a =
+        ParseCSP(test.policy_a);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies_b =
+        ParseCSP(test.policies_b);
+    EXPECT_EQ(Subsumes(*policy_a[0], policies_b,
+                       url::Origin::Create(GURL("https://a.com"))),
+              test.expected)
+        << test.policy_a << " should " << (test.expected ? "" : "not ")
+        << "subsume " << test.policies_b;
+  }
+}
+
+TEST(ContentSecurityPolicy, SubsumesPluginTypes) {
+  struct TestCase {
+    const char* policy_a;
+    const char* policies_b;
+    bool expected;
+  } cases[] = {
+      // `policyA` subsumes `policiesB`.
+      {"script-src 'unsafe-inline'",
+       "script-src  , script-src http://example.com, plugin-types text/plain",
+       true},
+      {"script-src http://example.com",
+       "script-src http://example.com; plugin-types ", true},
+      {"script-src http://example.com",
+       "script-src http://example.com; plugin-types text/plain", true},
+      {"script-src http://example.com; plugin-types text/plain",
+       "script-src http://example.com; plugin-types text/plain", true},
+      {"script-src http://example.com; plugin-types text/plain",
+       "script-src http://example.com; plugin-types ", true},
+      {"script-src http://example.com; plugin-types text/plain",
+       "script-src http://example.com; plugin-types , plugin-types ", true},
+      {"plugin-types application/pdf text/plain",
+       "plugin-types application/pdf text/plain, plugin-types "
+       "application/x-blink-test-plugin",
+       true},
+      {"plugin-types application/pdf text/plain",
+       "plugin-types application/pdf text/plain,"
+       "plugin-types application/pdf text/plain "
+       "application/x-blink-test-plugin",
+       true},
+      {"plugin-types application/x-shockwave-flash application/pdf text/plain",
+       "plugin-types application/x-shockwave-flash application/pdf text/plain, "
+       "plugin-types application/x-shockwave-flash",
+       true},
+      {"plugin-types application/x-shockwave-flash",
+       "plugin-types application/x-shockwave-flash application/pdf text/plain, "
+       "plugin-types application/x-shockwave-flash",
+       true},
+      // `policyA` does not subsume `policiesB`.
+      {"script-src http://example.com; plugin-types text/plain", "", false},
+      {"script-src http://example.com; plugin-types text/plain",
+       "script-src http://example.com", false},
+      {"plugin-types random-value",
+       "script-src 'unsafe-inline', plugin-types text/plain", false},
+      {"plugin-types random-value",
+       "script-src http://example.com, script-src http://example.com", false},
+      {"plugin-types random-value",
+       "plugin-types  text/plain, plugin-types text/plain", false},
+      {"script-src http://example.com; plugin-types text/plain",
+       "plugin-types , plugin-types ", false},
+      {"plugin-types application/pdf text/plain",
+       "plugin-types application/x-blink-test-plugin,"
+       "plugin-types application/x-blink-test-plugin",
+       false},
+      {"plugin-types application/pdf text/plain",
+       "plugin-types application/pdf application/x-blink-test-plugin, "
+       "plugin-types application/x-blink-test-plugin",
+       false},
+  };
+
+  for (const auto& test : cases) {
+    std::vector<mojom::ContentSecurityPolicyPtr> policy_a =
+        ParseCSP(test.policy_a);
+    std::vector<mojom::ContentSecurityPolicyPtr> policies_b =
+        ParseCSP(test.policies_b);
+    EXPECT_EQ(Subsumes(*policy_a[0], policies_b,
+                       url::Origin::Create(GURL("https://a.com"))),
+              test.expected)
+        << test.policy_a << " should " << (test.expected ? "" : "not ")
+        << "subsume " << test.policies_b;
   }
 }
 

@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '611a52108b01e0908ece02138d06eea0b810a5bc',
+  'skia_revision': 'cd54c8385c318ecf74f9d1d1b3f5bf37ee4e9b0e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0c069f3956ff1a58823ef28d83cbf70ca8b99064',
+  'devtools_frontend_revision': '5422981b71e391a5261bcda443ab539cb671bd8b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -891,7 +891,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '8152eec38dd1e1675aadfc4262692b71d731a1d0',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'fd5a98f6204f9d854af9dcb47b237a12875f2a14',
       'condition': 'checkout_linux',
   },
 

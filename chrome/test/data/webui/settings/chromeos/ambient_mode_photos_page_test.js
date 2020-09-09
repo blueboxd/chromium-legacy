@@ -62,6 +62,39 @@ suite('AmbientModeHandler', function() {
     ambientModePhotosPage.remove();
   });
 
+  /**
+   * @param {!AmbientModeTopicSource} topicSource
+   * @private
+   */
+  function assertCheckPosition(topicSource) {
+    ambientModePhotosPage.albums_ = [
+      {albumId: 'id0', checked: true, title: 'album0'},
+      {albumId: 'id1', checked: true, title: 'album1'}
+    ];
+    ambientModePhotosPage.topicSource_ = topicSource;
+    Polymer.dom.flush();
+
+    const albumList = ambientModePhotosPage.$$('album-list');
+    const ironList = albumList.$$('iron-list');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
+
+    albumItems.forEach((album) => {
+      const check = album.$$('.check');
+      const image = album.$.image;
+      const boundingWidth = image.getBoundingClientRect().width;
+      const scale = boundingWidth / image.offsetWidth;
+
+      const checkTop = Math.round(
+          (image.offsetHeight * (1.0 - scale) - check.offsetHeight) / 2.0);
+      assertEquals(checkTop, check.offsetTop);
+
+      const checkLeft = Math.round(
+          (image.offsetWidth * (1.0 - scale) - check.offsetWidth) / 2.0 +
+          boundingWidth);
+      assertEquals(checkLeft, check.offsetLeft);
+    });
+  }
+
   test('hasAlbums', function() {
     ambientModePhotosPage.albums = [
       {albumId: 'id0', checked: true, title: 'album0'},
@@ -71,7 +104,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(2, albumItems.length);
 
     const album0 = albumItems[0];
@@ -84,6 +117,50 @@ suite('AmbientModeHandler', function() {
     assertEquals('album1', album1.album.title);
   });
 
+  test('personalPhotosImageContainerHasCorrectSize', function() {
+    ambientModePhotosPage.albums = [
+      {albumId: 'id0', checked: true, title: 'album0'},
+      {albumId: 'id1', checked: false, title: 'album1'},
+      {albumId: 'id2', checked: false, title: 'album2'}
+    ];
+    ambientModePhotosPage.topicSource = AmbientModeTopicSource.GOOGLE_PHOTOS;
+    Polymer.dom.flush();
+
+    const albumList = ambientModePhotosPage.$$('album-list');
+    const ironList = albumList.$$('iron-list');
+    assertTrue(ironList.grid);
+
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
+    assertEquals(3, albumItems.length);
+    albumItems.forEach((album) => {
+      const imageContainer = album.$$('#imageContainer');
+      assertEquals(160, imageContainer.clientHeight);
+      assertEquals(160, imageContainer.clientWidth);
+    });
+  });
+
+  test('artImageContainerHasCorrectSize', function() {
+    ambientModePhotosPage.albums = [
+      {albumId: 'id0', checked: true, title: 'album0'},
+      {albumId: 'id1', checked: false, title: 'album1'},
+      {albumId: 'id2', checked: false, title: 'album2'}
+    ];
+    ambientModePhotosPage.topicSource = AmbientModeTopicSource.ART_GALLERY;
+    Polymer.dom.flush();
+
+    const albumList = ambientModePhotosPage.$$('album-list');
+    const ironList = albumList.$$('iron-list');
+    assertTrue(ironList.grid);
+
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
+    assertEquals(3, albumItems.length);
+    albumItems.forEach((album) => {
+      const imageContainer = album.$$('#imageContainer');
+      assertEquals(160, imageContainer.clientHeight);
+      assertEquals(256, imageContainer.clientWidth);
+    });
+  });
+
   test('toggleAlbumSelectionByClick', function() {
     ambientModePhotosPage.albums = [
       {albumId: 'id0', checked: true, title: 'album0'},
@@ -93,7 +170,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(2, albumItems.length);
 
     const album0 = albumItems[0];
@@ -129,6 +206,49 @@ suite('AmbientModeHandler', function() {
     assertEquals(4, selectedAlbumsChangedEventCalls);
   });
 
+  test('showCheckIconOnSelectedAlbum', function() {
+    ambientModePhotosPage.albums = [
+      {albumId: 'id0', checked: true, title: 'album0'},
+      {albumId: 'id1', checked: false, title: 'album1'}
+    ];
+    Polymer.dom.flush();
+
+    const albumList = ambientModePhotosPage.$$('album-list');
+    const ironList = albumList.$$('iron-list');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
+
+    const album0 = albumItems[0];
+    const check0 = album0.$$('.check');
+    assertTrue(album0.checked);
+    assertFalse(check0.hidden);
+
+    // Click album item image will toggle the check.
+    album0.$.image.click();
+    assertFalse(album0.checked);
+    assertTrue(check0.hidden);
+
+    const album1 = albumItems[1];
+    const check1 = album1.$$('.check');
+    assertFalse(album1.checked);
+    assertTrue(check1.hidden);
+
+    // Click album item image will toggle the check.
+    album1.$.image.click();
+    assertTrue(album1.checked);
+    assertFalse(check1.hidden);
+    // Click album1 will not affect album0.
+    assertFalse(album0.checked);
+    assertTrue(check0.hidden);
+  });
+
+  test('personalPhotosCheckIconHasCorrectPosition', function() {
+    assertCheckPosition(AmbientModeTopicSource.GOOGLE_PHOTOS);
+  });
+
+  test('artPhotosCheckIconHasCorrectPosition', function() {
+    assertCheckPosition(AmbientModeTopicSource.GOOGLE_PHOTOS);
+  });
+
   test('setSelectedAlbums', async () => {
     ambientModePhotosPage.albums = [
       {albumId: 'id0', checked: true, title: 'album0'},
@@ -138,7 +258,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(2, albumItems.length);
 
     const album0 = albumItems[0];
@@ -176,7 +296,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(1, albumItems.length);
 
     const album0 = albumItems[0];
@@ -203,7 +323,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(1, albumItems.length);
 
     const album0 = albumItems[0];
@@ -238,7 +358,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(1, albumItems.length);
 
     const album0 = albumItems[0];
@@ -263,7 +383,7 @@ suite('AmbientModeHandler', function() {
 
     const albumList = ambientModePhotosPage.$$('album-list');
     const ironList = albumList.$$('iron-list');
-    const albumItems = ironList.querySelectorAll('album-item');
+    const albumItems = ironList.querySelectorAll('album-item:not([hidden])');
     assertEquals(1, albumItems.length);
 
     const album0 = albumItems[0];

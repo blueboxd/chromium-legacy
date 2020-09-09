@@ -2788,26 +2788,6 @@
             ]
         }
     ],
-    "FriendlySettingsHats": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Launched_20200616",
-                    "enable_features": [
-                        "PrivacySettingsRedesign",
-                        "SafeBrowsingEnhancedProtection",
-                        "SyncSetupFriendlySettings"
-                    ]
-                }
-            ]
-        }
-    ],
     "FullscreenBrowserScope": [
         {
             "platforms": [
@@ -3405,6 +3385,22 @@
                     },
                     "enable_features": [
                         "IPH_IdentityDisc"
+                    ],
+                    "disable_features": []
+                }
+            ]
+        }
+    ],
+    "IllustratedEmptyStates": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IllustratedEmptyStates"
                     ],
                     "disable_features": []
                 }
@@ -4834,6 +4830,24 @@
             ]
         }
     ],
+    "OptimizationHintsNoPersistentStore": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200814",
+                    "params": {
+                        "persist_hints_to_disk": "false"
+                    },
+                    "enable_features": [
+                        "OptimizationHints"
+                    ]
+                }
+            ]
+        }
+    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
@@ -5311,22 +5325,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreloadMetadataLazyLoad"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PreviewsNoScript": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "NoScriptWithWhiteList2",
-                    "enable_features": [
-                        "NoScriptPreviews",
-                        "OptimizationHints"
                     ]
                 }
             ]
@@ -6208,6 +6206,24 @@
                 },
                 {
                     "name": "Default"
+                }
+            ]
+        }
+    ],
+    "SafetyCheckChromeCleanerChild": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafetyCheckChromeCleanerChild"
+                    ]
                 }
             ]
         }

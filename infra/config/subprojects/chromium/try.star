@@ -145,6 +145,13 @@ try_.chromium_builder(
 )
 
 try_.chromium_builder(
+    name = "mac-official",
+    branch_selector = branches.STANDARD_RELEASES,
+    cores = None,
+    os = os.MAC_ANY,
+)
+
+try_.chromium_builder(
     name = "win-official",
     branch_selector = branches.STANDARD_RELEASES,
     os = os.WINDOWS_DEFAULT,
@@ -325,10 +332,6 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_clang_coverage = True,
-)
-
-try_.chromium_android_builder(
-    name = "android-weblayer-pie-arm64-fyi-rel",
 )
 
 try_.chromium_android_builder(
@@ -1089,7 +1092,7 @@ try_.chromium_mac_builder(
     builderless = False,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 3),
+    tryjob = try_.job(experiment_percentage = 5),
 )
 
 try_.chromium_mac_builder(

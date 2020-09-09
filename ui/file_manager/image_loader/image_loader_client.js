@@ -88,6 +88,21 @@ ImageLoaderClient.sendMessage_ = function(request, callback) {
 };
 
 /**
+ * Image loader client extension request URL matcher.
+ * @const {!RegExp}
+ */
+ImageLoaderClient.CLIENT_URL_REGEX = /filesystem:chrome-extension:\/\/[a-z]+/;
+
+/**
+ * All client request URL match ImageLoaderClient.CLIENT_URL_REGEX and all are
+ * rewritten: the client extension id part of the request URL is replaced with
+ * the image loader extension id.
+ * @const {string}
+ */
+ImageLoaderClient.IMAGE_LOADER_URL =
+    'filesystem:chrome-extension://' + ImageLoaderClient.EXTENSION_ID;
+
+/**
  * Loads and resizes and image.
  *
  * @param {!LoadImageRequest} request
@@ -99,13 +114,9 @@ ImageLoaderClient.prototype.load = function(request, callback) {
   ImageLoaderClient.recordPercentage('Cache.Usage',
       this.cache_.size() / ImageLoaderClient.CACHE_MEMORY_LIMIT * 100.0);
 
-  // Replace the extension id.
-  const sourceId = chrome.i18n.getMessage('@@extension_id');
-  const targetId = ImageLoaderClient.EXTENSION_ID;
-
+  // Replace the client extension id with the image loader extension id.
   request.url = request.url.replace(
-      'filesystem:chrome-extension://' + sourceId,
-      'filesystem:chrome-extension://' + targetId);
+      ImageLoaderClient.CLIENT_URL_REGEX, ImageLoaderClient.IMAGE_LOADER_URL);
 
   // Try to load from cache, if available.
   const cacheKey = LoadImageRequest.cacheKey(request);

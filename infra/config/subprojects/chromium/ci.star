@@ -869,14 +869,6 @@ ci.android_builder(
 )
 
 ci.android_fyi_builder(
-    name = "Android WebLayer P FYI (rel)",
-    console_view_entry = ci.console_view_entry(
-        category = "weblayer",
-        short_name = "p-rel",
-    ),
-)
-
-ci.android_fyi_builder(
     name = "android-weblayer-pie-x86-fyi-rel",
     console_view_entry = ci.console_view_entry(
         category = "weblayer",
@@ -1021,6 +1013,25 @@ ci.chromium_builder(
     ),
     main_console_view = "main",
     os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = "mac-official",
+    builderless = False,
+    # TODO(https://crbug.com/1072012) Use the default console view and add
+    # main_console_view = settings.main_console_name once the build is green
+    console_view = "chromium.fyi",
+    console_view_entry = ci.console_view_entry(
+        category = "mac",
+        short_name = "off",
+    ),
+    # TODO: Change this back down to something reasonable once these builders
+    # have populated their cached by getting through the compile step
+    execution_timeout = 10 * time.hour,
+    main_console_view = main_console_if_on_branch(),
+    tree_closing = False,
+    os = os.MAC_ANY,
+    cores = None,
 )
 
 ci.chromium_builder(

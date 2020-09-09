@@ -211,11 +211,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '10121443c16deb0435be8ea61be54e3bee1b9855',
+  'swiftshader_revision': '5f71fdf34b763048628317f7f910e74ed7fe9b5c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '1e7df19a137f290064bc098e9ccbf82232197285',
+  'pdfium_revision': '33792a19b6e282c7f3219420b10b6f027dc1fde2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a67d868f6c11020f234b794742446ce589222c07',
+  'devtools_frontend_revision': 'b7a88f49d2ab73ea2888852c1bf01d9d2e1034bc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '22e5e179fa288848b059b563f1d2b7c32e804eff',
+  'dawn_revision': '12e97ed6a789a545a8e4d8b82d05fd80257936bd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -916,7 +916,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'd96f468ef02026bc4bf7c7c841bfbb8d728e60db',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'e61dd757a8c09139c03ffa2ef285d5678909370a',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@515a3a6dd4333336cdbcd6636c421c063ff0bfaf',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fdb64271aae6704cb76f1a6c2659cfb3a2ad6659',
     'condition': 'checkout_src_internal',
   },
 

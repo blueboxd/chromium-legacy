@@ -921,6 +921,7 @@ suite('CrostiniPageTests', function() {
           settings.routes.CROSTINI_SHARED_PATHS);
 
       await test_util.flushTasks();
+      Polymer.dom.flush();
       subpage = crostiniPage.$$('settings-crostini-shared-paths');
       assertTrue(!!subpage);
     });

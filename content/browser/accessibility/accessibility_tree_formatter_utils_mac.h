@@ -12,45 +12,53 @@ namespace content {
 namespace a11y {
 
 /**
+ * Return true if the given object is internal BrowserAccessibilityCocoa.
+ */
+bool IsBrowserAccessibilityCocoa(const id node);
+
+/**
+ * Returns true if the given object is AXUIElement.
+ */
+bool IsAXUIElement(const id node);
+
+/**
+ * Returns children of an accessible object, either AXUIElement or
+ * BrowserAccessibilityCocoa.
+ */
+NSArray* ChildrenOf(const id node);
+
+/**
+ * Returns (parameterized) attributes of an accessible object, (either
+ * AXUIElement or BrowserAccessibilityCocoa).
+ */
+NSArray* AttributeNamesOf(const id node);
+NSArray* ParameterizedAttributeNamesOf(const id node);
+
+/**
+ * Returns (parameterized) attribute value on a given node (either AXUIElement
+ * or BrowserAccessibilityCocoa)
+ */
+id AttributeValueOf(const id node, NSString* attribute);
+id ParameterizedAttributeValueOf(const id node,
+                                 NSString* attribute,
+                                 id parameter);
+
+/**
  * Converts accessible node object to a line index in the formatted
  * accessibility tree, the node is placed at, and vice versa.
  */
-class LineIndexer {
+class LineIndexer final {
  public:
-  LineIndexer();
+  LineIndexer(const gfx::NativeViewAccessible node);
   virtual ~LineIndexer();
 
   std::string IndexBy(const gfx::NativeViewAccessible node) const;
   gfx::NativeViewAccessible NodeBy(const std::string& index) const;
 
- protected:
-  virtual NSArray* Children(const gfx::NativeViewAccessible node) const = 0;
+ private:
   void Build(const gfx::NativeViewAccessible node, int* counter);
 
- private:
   std::map<const gfx::NativeViewAccessible, std::string> map;
-};
-
-/**
- * Line indexer for internal BrowserAccessibilityCocoa trees.
- */
-class CocoaLineIndexer final : public LineIndexer {
- public:
-  CocoaLineIndexer(const BrowserAccessibilityCocoa* node);
-
- protected:
-  NSArray* Children(const gfx::NativeViewAccessible node) const override;
-};
-
-/**
- * Line indexer for external AXUIElement trees.
- */
-class AXLineIndexer final : public LineIndexer {
- public:
-  AXLineIndexer(const AXUIElementRef node);
-
- protected:
-  NSArray* Children(const gfx::NativeViewAccessible node) const override;
 };
 
 // Implements stateful id values. Can be either id or be in
@@ -87,8 +95,7 @@ class OptionalNSObject final {
 // Invokes attributes matching the given property filter.
 class AttributeInvoker final {
  public:
-  AttributeInvoker(const BrowserAccessibilityCocoa* cocoa_node,
-                   const LineIndexer* line_indexer);
+  AttributeInvoker(const id node, const LineIndexer* line_indexer);
 
   // Invokes an attribute matching to a property filter.
   OptionalNSObject Invoke(const PropertyNode& property_node) const;
@@ -109,7 +116,7 @@ class AttributeInvoker final {
   gfx::NativeViewAccessible LineIndexToNode(
       const base::string16 line_index) const;
 
-  const BrowserAccessibilityCocoa* cocoa_node;
+  const id node;
   const LineIndexer* line_indexer;
   const NSArray* attributes;
   const NSArray* parameterized_attributes;

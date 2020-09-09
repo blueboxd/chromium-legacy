@@ -21,8 +21,8 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
-#include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
+#include "components/paint_preview/browser/warm_compositor.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/recording_map.h"
 #include "components/paint_preview/common/serialized_recording.h"
@@ -120,9 +120,10 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("paint_preview",
                                     "PlayerCompositorDelegate CreateCompositor",
                                     TRACE_ID_LOCAL(this));
-  paint_preview_compositor_service_ = StartCompositorService(
-      base::BindOnce(&PlayerCompositorDelegate::OnCompositorServiceDisconnected,
-                     weak_factory_.GetWeakPtr()));
+  paint_preview_compositor_service_ =
+      WarmCompositor::GetInstance()->GetOrStartCompositorService(base::BindOnce(
+          &PlayerCompositorDelegate::OnCompositorServiceDisconnected,
+          weak_factory_.GetWeakPtr()));
 
   paint_preview_compositor_client_ =
       paint_preview_compositor_service_->CreateCompositor(
@@ -167,10 +168,11 @@ void PlayerCompositorDelegate::OnCompositorReadyStatusAdapter(
 }
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
-  LOG(ERROR) << "Compositor service disconnected.";
-  if (compositor_error_)
+  DLOG(ERROR) << "Compositor service disconnected.";
+  if (compositor_error_) {
     std::move(compositor_error_)
         .Run(static_cast<int>(CompositorStatus::COMPOSITOR_SERVICE_DISCONNECT));
+  }
 }
 
 void PlayerCompositorDelegate::OnCompositorClientCreated(
@@ -262,10 +264,11 @@ void PlayerCompositorDelegate::SendCompositeRequest(
 }
 
 void PlayerCompositorDelegate::OnCompositorClientDisconnected() {
-  LOG(ERROR) << "Compositor client disconnected.";
-  if (compositor_error_)
+  DLOG(ERROR) << "Compositor client disconnected.";
+  if (compositor_error_) {
     std::move(compositor_error_)
         .Run(static_cast<int>(CompositorStatus::COMPOSITOR_CLIENT_DISCONNECT));
+  }
 }
 
 void PlayerCompositorDelegate::RequestBitmap(

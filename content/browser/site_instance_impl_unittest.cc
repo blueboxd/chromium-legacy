@@ -628,13 +628,11 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   // (foo.com).
   {
     GURL site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, test_url, false /* use_effective_urls */,
-        false /* allow_default_site_url */);
+        isolation_context, test_url, false /* use_effective_urls */);
     EXPECT_EQ(nonapp_site_url, site_url);
 
     site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, test_url, true /* use_effective_urls */,
-        false /* allow_default_site_url */);
+        isolation_context, test_url, true /* use_effective_urls */);
     EXPECT_EQ(app_url, site_url);
   }
 
@@ -1042,8 +1040,6 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
   host.reset(instance->GetProcess());
 
-  EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForURL(
-      instance->GetIsolationContext(), GURL()));
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForSite(
       instance->GetIsolationContext(), SiteInfo(), false));
 

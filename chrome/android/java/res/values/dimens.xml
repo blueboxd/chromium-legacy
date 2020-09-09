@@ -149,13 +149,21 @@
     <dimen name="fre_content_margin">24dp</dimen>
     <dimen name="fre_vertical_spacing">32dp</dimen>
     <dimen name="fre_landscape_top_padding">72dp</dimen>
-    <dimen name="fre_button_bar_height">62dp</dimen>
-    <dimen name="fre_bottom_vertical_margin">10dp</dimen>
-    <dimen name="fre_button_padding">12dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
+
+    <dimen name="fre_image_bottom_margin">36dp</dimen>
     <dimen name="fre_image_height">110dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
+    <dimen name="fre_tos_bottom_margin">16dp</dimen>
     <dimen name="fre_loading_spinner_size">48dp</dimen>
+    <dimen name="fre_button_padding">12dp</dimen>
+    <dimen name="fre_bottom_loading_spinner_size">24dp</dimen>
+
+    <dimen name="fre_button_vertical_margin">24dp</dimen>
+    <!-- fre_button_bar_height = button_height(48dp) + fre_button_vertical_margin * 2-->
+    <dimen name="fre_button_bar_height">96dp</dimen>
+    <!-- fre_bottom_loading_spinner_margin = (fre_button_bar_height - fre_bottom_loading_spinner_size) / 2-->
+    <dimen name='fre_bottom_loading_spinner_margin'>36dp</dimen>
 
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
@@ -497,6 +505,14 @@
     <dimen name="history_item_remove_button_lateral_padding">18dp</dimen>
 
     <!-- Revamped Context Menu Dimensions -->
+    <!-- Prevent the chip from reaching the edges of the screen for long translations. -->
+    <dimen name="context_menu_chip_max_width">300dp</dimen>
+    <dimen name="context_menu_chip_vertical_margin">24dp</dimen>
+    <!-- The chip touch target is 48dp. This reduces the chip size by 8dp to get to the desired
+         40dp height (24dp for content + 4dp of padding at the top and bottom. -->
+    <dimen name="context_menu_chip_vertical_inset">4dp</dimen>
+    <dimen name="context_menu_chip_icon_size">24dp</dimen>
+
     <dimen name="context_menu_max_width">500dp</dimen>
     <dimen name="revamped_context_menu_lateral_margin">40dp</dimen>
     <dimen name="revamped_context_menu_vertical_margin">20dp</dimen>
@@ -586,4 +602,7 @@
     <dimen name="overflow_menu_update_min_height">40sp</dimen>
     <dimen name="overflow_menu_update_padding">12dp</dimen>
 
+    <!-- Sharing Hub dimensions -->
+    <dimen name="sharing_hub_preview_monogram_text_size">24dp</dimen>
+    <dimen name="sharing_hub_preview_monogram_size">48dp</dimen>
 </resources>

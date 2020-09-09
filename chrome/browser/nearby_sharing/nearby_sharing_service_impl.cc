@@ -220,6 +220,7 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
           local_device_data_manager_.get())),
       certificate_manager_(NearbyShareCertificateManagerImpl::Factory::Create(
           local_device_data_manager_.get(),
+          contact_manager_.get(),
           prefs,
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetProtoDatabaseProvider(),
@@ -934,6 +935,8 @@ bool NearbySharingServiceImpl::HasAvailableConnectionMediums() {
 void NearbySharingServiceImpl::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
+  NS_LOG(VERBOSE) << "Bluetooth present changed: " << present;
+  InvalidateSurfaceState();
   if (!present)
     StopFastInitiationAdvertising();
 }
@@ -941,6 +944,8 @@ void NearbySharingServiceImpl::AdapterPresentChanged(
 void NearbySharingServiceImpl::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool powered) {
+  NS_LOG(VERBOSE) << "Bluetooth powered changed: " << powered;
+  InvalidateSurfaceState();
   if (!powered)
     StopFastInitiationAdvertising();
 }

@@ -139,6 +139,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentSuggestionsScrollToLoad,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuCopyImage,
+    &kContextMenuGoogleLensChip,
     &kContextMenuSearchWithGoogleLens,
     &kContextMenuShopWithGoogleLens,
     &kContextMenuSearchAndShopWithGoogleLens,
@@ -247,7 +248,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxSearchReadyIncognito,
     &omnibox::kOmniboxSuggestionsRecyclerView,
     &omnibox::kOmniboxSuggestionsWrapAround,
-    &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordChangeInSettings,
     &password_manager::features::kPasswordCheck,
     &password_manager::features::kPasswordEditingAndroid,
@@ -403,6 +403,9 @@ const base::Feature kContextMenuEnableLensShoppingAllowlist{
 
 const base::Feature kContextMenuCopyImage{"ContextMenuCopyImage",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContextMenuGoogleLensChip{
+    "ContextMenuGoogleLensChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};

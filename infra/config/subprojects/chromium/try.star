@@ -1092,7 +1092,7 @@ try_.chromium_mac_builder(
     builderless = False,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 5),
+    tryjob = try_.job(experiment_percentage = 7),
 )
 
 try_.chromium_mac_builder(
@@ -1159,7 +1159,7 @@ try_.chromium_mac_builder(
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_13,
     main_list_view = settings.main_list_view_name,
-    tryjob = try_.job(),
+    tryjob = try_.job(cancel_stale = False),
 )
 
 try_.chromium_mac_builder(
@@ -1383,7 +1383,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win10_chromium_x64_1909_fyi_rel_ng",
-    os = os.WINDOWS_10,
+    os = os.WINDOWS_10_1909,
 )
 
 try_.chromium_win_builder(

@@ -567,6 +567,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "context-menu-google-lens-chip",
+    "owners": [ "yusuyoutube", "benwgold", "lens-chrome" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "context-menu-performance-info-and-remote-hints-fetching",
     "owners": [ "jds" ],
     "expiry_milestone": 90
@@ -2689,6 +2694,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "global-media-controls-modern-ui",
+    "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "global-media-controls-overlay-controls",
     "owners" : [ "jazzhsu", "steimel", "media-dev" ],
     "expiry_milestone": 93
@@ -2702,11 +2712,6 @@
     "name": "global-media-controls-seamless-transfer",
     "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "google-password-manager",
-    "owners": [ "ioanap", "jdoerrie" ],
-    "expiry_milestone": 87
   },
   {
     "name": "h264-decoder-is-buffer-complete-frame",

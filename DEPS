@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '81c6d6eeb4cf2fac93f6fc4e26409a1315996413',
+  'skia_revision': '215d2b0fa42d523ac8c6d262e1cd6c7dc27976b6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'dc9083e4831f3c37dd91c8e66176726cb7c210ef',
+  'catapult_revision': '6acdaf066c1268620dbb9e5ee3d0c8d26ce3d099',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0a1061da0c7fc759a4ca06edf5b4e2f36915b15f',
+  'dawn_revision': '97b880e6ff82e98b70dab162d526f4e1c2af9a58',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:6f13aaac55a977e1948910942675c69f2b4f7a94',
+  'gn_version': 'git_revision:e002e68a48d1c82648eadde2f6aafa20d08c36f2',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -876,7 +876,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '168986591cc17b4eea1e6335be3ae38ec38a8d07',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd281ff18627341a0ff2c33e19691159d504923f8',
       'condition': 'checkout_chromeos',
   },
 
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b7310899f1269c81b8868a3b60c28ba6607c3ad6',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '21205c3720209f1d624a41b32af848464af678ed',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fdb64271aae6704cb76f1a6c2659cfb3a2ad6659',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4d42f9890bdc22de26320e6e494909a0d33ccadf',
     'condition': 'checkout_src_internal',
   },
 
@@ -1551,7 +1551,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'tO_jo2xydYVZOxjRmrkRI5NL5AYbhmuV3J9LTRaaYEsC',
+        'version': 'mluAO-o7A3mN4nCwt4x0R0SnXS6cuF3Fo--glimMpfkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1562,7 +1562,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'rUtprFyuBDz2yCzSepkGBxhzVtRer7AGDgUw2DZL4KgC',
+        'version': 'AsR6b9xlxrEC7Kxx3tzZ2Pn1DDftdw15hFUg0Q8B6ZoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

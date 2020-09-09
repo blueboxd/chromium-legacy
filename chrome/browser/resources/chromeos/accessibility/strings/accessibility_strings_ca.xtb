@@ -131,7 +131,7 @@
 <translation id="1923956950274750765">Orquídia mitjà</translation>
 <translation id="1928932365747995741">No hi ha cap camp de text anterior que es pugui editar</translation>
 <translation id="1964135212174907577">Objecte següent</translation>
-<translation id="1966649499058910679">Destaca cada paraula a mesura que es digui</translation>
+<translation id="1966649499058910679">Marca cada paraula a mesura que es digui</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1988733631391393183">Mostra ordres de braille als menús de ChromeVox</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{claudàtor d'obertura}other{# claudàtors d'obertura}}</translation>
@@ -280,6 +280,7 @@
 <translation id="3103579948980282461">Vermell violaci mitjà</translation>
 <translation id="3104705064753753826">diàleg d'alerta</translation>
 <translation id="3109724472072898302">Reduït</translation>
+<translation id="311015743332597320">Fes lliscar quatre dits cap a la dreta</translation>
 <translation id="3112457281078985179">Per activar o desactivar ChromeVox, fes servir Control+Alt+Z.</translation>
 <translation id="3131002934070407451">Llegeix números com a:</translation>
 <translation id="3134461040845705080">només de lectura</translation>
@@ -865,7 +866,7 @@
 <translation id="7882421473871500483">Marró</translation>
 <translation id="78826985582142166">control lliscant</translation>
 <translation id="7913106023953875143">No hi ha cap encapçalament més de nivell 2</translation>
-<translation id="7914870167134465181">Opcions per destacar</translation>
+<translation id="7914870167134465181">Opcions per marcar</translation>
 <translation id="7927711904086083099">Sense seleccionar</translation>
 <translation id="7935627501098484003">Control de temps</translation>
 <translation id="7939428177581522200">s'ha afegit a la selecció</translation>
@@ -901,6 +902,7 @@
 <translation id="812886159861361726">S'ha aturat la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">No hi ha cap cel·la més amunt</translation>
 <translation id="8138880386467279117">Tàctil</translation>
+<translation id="8173092779156526980">Fes lliscar quatre dits cap a l'esquerra</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8184828902145951186">fila</translation>
 <translation id="8186185314313222077">activa la pantalla completa</translation>

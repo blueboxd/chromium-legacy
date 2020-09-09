@@ -209,6 +209,9 @@ extern const char kBackForwardCacheDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
+extern const char kContextMenuGoogleLensChipName[];
+extern const char kContextMenuGoogleLensChipDescription[];
+
 extern const char kContextMenuSearchWithGoogleLensName[];
 extern const char kContextMenuSearchWithGoogleLensDescription[];
 
@@ -695,14 +698,14 @@ extern const char kGlobalMediaControlsPictureInPictureDescription[];
 extern const char kGlobalMediaControlsSeamlessTransferName[];
 extern const char kGlobalMediaControlsSeamlessTransferDescription[];
 
+extern const char kGlobalMediaControlsModernUIName[];
+extern const char kGlobalMediaControlsModernUIDescription[];
+
 extern const char kGlobalMediaControlsOverlayControlsName[];
 extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
-
-extern const char kGooglePasswordManagerName[];
-extern const char kGooglePasswordManagerDescription[];
 
 extern const char kH264DecoderBufferIsCompleteFrameName[];
 extern const char kH264DecoderBufferIsCompleteFrameDescription[];

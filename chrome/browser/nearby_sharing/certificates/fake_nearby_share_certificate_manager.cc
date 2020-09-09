@@ -14,11 +14,12 @@ FakeNearbyShareCertificateManager::Factory::~Factory() = default;
 std::unique_ptr<NearbyShareCertificateManager>
 FakeNearbyShareCertificateManager::Factory::CreateInstance(
     NearbyShareLocalDeviceDataManager* local_device_data_manager,
+    NearbyShareContactManager* contact_manager,
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& profile_path,
     NearbyShareClientFactory* client_factory,
-    base::Clock* clock) {
+    const base::Clock* clock) {
   auto instance = std::make_unique<FakeNearbyShareCertificateManager>();
   instances_.push_back(instance.get());
 
@@ -51,14 +52,14 @@ FakeNearbyShareCertificateManager::~FakeNearbyShareCertificateManager() =
 
 NearbySharePrivateCertificate
 FakeNearbyShareCertificateManager::GetValidPrivateCertificate(
-    NearbyShareVisibility visibility) {
+    nearby_share::mojom::Visibility visibility) {
   ++num_get_valid_private_certificate_calls_;
   return GetNearbyShareTestPrivateCertificate(visibility);
 }
 
 std::vector<nearbyshare::proto::PublicCertificate>
 FakeNearbyShareCertificateManager::GetPrivateCertificatesAsPublicCertificates(
-    NearbyShareVisibility visibility) {
+    nearby_share::mojom::Visibility visibility) {
   ++num_get_private_certificates_as_public_certificates_calls_;
   return GetNearbyShareTestPublicCertificateList(visibility);
 }

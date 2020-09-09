@@ -4981,10 +4981,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSwapSideVolumeButtonsForOrientation)},
 #endif  // defined(OS_CHROMEOS)
-    {"google-password-manager", flag_descriptions::kGooglePasswordManagerName,
-     flag_descriptions::kGooglePasswordManagerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kGooglePasswordManager)},
-
     {"enable-implicit-root-scroller",
      flag_descriptions::kEnableImplicitRootScrollerName,
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
@@ -5529,6 +5525,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsForCast)},
 
+    {"global-media-controls-modern-ui",
+     flag_descriptions::kGlobalMediaControlsModernUIName,
+     flag_descriptions::kGlobalMediaControlsModernUIDescription,
+     kOsWin | kOsMac | kOsLinux | kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsModernUI)},
+
     {"global-media-controls-picture-in-picture",
      flag_descriptions::kGlobalMediaControlsPictureInPictureName,
      flag_descriptions::kGlobalMediaControlsPictureInPictureDescription,
@@ -5687,6 +5689,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     "QuietNotificationPrompts")},
 
 #if defined(OS_ANDROID)
+    {"context-menu-google-lens-chip",
+     flag_descriptions::kContextMenuGoogleLensChipName,
+     flag_descriptions::kContextMenuGoogleLensChipDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuGoogleLensChip)},
+
     {"context-menu-search-with-google-lens",
      flag_descriptions::kContextMenuSearchWithGoogleLensName,
      flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,

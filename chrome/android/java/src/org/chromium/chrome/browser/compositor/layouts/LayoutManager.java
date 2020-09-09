@@ -17,8 +17,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
@@ -155,8 +155,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     private final ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
             new ObservableSupplierImpl<>();
-    private final ObservableSupplierImpl<TabContentManager> mTabContentManagerSupplier =
-            new ObservableSupplierImpl<>();
+    private final ObservableSupplier<TabContentManager> mTabContentManagerSupplier;
     private final ObservableSupplierImpl<BrowserControlsStateProvider>
             mBrowserControlsStateProviderSupplier = new ObservableSupplierImpl<>();
     private final CompositorModelChangeProcessor.FrameRequestSupplier mFrameRequestSupplier;
@@ -236,12 +235,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * Creates a {@link LayoutManager} instance.
      * @param host A {@link LayoutManagerHost} instance.
      * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
+     * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
      */
-    public LayoutManager(LayoutManagerHost host, ViewGroup contentContainer) {
+    public LayoutManager(LayoutManagerHost host, ViewGroup contentContainer,
+            ObservableSupplier<TabContentManager> tabContentManagerSupplier) {
         mHost = host;
         mPxToDp = 1.f / mHost.getContext().getResources().getDisplayMetrics().density;
         mAndroidViewShownSupplier = new ObservableSupplierImpl<>();
         mAndroidViewShownSupplier.set(true);
+        mTabContentManagerSupplier = tabContentManagerSupplier;
 
         mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
@@ -393,20 +395,19 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * Initializes the {@link LayoutManager}.  Must be called before using this object.
      * @param selector                 A {@link TabModelSelector} instance.
      * @param creator                  A {@link TabCreatorManager} instance.
-     * @param content                  A {@link TabContentManager} instance.
      * @param controlContainer         A {@link ControlContainer} for browser controls' layout.
      * @param contextualSearchDelegate A {@link ContextualSearchManagementDelegate} instance.
      * @param dynamicResourceLoader    A {@link DynamicResourceLoader} instance.
      */
     public void init(TabModelSelector selector, TabCreatorManager creator,
-            TabContentManager content, ControlContainer controlContainer,
+            ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader, ActivityTabProvider tabProvider) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
 
         // Build Layouts
         mStaticLayout = new StaticLayout(mContext, this, renderHost, mHost, mFrameRequestSupplier,
-                selector, mTabContentManagerSupplier, mBrowserControlsStateProviderSupplier);
+                selector, mTabContentManagerSupplier.get(), mBrowserControlsStateProviderSupplier);
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
@@ -416,13 +417,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // If fullscreen is disabled, don't bother creating this overlay; only the android view will
         // ever be shown.
         if (DeviceClassManager.enableFullscreen()) {
-            Supplier<Integer> viewportModeSupplier = ()
-                    -> getActiveLayout() != null ? getActiveLayout().getViewportMode()
-                                                 : Layout.ViewportMode.ALWAYS_FULLSCREEN;
             mToolbarOverlay = new TopToolbarOverlayCoordinator(mContext, mFrameRequestSupplier,
                     this, controlContainer, tabProvider, getBrowserControlsManager(),
-                    viewportModeSupplier, mAndroidViewShownSupplier,
-                    () -> renderHost.getResourceManager());
+                    mAndroidViewShownSupplier, () -> renderHost.getResourceManager());
         }
 
         // Initialize Layouts
@@ -438,8 +435,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mContextualSearchDelegate = contextualSearchDelegate;
 
         // Initialize Layouts
-        mStaticLayout.setTabModelSelector(selector, content);
-        mTabContentManagerSupplier.set(content);
         mBrowserControlsStateProviderSupplier.set(mHost.getBrowserControlsManager());
 
         // Initialize Contextual Search Panel

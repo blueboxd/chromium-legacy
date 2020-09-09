@@ -429,7 +429,6 @@
 <translation id="1500297251995790841">Непознат уређај [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Овај власнички налог мора да буде први пријављени налог у сесији са вишеструким пријављивањем.</translation>
 <translation id="150411034776756821">Уклони <ph name="SITE" /></translation>
-<translation id="1504311855864906891">Приказуј титл за медијске датотеке</translation>
 <translation id="1504551620756424144">Дељени директоријуми су доступни у Windows-у на <ph name="BASE_DIR" />.</translation>
 <translation id="1506061864768559482">Претраживач</translation>
 <translation id="1507170440449692343">Овој страници је забрањен приступ камери.</translation>
@@ -1864,7 +1863,7 @@
 <translation id="321834671654278338">Linux програм за деинсталирање</translation>
 <translation id="3220586366024592812">Процес конектора за <ph name="CLOUD_PRINT_NAME" /> је отказао. Желите ли поново да га покренете?</translation>
 <translation id="3222066309010235055">Претприказивање: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
-<translation id="3222779980972075989">Повежите се са уређајем <ph name="USB_VM_NAME" /></translation>
+<translation id="3222779980972075989">Повежите се са <ph name="USB_VM_NAME" /></translation>
 <translation id="3223531857777746191">Дугме Ресетуј</translation>
 <translation id="3225084153129302039">Подразумевани љубичасти аватар</translation>
 <translation id="3225319735946384299">Потписивање кода</translation>
@@ -3127,7 +3126,7 @@
 <translation id="4750394297954878236">Предлози</translation>
 <translation id="475088594373173692">Први корисник</translation>
 <translation id="4751476147751820511">Сензори за покрет или светло</translation>
-<translation id="4752124003533492687">Отворите Подешавања да бисте повезали уређај <ph name="USB_DEVICE_NAME" /></translation>
+<translation id="4752124003533492687">Отворите Подешавања да бисте повезали <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Заустави/поново учитај</translation>
 <translation id="4756388243121344051">&amp;Историја</translation>
 <translation id="4759238208242260848">Преузимања</translation>
@@ -3264,7 +3263,6 @@
 <translation id="4921348630401250116">Претварање текста у говор</translation>
 <translation id="49226369361073053">{0,plural, =0{Ажурирајте уређај}=1{Ажурирајте уређај у року од 1 секунде}one{Ажурирајте уређај у року од # секунде}few{Ажурирајте уређај у року од # секунде}other{Ажурирајте уређај у року од # секунди}}</translation>
 <translation id="492299503953721473">Уклони Android апликације</translation>
-<translation id="492320048412997552">Датотека <ph name="FILE_NAME" /> је непозната. Напредна заштита препоручује да пошаљете ову датотеку Google-у ради скенирања.</translation>
 <translation id="492363500327720082">Деинсталира се <ph name="APP_NAME" />…</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Портови ће се приказивати овде</translation>
@@ -3488,7 +3486,6 @@
 <translation id="5225324770654022472">Прикажи пречицу за апликације</translation>
 <translation id="52254442782792731">Актуелна видљивост још увек није подешена</translation>
 <translation id="5227679487546032910">Подразумевани тиркизни аватар</translation>
-<translation id="5228088094491423618">Титл уживо</translation>
 <translation id="5228579091201413441">Омогући синхронизацију</translation>
 <translation id="5229189185761556138">Управљање методима уноса</translation>
 <translation id="5230516054153933099">Прозор</translation>
@@ -5190,7 +5187,7 @@
 <translation id="7303900363563182677">Овом сајту је блокиран увид у текст и слике који су копирани у привремену меморију</translation>
 <translation id="7305123176580523628">USB штампач је повезан</translation>
 <translation id="730515362922783851">Размена података са било којим уређајем на локалној мрежи или интернету</translation>
-<translation id="7306521477691455105">Отворите Подешавања да бисте повезали уређај <ph name="USB_DEVICE_NAME" /> са уређајем <ph name="USB_VM_NAME" /></translation>
+<translation id="7306521477691455105">Отворите Подешавања да бисте повезали <ph name="USB_DEVICE_NAME" /> са <ph name="USB_VM_NAME" /></translation>
 <translation id="7307129035224081534">Паузирано</translation>
 <translation id="7308002049209013926">Користите Покретач да бисте брзо приступали новим апликацијама и активностима. Да бисте дошли овде помоћу тастатуре, притисните Alt + Shift + L.</translation>
 <translation id="7309257895202129721">Прикажи &amp;контроле</translation>
@@ -6022,7 +6019,6 @@
 <translation id="8281886186245836920">Прескочи</translation>
 <translation id="8283475148136688298">Кôд потврде аутентичности је одбијен током повезивања са „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="8284279544186306258">сви <ph name="WEBSITE_1" /> сајтови</translation>
-<translation id="8284326494547611709">Титл</translation>
 <translation id="8286036467436129157">Пријави ме</translation>
 <translation id="8286963743045814739">Можете да прегледате приватно у прозору без архивирања</translation>
 <translation id="8287902281644548111">Претражите према API позиву/URL-у</translation>
@@ -6246,7 +6242,6 @@
 <translation id="8585480574870650651">Уклоните Crostini</translation>
 <translation id="8588866096426746242">Прикажи статистику профила</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> – ВР се приказује преко хедсета</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> је онемогућио ADB отклањање грешака. Није могуће учитати нове апликације са извора треће стране.</translation>
 <translation id="8590375307970699841">Подеси аутоматска ажурирања</translation>
 <translation id="8591783563402255548">1 секунда</translation>
 <translation id="8592141010104017453">Не приказуј никаква обавештења</translation>
@@ -6304,7 +6299,6 @@
 <translation id="8648544143274677280"><ph name="SITE_NAME" /> жели да: <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> и друго</translation>
 <translation id="8650543407998814195">Више не можете да приступате старом профилу, али можете и даље да га уклоните.</translation>
 <translation id="8651585100578802546">Принудно поново учитај ову страницу</translation>
-<translation id="8651940856056821914">Помоћу титла уживо Chrome аутоматски прави титл (тренутно је доступно само на енглеском)</translation>
 <translation id="8652400352452647993">Грешка у вези са паковањем додатка</translation>
 <translation id="8654151524613148204">Датотека је превелика да би је рачунар обрадио. Жао нам је.</translation>
 <translation id="8655295600908251630">Канал</translation>

@@ -15,13 +15,15 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_storage.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
-#include "chrome/browser/nearby_sharing/certificates/nearby_share_visibility.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
+#include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 
 class NearbyShareClient;
 class NearbyShareClientFactory;
@@ -49,32 +51,43 @@ class ListPublicCertificatesResponse;
 //   2) downloading, storing, and decrypting public certificates from trusted
 //      contacts, as well as removing expired public certificates.
 //
+// This implementation destroys and recreates all private certificates if either
+//   a) the user's contact list has changed, or
+//   b) contacts are removed from the allowlist--relevant to selected-contacts
+//      visibility mode.
+// TODO(b/168022980): Only destroy the private certificates of the relevant
+// visiblity: all-contacts and selected-contacts visibility, respectively.
+//
 // TODO(https://crbug.com/1121443): Add the following if we remove
 // GetValidPrivateCertificate() and perform all private certificate crypto
 // operations internally: "This implementation also provides the high-level
 // interface for performing cryptographic operations related to certificates."
-class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
+class NearbyShareCertificateManagerImpl
+    : public NearbyShareCertificateManager,
+      public NearbyShareContactManager::Observer {
  public:
   class Factory {
    public:
     static std::unique_ptr<NearbyShareCertificateManager> Create(
         NearbyShareLocalDeviceDataManager* local_device_data_manager,
+        NearbyShareContactManager* contact_manager,
         PrefService* pref_service,
         leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
         const base::FilePath& profile_path,
         NearbyShareClientFactory* client_factory,
-        base::Clock* clock = base::DefaultClock::GetInstance());
+        const base::Clock* clock = base::DefaultClock::GetInstance());
     static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<NearbyShareCertificateManager> CreateInstance(
         NearbyShareLocalDeviceDataManager* local_device_data_manager,
+        NearbyShareContactManager* contact_manager,
         PrefService* pref_service,
         leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
         const base::FilePath& profile_path,
         NearbyShareClientFactory* client_factory,
-        base::Clock* clock) = 0;
+        const base::Clock* clock) = 0;
 
    private:
     static Factory* test_factory_;
@@ -85,24 +98,33 @@ class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
  private:
   NearbyShareCertificateManagerImpl(
       NearbyShareLocalDeviceDataManager* local_device_data_manager,
+      NearbyShareContactManager* contact_manager,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
       const base::FilePath& profile_path,
       NearbyShareClientFactory* client_factory,
-      base::Clock* clock);
+      const base::Clock* clock);
 
   // NearbyShareCertificateManager:
   NearbySharePrivateCertificate GetValidPrivateCertificate(
-      NearbyShareVisibility visibility) override;
+      nearby_share::mojom::Visibility visibility) override;
   std::vector<nearbyshare::proto::PublicCertificate>
   GetPrivateCertificatesAsPublicCertificates(
-      NearbyShareVisibility visibility) override;
+      nearby_share::mojom::Visibility visibility) override;
   void GetDecryptedPublicCertificate(
       NearbyShareEncryptedMetadataKey encrypted_metadata_key,
       CertDecryptedCallback callback) override;
   void DownloadPublicCertificates() override;
   void OnStart() override;
   void OnStop() override;
+
+  // NearbyShareContactManager::Observer:
+  void OnAllowlistChanged(bool were_contacts_added_to_allowlist,
+                          bool were_contacts_removed_from_allowlist) override;
+  void OnContactsDownloaded(
+      const std::set<std::string>& allowed_contact_ids,
+      const std::vector<nearbyshare::proto::ContactRecord>& contacts) override;
+  void OnContactsUploaded(bool did_contacts_change_since_last_upload) override;
 
   // Used by the private certificate expiration scheduler to determine the next
   // private certificate expiration time. Returns base::Time::Min() if
@@ -122,8 +144,9 @@ class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
 
   void FinishPrivateCertificateRefresh(
       std::vector<NearbySharePrivateCertificate> new_certs,
-      base::flat_map<NearbyShareVisibility, size_t> num_valid_certs,
-      base::flat_map<NearbyShareVisibility, base::Time> latest_not_after,
+      base::flat_map<nearby_share::mojom::Visibility, size_t> num_valid_certs,
+      base::flat_map<nearby_share::mojom::Visibility, base::Time>
+          latest_not_after,
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
   // Invoked by the certificate upload scheduler when private certificates need
@@ -154,6 +177,8 @@ class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
   void OnListPublicCertificatesFailure(size_t page_number,
                                        size_t certificate_count,
                                        NearbyShareHttpError error);
+  void OnListPublicCertificatesTimeout(size_t page_number,
+                                       size_t certificate_count);
   void OnPublicCertificatesAddedToStorage(
       base::Optional<std::string> page_token,
       size_t page_number,
@@ -164,10 +189,12 @@ class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
                                         size_t page_number,
                                         size_t certificate_count);
 
+  base::OneShotTimer timer_;
   NearbyShareLocalDeviceDataManager* local_device_data_manager_ = nullptr;
+  NearbyShareContactManager* contact_manager_ = nullptr;
   PrefService* pref_service_ = nullptr;
   NearbyShareClientFactory* client_factory_ = nullptr;
-  base::Clock* clock_ = nullptr;
+  const base::Clock* clock_;
   std::unique_ptr<NearbyShareCertificateStorage> certificate_storage_;
   std::unique_ptr<NearbyShareScheduler>
       private_certificate_expiration_scheduler_;

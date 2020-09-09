@@ -49,9 +49,119 @@ namespace {
 
 }  // namespace
 
+bool IsBrowserAccessibilityCocoa(const id node) {
+  return [node isKindOfClass:[BrowserAccessibilityCocoa class]];
+}
+
+bool IsAXUIElement(const id node) {
+  return CFGetTypeID(node) == AXUIElementGetTypeID();
+}
+
+NSArray* ChildrenOf(const id node) {
+  if (IsBrowserAccessibilityCocoa(node)) {
+    return [node children];
+  }
+
+  if (IsAXUIElement(node)) {
+    CFTypeRef children_ref;
+    if ((AXUIElementCopyAttributeValue(static_cast<AXUIElementRef>(node),
+                                       kAXChildrenAttribute, &children_ref)) ==
+        kAXErrorSuccess) {
+      return static_cast<NSArray*>(children_ref);
+    }
+    return nil;
+  }
+
+  NOTREACHED();
+  return nil;
+}
+
+NSArray* AttributeNamesOf(const id node) {
+  if (IsBrowserAccessibilityCocoa(node)) {
+    return [node accessibilityAttributeNames];
+  }
+
+  if (IsAXUIElement(node)) {
+    CFArrayRef attributes_ref;
+    if (AXUIElementCopyAttributeNames(static_cast<AXUIElementRef>(node),
+                                      &attributes_ref) == kAXErrorSuccess) {
+      return static_cast<NSArray*>(attributes_ref);
+    }
+    return nil;
+  }
+
+  NOTREACHED();
+  return nil;
+}
+
+NSArray* ParameterizedAttributeNamesOf(const id node) {
+  if (IsBrowserAccessibilityCocoa(node)) {
+    return [node accessibilityParameterizedAttributeNames];
+  }
+
+  if (IsAXUIElement(node)) {
+    CFArrayRef attributes_ref;
+    if (AXUIElementCopyParameterizedAttributeNames(
+            static_cast<AXUIElementRef>(node), &attributes_ref) ==
+        kAXErrorSuccess) {
+      return static_cast<NSArray*>(attributes_ref);
+    }
+    return nil;
+  }
+
+  NOTREACHED();
+  return nil;
+}
+
+id AttributeValueOf(const id node, NSString* attribute) {
+  if (IsBrowserAccessibilityCocoa(node)) {
+    return [node accessibilityAttributeValue:attribute];
+  }
+
+  if (IsAXUIElement(node)) {
+    CFTypeRef value_ref;
+    if ((AXUIElementCopyAttributeValue(static_cast<AXUIElementRef>(node),
+                                       static_cast<CFStringRef>(attribute),
+                                       &value_ref)) == kAXErrorSuccess) {
+      return static_cast<id>(value_ref);
+    }
+    return nil;
+  }
+
+  NOTREACHED();
+  return nil;
+}
+
+id ParameterizedAttributeValueOf(const id node,
+                                 NSString* attribute,
+                                 id parameter) {
+  if (IsBrowserAccessibilityCocoa(node)) {
+    return [node accessibilityAttributeValue:attribute forParameter:parameter];
+  }
+
+  if (IsAXUIElement(node)) {
+    CFTypeRef value_ref;
+    if ((AXUIElementCopyParameterizedAttributeValue(
+            static_cast<AXUIElementRef>(node),
+            static_cast<CFStringRef>(attribute),
+            static_cast<CFTypeRef>(parameter), &value_ref)) ==
+        kAXErrorSuccess) {
+      return static_cast<id>(value_ref);
+    }
+    return nil;
+  }
+
+  NOTREACHED();
+  return nil;
+}
+
 // Line indexers
 
-LineIndexer::LineIndexer() {}
+LineIndexer::LineIndexer(const gfx::NativeViewAccessible node) {
+  int counter = 0;
+  Build(node, &counter);
+}
+
 LineIndexer::~LineIndexer() {}
 
 std::string LineIndexer::IndexBy(const gfx::NativeViewAccessible node) const {
@@ -76,44 +186,19 @@ void LineIndexer::Build(const gfx::NativeViewAccessible node, int* counter) {
   const std::string line_index =
       std::string(1, ':') + base::NumberToString(++(*counter));
   map.insert({node, line_index});
-  NSArray* children = Children(node);
+  NSArray* children = ChildrenOf(node);
   for (gfx::NativeViewAccessible child in children) {
     Build(child, counter);
   }
 }
 
-CocoaLineIndexer::CocoaLineIndexer(const BrowserAccessibilityCocoa* node) {
-  int counter = 0;
-  Build(node, &counter);
-}
-
-NSArray* CocoaLineIndexer::Children(gfx::NativeViewAccessible node) const {
-  return [node children];
-}
-
-AXLineIndexer::AXLineIndexer(const AXUIElementRef node) {
-  int counter = 0;
-  Build(static_cast<id>(node), &counter);
-}
-
-NSArray* AXLineIndexer::Children(gfx::NativeViewAccessible node) const {
-  CFTypeRef children_ref;
-  if ((AXUIElementCopyAttributeValue(static_cast<AXUIElementRef>(node),
-                                     kAXChildrenAttribute, &children_ref)) ==
-      kAXErrorSuccess) {
-    return static_cast<NSArray*>(children_ref);
-  }
-  return nil;
-}
-
 // AttributeInvoker
 
-AttributeInvoker::AttributeInvoker(const BrowserAccessibilityCocoa* cocoa_node,
+AttributeInvoker::AttributeInvoker(const id node,
                                    const LineIndexer* line_indexer)
-    : cocoa_node(cocoa_node), line_indexer(line_indexer) {
-  attributes = [cocoa_node accessibilityAttributeNames];
-  parameterized_attributes =
-      [cocoa_node accessibilityParameterizedAttributeNames];
+    : node(node), line_indexer(line_indexer) {
+  attributes = AttributeNamesOf(node);
+  parameterized_attributes = ParameterizedAttributeNamesOf(node);
 }
 
 OptionalNSObject AttributeInvoker::Invoke(
@@ -122,7 +207,7 @@ OptionalNSObject AttributeInvoker::Invoke(
   for (NSString* attribute : attributes) {
     if (property_node.IsMatching(SysNSStringToUTF8(attribute))) {
       return OptionalNSObject::NotNullOrNotApplicable(
-          [cocoa_node accessibilityAttributeValue:attribute]);
+          AttributeValueOf(node, attribute));
     }
   }
 
@@ -131,9 +216,8 @@ OptionalNSObject AttributeInvoker::Invoke(
     if (property_node.IsMatching(SysNSStringToUTF8(attribute))) {
       OptionalNSObject param = ParamByPropertyNode(property_node);
       if (param.IsNotNil()) {
-        return OptionalNSObject([cocoa_node
-            accessibilityAttributeValue:attribute
-                           forParameter:*param]);
+        return OptionalNSObject(
+            ParameterizedAttributeValueOf(node, attribute, *param));
       }
       return param;
     }

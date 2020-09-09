@@ -4,7 +4,7 @@
 
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
 #include "chrome/browser/nearby_sharing/certificates/fake_nearby_share_certificate_storage.h"
@@ -12,8 +12,10 @@
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
 #include "chrome/browser/nearby_sharing/client/fake_nearby_share_client.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/contacts/fake_nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/local_device_data/fake_nearby_share_local_device_data_manager.h"
 #include "chrome/browser/nearby_sharing/scheduling/fake_nearby_share_scheduler_factory.h"
+#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -24,6 +26,10 @@ namespace {
 
 const base::Time t0 =
     base::Time::UnixEpoch() + base::TimeDelta::FromDays(365 * 50);
+
+// Copied from nearby_share_certificate_manager_impl.cc.
+constexpr base::TimeDelta kListPublicCertificatesTimeout =
+    base::TimeDelta::FromSeconds(30);
 
 const char kPageTokenPrefix[] = "page_token_";
 const char kSecretIdPrefix[] = "secret_id_";
@@ -45,9 +51,14 @@ class NearbyShareCertificateManagerImplTest
       public NearbyShareCertificateManager::Observer {
  public:
   NearbyShareCertificateManagerImplTest() {
+    // Set time to t0.
+    FastForward(t0 - base::Time::UnixEpoch());
+
     local_device_data_manager_ =
         std::make_unique<FakeNearbyShareLocalDeviceDataManager>();
     local_device_data_manager_->SetId(kDeviceId);
+
+    contact_manager_ = std::make_unique<FakeNearbyShareContactManager>();
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     pref_service_->registry()->RegisterDictionaryPref(
@@ -57,11 +68,12 @@ class NearbyShareCertificateManagerImplTest
     NearbyShareCertificateStorageImpl::Factory::SetFactoryForTesting(
         &cert_store_factory_);
 
-    cert_man_ = NearbyShareCertificateManagerImpl::Factory::Create(
-        local_device_data_manager_.get(), pref_service_.get(),
+    cert_manager_ = NearbyShareCertificateManagerImpl::Factory::Create(
+        local_device_data_manager_.get(), contact_manager_.get(),
+        pref_service_.get(),
         /*proto_database_provider=*/nullptr, base::FilePath(), &client_factory_,
-        &clock_);
-    cert_man_->AddObserver(this);
+        task_environment_.GetMockClock());
+    cert_manager_->AddObserver(this);
 
     cert_store_ = cert_store_factory_.instances().back();
 
@@ -103,7 +115,7 @@ class NearbyShareCertificateManagerImplTest
   ~NearbyShareCertificateManagerImplTest() override = default;
 
   void TearDown() override {
-    cert_man_->RemoveObserver(this);
+    cert_manager_->RemoveObserver(this);
     NearbyShareSchedulerFactory::SetFactoryForTesting(nullptr);
     NearbyShareCertificateStorageImpl::Factory::SetFactoryForTesting(nullptr);
   }
@@ -121,6 +133,20 @@ class NearbyShareCertificateManagerImplTest
   }
 
  protected:
+  enum class DownloadPublicCertificatesResult {
+    kSuccess,
+    kTimeout,
+    kHttpError,
+    kStorageError
+  };
+
+  base::Time Now() const { return task_environment_.GetMockClock()->Now(); }
+
+  // Fast-forwards mock time by |delta| and fires relevant timers.
+  void FastForward(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
+
   void GetPublicCertificatesCallback(
       bool success,
       const std::vector<nearbyshare::proto::PublicCertificate>& certs) {
@@ -166,13 +192,13 @@ class NearbyShareCertificateManagerImplTest
       EXPECT_EQ(cert.not_after() - cert.not_before(),
                 kNearbyShareCertificateValidityPeriod);
       switch (cert.visibility()) {
-        case NearbyShareVisibility::kAllContacts:
+        case nearby_share::mojom::Visibility::kAllContacts:
           min_not_before_all_contacts =
               std::min(min_not_before_all_contacts, cert.not_before());
           max_not_after_all_contacts =
               std::max(max_not_after_all_contacts, cert.not_after());
           break;
-        case NearbyShareVisibility::kSelectedContacts:
+        case nearby_share::mojom::Visibility::kSelectedContacts:
           min_not_before_selected_contacts =
               std::min(min_not_before_selected_contacts, cert.not_before());
           max_not_after_selected_contacts =
@@ -221,19 +247,16 @@ class NearbyShareCertificateManagerImplTest
   }
 
   // Test downloading public certificates with or without errors. The RPC is
-  // paginated, and |num_pages| will be simulated. If |rpc_fail| is not
-  // nullopt or store_fail is true, then those respective failures will be
-  // simulated on the last page.
-  void DownloadPublicCertificatesFlow(
-      size_t num_pages,
-      base::Optional<NearbyShareHttpError> rpc_fail,
-      bool store_fail) {
+  // paginated, and |num_pages| will be simulated. Any failures, as indicated by
+  // |result|, will be simulated on the last page.
+  void DownloadPublicCertificatesFlow(size_t num_pages,
+                                      DownloadPublicCertificatesResult result) {
     size_t prev_num_results = download_scheduler_->handled_results().size();
     cert_store_->SetPublicCertificateIds(kPublicCertificateIds);
 
-    cert_man_->Start();
+    cert_manager_->Start();
     download_scheduler_->InvokeRequestCallback();
-    cert_man_->Stop();
+    cert_manager_->Stop();
 
     size_t initial_num_notifications =
         num_public_certs_downloaded_notifications_;
@@ -249,10 +272,17 @@ class NearbyShareCertificateManagerImplTest
                           .back();
       CheckRpcRequest(request.request, page_token);
 
-      if (last_page && rpc_fail) {
-        std::move(request.error_callback).Run(*rpc_fail);
-        break;
+      if (last_page) {
+        if (result == DownloadPublicCertificatesResult::kTimeout) {
+          FastForward(kListPublicCertificatesTimeout);
+          break;
+        } else if (result == DownloadPublicCertificatesResult::kHttpError) {
+          std::move(request.error_callback)
+              .Run(NearbyShareHttpError::kResponseMalformed);
+          break;
+        }
       }
+
       page_token = last_page
                        ? std::string()
                        : kPageTokenPrefix + base::NumberToString(page_number);
@@ -263,12 +293,13 @@ class NearbyShareCertificateManagerImplTest
       CheckStorageAddCertificates(add_cert_call);
 
       std::move(add_cert_call.callback)
-          .Run(/*success=*/!(last_page && store_fail));
+          .Run(/*success=*/!last_page ||
+               result != DownloadPublicCertificatesResult::kStorageError);
     }
     ASSERT_EQ(download_scheduler_->handled_results().size(),
               prev_num_results + 1);
 
-    bool success = !rpc_fail && !store_fail;
+    bool success = result == DownloadPublicCertificatesResult::kSuccess;
     EXPECT_EQ(download_scheduler_->handled_results().back(), success);
     EXPECT_EQ(initial_num_notifications + (success ? 1u : 0u),
               num_public_certs_downloaded_notifications_);
@@ -317,8 +348,9 @@ class NearbyShareCertificateManagerImplTest
   void PopulatePrivateCertificates() {
     private_certificates_.clear();
     const auto& metadata = GetNearbyShareTestMetadata();
-    for (auto visibility : {NearbyShareVisibility::kAllContacts,
-                            NearbyShareVisibility::kSelectedContacts}) {
+    for (auto visibility :
+         {nearby_share::mojom::Visibility::kAllContacts,
+          nearby_share::mojom::Visibility::kSelectedContacts}) {
       private_certificates_.emplace_back(visibility, t0, metadata);
       private_certificates_.emplace_back(
           visibility, t0 + kNearbyShareCertificateValidityPeriod, metadata);
@@ -338,7 +370,7 @@ class NearbyShareCertificateManagerImplTest
     metadata2.set_bluetooth_mac_address("bluetooth_mac_address2");
     for (auto metadata : {metadata1, metadata2}) {
       auto private_cert = NearbySharePrivateCertificate(
-          NearbyShareVisibility::kAllContacts, t0, metadata);
+          nearby_share::mojom::Visibility::kAllContacts, t0, metadata);
       public_certificates_.push_back(*private_cert.ToPublicCertificate());
       metadata_encryption_keys_.push_back(*private_cert.EncryptMetadataKey());
     }
@@ -357,31 +389,33 @@ class NearbyShareCertificateManagerImplTest
   std::vector<nearbyshare::proto::PublicCertificate> public_certificates_;
   std::vector<NearbyShareEncryptedMetadataKey> metadata_encryption_keys_;
 
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   FakeNearbyShareClientFactory client_factory_;
   FakeNearbyShareSchedulerFactory scheduler_factory_;
   FakeNearbyShareCertificateStorage::Factory cert_store_factory_;
-  base::SimpleTestClock clock_;
   std::unique_ptr<FakeNearbyShareLocalDeviceDataManager>
       local_device_data_manager_;
+  std::unique_ptr<FakeNearbyShareContactManager> contact_manager_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  std::unique_ptr<NearbyShareCertificateManager> cert_man_;
+  std::unique_ptr<NearbyShareCertificateManager> cert_manager_;
 };
 
 TEST_F(NearbyShareCertificateManagerImplTest, GetValidPrivateCertificate) {
   cert_store_->SetPrivateCertificates(private_certificates_);
-  clock_.SetNow(t0 + kNearbyShareCertificateValidityPeriod * 1.5);
-  auto cert = cert_man_->GetValidPrivateCertificate(
-      NearbyShareVisibility::kAllContacts);
+  FastForward(kNearbyShareCertificateValidityPeriod * 1.5);
+  auto cert = cert_manager_->GetValidPrivateCertificate(
+      nearby_share::mojom::Visibility::kAllContacts);
 
-  EXPECT_EQ(NearbyShareVisibility::kAllContacts, cert.visibility());
-  EXPECT_LE(cert.not_before(), clock_.Now());
-  EXPECT_LT(clock_.Now(), cert.not_after());
+  EXPECT_EQ(nearby_share::mojom::Visibility::kAllContacts, cert.visibility());
+  EXPECT_LE(cert.not_before(), Now());
+  EXPECT_LT(Now(), cert.not_after());
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        GetDecryptedPublicCertificateSuccess) {
   base::Optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
-  cert_man_->GetDecryptedPublicCertificate(
+  cert_manager_->GetDecryptedPublicCertificate(
       metadata_encryption_keys_[0],
       base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
                      &decrypted_pub_cert));
@@ -399,12 +433,13 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 TEST_F(NearbyShareCertificateManagerImplTest,
        GetDecryptedPublicCertificateCertNotFound) {
   auto private_cert = NearbySharePrivateCertificate(
-      NearbyShareVisibility::kAllContacts, t0, GetNearbyShareTestMetadata());
+      nearby_share::mojom::Visibility::kAllContacts, t0,
+      GetNearbyShareTestMetadata());
   auto metadata_key = private_cert.EncryptMetadataKey();
   ASSERT_TRUE(metadata_key);
 
   base::Optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
-  cert_man_->GetDecryptedPublicCertificate(
+  cert_manager_->GetDecryptedPublicCertificate(
       *metadata_key, base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
                                     &decrypted_pub_cert));
 
@@ -416,7 +451,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 TEST_F(NearbyShareCertificateManagerImplTest,
        GetDecryptedPublicCertificateGetPublicCertificatesFailure) {
   base::Optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
-  cert_man_->GetDecryptedPublicCertificate(
+  cert_manager_->GetDecryptedPublicCertificate(
       metadata_encryption_keys_[0],
       base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
                      &decrypted_pub_cert));
@@ -429,33 +464,37 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 TEST_F(NearbyShareCertificateManagerImplTest,
        DownloadPublicCertificatesImmediateRequest) {
   size_t prev_num_requests = download_scheduler_->num_immediate_requests();
-  cert_man_->DownloadPublicCertificates();
+  cert_manager_->DownloadPublicCertificates();
   EXPECT_EQ(download_scheduler_->num_immediate_requests(),
             prev_num_requests + 1);
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        DownloadPublicCertificatesSuccess) {
-  DownloadPublicCertificatesFlow(/*num_pages=*/2, /*rpc_fail=*/base::nullopt,
-                                 /*store_fail=*/false);
+  DownloadPublicCertificatesFlow(/*num_pages=*/2,
+                                 DownloadPublicCertificatesResult::kSuccess);
+}
+
+TEST_F(NearbyShareCertificateManagerImplTest,
+       DownloadPublicCertificatesTimeout) {
+  DownloadPublicCertificatesFlow(/*num_pages=*/2,
+                                 DownloadPublicCertificatesResult::kTimeout);
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        DownloadPublicCertificatesRPCFailure) {
-  DownloadPublicCertificatesFlow(
-      /*num_pages=*/2, /*rpc_fail=*/NearbyShareHttpError::kResponseMalformed,
-      /*store_fail=*/false);
+  DownloadPublicCertificatesFlow(/*num_pages=*/2,
+                                 DownloadPublicCertificatesResult::kHttpError);
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        DownloadPublicCertificatesStoreFailure) {
-  DownloadPublicCertificatesFlow(/*num_pages=*/2, /*rpc_fail=*/base::nullopt,
-                                 /*store_fail=*/true);
+  DownloadPublicCertificatesFlow(
+      /*num_pages=*/2, DownloadPublicCertificatesResult::kStorageError);
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_ValidCertificates) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(private_certificates_);
 
   local_device_data_manager_->SetDeviceName(
@@ -466,7 +505,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/false,
                                   /*expected_success=*/true);
   VerifyPrivateCertificates(/*expected_metadata=*/GetNearbyShareTestMetadata());
@@ -474,7 +513,6 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_NoCertificates_UploadSuccess) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(
       std::vector<NearbySharePrivateCertificate>());
 
@@ -486,7 +524,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
                                   /*expected_success=*/true);
   RunUpload(/*success=*/true);
@@ -495,7 +533,6 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_NoCertificates_UploadFailure) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(
       std::vector<NearbySharePrivateCertificate>());
 
@@ -507,7 +544,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
                                   /*expected_success=*/true);
   RunUpload(/*success=*/false);
@@ -515,9 +552,52 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 }
 
 TEST_F(NearbyShareCertificateManagerImplTest,
+       RevokePrivateCertificates_OnAllowlistChanged) {
+  cert_manager_->Start();
+
+  // Destroy and recreate private certificates if and only if contacts were
+  // removed from the user's list of selected contacts.
+  size_t num_expected_calls = 0;
+  for (bool were_contacts_added_to_allowlist : {true, false}) {
+    for (bool were_contacts_removed_from_allowlist : {true, false}) {
+      contact_manager_->NotifyAllowlistChanged(
+          were_contacts_added_to_allowlist,
+          were_contacts_removed_from_allowlist);
+      if (were_contacts_removed_from_allowlist)
+        ++num_expected_calls;
+
+      EXPECT_EQ(num_expected_calls,
+                cert_store_->num_clear_private_certificates_calls());
+      EXPECT_EQ(num_expected_calls,
+                private_cert_exp_scheduler_->num_reschedule_calls());
+    }
+  }
+}
+
+TEST_F(NearbyShareCertificateManagerImplTest,
+       RevokePrivateCertificates_OnContactsUploaded) {
+  cert_manager_->Start();
+
+  // Destroy and recreate private certificates if and only if the user's contact
+  // list has changed since the last upload.
+  size_t num_expected_calls = 0;
+  for (bool did_contacts_change_since_last_upload : {true, false}) {
+    contact_manager_->NotifyContactsUploaded(
+        did_contacts_change_since_last_upload);
+    if (did_contacts_change_since_last_upload)
+      ++num_expected_calls;
+
+    EXPECT_EQ(num_expected_calls,
+              cert_store_->num_clear_private_certificates_calls());
+    EXPECT_EQ(num_expected_calls,
+              private_cert_exp_scheduler_->num_reschedule_calls());
+  }
+}
+
+TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_ExpiredCertificate) {
   // First certificates are expired;
-  clock_.SetNow(t0 + kNearbyShareCertificateValidityPeriod * 1.5);
+  FastForward(kNearbyShareCertificateValidityPeriod * 1.5);
   cert_store_->SetPrivateCertificates(private_certificates_);
 
   local_device_data_manager_->SetDeviceName(
@@ -528,7 +608,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
                                   /*expected_success=*/true);
   RunUpload(/*success=*/true);
@@ -537,7 +617,6 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_InvalidDeviceName) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(
       std::vector<NearbySharePrivateCertificate>());
 
@@ -548,7 +627,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
 
   // Expect failure because a device name is required.
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
@@ -557,7 +636,6 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_InvalidBluetoothMacAddress) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(
       std::vector<NearbySharePrivateCertificate>());
 
@@ -570,7 +648,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().icon_url());
   SetBluetoothMacAddress("invalid_mac_address");
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
                                   /*expected_success=*/true);
   RunUpload(/*success=*/true);
@@ -584,7 +662,6 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RefreshPrivateCertificates_MissingFullNameAndIconUrl) {
-  clock_.SetNow(t0);
   cert_store_->SetPrivateCertificates(
       std::vector<NearbySharePrivateCertificate>());
 
@@ -593,7 +670,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
       GetNearbyShareTestMetadata().device_name());
   SetBluetoothMacAddress(kTestUnparsedBluetoothMacAddress);
 
-  cert_man_->Start();
+  cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
                                   /*expected_success=*/true);
   RunUpload(/*success=*/true);
@@ -608,8 +685,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RemoveExpiredPublicCertificates_Success) {
-  clock_.SetNow(t0);
-  cert_man_->Start();
+  cert_manager_->Start();
 
   // The public certificate expiration scheduler notifies the certificate
   // manager that a public certificate has expired.
@@ -629,8 +705,7 @@ TEST_F(NearbyShareCertificateManagerImplTest,
 
 TEST_F(NearbyShareCertificateManagerImplTest,
        RemoveExpiredPublicCertificates_Failue) {
-  clock_.SetNow(t0);
-  cert_man_->Start();
+  cert_manager_->Start();
 
   // The public certificate expiration scheduler notifies the certificate
   // manager that a public certificate has expired.

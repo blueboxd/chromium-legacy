@@ -665,7 +665,7 @@ const char kTermsOfServiceURL[] = "terms_of_service.url";
 const char kAttestationEnabled[] = "attestation.enabled";
 // The list of extensions allowed to use the platformKeysPrivate API for
 // remote attestation.
-const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
+const char kAttestationExtensionAllowlist[] = "attestation.extension_allowlist";
 
 // A boolean pref recording whether user has dismissed the multiprofile
 // itroduction dialog show.
@@ -1150,11 +1150,6 @@ const char kPluginsMetadata[] = "plugins.metadata";
 // Last update time of plugins resource cache.
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
-
-// Last time the flash deprecation message was dismissed. Used to ensure a
-// cooldown period passes before the deprecation message is displayed again.
-const char kPluginsDeprecationInfobarLastShown[] =
-    "plugins.deprecation_infobar_last_shown";
 
 // Int64 containing the internal value of the time at which the default browser
 // infobar was last dismissed by the user.

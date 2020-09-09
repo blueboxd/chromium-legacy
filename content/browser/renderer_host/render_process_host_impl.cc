@@ -93,7 +93,6 @@
 #include "content/browser/field_trial_synchronizer.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
-#include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -127,6 +126,7 @@
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
+#include "content/browser/renderer_host/render_frame_message_filter.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -4162,8 +4162,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
       // destination that doesn't require a dedicated process, even for the
       // same site. This can happen with dynamic isolated origins (see
       // https://crbug.com/950453).
-      if (!SiteInstanceImpl::ShouldLockProcess(isolation_context,
-                                               site_info.site_url(), is_guest))
+      if (!SiteInstanceImpl::ShouldLockProcess(isolation_context, site_info,
+                                               is_guest))
         return false;
 
       // If the destination requires a different process lock, this process
@@ -4171,9 +4171,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
       if (process_lock != ProcessLock(site_info))
         return false;
     } else {
-      if (!host->IsUnused() &&
-          SiteInstanceImpl::ShouldLockProcess(isolation_context,
-                                              site_info.site_url(), is_guest)) {
+      if (!host->IsUnused() && SiteInstanceImpl::ShouldLockProcess(
+                                   isolation_context, site_info, is_guest)) {
         // If this process has been used to host any other content, it cannot
         // be reused if the destination site requires a dedicated process and
         // should use a process locked to just that site.
@@ -4358,16 +4357,6 @@ bool RenderProcessHostImpl::ShouldUseProcessPerSite(
   // Otherwise let the content client decide, defaulting to false.
   return GetContentClient()->browser()->ShouldUseProcessPerSite(
       browser_context, site_info.site_url());
-}
-
-// static
-RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForURL(
-    const IsolationContext& isolation_context,
-    const GURL& url) {
-  SiteInfo site_info =
-      SiteInstanceImpl::ComputeSiteInfo(isolation_context, url);
-  return GetSoleProcessHostForSite(isolation_context, site_info,
-                                   /* is_guest */ false);
 }
 
 // static

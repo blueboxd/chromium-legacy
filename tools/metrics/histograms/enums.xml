@@ -5826,6 +5826,31 @@ Unknown properties are collapsed to zero. -->
       label="password_manager::ContentPasswordManagerDriver"/>
 </enum>
 
+<enum name="BackForwardCacheDisabledForRenderFrameHostReasonShort">
+  <int value="4520" label="PopupBlockerTabHelper"/>
+  <int value="8169" label="SafeBrowsingTriggeredPopupBlocker"/>
+  <int value="12795" label="banners::AppBannerManager"/>
+  <int value="14149" label="OfflinePage"/>
+  <int value="15533" label="WebAuthenticationAPI"/>
+  <int value="17667" label="PermissionServiceContext"/>
+  <int value="25206" label="Serial"/>
+  <int value="26854" label="OomInterventionTabHelper"/>
+  <int value="29532" label="MediaSessionImpl::OnServiceCreated"/>
+  <int value="30041" label="NativeFileSystem"/>
+  <int value="31177" label="safe_browsing::ThreatDetails"/>
+  <int value="31230" label="autofill::ContentAutofillDriver"/>
+  <int value="36734" label="RenderFrameDevToolsAgentHost"/>
+  <int value="36798" label="WebBluetooth"/>
+  <int value="37928" label="content::protocol::SecurityHandler"/>
+  <int value="41719"
+      label="ChromePasswordManagerClient::BindCredentialManager"/>
+  <int value="44443" label="PermissionRequestManager"/>
+  <int value="49166" label="password_manager::ContentPasswordManagerDriver"/>
+  <int value="51814" label="MixedContentSettingsTabHelper"/>
+  <int value="55334" label="WebUSB"/>
+  <int value="58230" label="MediaWebContentsObserver::OnMediaPlaying"/>
+</enum>
+
 <enum name="BackForwardCacheEligibilityDuringCommit">
   <int value="0" label="No longer bfcache-eligible"/>
   <int value="1" label="Still bfcache-eligible"/>
@@ -21698,6 +21723,7 @@ Called by update_document_policy_enum.py.-->
   <int value="782" label="LookalikeWarningAllowlistDomains"/>
   <int value="783" label="PrintingAPIExtensionsAllowlist"/>
   <int value="784" label="QuickUnlockModeAllowlist"/>
+  <int value="785" label="AttestationExtensionAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25308,6 +25334,14 @@ Called by update_extension_permission.py.-->
   <int value="1" label="OAuth2 token error"/>
   <int value="2" label="Network error"/>
   <int value="3" label="Service error"/>
+</enum>
+
+<enum name="FamilyUserLogSegment">
+  <summary>Filters family user metrics into categories of interest.</summary>
+  <int value="0" label="Supervised User"/>
+  <int value="1" label="Supervised Student"/>
+  <int value="2" label="Student at Home"/>
+  <int value="3" label="Other"/>
 </enum>
 
 <enum name="FaultTolerantHeap">
@@ -40866,6 +40900,7 @@ from previous Chrome versions.
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
   <int value="-1668306615" label="CrostiniUseDlc:enabled"/>
+  <int value="-1667822423" label="ContextMenuGoogleLensChip:disabled"/>
   <int value="-1665720309"
       label="ArcNativeBridge64BitSupportExperiment:disabled"/>
   <int value="-1664795930" label="StorageAccessAPI:disabled"/>
@@ -42356,7 +42391,6 @@ from previous Chrome versions.
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>
-  <int value="-143819280" label="google-password-manager:disabled"/>
   <int value="-143394485" label="SplitSettingsSync:enabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
   <int value="-143121333" label="WebXRIncubations:enabled"/>
@@ -42544,6 +42578,7 @@ from previous Chrome versions.
   <int value="37024318" label="disable-affiliation-based-matching"/>
   <int value="38213894" label="PrivacySettingsRedesign:enabled"/>
   <int value="38904620" label="TabSwitcherLongpressMenu:enabled"/>
+  <int value="41990393" label="ContextMenuGoogleLensChip:enabled"/>
   <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
@@ -43270,6 +43305,7 @@ from previous Chrome versions.
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
   <int value="813999334" label="HistoryManipulationIntervention:enabled"/>
   <int value="816907702" label="GlobalMediaControlsSeamlessTransfer:disabled"/>
+  <int value="817393533" label="GlobalMediaControlsModernUI:disabled"/>
   <int value="820650704" label="disable-ntp-popular-sites"/>
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
@@ -43348,6 +43384,7 @@ from previous Chrome versions.
   <int value="909439558" label="disable-device-discovery"/>
   <int value="909525364" label="ExtensionsCheckup:enabled"/>
   <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
+  <int value="911256399" label="GlobalMediaControlsModernUI:enabled"/>
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="913855453" label="VirtualKeyboardFloatingResizable:disabled"/>
@@ -43398,7 +43435,6 @@ from previous Chrome versions.
   <int value="975104092" label="show-taps"/>
   <int value="975463471" label="WebViewExtraHeadersSameOriginOnly:enabled"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
-  <int value="976278412" label="google-password-manager:enabled"/>
   <int value="977140835" label="OmniboxMostVisitedTiles:disabled"/>
   <int value="977968353" label="WebUITabStrip:disabled"/>
   <int value="978712907" label="PrintServerUi:disabled"/>

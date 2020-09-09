@@ -51,6 +51,7 @@ class StoragePartitionImpl;
 class CONTENT_EXPORT SiteInfo {
  public:
   static SiteInfo CreateForErrorPage();
+  static SiteInfo CreateForDefaultSiteInstance();
 
   // The SiteInfo constructor should take in all values needed for comparing two
   // SiteInfos, to help ensure all creation sites are updated accordingly when
@@ -417,27 +418,21 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const IsolationContext& isolation_context,
       const GURL& url);
 
-  // Returns true if a process for a site |site_url| should be locked to just
-  // that site. Returning true here also implies that |site_url| requires a
-  // dedicated process. However, the converse does not hold: this might still
+  // Returns true if a process for a |site_info| should be locked. Returning
+  // true here also implies that |site_info| requires a dedicated process.
+  // However, the converse does not hold: this might still
   // return false for certain special cases where an origin lock can't be
-  // applied even when |site_url| requires a dedicated process (e.g., with
+  // applied even when |site_info| requires a dedicated process (e.g., with
   // --site-per-process). Examples of those cases include <webview> guests,
   // single-process mode, or extensions where a process is currently allowed to
   // be reused for different extensions.  Most of these special cases should
   // eventually be removed, and this function should become equivalent to
   // DoesSiteRequireDedicatedProcess().
   //
-  // Note that this function currently requires passing in a site URL (which
-  // may use effective URLs), and not a lock URL to which the process may
-  // eventually be locked via SetProcessLock().  See comments on SiteInfo's
-  // process_lock_url() for more info. |is_guest| should be set to true if the
-  // call is being made for a <webview> guest SiteInstance(i.e.
-  // SiteInstance::IsGuest() returns true).
-  // TODO(alexmos):  See if this can take a lock URL instead.
-  // TODO(wjmaclean): Or see if this can take a SiteInfo or ProcessLock instead.
+  // |is_guest| should be set to true if the call is being made for a <webview>
+  // guest SiteInstance(i.e. SiteInstance::IsGuest() returns true).
   static bool ShouldLockProcess(const IsolationContext& isolation_context,
-                                const GURL& site_url,
+                                const SiteInfo& site_info,
                                 const bool is_guest);
 
   // Return an ID of the next BrowsingInstance to be created.  This ID is
@@ -522,6 +517,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // a dedicated process.
   void MaybeSetBrowsingInstanceDefaultProcess();
 
+  // Sets the SiteInfo and other fields so that this instance becomes a
+  // default SiteInstance.
+  void SetSiteInfoToDefault();
+
   // Sets |site_info_| with |site_info| and registers this object with
   // |browsing_instance_|. SetSite() calls this method to set the site and lock
   // for a user provided URL. This method should only be called by code that
@@ -564,12 +563,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |should_use_effective_urls| specifies whether to resolve |url| to an
   // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
   // determining the site.
-  // |allow_default_site_url| specifies whether the default SiteInstance site
-  // URL is allowed to be returned.
   static GURL GetSiteForURLInternal(const IsolationContext& isolation_context,
                                     const GURL& url,
-                                    bool should_use_effective_urls,
-                                    bool allow_default_site_url);
+                                    bool should_use_effective_urls);
 
   // True if |url| resolves to an effective URL that is different from |url|.
   // See GetEffectiveURL().  This will be true for hosted apps as well as NTP
@@ -589,15 +585,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns true if |url| and its |site_url| can be placed inside a default
   // SiteInstance.
   //
-  // Note: |url| and |site_url| must be consistent with each other. In contexts
+  // Note: |url| and |site_info| must be consistent with each other. In contexts
   // where the caller only has |url| it can use
-  // SiteInstanceImpl::GetSiteForURL() to generate |site_url|. This call is
+  // SiteInstanceImpl::ComputeSiteInfo() to generate |site_info|. This call is
   // intentionally not set as a default value to encourage the caller to reuse
-  // a site url computation if they already have one.
+  // a SiteInfo computation if they already have one.
   static bool CanBePlacedInDefaultSiteInstance(
       const IsolationContext& isolation_context,
       const GURL& url,
-      const GURL& site_url);
+      const SiteInfo& site_info);
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

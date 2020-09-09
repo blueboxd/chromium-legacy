@@ -429,7 +429,6 @@
 <translation id="1500297251995790841">অজানা ডিভাইস [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">একাধিক সাইন-ইন সেশনে এই মালিক অ্যাকাউন্টটি প্রথম সাইন-ইন অ্যাকাউন্ট হতে হবে৷</translation>
 <translation id="150411034776756821"><ph name="SITE" /> সরান</translation>
-<translation id="1504311855864906891">আপনার মিডিয়ার জন্য ক্যাপশন পেয়ে যান</translation>
 <translation id="1504551620756424144">শেয়ার করা ফোল্ডার, Windows-এর মধ্যে <ph name="BASE_DIR" />-এ পাওয়া যাবে।</translation>
 <translation id="1506061864768559482">সার্চ ইঞ্জিন</translation>
 <translation id="1507170440449692343">এই পৃষ্ঠাটিকে আপনার ক্যামেরা অ্যাক্সেস করা থেকে অবরুদ্ধ করা হয়েছে৷</translation>
@@ -511,6 +510,7 @@
 <translation id="158849752021629804">হোম নেটওয়ার্কের প্রয়োজন</translation>
 <translation id="1588870296199743671">এর সাথে লিঙ্ক খুলুন...</translation>
 <translation id="1589055389569595240">বানান এবং ব্যাকরণ দেখান</translation>
+<translation id="1591679663873027990">Parallels Desktop-কে ইউএসবি ডিভাইস অ্যাক্সেস করার অনুমতি দিন। সরিয়ে দেওয়ার পরে, Parallels Desktop-এর কাছে কোনও ইউএসবি ডিভাইসের তথ্য সেভ করা থাকবে না।</translation>
 <translation id="1593594475886691512">ফরম্যাট করা হচ্ছে...</translation>
 <translation id="159359590073980872">ছবি ক্যাশে</translation>
 <translation id="1593926297800505364">পেমেন্ট পদ্ধতি সেভ করুন</translation>
@@ -827,6 +827,7 @@
 <translation id="1954813140452229842">মাউন্টিং শেয়ারে সমস্যা। অনুগ্রহ করে আপনার ক্রেডেনশিয়াল যাচাই করে আবার চেষ্টা করুন।</translation>
 <translation id="1956050014111002555">ফাইলটিতে একাধিক শংসাপত্র রয়েছে, এর মধ্যে কোনওটিই আমদানি করা হয়নি:</translation>
 <translation id="1956390763342388273">এটি ''<ph name="FOLDER_PATH" />'' থেকে সমস্ত ফাইল আপলোড করবে। আপনি এই সাইটটি বিশ্বাস করে থাকলে তবেই এটি করুন।</translation>
+<translation id="196040970347962278">প্রথমে একটি ইন্টারনেট কানেকশন যোগ করুন</translation>
 <translation id="1962233722219655970">এই পৃষ্ঠাটি একটি নেটিভ ক্লায়েন্ট অ্যাপ্লিকেশন ব্যবহার করে যা আপনার কম্পিউটারে কাজ করে না৷</translation>
 <translation id="1963227389609234879">সকল সরান</translation>
 <translation id="1963976881984600709">স্ট্যান্ডার্ড সুরক্ষা</translation>
@@ -1864,6 +1865,7 @@
 <translation id="321834671654278338">Linux আনইনস্টলার</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> সংযোগকারী প্রক্রিয়া ক্র্যাশ হয়েছে৷ পুর্নসূচনা করবেন?</translation>
 <translation id="3222066309010235055">পূর্বউপস্থাপন: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
+<translation id="3222779980972075989"><ph name="USB_VM_NAME" />-এর সাথে কানেক্ট করুন</translation>
 <translation id="3223531857777746191">রিসেট করার বোতাম</translation>
 <translation id="3225084153129302039">ডিফল্ট রক্তবর্ণ অবতার</translation>
 <translation id="3225319735946384299">Code Signing</translation>
@@ -1876,6 +1878,7 @@
 <translation id="3246107497225150582">{0,plural, =1{এক দিনের মধ্যে ডিভাইস আপডেট করুন}one{# দিনের মধ্যে ডিভাইস আপডেট করুন}other{# দিনের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - নেটওয়ার্ক ত্রুটি</translation>
 <translation id="3248902735035392926">নিরাপত্তা বজায় রাখা গুরুত্বপূর্ণ। একটু সময় নিয়ে <ph name="BEGIN_LINK" />এখনই আপনার এক্সটেনশন চেক করুন<ph name="END_LINK" /></translation>
+<translation id="325036368918787455">'ছদ্মবেশী' উইন্ডো বন্ধ করুন</translation>
 <translation id="3251759466064201842">&lt;শংসাপত্রের অংশ নয়&gt;</translation>
 <translation id="3253225298092156258">উপলভ্য নয়</translation>
 <translation id="3253448572569133955">অপরিচিত অ্যাকাউন্ট</translation>
@@ -2115,6 +2118,7 @@
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3528498924003805721">শর্টকাট লক্ষ্যগুলি</translation>
 <translation id="3532273508346491126">সিঙ্ক ম্যানেজমেন্ট</translation>
+<translation id="3532521178906420528">নেটওয়ার্ক কানেকশন যোগ করা হচ্ছে ...</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - অডিও মিউট রয়েছে</translation>
 <translation id="3537881477201137177">এটিকে সেটিংসে গিয়ে পরে পরিবর্তন করা যেতে পারে</translation>
 <translation id="3538066758857505094">Linux আনইনস্টল করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
@@ -3123,6 +3127,7 @@
 <translation id="4750394297954878236">প্রস্তাবনা</translation>
 <translation id="475088594373173692">প্রথম ব্যবহারকারী</translation>
 <translation id="4751476147751820511">মোশন বা হালকা সেন্সর</translation>
+<translation id="4752124003533492687"><ph name="USB_DEVICE_NAME" />-কে কানেক্ট করতে 'সেটিংস' খুলুন</translation>
 <translation id="4756378406049221019">বন্ধ করুন/রিলোড করুন</translation>
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
 <translation id="4759238208242260848">ডাউনলোড</translation>
@@ -3259,7 +3264,6 @@
 <translation id="4921348630401250116">টেক্সট-টু-স্পিচ</translation>
 <translation id="49226369361073053">{0,plural, =0{এখনই ডিভাইস আপডেট করুন}=1{১ সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}one{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}other{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="492299503953721473">Android অ্যাপ্লিকেশানগুলি সরান</translation>
-<translation id="492320048412997552"><ph name="FILE_NAME" /> অজানা। স্ক্যান করার জন্য 'উন্নত সুরক্ষা' ফাইলটিকে Google-এর কাছে পাঠাতে সাজেস্ট করছে।</translation>
 <translation id="492363500327720082"><ph name="APP_NAME" /> আনইনস্টল করা হচ্ছে...</translation>
 <translation id="4924352752174756392">১২x</translation>
 <translation id="4925320384394644410">আপনার পোর্টগুলি এখানে দেখা যাবে</translation>
@@ -3483,7 +3487,6 @@
 <translation id="5225324770654022472">অ্যাপ্লিকেশানগুলির শর্টকাট দেখান</translation>
 <translation id="52254442782792731">বর্তমানে 'ডিভাইসের দৃশ্যমানতা' সেটিং এখনও সেট করা হয়নি</translation>
 <translation id="5227679487546032910">ডিফল্ট টিল রঙের অবতার</translation>
-<translation id="5228088094491423618">লাইভ ক্যাপশন</translation>
 <translation id="5228579091201413441">সিঙ্ক সক্ষম করুন</translation>
 <translation id="5229189185761556138">ইনপুট পদ্ধতিগুলি পরিচালনা করুন</translation>
 <translation id="5230516054153933099">উইন্ডো</translation>
@@ -4642,6 +4645,7 @@
 <translation id="6630752851777525409">আপনার পক্ষ থেকে একটি সার্টিফিকেট প্রমাণীকৃত করতে <ph name="EXTENSION_NAME" /> সেটিতে স্থায়ী অ্যাক্সেস চায়।</translation>
 <translation id="6635944431854494329">সেটিংস &gt; অ্যাডভান্সড &gt; নিজে থেকে Google-এ ডায়গনস্টিক ও ব্যবহারের ডেটা পাঠান বিকল্পে গিয়ে মালিক এই ফিচারটি নিয়ন্ত্রণ করতে পারেন।</translation>
 <translation id="6635956300022133031">পাঠ্য থেকে ভাষ্য ভয়েস বেছে নিন এবং কাস্টমাইজ করুন</translation>
+<translation id="6636588250634969791">কাজ চালিয়ে যাওয়ার আগে সিম কার্ড ঢোকান</translation>
 <translation id="6639554308659482635">SQLite স্মৃতি</translation>
 <translation id="6641138807883536517">র‍্যান্ডম ভাবে জেনারেট করা নিরাপদ মডিউল পাসওয়ার্ডটি পাওয়া যাচ্ছে না। পাওয়ারওয়াশের পরে এরকম হয়ে থাকে।</translation>
 <translation id="6642720633335369752">সব খোলা অ্যাপের উইন্ডোগুলি দেখতে নিচের দিক থেকে উপরে সোয়াইপ করে ধরে রাখুন।</translation>
@@ -5184,6 +5188,7 @@
 <translation id="7303900363563182677">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখা থেকে এই সাইটটিকে ব্লক করা হয়েছে</translation>
 <translation id="7305123176580523628">ইউএসবি প্রিন্টার কানেক্ট করা হয়েছে</translation>
 <translation id="730515362922783851">স্থানীয় নেটওয়ার্ক বা ইন্টারনেটে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="7306521477691455105"><ph name="USB_DEVICE_NAME" />-কে <ph name="USB_VM_NAME" />-এর সাথে কানেক্ট করার জন্য 'সেটিংস' খুলুন</translation>
 <translation id="7307129035224081534">থামানো হয়েছে</translation>
 <translation id="7308002049209013926">নতুন অ্যাপ এবং কার্যকলাপগুলি দ্রুত চালু করতে লঞ্চার ব্যবহার করুন। কীবোর্ডের সাহায্যে এখানে পেতে Alt + Shift + L বোতামটি টিপুন।</translation>
 <translation id="7309257895202129721">&amp;নিয়ন্ত্রণগুলি দেখান</translation>
@@ -6012,7 +6017,6 @@
 <translation id="8281886186245836920">ছেড়ে যান</translation>
 <translation id="8283475148136688298">"<ph name="DEVICE_NAME" />" এর সাথে কানেক্ট করার সময়ে যাচাইকরণ কোড বাতিল করা হয়েছে৷</translation>
 <translation id="8284279544186306258">সব <ph name="WEBSITE_1" /> সাইট</translation>
-<translation id="8284326494547611709">পরিচয়লিপিগুলি</translation>
 <translation id="8286036467436129157">সাইন-ইন করুন</translation>
 <translation id="8286963743045814739">আপনি ছদ্মবেশী উইন্ডো ব্যবহার করে গোপনে ব্রাউজ করতে পারেন</translation>
 <translation id="8287902281644548111">এপিআই কল/ইউআরএল অনুযায়ী সার্চ করুন</translation>
@@ -6236,7 +6240,6 @@
 <translation id="8585480574870650651">Crostini মুছুন</translation>
 <translation id="8588866096426746242">প্রোফাইল পরিসংখ্যান দেখান</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> - হেডসেটে ভিআর (VR) কন্টেন্ট দেখানো হচ্ছে</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> ADB ডিবাগিং বন্ধ করে দিয়েছে। কোনও নতুন অ্যাপ্লিকেশন সাইডলোড করা যাবে না।</translation>
 <translation id="8590375307970699841">স্বয়ংক্রিয় আপডেটগুলো সেটআপ করুন</translation>
 <translation id="8591783563402255548">১ সেকেন্ড</translation>
 <translation id="8592141010104017453">কোনও বিজ্ঞপ্তি দেখতে চাই না</translation>
@@ -6294,7 +6297,6 @@
 <translation id="8648544143274677280"><ph name="SITE_NAME" /> এর জন্য অনুমতি চায় <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" />, এবং আরও অনেক কিছু</translation>
 <translation id="8650543407998814195">যদিও পুরনো প্রোফাইলটি আপনি আর অ্যাক্সেস করতে পারবেন না, আপনি সেটি সরিয়ে দিতে পারেন।</translation>
 <translation id="8651585100578802546">এই পৃষ্ঠাটি ফোর্স রিলোড করুন</translation>
-<translation id="8651940856056821914">Chrome, 'লাইভ ক্যাপশন' ফিচার (বর্তমানে শুধু ইংরেজিতেই উপলভ্য) ব্যবহার করে অটোমেটিক ক্যাপশন তৈরি করে</translation>
 <translation id="8652400352452647993">প্যাক এক্সটেনশনে সমস্যা হয়েছে</translation>
 <translation id="8654151524613148204">আপনার কম্পিউটারের পক্ষে ফাইলটি পরিচালনা করার জন্য অত্যন্ত বড়৷ দুঃখিত৷</translation>
 <translation id="8655295600908251630">চ্যানেল</translation>
@@ -6805,6 +6807,7 @@
 <translation id="947329552760389097">&amp;এলিমেন্ট ইন্সপেক্ট করুন</translation>
 <translation id="951991426597076286">প্রত্যাখ্যান</translation>
 <translation id="952992212772159698">সক্রিয় নেই</translation>
+<translation id="956444359529327203">'গেস্ট' উইন্ডো বন্ধ করুন</translation>
 <translation id="956500788634395331">আপনি সম্ভাব্য ক্ষতিকারক এক্সটেনশনগুলি থেকে নিরাপদে আছেন</translation>
 <translation id="957960681186851048">এই সাইটটি নিজে থেকে একাধিক ফাইল ডাউনলোড করার চেষ্টা করেছে</translation>
 <translation id="9580706199804957">Google পরিষেবাগুলির সাথে সংযুক্ত করা যায়নি</translation>

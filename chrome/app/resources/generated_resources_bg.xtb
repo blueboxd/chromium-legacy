@@ -429,7 +429,6 @@
 <translation id="1500297251995790841">Неизвестно устройство [<ph name="VENDOR_ID" />: <ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Този профил на собственик трябва да е първият, в който да се влезе, при сесия с централизиран вход.</translation>
 <translation id="150411034776756821">Премахване на <ph name="SITE" /></translation>
-<translation id="1504311855864906891">Показване на надписи за мултимедийното съдържание</translation>
 <translation id="1504551620756424144">Споделените папки са налични в Windows в <ph name="BASE_DIR" />.</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="1507170440449692343">Достъпът на тази страница до камерата ви е блокиран.</translation>
@@ -3266,7 +3265,6 @@
 <translation id="4921348630401250116">Синтезиран говор</translation>
 <translation id="49226369361073053">{0,plural, =0{Актуализирайте устройството сега}=1{Актуализирайте устройството в рамките на 1 секунда}other{Актуализирайте устройството в рамките на # секунди}}</translation>
 <translation id="492299503953721473">Премахване на приложенията за Android</translation>
-<translation id="492320048412997552">Файлът <ph name="FILE_NAME" /> е неизвестен. „Разширена защита“ препоръчва да го изпратите до Google, за да бъде сканиран.</translation>
 <translation id="492363500327720082"><ph name="APP_NAME" /> се деинсталира...</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Портовете ще се покажат тук</translation>
@@ -3490,7 +3488,6 @@
 <translation id="5225324770654022472">Показване на прекия път към приложенията</translation>
 <translation id="52254442782792731">Няма зададена настройка за видимост</translation>
 <translation id="5227679487546032910">Стандартен синьо-зелен аватар</translation>
-<translation id="5228088094491423618">Надписи на живо</translation>
 <translation id="5228579091201413441">Активиране на синхронизирането</translation>
 <translation id="5229189185761556138">Управление на методите на въвеждане</translation>
 <translation id="5230516054153933099">Window</translation>
@@ -4481,6 +4478,7 @@
 <translation id="6415900369006735853">Връзка с интернет през телефона ви</translation>
 <translation id="6416743254476733475">Разрешаване или блокиране на компютъра ви.</translation>
 <translation id="6417265370957905582">Google Асистент</translation>
+<translation id="6417468503703810114">Поведение по подразбиране</translation>
 <translation id="6418160186546245112">Предишната инсталирана версия на <ph name="IDS_SHORT_PRODUCT_NAME" /> се възстановява</translation>
 <translation id="6418481728190846787">Премахване за постоянно на достъпа за всички приложения</translation>
 <translation id="6418511932144861495">Инсталиране на критична актуализация</translation>
@@ -5556,6 +5554,7 @@
 <translation id="7766082757934713382">Помага за намаляването на преноса на данни от мрежата, като поставя на пауза автоматичните актуализации на приложенията и системата.</translation>
 <translation id="7766807826975222231">Направете обиколка</translation>
 <translation id="7766838926148951335">Приемам разрешенията</translation>
+<translation id="7768507955883790804">Сайтовете автоматично следват тази настройка, когато ги посещавате</translation>
 <translation id="7768770796815395237">Промяна</translation>
 <translation id="7768784765476638775">Прочитане на глас</translation>
 <translation id="7769672763586021400">Идент. № на модела</translation>
@@ -6022,7 +6021,6 @@
 <translation id="8281886186245836920">Пропускане</translation>
 <translation id="8283475148136688298">Кодът за удостоверяване бе отхвърлен при установяването на връзка с/ъс <ph name="DEVICE_NAME" />.</translation>
 <translation id="8284279544186306258">всички <ph name="WEBSITE_1" /> сайта</translation>
-<translation id="8284326494547611709">Надписи</translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8286963743045814739">Можете да сърфирате частно посредством прозорец в режим „инкогнито“</translation>
 <translation id="8287902281644548111">Търсене по извикване на API/по URL адрес</translation>
@@ -6246,7 +6244,6 @@
 <translation id="8585480574870650651">Премахване на Crostini</translation>
 <translation id="8588866096426746242">Статистика за потребителския профил</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> – предава съдържание във VR към очила</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> деактивира отстраняването на грешки през ADB. Не е възможно локалното инсталиране на нови приложения.</translation>
 <translation id="8590375307970699841">Настройка за автоматични актуализации</translation>
 <translation id="8591783563402255548">1 секунда</translation>
 <translation id="8592141010104017453">Известията да не се показват въобще</translation>
@@ -6304,7 +6301,6 @@
 <translation id="8648544143274677280"><ph name="SITE_NAME" /> иска да <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> и др.</translation>
 <translation id="8650543407998814195">Можете да премахнете стария си потребителски профил, въпреки че вече нямате достъп до него.</translation>
 <translation id="8651585100578802546">Принудително презареждане на тази страница</translation>
-<translation id="8651940856056821914">Chrome автоматично създава надписи посредством функцията „Надписи на живо“ (понастоящем се предлага само на английски)</translation>
 <translation id="8652400352452647993">Грешка при пакетиране на разширението</translation>
 <translation id="8654151524613148204">За съжаление файлът е твърде голям, за да се обработи от компютъра ви.</translation>
 <translation id="8655295600908251630">Канал</translation>

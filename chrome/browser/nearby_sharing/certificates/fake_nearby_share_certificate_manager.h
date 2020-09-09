@@ -39,11 +39,12 @@ class FakeNearbyShareCertificateManager : public NearbyShareCertificateManager {
     // NearbyShareCertificateManagerImpl::Factory:
     std::unique_ptr<NearbyShareCertificateManager> CreateInstance(
         NearbyShareLocalDeviceDataManager* local_device_data_manager,
+        NearbyShareContactManager* contact_manager,
         PrefService* pref_service,
         leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
         const base::FilePath& profile_path,
         NearbyShareClientFactory* client_factory,
-        base::Clock* clock) override;
+        const base::Clock* clock) override;
 
     std::vector<FakeNearbyShareCertificateManager*> instances_;
   };
@@ -72,10 +73,10 @@ class FakeNearbyShareCertificateManager : public NearbyShareCertificateManager {
 
   // NearbyShareCertificateManager:
   NearbySharePrivateCertificate GetValidPrivateCertificate(
-      NearbyShareVisibility visibility) override;
+      nearby_share::mojom::Visibility visibility) override;
   std::vector<nearbyshare::proto::PublicCertificate>
   GetPrivateCertificatesAsPublicCertificates(
-      NearbyShareVisibility visibility) override;
+      nearby_share::mojom::Visibility visibility) override;
   void GetDecryptedPublicCertificate(
       NearbyShareEncryptedMetadataKey encrypted_metadata_key,
       CertDecryptedCallback callback) override;

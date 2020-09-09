@@ -349,6 +349,12 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
+const char kContextMenuGoogleLensChipName[] =
+    "Google Lens powered image search for surfaced as a chip below the context "
+    "menu.";
+const char kContextMenuGoogleLensChipDescription[] =
+    "Enable a chip for a Shopping intent into Google Lens when supported. ";
+
 const char kContextMenuSearchWithGoogleLensName[] =
     "Google Lens powered image search in the context menu.";
 const char kContextMenuSearchWithGoogleLensDescription[] =
@@ -1195,6 +1201,13 @@ const char kGlobalMediaControlsSeamlessTransferDescription[] =
     "the Global Media Controls UI. Requires #global-media-controls to "
     "also be enabled.";
 
+const char kGlobalMediaControlsModernUIName[] =
+    "Global Media Controls Modern UI";
+
+const char kGlobalMediaControlsModernUIDescription[] =
+    "Use a redesigned version of the Global Media Controls UI. Requires "
+    "#global-media-controls to also be enabled.";
+
 const char kGlobalMediaControlsOverlayControlsName[] =
     "Enable overlay controls for Global Media Controls";
 const char kGlobalMediaControlsOverlayControlsDescription[] =
@@ -1203,10 +1216,6 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
 
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
-
-const char kGooglePasswordManagerName[] = "Google Password Manager UI";
-const char kGooglePasswordManagerDescription[] =
-    "Enables access to the Google Password Manager UI from Chrome.";
 
 const char kH264DecoderBufferIsCompleteFrameName[] =
     "H.264 Decoder Buffer Is Complete Frame";

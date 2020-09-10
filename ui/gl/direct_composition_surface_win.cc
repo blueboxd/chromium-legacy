@@ -335,7 +335,8 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
           settings.disable_larger_than_screen_overlays,
-          settings.disable_vp_scaling)) {
+          settings.disable_vp_scaling,
+          settings.reset_vp_when_colorspace_changes)) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
@@ -742,8 +743,12 @@ bool DirectCompositionSurfaceWin::ScheduleDCLayer(
 }
 
 void DirectCompositionSurfaceWin::SetFrameRate(float frame_rate) {
+  // Only try to reduce vsync frequency through the video swap chain.
+  // This allows us to experiment UseSetPresentDuration optimization to
+  // fullscreen video overlays only and avoid compromising
+  // UsePreferredIntervalForVideo optimization where we skip compositing
+  // every other frame when fps <= half the vsync frame rate.
   layer_tree_->SetFrameRate(frame_rate);
-  root_surface_->SetFrameRate(frame_rate);
 }
 
 bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {

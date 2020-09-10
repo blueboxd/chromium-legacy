@@ -861,6 +861,14 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-pie-arm64-wpt-rel-non-cq",
+    console_view_entry = ci.console_view_entry(
+        category = "builder_tester|arm64",
+        short_name = "P-WPT",
+    ),
+)
+
+ci.android_builder(
     name = "android-pie-x86-rel",
     console_view_entry = ci.console_view_entry(
         category = "builder_tester|x86",
@@ -1140,17 +1148,6 @@ ci.chromiumos_builder(
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
         category = "simple|debug|x64",
-        short_name = "dbg",
-    ),
-    cq_mirrors_console_view = settings.cq_mirrors_console_name,
-    main_console_view = settings.main_console_name,
-)
-
-ci.chromiumos_builder(
-    name = "chromeos-amd64-generic-lacros-dbg",
-    branch_selector = branches.STANDARD_RELEASES,
-    console_view_entry = ci.console_view_entry(
-        category = "lacros|x64",
         short_name = "dbg",
     ),
     cq_mirrors_console_view = settings.cq_mirrors_console_name,

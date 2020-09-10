@@ -456,43 +456,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'/XSelectInput|CWEventMask|XCB_CW_EVENT_MASK',
-      (
-       'Chrome clients wishing to select events on X windows should use',
-       'ui::XScopedEventSelector.  It is safe to ignore this warning only if',
-       'you are selecting events from the GPU process, or if you are using',
-       'an XDisplay other than gfx::GetXDisplay().',
-      ),
-      True,
-      (
-        r"^ui[\\/]events[\\/]x[\\/].*\.cc$",
-        r"^ui[\\/]gl[\\/].*\.cc$",
-        r"^media[\\/]gpu[\\/].*\.cc$",
-        r"^gpu[\\/].*\.cc$",
-        r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]xwmstartupcheck\.cc$",
-        ),
-    ),
-    (
-      r'/\WX?(((Width|Height)(MM)?OfScreen)|(Display(Width|Height)))\(',
-      (
-       'Use the corresponding fields in x11::Screen instead.',
-      ),
-      True,
-      (),
-    ),
-    (
-      r'/XInternAtom|xcb_intern_atom',
-      (
-       'Use gfx::GetAtom() instead of interning atoms directly.',
-      ),
-      True,
-      (
-        r"^gpu[\\/]ipc[\\/]service[\\/]gpu_watchdog_thread\.cc$",
-        r"^remoting[\\/]host[\\/]linux[\\/]x_server_clipboard\.cc$",
-        r"^ui[\\/]gfx[\\/]x[\\/]x11_atom_cache\.cc$",
-      ),
-    ),
-    (
       'setMatrixClip',
       (
         'Overriding setMatrixClip() is prohibited; ',
@@ -841,6 +804,14 @@ _BANNED_CPP_FUNCTIONS = (
       (
         'Do not use any random number engines from <random>. Instead',
         'use base::RandomBitGenerator.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\b#include <X11/',
+      (
+        'Do not use Xlib. Use xproto (from //ui/gfx/x:xproto) instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -1470,9 +1441,17 @@ def CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   base_function_pattern = r'[ :]test::[^\s]+|ForTest(s|ing)?|for_test(s|ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
   comment_pattern = input_api.re.compile(r'//.*(%s)' % base_function_pattern)
+  allowlist_pattern = input_api.re.compile(r'// IN-TEST$')
   exclusion_pattern = input_api.re.compile(
     r'::[A-Za-z0-9_]+(%s)|(%s)[^;]+\{' % (
       base_function_pattern, base_function_pattern))
+  # Avoid a false positive in this case, where the method name, the ::, and
+  # the closing { are all on different lines due to line wrapping.
+  # HelperClassForTesting::
+  #   HelperClassForTesting(
+  #       args)
+  #     : member(0) {}
+  method_defn_pattern = input_api.re.compile(r'[A-Za-z0-9_]+::$')
 
   def FilterFile(affected_file):
     files_to_skip = (_EXCLUDED_PATHS +
@@ -1486,12 +1465,16 @@ def CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   problems = []
   for f in input_api.AffectedSourceFiles(FilterFile):
     local_path = f.LocalPath()
+    in_method_defn = False
     for line_number, line in f.ChangedContents():
       if (inclusion_pattern.search(line) and
           not comment_pattern.search(line) and
-          not exclusion_pattern.search(line)):
+          not exclusion_pattern.search(line) and
+          not allowlist_pattern.search(line) and
+          not in_method_defn):
         problems.append(
           '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+      in_method_defn = method_defn_pattern.search(line)
 
   if problems:
     return [output_api.PresubmitPromptOrNotify(_TEST_ONLY_WARNING, problems)]

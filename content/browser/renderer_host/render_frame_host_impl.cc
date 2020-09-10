@@ -32,7 +32,6 @@
 #include "base/stl_util.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_conversion_helper.h"
@@ -847,7 +846,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
   auto it = frames->find(id);
-  return it == frames->end() ? NULL : it->second;
+  return it == frames->end() ? nullptr : it->second;
 }
 
 // static
@@ -1294,7 +1293,7 @@ void RenderFrameHostImpl::DisableBackForwardCache(base::StringPiece reason) {
 void RenderFrameHostImpl::DisableProactiveBrowsingInstanceSwapForTesting() {
   // This should only be called on main frames.
   DCHECK(!GetParent());
-  is_proactive_browsing_instance_swap_disabled_for_testing_ = true;
+  has_test_disabled_proactive_browsing_instance_swap_ = true;
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -1644,7 +1643,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
 
   const bool has_user_gesture = false;
   const bool wants_result = !callback.is_null();
-  GetNavigationControl()->JavaScriptExecuteRequestForTests(
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(  // IN-TEST
       javascript, wants_result, has_user_gesture, world_id,
       std::move(callback));
 }
@@ -1662,7 +1661,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
       blink::mojom::UserActivationNotificationType::kTest);
 
   const bool has_user_gesture = true;
-  GetNavigationControl()->JavaScriptExecuteRequestForTests(
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(  // IN-TEST
       javascript, false, has_user_gesture, world_id, base::NullCallback());
 }
 
@@ -2934,9 +2933,9 @@ void RenderFrameHostImpl::SetNavigationRequest(
 void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   // The end of this event is in OnUnloadACK when the RenderFrame has completed
   // the operation and sends back an IPC message.
-  TRACE_EVENT_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl::Unload", this,
-                           "frame_tree_node",
-                           frame_tree_node_->frame_tree_node_id());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl::Unload",
+                                    TRACE_ID_LOCAL(this), "frame_tree_node",
+                                    frame_tree_node_->frame_tree_node_id());
 
   // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
@@ -3007,9 +3006,9 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompleted(
     bool treat_as_final_completion_callback,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
-  TRACE_EVENT_ASYNC_END1("navigation", "RenderFrameHostImpl BeforeUnload", this,
-                         "FrameTreeNode id",
-                         frame_tree_node_->frame_tree_node_id());
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "navigation", "RenderFrameHostImpl BeforeUnload", TRACE_ID_LOCAL(this),
+      "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in DidCommitProvisionalLoad, in which case we
   // can ignore this message.
@@ -3176,7 +3175,8 @@ void RenderFrameHostImpl::OnUnloadACK() {
 void RenderFrameHostImpl::OnUnloaded() {
   DCHECK(is_waiting_for_unload_ack_);
 
-  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::Unload", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "RenderFrameHostImpl::Unload",
+                                  TRACE_ID_LOCAL(this));
   if (unload_event_monitor_timeout_)
     unload_event_monitor_timeout_->Stop();
 
@@ -3691,12 +3691,12 @@ void RenderFrameHostImpl::ViewSource() {
 
 void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting() {
   DCHECK(network_service_disconnect_handler_holder_);
-  network_service_disconnect_handler_holder_.FlushForTesting();
+  network_service_disconnect_handler_holder_.FlushForTesting();  // IN-TEST
 
   if (!navigation_control_)
     GetNavigationControl();
   DCHECK(navigation_control_);
-  navigation_control_.FlushForTesting();
+  navigation_control_.FlushForTesting();  // IN-TEST
 }
 
 void RenderFrameHostImpl::PrepareForInnerWebContentsAttach(
@@ -5612,8 +5612,9 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
     return;
   }
-  TRACE_EVENT_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl BeforeUnload",
-                           this, "&RenderFrameHostImpl", (void*)this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "navigation", "RenderFrameHostImpl BeforeUnload", TRACE_ID_LOCAL(this),
+      "&RenderFrameHostImpl", static_cast<void*>(this));
 
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if they click the tab close button then the browser close
@@ -6094,6 +6095,7 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     non_network_uniquely_owned_factories_.clear();
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
 
     // Set up the default factory.
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -6126,8 +6128,8 @@ void RenderFrameHostImpl::CommitNavigation(
         // WebUIURLLoaderFactory will kill the renderer if it sees a request
         // with a non-chrome scheme. Register a URLLoaderFactory for the about
         // scheme so about:blank doesn't kill the renderer.
-        non_network_uniquely_owned_factories_[url::kAboutScheme] =
-            std::make_unique<AboutURLLoaderFactory>();
+        non_network_factories[url::kAboutScheme] =
+            AboutURLLoaderFactory::Create();
       } else {
         // This is a webui scheme that doesn't have webui bindings. Give it
         // access to the network loader as it might require it.
@@ -6203,7 +6205,6 @@ void RenderFrameHostImpl::CommitNavigation(
     //
     // TODO(crbug.com/888079): In the future, use
     // GetOriginForURLLoaderFactory/GetOriginToCommit.
-    ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
     if ((common_params->url.SchemeIsFile() ||
          (common_params->url.IsAboutBlank() &&
           common_params->initiator_origin &&
@@ -6225,12 +6226,8 @@ void RenderFrameHostImpl::CommitNavigation(
 #if defined(OS_ANDROID)
     if (common_params->url.SchemeIs(url::kContentScheme)) {
       // Only content:// URLs can load content:// subresources
-      auto content_factory = std::make_unique<ContentURLLoaderFactory>(
-          base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-      non_network_uniquely_owned_factories_.emplace(url::kContentScheme,
-                                                    std::move(content_factory));
+      non_network_factories.emplace(url::kContentScheme,
+                                    ContentURLLoaderFactory::Create());
     }
 #endif
 
@@ -6243,8 +6240,8 @@ void RenderFrameHostImpl::CommitNavigation(
                                     partition->GetFileSystemContext(),
                                     partition->GetPartitionDomain()));
 
-    non_network_uniquely_owned_factories_.emplace(
-        url::kDataScheme, std::make_unique<DataURLLoaderFactory>());
+    non_network_factories.emplace(url::kDataScheme,
+                                  DataURLLoaderFactory::Create());
 
     GetContentClient()
         ->browser()

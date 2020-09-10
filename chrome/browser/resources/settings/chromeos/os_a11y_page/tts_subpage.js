@@ -10,7 +10,12 @@
 Polymer({
   is: 'settings-tts-subpage',
 
-  behaviors: [WebUIListenerBehavior, I18nBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    I18nBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -75,6 +80,33 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kTextToSpeechRate,
+        chromeos.settings.mojom.Setting.kTextToSpeechPitch,
+        chromeos.settings.mojom.Setting.kTextToSpeechVolume,
+        chromeos.settings.mojom.Setting.kTextToSpeechVoice,
+        chromeos.settings.mojom.Setting.kTextToSpeechEngines,
+      ]),
+    },
+  },
+
+  /** @private {?TtsSubpageBrowserProxy} */
+  ttsBrowserProxy_: null,
+
+  /** @private {?settings.LanguagesBrowserProxy} */
+  langBrowserProxy_: null,
+
+  /** @override */
+  created() {
+    this.ttsBrowserProxy_ = TtsSubpageBrowserProxyImpl.getInstance();
+    this.langBrowserProxy_ = settings.LanguagesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -84,15 +116,28 @@ Polymer({
     this.previewText_ = this.i18n('textToSpeechPreviewInput');
     this.addWebUIListener(
         'all-voice-data-updated', this.populateVoiceList_.bind(this));
-    chrome.send('getAllTtsVoiceData');
+    this.ttsBrowserProxy_.getAllTtsVoiceData();
     this.addWebUIListener(
         'tts-extensions-updated', this.populateExtensionList_.bind(this));
     this.addWebUIListener(
         'tts-preview-state-changed', this.onTtsPreviewStateChanged_.bind(this));
-    chrome.send('getTtsExtensions');
+    this.ttsBrowserProxy_.getTtsExtensions();
   },
 
   /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.MANAGE_TTS_SETTINGS) {
+      return;
+    }
+
+    this.attemptDeepLink();
+  },
+
+  /*
    * Ticks for the Speech Rate slider. Valid rates are between 0.1 and 5.
    * @return {!Array<!cr_slider.SliderTick>}
    * @private
@@ -366,22 +411,23 @@ Polymer({
       this.set('defaultPreviewVoice', this.getBestVoiceForLocale_(allVoices));
     }
 
-    const browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
-    browserProxy.getProspectiveUILanguage().then(prospectiveUILanguage => {
-      let result;
-      if (prospectiveUILanguage && prospectiveUILanguage != '' &&
-          languageCodeMap[prospectiveUILanguage]) {
-        const code = languageCodeMap[prospectiveUILanguage];
-        // First try the pref value.
-        result = this.prefs.settings['tts']['lang_to_voice_name'].value[code];
-      }
-      if (!result) {
-        // If it's not a pref value yet, or the prospectiveUILanguage was
-        // missing, try using the voice score.
-        result = this.getBestVoiceForLocale_(allVoices);
-      }
-      this.set('defaultPreviewVoice', result);
-    });
+    this.langBrowserProxy_.getProspectiveUILanguage().then(
+        prospectiveUILanguage => {
+          let result;
+          if (prospectiveUILanguage && prospectiveUILanguage != '' &&
+              languageCodeMap[prospectiveUILanguage]) {
+            const code = languageCodeMap[prospectiveUILanguage];
+            // First try the pref value.
+            result =
+                this.prefs.settings['tts']['lang_to_voice_name'].value[code];
+          }
+          if (!result) {
+            // If it's not a pref value yet, or the prospectiveUILanguage was
+            // missing, try using the voice score.
+            result = this.getBestVoiceForLocale_(allVoices);
+          }
+          this.set('defaultPreviewVoice', result);
+        });
   },
 
   /**
@@ -404,8 +450,8 @@ Polymer({
 
   /** @private */
   onPreviewTtsClick_() {
-    chrome.send(
-        'previewTtsVoice', [this.previewText_, this.$.previewVoice.value]);
+    this.ttsBrowserProxy_.previewTtsVoice(
+        this.previewText_, this.$.previewVoice.value);
   },
 
   /**
@@ -413,7 +459,7 @@ Polymer({
    * @private
    */
   onEngineSettingsTap_(event) {
-    chrome.send('wakeTtsEngine');
+    this.ttsBrowserProxy_.wakeTtsEngine();
     window.open(event.model.extension.optionsPage);
   },
 });

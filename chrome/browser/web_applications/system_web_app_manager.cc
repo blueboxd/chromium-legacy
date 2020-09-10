@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/chromeos/web_applications/diagnostics_system_web_app_info.h"
+#include "chrome/browser/chromeos/web_applications/media_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/scanning_system_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/terminal_source.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
@@ -57,6 +58,7 @@
 #include "extensions/common/constants.h"
 
 #if !defined(OFFICIAL_BUILD)
+#include "chrome/browser/chromeos/web_applications/file_manager_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/sample_system_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/telemetry_extension_web_app_info.h"
 #endif  // !defined(OFFICIAL_BUILD)
@@ -153,8 +155,10 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {
-    infos.emplace(SystemAppType::MEDIA,
-                  SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
+    infos.emplace(
+        SystemAppType::MEDIA,
+        SystemAppInfo("Media", GURL("chrome://media-app/pwa.html"),
+                      base::BindRepeating(&CreateWebAppInfoForMediaWebApp)));
     infos.at(SystemAppType::MEDIA).include_launch_directory = true;
     infos.at(SystemAppType::MEDIA).show_in_launcher = false;
     infos.at(SystemAppType::MEDIA).show_in_search = false;
@@ -188,6 +192,12 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
             "Telemetry", GURL("chrome://telemetry-extension"),
             base::BindRepeating(&CreateWebAppInfoForTelemetryExtension)));
   }
+
+  infos.emplace(
+      SystemAppType::FILE_MANAGER,
+      SystemAppInfo("File Manager", GURL("chrome://file-manager"),
+                    base::BindRepeating(&CreateWebAppInfoForFileManager)));
+  infos.at(SystemAppType::FILE_MANAGER).capture_navigations = true;
 
   infos.emplace(
       SystemAppType::SAMPLE,
@@ -321,6 +331,8 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
     case SystemAppType::TELEMETRY:
       return base::FeatureList::IsEnabled(
           chromeos::features::kTelemetryExtension);
+    case SystemAppType::FILE_MANAGER:
+      return base::FeatureList::IsEnabled(chromeos::features::kFilesSWA);
     case SystemAppType::SAMPLE:
       NOTREACHED();
       return false;

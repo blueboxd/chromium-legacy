@@ -15,6 +15,8 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -295,8 +297,10 @@ class ContentURLLoader : public network::mojom::URLLoader {
 }  // namespace
 
 ContentURLLoaderFactory::ContentURLLoaderFactory(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
+    : NonNetworkURLLoaderFactoryBase(std::move(factory_receiver)),
+      task_runner_(std::move(task_runner)) {}
 
 ContentURLLoaderFactory::~ContentURLLoaderFactory() = default;
 
@@ -313,9 +317,20 @@ void ContentURLLoaderFactory::CreateLoaderAndStart(
                                 std::move(loader), std::move(client)));
 }
 
-void ContentURLLoaderFactory::Clone(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
-  receivers_.Add(this, std::move(loader));
+// static
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+ContentURLLoaderFactory::Create() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+
+  // The ContentURLLoaderFactory will delete itself when there are no more
+  // receivers - see the NonNetworkURLLoaderFactoryBase::OnDisconnect method.
+  new ContentURLLoaderFactory(
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+      pending_remote.InitWithNewPipeAndPassReceiver());
+
+  return pending_remote;
 }
 
 }  // namespace content

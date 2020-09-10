@@ -849,45 +849,45 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           base::nullopt, override_user_agent,
-          std::vector<GURL>(),  // redirects
-          std::vector<
-              network::mojom::URLResponseHeadPtr>(),  // redirect_response
-          std::vector<net::RedirectInfo>(),           // redirect_infos
-          std::string(),                              // post_content_type
-          common_params->url, common_params->method,
-          false,                                // can_load_local_resources
-          PageState(),                          // page_state
-          0,                                    // nav_entry_id
-          base::flat_map<std::string, bool>(),  // subframe_unique_names
-          false,                                // intended_as_new_entry
-          -1,  // |pending_history_list_offset| is set to -1 because
-               // history-navigations do not use this path. See comments above.
-          current_history_list_offset, current_history_list_length,
-          false,  // was_discarded
-          false,  // is_view_source
-          false /*should_clear_history_list*/,
-          mojom::NavigationTiming::New(),  // navigation_timing
-          base::nullopt,                   // appcache_host_id
+          /*redirects=*/std::vector<GURL>(),
+          /*redirect_response=*/
+          std::vector<network::mojom::URLResponseHeadPtr>(),
+          /*redirect_infos=*/std::vector<net::RedirectInfo>(),
+          /*post_content_type=*/std::string(), common_params->url,
+          common_params->method,
+          /*can_load_local_resources=*/false,
+          /*page_state=*/PageState(),
+          /*nav_entry_id=*/0,
+          /*subframe_unique_names=*/base::flat_map<std::string, bool>(),
+          /*intended_as_new_entry=*/false,
+          // Set to -1 because history-navigations do not use this path. See
+          // comments above.
+          /*pending_history_list_offset=*/-1, current_history_list_offset,
+          current_history_list_length,
+          /*was_discarded=*/false,
+          /*is_view_source=*/false,
+          /*should_clear_history_list=*/false,
+          /*navigation_timing=*/mojom::NavigationTiming::New(),
+          /*appcache_host_id=*/base::nullopt,
           mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create(),  // navigation_token
-          std::vector<
-              mojom::
-                  PrefetchedSignedExchangeInfoPtr>(),  // prefetched_signed_exchanges
+          /*navigation_token=*/base::UnguessableToken::Create(),
+          /*prefetched_signed_exchanges=*/
+          std::vector<mojom::PrefetchedSignedExchangeInfoPtr>(),
 #if defined(OS_ANDROID)
-          std::string(),  // data_url_as_string
+          /*data_url_as_string=*/std::string(),
 #endif
-          false,  // is_browser_initiated
+          /*is_browser_initiated=*/false,
           network::mojom::IPAddressSpace::kUnknown,
-          GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */,
+          /*web_bundle_physical_url=*/GURL(),
+          /*base_url_override_for_web_bundle=*/GURL(),
           frame_tree_node->pending_frame_policy(),
-          std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolated */,
-          std::vector<
-              network::mojom::WebClientHintsType>() /* enabled_client_hints */,
-          false /* is_cross_browsing_instance */,
-          std::vector<std::string>() /* forced_content_security_policies */,
-          nullptr /* old_page_info */);
+          /*force_enabled_origin_trials=*/std::vector<std::string>(),
+          /*origin_isolated=*/false,
+          /*enabled_client_hints=*/
+          std::vector<network::mojom::WebClientHintsType>(),
+          /*is_cross_browsing_instance=*/false,
+          /*forced_content_security_policies=*/std::vector<std::string>(),
+          /*old_page_info=*/nullptr);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1405,7 +1405,7 @@ void NavigationRequest::BeginNavigation() {
       base::debug::DumpWithoutCrashing();
     }
 
-    ReadyToCommitNavigation(CommitPageType::kNonErrorPage);
+    ReadyToCommitNavigation(false /* is_error */);
     CommitNavigation();
     return;
   }
@@ -3043,8 +3043,7 @@ void NavigationRequest::CommitErrorPage(
   }
 
   sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
-  ReadyToCommitNavigation(error_page_content ? CommitPageType::kCustomErrorPage
-                                             : CommitPageType::kErrorPage);
+  ReadyToCommitNavigation(true);
   render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
                                        error_page_content);
@@ -3803,7 +3802,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
     if (render_frame_host_)
-      ReadyToCommitNavigation(CommitPageType::kNonErrorPage);
+      ReadyToCommitNavigation(false);
 
     // The call above might block on showing a user dialog. The interaction of
     // the user with this dialog might result in the WebContents owning this
@@ -3842,10 +3841,6 @@ void NavigationRequest::CancelDeferredNavigation(
   DCHECK(cancelling_throttle);
   DCHECK_EQ(cancelling_throttle, throttle_runner_->GetDeferringThrottle());
   CancelDeferredNavigationInternal(result);
-}
-
-void NavigationRequest::CallResumeForTesting() {
-  throttle_runner_->CallResumeForTesting();
 }
 
 void NavigationRequest::RegisterThrottleForTesting(
@@ -4166,11 +4161,10 @@ bool NavigationRequest::NeedsUrlLoader() {
          !IsForMhtmlSubframe();
 }
 
-void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
+void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   EnterChildTraceEvent("ReadyToCommitNavigation", this);
 
   SetState(READY_TO_COMMIT);
-  committed_page_type_ = type;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
@@ -4214,7 +4208,7 @@ void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
 
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
-  if (!IsSameDocument() && type == CommitPageType::kNonErrorPage) {
+  if (!IsSameDocument() && !is_error) {
     is_same_process_ =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
@@ -4456,11 +4450,6 @@ bool NavigationRequest::HasCommitted() {
 
 bool NavigationRequest::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
-}
-
-bool NavigationRequest::IsCustomErrorPage() {
-  return state_ == DID_COMMIT_ERROR_PAGE &&
-         committed_page_type_ == CommitPageType::kCustomErrorPage;
 }
 
 net::HttpResponseInfo::ConnectionInfo NavigationRequest::GetConnectionInfo() {

@@ -24623,6 +24623,7 @@ Called by update_extension_histograms.py.-->
   <int value="24" label="IN_PROGRESS"/>
   <int value="25" label="CRX_FETCH_URL_EMPTY"/>
   <int value="26" label="CRX_FETCH_URL_INVALID"/>
+  <int value="27" label="OVERRIDEN_BY_SETTINGS"/>
 </enum>
 
 <enum name="ExtensionInstallationStage">
@@ -58182,6 +58183,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="KeyboardShortcut"/>
   <int value="1" label="FeaturePod"/>
   <int value="2" label="ToastButton"/>
+</enum>
+
+<enum name="PrivateSetMembershipHashDanceComparison">
+  <int value="0" label="Equal Results"/>
+  <int value="1" label="Different Results"/>
+  <int value="2" label="PSM Error, Hash Dance Success"/>
+  <int value="3" label="PSM Success, Hash Dance Error"/>
+  <int value="4" label="Both Error"/>
+</enum>
+
+<enum name="PrivateSetMembershipStatus">
+  <int value="0" label="Attempt"/>
+  <int value="1" label="Successful Determination"/>
+  <int value="2" label="Error"/>
+  <int value="3" label="Timeout"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">

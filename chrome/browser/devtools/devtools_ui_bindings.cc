@@ -171,7 +171,7 @@ Browser* FindBrowser(content::WebContents* web_contents) {
     if (tab_index != TabStripModel::kNoTab)
       return browser;
   }
-  return NULL;
+  return nullptr;
 }
 
 // DevToolsUIDefaultDelegate --------------------------------------------------
@@ -658,14 +658,14 @@ void DevToolsUIBindings::FrontendWebContentsObserver::DidFinishNavigation(
 DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
      content::WebContents* web_contents) {
   if (!g_devtools_ui_bindings_instances.IsCreated())
-    return NULL;
+    return nullptr;
   DevToolsUIBindingsList* instances =
       g_devtools_ui_bindings_instances.Pointer();
-  for (auto it(instances->begin()); it != instances->end(); ++it) {
-    if ((*it)->web_contents() == web_contents)
-      return *it;
+  for (DevToolsUIBindings* binding : *instances) {
+    if (binding->web_contents() == web_contents)
+      return binding;
   }
-  return NULL;
+  return nullptr;
 }
 
 DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
@@ -677,9 +677,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       frontend_loaded_(false) {
   g_devtools_ui_bindings_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
-  web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  web_contents_->GetMutableRendererPrefs()->accept_languages =
-      g_browser_process->GetApplicationLocale();
 
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile_, this));
   file_system_indexer_ = new DevToolsFileSystemIndexer();

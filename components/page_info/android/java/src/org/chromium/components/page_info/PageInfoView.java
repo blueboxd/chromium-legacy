@@ -13,7 +13,6 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -34,7 +33,7 @@ import java.util.List;
 /**
  * Represents the view inside the page info popup.
  */
-public class PageInfoView extends FrameLayout implements OnClickListener, OnLongClickListener {
+public class PageInfoView extends FrameLayout implements OnClickListener {
     /**
      * A TextView which truncates and displays a URL such that the origin is always visible.
      * The URL can be expanded by clicking on the it.
@@ -174,7 +173,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public CharSequence url;
         public CharSequence previewLoadOriginalMessage;
         public int urlOriginLength;
-        public CharSequence truncatedUrl;
     }
 
     /** Parameters to configure the permission info section */
@@ -214,7 +212,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     protected Button mInstantAppButton;
     protected Button mSiteSettingsButton;
     protected Button mOpenOnlineButton;
-    protected Runnable mUrlTitleLongClickCallback;
     protected Runnable mOnUiClosingCallback;
 
     // Components specific to this PageInfoView
@@ -255,9 +252,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     protected void initUrlTitle(PageInfoViewParams params) {
         mUrlTitle = findViewById(R.id.page_info_url);
         mUrlTitle.setUrl(params.url, params.urlOriginLength);
-        mUrlTitleLongClickCallback = params.urlTitleLongClickCallback;
         if (params.urlTitleLongClickCallback != null) {
-            mUrlTitle.setOnLongClickListener(this);
+            mUrlTitle.setOnLongClickListener(v -> {
+                params.urlTitleLongClickCallback.run();
+                return true;
+            });
         }
         initializePageInfoViewChild(
                 mUrlTitle, params.urlTitleShown, 0f, params.urlTitleClickCallback);
@@ -407,14 +406,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         }
         Runnable clickCallback = (Runnable) clickCallbackObj;
         clickCallback.run();
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-        assert view == mUrlTitle;
-        assert mUrlTitleLongClickCallback != null;
-        mUrlTitleLongClickCallback.run();
-        return true;
     }
 
     protected void initializePageInfoViewChild(

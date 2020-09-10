@@ -1565,9 +1565,6 @@ extern const char kContentIndexingDownloadHomeDescription[];
 extern const char kContentIndexingNTPName[];
 extern const char kContentIndexingNTPDescription[];
 
-extern const char kContextMenuCopyImageName[];
-extern const char kContextMenuCopyImageDescription[];
-
 extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[];
 extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[];
 
@@ -2360,6 +2357,9 @@ extern const char kFilesAppCopyImageDescription[];
 
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
+
+extern const char kFilesSinglePartitionFormatName[];
+extern const char kFilesSinglePartitionFormatDescription[];
 
 extern const char kFilesSWAName[];
 extern const char kFilesSWADescription[];

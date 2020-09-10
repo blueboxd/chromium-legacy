@@ -7,11 +7,6 @@ import("//third_party/blink/renderer/platform/platform.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 blink_platform_sources("scheduler") {
-  visibility = [
-    "//third_party/blink/renderer/platform",
-    "//third_party/blink/renderer/platform/blob",
-  ]
-
   sources = [
     "common/cancelable_closure_holder.cc",
     "common/cancelable_closure_holder.h",
@@ -183,8 +178,10 @@ blink_platform_sources("scheduler") {
     "//v8",
   ]
 
-  allow_circular_includes_from =
-      [ "//third_party/blink/renderer/platform/instrumentation" ]
+  allow_circular_includes_from = [
+    "//third_party/blink/renderer/platform/heap:heap",
+    "//third_party/blink/renderer/platform/instrumentation",
+  ]
 }
 
 source_set("test_support") {

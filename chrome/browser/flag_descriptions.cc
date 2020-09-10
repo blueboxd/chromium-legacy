@@ -2698,10 +2698,6 @@ const char kContentIndexingNTPName[] = "Content indexing in NTP";
 const char kContentIndexingNTPDescription[] =
     "Shows content indexing entry point UI in NTP";
 
-const char kContextMenuCopyImageName[] = "Copy Image";
-const char kContextMenuCopyImageDescription[] =
-    "Enable copying image to system clipboard via context menu.";
-
 const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[] =
     "Context menu performance info and remote hint fetching";
 const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[] =
@@ -4076,6 +4072,11 @@ const char kFilesAppCopyImageDescription[] =
 const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";
+
+const char kFilesSinglePartitionFormatName[] =
+    "Enable Partitioning of Removable Disks.";
+const char kFilesSinglePartitionFormatDescription[] =
+    "Enable partitioning of removable disks into single partition.";
 
 const char kFilesSWAName[] = "Enable Files App SWA.";
 const char kFilesSWADescription[] =

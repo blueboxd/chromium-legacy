@@ -28,7 +28,7 @@ const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
 
 // Controls whether to enable Ambient mode album selection with photo previews.
 const base::Feature kAmbientModePhotoPreviewFeature{
-    "ChromeOSAmbientModePhotoPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeOSAmbientModePhotoPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to allow Dev channel to use Prod server feature.
 const base::Feature kAmbientModeDevUseProdFeature{
@@ -199,6 +199,10 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables partitioning of removable disks in file manager.
+const base::Feature kFilesSinglePartitionFormat{
+    "FilesSinglePartitionFormat", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
 const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};

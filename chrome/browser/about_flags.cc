@@ -3641,6 +3641,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
+    {"files-single-partition-format",
+     flag_descriptions::kFilesSinglePartitionFormatName,
+     flag_descriptions::kFilesSinglePartitionFormatDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesSinglePartitionFormat)},
     {"files-swa", flag_descriptions::kFilesSWAName,
      flag_descriptions::kFilesSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesSWA)},
@@ -5763,9 +5767,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "BackForwardCache")},
 
 #if defined(OS_ANDROID)
-    {"context-menu-copy-image", flag_descriptions::kContextMenuCopyImageName,
-     flag_descriptions::kContextMenuCopyImageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextMenuCopyImage)},
     {"enable-clipboard-provider-image-suggestions",
      flag_descriptions::kEnableClipboardProviderImageSuggestionsName,
      flag_descriptions::kEnableClipboardProviderImageSuggestionsDescription,

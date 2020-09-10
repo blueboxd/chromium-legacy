@@ -291,6 +291,16 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
       {"spellCheckTitle", IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_TITLE},
       {"spellCheckDisabledReason",
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_DISABLED_REASON},
+      {"spellCheckLanguagesListTitle",
+       IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_TITLE},
+      {"spellCheckLanguagesListDescription",
+       IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_DESCRIPTION},
+      {"languagesDictionaryDownloadError",
+       IDS_OS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_FAILED},
+      {"languagesDictionaryDownloadRetryLabel",
+       IDS_OS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_RETRY_LABEL},
+      {"languagesDictionaryDownloadRetryDescription",
+       IDS_OS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_RETRY_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

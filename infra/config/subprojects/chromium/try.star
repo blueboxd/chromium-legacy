@@ -1092,7 +1092,7 @@ try_.chromium_mac_builder(
     builderless = False,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 7),
+    tryjob = try_.job(experiment_percentage = 10),
 )
 
 try_.chromium_mac_builder(
@@ -1574,6 +1574,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "iphone-device",
+)
+
+chrome_internal_verifier(
+    builder = "linux-chrome",
 )
 
 chrome_internal_verifier(

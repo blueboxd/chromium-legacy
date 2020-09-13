@@ -49,7 +49,6 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/page_info/page_info.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -60,6 +59,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -129,9 +129,9 @@ std::unique_ptr<views::View> CreateSiteSettingsLink(
 
 }  // namespace
 
-// |BubbleHeaderView| is the UI element (view) that represents the header of the
-// |PageInfoBubbleView|. The header shows the status of the site's
-// identity check and the name of the site's identity.
+// BubbleHeaderView is the UI element (view) that represents the header of a
+// PageInfoBubbleView. The header shows the status of the site's identity check
+// and the name of the site's identity.
 class BubbleHeaderView : public views::View, public views::StyledLabelListener {
  public:
   BubbleHeaderView(PageInfoBubbleView* bubble, int side_margin);
@@ -238,7 +238,7 @@ BubbleHeaderView::BubbleHeaderView(PageInfoBubbleView* bubble, int side_margin)
                       views::GridLayout::FILL, views::GridLayout::LEADING);
 }
 
-BubbleHeaderView::~BubbleHeaderView() {}
+BubbleHeaderView::~BubbleHeaderView() = default;
 
 void BubbleHeaderView::StyledLabelLinkClicked(views::StyledLabel* label,
                                               const gfx::Range& range,
@@ -318,17 +318,9 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
     password_reuse_button_container_->RemoveAllChildViews(true /* delete */);
   }
 
-  int change_password_template = 0;
-  if (is_saved_password && !base::FeatureList::IsEnabled(
-                               password_manager::features::kPasswordCheck)) {
-    change_password_template = 0;
-  } else {
-    change_password_template =
-        is_saved_password && base::FeatureList::IsEnabled(
-                                 password_manager::features::kPasswordCheck)
-            ? IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON
-            : IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON;
-  }
+  int change_password_template = is_saved_password
+                                     ? IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON
+                                     : IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON;
 
   std::unique_ptr<views::MdTextButton> change_password_button;
   if (change_password_template) {
@@ -481,8 +473,9 @@ void PageInfoBubbleView::SecurityDetailsClicked(int event_flags) {
   } else {
     web_contents()->OpenURL(content::OpenURLParams(
         GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-        WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-        false));
+        ui::DispositionFromEventFlags(
+            event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
+        ui::PAGE_TRANSITION_LINK, false));
     presenter_->RecordPageInfoAction(
         PageInfo::PAGE_INFO_CONNECTION_HELP_OPENED);
   }

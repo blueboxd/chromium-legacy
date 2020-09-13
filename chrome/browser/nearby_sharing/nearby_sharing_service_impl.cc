@@ -237,6 +237,12 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
 
   nearby_notification_manager_ = std::make_unique<NearbyNotificationManager>(
       notification_display_service, this, prefs, profile_);
+
+  if (settings_.GetEnabled()) {
+    local_device_data_manager_->Start();
+    contact_manager_->Start();
+    certificate_manager_->Start();
+  }
 }
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() {
@@ -287,8 +293,24 @@ void NearbySharingServiceImpl::Shutdown() {
 
   settings_receiver_.reset();
 
+  if (settings_.GetEnabled()) {
+    local_device_data_manager_->Stop();
+    contact_manager_->Stop();
+    certificate_manager_->Stop();
+  }
+
   // |profile_| has now been shut down so we shouldn't use it anymore.
   profile_ = nullptr;
+}
+
+void NearbySharingServiceImpl::AddObserver(
+    NearbySharingService::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NearbySharingServiceImpl::RemoveObserver(
+    NearbySharingService::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 NearbySharingService::StatusCodes NearbySharingServiceImpl::RegisterSendSurface(
@@ -510,6 +532,10 @@ NearbySharingServiceImpl::UnregisterReceiveSurface(
                   << ") has been unregistered";
   InvalidateSurfaceState();
   return StatusCodes::kOk;
+}
+
+bool NearbySharingServiceImpl::IsInHighVisibility() {
+  return in_high_visibility;
 }
 
 void NearbySharingServiceImpl::Accept(
@@ -789,11 +815,17 @@ void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (enabled) {
     NS_LOG(VERBOSE) << __func__ << ": Nearby sharing enabled!";
+    local_device_data_manager_->Start();
+    contact_manager_->Start();
+    certificate_manager_->Start();
   } else {
     NS_LOG(VERBOSE) << __func__ << ": Nearby sharing disabled!";
     StopAdvertising();
     StopScanning();
     nearby_connections_manager_->Shutdown();
+    local_device_data_manager_->Stop();
+    contact_manager_->Stop();
+    certificate_manager_->Stop();
   }
   InvalidateSurfaceState();
 }
@@ -1185,23 +1217,36 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   nearby_connections_manager_->StartAdvertising(
       *endpoint_info,
       /* listener= */ this, power_level, data_usage,
-      base::BindOnce([](NearbyConnectionsManager::ConnectionsStatus status) {
-        NS_LOG(VERBOSE)
-            << __func__
-            << ": Advertising attempted over Nearby Connections with result "
-            << status;
-      }));
+      base::BindOnce(&NearbySharingServiceImpl::OnStartAdvertisingResult,
+                     weak_ptr_factory_.GetWeakPtr(), device_name.has_value()));
 
   advertising_power_level_ = power_level;
   NS_LOG(VERBOSE) << __func__
-                  << ": Advertising has started over Nearby Connections: "
-                  << " power level " << PowerLevelToString(power_level)
-                  << " visibility " << settings_.GetVisibility()
-                  << " data usage " << data_usage;
+                  << ": StartAdvertising requested over Nearby Connections: "
+                  << " power level: " << PowerLevelToString(power_level)
+                  << " visibility: " << settings_.GetVisibility()
+                  << " data usage: " << data_usage << " device name: "
+                  << device_name.value_or("** no device name **");
   return;
 }
 
+void NearbySharingServiceImpl::OnStartAdvertisingResult(
+    bool used_device_name,
+    NearbyConnectionsManager::ConnectionsStatus status) {
+  if (status == NearbyConnectionsManager::ConnectionsStatus::kSuccess) {
+    NS_LOG(VERBOSE)
+        << "StartAdvertising over Nearby Connections was successful.";
+    SetInHighVisibility(used_device_name);
+  } else {
+    NS_LOG(ERROR) << "StartAdvertising over Nearby Connections failed: "
+                  << NearbyConnectionsManager::ConnectionsStatusToString(
+                         status);
+    SetInHighVisibility(false);
+  }
+}
+
 void NearbySharingServiceImpl::StopAdvertising() {
+  SetInHighVisibility(false);
   if (advertising_power_level_ == PowerLevel::kUnknown) {
     NS_LOG(VERBOSE)
         << __func__
@@ -3091,4 +3136,15 @@ base::Optional<int64_t> NearbySharingServiceImpl::GetAttachmentPayloadId(
     return base::nullopt;
 
   return it->second.payload_id;
+}
+
+void NearbySharingServiceImpl::SetInHighVisibility(
+    bool new_in_high_visibility) {
+  if (in_high_visibility == new_in_high_visibility)
+    return;
+
+  in_high_visibility = new_in_high_visibility;
+  for (auto& observer : observers_) {
+    observer.OnHighVisibilityChanged(in_high_visibility);
+  }
 }

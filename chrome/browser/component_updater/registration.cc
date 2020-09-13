@@ -13,6 +13,7 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
+#include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/floc_blocklist_component_installer.h"
 #include "chrome/browser/component_updater/games_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
@@ -126,6 +127,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
       cus, g_browser_process->GetApplicationLocale());
   RegisterOptimizationHintsComponent(cus, is_off_the_record_profile);
   RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(cus);
+  RegisterFirstPartySetsComponent(cus);
 
   base::FilePath path;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {
@@ -140,8 +142,6 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
     // Chrome OS: On Chrome OS, this cleanup is delayed until user login.
     component_updater::DeleteLegacySTHSet(path);
 #endif
-
-    RegisterOriginTrialsComponent(cus, path);
   }
   RegisterSSLErrorAssistantComponent(cus);
   RegisterFileTypePoliciesComponent(cus);
@@ -152,6 +152,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   component_updater::RegisterCRLSetComponent(cus);
 #endif  // !defined(OS_CHROMEOS)
 
+  RegisterOriginTrialsComponent(cus);
   RegisterMediaEngagementPreloadComponent(cus, base::OnceClosure());
 
 #if defined(OS_WIN)

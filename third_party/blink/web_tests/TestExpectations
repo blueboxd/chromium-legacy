@@ -845,7 +845,6 @@ crbug.com/591099 external/wpt/css/css-text/hyphens/shy-styling-001.html [ Failur
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
-crbug.com/1002815 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Failure ]
 crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-003.html [ Failure ]
 crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-007.html [ Failure ]
 crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
@@ -2537,6 +2536,10 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/trailing-ogham-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/trailing-ogham-002.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-text/white-space/trailing-ogham-002.html [ Failure ]
@@ -6600,6 +6603,7 @@ crbug.com/1112778 external/wpt/html/semantics/scripting-1/the-script-element/mod
 
 # Flaky timeout
 crbug.com/1092048 external/wpt/FileAPI/blob/Blob-stream.any.html [ Pass Timeout ]
+crbug.com/1092048 external/wpt/FileAPI/blob/Blob-stream.any.worker.html [ Pass Timeout ]
 
 # Sheriff 2020-08-04: New wpt tests are failing
 crbug.com/1112771 external/wpt/webhid/idlharness.https.window.html [ Failure ]

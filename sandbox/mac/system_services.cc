@@ -9,9 +9,26 @@
 
 #include "base/mac/mac_logging.h"
 
+extern "C" {
+OSStatus SetApplicationIsDaemon(Boolean isDaemon);
+void _LSSetApplicationLaunchServicesServerConnectionStatus(
+    uint64_t flags,
+    bool (^connection_allowed)(CFDictionaryRef options));
+
+// See
+// https://github.com/WebKit/webkit/commit/8da694b0b3febcc262653d01a45e946ce91845ed.
+void _CSCheckFixDisable() API_AVAILABLE(macosx(10.15));
+}  // extern "C"
+
 namespace sandbox {
 
 void DisableLaunchServices() {
+}
+
+void DisableCoreServicesCheckFix() {
+  if (__builtin_available(macOS 10.15, *)) {
+    _CSCheckFixDisable();
+  }
 }
 
 }  // namespace sandbox

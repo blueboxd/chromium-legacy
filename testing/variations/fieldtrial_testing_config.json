@@ -299,6 +299,7 @@
                 "android",
                 "android_webview",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -656,21 +657,6 @@
                     },
                     "enable_features": [
                         "BackForwardCacheMemoryControls"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BackgroundPurgeOnMac": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "BackgrounPurgeOnMac",
-                    "enable_features": [
-                        "PurgeRendererMemoryWhenBackgrounded"
                     ]
                 }
             ]
@@ -1279,6 +1265,35 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ClickPointerEvent"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ClientSideDetectionModel": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithVisualModel",
+                    "params": {
+                        "ModelNum": "5"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModel"
+                    ]
+                },
+                {
+                    "name": "EnabledDomOnly",
+                    "params": {
+                        "ModelNum": "4"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModel"
                     ]
                 }
             ]
@@ -4831,6 +4846,21 @@
             ]
         }
     ],
+    "PasswordChangeInSettings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordChangeInSettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordCompromisedBubble": [
         {
             "platforms": [
@@ -4898,6 +4928,41 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PdfHonorJsContentSettings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PdfPartialLoading": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "PdfIncrementalLoading",
+                        "PdfPartialLoading"
+                    ]
+                },
+                {
+                    "name": "IncrementalOnly",
+                    "enable_features": [
+                        "PdfIncrementalLoading"
+                    ],
+                    "disable_features": [
+                        "PdfPartialLoading"
+                    ]
+                },
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PdfIncrementalLoading",
+                        "PdfPartialLoading"
                     ]
                 }
             ]
@@ -7130,27 +7195,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "VideoToolboxVp9Decoding"
-                    ]
-                }
-            ]
-        }
-    ],
-    "VisualClientSideDetectionModel": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "ModelNum": "5"
-                    },
-                    "enable_features": [
-                        "ClientSideDetectionModel"
                     ]
                 }
             ]

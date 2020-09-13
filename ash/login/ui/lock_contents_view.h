@@ -17,7 +17,7 @@
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_error_bubble.h"
-#include "ash/login/ui/login_tooltip_view.h"
+#include "ash/login/ui/login_unpositioned_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_accelerators.h"
@@ -32,7 +32,6 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -42,7 +41,6 @@ class KeyboardUIController;
 
 namespace views {
 class BoxLayout;
-class StyledLabel;
 }  // namespace views
 
 namespace ash {
@@ -69,13 +67,14 @@ class ASH_EXPORT LockContentsView
       public LoginDataDispatcher::Observer,
       public SystemTrayFocusObserver,
       public display::DisplayObserver,
-      public views::StyledLabelListener,
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
   METADATA_HEADER(LockContentsView);
   class AuthErrorBubble;
   class ManagementPopUp;
+  class LoginTooltipView;
+  class UserAddingPopUp;
   class UserState;
 
   enum class BottomIndicatorState {
@@ -96,12 +95,13 @@ class ASH_EXPORT LockContentsView
     ScrollableUsersListView* users_list() const;
     LockScreenMediaControlsView* media_controls_view() const;
     views::View* note_action() const;
-    LoginTooltipView* tooltip_bubble() const;
-    LoginTooltipView* management_bubble() const;
+    views::View* tooltip_bubble() const;
+    views::View* management_bubble() const;
     LoginErrorBubble* auth_error_bubble() const;
     LoginErrorBubble* detachable_base_error_bubble() const;
     LoginErrorBubble* warning_banner_bubble() const;
     LoginErrorBubble* supervised_user_deprecation_bubble() const;
+    views::View* user_adding_screen_bubble() const;
     views::View* system_info() const;
     views::View* bottom_status_indicator() const;
     BottomIndicatorState bottom_status_indicator_status() const;
@@ -212,11 +212,6 @@ class ASH_EXPORT LockContentsView
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override {}
 
   // KeyboardControllerObserver:
   void OnKeyboardVisibilityChanged(bool is_visible) override;
@@ -459,6 +454,9 @@ class ASH_EXPORT LockContentsView
   LoginTooltipView* tooltip_bubble_;
   // Bubble for displaying management details.
   ManagementPopUp* management_bubble_;
+  // Bubble for displaying a warning message when a secondary user is being
+  // added.
+  UserAddingPopUp* user_adding_screen_bubble_;
   // Bubble for displaying warning banner message.
   LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.

@@ -98,6 +98,10 @@
     "label": "//chrome/test:android_browsertests",
     "type": "windowed_test_launcher",
   },
+  "android_sync_integration_tests": {
+    "label": "//chrome/test:android_sync_integration_tests",
+    "type": "windowed_test_launcher",
+  },
   "android_webview_junit_tests": {
     "label": "//android_webview/test:android_webview_junit_tests",
     "type": "junit_test",
@@ -519,6 +523,7 @@
       "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
       "-v",
       "--chromedriver=chromedriver",
+      "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
       "--output-dir=${ISOLATED_OUTDIR}",
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],

@@ -6432,7 +6432,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="7" label="CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD"/>
   <int value="8"
       label="CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER"/>
-  <int value="9" label="CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING"/>
+  <int value="9" label="CPMD_BAD_ORIGIN_UPON_USER_INPUT_CHANGE"/>
   <int value="10" label="CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED"/>
   <int value="11"
       label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
@@ -16336,12 +16336,32 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="8" label="More than 50"/>
 </enum>
 
+<enum name="DevToolsIssuesPanelIssueExpanded">
+  <int value="0" label="CrossOriginEmbedderPolicy"/>
+  <int value="1" label="MixedContent"/>
+  <int value="2" label="SameSiteCookie"/>
+  <int value="3" label="HeavyAd"/>
+  <int value="4" label="ContentSecurityPolicy"/>
+  <int value="5" label="Other"/>
+</enum>
+
 <enum name="DevToolsIssuesPanelOpenedFrom">
   <int value="0" label="Console Info Bar"/>
   <int value="1" label="Learn More Link COEP"/>
   <int value="2" label="Status Bar Issues Counter"/>
   <int value="3" label="Hamburger Menu"/>
   <int value="4" label="Adorner"/>
+</enum>
+
+<enum name="DevToolsIssuesPanelResourceOpened">
+  <int value="0" label="CrossOriginEmbedderPolicy Cookie opened"/>
+  <int value="1" label="CrossOriginEmbedderPolicy Element opened"/>
+  <int value="2" label="MixedContent Request opened"/>
+  <int value="3" label="SameSiteCookie Cookie opened"/>
+  <int value="4" label="SameSiteCookie Request opened"/>
+  <int value="5" label="HeavyAd Element opened"/>
+  <int value="6" label="ContentSecurityPolicy Directive opened"/>
+  <int value="7" label="ContentSecurityPolicy Element opened"/>
 </enum>
 
 <enum name="DevToolsKeybindSets">
@@ -42634,6 +42654,7 @@ from previous Chrome versions.
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
+  <int value="90551098" label="UseWallpaperStagingUrl:enabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="92106937" label="CloseTabSuggestions:disabled"/>
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
@@ -43792,6 +43813,7 @@ from previous Chrome versions.
   <int value="1319024729" label="ServiceWorkerServicification:disabled"/>
   <int value="1319068611" label="SecondaryUiMd:disabled"/>
   <int value="1319498514" label="NewMacNotificationAPI:disabled"/>
+  <int value="1319638975" label="UseWallpaperStagingUrl:disabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
   <int value="1320450434" label="ArcUsbStorageUI:disabled"/>

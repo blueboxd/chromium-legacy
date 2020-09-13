@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager_impl.h"
+#include "chrome/browser/ui/global_media_controls/presentation_request_notification_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,12 +31,17 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
+class StartPresentationContext;
 class WebContents;
 }  // namespace content
 
 namespace media_message_center {
 class MediaSessionNotificationItem;
 }  // namespace media_message_center
+
+namespace media_router {
+class CastDialogController;
+}
 
 class MediaDialogDelegate;
 class MediaNotificationContainerImpl;
@@ -123,8 +129,16 @@ class MediaNotificationService
       const std::string& id,
       base::RepeatingCallback<void(bool)> callback);
 
+  void OnStartPresentationContextCreated(
+      std::unique_ptr<media_router::StartPresentationContext> context);
+
   void set_device_provider_for_testing(
       std::unique_ptr<MediaNotificationDeviceProvider> device_provider);
+
+  // Instantiates a MediaRouterViewsUI object associated with the Session with
+  // the given |session_id|.
+  std::unique_ptr<media_router::CastDialogController>
+  CreateCastDialogControllerForSession(const std::string& session_id);
 
  private:
   friend class MediaNotificationServiceTest;
@@ -256,7 +270,7 @@ class MediaNotificationService
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
         observer_receiver_{this};
 
-    // Used to request audio output be routed to a different device
+    // Used to request audio output be routed to a different device.
     mojo::Remote<media_session::mojom::MediaController> controller_;
 
     base::WeakPtr<media_router::WebContentsPresentationManager>
@@ -268,8 +282,19 @@ class MediaNotificationService
   void OnReceivedAudioFocusRequests(
       std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions);
 
+  // Looks up a notification from any source.  Returns null if not found.
   base::WeakPtr<media_message_center::MediaNotificationItem>
   GetNotificationItem(const std::string& id);
+
+  // Looks up a Session object by its ID.  Returns null if not found.
+  Session* GetSession(const std::string& id);
+
+  // Looks up a notification item not associated with a Session object.  Returns
+  // null if not found.
+  //
+  // TODO(crbug.com/1021643): Treat audio sessions the same way we treat others.
+  base::WeakPtr<media_message_center::MediaNotificationItem>
+  GetNonSessionNotificationItem(const std::string& id);
 
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
@@ -311,6 +336,8 @@ class MediaNotificationService
       audio_focus_observer_receiver_{this};
 
   std::unique_ptr<CastMediaNotificationProvider> cast_notification_provider_;
+  std::unique_ptr<PresentationRequestNotificationProvider>
+      presentation_request_notification_provider_;
 
   base::ObserverList<MediaNotificationServiceObserver> observers_;
 

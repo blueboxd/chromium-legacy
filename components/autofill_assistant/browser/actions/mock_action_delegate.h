@@ -130,7 +130,7 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
   MOCK_METHOD4(SelectOption,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     const std::string& value,
                     DropdownSelectStrategy select_strategy,
                     base::OnceCallback<void(const ClientStatus&)> callback));
@@ -229,7 +229,7 @@ class MockActionDelegate : public ActionDelegate {
                                             const std::string&)> callback));
 
   MOCK_METHOD2(GetElementTag,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&,
                                             const std::string&)> callback));
 

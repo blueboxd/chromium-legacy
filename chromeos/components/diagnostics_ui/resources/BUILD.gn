@@ -9,15 +9,29 @@ import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [ ":diagnostics_app" ]
+  deps = [
+    ":diagnostics_app",
+    ":diagnostics_card",
+  ]
 }
 
 js_library("diagnostics_app") {
+  deps = [
+    ":diagnostics_card",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("diagnostics_card") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 html_to_js("web_components") {
-  js_files = [ "diagnostics_app.js" ]
+  js_files = [
+    "diagnostics_app.js",
+    "diagnostics_card.js",
+    "diagnostics_shared_css.js",
+  ]
 }

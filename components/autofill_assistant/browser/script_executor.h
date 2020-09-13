@@ -167,7 +167,7 @@ class ScriptExecutor : public ActionDelegate,
                               const autofill::FormFieldData& field_data)>
           callback) override;
   void SelectOption(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
@@ -205,7 +205,7 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) override;
   void GetElementTag(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) override;
   void ExpectNavigation() override;

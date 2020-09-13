@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
-#include <aura-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
@@ -204,6 +203,13 @@ void XDGSurfaceWrapperImpl::CloseTopLevelStable(
   surface->wayland_window_->OnCloseRequest();
 }
 
+void XDGSurfaceWrapperImpl::SetTopLevelDecorationMode(
+    zxdg_toplevel_decoration_v1_mode requested_mode) {
+  zxdg_toplevel_decoration_mode_ = requested_mode;
+  zxdg_toplevel_decoration_v1_set_mode(zxdg_toplevel_decoration_.get(),
+                                       requested_mode);
+}
+
 // static
 void XDGSurfaceWrapperImpl::ConfigureV6(void* data,
                                         struct zxdg_surface_v6* zxdg_surface_v6,
@@ -255,6 +261,17 @@ xdg_surface* XDGSurfaceWrapperImpl::xdg_surface() const {
   return xdg_surface_.get();
 }
 
+// static
+void XDGSurfaceWrapperImpl::ConfigureDecoration(
+    void* data,
+    struct zxdg_toplevel_decoration_v1* decoration,
+    uint32_t mode) {
+  auto* surface = static_cast<XDGSurfaceWrapperImpl*>(data);
+  DCHECK(surface);
+  surface->SetTopLevelDecorationMode(
+      static_cast<zxdg_toplevel_decoration_v1_mode>(mode));
+}
+
 bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
   static const xdg_surface_listener xdg_surface_listener = {
       &XDGSurfaceWrapperImpl::ConfigureStable,
@@ -287,9 +304,10 @@ bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
     LOG(ERROR) << "Failed to create xdg_toplevel";
     return false;
   }
+
   xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
 
-  InitializeAuraShell();
+  InitializeXdgDecoration();
 
   wayland_window_->root_surface()->Commit();
   connection_->ScheduleFlush();
@@ -332,20 +350,22 @@ bool XDGSurfaceWrapperImpl::InitializeV6(bool with_toplevel) {
   zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
                                 &zxdg_toplevel_v6_listener, this);
 
-  InitializeAuraShell();
-
   wayland_window_->root_surface()->Commit();
   connection_->ScheduleFlush();
   return true;
 }
 
-void XDGSurfaceWrapperImpl::InitializeAuraShell() {
-  if (connection_->aura_shell()) {
-    DCHECK(!aura_surface_);
-    aura_surface_.reset(zaura_shell_get_aura_surface(
-        connection_->aura_shell(), wayland_window_->root_surface()->surface()));
-    zaura_surface_set_fullscreen_mode(aura_surface_.get(),
-                                      ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE);
+void XDGSurfaceWrapperImpl::InitializeXdgDecoration() {
+  if (connection_->xdg_decoration_manager_v1()) {
+    DCHECK(!zxdg_toplevel_decoration_);
+    static const zxdg_toplevel_decoration_v1_listener decoration_listener = {
+        &XDGSurfaceWrapperImpl::ConfigureDecoration,
+    };
+    zxdg_toplevel_decoration_.reset(
+        zxdg_decoration_manager_v1_get_toplevel_decoration(
+            connection_->xdg_decoration_manager_v1(), xdg_toplevel_.get()));
+    zxdg_toplevel_decoration_v1_add_listener(zxdg_toplevel_decoration_.get(),
+                                             &decoration_listener, this);
   }
 }
 

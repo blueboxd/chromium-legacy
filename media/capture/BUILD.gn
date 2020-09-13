@@ -162,8 +162,13 @@ component("capture_lib") {
 
   if (is_mac) {
     sources += [
+      "video/mac/video_capture_device_avfoundation_legacy_mac.h",
+      "video/mac/video_capture_device_avfoundation_legacy_mac.mm",
       "video/mac/video_capture_device_avfoundation_mac.h",
       "video/mac/video_capture_device_avfoundation_mac.mm",
+      "video/mac/video_capture_device_avfoundation_protocol_mac.h",
+      "video/mac/video_capture_device_avfoundation_utils_mac.h",
+      "video/mac/video_capture_device_avfoundation_utils_mac.mm",
       "video/mac/video_capture_device_decklink_mac.h",
       "video/mac/video_capture_device_decklink_mac.mm",
       "video/mac/video_capture_device_factory_mac.h",
@@ -390,6 +395,11 @@ test("capture_unittests") {
     "video/linux/camera_config_chromeos_unittest.cc",
     "video/linux/v4l2_capture_delegate_unittest.cc",
     "video/linux/video_capture_device_factory_linux_unittest.cc",
+    "video/mac/test/mock_video_capture_device_avfoundation_frame_receiver_mac.h",
+    "video/mac/test/mock_video_capture_device_avfoundation_frame_receiver_mac.mm",
+    "video/mac/test/video_capture_test_utils_mac.h",
+    "video/mac/test/video_capture_test_utils_mac.mm",
+    "video/mac/video_capture_device_avfoundation_mac_unittest.mm",
     "video/mac/video_capture_device_factory_mac_unittest.mm",
     "video/mac/video_capture_device_mac_unittest.mm",
     "video/video_capture_device_client_unittest.cc",

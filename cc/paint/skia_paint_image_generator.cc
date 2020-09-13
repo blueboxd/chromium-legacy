@@ -33,23 +33,15 @@ bool SkiaPaintImageGenerator::onGetPixels(const SkImageInfo& info,
       info, pixels, row_bytes, frame_index_, client_id_, uniqueID());
 }
 
-bool SkiaPaintImageGenerator::onQueryYUVA8(
-    SkYUVASizeInfo* size_info,
-    SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-    SkYUVColorSpace* color_space) const {
-  // Only 8-bit YUV is supported by the SkImageGenerator.
-  uint8_t bit_depth = 8;
-  const bool result = paint_image_generator_->QueryYUVA(
-      size_info, indices, color_space, &bit_depth);
-  return result && bit_depth == 8;
+bool SkiaPaintImageGenerator::onQueryYUVAInfo(
+    const SkYUVAPixmapInfo::SupportedDataTypes& supported_data_types,
+    SkYUVAPixmapInfo* yuva_pixmap_info) const {
+  return paint_image_generator_->QueryYUVA(supported_data_types,
+                                           yuva_pixmap_info);
 }
 
-bool SkiaPaintImageGenerator::onGetYUVA8Planes(
-    const SkYUVASizeInfo& size_info,
-    const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-    void* planes[4]) {
-  return paint_image_generator_->GetYUVAPlanes(size_info, kGray_8_SkColorType,
-                                               indices, planes, frame_index_,
+bool SkiaPaintImageGenerator::onGetYUVAPlanes(const SkYUVAPixmaps& planes) {
+  return paint_image_generator_->GetYUVAPlanes(planes, frame_index_,
                                                uniqueID());
 }
 

@@ -2828,7 +2828,7 @@ blink::WebLocalFrame* RenderFrameImpl::GetWebFrame() {
   return frame_;
 }
 
-const WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
+const blink::web_pref::WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
   return render_view_->GetWebkitPreferences();
 }
 
@@ -2973,8 +2973,8 @@ bool RenderFrameImpl::IsFTPDirectoryListing() {
 void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       size_t offset,
                                       const gfx::Range& range) {
-  Send(new FrameHostMsg_SelectionChanged(routing_id_, selection_text,
-                                         static_cast<uint32_t>(offset), range));
+  GetWebFrame()->TextSelectionChanged(WebString::FromUTF16(selection_text),
+                                      static_cast<uint32_t>(offset), range);
 }
 
 void RenderFrameImpl::SetDeviceScaleFactorOnRenderView(
@@ -5648,19 +5648,19 @@ void RenderFrameImpl::BeginNavigation(
   // This is fine normally, except if we're showing UI from one security
   // context and they're trying to navigate to a different context.
   const GURL& url = info->url_request.Url();
+  TRACE_EVENT2("navigation", "RenderFrameImpl::BeginNavigation", "url",
+               url.possibly_invalid_spec(), "navigation_type",
+               static_cast<int>(info->navigation_type));
+
   if (GetWebFrame() && GetWebFrame()->DispatchedPagehideAndStillHidden()) {
     // The navigation started after the pagehide event got dispatched. This
     // navigation will be ignored by the browser, and we need to track that it's
     // happening. Note that this problem is not unique to BackForwardCache/
     // same-site BrowsingInstance swap, as navigations started after unload in
     // normal scenarios will also be ignored by the browser.
-    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.SameSite.ActionAfterPagehide",
+    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.SameSite.ActionAfterPagehide2",
                               blink::ActionAfterPagehide::kNavigation);
   }
-
-  TRACE_EVENT2("navigation", "RenderFrameImpl::BeginNavigation", "url",
-               url.possibly_invalid_spec(), "navigation_type",
-               static_cast<int>(info->navigation_type));
 
   // When an MHTML Archive is present, it should be used to serve iframe
   // content instead of doing a network request. This should never be true for
@@ -6416,12 +6416,6 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
   // renderer should never see this.
   if (error_code == net::ERR_ABORTED)
     CHECK(false);
-
-  // Don't display "client blocked" error page if browser has asked us not to.
-  if (net::IsRequestBlockedError(error_code) &&
-      render_view_->renderer_preferences_.disable_client_blocked_error_page) {
-    return false;
-  }
 
   // Allow the embedder to suppress an error page.
   if (GetContentClient()->renderer()->ShouldSuppressErrorPage(

@@ -506,6 +506,16 @@ const base::Feature kHardwareMediaKeyHandling {
 const base::Feature kResolutionBasedDecoderPriority{
     "ResolutionBasedDecoderPriority", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces use of hardware (platform) video decoders in
+// `media::DecoderSelector`.
+const base::Feature kForceHardwareVideoDecoders{
+    "ForceHardwareVideoDecoders", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Forces use of hardware (platform) audio decoders in
+// `media::DecoderSelector`.
+const base::Feature kForceHardwareAudioDecoders{
+    "ForceHardwareAudioDecoders", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",
@@ -644,6 +654,11 @@ const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MAC)
+// Controls whether the next version mac capturer, including power improvements,
+// zero copy operation, and other improvements, is active.
+const base::Feature MEDIA_EXPORT kAVFoundationCaptureV2{
+    "AVFoundationCaptureV2", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature MEDIA_EXPORT kVideoToolboxVp9Decoding{
     "VideoToolboxVp9Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MAC)
@@ -777,10 +792,10 @@ const base::Feature kKaleidoscopeForceShowFirstRunExperience{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kKaleidoscopeModule{"KaleidoscopeModule",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKaleidoscopeModuleCacheOnly{
-    "KaleidoscopeModuleCacheOnly", base::FEATURE_DISABLED_BY_DEFAULT};
+    "KaleidoscopeModuleCacheOnly", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseFakeDeviceForMediaStream{
     "use-fake-device-for-media-stream", base::FEATURE_DISABLED_BY_DEFAULT};

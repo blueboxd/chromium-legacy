@@ -979,9 +979,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   unload_event_monitor_timeout_ =
       std::make_unique<TimeoutMonitor>(base::BindRepeating(
           &RenderFrameHostImpl::OnUnloaded, weak_ptr_factory_.GetWeakPtr()));
-  beforeunload_timeout_.reset(new TimeoutMonitor(
+  beforeunload_timeout_ = std::make_unique<TimeoutMonitor>(
       base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
-                          weak_ptr_factory_.GetWeakPtr())));
+                          weak_ptr_factory_.GetWeakPtr()));
 
   // Local roots are:
   // - main frames; or
@@ -1571,7 +1571,8 @@ bool RenderFrameHostImpl::IsSandboxed(network::mojom::WebSandboxFlags flags) {
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
-WebPreferences RenderFrameHostImpl::GetOrCreateWebPreferences() {
+blink::web_pref::WebPreferences
+RenderFrameHostImpl::GetOrCreateWebPreferences() {
   return delegate()->GetOrCreateWebPreferences();
 }
 
@@ -1581,7 +1582,7 @@ RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const base::flat_set<url::Origin>& isolated_world_origins,
     network::mojom::ClientSecurityStatePtr client_security_state,
     network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
-  WebPreferences preferences = GetOrCreateWebPreferences();
+  auto preferences = GetOrCreateWebPreferences();
 
   blink::PendingURLLoaderFactoryBundle::OriginMap result;
   for (const url::Origin& isolated_world_origin : isolated_world_origins) {
@@ -1760,7 +1761,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -4494,13 +4494,6 @@ void RenderFrameHostImpl::DidFinishDocumentLoad() {
   delegate_->DOMContentLoaded(this);
 }
 
-void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
-                                             uint32_t offset,
-                                             const gfx::Range& range) {
-  has_selection_ = !text.empty();
-  GetRenderWidgetHost()->SelectionChanged(text, offset, range);
-}
-
 void RenderFrameHostImpl::FocusedElementChanged(
     bool is_editable_element,
     const gfx::Rect& bounds_in_frame_widget,
@@ -4516,6 +4509,13 @@ void RenderFrameHostImpl::FocusedElementChanged(
                     bounds_in_frame_widget.origin()),
                 bounds_in_frame_widget.size()),
       focus_type);
+}
+
+void RenderFrameHostImpl::TextSelectionChanged(const base::string16& text,
+                                               uint32_t offset,
+                                               const gfx::Range& range) {
+  has_selection_ = !text.empty();
+  GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
 void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
@@ -6234,8 +6234,8 @@ void RenderFrameHostImpl::CommitNavigation(
     auto* partition =
         static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
             browser_context, GetSiteInstance()));
-    non_network_uniquely_owned_factories_.emplace(
-        url::kFileSystemScheme, content::CreateFileSystemURLLoaderFactory(
+    non_network_factories.emplace(
+        url::kFileSystemScheme, CreateFileSystemURLLoaderFactory(
                                     GetProcess()->GetID(), GetFrameTreeNodeId(),
                                     partition->GetFileSystemContext(),
                                     partition->GetPartitionDomain()));
@@ -6626,7 +6626,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       remote_interfaces;
   frame_->GetInterfaceProvider(
       remote_interfaces.InitWithNewPipeAndPassReceiver());
-  remote_interfaces_.reset(new service_manager::InterfaceProvider);
+  remote_interfaces_ = std::make_unique<service_manager::InterfaceProvider>();
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
   // Called to bind the receiver for this interface to the local frame. We need
@@ -7544,7 +7544,7 @@ void RenderFrameHostImpl::BindSerialService(
 void RenderFrameHostImpl::BindAuthenticatorReceiver(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
   if (!authenticator_impl_)
-    authenticator_impl_.reset(new AuthenticatorImpl(this));
+    authenticator_impl_ = std::make_unique<AuthenticatorImpl>(this);
 
   authenticator_impl_->Bind(std::move(receiver));
 }
@@ -7603,10 +7603,10 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
 void RenderFrameHostImpl::GetSensorProvider(
     mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
   if (!sensor_provider_proxy_) {
-    sensor_provider_proxy_.reset(new SensorProviderProxyImpl(
+    sensor_provider_proxy_ = std::make_unique<SensorProviderProxyImpl>(
         PermissionControllerImpl::FromBrowserContext(
             GetProcess()->GetBrowserContext()),
-        this));
+        this);
   }
   sensor_provider_proxy_->Bind(std::move(receiver));
 }
@@ -7792,7 +7792,8 @@ void RenderFrameHostImpl::CreateIDBFactory(
 void RenderFrameHostImpl::CreatePermissionService(
     mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
   if (!permission_service_context_)
-    permission_service_context_.reset(new PermissionServiceContext(this));
+    permission_service_context_ =
+        std::make_unique<PermissionServiceContext>(this);
 
   permission_service_context_->CreateService(std::move(receiver));
 }
@@ -8104,7 +8105,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // file: URLs can be allowed to access any other origin, based on settings.
   bool bypass_checks_for_file_scheme = false;
   if (params->origin.scheme() == url::kFileScheme) {
-    WebPreferences prefs = GetOrCreateWebPreferences();
+    auto prefs = GetOrCreateWebPreferences();
     if (prefs.allow_universal_access_from_file_urls)
       bypass_checks_for_file_scheme = true;
   }
@@ -8176,9 +8177,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // banned URLs into the navigation controller in the first place.
   process->FilterURL(false, &params->url);
   process->FilterURL(true, &params->referrer.url);
-  for (auto it(params->redirects.begin()); it != params->redirects.end();
-       ++it) {
-    process->FilterURL(false, &(*it));
+  for (auto& redirect : params->redirects) {
+    process->FilterURL(false, &redirect);
   }
 
   // Without this check, the renderer can trick the browser into using

@@ -715,6 +715,8 @@ ci.android_builder(
     notifies = ["cronet"],
 )
 
+# TODO(https://crbug.com/1105234) Remove this once the builder is no longer
+# triggering it
 ci.android_builder(
     name = "android-cronet-kitkat-arm-rel",
     branch_selector = branches.STANDARD_RELEASES,
@@ -729,7 +731,35 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-cronet-arm-rel-kitkat-tests",
+    branch_selector = branches.STANDARD_RELEASES,
+    console_view_entry = ci.console_view_entry(
+        category = "cronet|test",
+        short_name = "k",
+    ),
+    cq_mirrors_console_view = settings.cq_mirrors_console_name,
+    main_console_view = main_console_if_on_branch(),
+    notifies = ["cronet"],
+    triggered_by = [builder_name("android-cronet-arm-rel")],
+)
+
+# TODO(https://crbug.com/1105234) Remove this once the builder is no longer
+# triggering it
+ci.android_builder(
     name = "android-cronet-lollipop-arm-rel",
+    branch_selector = branches.STANDARD_RELEASES,
+    console_view_entry = ci.console_view_entry(
+        category = "cronet|test",
+        short_name = "l",
+    ),
+    cq_mirrors_console_view = settings.cq_mirrors_console_name,
+    main_console_view = main_console_if_on_branch(),
+    notifies = ["cronet"],
+    triggered_by = [builder_name("android-cronet-arm-rel")],
+)
+
+ci.android_builder(
+    name = "android-cronet-arm-rel-lollipop-tests",
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
         category = "cronet|test",
@@ -755,8 +785,20 @@ ci.android_builder(
     os = os.ANDROID,
 )
 
+# TODO(https://crbug.com/1105234) Remove this once the builder is no longer
+# triggering it
 ci.android_builder(
     name = "android-cronet-marshmallow-arm64-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "cronet|test",
+        short_name = "m",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-arm64-rel"],
+)
+
+ci.android_builder(
+    name = "android-cronet-arm64-rel-marshmallow-tests",
     console_view_entry = ci.console_view_entry(
         category = "cronet|test",
         short_name = "m",
@@ -826,6 +868,14 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-marshmallow-x86-rel-non-cq",
+    console_view_entry = ci.console_view_entry(
+        category = "builder_tester|x86",
+        short_name = "M_non-cq",
+    ),
+)
+
+ci.android_builder(
     name = "android-nougat-arm64-rel",
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
@@ -860,7 +910,7 @@ ci.android_builder(
     tree_closing = True,
 )
 
-ci.android_builder(
+ci.android_fyi_builder(
     name = "android-pie-arm64-wpt-rel-non-cq",
     console_view_entry = ci.console_view_entry(
         category = "builder_tester|arm64",
@@ -890,15 +940,6 @@ ci.android_fyi_builder(
         category = "webview",
         short_name = "p-rel",
     ),
-)
-
-ci.android_fyi_builder(
-    name = "android-marshmallow-x86-fyi-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "emulator|M|x86",
-        short_name = "rel",
-    ),
-    goma_jobs = goma.jobs.J150,
 )
 
 # TODO(hypan): remove this once there is no associated disabled tests
@@ -1479,30 +1520,32 @@ ci.clang_builder(
 
 ci.clang_builder(
     name = "ToTiOS",
-    caches = [xcode_cache.x11e146],
+    builderless = False,
+    caches = [xcode_cache.x12a8189n],
     console_view_entry = ci.console_view_entry(
         category = "iOS|public",
         short_name = "sim",
     ),
     cores = None,
-    os = os.MAC_10_14,
+    os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e146",
+        "xcode_build_version": "12a8189n",
     },
     ssd = True,
 )
 
 ci.clang_builder(
     name = "ToTiOSDevice",
-    caches = [xcode_cache.x11e146],
+    builderless = False,
+    caches = [xcode_cache.x12a8189n],
     console_view_entry = ci.console_view_entry(
         category = "iOS|public",
         short_name = "dev",
     ),
     cores = None,
-    os = os.MAC_10_14,
+    os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e146",
+        "xcode_build_version": "12a8189n",
     },
     ssd = True,
 )
@@ -1686,25 +1729,23 @@ ci.dawn_builder(
     triggered_by = ["Dawn Mac x64 Builder"],
 )
 
-ci.dawn_builder(
+ci.dawn_windows_builder(
     name = "Dawn Win10 x64 ASAN Release",
     console_view_entry = ci.console_view_entry(
         category = "ToT|Windows|ASAN",
         short_name = "x64",
     ),
-    os = os.WINDOWS_ANY,
 )
 
-ci.dawn_builder(
+ci.dawn_windows_builder(
     name = "Dawn Win10 x64 Builder",
     console_view_entry = ci.console_view_entry(
         category = "ToT|Windows|Builder",
         short_name = "x64",
     ),
-    os = os.WINDOWS_ANY,
 )
 
-ci.dawn_builder(
+ci.dawn_windows_builder(
     name = "Dawn Win10 x64 DEPS Builder",
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
@@ -1713,7 +1754,6 @@ ci.dawn_builder(
     ),
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
     main_console_view = main_console_if_on_branch(),
-    os = os.WINDOWS_ANY,
 )
 
 ci.dawn_builder(
@@ -1768,16 +1808,15 @@ ci.dawn_builder(
     triggered_by = ["Dawn Win10 x64 Builder"],
 )
 
-ci.dawn_builder(
+ci.dawn_windows_builder(
     name = "Dawn Win10 x86 Builder",
     console_view_entry = ci.console_view_entry(
         category = "ToT|Windows|Builder",
         short_name = "x86",
     ),
-    os = os.WINDOWS_ANY,
 )
 
-ci.dawn_builder(
+ci.dawn_windows_builder(
     name = "Dawn Win10 x86 DEPS Builder",
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
@@ -1786,7 +1825,6 @@ ci.dawn_builder(
     ),
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
     main_console_view = main_console_if_on_branch(),
-    os = os.WINDOWS_ANY,
 )
 
 ci.dawn_builder(
@@ -3091,6 +3129,7 @@ ci.gpu_builder(
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
     main_console_view = main_console_if_on_branch(),
     os = os.WINDOWS_ANY,
+    pool = "luci.chromium.gpu.ci",
 )
 
 ci.gpu_builder(
@@ -3100,6 +3139,7 @@ ci.gpu_builder(
         category = "Windows",
     ),
     os = os.WINDOWS_ANY,
+    pool = "luci.chromium.gpu.ci",
     tree_closing = False,
 )
 
@@ -4240,12 +4280,24 @@ ci.mac_builder(
     name = "mac-arm64-rel",
     branch_selector = branches.STANDARD_RELEASES,
     console_view_entry = ci.console_view_entry(
-        category = "release",
-        short_name = "a64",
+        category = "release|arm64",
+        short_name = "bld",
     ),
     main_console_view = settings.main_console_name,
     cores = None,
     os = os.MAC_ANY,
+)
+
+ci.thin_tester(
+    name = "mac-arm64-rel-tests",
+    builder_group = "chromium.fyi",
+    console_view_entry = ci.console_view_entry(
+        category = "mac",
+        short_name = "a64",
+    ),
+    # TODO(estaab): Make this true when promoting out of FYI.
+    tree_closing = False,
+    triggered_by = [builder_name("mac-arm64-rel")],
 )
 
 ci.thin_tester(

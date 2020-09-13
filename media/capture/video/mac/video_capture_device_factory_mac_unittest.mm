@@ -6,49 +6,36 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "media/base/media_switches.h"
+#import "media/capture/video/mac/test/video_capture_test_utils_mac.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-// Video capture code on MacOSX must run on a CFRunLoop enabled thread
-// for interaction with AVFoundation.
-// In order to make the test case run on the actual message loop that has
-// been created for this thread, we need to run it inside a RunLoop. This is
-// required, because on MacOS the capture code must run on a CFRunLoop
-// enabled message loop.
-void RunTestCase(base::OnceClosure test_case) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::RunLoop* run_loop, base::OnceClosure* test_case) {
-                       std::move(*test_case).Run();
-                       run_loop->Quit();
-                     },
-                     &run_loop, &test_case));
-  run_loop.Run();
-}
+enum class AVFoundationCaptureV2 { kEnabled, kDisabled };
 
-void GetDevicesInfo(VideoCaptureDeviceFactoryMac* video_capture_device_factory,
-                    std::vector<VideoCaptureDeviceInfo>* descriptors) {
-  base::RunLoop run_loop;
-  video_capture_device_factory->GetDevicesInfo(base::BindLambdaForTesting(
-      [descriptors, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
-        *descriptors = std::move(result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-}
+class VideoCaptureDeviceFactoryMacTest
+    : public ::testing::TestWithParam<AVFoundationCaptureV2> {
+ public:
+  VideoCaptureDeviceFactoryMacTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        media::kAVFoundationCaptureV2,
+        /*enabled=*/GetParam() == AVFoundationCaptureV2::kEnabled);
+  }
 
-TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   RunTestCase(base::BindOnce([]() {
     VideoCaptureDeviceFactoryMac video_capture_device_factory;
 
-    std::vector<VideoCaptureDeviceInfo> devices_info;
-    GetDevicesInfo(&video_capture_device_factory, &devices_info);
+    std::vector<VideoCaptureDeviceInfo> devices_info =
+        GetDevicesInfo(&video_capture_device_factory);
     if (devices_info.empty()) {
       DVLOG(1) << "No camera available. Exiting test.";
       return;
@@ -60,12 +47,12 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   }));
 }
 
-TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
+TEST_P(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
   RunTestCase(base::BindOnce([]() {
     VideoCaptureDeviceFactoryMac video_capture_device_factory;
 
-    std::vector<VideoCaptureDeviceInfo> devices_info;
-    GetDevicesInfo(&video_capture_device_factory, &devices_info);
+    std::vector<VideoCaptureDeviceInfo> devices_info =
+        GetDevicesInfo(&video_capture_device_factory);
     if (devices_info.empty()) {
       DVLOG(1) << "No camera available. Exiting test.";
       return;
@@ -74,5 +61,10 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
       EXPECT_FALSE(device.descriptor.pan_tilt_zoom_supported());
   }));
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureDeviceFactoryMacTest,
+                         ::testing::Values(AVFoundationCaptureV2::kEnabled,
+                                           AVFoundationCaptureV2::kDisabled));
 
 }  // namespace media

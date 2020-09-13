@@ -61,7 +61,6 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/open_in/features.h"
-#include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -692,6 +691,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
+    {"default-browser-fullscreen-promo",
+     flag_descriptions::kDefaultBrowserFullscreenPromoName,
+     flag_descriptions::kDefaultBrowserFullscreenPromoDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDefaultBrowserFullscreenPromo)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

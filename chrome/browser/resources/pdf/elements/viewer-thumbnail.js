@@ -17,8 +17,30 @@ export class ViewerThumbnailElement extends PolymerElement {
 
   static get properties() {
     return {
+      isActive: {
+        type: Boolean,
+        observer: 'isActiveChanged_',
+        reflectToAttribute: true,
+      },
+
       pageNumber: Number,
     };
+  }
+
+  /** @private */
+  isActiveChanged_() {
+    if (this.isActive) {
+      this.scrollIntoView({block: 'nearest'});
+    }
+  }
+
+  /** @private */
+  onClick_() {
+    this.dispatchEvent(new CustomEvent('change-page', {
+      detail: {page: this.pageNumber - 1, origin: 'thumbnail'},
+      bubbles: true,
+      composed: true
+    }));
   }
 }
 

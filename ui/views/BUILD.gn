@@ -167,7 +167,6 @@ component("views") {
     "controls/separator.h",
     "controls/slider.h",
     "controls/styled_label.h",
-    "controls/styled_label_listener.h",
     "controls/tabbed_pane/tabbed_pane.h",
     "controls/tabbed_pane/tabbed_pane_listener.h",
     "controls/table/table_grouper.h",

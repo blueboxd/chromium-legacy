@@ -243,15 +243,12 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_SHARE_SCREENSHOT = "ChromeShareScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_V15 = "ChromeSharingHubV15";
-    public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
             "ContentSuggestionsScrollToLoad";
-    public static final String CONTENT_INDEXING_NTP = "ContentIndexingNTP";
-    public static final String CONTENT_INDEXING_DOWNLOAD_HOME = "ContentIndexingDownloadHome";
     public static final String CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST =
             "ContextMenuEnableLensShoppingAllowlist";
     public static final String CONTEXT_MENU_GOOGLE_LENS_CHIP = "ContextMenuGoogleLensChip";
@@ -289,6 +286,7 @@ public abstract class ChromeFeatureList {
             "UseDownloadOfflineContentProvider";
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     public static final String DOWNLOAD_LATER = "DownloadLater";
+    public static final String EDIT_PASSWORDS_IN_SETTINGS = "EditPasswordsInSettings";
     public static final String EPHEMERAL_TAB_USING_BOTTOM_SHEET = "EphemeralTabUsingBottomSheet";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
@@ -354,9 +352,6 @@ public abstract class ChromeFeatureList {
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
     public static final String PASSWORD_CHANGE_IN_SETTINGS = "PasswordChangeInSettings";
     public static final String PASSWORD_CHECK = "PasswordCheck";
-    public static final String PASSWORD_EDITING_ANDROID = "PasswordEditingAndroid";
-    public static final String PASSWORD_MANAGER_ONBOARDING_ANDROID =
-            "PasswordManagerOnboardingAndroid";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";
@@ -383,7 +378,6 @@ public abstract class ChromeFeatureList {
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
-    public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SAFETY_CHECK_ANDROID = "SafetyCheckAndroid";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED =

@@ -6,8 +6,11 @@ component("media_message_center") {
   sources = [
     "media_controls_progress_view.cc",
     "media_controls_progress_view.h",
-    "media_notification_background.cc",
     "media_notification_background.h",
+    "media_notification_background_ash_impl.cc",
+    "media_notification_background_ash_impl.h",
+    "media_notification_background_impl.cc",
+    "media_notification_background_impl.h",
     "media_notification_constants.cc",
     "media_notification_constants.h",
     "media_notification_container.h",
@@ -19,6 +22,8 @@ component("media_message_center") {
     "media_notification_view.h",
     "media_notification_view_impl.cc",
     "media_notification_view_impl.h",
+    "media_notification_view_modern_impl.cc",
+    "media_notification_view_modern_impl.h",
     "media_session_notification_item.cc",
     "media_session_notification_item.h",
   ]
@@ -45,8 +50,10 @@ source_set("unit_tests") {
 
   sources = [
     "media_controls_progress_view_unittest.cc",
-    "media_notification_background_unittest.cc",
+    "media_notification_background_ash_impl_unittest.cc",
+    "media_notification_background_impl_unittest.cc",
     "media_notification_view_impl_unittest.cc",
+    "media_notification_view_modern_impl_unittest.cc",
   ]
 
   deps = [

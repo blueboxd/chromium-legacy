@@ -112,6 +112,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   DictationButtonTray* dictation_button_tray() {
     return dictation_button_tray_.get();
   }
+  MediaTray* media_tray() { return media_tray_.get(); }
   StatusAreaOverflowButtonTray* overflow_button_tray() {
     return overflow_button_tray_.get();
   }
@@ -124,6 +125,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   }
   ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
   HoldingSpaceTray* holding_space_tray() { return holding_space_tray_.get(); }
+  PhoneHubTray* phone_hub_tray() { return phone_hub_tray_.get(); }
 
   SelectToSpeakTray* select_to_speak_tray() {
     return select_to_speak_tray_.get();

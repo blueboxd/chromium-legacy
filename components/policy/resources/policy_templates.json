@@ -3042,6 +3042,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-'],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': False,
@@ -9378,7 +9379,10 @@
       'example_value': True,
       'id': 127,
       'caption': '''Enable metrics reporting''',
-      'tags': ['admin-sharing'],
+      'tags': [
+        'admin-sharing',
+        'google-sharing',
+      ],
       'desc': '''Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google.
 
       If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics and diagnostic data.
@@ -23187,16 +23191,16 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['skym@chromium.org', 'wenyufu@chromium.org', 'twellington@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['android'],
+      'supported_on': ['android:86-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': True,
       'id': 760,
-      'caption': 'Enable ToS during first-run for CCT/PWA',
+      'caption': 'Enable ToS during first-run for CCT',
       'tags': [],
-      'desc': '''By default the Terms of Service are shown when CCT/PWA is first-run. Setting this policy to Disabled will cause the Terms of Service dialog to not appear during the first-run-experience or subsequent runs. Setting this policy to Enabled or leaving it unset will cause the Terms of Service dialog to appear during the first-run-experience. The other caveats are:
+      'desc': '''By default the Terms of Service are shown when CCT is first-run. Setting this policy to Disabled will cause the Terms of Service dialog to not appear during the first-run-experience or subsequent runs. Setting this policy to Enabled or leaving it unset will cause the Terms of Service dialog to appear during the first-run-experience. The other caveats are:
 
       - This policy only works on fully managed Android devices that can be configured by Unified Endpoint Management vendors.
 

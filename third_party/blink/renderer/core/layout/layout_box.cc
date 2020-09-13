@@ -1068,14 +1068,33 @@ LayoutUnit LayoutBox::ConstrainLogicalWidthByMinMax(
     LayoutUnit available_width,
     const LayoutBlock* cb) const {
   const ComputedStyle& style_to_use = StyleRef();
+
+  // This implements the transferred min/max sizes per
+  // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
+  Length h = style_to_use.LogicalHeight();
+  if (ShouldComputeLogicalHeightFromAspectRatio()) {
+    MinMaxSizes transferred_min_max =
+        ComputeMinMaxLogicalWidthFromAspectRatio();
+    logical_width = transferred_min_max.ClampSizeToMinAndMax(logical_width);
+  }
+
   if (!style_to_use.LogicalMaxWidth().IsNone())
     logical_width = std::min(
         logical_width,
         ComputeLogicalWidthUsing(kMaxSize, style_to_use.LogicalMaxWidth(),
                                  available_width, cb));
-  return std::max(logical_width, ComputeLogicalWidthUsing(
-                                     kMinSize, style_to_use.LogicalMinWidth(),
-                                     available_width, cb));
+
+  // If we have an aspect-ratio, check if we need to apply min-width: auto.
+  Length min_length = style_to_use.LogicalMinWidth();
+  if (style_to_use.AspectRatio() && style_to_use.LogicalWidth().IsAuto() &&
+      min_length.IsAuto() &&
+      style_to_use.OverflowInlineDirection() == EOverflow::kVisible) {
+    // Make sure we actually used the aspect ratio.
+    if (ShouldComputeLogicalWidthFromAspectRatio())
+      min_length = Length::MinIntrinsic();
+  }
+  return std::max(logical_width, ComputeLogicalWidthUsing(kMinSize, min_length,
+                                                          available_width, cb));
 }
 
 LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
@@ -1094,6 +1113,12 @@ LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
       logical_height = std::min(logical_height, max_h);
   }
   Length logical_min_height = StyleRef().LogicalMinHeight();
+  if (logical_min_height.IsAuto() &&
+      ShouldComputeLogicalHeightFromAspectRatio() &&
+      intrinsic_content_height != kIndefiniteSize &&
+      StyleRef().OverflowBlockDirection() == EOverflow::kVisible) {
+    logical_min_height = Length::Fixed(intrinsic_content_height);
+  }
   if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
       logical_min_height.IsMinIntrinsic() || logical_min_height.IsFitContent())
     logical_min_height = Length::Auto();
@@ -1257,6 +1282,44 @@ bool LayoutBox::CanResize() const {
   // we want to allow resizing them also.
   return (HasNonVisibleOverflow() || IsLayoutIFrame()) &&
          StyleRef().HasResize();
+}
+
+MinMaxSizes LayoutBox::ComputeMinMaxLogicalWidthFromAspectRatio() const {
+  DCHECK(StyleRef().LogicalAspectRatio());
+
+  // The spec requires us to clamp these by the specified size (it calls it the
+  // preferred size). However, we actually don't need to worry about that,
+  // because we only use this if the width is indefinite.
+
+  // We do not need to compute the min/max inline sizes; as long as we always
+  // apply the transferred min/max size before the explicit min/max size, the
+  // result will be identical.
+
+  LogicalSize ratio = *StyleRef().LogicalAspectRatio();
+  MinMaxSizes block_min_max{
+      ConstrainLogicalHeightByMinMax(LayoutUnit(), kIndefiniteSize),
+      ConstrainLogicalHeightByMinMax(LayoutUnit::Max(), kIndefiniteSize)};
+  if (block_min_max.max_size == kIndefiniteSize)
+    block_min_max.max_size = LayoutUnit::Max();
+
+  NGBoxStrut border_padding(BorderStart() + ComputedCSSPaddingStart(),
+                            BorderEnd() + ComputedCSSPaddingEnd(),
+                            BorderBefore() + ComputedCSSPaddingBefore(),
+                            BorderAfter() + ComputedCSSPaddingAfter());
+
+  MinMaxSizes transferred_min_max = {LayoutUnit(), LayoutUnit::Max()};
+  if (block_min_max.min_size > LayoutUnit()) {
+    transferred_min_max.min_size = InlineSizeFromAspectRatio(
+        border_padding, ratio, StyleRef().BoxSizing(), block_min_max.min_size);
+  }
+  if (block_min_max.max_size != LayoutUnit::Max()) {
+    transferred_min_max.max_size = InlineSizeFromAspectRatio(
+        border_padding, ratio, StyleRef().BoxSizing(), block_min_max.max_size);
+  }
+  // Minimum size wins over maximum size.
+  transferred_min_max.max_size =
+      std::max(transferred_min_max.max_size, transferred_min_max.min_size);
+  return transferred_min_max;
 }
 
 bool LayoutBox::HasScrollbarGutters(ScrollbarOrientation orientation) const {
@@ -3547,26 +3610,38 @@ LayoutUnit LayoutBox::ContainerWidthInInlineDirection() const {
   return PerpendicularContainingBlockLogicalHeight().ClampNegativeToZero();
 }
 
-bool LayoutBox::ComputeLogicalWidthFromAspectRatio(
-    LayoutUnit* out_logical_width) const {
-  LayoutUnit logical_height_for_ar = kIndefiniteSize;
-  if (StyleRef().AspectRatio() &&
-      (StyleRef().LogicalHeight().IsFixed() ||
-       StyleRef().LogicalHeight().IsPercentOrCalc())) {
-    logical_height_for_ar = ComputeLogicalHeightUsing(
-        kMainOrPreferredSize, StyleRef().LogicalHeight(),
-        /* intrinsic_content_height */ kIndefiniteSize);
+bool LayoutBox::ShouldComputeLogicalWidthFromAspectRatio(
+    LayoutUnit* out_logical_height) const {
+  if (!StyleRef().AspectRatio() ||
+      (!StyleRef().LogicalHeight().IsFixed() &&
+       !StyleRef().LogicalHeight().IsPercentOrCalc())) {
+    return false;
   }
 
-  if (logical_height_for_ar == kIndefiniteSize)
+  LayoutUnit logical_height = ComputeLogicalHeightUsing(
+      kMainOrPreferredSize, StyleRef().LogicalHeight(),
+      /* intrinsic_content_height */ kIndefiniteSize);
+  if (logical_height == kIndefiniteSize)
+    return false;
+
+  if (out_logical_height)
+    *out_logical_height = logical_height;
+  return true;
+}
+
+bool LayoutBox::ComputeLogicalWidthFromAspectRatio(
+    LayoutUnit* out_logical_width) const {
+  LayoutUnit logical_height_for_ar;
+  if (!ShouldComputeLogicalWidthFromAspectRatio(&logical_height_for_ar))
     return false;
 
   LayoutUnit container_width_in_inline_direction =
       ContainerWidthInInlineDirection();
 
-  NGBoxStrut border_padding(
-      BorderStart() + PaddingStart(), BorderEnd() + PaddingEnd(),
-      BorderBefore() + PaddingBefore(), BorderAfter() + PaddingAfter());
+  NGBoxStrut border_padding(BorderStart() + ComputedCSSPaddingStart(),
+                            BorderEnd() + ComputedCSSPaddingEnd(),
+                            BorderBefore() + ComputedCSSPaddingBefore(),
+                            BorderAfter() + ComputedCSSPaddingAfter());
   LayoutUnit logical_width = InlineSizeFromAspectRatio(
       border_padding, *StyleRef().LogicalAspectRatio(), StyleRef().BoxSizing(),
       logical_height_for_ar);
@@ -4146,12 +4221,11 @@ void LayoutBox::ComputeLogicalHeight(
 
     LayoutUnit height_result;
     if (check_min_max_height) {
-      if (StyleRef().AspectRatio() &&
-          (h.IsAuto() || (h.IsPercentOrCalc() && ComputePercentageLogicalHeight(
-                                                     h) == kIndefiniteSize))) {
-        NGBoxStrut border_padding(
-            BorderStart() + PaddingStart(), BorderEnd() + PaddingEnd(),
-            BorderBefore() + PaddingBefore(), BorderAfter() + PaddingAfter());
+      if (ShouldComputeLogicalHeightFromAspectRatio()) {
+        NGBoxStrut border_padding(BorderStart() + ComputedCSSPaddingStart(),
+                                  BorderEnd() + ComputedCSSPaddingEnd(),
+                                  BorderBefore() + ComputedCSSPaddingBefore(),
+                                  BorderAfter() + ComputedCSSPaddingAfter());
         height_result = BlockSizeFromAspectRatio(
             border_padding, *StyleRef().LogicalAspectRatio(),
             StyleRef().BoxSizing(), LogicalWidth());
@@ -5287,7 +5361,16 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
   DCHECK(width_size_type == kMinSize ||
          width_size_type == kMainOrPreferredSize || !logical_width.IsAuto());
   if (width_size_type == kMinSize && logical_width.IsAuto()) {
-    logical_width_value = LayoutUnit();
+    if (ShouldComputeLogicalWidthFromAspectRatio()) {
+      logical_width_value =
+          IntrinsicLogicalWidths(MinMaxSizesType::kIntrinsic).min_size;
+    } else {
+      logical_width_value = LayoutUnit();
+    }
+  } else if (width_size_type == kMainOrPreferredSize &&
+             logical_width.IsAuto() &&
+             ComputeLogicalWidthFromAspectRatio(&logical_width_value)) {
+    // We're good.
   } else if (logical_width.IsIntrinsic()) {
     logical_width_value = ComputeIntrinsicLogicalWidthUsing(
                               logical_width, container_logical_width) -
@@ -5311,7 +5394,9 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
   const LayoutUnit container_relative_logical_width =
       ContainingBlockLogicalWidthForPositioned(container_block, false);
 
-  bool logical_width_is_auto = logical_width.IsAuto();
+  // If we are using aspect-ratio, the width is effectively not auto.
+  bool logical_width_is_auto =
+      logical_width.IsAuto() && !ShouldComputeLogicalWidthFromAspectRatio();
   bool logical_left_is_auto = logical_left.IsAuto();
   bool logical_right_is_auto = logical_right.IsAuto();
   LayoutUnit& margin_logical_left_value = StyleRef().IsLeftToRightDirection()
@@ -5628,7 +5713,9 @@ void LayoutBox::ComputePositionedLogicalHeight(
   if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
       logical_min_height.IsMinIntrinsic() || logical_min_height.IsFitContent())
     logical_min_height = Length::Auto();
-  if (!logical_min_height.IsZero() || logical_min_height.IsFillAvailable()) {
+  // auto is considered to be zero, so we need to check for it explicitly.
+  if (logical_min_height.IsAuto() || !logical_min_height.IsZero() ||
+      logical_min_height.IsFillAvailable()) {
     LogicalExtentComputedValues min_values;
 
     ComputePositionedLogicalHeightUsing(
@@ -5713,8 +5800,12 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
   DCHECK(height_size_type == kMinSize ||
          height_size_type == kMainOrPreferredSize ||
          !logical_height_length.IsAuto());
-  if (height_size_type == kMinSize && logical_height_length.IsAuto())
-    logical_height_length = Length::Fixed(0);
+  if (height_size_type == kMinSize && logical_height_length.IsAuto()) {
+    if (ShouldComputeLogicalHeightFromAspectRatio())
+      logical_height_length = Length::Fixed(logical_height);
+    else
+      logical_height_length = Length::Fixed(0);
+  }
 
   // 'top' and 'bottom' cannot both be 'auto' because 'top would of been
   // converted to the static position in computePositionedLogicalHeight()
@@ -5728,7 +5819,10 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
 
   LayoutUnit logical_top_value;
 
-  bool logical_height_is_auto = logical_height_length.IsAuto();
+  bool from_aspect_ratio = height_size_type == kMainOrPreferredSize &&
+                           ShouldComputeLogicalHeightFromAspectRatio();
+  bool logical_height_is_auto =
+      logical_height_length.IsAuto() && !from_aspect_ratio;
   bool logical_top_is_auto = logical_top.IsAuto();
   bool logical_bottom_is_auto = logical_bottom.IsAuto();
 
@@ -5738,12 +5832,21 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
     resolved_logical_height = content_logical_height;
     logical_height_is_auto = false;
   } else {
-    if (logical_height_length.IsIntrinsic())
+    if (logical_height_length.IsIntrinsic()) {
       resolved_logical_height = ComputeIntrinsicLogicalContentHeightUsing(
           logical_height_length, content_logical_height, borders_plus_padding);
-    else
+    } else if (from_aspect_ratio) {
+      NGBoxStrut border_padding(BorderStart() + ComputedCSSPaddingStart(),
+                                BorderEnd() + ComputedCSSPaddingEnd(),
+                                BorderBefore() + ComputedCSSPaddingBefore(),
+                                BorderAfter() + ComputedCSSPaddingAfter());
+      resolved_logical_height = BlockSizeFromAspectRatio(
+          border_padding, *StyleRef().LogicalAspectRatio(),
+          StyleRef().BoxSizing(), LogicalWidth());
+    } else {
       resolved_logical_height = AdjustContentBoxLogicalHeightForBoxSizing(
           ValueForLength(logical_height_length, container_logical_height));
+    }
   }
 
   if (!logical_top_is_auto && !logical_height_is_auto &&

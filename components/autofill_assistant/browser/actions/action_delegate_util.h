@@ -13,6 +13,18 @@
 namespace autofill_assistant {
 namespace ActionDelegateUtil {
 
+// Finds the element given by the selector. If the resolution fails, it
+// immediately executes the |done| callback. If the resolution succeeds, it
+// executes the |perform| callback with the element and the |done| callback as
+// arguments, while retaining the element.
+void FindElementAndPerform(
+    ActionDelegate* delegate,
+    const Selector& selector,
+    base::OnceCallback<void(const ElementFinder::Result&,
+                            base::OnceCallback<void(const ClientStatus&)>)>
+        perform,
+    base::OnceCallback<void(const ClientStatus&)> done);
+
 void ClickOrTapElement(ActionDelegate* delegate,
                        const Selector& selector,
                        ClickType click_type,

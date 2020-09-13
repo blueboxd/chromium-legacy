@@ -52,13 +52,20 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     kMaxValue = kSource,
   };
 
+  // Allow MediaNotificationViewImpl show different styled background.
+  enum class BackgroundStyle {
+    kDefault,
+    kAshStyle,
+  };
+
   MediaNotificationViewImpl(
       MediaNotificationContainer* container,
       base::WeakPtr<MediaNotificationItem> item,
       std::unique_ptr<views::View> header_row_controls_view,
       const base::string16& default_app_name,
       int notification_width,
-      bool should_show_icon);
+      bool should_show_icon,
+      BackgroundStyle background_style = BackgroundStyle::kDefault);
   ~MediaNotificationViewImpl() override;
 
   // views::View:
@@ -81,9 +88,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image) override;
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
   void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override;
-  void OnThemeChanged() override;
+  void UpdateDeviceSelectorAvailability(bool availability) override;
 
-  void UpdateDeviceSelectorAvailability(bool availability);
+  void OnThemeChanged() override;
 
   const views::Label* title_label_for_testing() const { return title_label_; }
 

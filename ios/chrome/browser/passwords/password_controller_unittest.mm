@@ -27,7 +27,6 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -40,7 +39,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -78,8 +76,6 @@ using FillingAssistance =
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordFormManager;
 using password_manager::PasswordStoreConsumer;
-using password_manager::prefs::kPasswordManagerOnboardingState;
-using password_manager::prefs::kWasOnboardingFeatureCheckedBefore;
 using password_manager::prefs::kPasswordLeakDetectionEnabled;
 using test_helpers::SetPasswordFormFillData;
 using test_helpers::MakeSimpleFormData;
@@ -116,11 +112,6 @@ class MockPasswordManagerClient
   explicit MockPasswordManagerClient(password_manager::PasswordStore* store)
       : store_(store) {
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
-    prefs_->registry()->RegisterIntegerPref(
-        kPasswordManagerOnboardingState,
-        static_cast<int>(password_manager::OnboardingState::kDoNotShow));
-    prefs_->registry()->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore,
-                                            false);
     prefs_->registry()->RegisterBooleanPref(kPasswordLeakDetectionEnabled,
                                             true);
     safe_browsing::RegisterProfilePrefs(prefs_->registry());

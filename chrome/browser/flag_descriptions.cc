@@ -93,6 +93,10 @@ const char kConversionMeasurementDebugModeDescription[] =
     "reporting delays and noise. Only works if the Conversion Measurement API "
     "is already enabled.";
 
+const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
+const char kEditPasswordsInSettingsDescription[] =
+    "Enables password editing in settings.";
+
 const char kEnableBloomName[] = "Enable Bloom Integration";
 const char kEnableBloomDescription[] =
     "Enables native support for bloom, an experimental vertical knowledge "
@@ -1546,13 +1550,6 @@ const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription[] =
     "Midword matches are allowed and scored when the match begins immediately "
     "after the previous match ends.";
 
-const char kOmniboxLocalEntitySuggestionsName[] =
-    "Omnibox Local Entity Suggestions";
-const char kOmniboxLocalEntitySuggestionsDescription[] =
-    "Enables location specific suggestions displayed with images and enhanced "
-    "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
-    "will also enable #omnibox-rich-entity-suggestions.";
-
 const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
     "Frecency ranking for local history zero-prefix suggestions";
 const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[] =
@@ -1860,10 +1857,6 @@ const char kPasswordChangeInSettingsDescription[] =
 const char kPasswordChangeName[] = "Rework password change flow";
 const char kPasswordChangeDescription[] =
     "Change password when password leak is detected.";
-
-const char kPasswordEditingAndroidName[] = "Password editing for Android";
-const char kPasswordEditingAndroidDescription[] =
-    "Adds the editing option for saved passwords.";
 
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
@@ -2591,6 +2584,11 @@ const char kAndroidDefaultBrowserPromoName[] = "Default Browser Promo";
 const char kAndroidDefaultBrowserPromoDescription[] =
     "Shows a promo dialog to set Chrome as the default browser";
 
+const char kAndroidDetailedLanguageSettingsName[] =
+    "Detailed Language Settings";
+const char kAndroidDetailedLanguageSettingsDescription[] =
+    "Enable the new detailed language settings page";
+
 const char kAndroidManagedByMenuItemName[] = "Managed by menu item";
 const char kAndroidManagedByMenuItemDescription[] =
     "whether policies have been applied to this browser at the profile or "
@@ -2694,15 +2692,6 @@ const char kCriticalPersistedTabDataDescription[] =
     "A new method of persisting Tab data across restarts has been devised "
     "and implemented. This actives the new approach.";
 
-const char kContentIndexingDownloadHomeName[] =
-    "Content indexing in download home";
-const char kContentIndexingDownloadHomeDescription[] =
-    "Shows content indexing articles in group cards in download home";
-
-const char kContentIndexingNTPName[] = "Content indexing in NTP";
-const char kContentIndexingNTPDescription[] =
-    "Shows content indexing entry point UI in NTP";
-
 const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[] =
     "Context menu performance info and remote hint fetching";
 const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[] =
@@ -2784,12 +2773,6 @@ const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
-
-const char kEnableRevampedContextMenuName[] =
-    "Enable the revamped context menu";
-const char kEnableRevampedContextMenuDescription[] =
-    "Enables a revamped context menu when a link, image, or video is long "
-    "pressed within Chrome.";
 
 const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
@@ -2984,11 +2967,6 @@ const char kPageInfoV2Description[] =
 const char kPasswordCheckName[] = "Bulk Password Check";
 const char kPasswordCheckDescription[] =
     "Enables the Bulk Password Check feature for signed-in users.";
-
-const char kPasswordManagerOnboardingAndroidName[] =
-    "Password manager onboarding experience";
-const char kPasswordManagerOnboardingAndroidDescription[] =
-    "This flag enables showing the password manager onboarding experience.";
 
 const char kPhotoPickerVideoSupportName[] = "Photo Picker Video Support";
 const char kPhotoPickerVideoSupportDescription[] =
@@ -3255,10 +3233,6 @@ extern const char kAllowAllSitesToInitiateMirroringDescription[] =
     "When enabled, allows all websites to request to initiate tab mirroring "
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
-
-const char kEditPasswordsInDesktopSettingsName[] = "Edit passwords in settings";
-const char kEditPasswordsInDesktopSettingsDescription[] =
-    "Enables password editing in settings.";
 
 const char kEnableAccessibilityLiveCaptionsName[] = "Live Captions";
 const char kEnableAccessibilityLiveCaptionsDescription[] =
@@ -4021,6 +3995,11 @@ const char kEnterpriseReportingInChromeOSName[] =
 const char kEnterpriseReportingInChromeOSDescription[] =
     "Enable the enterprise cloud reporting in Chrome OS. This feature requires "
     "user level cloud management.";
+
+const char kExoGamepadVibrationName[] = "Gamepad Vibration for Exo Clients";
+const char kExoGamepadVibrationDescription[] =
+    "Allow Exo clients like Android to request vibration events for gamepads "
+    "that support it.";
 
 const char kExoOrdinalMotionName[] =
     "Raw (unaccelerated) motion for Linux applications";

@@ -270,6 +270,7 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 
 # Not supported yet
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-013.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-013.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-014.tentative.html [ Failure ]
 
@@ -1014,9 +1015,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldse
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-004.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-005.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-monolithic-001.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
 crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
@@ -1053,9 +1051,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-004.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/abspos-in-overflow-hidden-in-2nd-column.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
@@ -1087,7 +1082,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becom
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/event-offset-in-nested.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_block_frag/fast/multicol/fieldset-as-multicol.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/file-upload-as-multicol.html [ Failure ]
 crbug.com/1061423 virtual/layout_ng_block_frag/fast/multicol/flipped-blocks-hit-test.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-after-break-after.html [ Failure ]
@@ -1271,12 +1265,10 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif.
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-script.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-stretched.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-tailed.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/multi-column-layout.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/width-height-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-3.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-4.html [ Failure ]
 
 # This test fails on macOS.
 crbug.com/6606 [ Mac ] external/wpt/mathml/relations/text-and-math/use-typo-metrics-1.html [ Failure ]
@@ -1801,6 +1793,7 @@ crbug.com/1075869 http/tests/devtools/elements/styles-1/color-swatch.js [ Pass F
 crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
+crbug.com/1125357 http/tests/devtools/elements/styles-3/styles-cssom-important-property.js [ Pass Failure ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -5750,8 +5743,6 @@ crbug.com/970285 [ Win ] virtual/forced-high-contrast-colors/* [ Pass ]
 crbug.com/970285 [ Linux ] virtual/forced-high-contrast-colors/* [ Pass ]
 crbug.com/970285 [ Android ] virtual/forced-high-contrast-colors/* [ Pass ]
 
-crbug.com/1081945 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-13.html [ Crash ]
-
 # Expected failures for dark mode tests when the corresponding flags
 # are not enabled.
 crbug.com/1090660 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/svg-as-image.html [ Skip ]
@@ -6648,7 +6639,6 @@ crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
 crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
 
 # Sheriff 2020-08-26
-crbug.com/1122106 external/wpt/webrtc/protocol/crypto-suite.https.html [ Pass Timeout ]
 crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
 
 crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Pass Failure ]

@@ -12,7 +12,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/password_manager/ios/credential_manager_util.h"
+#include "components/password_manager/ios/password_manager_ios_util.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_requirements_service_factory.h"
@@ -126,11 +126,6 @@ bool WebViewPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 void WebViewPasswordManagerClient::PromptUserToMovePasswordToAccount(
     std::unique_ptr<PasswordFormManagerForUI> form_to_move) {
   NOTIMPLEMENTED();
-}
-
-bool WebViewPasswordManagerClient::ShowOnboarding(
-    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
-  return false;
 }
 
 void WebViewPasswordManagerClient::ShowManualFallbackForSaving(

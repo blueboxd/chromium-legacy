@@ -32,6 +32,7 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_view_host.h"
@@ -1097,7 +1098,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // First make an existing committed entry.
   const GURL kExistingURL("http://foo/eh");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kExistingURL);
-  main_test_rfh()->DidStopLoading();
+  static_cast<mojom::FrameHost*>(main_test_rfh())->DidStopLoading();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -2963,8 +2964,7 @@ TEST_F(NavigationControllerTest,
   // Test allow_universal_access_from_file_urls flag.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
-  WebPreferences prefs =
-      controller.GetWebContents()->GetOrCreateWebPreferences();
+  auto prefs = controller.GetWebContents()->GetOrCreateWebPreferences();
   prefs.allow_universal_access_from_file_urls = true;
   controller.GetWebContents()->SetWebPreferences(prefs);
   prefs = controller.GetWebContents()->GetOrCreateWebPreferences();

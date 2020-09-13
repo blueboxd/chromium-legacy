@@ -9766,6 +9766,8 @@ histogram as enum -->
   <int value="42" label="ZoomOut"/>
   <int value="43" label="ZoomCustomFirst"/>
   <int value="44" label="ZoomCustom"/>
+  <int value="45" label="ThumbnailNavigateFirst"/>
+  <int value="46" label="ThumbnailNavigate"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">
@@ -37657,6 +37659,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Recent Tabs Entry"/>
 </enum>
 
+<enum name="IOSAppState">
+  <int value="0"
+      label="Unknown UTE. This should not happen and presence of this value
+             likely indicates a bug in Chrome or UIKit code."/>
+  <int value="1"
+      label="Unknown XTE. This should not happen and presence of this value
+             likely indicates a bug in Chrome or UIKit code."/>
+  <int value="2" label="App state was UIApplicationStateActive during UTE."/>
+  <int value="3" label="App state was UIApplicationStateActive during XTE."/>
+  <int value="4" label="App state was UIApplicationStateInactive during UTE."/>
+  <int value="5" label="App state was UIApplicationStateInactive during XTE."/>
+  <int value="6"
+      label="App state was UIApplicationStateBackground during UTE."/>
+  <int value="7"
+      label="App state was UIApplicationStateBackground during XTE."/>
+</enum>
+
 <enum name="IOSContentSizeCategory">
   <int value="0" label="Unspecified"/>
   <int value="1" label="ExtraSmall"/>
@@ -40436,7 +40455,6 @@ from previous Chrome versions.
   <int value="-2140007754" label="HomepageSettingsUIConversion:disabled"/>
   <int value="-2139379065" label="StoragePressureUI:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
-  <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
   <int value="-2136173537" label="QuickAnswers:enabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
@@ -41385,7 +41403,6 @@ from previous Chrome versions.
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
   <int value="-1228546373"
       label="UseLookalikesForNavigationSuggestions:enabled"/>
-  <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
   <int value="-1225772151" label="OfflineHome:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
@@ -41480,7 +41497,6 @@ from previous Chrome versions.
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
-  <int value="-1143108160" label="PasswordManagerOnboardingAndroid:enabled"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1142933895" label="ReduceDisplayNotifications:disabled"/>
   <int value="-1142034548" label="BuiltInModuleKvStorage:enabled"/>
@@ -41800,6 +41816,7 @@ from previous Chrome versions.
   <int value="-812461825" label="AutofillCreditCardSigninPromo:enabled"/>
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
+  <int value="-810110236" label="EditPasswordsInSettings:enabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
   <int value="-806480547" label="SyncDeviceInfoInTransportMode:enabled"/>
   <int value="-805480822" label="RemoteCopyImageNotification:disabled"/>
@@ -42433,6 +42450,7 @@ from previous Chrome versions.
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-131673218" label="FileHandlingAPI:disabled"/>
   <int value="-131257916" label="OmniboxCompactSuggestions:disabled"/>
+  <int value="-130318058" label="ExoGamepadVibration:enabled"/>
   <int value="-128687277"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:disabled"/>
   <int value="-127666141" label="TabGroups:disabled"/>
@@ -42635,7 +42653,6 @@ from previous Chrome versions.
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
-  <int value="73436710" label="EditPasswordsInDesktopSettings:disabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
   <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
   <int value="75237697" label="ash-enable-new-overview-ui"/>
@@ -42708,7 +42725,6 @@ from previous Chrome versions.
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="151630887" label="WebUIA11yEnhancements:disabled"/>
-  <int value="152867897" label="PasswordEditingAndroid:disabled"/>
   <int value="153347646" label="SmartDimModelV3:disabled"/>
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
@@ -42821,6 +42837,7 @@ from previous Chrome versions.
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
   <int value="300870732" label="ShelfDimming:disabled"/>
+  <int value="301536977" label="DetailedLanguageSettings:enabled"/>
   <int value="301630312" label="ForcedColors:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
@@ -43161,6 +43178,7 @@ from previous Chrome versions.
   <int value="638865852" label="UsePreferredIntervalForVideo:disabled"/>
   <int value="640174751" label="AndroidMultipleDisplay:enabled"/>
   <int value="642037198" label="SoleIntegration:disabled"/>
+  <int value="642678255" label="ExoGamepadVibration:disabled"/>
   <int value="643068614"
       label="CrossOriginOpenerPolicyAccessReporting:enabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
@@ -44315,6 +44333,7 @@ from previous Chrome versions.
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
   <int value="1854048611" label="OmniboxSuggestionsRecyclerView:disabled"/>
   <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
+  <int value="1854646491" label="DetailedLanguageSettings:disabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
   <int value="1858919054" label="SplitSettingsSync:disabled"/>
@@ -44393,7 +44412,6 @@ from previous Chrome versions.
   <int value="1933376478" label="IsolatePrerenders:enabled"/>
   <int value="1935405622" label="AppServiceInstanceRegistry:disabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
-  <int value="1936816247" label="EditPasswordsInDesktopSettings:enabled"/>
   <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1939884866" label="web-otp-backend"/>
@@ -44498,6 +44516,7 @@ from previous Chrome versions.
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
   <int value="2024172900" label="KidsManagementUrlClassification:disabled"/>
+  <int value="2027793952" label="EditPasswordsInSettings:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
@@ -50882,6 +50901,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NewTabPage.ExploreOffline.Action">
+  <obsolete>
+    Deprecated as of 08/2020.
+  </obsolete>
   <int value="0" label="Displayed explore offline card on NTP"/>
   <int value="1" label="Clicked confirm button"/>
   <int value="2" label="Clicked cancel button"/>
@@ -65065,6 +65087,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="ShortcutsCreationResult">
+  <summary>Result of creating shortcuts for PWA.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Fail to create shortcut"/>
+</enum>
+
 <enum name="ShortcutsMenuRegistrationWinResult">
   <summary>
     Result of registering app icon shortcuts menu for PWA on Windows
@@ -67925,6 +67953,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="The connection negotiated token binding, which is incompatible
              with 0-RTT."/>
   <int value="12" label="The client and server ticket age were too far apart."/>
+  <int value="13"
+      label="QUIC parameters differ between this connection and the original."/>
 </enum>
 
 <enum name="SSLHashAlgorithm">

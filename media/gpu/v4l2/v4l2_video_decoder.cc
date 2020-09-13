@@ -298,7 +298,7 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
 
     gfx::Size adjusted_size(format->fmt.pix_mp.width,
                             format->fmt.pix_mp.height);
-    candidates.push_back(std::make_pair(*candidate, adjusted_size));
+    candidates.emplace_back(*candidate, adjusted_size);
   }
 
   // Ask the pipeline to pick the output format.
@@ -500,7 +500,6 @@ void V4L2VideoDecoder::ContinueChangeResolution(
     const size_t num_output_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-  DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
 
   // If we already reset, then skip it.
   if (state_ == State::kDecoding)

@@ -36,6 +36,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom-test-utils.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -118,7 +119,7 @@ class NotifyPreferencesChangedTestContentBrowserClient
   NotifyPreferencesChangedTestContentBrowserClient() = default;
 
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
-                           WebPreferences* prefs) override {
+                           blink::web_pref::WebPreferences* prefs) override {
     override_webkit_prefs_rvh_set_.insert(render_view_host);
   }
 
@@ -4382,7 +4383,7 @@ class DidStopLoadingInterceptor : public mojom::FrameHostInterceptorForTesting {
   void DidStopLoading() override {
     static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess())
         ->mark_child_process_activity_time();
-    render_frame_host_->DidStopLoading();
+    static_cast<mojom::FrameHost*>(render_frame_host_)->DidStopLoading();
   }
 
  private:

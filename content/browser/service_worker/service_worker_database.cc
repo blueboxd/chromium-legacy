@@ -335,7 +335,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetNextAvailableIds(
 }
 
 ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
+ServiceWorkerDatabase::GetOriginsWithRegistrations(
+    std::set<url::Origin>* origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(origins->empty());
 
@@ -369,7 +370,7 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
         break;
       }
 
-      origins->insert(origin);
+      origins->insert(url::Origin::Create(origin));
     }
   }
 
@@ -983,7 +984,7 @@ ServiceWorkerDatabase::ReadUserKeysAndDataByKeyPrefix(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<storage::mojom::ServiceWorkerUserDataPtr>& user_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
@@ -997,8 +998,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
 
   // There should be the registration specified by |registration_id|.
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
-                                &registration);
+  status = ReadRegistrationData(registration_id, origin, &registration);
   if (status != Status::kOk)
     return status;
 

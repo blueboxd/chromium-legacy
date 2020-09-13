@@ -41,8 +41,15 @@
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_observer.h"
 
+namespace blink {
+namespace web_pref {
+struct WebPreferences;
+}
+}  // namespace blink
+
 namespace content {
 
+class AgentSchedulingGroupHost;
 class TimeoutMonitor;
 
 // A callback which will be called immediately before EnterBackForwardCache
@@ -299,7 +306,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetBackgroundOpaque(bool opaque) override;
   bool IsMainFrameActive() override;
   bool IsNeverComposited() override;
-  WebPreferences GetWebkitPreferencesForWidget() override;
+  blink::web_pref::WebPreferences GetWebkitPreferencesForWidget() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,
@@ -334,6 +341,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   void ClosePageTimeout();
 
   void OnPageClosed();
+
+  // Returns the `AgentSchedulingGroupHost` this view is associated with (via
+  // the widget).
+  AgentSchedulingGroupHost& GetAgentSchedulingGroup();
 
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler

@@ -517,11 +517,11 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
 }
 
 void ScriptExecutor::SelectOption(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     const std::string& value,
     DropdownSelectStrategy select_strategy,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SelectOption(selector, value, select_strategy,
+  delegate_->GetWebController()->SelectOption(element, value, select_strategy,
                                               std::move(callback));
 }
 
@@ -613,10 +613,10 @@ void ScriptExecutor::GetOuterHtml(
 }
 
 void ScriptExecutor::GetElementTag(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&, const std::string&)>
         callback) {
-  delegate_->GetWebController()->GetElementTag(selector, std::move(callback));
+  delegate_->GetWebController()->GetElementTag(element, std::move(callback));
 }
 
 void ScriptExecutor::ExpectNavigation() {

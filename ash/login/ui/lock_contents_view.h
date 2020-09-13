@@ -456,7 +456,7 @@ class ASH_EXPORT LockContentsView
   ManagementPopUp* management_bubble_;
   // Bubble for displaying a warning message when a secondary user is being
   // added.
-  UserAddingPopUp* user_adding_screen_bubble_;
+  UserAddingPopUp* user_adding_screen_bubble_ = nullptr;
   // Bubble for displaying warning banner message.
   LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.

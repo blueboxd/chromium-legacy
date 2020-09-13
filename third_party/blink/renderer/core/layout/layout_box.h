@@ -492,7 +492,22 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CanResize() const;
 
   LayoutUnit ContainerWidthInInlineDirection() const;
+  // Whether we should (and are able to) compute the logical width using the
+  // aspect ratio. Since we compute the logical *height* as part of this check,
+  // we provide it in an optional out parameter in case the caller needs it
+  // (only valid if this function returns true).
+  bool ShouldComputeLogicalWidthFromAspectRatio(
+      LayoutUnit* logical_height = nullptr) const;
+  bool ShouldComputeLogicalHeightFromAspectRatio() const {
+    Length h = StyleRef().LogicalHeight();
+    return StyleRef().AspectRatio() &&
+           (h.IsAuto() ||
+            (h.IsPercentOrCalc() &&
+             ComputePercentageLogicalHeight(h) == kIndefiniteSize));
+  }
   bool ComputeLogicalWidthFromAspectRatio(LayoutUnit* logical_width) const;
+
+  MinMaxSizes ComputeMinMaxLogicalWidthFromAspectRatio() const;
 
   // Like most of the other box geometries, visual and layout overflow are also
   // in the "physical coordinates in flipped block-flow direction" of the box.

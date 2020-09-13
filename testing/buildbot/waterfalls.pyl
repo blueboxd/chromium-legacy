@@ -600,6 +600,26 @@
           'isolated_scripts': 'cronet_rel_isolated_scripts',
         },
       },
+      'android-cronet-arm-rel-kitkat-tests': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
+      },
+      'android-cronet-arm-rel-lollipop-tests': {
+        'mixins': [
+          'lollipop',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
+      },
       'android-cronet-arm64-dbg': {
         'additional_compile_targets': [
           'cronet_package',
@@ -631,6 +651,16 @@
         'test_suites': {
           'isolated_scripts': 'cronet_rel_isolated_scripts',
         },
+      },
+      'android-cronet-arm64-rel-marshmallow-tests': {
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
       },
       'android-cronet-asan-arm-rel': {
         'mixins': [
@@ -768,6 +798,18 @@
           'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
         }
       },
+      'android-marshmallow-x86-rel-non-cq': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_marshmallow_emulator_backlog_gtests',
+        }
+      },
       'android-nougat-arm64-rel': {
         'mixins': [
           'nougat',
@@ -810,17 +852,6 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'android-pie-arm64-wpt-rel-non-cq': {
-        'mixins': [
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
-      },
       'android-pie-x86-rel': {
         'mixins': [
           'pie-x86-emulator',
@@ -853,17 +884,16 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'android-marshmallow-x86-fyi-rel': {
+      'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
-          'marshmallow-x86-emulator',
-          'emulator-8-cores',
-          'linux-xenial',
-          'x86-64',
+          'pie_fleet',
+          'walleye',
         ],
-        'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_marshmallow_emulator_backlog_gtests',
-        }
+          'isolated_scripts': 'weblayer_shell_wpt',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
       },
       'android-weblayer-pie-x86-fyi-rel': {
         'mixins': [
@@ -2377,6 +2407,15 @@
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests',
+        },
+      },
+      'mac-arm64-rel-tests': {
+        'mixins': [
+            'mac_arm64_apple_dtk_experimental',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'mac-code-coverage': {
@@ -4598,19 +4637,6 @@
         'additional_compile_targets': [
           'all',
         ],
-        'os_type': 'mac',
-        'browser_config': 'release',
-        # TODO(thakis): This mixin is almost certainly incorrect. It exists to
-        # make the test suites listed below be valid; this can't be generated
-        # swarming dimensions are set.
-        'mixins': [
-          'mac_mini_intel_gpu_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
-        },
       },
     },
   },
@@ -5288,6 +5314,9 @@
           'isolated_scripts': 'client_v8_chromium_isolated_scripts',
         },
       },
+      'Linux V8 API Stability': {
+        'additional_compile_targets': ['all'],
+      },
     },
   },
   {
@@ -5424,6 +5453,7 @@
         'additional_compile_targets': [
           'accessibility_unittests',
           'aura_unittests',
+          'blink_tests',
           'browser_tests',
           'capture_unittests',
           'cast_unittests',
@@ -5442,6 +5472,7 @@
           'extensions_unittests',
           'gcm_unit_tests',
           'gfx_unittests',
+          'gin_unittests',
           'google_apis_unittests',
           'gpu_unittests',
           'interactive_ui_tests',
@@ -5453,6 +5484,8 @@
           'nacl_loader_unittests',
           'net_unittests',
           'pdf_unittests',
+          'pdfium_test',
+          'postmortem-metadata',
           'ppapi_unittests',
           'printing_unittests',
           'remoting_unittests',

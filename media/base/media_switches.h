@@ -184,6 +184,8 @@ MEDIA_EXPORT extern const base::Feature kWakeLockOptimisationHiddenMuted;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1ForceSupportForTesting;
 MEDIA_EXPORT extern const base::Feature kResolutionBasedDecoderPriority;
+MEDIA_EXPORT extern const base::Feature kForceHardwareVideoDecoders;
+MEDIA_EXPORT extern const base::Feature kForceHardwareAudioDecoders;
 
 #if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
@@ -221,6 +223,7 @@ MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MAC)
+MEDIA_EXPORT extern const base::Feature kAVFoundationCaptureV2;
 MEDIA_EXPORT extern const base::Feature kVideoToolboxVp9Decoding;
 #endif
 

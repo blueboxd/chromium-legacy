@@ -85,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads origins that have one or more than one registration from the
   // database. Returns OK if they are successfully read or not found.
   // Otherwise, returns an error.
-  Status GetOriginsWithRegistrations(std::set<GURL>* origins);
+  Status GetOriginsWithRegistrations(std::set<url::Origin>* origins);
 
   // Reads registrations for |origin| from the database. Returns OK if they are
   // successfully read or not found. Otherwise, returns an error.
@@ -194,7 +194,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // registration specified by |registration_id| does not exist in the database.
   Status WriteUserData(
       int64_t registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<storage::mojom::ServiceWorkerUserDataPtr>& user_data);
 
   // Deletes user data for |registration_id| and |user_data_names| from the

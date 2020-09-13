@@ -133,7 +133,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void FindRegistrationForScope(const GURL& scope,
                                 FindRegistrationDataCallback callback);
   void FindRegistrationForId(int64_t registration_id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              FindRegistrationDataCallback callback);
   void FindRegistrationForIdOnly(int64_t registration_id,
                                  FindRegistrationDataCallback callback);
@@ -229,7 +229,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Stored data is deleted when the associated registraton is deleted.
   void StoreUserData(
       int64_t registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
       DatabaseStatusCallback callback);
   // Responds OK if all are successfully deleted or not found in the database.
@@ -320,7 +320,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
     int64_t next_registration_id;
     int64_t next_version_id;
     int64_t next_resource_id;
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
 
     InitialData();
     ~InitialData();
@@ -398,7 +398,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                      DatabaseStatusCallback callback,
                                      ServiceWorkerDatabase::Status status);
   void DidStoreUserData(DatabaseStatusCallback callback,
-                        const GURL& origin,
+                        const url::Origin& origin,
                         ServiceWorkerDatabase::Status status);
 
   // Lazy disk_cache getter.
@@ -458,7 +458,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       int64_t registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       FindInDBCallback callback);
   static void FindForIdOnlyInDB(
       ServiceWorkerDatabase* database,
@@ -511,7 +511,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DidDeleteDiskCache(DatabaseStatusCallback callback, bool result);
 
   // Origins having registations.
-  std::set<GURL> registered_origins_;
+  std::set<url::Origin> registered_origins_;
   // The set of origins whose storage should be cleaned on shutdown.
   std::set<GURL> origins_to_purge_on_shutdown_;
 

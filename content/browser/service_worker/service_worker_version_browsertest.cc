@@ -47,7 +47,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -63,6 +62,7 @@
 #include "storage/browser/test/blob_test_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 using blink::mojom::CacheStorageError;
@@ -552,7 +552,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
   }
 
   void FindRegistrationForId(int64_t id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              blink::ServiceWorkerStatusCode expected_status) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     blink::ServiceWorkerStatusCode status =
@@ -570,7 +570,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
   void FindRegistrationForIdOnCoreThread(base::OnceClosure done,
                                          blink::ServiceWorkerStatusCode* result,
                                          int64_t id,
-                                         const GURL& origin) {
+                                         const url::Origin& origin) {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
     wrapper()->context()->registry()->FindRegistrationForId(
@@ -876,7 +876,7 @@ class MockContentBrowserClient : public TestContentBrowserClient {
   }
 
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
-                           WebPreferences* prefs) override {
+                           blink::web_pref::WebPreferences* prefs) override {
     prefs->data_saver_enabled = data_saver_enabled_;
   }
 
@@ -1002,7 +1002,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
 
   // The registration should be deleted from storage.
-  FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
+  FindRegistrationForId(registration_->id(), registration_->origin(),
                         blink::ServiceWorkerStatusCode::kErrorNotFound);
   EXPECT_TRUE(registration_->is_uninstalled());
 }
@@ -1053,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
   // The whole registration should be deleted from storage even though the
   // waiting version was not the broken one.
-  FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
+  FindRegistrationForId(registration_->id(), registration_->origin(),
                         blink::ServiceWorkerStatusCode::kErrorNotFound);
   EXPECT_TRUE(registration_->is_uninstalled());
 }

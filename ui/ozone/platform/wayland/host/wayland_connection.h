@@ -36,6 +36,7 @@ class WaylandDataDeviceManager;
 class WaylandCursorPosition;
 class WaylandWindowDragController;
 class GtkPrimarySelectionDeviceManager;
+class XdgForeignWrapper;
 
 class WaylandConnection {
  public:
@@ -70,6 +71,9 @@ class WaylandConnection {
   zwp_linux_explicit_synchronization_v1* linux_explicit_synchronization_v1()
       const {
     return linux_explicit_synchronization_.get();
+  }
+  zxdg_decoration_manager_v1* xdg_decoration_manager_v1() const {
+    return xdg_decoration_manager_.get();
   }
 
   void set_serial(uint32_t serial, EventType event_type) {
@@ -133,6 +137,8 @@ class WaylandConnection {
     return window_drag_controller_.get();
   }
 
+  XdgForeignWrapper* xdg_foreign() const { return xdg_foreign_.get(); }
+
   // Returns true when dragging is entered or started.
   bool IsDragInProgress() const;
 
@@ -183,6 +189,7 @@ class WaylandConnection {
   wl::Object<zaura_shell> aura_shell_;
   wl::Object<zwp_linux_explicit_synchronization_v1>
       linux_explicit_synchronization_;
+  wl::Object<zxdg_decoration_manager_v1> xdg_decoration_manager_;
 
   // Event source instance. Must be declared before input objects so it
   // outlives them so thus being able to properly handle their destruction.
@@ -202,6 +209,7 @@ class WaylandConnection {
   std::unique_ptr<WaylandDrm> drm_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
+  std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
 
   std::unique_ptr<GtkPrimarySelectionDeviceManager>
       primary_selection_device_manager_;

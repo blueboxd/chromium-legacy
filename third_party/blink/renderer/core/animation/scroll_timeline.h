@@ -65,11 +65,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // TODO(crbug.com/1094014): scrollOffsets will replace start and end
   // offsets once spec decision on multiple scroll offsets is finalized.
   // https://github.com/w3c/csswg-drafts/issues/4912
-  void startScrollOffset(
-      StringOrScrollTimelineElementBasedOffset& result) const;
-  void endScrollOffset(StringOrScrollTimelineElementBasedOffset& result) const;
-  const HeapVector<StringOrScrollTimelineElementBasedOffset> scrollOffsets()
-      const;
+  void startScrollOffset(ScrollTimelineOffsetValue& result) const;
+  void endScrollOffset(ScrollTimelineOffsetValue& result) const;
+  const HeapVector<ScrollTimelineOffsetValue> scrollOffsets() const;
 
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
@@ -79,17 +77,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // removed before the ScrollTimeline was created.
   Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
 
-  // Return the latest resolved start scroll offset. This will be nullopt when
+  // Return the latest resolved scroll offsets. This will be empty when
   // timeline is inactive.
-  base::Optional<double> GetResolvedStartScrollOffset() const {
-    return timeline_state_snapshotted_.start_offset;
-  }
-
-  // Return the latest resolved end scroll offset. This will be nullopt when
-  // timeline is inactive.
-  base::Optional<double> GetResolvedEndScrollOffset() const {
-    return timeline_state_snapshotted_.end_offset;
-  }
+  const std::vector<double> GetResolvedScrollOffsets() const;
 
   ScrollDirection GetOrientation() const { return orientation_; }
 
@@ -139,21 +129,18 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // element-based values it computes the corresponding length value that maps
   // to the particular element intersection. See
   // |ScrollTimelineOffset::ResolveOffset()| for more details.
-  std::tuple<base::Optional<double>, base::Optional<double>>
-  ResolveScrollOffsets() const;
+  bool ResolveScrollOffsets(WTF::Vector<double>& resolved_offsets) const;
 
   struct TimelineState {
     TimelinePhase phase;
     base::Optional<base::TimeDelta> current_time;
-    // The resolved version of start and end offset. These values are nullopts
+    // The resolved version of scroll offset. The vector is empty
     // when timeline is inactive (e.g., when source does not overflow).
-    base::Optional<double> start_offset;
-    base::Optional<double> end_offset;
+    WTF::Vector<double> scroll_offsets;
 
     bool operator==(const TimelineState& other) const {
       return phase == other.phase && current_time == other.current_time &&
-             start_offset == other.start_offset &&
-             end_offset == other.end_offset;
+             scroll_offsets == other.scroll_offsets;
     }
   };
 

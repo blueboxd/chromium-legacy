@@ -38,6 +38,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
+#include "ui/ozone/platform/wayland/host/xdg_foreign_wrapper.h"
 
 namespace ui {
 
@@ -56,6 +57,7 @@ constexpr uint32_t kMaxExplicitSyncVersion = 2;
 constexpr uint32_t kMinAuraShellVersion = 10;
 constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
+constexpr uint32_t kMaxXdgDecorationVersion = 1;
 }  // namespace
 
 WaylandConnection::WaylandConnection() = default;
@@ -367,6 +369,10 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
       return;
     }
+  } else if (!connection->xdg_foreign_ &&
+             strcmp(interface, "zxdg_exporter_v1") == 0) {
+    connection->xdg_foreign_ = std::make_unique<XdgForeignWrapper>(
+        connection, wl::Bind<zxdg_exporter_v1>(registry, name, version));
   } else if (!connection->drm_ && (strcmp(interface, "wl_drm") == 0) &&
              version >= kMinWlDrmVersion) {
     auto wayland_drm = wl::Bind<struct wl_drm>(registry, name, version);
@@ -381,6 +387,11 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind zaura_shell";
       return;
     }
+  } else if (!connection->xdg_decoration_manager_ &&
+             strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
+    connection->xdg_decoration_manager_ =
+        wl::Bind<struct zxdg_decoration_manager_v1>(registry, name,
+                                                    kMaxXdgDecorationVersion);
   }
 
   connection->ScheduleFlush();

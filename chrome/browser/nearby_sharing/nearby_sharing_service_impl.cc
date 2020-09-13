@@ -28,6 +28,7 @@
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_share_default_device_name.h"
 #include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
@@ -203,7 +204,6 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
     NearbyProcessManager* process_manager)
     : profile_(profile),
-      settings_(prefs),
       nearby_connections_manager_(std::move(nearby_connections_manager)),
       process_manager_(process_manager),
       http_client_factory_(std::make_unique<NearbyShareClientFactoryImpl>(
@@ -225,7 +225,8 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetProtoDatabaseProvider(),
           profile->GetPath(),
-          http_client_factory_.get())) {
+          http_client_factory_.get())),
+      settings_(prefs, local_device_data_manager_.get()) {
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
 
@@ -243,6 +244,8 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     contact_manager_->Start();
     certificate_manager_->Start();
   }
+
+  SetDefaultDeviceNameIfEmpty();
 }
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() {
@@ -252,6 +255,12 @@ NearbySharingServiceImpl::~NearbySharingServiceImpl() {
 }
 
 void NearbySharingServiceImpl::Shutdown() {
+  // Before we clean up, lets give observers a heads up we are shutting down.
+  for (auto& observer : observers_) {
+    observer.OnShutdown();
+  }
+  observers_.Clear();
+
   // Clear in-progress transfers.
   ClearOutgoingShareTargetInfoMap();
   incoming_share_target_info_map_.clear();
@@ -921,6 +930,8 @@ void NearbySharingServiceImpl::OnDeviceNameChanged(
   NS_LOG(VERBOSE) << __func__ << ": Nearby sharing device name changed to "
                   << device_name;
   // TODO(vecore): handle device name change
+
+  SetDefaultDeviceNameIfEmpty();
 }
 
 void NearbySharingServiceImpl::OnAllowedContactsChanged(
@@ -3147,4 +3158,29 @@ void NearbySharingServiceImpl::SetInHighVisibility(
   for (auto& observer : observers_) {
     observer.OnHighVisibilityChanged(in_high_visibility);
   }
+}
+
+void NearbySharingServiceImpl::SetDefaultDeviceNameIfEmpty() {
+  if (local_device_data_manager_->GetDeviceName() || !profile_)
+    return;
+
+  GetNearbyShareDefaultDeviceName(
+      profile_,
+      base::BindOnce(&NearbySharingServiceImpl::OnDefaultDeviceNameFetched,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbySharingServiceImpl::OnDefaultDeviceNameFetched(
+    const base::Optional<std::string>& default_device_name) {
+  // Check that the device name wasn't set while the default device name was
+  // being generated.
+  if (local_device_data_manager_->GetDeviceName())
+    return;
+
+  if (!default_device_name) {
+    NS_LOG(ERROR) << __func__ << ": Could not generate default device name.";
+    return;
+  }
+
+  local_device_data_manager_->SetDeviceName(*default_device_name);
 }

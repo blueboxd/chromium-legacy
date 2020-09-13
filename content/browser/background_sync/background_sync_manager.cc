@@ -1419,8 +1419,7 @@ void BackgroundSyncManager::StoreDataInBackend(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->StoreRegistrationUserData(
-      sw_registration_id, origin.GetURL(), {{backend_key, data}},
-      std::move(callback));
+      sw_registration_id, origin, {{backend_key, data}}, std::move(callback));
 }
 
 void BackgroundSyncManager::GetDataFromBackend(
@@ -1467,7 +1466,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kBackgroundSync)) {
     devtools_context_->LogBackgroundServiceEventOnCoreThread(
-        active_version->registration_id(), active_version->script_origin(),
+        active_version->registration_id(), active_version->origin(),
         DevToolsBackgroundService::kBackgroundSync,
         /* event_name= */ "Dispatched sync event",
         /* instance_id= */ tag,
@@ -1510,7 +1509,7 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kPeriodicBackgroundSync)) {
     devtools_context_->LogBackgroundServiceEventOnCoreThread(
-        active_version->registration_id(), active_version->script_origin(),
+        active_version->registration_id(), active_version->origin(),
         DevToolsBackgroundService::kPeriodicBackgroundSync,
         /* event_name= */ "Dispatched periodicsync event",
         /* instance_id= */ tag,
@@ -2087,7 +2086,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(
         registration_info->service_worker_registration_id;
     service_worker_context_->FindReadyRegistrationForId(
         service_worker_registration_id,
-        active_registrations_[service_worker_registration_id].origin.GetURL(),
+        active_registrations_[service_worker_registration_id].origin,
         base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
             weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),

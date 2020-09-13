@@ -87,6 +87,9 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
+extern const char kEditPasswordsInSettingsName[];
+extern const char kEditPasswordsInSettingsDescription[];
+
 extern const char kEnableBloomName[];
 extern const char kEnableBloomDescription[];
 
@@ -900,9 +903,6 @@ extern const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsName[];
 extern const char
     kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription[];
 
-extern const char kOmniboxLocalEntitySuggestionsName[];
-extern const char kOmniboxLocalEntitySuggestionsDescription[];
-
 extern const char kOmniboxLocalZeroSuggestFrecencyRankingName[];
 extern const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[];
 
@@ -1054,9 +1054,6 @@ extern const char kPasswordChangeInSettingsDescription[];
 
 extern const char kPasswordChangeName[];
 extern const char kPasswordChangeDescription[];
-
-extern const char kPasswordEditingAndroidName[];
-extern const char kPasswordEditingAndroidDescription[];
 
 extern const char kPassiveEventListenerDefaultName[];
 extern const char kPassiveEventListenerDefaultDescription[];
@@ -1493,6 +1490,9 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 extern const char kAndroidDefaultBrowserPromoName[];
 extern const char kAndroidDefaultBrowserPromoDescription[];
 
+extern const char kAndroidDetailedLanguageSettingsName[];
+extern const char kAndroidDetailedLanguageSettingsDescription[];
+
 extern const char kAndroidManagedByMenuItemName[];
 extern const char kAndroidManagedByMenuItemDescription[];
 
@@ -1562,12 +1562,6 @@ extern const char kCloseTabSuggestionsDescription[];
 extern const char kCriticalPersistedTabDataName[];
 extern const char kCriticalPersistedTabDataDescription[];
 
-extern const char kContentIndexingDownloadHomeName[];
-extern const char kContentIndexingDownloadHomeDescription[];
-
-extern const char kContentIndexingNTPName[];
-extern const char kContentIndexingNTPDescription[];
-
 extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[];
 extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[];
 
@@ -1608,9 +1602,6 @@ extern const char kEnableAndroidSpellcheckerDescription[];
 
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
-
-extern const char kEnableRevampedContextMenuName[];
-extern const char kEnableRevampedContextMenuDescription[];
 
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
@@ -1719,9 +1710,6 @@ extern const char kPageInfoV2Description[];
 
 extern const char kPasswordCheckName[];
 extern const char kPasswordCheckDescription[];
-
-extern const char kPasswordManagerOnboardingAndroidName[];
-extern const char kPasswordManagerOnboardingAndroidDescription[];
 
 extern const char kPhotoPickerVideoSupportName[];
 extern const char kPhotoPickerVideoSupportDescription[];
@@ -1863,9 +1851,6 @@ extern const char kTabbedAppOverflowMenuRegroupDescription[];
 
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
-
-extern const char kEditPasswordsInDesktopSettingsName[];
-extern const char kEditPasswordsInDesktopSettingsDescription[];
 
 extern const char kEnableAccessibilityLiveCaptionsName[];
 extern const char kEnableAccessibilityLiveCaptionsDescription[];
@@ -2326,6 +2311,9 @@ extern const char kEnableSuggestedFilesDescription[];
 
 extern const char kEnterpriseReportingInChromeOSName[];
 extern const char kEnterpriseReportingInChromeOSDescription[];
+
+extern const char kExoGamepadVibrationName[];
+extern const char kExoGamepadVibrationDescription[];
 
 extern const char kExoOrdinalMotionName[];
 extern const char kExoOrdinalMotionDescription[];

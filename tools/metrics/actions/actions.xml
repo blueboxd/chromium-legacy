@@ -13091,6 +13091,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarHomeButton">
+  <obsolete>Removed as of 2020/09/09.</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
@@ -13433,6 +13434,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileDefaultBrowserViewIntent">
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    Records when an iOS user opens the app from the default browser URL open.
+  </description>
+</action>
+
 <action name="MobileDownloadFileUIInstallGoogleDrive">
   <obsolete>
     Removed in 12/2019 after adds of IOSDownloadFileUIGoogleDrive's histogram.
@@ -13512,6 +13520,13 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 12/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileFirstPartyViewIntent">
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    Records when an iOS user opens the app from a Google first party app.
+  </description>
 </action>
 
 <action name="MobileFocusedFakeboxOnNtp">
@@ -15445,6 +15460,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTopToolbarHomeButton">
+  <obsolete>Removed as of 2020/09/09.</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>The user tapped on the top toolbar's home button.</description>
@@ -20261,6 +20277,15 @@ should be able to be added at any place in this file.
 <action name="Screenshot_CopyClipboard">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Screenshot_ShowInFolder">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>
+    User clicks the body of the notification displayed after taking a screenshot
+    in order to show the screenshot file in its folder.
+  </description>
 </action>
 
 <action name="Screenshot_TakeFull">

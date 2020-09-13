@@ -1070,7 +1070,7 @@ void ServiceWorkerContextWrapper::FindRegistrationForScope(
 
 void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     FindRegistrationCallback callback) {
   RunOrPostTaskOnCoreThread(
       FROM_HERE,
@@ -1082,7 +1082,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
 
 void ServiceWorkerContextWrapper::FindReadyRegistrationForIdOnCoreThread(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     FindRegistrationCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
@@ -1094,7 +1094,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForIdOnCoreThread(
     return;
   }
   context_core_->registry()->FindRegistrationForId(
-      registration_id, origin.GetOrigin(),
+      registration_id, origin,
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
           std::move(callback), std::move(callback_runner)));
@@ -1317,7 +1317,7 @@ void ServiceWorkerContextWrapper::
 
 void ServiceWorkerContextWrapper::StoreRegistrationUserData(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     StatusCallback callback) {
   RunOrPostTaskOnCoreThread(
@@ -1337,7 +1337,7 @@ void ServiceWorkerContextWrapper::StoreRegistrationUserData(
 
 void ServiceWorkerContextWrapper::StoreRegistrationUserDataOnCoreThread(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
@@ -1345,9 +1345,8 @@ void ServiceWorkerContextWrapper::StoreRegistrationUserDataOnCoreThread(
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
-  context_core_->registry()->StoreUserData(registration_id, origin.GetOrigin(),
-                                           key_value_pairs,
-                                           std::move(callback));
+  context_core_->registry()->StoreUserData(
+      registration_id, origin, key_value_pairs, std::move(callback));
 }
 
 void ServiceWorkerContextWrapper::ClearRegistrationUserData(

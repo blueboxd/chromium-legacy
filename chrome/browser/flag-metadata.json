@@ -104,6 +104,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "android-detailed-language-settings",
+    "owners": [ "perrier", "chrome-langauge@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "android-files-in-files-app",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
@@ -542,16 +547,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "content-indexing-download-home",
-    "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "content-indexing-ntp",
-    "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "content-settings-redesign",
     "owners": [
       "tchudakov",
@@ -767,6 +762,11 @@
     "name": "decode-webp-images-to-yuv",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "default-browser-fullscreen-promo",
+    "owners": [ "thegreenfrog", "bling-team@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "delay-async-script-execution",
@@ -1015,7 +1015,7 @@
   },
   {
     "name": "edit-passwords-in-settings",
-    "owners": [ "irfedorova", "jdoerrie" ],
+    "owners": [ "fhorschig", "jdoerrie" ],
     "expiry_milestone": 88
   },
   {
@@ -2021,11 +2021,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-revamped-context-menu",
-    "owners": [ "twellington" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-save-data",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2422,6 +2417,11 @@
     "name": "ev-details-in-page-info",
     "owners": [ "cthomp" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "exo-gamepad-vibration",
+    "owners": [ "prabirmsp" ],
+    "expiry_milestone": 90
   },
   {
     "name": "exo-ordinal-motion",
@@ -3371,11 +3371,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "omnibox-local-entity-suggestions",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "omnibox-local-zero-suggest-frecency-ranking",
     "owners": [ "mahmadi", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 89
@@ -3635,16 +3630,6 @@
     "name": "password-check",
     "owners": [ "jdoerrie", "vasilii" ],
     "expiry_milestone": 87
-  },
-  {
-    "name": "password-editing-android",
-    "owners": [ "fhorschig" ],
-    "expiry_milestone": 87
-  },
-  {
-    "name": "password-manager-onboarding-android",
-    "owners": [ "ioanap" ],
-    "expiry_milestone": 82
   },
   {
     "name": "PasswordImport",

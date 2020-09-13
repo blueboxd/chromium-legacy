@@ -36,7 +36,7 @@ public class TosAndUmaFragmentView extends FrameLayout {
 
     private View mTitle;
     private View mLogo;
-    private View mLoadingSpinner;
+    private View mLoadingSpinnerContainer;
     private View mShadow;
 
     private int mLastHeight;
@@ -72,7 +72,7 @@ public class TosAndUmaFragmentView extends FrameLayout {
 
         mTitle = findViewById(R.id.title);
         mLogo = findViewById(R.id.image);
-        mLoadingSpinner = findViewById(R.id.progress_spinner_large);
+        mLoadingSpinnerContainer = findViewById(R.id.loading_view_container);
         mShadow = findViewById(R.id.shadow);
 
         // Set up shadow.
@@ -81,14 +81,14 @@ public class TosAndUmaFragmentView extends FrameLayout {
         // Cache resource dimensions that used in #onMeasure.
         mImageBottomMargin = getResources().getDimensionPixelSize(R.dimen.fre_image_bottom_margin);
         mVerticalSpacing = getResources().getDimensionPixelSize(R.dimen.fre_vertical_spacing);
-        mImageSize = getResources().getDimensionPixelSize(R.dimen.fre_image_height);
+        mImageSize = getResources().getDimensionPixelSize(R.dimen.fre_tos_image_height);
         mLoadingSpinnerSize =
                 getResources().getDimensionPixelSize(R.dimen.fre_loading_spinner_size);
         mLandscapeTopPadding =
                 getResources().getDimensionPixelSize(R.dimen.fre_landscape_top_padding);
         mHeadlineSize = getResources().getDimensionPixelSize(R.dimen.headline_size);
         mContentMargin = getResources().getDimensionPixelSize(R.dimen.fre_content_margin);
-        mButtonBarHeight = getResources().getDimensionPixelSize(R.dimen.fre_button_bar_height);
+        mButtonBarHeight = getResources().getDimensionPixelSize(R.dimen.fre_tos_button_bar_height);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class TosAndUmaFragmentView extends FrameLayout {
 
     private void setSpinnerLayoutParams(boolean useWideScreen, int width, int height) {
         LinearLayout.LayoutParams spinnerParams =
-                (LinearLayout.LayoutParams) mLoadingSpinner.getLayoutParams();
+                (LinearLayout.LayoutParams) mLoadingSpinnerContainer.getLayoutParams();
 
         // Adjust the spinner placement. If in portrait mode, the spinner is centered in the region
         // below the title; If in wide screen mode, the spinner is placed in the center of
@@ -175,7 +175,7 @@ public class TosAndUmaFragmentView extends FrameLayout {
             spinnerParams.topMargin = spinnerTopMargin;
         }
 
-        mLoadingSpinner.setLayoutParams(spinnerParams);
+        mLoadingSpinnerContainer.setLayoutParams(spinnerParams);
     }
 
     private void setLogoLayoutParams(boolean useWideScreen, int height) {

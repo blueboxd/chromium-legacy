@@ -12,6 +12,8 @@
 #include <presentation-time-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
 #include <wayland-drm-client-protocol.h>
+#include <xdg-decoration-unstable-v1-client-protocol.h>
+#include <xdg-foreign-unstable-v1-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
@@ -56,6 +58,16 @@ void delete_data_device(wl_data_device* data_device) {
 }
 
 }  // namespace
+
+const wl_interface* ObjectTraits<zxdg_decoration_manager_v1>::interface =
+    &zxdg_decoration_manager_v1_interface;
+void (*ObjectTraits<zxdg_decoration_manager_v1>::deleter)(
+    zxdg_decoration_manager_v1*) = &zxdg_decoration_manager_v1_destroy;
+
+const wl_interface* ObjectTraits<zxdg_toplevel_decoration_v1>::interface =
+    &zxdg_toplevel_decoration_v1_interface;
+void (*ObjectTraits<zxdg_toplevel_decoration_v1>::deleter)(
+    zxdg_toplevel_decoration_v1*) = &zxdg_toplevel_decoration_v1_destroy;
 
 const wl_interface*
     ObjectTraits<gtk_primary_selection_device_manager>::interface =
@@ -268,5 +280,15 @@ const wl_interface* ObjectTraits<zwp_text_input_v1>::interface =
     &zwp_text_input_v1_interface;
 void (*ObjectTraits<zwp_text_input_v1>::deleter)(zwp_text_input_v1*) =
     &zwp_text_input_v1_destroy;
+
+const wl_interface* ObjectTraits<zxdg_exporter_v1>::interface =
+    &zxdg_exporter_v1_interface;
+void (*ObjectTraits<zxdg_exporter_v1>::deleter)(zxdg_exporter_v1*) =
+    &zxdg_exporter_v1_destroy;
+
+const wl_interface* ObjectTraits<zxdg_exported_v1>::interface =
+    &zxdg_exported_v1_interface;
+void (*ObjectTraits<zxdg_exported_v1>::deleter)(zxdg_exported_v1*) =
+    &zxdg_exported_v1_destroy;
 
 }  // namespace wl

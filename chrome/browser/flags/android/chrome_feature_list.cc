@@ -131,11 +131,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeShareScreenshot,
     &kChromeSharingHub,
     &kChromeSharingHubV15,
-    &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kConditionalTabStripAndroid,
-    &kContentIndexingDownloadHome,
-    &kContentIndexingNTP,
     &kContentSuggestionsScrollToLoad,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuGoogleLensChip,
@@ -182,7 +179,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kReaderModeInCCT,
     &kReengagementNotification,
     &kRelatedSearches,
-    &kRevampedContextMenu,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
@@ -247,10 +243,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxSearchReadyIncognito,
     &omnibox::kOmniboxSuggestionsRecyclerView,
     &omnibox::kOmniboxSuggestionsWrapAround,
+    &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kPasswordChangeInSettings,
     &password_manager::features::kPasswordCheck,
-    &password_manager::features::kPasswordEditingAndroid,
-    &password_manager::features::kPasswordManagerOnboardingAndroid,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &performance_hints::features::kPageInfoPerformanceHints,
@@ -381,17 +376,8 @@ const base::Feature kChromeSharingHub{"ChromeSharingHub",
 const base::Feature kChromeSharingHubV15{"ChromeSharingHubV15",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContentIndexingDownloadHome{
-    "ContentIndexingDownloadHome", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kContentIndexingNTP{"ContentIndexingNTP",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -404,7 +390,7 @@ const base::Feature kContextMenuGoogleLensChip{
     "ContextMenuGoogleLensChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuSearchWithGoogleLens{
-    "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextMenuSearchWithGoogleLens", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextMenuShopWithGoogleLens{
     "ContextMenuShopWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -549,9 +535,6 @@ const base::Feature kReengagementNotification{
 
 const base::Feature kRelatedSearches{"RelatedSearches",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kRevampedContextMenu{"RevampedContextMenu",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForBackgroundPrefetch{
     "ServiceManagerForBackgroundPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};

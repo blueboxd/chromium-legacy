@@ -210,7 +210,6 @@
 #endif  // OS_CHROMEOS
 
 #if defined(OS_MAC)
-#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #endif  // OS_MAC
 
@@ -829,43 +828,6 @@ const FeatureEntry::FeatureVariation
         {"Fifteen Prefetches", kIsolatedPrerenderPrefetchLimitFifteen,
          base::size(kIsolatedPrerenderPrefetchLimitFifteen), nullptr},
 };
-
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
-        {autofill::kAutofillKeyboardAccessoryAnimationDurationKey, "1000"}};
-
-const FeatureEntry::FeatureParam
-    kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth[] = {
-        {autofill::kAutofillKeyboardAccessoryLimitLabelWidthKey, "true"}};
-
-const FeatureEntry::FeatureParam
-    kAutofillKeyboardAccessoryFeatureVariationShowHint[] = {
-        {autofill::kAutofillKeyboardAccessoryHintKey, "true"}};
-
-const FeatureEntry::FeatureParam
-    kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint[] = {
-        {autofill::kAutofillKeyboardAccessoryAnimationDurationKey, "1000"},
-        {autofill::kAutofillKeyboardAccessoryHintKey, "true"}};
-
-const FeatureEntry::FeatureVariation
-    kAutofillKeyboardAccessoryFeatureVariations[] = {
-        {"Animate", kAutofillKeyboardAccessoryFeatureVariationAnimationDuration,
-         base::size(
-             kAutofillKeyboardAccessoryFeatureVariationAnimationDuration),
-         nullptr},
-        {"Limit label width",
-         kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth),
-         nullptr},
-        {"Show hint", kAutofillKeyboardAccessoryFeatureVariationShowHint,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationShowHint),
-         nullptr},
-        {"Animate with hint",
-         kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint),
-         nullptr}};
-#endif  // OS_ANDROID
 
 const FeatureEntry::Choice kMemlogModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
@@ -3122,10 +3084,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"autofill-keyboard-accessory-view",
      flag_descriptions::kAutofillAccessoryViewName,
      flag_descriptions::kAutofillAccessoryViewDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::features::kAutofillKeyboardAccessory,
-         kAutofillKeyboardAccessoryFeatureVariations,
-         "AutofillKeyboardAccessory")},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillKeyboardAccessory)},
 #endif  // OS_ANDROID
 #if defined(OS_MAC)
     {"mac-syscall-sandbox", flag_descriptions::kMacSyscallSandboxName,
@@ -3219,13 +3178,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
-    {"content-indexing-download-home",
-     flag_descriptions::kContentIndexingDownloadHomeName,
-     flag_descriptions::kContentIndexingDownloadHomeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContentIndexingDownloadHome)},
-    {"content-indexing-ntp", flag_descriptions::kContentIndexingNTPName,
-     flag_descriptions::kContentIndexingNTPDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContentIndexingNTP)},
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
@@ -3369,11 +3321,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
-#if defined(OS_ANDROID)
-    {"password-editing-android", flag_descriptions::kPasswordEditingAndroidName,
-     flag_descriptions::kPasswordEditingAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordEditingAndroid)},
-#endif  // OS_ANDROID
 #if !defined(OS_CHROMEOS)
     // TODO(https://crbug.com/1011696): Investigate crash reports and re-enable
     // for ChromeOS.
@@ -3770,11 +3717,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)},
 
-    {"omnibox-local-entity-suggestions",
-     flag_descriptions::kOmniboxLocalEntitySuggestionsName,
-     flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxLocalEntitySuggestions)},
-
     {"omnibox-local-zero-suggest-frecency-ranking",
      flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingName,
      flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingDescription,
@@ -3904,10 +3846,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-    {"enable-revamped-context-menu",
-     flag_descriptions::kEnableRevampedContextMenuName,
-     flag_descriptions::kEnableRevampedContextMenuDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kRevampedContextMenu)},
     {"tabbed-app-overflow-menu-icons",
      flag_descriptions::kTabbedAppOverflowMenuIconsName,
      flag_descriptions::kTabbedAppOverflowMenuIconsDescription, kOsAndroid,
@@ -5583,15 +5521,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTurnOffStreamingMediaCachingAlwaysDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCachingAlways)},
 
-#if defined(OS_ANDROID)
-    {"password-manager-onboarding-android",
-     flag_descriptions::kPasswordManagerOnboardingAndroidName,
-     flag_descriptions::kPasswordManagerOnboardingAndroidDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kPasswordManagerOnboardingAndroid)},
-#endif  // defined(OS_ANDROID)
-
     {"enable-cooperative-scheduling",
      flag_descriptions::kCooperativeSchedulingName,
      flag_descriptions::kCooperativeSchedulingDescription, kOsAll,
@@ -5833,12 +5762,12 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
+    {"exo-gamepad-vibration", flag_descriptions::kExoGamepadVibrationName,
+     flag_descriptions::kExoGamepadVibrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kGamepadVibration)},
     {"exo-ordinal-motion", flag_descriptions::kExoOrdinalMotionName,
      flag_descriptions::kExoOrdinalMotionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kExoOrdinalMotion)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"exo-pointer-lock", flag_descriptions::kExoPointerLockName,
      flag_descriptions::kExoPointerLockDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kExoPointerLock)},
@@ -6333,13 +6262,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLiteVideoForceOverrideDecisionDescription, kOsAll,
      SINGLE_VALUE_TYPE(lite_video::switches::kLiteVideoForceOverrideDecision)},
 
-#if !defined(OS_ANDROID)
     {"edit-passwords-in-settings",
-     flag_descriptions::kEditPasswordsInDesktopSettingsName,
-     flag_descriptions::kEditPasswordsInDesktopSettingsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEditPasswordsInDesktopSettings)},
-#endif  // !defined(OS_ANDROID)
+     flag_descriptions::kEditPasswordsInSettingsName,
+     flag_descriptions::kEditPasswordsInSettingsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kEditPasswordsInSettings)},
 
     {"mixed-forms-disable-autofill",
      flag_descriptions::kMixedFormsDisableAutofillName,
@@ -6463,6 +6389,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPasswords)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"android-detailed-language-settings",
+     flag_descriptions::kAndroidDetailedLanguageSettingsName,
+     flag_descriptions::kAndroidDetailedLanguageSettingsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(language::kDetailedLanguageSettings)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -6474,6 +6407,8 @@ class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {
   FlagsStateSingleton()
       : flags_state_(
             std::make_unique<flags_ui::FlagsState>(kFeatureEntries, this)) {}
+  FlagsStateSingleton(const FlagsStateSingleton&) = delete;
+  FlagsStateSingleton& operator=(const FlagsStateSingleton&) = delete;
   ~FlagsStateSingleton() override = default;
 
   static FlagsStateSingleton* GetInstance() {
@@ -6496,8 +6431,6 @@ class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {
   }
 
   std::unique_ptr<flags_ui::FlagsState> flags_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
 
 bool ShouldSkipNonDeprecatedFeatureEntry(const FeatureEntry& entry) {
@@ -6588,15 +6521,6 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 #endif  // OS_ANDROID
-
-#if defined(OS_MAC)
-  // The Eye Dropper relies on the NSColorSampler API, which is available
-  // starting with macOS 10.15.
-  if (!strcmp("color-picker-eye-dropper", entry.internal_name) &&
-      !base::mac::IsAtLeastOS10_15()) {
-    return true;
-  }
-#endif  // OS_MAC
 
   if (flags::IsFlagExpired(storage, entry.internal_name))
     return true;

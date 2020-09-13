@@ -192,10 +192,9 @@ class ActionDelegate {
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback) = 0;
 
-  // Select the option given by |selector| and the value of the option to be
-  // picked.
+  // Select the option to be picked given by the |value| in the |element|.
   virtual void SelectOption(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
@@ -259,9 +258,10 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) = 0;
 
-  // Return the tag of the element given by |selector|.
+  // Return the tag of the |element|. In case of an error, returns an empty
+  // string.
   virtual void GetElementTag(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) = 0;
 

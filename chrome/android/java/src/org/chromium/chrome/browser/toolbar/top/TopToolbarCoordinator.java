@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -110,11 +111,12 @@ public class TopToolbarCoordinator implements Toolbar {
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ThemeColorProvider normalThemeColorProvider,
             ThemeColorProvider overviewThemeColorProvider,
-            MenuButtonCoordinator menuButtonCoordinator,
-            ObservableSupplier<AppMenuButtonHelper> appMenuButtonHelperSupplier) {
+            MenuButtonCoordinator browsingModeMenuButtonCoordinator,
+            MenuButtonCoordinator startSurfaceMenuButtonCoordinator,
+            ObservableSupplier<AppMenuButtonHelper> appMenuButtonHelperSupplier, Context context) {
         mToolbarLayout = toolbarLayout;
         mIdentityDiscController = identityDiscController;
-        mMenuButtonCoordinator = menuButtonCoordinator;
+        mMenuButtonCoordinator = browsingModeMenuButtonCoordinator;
         mOptionalButtonController = new OptionalBrowsingModeButtonController(buttonDataProviders,
                 userEducationHelper, mToolbarLayout, () -> toolbarDataProvider.getTab());
 
@@ -127,7 +129,7 @@ public class TopToolbarCoordinator implements Toolbar {
                 mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(
                         controlContainer.getRootView().findViewById(R.id.tab_switcher_toolbar_stub),
                         mIdentityDiscController, userEducationHelper, mOverviewModeBehaviorSupplier,
-                        overviewThemeColorProvider);
+                        overviewThemeColorProvider, startSurfaceMenuButtonCoordinator);
             } else {
                 mTabSwitcherModeCoordinatorPhone = new TabSwitcherModeTTCoordinatorPhone(
                         controlContainer.getRootView().findViewById(
@@ -136,7 +138,7 @@ public class TopToolbarCoordinator implements Toolbar {
         }
         controlContainer.setToolbar(this);
         HomepageManager.getInstance().addListener(mHomepageStateListener);
-        mToolbarLayout.initialize(toolbarDataProvider, tabController, menuButtonCoordinator);
+        mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator);
 
         final MenuButton menuButtonWrapper = getMenuButtonWrapper();
         if (menuButtonWrapper != null) {
@@ -154,8 +156,6 @@ public class TopToolbarCoordinator implements Toolbar {
         mToolbarLayout.setAppMenuButtonHelper(appMenuButtonHelper);
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.setAppMenuButtonHelper(appMenuButtonHelper);
-        } else if (mStartSurfaceToolbarCoordinator != null) {
-            mStartSurfaceToolbarCoordinator.setAppMenuButtonHelper(appMenuButtonHelper);
         }
     }
 
@@ -603,19 +603,6 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public LocationBar getLocationBar() {
         return mToolbarLayout.getLocationBar();
-    }
-
-    /**
-     * @param isVisible Whether the bottom toolbar is visible.
-     */
-    public void onBottomToolbarVisibilityChanged(boolean isVisible) {
-        mToolbarLayout.onBottomToolbarVisibilityChanged(isVisible);
-        if (mTabSwitcherModeCoordinatorPhone != null) {
-            mTabSwitcherModeCoordinatorPhone.onBottomToolbarVisibilityChanged(isVisible);
-        } else if (mStartSurfaceToolbarCoordinator != null) {
-            mStartSurfaceToolbarCoordinator.onBottomToolbarVisibilityChanged(isVisible);
-        }
-        mOptionalButtonController.updateButtonVisibility();
     }
 
     @Override

@@ -323,7 +323,7 @@ const base::Feature kEventBasedStatusReporting{
 // The plan is for this to go away once tagged PDFs become the default.
 // See https://crbug.com/607777
 const base::Feature kExportTaggedPDF{"ExportTaggedPDF",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the
@@ -572,20 +572,10 @@ const base::Feature kOomIntervention{"OomIntervention",
 #endif
 
 #if defined(OS_CHROMEOS)
-// Enables usage of Parent Access Code to authorize certain actions on child
-// user device.
-const base::Feature kParentAccessCode{"ParentAccessCode",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables usage of Parent Access Code in the login flow for reauth and add
 // user. Requires |kParentAccessCode| to be enabled.
 const base::Feature kParentAccessCodeForOnlineLogin{
     "ParentAccessCodeForOnlineLogin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables usage of Parent Access Code to authorize change of time actions on
-// child user device. Requires |kParentAccessCode| to be enabled.
-const base::Feature kParentAccessCodeForTimeChange{
-    "ParentAccessCodeForTimeChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables enforcement of per-app time limits for child user.
 const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
@@ -838,8 +828,7 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
 
 #if defined(OS_CHROMEOS)
 bool IsParentAccessCodeForOnlineLoginEnabled() {
-  return base::FeatureList::IsEnabled(kParentAccessCode) &&
-         base::FeatureList::IsEnabled(kParentAccessCodeForOnlineLogin);
+  return base::FeatureList::IsEnabled(kParentAccessCodeForOnlineLogin);
 }
 #endif  // defined(OS_CHROMEOS)
 

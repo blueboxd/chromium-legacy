@@ -38,6 +38,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -85,6 +86,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/device_form_factor.h"
@@ -262,7 +264,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       g_routing_id_view_map.Get().emplace(
           RenderViewHostID(GetProcess()->GetID(), routing_id_), this);
   CHECK(result.second) << "Inserting a duplicate item!";
-  GetProcess()->AddRoute(routing_id_, this);
+  GetAgentSchedulingGroup().AddRoute(routing_id_, this);
 
   GetProcess()->AddObserver(this);
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -271,6 +273,8 @@ RenderViewHostImpl::RenderViewHostImpl(
   // brief window where the internal ChannelProxy is null. This ensures that the
   // ChannelProxy is re-initialized in such cases so that subsequent messages
   // make their way to the new renderer once its restarted.
+  // TODO(crbug.com/1111231): Should this go via ASGH? Is it even needed after
+  // the migration?
   GetProcess()->EnableSendQueue();
 
   if (!is_active())
@@ -288,11 +292,16 @@ RenderViewHostImpl::RenderViewHostImpl(
                               : blink::mojom::PageVisibilityState::kHidden);
 
   GetWidget()->set_owner_delegate(this);
+  GetDelegate()->GetFrameTree()->RegisterRenderViewHost(this);
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
   // We can't release the SessionStorageNamespace until our peer
   // in the renderer has wound down.
+  // TODO(crbug.com/1111231): `ReleaseOnCloseACK()` should probably be called on
+  // the ASGH rather than the RPHI. If that happens, does it still make sense to
+  // test if the process is still alive, or should that be encapsulated in
+  // `ASGH::ReleaseOnCloseAck()`?
   if (GetProcess()->IsInitializedAndNotDead()) {
     RenderProcessHostImpl::ReleaseOnCloseACK(
         GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
@@ -303,27 +312,23 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   GetWidget()->ShutdownAndDestroyWidget(false);
   if (IsRenderViewLive()) {
     // Destroy the RenderView, which will also destroy the RenderWidget.
-    GetProcess()->GetRendererInterface()->DestroyView(GetRoutingID());
+    GetAgentSchedulingGroup().DestroyView(GetRoutingID());
   }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
   // Detach the routing ID as the object is going away.
-  GetProcess()->RemoveRoute(GetRoutingID());
+  GetAgentSchedulingGroup().RemoveRoute(GetRoutingID());
   g_routing_id_view_map.Get().erase(
       RenderViewHostID(GetProcess()->GetID(), GetRoutingID()));
 
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
 
-  // This can be called inside the FrameTree destructor. When the delegate is
-  // the InterstialPageImpl, the |frame_tree| is set to null before deleting it.
-  if (FrameTree* frame_tree = GetDelegate()->GetFrameTree()) {
-    // If |this| is in the BackForwardCache, then it was already removed from
-    // the FrameTree at the time it entered the BackForwardCache.
-    if (!is_in_back_forward_cache_)
-      frame_tree->UnregisterRenderViewHost(this);
-  }
+  // If |this| is in the BackForwardCache, then it was already removed from
+  // the FrameTree at the time it entered the BackForwardCache.
+  if (!is_in_back_forward_cache_)
+    GetDelegate()->GetFrameTree()->UnregisterRenderViewHost(this);
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
@@ -439,10 +444,10 @@ bool RenderViewHostImpl::CreateRenderView(
     params->visual_properties = GetWidget()->GetInitialVisualProperties();
   }
 
-  // The RenderView is owned by this process. This call must be accompanied by a
-  // DestroyView [see destructor] or else there will be a leak in the renderer
-  // process.
-  GetProcess()->GetRendererInterface()->CreateView(std::move(params));
+  // The renderer process's `RenderView` is owned by this `RenderViewHost`. This
+  // call must, therefore, be accompanied by a `DestroyView()` [see destructor]
+  // or else there will be a leak in the renderer process.
+  GetAgentSchedulingGroup().CreateView(std::move(params));
 
   // Let our delegate know that we created a RenderView.
   DispatchRenderViewCreated();
@@ -467,8 +472,7 @@ void RenderViewHostImpl::EnterBackForwardCache() {
     will_enter_back_forward_cache_callback_for_testing_.Run();
 
   TRACE_EVENT0("navigation", "RenderViewHostImpl::EnterBackForwardCache");
-  FrameTree* frame_tree = GetDelegate()->GetFrameTree();
-  frame_tree->UnregisterRenderViewHost(this);
+  GetDelegate()->GetFrameTree()->UnregisterRenderViewHost(this);
   is_in_back_forward_cache_ = true;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
       is_in_back_forward_cache_, /*page_restore_params=*/nullptr);
@@ -477,10 +481,9 @@ void RenderViewHostImpl::EnterBackForwardCache() {
 void RenderViewHostImpl::LeaveBackForwardCache(
     blink::mojom::PageRestoreParamsPtr page_restore_params) {
   TRACE_EVENT0("navigation", "RenderViewHostImpl::LeaveBackForwardCache");
-  FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   // At this point, the frames |this| RenderViewHostImpl belongs to are
   // guaranteed to be committed, so it should be reused going forward.
-  frame_tree->RegisterRenderViewHost(this);
+  GetDelegate()->GetFrameTree()->RegisterRenderViewHost(this);
   is_in_back_forward_cache_ = false;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
       is_in_back_forward_cache_, std::move(page_restore_params));
@@ -532,9 +535,10 @@ bool RenderViewHostImpl::IsNeverComposited() {
   return GetDelegate()->IsNeverComposited();
 }
 
-WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {
+blink::web_pref::WebPreferences
+RenderViewHostImpl::GetWebkitPreferencesForWidget() {
   if (!delegate_)
-    return WebPreferences();
+    return blink::web_pref::WebPreferences();
   return delegate_->GetOrCreateWebPreferences();
 }
 
@@ -617,8 +621,12 @@ RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() {
   return render_widget_host_.get();
 }
 
+AgentSchedulingGroupHost& RenderViewHostImpl::GetAgentSchedulingGroup() {
+  return render_widget_host_->agent_scheduling_group();
+}
+
 RenderProcessHost* RenderViewHostImpl::GetProcess() {
-  return GetWidget()->GetProcess();
+  return GetAgentSchedulingGroup().GetProcess();
 }
 
 int RenderViewHostImpl::GetRoutingID() {

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
@@ -12,9 +14,9 @@
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_message_center/media_notification_view_modern_impl.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/audio/audio_device_description.h"
-#include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -31,10 +33,10 @@ namespace {
 
 // TODO(steimel): We need to decide on the correct values here.
 constexpr int kWidth = 400;
-// TODO(noahrose): Should these sizes include the height of the audio
-// device selector view?
+constexpr int kModernUIWidth = 350;
 constexpr gfx::Size kNormalSize = gfx::Size(kWidth, 100);
 constexpr gfx::Size kExpandedSize = gfx::Size(kWidth, 150);
+constexpr gfx::Size kModernUISize = gfx::Size(kModernUIWidth, 100);
 constexpr gfx::Size kDismissButtonSize = gfx::Size(30, 30);
 constexpr int kDismissButtonIconSize = 20;
 constexpr int kDismissButtonBackgroundRadius = 15;
@@ -71,7 +73,9 @@ class MediaNotificationContainerImplView::DismissButton
 MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
-    MediaNotificationService* service)
+    MediaNotificationService* service,
+    media_message_center::MediaNotificationViewImpl::BackgroundStyle
+        background_style)
     : views::Button(this),
       id_(id),
       foreground_color_(kDefaultForegroundColor),
@@ -115,17 +119,34 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
   UpdateDismissButtonIcon();
 
   bool is_cast_notification = item ? item->SourceIsCast() : false;
-  auto view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
-      this, std::move(item), std::move(dismiss_button_placeholder),
-      base::string16(), kWidth, /*should_show_icon=*/false);
+
+  std::unique_ptr<media_message_center::MediaNotificationView> view;
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsModernUI)) {
+    view =
+        std::make_unique<media_message_center::MediaNotificationViewModernImpl>(
+            this, std::move(item), std::move(dismiss_button_placeholder),
+            kModernUIWidth);
+    SetPreferredSize(kModernUISize);
+  } else {
+    view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
+        this, std::move(item), std::move(dismiss_button_placeholder),
+        base::string16(), kWidth, /*should_show_icon=*/false, background_style);
+    SetPreferredSize(kNormalSize);
+  }
+
   view_ = swipeable_container_->AddChildView(std::move(view));
 
   if (base::FeatureList::IsEnabled(
           media::kGlobalMediaControlsSeamlessTransfer) &&
       !is_cast_notification) {
+    auto cast_controller =
+        media_router::GlobalMediaControlsCastStartStopEnabled()
+            ? service_->CreateCastDialogControllerForSession(id_)
+            : nullptr;
     auto audio_device_selector_view =
         std::make_unique<MediaNotificationDeviceSelectorView>(
-            this, audio_sink_id_, foreground_color_, background_color_);
+            this, std::move(cast_controller), audio_sink_id_, foreground_color_,
+            background_color_);
     audio_device_selector_view_ =
         AddChildView(std::move(audio_device_selector_view));
     view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
@@ -489,7 +510,12 @@ bool MediaNotificationContainerImplView::ShouldHandleMouseEvent(
 }
 
 void MediaNotificationContainerImplView::OnSizeChanged() {
-  gfx::Size new_size = is_expanded_ ? kExpandedSize : kNormalSize;
+  gfx::Size new_size;
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsModernUI)) {
+    new_size = kModernUISize;
+  } else {
+    new_size = is_expanded_ ? kExpandedSize : kNormalSize;
+  }
 
   // |new_size| does not contain the height for the audio device selector view.
   // If this view is present, we should query it for its preferred height and

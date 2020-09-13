@@ -46,11 +46,9 @@
 #  : the test is a python script; the path to the script is specified in
 #    the "script" field.
 #  "generated_script"
-#  : the test is a script generated at build time; the script *should* be
+#  : the test is a script generated at build time; the script *must* be
 #    in output_dir/bin/run_$target (or output_dir\bin\run_$target.bat on
-#    Windows), but an alternative path *may* be specified,
-#    in the "script" field, as *relative to the output directory*.
-#    TODO(crbug.com/816629): remove support for "script".
+#    Windows).
 #  "unknown"
 #  : (the default), which indicates that we don't know what the command line
 #    needs to be (this is a fatal error).
@@ -101,6 +99,10 @@
   "android_sync_integration_tests": {
     "label": "//chrome/test:android_sync_integration_tests",
     "type": "windowed_test_launcher",
+  },
+  "android_tools": {
+    "label": "//tools/android:android_tools",
+    "type": "additional_compile_target",
   },
   "android_webview_junit_tests": {
     "label": "//android_webview/test:android_webview_junit_tests",
@@ -399,6 +401,10 @@
     "label": "//media/cast:cast_unittests",
     "type": "windowed_test_launcher",
   },
+  "cc_perftests": {
+    "label": "//cc:cc_perftests",
+    "type": "additional_compile_target",
+  },
   "cc_unittests": {
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
@@ -523,7 +529,6 @@
       "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
       "-v",
       "--chromedriver=chromedriver",
-      "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
       "--output-dir=${ISOLATED_OUTDIR}",
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],
@@ -1111,10 +1116,6 @@
     "script": "//chrome/test/media_router/internal/media_router_tests.py",
     "type": "script",
   },
-  "media_router_junit_tests": {
-    "label": "//chrome/android/features/media_router:media_router_junit_tests",
-    "type": "junit_test",
-  },
   "media_router_perf_tests": {
     "args": [
       "--browser=release",
@@ -1403,6 +1404,10 @@
     "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
     "type": "console_test_launcher",
   },
+  "push_apps_to_background_apk": {
+    "label": "//tools/android/push_apps_to_background:push_apps_to_background_apk",
+    "type": "additional_compile_target",
+  },
   "remoting/client:client": {
     "label": "//remoting/client:client",
     "type": "additional_compile_target",
@@ -1428,12 +1433,10 @@
   "resource_sizes_chrome_modern_public_minimal_apks": {
     "label": "//chrome/android:resource_sizes_chrome_modern_public_minimal_apks",
     "type": "generated_script",
-    "script": "bin/resource_sizes_chrome_modern_public_minimal_apks",
   },
   "resource_sizes_cronet_sample_apk": {
     "label": "//components/cronet/android:resource_sizes_cronet_sample_apk",
     "type": "generated_script",
-    "script": "bin/resource_sizes_cronet_sample_apk",
   },
   'resource_sizes_lacros_chrome': {
     "label": "//chromeos/lacros:resource_sizes_lacros_chrome",
@@ -1443,17 +1446,14 @@
   "resource_sizes_monochrome_public_minimal_apks": {
     "label": "//chrome/android:resource_sizes_monochrome_public_minimal_apks",
     "type": "generated_script",
-    "script": "bin/resource_sizes_monochrome_public_minimal_apks",
   },
   "resource_sizes_trichrome": {
     "label": "//chrome/android:resource_sizes_trichrome",
     "type": "generated_script",
-    "script": "bin/resource_sizes_trichrome",
   },
   "resource_sizes_system_webview_bundle": {
     "label": "//android_webview:resource_sizes_system_webview_bundle",
     "type": "generated_script",
-    "script": "bin/resource_sizes_system_webview_bundle",
   },
   "sandbox_linux_unittests": {
     "label": "//sandbox/linux:sandbox_linux_unittests",
@@ -1540,6 +1540,10 @@
     "label": "//android_webview:system_webview_apk",
     "type": "additional_compile_target",
   },
+  "system_webview_shell_apk": {
+    "label": "//android_webview/tools/system_webview_shell:system_webview_shell_apk",
+    "type": "additional_compile_target",
+  },
   "system_webview_shell_layout_test_apk": {
     "args": [
       "--replace-system-package",
@@ -1616,6 +1620,10 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
+  "telemetry_weblayer_apks": {
+    "label": "//tools/perf/chrome_telemetry_build:telemetry_weblayer_apks",
+    "type": "additional_compile_target",
+  },
   # TODO(crbug.com/1080749): Re-add this once the test is fixed and re-enabled.
   # "test_buildbucket_api_gpu_use_cases": {
   #   "label": "//content/test:test_buildbucket_api_gpu_use_cases",
@@ -1686,7 +1694,6 @@
   "upload_trace_processor": {
     "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",
     "type": "generated_script",
-    "script": "bin/upload_trace_processor",
   },
   "url_unittests": {
     "label": "//url:url_unittests",

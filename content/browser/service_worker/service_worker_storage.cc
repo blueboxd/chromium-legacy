@@ -136,7 +136,7 @@ void ServiceWorkerStorage::GetRegisteredOrigins(
 
   std::vector<url::Origin> origins;
   for (const auto& origin : registered_origins_)
-    origins.push_back(url::Origin::Create(origin));
+    origins.push_back(origin);
   std::move(callback).Run(std::move(origins));
 }
 
@@ -165,7 +165,7 @@ void ServiceWorkerStorage::FindRegistrationForClientUrl(
   }
 
   // Bypass database lookup when there is no stored registration.
-  if (!base::Contains(registered_origins_, client_url.GetOrigin())) {
+  if (!base::Contains(registered_origins_, url::Origin::Create(client_url))) {
     std::move(callback).Run(
         /*data=*/nullptr, /*resources=*/nullptr,
         ServiceWorkerDatabase::Status::kErrorNotFound);
@@ -199,7 +199,7 @@ void ServiceWorkerStorage::FindRegistrationForScope(
   }
 
   // Bypass database lookup when there is no stored registration.
-  if (!base::Contains(registered_origins_, scope.GetOrigin())) {
+  if (!base::Contains(registered_origins_, url::Origin::Create(scope))) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            /*data=*/nullptr, /*resources=*/nullptr,
@@ -215,7 +215,7 @@ void ServiceWorkerStorage::FindRegistrationForScope(
 
 void ServiceWorkerStorage::FindRegistrationForId(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     FindRegistrationDataCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
@@ -596,7 +596,7 @@ void ServiceWorkerStorage::DoomUncommittedResources(
 
 void ServiceWorkerStorage::StoreUserData(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     std::vector<storage::mojom::ServiceWorkerUserDataPtr> user_data,
     DatabaseStatusCallback callback) {
   switch (state_) {
@@ -1124,7 +1124,7 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
                             deleted_version.newly_purgeable_resources);
     return;
   }
-  registered_origins_.insert(origin);
+  registered_origins_.insert(url::Origin::Create(origin));
 
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
@@ -1170,7 +1170,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
   }
 
   if (origin_state == OriginState::kDelete)
-    registered_origins_.erase(params->origin);
+    registered_origins_.erase(url::Origin::Create(params->origin));
 
   std::move(params->callback)
       .Run(ServiceWorkerDatabase::Status::kOk, origin_state,
@@ -1197,9 +1197,9 @@ void ServiceWorkerStorage::DidDoomUncommittedResourceIds(
 
 void ServiceWorkerStorage::DidStoreUserData(
     DatabaseStatusCallback callback,
-    const GURL& origin,
+    const url::Origin& origin,
     ServiceWorkerDatabase::Status status) {
-  MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
+  MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin.GetURL());
   std::move(callback).Run(status);
 }
 
@@ -1536,12 +1536,12 @@ void ServiceWorkerStorage::FindForIdInDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     FindInDBCallback callback) {
   storage::mojom::ServiceWorkerRegistrationDataPtr data;
   auto resources = std::make_unique<ResourceList>();
   ServiceWorkerDatabase::Status status = database->ReadRegistration(
-      registration_id, origin, &data, resources.get());
+      registration_id, origin.GetURL(), &data, resources.get());
   original_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(data),
                                 std::move(resources), status));
@@ -1563,8 +1563,8 @@ void ServiceWorkerStorage::FindForIdOnlyInDB(
                                   /*resources=*/nullptr, status));
     return;
   }
-  FindForIdInDB(database, original_task_runner, registration_id, origin,
-                std::move(callback));
+  FindForIdInDB(database, original_task_runner, registration_id,
+                url::Origin::Create(origin), std::move(callback));
 }
 
 // static

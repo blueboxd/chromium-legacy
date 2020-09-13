@@ -34,17 +34,6 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     return mockFeedback;
   }
 
-  /**
-   * Create a function which perform the command |cmd|.
-   * @param {string} cmd
-   * @return {function() : void}
-   */
-  doCmd(cmd) {
-    return function() {
-      CommandHandler.onCommand(cmd);
-    };
-  }
-
   doGesture(gesture) {
     return () => {
       GestureCommandHandler.onAccessibilityGesture_(gesture);
@@ -290,10 +279,10 @@ TEST_F('ChromeVoxBackgroundTest', 'SelectSingleBasic', function() {
   this.runWithLoadedTree(this.formsDoc, function() {
     mockFeedback.expectSpeech('apple', 'has pop up', 'Collapsed')
         .expectBraille('apple btn +popup +')
-        .call(press(40 /* ArrowDown */))
+        .call(press(KeyCode.DOWN))
         .expectSpeech('grape', /2 of 3/)
         .expectBraille('grape 2/3')
-        .call(press(40 /* ArrowDown */))
+        .call(press(KeyCode.DOWN))
         .expectSpeech('banana', /3 of 3/)
         .expectBraille('banana 3/3');
     mockFeedback.replay();
@@ -1362,12 +1351,12 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NativeFind', function() {
     <a href="#">pineapple</a>
   `,
       function(root) {
-        mockFeedback.call(press(70, {ctrl: true}))
+        mockFeedback.call(press(KeyCode.F, {ctrl: true}))
             .expectSpeech('Find', 'Edit text')
-            .call(press(71))
+            .call(press(KeyCode.G))
             .expectSpeech('grape', 'Link')
-            .call(press(8))
-            .call(press(76))
+            .call(press(KeyCode.Back))
+            .call(press(KeyCode.L))
             .expectSpeech('pineapple', 'Link')
             .replay();
       });
@@ -1570,6 +1559,26 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationEscapesEdit', function() {
           mockFeedback.call(assertBeginning.bind(this, true))
               .call(assertEnd.bind(this, false))
 
+              .call(press(KeyCode.DOWN))
+              .expectSpeech('is')
+              .call(assertBeginning.bind(this, false))
+              .call(assertEnd.bind(this, false))
+
+              .call(press(KeyCode.DOWN))
+              .expectSpeech('a')
+              .call(assertBeginning.bind(this, false))
+              .call(assertEnd.bind(this, false))
+
+              .call(press(KeyCode.DOWN))
+              .expectSpeech('test')
+              .call(assertBeginning.bind(this, false))
+              .call(assertEnd.bind(this, true))
+
+              .call(textArea.focus.bind(textArea))
+              .expectSpeech('Text area')
+              .call(assertBeginning.bind(this, true))
+              .call(assertEnd.bind(this, false))
+
               .call(press(40 /* ArrowDown */))
               .expectSpeech('is')
               .call(assertBeginning.bind(this, false))
@@ -1583,11 +1592,6 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationEscapesEdit', function() {
               .call(press(40 /* ArrowDown */))
               .expectSpeech('test')
               .call(assertBeginning.bind(this, false))
-              .call(assertEnd.bind(this, true))
-
-              .call(textArea.focus.bind(textArea))
-              .expectSpeech('Text area')
-              .call(assertBeginning.bind(this, true))
               .call(assertEnd.bind(this, true))
 
               .replay();
@@ -1841,13 +1845,13 @@ TEST_F('ChromeVoxBackgroundTest', 'TabSwitchAndRefreshRecovery', function() {
             function(root2) {
               mockFeedback.expectSpeech('tab2')
                   .clearPendingOutput()
-                  .call(press(9 /* tab */, {shift: true, ctrl: true}))
+                  .call(press(KeyCode.TAB, {shift: true, ctrl: true}))
                   .expectSpeech('tab1')
                   .clearPendingOutput()
-                  .call(press(9 /* tab */, {ctrl: true}))
+                  .call(press(KeyCode.TAB, {ctrl: true}))
                   .expectSpeech('tab2')
                   .clearPendingOutput()
-                  .call(press(82 /* R */, {ctrl: true}))
+                  .call(press(KeyCode.R, {ctrl: true}))
 
                   // ChromeVox stays on the same node due to tree path recovery.
                   .call(() => {
@@ -2054,7 +2058,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_EventFromUser', function() {
               assertEquals('cancel', evt.target.name);
             }));
 
-        press(9 /* tab */)();
+        press(KeyCode.TAB)();
       });
 });
 
@@ -2921,8 +2925,8 @@ TEST_F('ChromeVoxBackgroundTest', 'AudioVideo', function() {
         assertNotNullNorUndefined(audio);
         assertNotNullNorUndefined(video);
 
-        assertEquals('', audio.name);
-        assertEquals('', video.name);
+        assertEquals(undefined, audio.name);
+        assertEquals(undefined, video.name);
         assertEquals(undefined, audio.firstChild);
         assertEquals(undefined, video.firstChild);
 
@@ -3031,6 +3035,72 @@ TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', function() {
         mockFeedback.call(doGesture('swipeRight2')).expectSpeech('Enter');
         mockFeedback.call(doGesture('swipeLeft2'))
             .expectSpeech('Escape')
+            .replay();
+      });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'DialogAutoSummaryTextContent', function() {
+  // This was overridden in setUp() for most all tests, but we want the
+  // production behavior here.
+  Output.ROLE_INFO_[RoleType.DIALOG]['outputContextFirst'] = true;
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p>start</p>
+    <div role="dialog" aria-label="Setup">
+      <h1>Welcome</h1>
+      <p>This is some introductory text<p>
+      <button>Exit</button>
+      <button>Let's go</button>
+    </div>
+  `,
+      function(root) {
+        mockFeedback.call(doCmd('nextObject'))
+            .expectSpeech('Setup', 'Dialog')
+            .expectSpeech(
+                `Welcome This is some introductory text Exit Let's go`)
+            .expectSpeech('Welcome')
+            .expectSpeech('Heading 1')
+            .replay();
+      });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'ImageAnnotations', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p>start</p>
+    <img alt="bar" src="data:image/png;base64,iVBORw0KGgoAAAANS">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANS">
+  `,
+      function(root) {
+        const [namedImg, unnamedImg] = root.findAll({role: RoleType.IMAGE});
+
+        assertNotNullNorUndefined(namedImg);
+        assertNotNullNorUndefined(unnamedImg);
+
+        assertEquals('bar', namedImg.name);
+        assertEquals(undefined, unnamedImg.name);
+
+        // Fake the image annotation.
+        Object.defineProperty(namedImg, 'imageAnnotation', {
+          get() {
+            return 'foo';
+          }
+        });
+        Object.defineProperty(unnamedImg, 'imageAnnotation', {
+          get() {
+            return 'foo';
+          }
+        });
+
+        mockFeedback.call(doCmd('nextObject'))
+            .expectSpeech('start')
+            .expectNextSpeechUtteranceIsNot('foo')
+            .expectSpeech('bar', 'Image')
+            .call(doCmd('nextObject'))
+            .expectNextSpeechUtteranceIsNot('bar')
+            .expectSpeech('foo', 'Image')
             .replay();
       });
 });

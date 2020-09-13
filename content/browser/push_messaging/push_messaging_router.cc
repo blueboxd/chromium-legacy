@@ -77,7 +77,7 @@ void FindServiceWorkerRegistration(
     ServiceWorkerMetrics::EventType event_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
-    const GURL& origin,
+    const url::Origin& origin,
     int64_t service_worker_registration_id,
     ServiceWorkerStartCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -112,7 +112,7 @@ void StartServiceWorkerForDispatch(ServiceWorkerMetrics::EventType event_type,
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&FindServiceWorkerRegistration, event_type,
                      std::move(service_worker_context),
-                     std::move(devtools_context), origin,
+                     std::move(devtools_context), url::Origin::Create(origin),
                      service_worker_registration_id, std::move(callback)));
 }
 
@@ -179,7 +179,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
     if (payload)
       event_metadata["Payload"] = *payload;
     devtools_context->LogBackgroundServiceEventOnCoreThread(
-        service_worker->registration_id(), service_worker->script_origin(),
+        service_worker->registration_id(), service_worker->origin(),
         DevToolsBackgroundService::kPushMessaging, "Push event dispatched",
         message_id, event_metadata);
   }
@@ -244,7 +244,7 @@ void PushMessagingRouter::DeliverMessageEnd(
       push_event_status !=
           blink::mojom::PushEventStatus::SERVICE_WORKER_ERROR) {
     devtools_context->LogBackgroundServiceEventOnCoreThread(
-        service_worker->registration_id(), service_worker->script_origin(),
+        service_worker->registration_id(), service_worker->origin(),
         DevToolsBackgroundService::kPushMessaging, "Push event completed",
         message_id, {{"Status", status_description}});
   }

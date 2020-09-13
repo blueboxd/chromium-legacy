@@ -253,10 +253,6 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = "android-marshmallow-x86-fyi-rel",
-)
-
-try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_RELEASES,
     cores = 16,
@@ -265,6 +261,10 @@ try_.chromium_android_builder(
     tryjob = try_.job(
         experiment_percentage = 5,
     ),
+)
+
+try_.chromium_android_builder(
+    name = "android-marshmallow-x86-rel-non-cq",
 )
 
 # TODO(crbug.com/1111436) Added it back once all Pixel 1s are flashed
@@ -1092,7 +1092,7 @@ try_.chromium_mac_builder(
     builderless = False,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(experiment_percentage = 10),
+    tryjob = try_.job(experiment_percentage = 8),
 )
 
 try_.chromium_mac_builder(

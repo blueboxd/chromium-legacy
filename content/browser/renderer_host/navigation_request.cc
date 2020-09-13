@@ -89,7 +89,6 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
@@ -116,6 +115,7 @@
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -2511,11 +2511,8 @@ void NavigationRequest::OnRequestFailedInternal(
   net_error_ = static_cast<net::Error>(status.error_code);
   resolve_error_info_ = status.resolve_error_info;
 
-  // If the request was canceled by the user do not show an error page.
-  if (status.error_code == net::ERR_ABORTED) {
-    frame_tree_node_->ResetNavigationRequest(false);
+  if (MaybeCancelFailedNavigation())
     return;
-  }
 
   if (collapse_frame) {
     DCHECK(!frame_tree_node_->IsMainFrame());
@@ -2892,11 +2889,8 @@ void NavigationRequest::OnFailureChecksComplete(
   net::Error old_net_error = net_error_;
   net_error_ = result.net_error_code();
 
-  // TODO(crbug.com/774663): We may want to take result.action() into account.
-  if (net::ERR_ABORTED == result.net_error_code()) {
-    frame_tree_node_->ResetNavigationRequest(false);
+  if (MaybeCancelFailedNavigation())
     return;
-  }
 
   // Ensure that WillFailRequest() isn't changing the error code in a way that
   // switches the destination process for the error page - see
@@ -5032,6 +5026,21 @@ void NavigationRequest::CheckStateTransition(NavigationState state) const {
 void NavigationRequest::SetState(NavigationState state) {
   CheckStateTransition(state);
   state_ = state;
+}
+
+bool NavigationRequest::MaybeCancelFailedNavigation() {
+  // TODO(crbug.com/774663): Maybe take `ThrottleCheckResult::action()` into
+  // account as well.
+  // If the request was canceled by the user, do not show an error page.
+  if (net::ERR_ABORTED == net_error_ ||
+      // Some embedders suppress error pages to allow custom error handling.
+      (net::ERR_BLOCKED_BY_CLIENT == net_error_ &&
+       silently_ignore_blocked_by_client_)) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace content

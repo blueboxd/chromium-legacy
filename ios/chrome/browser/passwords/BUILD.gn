@@ -7,8 +7,6 @@ import("//ios/web/js_compile.gni")
 source_set("passwords") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "credential_manager.h",
-    "credential_manager.mm",
     "ios_chrome_bulk_leak_check_service_factory.cc",
     "ios_chrome_bulk_leak_check_service_factory.h",
     "ios_chrome_change_password_url_service_factory.cc",
@@ -29,8 +27,6 @@ source_set("passwords") {
     "ios_password_infobar_controller.mm",
     "ios_password_requirements_service_factory.cc",
     "ios_password_requirements_service_factory.h",
-    "js_credential_manager.h",
-    "js_credential_manager.mm",
     "notify_auto_signin_view_controller.h",
     "notify_auto_signin_view_controller.mm",
     "password_check_observer_bridge.h",
@@ -110,10 +106,7 @@ source_set("passwords") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    ":feature_flags",
-    ":passwords_generation_utils",
-  ]
+  public_deps = [ ":passwords_generation_utils" ]
 
   allow_circular_includes_from = [ ":passwords_generation_utils" ]
 }
@@ -148,15 +141,6 @@ source_set("public") {
   deps = [ "//base" ]
 }
 
-source_set("feature_flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "password_manager_features.cc",
-    "password_manager_features.h",
-  ]
-  deps = [ "//base" ]
-}
-
 source_set("passwords_generation_utils") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -171,10 +155,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "credential_manager_unittest.mm",
     "ios_chrome_password_check_manager_unittest.mm",
     "ios_chrome_password_manager_client_unittest.mm",
-    "js_credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",
     "password_controller_unittest.mm",
     "well_known_change_password_tab_helper_unittest.mm",
@@ -196,13 +178,10 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
-    "//components/security_state/ios",
     "//components/ukm:test_support",
-    "//google_apis",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords/test",
-    "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/autofill/form_input_accessory",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/web:test_support",
@@ -210,7 +189,6 @@ source_set("unit_tests") {
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/js_messaging",
-    "//ios/web/public/security",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
@@ -228,10 +206,8 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [ "credential_manager_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
-    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/password_manager/core/common",

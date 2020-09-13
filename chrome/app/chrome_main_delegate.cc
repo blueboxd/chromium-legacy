@@ -493,7 +493,8 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-  // Record the startup process creation time on supported platforms.
+  // Record the startup process creation time on supported platforms. On Android
+  // this is recorded in ChromeMainDelegateAndroid.
   startup_metric_utils::RecordStartupProcessCreationTime(
       base::Process::Current().CreationTime());
 #endif
@@ -598,6 +599,11 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   // syscall in the sandbox (baseline_policy_android.cc). When this call is
   // removed, the sandbox whitelist should be updated too.
   chrome::InitializeCpuAffinityExperiments();
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Threading features.
+  base::PlatformThread::InitThreadPostFieldTrial();
 #endif
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)

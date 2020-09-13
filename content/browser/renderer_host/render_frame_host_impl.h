@@ -409,7 +409,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the current WebPreferences for the WebContents associated with this
   // RenderFrameHost. Will create one if it does not exist (and update all the
   // renderers with the newly computed value).
-  WebPreferences GetOrCreateWebPreferences();
+  blink::web_pref::WebPreferences GetOrCreateWebPreferences();
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1626,6 +1626,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FocusedElementChanged(bool is_editable_element,
                              const gfx::Rect& bounds_in_frame_widget,
                              blink::mojom::FocusType focus_type) override;
+  void TextSelectionChanged(const base::string16& text,
+                            uint32_t offset,
+                            const gfx::Range& range) override;
   void ShowPopupMenu(
       mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
       const gfx::Rect& bounds,
@@ -1762,10 +1765,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // network::mojom::CookieAccessObserver:
   void OnCookiesAccessed(
       network::mojom::CookieAccessDetailsPtr details) override;
-
-  // mojom::FrameHost:
-  void OpenURL(mojom::OpenURLParamsPtr params) override;
-  void DidStopLoading() override;
 
   void GetSavableResourceLinksFromRenderer();
 
@@ -1963,9 +1962,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnSelectionChanged(const base::string16& text,
-                          uint32_t offset,
-                          const gfx::Range& range);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
   void OnSaveImageFromDataURL(const std::string& url_str);
 
@@ -2049,6 +2045,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void UpdateState(const PageState& state) override;
+  void OpenURL(mojom::OpenURLParamsPtr params) override;
+  void DidStopLoading() override;
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

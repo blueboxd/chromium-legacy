@@ -55,7 +55,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -67,6 +66,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -81,6 +81,7 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/navigation_error_navigation_throttle.h"
+#include "weblayer/browser/navigation_ui_data_impl.h"
 #include "weblayer/browser/no_state_prefetch/prerender_manager_factory.h"
 #include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/page_specific_content_settings_delegate.h"
@@ -162,6 +163,16 @@ bool IsSafebrowsingSupported() {
   return true;
 #endif
   return false;
+}
+
+bool IsNetworkErrorAutoReloadEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableAutoReload))
+    return true;
+  if (command_line.HasSwitch(switches::kDisableAutoReload))
+    return false;
+  return true;
 }
 
 bool IsInHostedApp(content::WebContents* web_contents) {
@@ -317,7 +328,7 @@ blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
-    content::WebPreferences* prefs) {
+    blink::web_pref::WebPreferences* prefs) {
   prefs->default_encoding = l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 
   content::WebContents* web_contents =
@@ -624,10 +635,16 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
 
   if (handle->IsInMainFrame()) {
-    auto auto_reload_throttle =
-        error_page::NetErrorAutoReloader::MaybeCreateThrottleFor(handle);
-    if (auto_reload_throttle)
-      throttles.push_back(std::move(auto_reload_throttle));
+    NavigationUIDataImpl* navigation_ui_data =
+        static_cast<NavigationUIDataImpl*>(handle->GetNavigationUIData());
+    if ((!navigation_ui_data ||
+         !navigation_ui_data->disable_network_error_auto_reload()) &&
+        IsNetworkErrorAutoReloadEnabled()) {
+      auto auto_reload_throttle =
+          error_page::NetErrorAutoReloader::MaybeCreateThrottleFor(handle);
+      if (auto_reload_throttle)
+        throttles.push_back(std::move(auto_reload_throttle));
+    }
 
     // MetricsNavigationThrottle requires that it runs before
     // NavigationThrottles that may delay or cancel navigations, so only

@@ -12,6 +12,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/phone_status_view.h"
 #include "ash/system/phonehub/quick_actions_view.h"
+#include "ash/system/phonehub/task_continuation_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -20,6 +21,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/bind.h"
+#include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -45,31 +47,45 @@ constexpr int kPaddingBetweenTitleAndSeparator = 3;
 // such as phone status, task continuation, etc.
 class PhoneHubView : public views ::View {
  public:
-  explicit PhoneHubView(TrayBubbleView* bubble_view) {
+  explicit PhoneHubView(TrayBubbleView* bubble_view)
+      : bubble_view_(bubble_view) {
     auto setup_layered_view = [](views::View* view) {
       view->SetPaintToLayer();
       view->layer()->SetFillsBoundsOpaquely(false);
     };
 
     setup_layered_view(
-        bubble_view->AddChildView(std::make_unique<PhoneStatusView>()));
+        bubble_view_->AddChildView(std::make_unique<PhoneStatusView>()));
 
-    auto* separator =
-        bubble_view->AddChildView(std::make_unique<views::Separator>());
-    setup_layered_view(separator);
-    separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kSeparatorColor));
-    separator->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kPaddingBetweenTitleAndSeparator, 0,
-                    kMenuSeparatorVerticalPadding, 0)));
+    AddSeparator();
 
     setup_layered_view(
-        bubble_view->AddChildView(std::make_unique<QuickActionsView>()));
+        bubble_view_->AddChildView(std::make_unique<QuickActionsView>()));
+
+    AddSeparator();
+
+    setup_layered_view(
+        bubble_view_->AddChildView(std::make_unique<TaskContinuationView>()));
   }
   ~PhoneHubView() override = default;
 
   // views::View:
   const char* GetClassName() const override { return "PhoneHubView"; }
+
+ private:
+  void AddSeparator() {
+    auto* separator =
+        bubble_view_->AddChildView(std::make_unique<views::Separator>());
+    separator->SetPaintToLayer();
+    separator->layer()->SetFillsBoundsOpaquely(false);
+    separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kSeparatorColor));
+    separator->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kPaddingBetweenTitleAndSeparator, 0,
+                    kMenuSeparatorVerticalPadding, 0)));
+  }
+
+  TrayBubbleView* bubble_view_ = nullptr;
 };
 
 }  // namespace
@@ -91,6 +107,21 @@ PhoneHubTray::PhoneHubTray(Shelf* shelf) : TrayBackgroundView(shelf) {
 PhoneHubTray::~PhoneHubTray() {
   if (bubble_)
     bubble_->bubble_view()->ResetDelegate();
+  CleanUpPhoneHubManager();
+}
+
+void PhoneHubTray::SetPhoneHubManager(
+    chromeos::phonehub::PhoneHubManager* phone_hub_manager) {
+  if (phone_hub_manager == phone_hub_manager_)
+    return;
+
+  CleanUpPhoneHubManager();
+
+  phone_hub_manager_ = phone_hub_manager;
+  if (phone_hub_manager_)
+    phone_hub_manager_->GetFeatureStatusProvider()->AddObserver(this);
+
+  OnFeatureStatusChanged();
 }
 
 void PhoneHubTray::ClickedOutsideBubble() {
@@ -185,9 +216,38 @@ void PhoneHubTray::CloseBubble() {
   shelf()->UpdateAutoHideState();
 }
 
+void PhoneHubTray::OnFeatureStatusChanged() {
+  UpdateVisibility();
+}
+
 void PhoneHubTray::UpdateVisibility() {
-  // TODO(tengs): Hook up visibility with phonehub::FeatureStatusProvider.
-  SetVisiblePreferred(chromeos::features::IsPhoneHubEnabled());
+  if (!phone_hub_manager_) {
+    SetVisiblePreferred(false);
+    return;
+  }
+
+  auto feature_status =
+      phone_hub_manager_->GetFeatureStatusProvider()->GetStatus();
+  bool is_visible;
+  switch (feature_status) {
+    case chromeos::phonehub::FeatureStatus::kNotEligibleForFeature:
+      FALLTHROUGH;
+    case chromeos::phonehub::FeatureStatus::kDisabled:
+      is_visible = false;
+      break;
+    default:
+      is_visible = true;
+      break;
+  }
+
+  SetVisiblePreferred(is_visible);
+}
+
+void PhoneHubTray::CleanUpPhoneHubManager() {
+  if (!phone_hub_manager_)
+    return;
+
+  phone_hub_manager_->GetFeatureStatusProvider()->RemoveObserver(this);
 }
 
 }  // namespace ash

@@ -1454,10 +1454,6 @@ const char kNewOsSettingsSearchDescription[] =
     "Enables New OS Settings search with fuzzy matching, and disables the old "
     "OS settings search using exact string matching.";
 
-const char kTextureLayerSkipWaitForActivationName[] = "Parallelize layers";
-const char kTextureLayerSkipWaitForActivationDescription[] =
-    "Don't wait for layer activation before beginning new frame.";
-
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on shelf app icons and "
@@ -3256,6 +3252,11 @@ const char kCastMediaRouteProviderName[] = "Cast Media Route Provider";
 const char kCastMediaRouteProviderDescription[] =
     "Enables the native Cast Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
+
+const char kCopyLinkToTextName[] = "Copy Link To Text";
+const char kCopyLinkToTextDescription[] =
+    "Adds an item to the context menu to allow a user to copy a link to the "
+    "page with the selected text highlighted.";
 
 const char kGlobalMediaControlsCastStartStopName[] =
     "Global media controls control Cast start/stop";

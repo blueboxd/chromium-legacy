@@ -180,7 +180,7 @@ std::string TranslateManager::GetManualTargetLanguage(
 }
 
 bool TranslateManager::CanManuallyTranslate() {
-  if (!base::FeatureList::IsEnabled(translate::kTranslateUI) ||
+  if (!base::FeatureList::IsEnabled(translate::kTranslate) ||
       net::NetworkChangeNotifier::IsOffline() ||
       (!ignore_missing_key_for_testing_ &&
        !::google_apis::HasAPIKeyConfigured()))
@@ -200,9 +200,6 @@ bool TranslateManager::CanManuallyTranslate() {
 
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
-  if (!translate_prefs->IsTranslateAllowedByPolicy())
-    return false;
-  
   const std::string target_lang = GetManualTargetLanguage(
       TranslateDownloadManager::GetLanguageCode(source_language),
       language_state_, translate_prefs.get(), language_model_);
@@ -212,13 +209,7 @@ bool TranslateManager::CanManuallyTranslate() {
   return true;
 }
 
-void TranslateManager::InitiateManualTranslation(bool auto_translate,
-                                                 bool triggered_from_menu) {
-  // If a translation has already been triggered, do nothing.
-  if (language_state_.IsPageTranslated() ||
-      language_state_.translation_pending())
-    return;
-
+void TranslateManager::InitiateManualTranslation(bool auto_translate) {
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
   const std::string source_code = TranslateDownloadManager::GetLanguageCode(
@@ -230,8 +221,8 @@ void TranslateManager::InitiateManualTranslation(bool auto_translate,
 
   // Translate the page if it has not been translated and manual translate
   // should trigger translation automatically. Otherwise, only show the infobar.
-  if (auto_translate) {
-    TranslatePage(source_code, target_lang, triggered_from_menu);
+  if (!language_state_.IsPageTranslated() && auto_translate) {
+    TranslatePage(source_code, target_lang, false);
     return;
   }
 
@@ -557,7 +548,7 @@ void TranslateManager::SetIgnoreMissingKeyForTesting(bool ignore) {
 // static
 bool TranslateManager::IsAvailable(const TranslatePrefs* prefs) {
   // These conditions mirror the conditions in InitiateTranslation.
-  return base::FeatureList::IsEnabled(translate::kTranslateUI) &&
+  return base::FeatureList::IsEnabled(translate::kTranslate) &&
          (ignore_missing_key_for_testing_ ||
           ::google_apis::HasAPIKeyConfigured()) &&
          prefs->IsOfferTranslateEnabled();
@@ -709,7 +700,7 @@ void TranslateManager::FilterIsTranslatePossible(
         TranslateBrowserMetrics::INITIATION_STATUS_DOESNT_NEED_TRANSLATION);
   }
 
-  if (!base::FeatureList::IsEnabled(translate::kTranslateUI)) {
+  if (!base::FeatureList::IsEnabled(translate::kTranslate)) {
     decision->PreventAllTriggering();
     decision->initiation_statuses.push_back(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);

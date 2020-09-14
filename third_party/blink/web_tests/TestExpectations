@@ -726,7 +726,7 @@ crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Fai
 crbug.com/1111708 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/1111128 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 
-# These have some incorrect expectations.
+# These have some incorrect expectations and will supposedly be deleted soon (Sep 2020) by mozilla.
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003.html [ Failure ]
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004.html [ Failure ]
@@ -1624,17 +1624,10 @@ crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-# Fix once top-level-await is enabled
-crbug.com/1022182 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-4-tla.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Skip ]
-crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Skip ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-order-4-tla.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Pass ]
-crbug.com/1022182 virtual/module-top-level-await/external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Pass ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-import.html [ Failure ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-delayed.html [ Timeout ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-immediate-promise.html [ Timeout ]
+crbug.com/1022182 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/module-tla-promise.html [ Timeout ]
 
 crbug.com/676270 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
 crbug.com/1022415 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-010.html [ Failure ]
@@ -2536,6 +2529,14 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/omt-worker-fetch/external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/fetch/connection-pool/network-partition-key.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Failure ]

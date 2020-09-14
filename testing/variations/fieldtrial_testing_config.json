@@ -87,6 +87,25 @@
             ]
         }
     ],
+    "AndroidAppMenuUiRework": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "RegroupBackwardButton",
+                    "params": {
+                        "action_bar": "backward_button"
+                    },
+                    "enable_features": [
+                        "TabbedAppOverflowMenuIcons",
+                        "TabbedAppOverflowMenuRegroup"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -6905,27 +6924,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "TextfieldFocusOnTapUp"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TextureLayerSkipWaitForActivation": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "TextureLayerSkipWaitForActivation",
-                    "enable_features": [
-                        "TextureLayerSkipWaitForActivation"
                     ]
                 }
             ]

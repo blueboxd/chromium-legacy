@@ -2024,6 +2024,7 @@ if (!is_android) {
         "//components/content_settings/core/test:test_support",
         "//components/guest_view/browser:test_support",
         "//components/keep_alive_registry",
+        "//components/web_package:test_support",
         "//google_apis/drive:test_support",
 
         # TODO(rockot) bug 505926: The chrome_extensions_browsertests target
@@ -3769,6 +3770,7 @@ test("unit_tests") {
       "../browser/component_updater/soda_en_us_component_installer_unittest.cc",
       "../browser/component_updater/soda_ja_jp_component_installer_unittest.cc",
       "../browser/content_settings/generated_cookie_prefs_unittest.cc",
+      "../browser/content_settings/generated_notification_pref_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
       "../browser/media/feeds/media_feeds_converter_unittest.cc",
       "../browser/media/feeds/media_feeds_fetcher_unittest.cc",

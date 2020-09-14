@@ -171,7 +171,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:b022173f8069cf8001d4cf2a87ce7c5f0eae220f',
+  'luci_go': 'git_revision:18502e6a01811b0c2dd2a0250e81bd82e47d2c2d',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '183a454b9d5474abb097da2c527805a9c7379a6c',
+  'angle_revision': '75d257686e00d26633d0ae4648b1c9939fffda22',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '01a6665d9a382f0c77c4d922c9211615e002e021',
+  'devtools_frontend_revision': '02fad13e19503b82c73778c2cf54bc25cb2dd652',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '2de7d3af0c0ed8b0fcff7b83b36c5a7424e51e19',
+  'spv_tools_revision': '726af6f78f80988271c8b558ae9cc84fa5a65016',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -947,7 +947,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '759ae5aec02bd6fe5f58a9c7cd6c98cc1968c7b5',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f8a5602c55606f8e97f5576c85cbc2a58026a999',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7214110d995df5f856022330b0fe9fd34c79cf31',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4bb03bb4b22dd262b712cd3a6bab6d8049f77746',
     'condition': 'checkout_src_internal',
   },
 

@@ -277,6 +277,9 @@
   <message name="IDS_OS_SETTINGS_LANGUAGES_LANGUAGES_PREFERENCE_DESCRIPTION" translateable="false" desc="The description of the section in the language settings page where users can add languages they read to an ordered list. The web content languages will be served in the order of the list.">
     Add and order languages you read. Apps and websites will be displayed in the most preferred language available. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_TRANSLATE_TARGET_LABEL" translateable="false" desc="The label of the toggle that enables the prompt to translate a page to users.">
+   The language is used when translating pages
+  </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_LABEL" translateable="false" desc="The label of the toggle that enables the prompt to translate a page to users.">
    Translation suggestion
   </message>
@@ -318,6 +321,24 @@
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_LABEL" translateable="false" desc="Label for the section for users to add custom words for no spell check.">
     Customize spell check
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_DESCRIPTION" translateable="false" desc="Description for the section for users to add custom words for no spell check.">
+    Add words you want spell check to skip
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_BUTTON_LABEL" translateable="false" desc="Description for the button for users to add custom words for no spell check.">
+    Add word
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_DUPLICATE_ERROR" translateable="false" desc="Error message displayed to the user when the word is duplicated in the text input used to add a new word to the custom spell check dictionary.">
+    Word already added
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_LENGTH_ERROR" translateable="false" desc="Error message displayed to the user when the word is too long in the text input used to add a new word to the custom spell check dictionary.">
+    Use 99 letters or fewer for new words
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_DELETE_DICTIONARY_WORD_TOOLTIP" translateable="false" desc="Description for the tooltip that appear when users hover over the icon to delete a custom words.">
+    Delete word
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_NO_DICTIONARY_WORDS_LABEL" translateable="false" desc="Description for the label that appear when there are no custom words in the dictionary.">
+    Saved custom words will appear here
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE" desc="Title for the list of the user's preferred written languages.">
     Languages

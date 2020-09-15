@@ -1008,8 +1008,14 @@ const char kEnableResourceLoadingHintsDescription[] =
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
 const char kEnableTabSearchName[] = "Enable Tab Search";
 const char kEnableTabSearchDescription[] =
-    "Enable the Tab Search feature in Top Chrome UI, which will show a popup"
+    "Enable the Tab Search feature in Top Chrome UI, which will show a popup "
     "bubble that allows users to search over their currently open tabs.";
+const char kEnableTabSearchFixedEntrypointName[] =
+    "Enable Tab Search fixed "
+    "entrypoint";
+const char kEnableTabSearchFixedEntrypointDescription[] =
+    "Enable the Tab "
+    "Search feature in Top Chrome UI having a fixed button position.";
 #endif  // BUILDFLAG(ENABLE_TAB_SEARCH)";
 
 const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
@@ -1851,12 +1857,6 @@ const char kPassiveDocumentWheelEventListenersDescription[] =
     "Forces wheel, and mousewheel event listeners on document level targets "
     "(which haven't requested otherwise) to be treated as passive.";
 
-const char kPassiveMixedContentWarningName[] =
-    "Warning for Passive Mixed Content";
-const char kPassiveMixedContentWarningDescription[] =
-    "Causes a 'Not Secure' chip to be shown in the omnibox if a site contains "
-    "passive (aka optionally blockable) mixed content.";
-
 const char kPasswordChangeInSettingsName[] =
     "Rework password change flow from settings";
 const char kPasswordChangeInSettingsDescription[] =
@@ -2240,6 +2240,11 @@ const char kSuggestionsWithSubStringMatchName[] =
 const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
+
+const char kSyncAutofillWalletOfferDataName[] =
+    "Enable syncing autofill offer data";
+const char kSyncAutofillWalletOfferDataDescription[] =
+    "When enabled, allows syncing autofill wallet offer data type.";
 
 const char kSyncDeviceInfoInTransportModeName[] =
     "Enable syncing DeviceInfo in transport-only sync mode.";
@@ -4133,6 +4138,14 @@ const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "
     "#enable-media-session-notifications to be enabled.";
 
+const char kHoldingSpaceName[] =
+    "Quick access to screenshots, downloads, and files test";
+const char kHoldingSpaceDescription[] =
+    "Enables quick access to screenshots, downloads, and important files which "
+    "aims to increase productivity by saving time. When enabled, access recent "
+    "screenshots and downloads from the shelf. Pin important files with the "
+    "Files App context menu to keep them one click away.";
+
 const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
 const char kImeAssistAutocorrectDescription[] =
     "Enable assistive auto-correct features for native IME";
@@ -4174,6 +4187,12 @@ const char kIntentHandlingSharingDescription[] =
 const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
 const char kIntentPickerPWAPersistenceDescription[] =
     "Allow user to always open with PWA in intent picker.";
+
+const char kInteractiveWindowCycleList[] =
+    "Enable Alt-Tab interactivity improvements.";
+const char kInteractiveWindowCycleListDescription[] =
+    "Adds mouse behavior, three-finger touchpad swipe, left/right "
+    "arrow navigation, and space/enter confirmation to Alt-Tab.";
 
 const char kLacrosSupportName[] = "LaCrOS support";
 const char kLacrosSupportDescription[] =

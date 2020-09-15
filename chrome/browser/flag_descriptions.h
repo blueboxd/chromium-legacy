@@ -585,6 +585,8 @@ extern const char kEnableSubresourceRedirectDescription[];
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
 extern const char kEnableTabSearchName[];
 extern const char kEnableTabSearchDescription[];
+extern const char kEnableTabSearchFixedEntrypointName[];
+extern const char kEnableTabSearchFixedEntrypointDescription[];
 #endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 extern const char kEnableTextFragmentAnchorName[];
@@ -1072,9 +1074,6 @@ extern const char kPassiveDocumentEventListenersDescription[];
 extern const char kPassiveDocumentWheelEventListenersName[];
 extern const char kPassiveDocumentWheelEventListenersDescription[];
 
-extern const char kPassiveMixedContentWarningName[];
-extern const char kPassiveMixedContentWarningDescription[];
-
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
@@ -1287,6 +1286,9 @@ extern const char kSuggestedContentToggleDescription[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
+
+extern const char kSyncAutofillWalletOfferDataName[];
+extern const char kSyncAutofillWalletOfferDataDescription[];
 
 extern const char kSyncDeviceInfoInTransportModeName[];
 extern const char kSyncDeviceInfoInTransportModeDescription[];
@@ -2398,6 +2400,9 @@ extern const char kHelpAppSearchServiceIntegrationDescription[];
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
 
+extern const char kHoldingSpaceName[];
+extern const char kHoldingSpaceDescription[];
+
 extern const char kImeAssistAutocorrectName[];
 extern const char kImeAssistAutocorrectDescription[];
 
@@ -2427,6 +2432,9 @@ extern const char kIntentHandlingSharingDescription[];
 
 extern const char kIntentPickerPWAPersistenceName[];
 extern const char kIntentPickerPWAPersistenceDescription[];
+
+extern const char kInteractiveWindowCycleList[];
+extern const char kInteractiveWindowCycleListDescription[];
 
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];

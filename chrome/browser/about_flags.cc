@@ -2547,6 +2547,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
+    {"ash-enable-interactive-window-cycle-list",
+     flag_descriptions::kInteractiveWindowCycleList,
+     flag_descriptions::kInteractiveWindowCycleListDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kInteractiveWindowCycleList)},
     {"bluetooth-aggressive-appearance-filter",
      flag_descriptions::kBluetoothAggressiveAppearanceFilterName,
      flag_descriptions::kBluetoothAggressiveAppearanceFilterDescription,
@@ -5884,11 +5888,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kUseWallpaperStagingUrl)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"passive-mixed-content-warning",
-     flag_descriptions::kPassiveMixedContentWarningName,
-     flag_descriptions::kPassiveMixedContentWarningDescription, kOsAll,
-     FEATURE_VALUE_TYPE(security_state::features::kPassiveMixedContentWarning)},
-
     {"autofill-enable-virtual-card",
      flag_descriptions::kAutofillEnableVirtualCardName,
      flag_descriptions::kAutofillEnableVirtualCardDescription, kOsDesktop,
@@ -6325,6 +6324,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-search", flag_descriptions::kEnableTabSearchName,
      flag_descriptions::kEnableTabSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTabSearch)},
+
+    {"enable-tab-search-fixed-entrypoint",
+     flag_descriptions::kEnableTabSearchFixedEntrypointName,
+     flag_descriptions::kEnableTabSearchFixedEntrypointDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTabSearchFixedEntrypoint)},
 #endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 #if defined(OS_ANDROID)
@@ -6407,6 +6411,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidDetailedLanguageSettingsName,
      flag_descriptions::kAndroidDetailedLanguageSettingsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(language::kDetailedLanguageSettings)},
+#endif
+
+    {"sync-autofill-wallet-offer-data",
+     flag_descriptions::kSyncAutofillWalletOfferDataName,
+     flag_descriptions::kSyncAutofillWalletOfferDataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncAutofillWalletOfferData)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-holding-space", flag_descriptions::kHoldingSpaceName,
+     flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

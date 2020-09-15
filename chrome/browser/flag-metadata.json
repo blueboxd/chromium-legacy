@@ -200,6 +200,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ash-enable-interactive-window-cycle-list",
+    "owners": [ "chinsenj", "tclaiborne" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "ash-enable-pip-rounded-corners",
     "owners": [ "edcourtney" ],
     "expiry_milestone": 90
@@ -1649,6 +1654,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-holding-space",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-home-page-location-policy",
     "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
     "expiry_milestone": 83
@@ -2185,6 +2195,11 @@
   },
   {
     "name": "enable-tab-search",
+    "owners": [ "tluk@google.com", "robliao@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-tab-search-fixed-entrypoint",
     "owners": [ "tluk@google.com", "robliao@google.com" ],
     "expiry_milestone": 90
   },
@@ -4287,6 +4302,11 @@
     "name": "suggested-content-toggle",
     "owners": [ "jiameng", "wrong" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "sync-autofill-wallet-offer-data",
+    "owners": ["siyua", "treib"],
+    "expiry_milestone": 90
   },
   {
     "name": "sync-setup-friendly-settings",

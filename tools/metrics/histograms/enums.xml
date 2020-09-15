@@ -29157,6 +29157,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3467" label="CSSContainAllWithoutContentVisibility"/>
   <int value="3468" label="TimerInstallFromBeforeUnload"/>
   <int value="3469" label="TimerInstallFromUnload"/>
+  <int value="3470" label="ElementAttachInternalsBeforeConstructor"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40965,6 +40966,7 @@ from previous Chrome versions.
   <int value="-1645071473" label="ChromeColors:disabled"/>
   <int value="-1644721118"
       label="disable-experimental-accessibility-chromevox-search-menus"/>
+  <int value="-1643933608" label="SyncAutofillWalletOfferData:enabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
@@ -41271,6 +41273,7 @@ from previous Chrome versions.
   <int value="-1357655121" label="enable-iframe-based-signin"/>
   <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
   <int value="-1356379431" label="GlobalMediaControlsOverlayControls:enabled"/>
+  <int value="-1353865639" label="InteractiveWindowCycleList:disabled"/>
   <int value="-1353714232" label="FilesTransferDetails:enabled"/>
   <int value="-1353195918" label="UseSkiaRenderer:enabled"/>
   <int value="-1351968795" label="SingleProcessMash:enabled"/>
@@ -41985,6 +41988,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-631614101" label="CameraSystemWebApp:enabled"/>
+  <int value="-630946893" label="TabSearchFixedEntrypoint:enabled"/>
   <int value="-626329144" label="SyncSupportTrustedVaultPassphrase:enabled"/>
   <int value="-626211146" label="DesktopMinimalUI:disabled"/>
   <int value="-625695291" label="AccessibilityExposeARIAAnnotations:enabled"/>
@@ -42153,6 +42157,7 @@ from previous Chrome versions.
   <int value="-460313418" label="ProgressBarThrottle:enabled"/>
   <int value="-460081932" label="CustomFeedbackUi:disabled"/>
   <int value="-459318667" label="AccessiblePDFForm:enabled"/>
+  <int value="-457584339" label="TemporaryHoldingSpace:enabled"/>
   <int value="-457292000" label="HappinessTrackingSurveysForDesktop:enabled"/>
   <int value="-457174225" label="Av1Decoder:enabled"/>
   <int value="-456321929" label="ForceEnableSystemAec:disabled"/>
@@ -42340,6 +42345,7 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-265697837" label="PhoneHub:disabled"/>
+  <int value="-263645996" label="InteractiveWindowCycleList:enabled"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
@@ -42804,6 +42810,7 @@ from previous Chrome versions.
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="268535107"
       label="ash-new-touch-support-for-screen-magnification"/>
+  <int value="270118291" label="SyncAutofillWalletOfferData:disabled"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="272108480" label="SmbFs:enabled"/>
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
@@ -43410,6 +43417,7 @@ from previous Chrome versions.
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
+  <int value="880677998" label="TabSearchFixedEntrypoint:disabled"/>
   <int value="883190338" label="PrintWithReducedRasterization:disabled"/>
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="885004540" label="ArcEnableApplicationZoomFeature:enabled"/>
@@ -44008,6 +44016,7 @@ from previous Chrome versions.
   <int value="1496571153" label="enable-webapk"/>
   <int value="1497609106" label="ContextualNudges:enabled"/>
   <int value="1497924954" label="js-flags"/>
+  <int value="1498398756" label="TemporaryHoldingSpace:disabled"/>
   <int value="1499163193" label="PostScriptPrinting:disabled"/>
   <int value="1500390299" label="NtpCustomizationMenuV2:disabled"/>
   <int value="1505194447" label="disable-transition-compositing"/>
@@ -68581,6 +68590,7 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Voice"/>
   <int value="6" label="Calculator"/>
   <int value="7" label="Favicon"/>
+  <int value="8" label="Trends"/>
 </enum>
 
 <enum name="SuggestionPedalType">
@@ -75600,6 +75610,15 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Does not match any whitelists"/>
   <int value="1" label="URL whitelist"/>
   <int value="2" label="Signature whitelist"/>
+</enum>
+
+<enum name="WidgetClosedReason">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="EscKeyPressed"/>
+  <int value="2" label="CloseButtonClicked"/>
+  <int value="3" label="LostFocus"/>
+  <int value="4" label="CancelButtonClicked"/>
+  <int value="5" label="AcceptButtonClicked"/>
 </enum>
 
 <enum name="WiFiAp80211kSupport">

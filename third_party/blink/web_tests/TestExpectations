@@ -881,7 +881,6 @@ crbug.com/591099 fast/multicol/vertical-lr/nested-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 [ Win ] virtual/text-antialias/ellipsis-with-self-painting-layer.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/multicol/file-upload-as-multicol.html [ Failure ]
-crbug.com/1098801 virtual/text-antialias/whitespace/whitespace-in-pre.html [ Failure ]
 
 # LayoutNG failures that needs to be triaged
 crbug.com/591099 virtual/text-antialias/selection/selection-rect-line-height-too-small.html [ Failure ]
@@ -5354,8 +5353,6 @@ crbug.com/719023 media_capabilities/encodingInfo-avc1.html [ Pass Failure ]
 # Sheriff 2019-01-07
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
 
-# WebRTC Unified Plan
-crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass Crash Timeout ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 

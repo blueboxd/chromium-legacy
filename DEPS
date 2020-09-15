@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '53a7d9430dbb3fb355bd03e48db92a3348ba7602',
+  'devtools_frontend_revision': '8b068ffba19b816885244542b7a87cbbb0317950',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'dc8add9b14b393940bd3430c5dffa51f016424e5',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'aba747b4808a48603bae4798569aff2eb7d2404d',
       'condition': 'checkout_ios',
   },
 
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'cfda0b2aaf01f3fc41a9885114baeab0c368477e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b0a548c7e6b64fe0a6a140d133815123f5b3b112',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1327,7 +1327,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'cG1zzefbD24rFmPDujqP0rrEG0uXUhH8axBOrD619hoC'
+              'version': 'yu1TNZdimAolWHFRji7ATuLGOV29PrdOBhWQd2oQxVMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1509,7 +1509,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': '-xiy-efdb--wYTN3Wri48BP83XnnX7zpK1cGoKp0uA0C',
+          'version': 'f-DTUcX4U7OFc5zCWXjvrSxtdJvuhXh4sUcNTJ25tGgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1519,7 +1519,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '2atKOIuMTCpEeTrs47-p-JN2Tdztm20pW0D8l5WhPXAC',
+          'version': '0T7A2zKUcd9aOk8Bm8_upn7Ee3pt5MEMFPxJlsU5MSgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1529,7 +1529,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'mazyV5wLKAOn58AEZha47bpZO_y8i6NfTsZR6L_Rt6QC',
+          'version': 'ZEjCOhpgQq2QyPhqYBzxLzorH4ZmulpCNyb_UYP34iYC',
         },
       ],
       'dep_type': 'cipd',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a0ee89a93f645c9eb91e107360503fc96cb6c61e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@68241d4f5af5f2e08963fe6f02f8255a1b3677b2',
     'condition': 'checkout_src_internal',
   },
 

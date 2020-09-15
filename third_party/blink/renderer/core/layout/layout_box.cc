@@ -5259,42 +5259,50 @@ void LayoutBox::ComputePositionedLogicalWidth(
       logical_left_length, logical_right_length, margin_logical_left,
       margin_logical_right, computed_values);
 
-  // Calculate constraint equation values for 'max-width' case.
-  if (!StyleRef().LogicalMaxWidth().IsNone()) {
-    LogicalExtentComputedValues max_values;
+  MinMaxSizes transferred_min_max{LayoutUnit(), LayoutUnit::Max()};
+  if (ShouldComputeLogicalHeightFromAspectRatio())
+    transferred_min_max = ComputeMinMaxLogicalWidthFromAspectRatio();
 
+  // Calculate constraint equation values for 'max-width' case.
+  LogicalExtentComputedValues max_values;
+  max_values.extent_ = LayoutUnit::Max();
+  if (!StyleRef().LogicalMaxWidth().IsNone()) {
     ComputePositionedLogicalWidthUsing(
         kMaxSize, StyleRef().LogicalMaxWidth(), container_block,
         container_direction, container_logical_width, borders_plus_padding,
         logical_left_length, logical_right_length, margin_logical_left,
         margin_logical_right, max_values);
-
-    if (computed_values.extent_ > max_values.extent_) {
-      computed_values.extent_ = max_values.extent_;
-      computed_values.position_ = max_values.position_;
-      computed_values.margins_.start_ = max_values.margins_.start_;
-      computed_values.margins_.end_ = max_values.margins_.end_;
-    }
+  }
+  if (transferred_min_max.max_size < max_values.extent_) {
+    ComputePositionedLogicalWidthUsing(
+        kMaxSize, Length::Fixed(transferred_min_max.max_size), container_block,
+        container_direction, container_logical_width, borders_plus_padding,
+        logical_left_length, logical_right_length, margin_logical_left,
+        margin_logical_right, max_values);
   }
 
+  if (computed_values.extent_ > max_values.extent_)
+    max_values.CopyExceptBlockMargins(&computed_values);
+
+  LogicalExtentComputedValues min_values;
   // Calculate constraint equation values for 'min-width' case.
   if (!StyleRef().LogicalMinWidth().IsZero() ||
       StyleRef().LogicalMinWidth().IsIntrinsic()) {
-    LogicalExtentComputedValues min_values;
-
     ComputePositionedLogicalWidthUsing(
         kMinSize, StyleRef().LogicalMinWidth(), container_block,
         container_direction, container_logical_width, borders_plus_padding,
         logical_left_length, logical_right_length, margin_logical_left,
         margin_logical_right, min_values);
-
-    if (computed_values.extent_ < min_values.extent_) {
-      computed_values.extent_ = min_values.extent_;
-      computed_values.position_ = min_values.position_;
-      computed_values.margins_.start_ = min_values.margins_.start_;
-      computed_values.margins_.end_ = min_values.margins_.end_;
-    }
   }
+  if (transferred_min_max.min_size > min_values.extent_) {
+    ComputePositionedLogicalWidthUsing(
+        kMinSize, Length::Fixed(transferred_min_max.min_size), container_block,
+        container_direction, container_logical_width, borders_plus_padding,
+        logical_left_length, logical_right_length, margin_logical_left,
+        margin_logical_right, min_values);
+  }
+  if (computed_values.extent_ < min_values.extent_)
+    min_values.CopyExceptBlockMargins(&computed_values);
 
   computed_values.extent_ += borders_plus_padding;
 }

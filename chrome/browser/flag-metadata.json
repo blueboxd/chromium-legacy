@@ -1443,6 +1443,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-desktop-pwas-migration-user-display-mode-clean-up",
+    "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "enable-desktop-pwas-run-on-os-login",
     "owners": [ "cafrias@microsoft.com", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 88
@@ -3337,6 +3342,11 @@
   },
   {
     "name": "omnibox-autocomplete-titles",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-bubble-url-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
   },

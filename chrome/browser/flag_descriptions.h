@@ -406,6 +406,9 @@ extern const char kDesktopPWAsLocalUpdatingDescription[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[];
 
+extern const char kDesktopPWAsMigrationUserDisplayModeCleanUpName[];
+extern const char kDesktopPWAsMigrationUserDisplayModeCleanUpDescription[];
+
 extern const char kDesktopPWAsAppIconShortcutsMenuName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
 
@@ -982,6 +985,9 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 
 extern const char kOmniboxDynamicMaxAutocompleteName[];
 extern const char kOmniboxDynamicMaxAutocompleteDescription[];
+
+extern const char kOmniboxBubbleUrlSuggestionsName[];
+extern const char kOmniboxBubbleUrlSuggestionsDescription[];
 
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];

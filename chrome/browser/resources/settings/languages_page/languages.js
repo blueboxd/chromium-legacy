@@ -130,6 +130,17 @@ Polymer({
         return new Map();
       },
     },
+
+    /**
+     * Hash set of enabled input methods id for mebership testings
+     * @private {!Set<string>}
+     */
+    enabledInputMethodSet_: {
+      type: Object,
+      value() {
+        return new Set();
+      }
+    },
     // </if>
 
     /** @private Prospective UI language when the page was loaded. */
@@ -999,6 +1010,7 @@ Polymer({
     enabledInputMethodIds = enabledInputMethodIds.concat(
         this.getPref('settings.language.enabled_extension_imes')
             .value.split(','));
+    this.enabledInputMethodSet_ = new Set(enabledInputMethodIds);
 
     // Return only supported input methods.
     return enabledInputMethodIds
@@ -1064,6 +1076,43 @@ Polymer({
    */
   getInputMethodsForLanguage(languageCode) {
     return this.languageInputMethods_.get(languageCode) || [];
+  },
+
+  /**
+   * Returns the input methods that support any of the given languages.
+   * @param {!Array<string>} languageCodes
+   * @return {!Array<!chrome.languageSettingsPrivate.InputMethod>}
+   */
+  getInputMethodsForLanguages(languageCodes) {
+    // Input methods that have already been listed for this language.
+    const /** !Set<string> */ usedInputMethods = new Set();
+    /** @type {!Array<chrome.languageSettingsPrivate.InputMethod>} */
+    const combinedInputMethods = [];
+    for (const languageCode of languageCodes) {
+      const inputMethods = this.getInputMethodsForLanguage(languageCode);
+      // Get the language's unused input methods and mark them as used.
+      const newInputMethods = inputMethods.filter(
+          inputMethod => !usedInputMethods.has(inputMethod.id));
+      newInputMethods.forEach(
+          inputMethod => usedInputMethods.add(inputMethod.id));
+      combinedInputMethods.push(...newInputMethods);
+    }
+    return combinedInputMethods;
+  },
+
+  /**
+   * @return {!Set<string>} list of enabled language code.
+   */
+  getEnabledLanguageCodes() {
+    return this.enabledLanguageSet_;
+  },
+
+  /**
+   * @param {string} id the input method id
+   * @return {boolean} True if the input method is enabled
+   */
+  isInputMethodEnabled(id) {
+    return this.enabledInputMethodSet_.has(id);
   },
 
   /**

@@ -5,6 +5,7 @@
 // clang-format off
 // #import {LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 // #import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
 // #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
@@ -167,11 +168,145 @@ suite('input page', () => {
   });
 
   suite('add input methods dialog', () => {
-    test('opens when clicking addInputMethod button', () => {
+    let dialog;
+    let suggestedInputMethods;
+    let allInputMethods;
+    let cancelButton;
+    let actionButton;
+
+    setup(() => {
       assertFalse(!!inputPage.$$('os-settings-add-input-methods-dialog'));
       inputPage.$$('#addInputMethod').click();
       Polymer.dom.flush();
-      assertTrue(!!inputPage.$$('os-settings-add-input-methods-dialog'));
+
+      dialog = inputPage.$$('os-settings-add-input-methods-dialog');
+      assertTrue(!!dialog);
+
+      actionButton = dialog.$$('.action-button');
+      assertTrue(!!actionButton);
+      cancelButton = dialog.$$('.cancel-button');
+      assertTrue(!!cancelButton);
+
+      suggestedInputMethods = dialog.$$('#suggestedInputMethods');
+      assertTrue(!!suggestedInputMethods);
+
+      allInputMethods = dialog.$$('#allInputMethods');
+      assertTrue(!!allInputMethods);
+
+      // No input methods has been selected, so the action button is disabled.
+      assertTrue(actionButton.disabled);
+      assertFalse(cancelButton.disabled);
+    });
+
+    test('has action button working correctly', () => {
+      const listItems = suggestedInputMethods.querySelectorAll('.list-item');
+      // selecting a language enables action button
+      listItems[0].click();
+      assertFalse(actionButton.disabled);
+
+      // selecting the same language again disables action button
+      listItems[0].click();
+      assertTrue(actionButton.disabled);
+    });
+
+    test('adds input methods', () => {
+      const suggestedItems =
+          suggestedInputMethods.querySelectorAll('.list-item');
+      // input methods are based on and ordered by enabled languages
+      assertEquals(2, suggestedItems.length);
+      assertEquals('US Swahili keyboard', suggestedItems[0].textContent.trim());
+      assertEquals('Swahili keyboard', suggestedItems[1].textContent.trim());
+      // selecting Swahili keyboard.
+      suggestedItems[1].click();
+
+      const allItems = allInputMethods.querySelectorAll('.list-item');
+      // All input methods should appear and ordered based on fake settings
+      // data.
+      assertEquals(3, allItems.length);
+      assertEquals('Swahili keyboard', allItems[0].textContent.trim());
+      // checked is reflected
+      assertTrue(allItems[0].checked);
+      assertEquals('US Swahili keyboard', allItems[1].textContent.trim());
+      assertFalse(allItems[1].checked);
+      assertEquals('Vietnamese keyboard', allItems[2].textContent.trim());
+      // selecting Vietnamese keyboard
+      allItems[2].click();
+
+      actionButton.click();
+
+      assertTrue(languageHelper.isInputMethodEnabled(
+          '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw'));
+      assertFalse(languageHelper.isInputMethodEnabled(
+          '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw'));
+      assertTrue(languageHelper.isInputMethodEnabled(
+          '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:vi:vi'));
+    });
+
+    test('suggested input methods hidden when no languages is enabled', () => {
+      languageHelper.setPrefValue('settings.language.preferred_languages', '');
+      Polymer.dom.flush();
+
+      suggestedInputMethods = dialog.$$('#suggestedInputMethods');
+      // suggested input methods is rendered previously.
+      assertTrue(!!suggestedInputMethods);
+      assertEquals('none', getComputedStyle(suggestedInputMethods).display);
+    });
+
+    test('suggested input methods hidden when no input methods left', () => {
+      const languageCode = 'sw';
+      languageHelper.setPrefValue(
+          'settings.language.preferred_languages', languageCode);
+      languageHelper.getInputMethodsForLanguage(languageCode)
+          .forEach(inputMethod => {
+            languageHelper.addInputMethod(inputMethod.id);
+          });
+      Polymer.dom.flush();
+
+      suggestedInputMethods = dialog.$$('#suggestedInputMethods');
+      // suggested input methods is rendered previously.
+      assertTrue(!!suggestedInputMethods);
+      assertEquals('none', getComputedStyle(suggestedInputMethods).display);
+    });
+
+    test('searches input methods correctly', () => {
+      const searchInput = dialog.$$('cr-search-field');
+      const getItems = function() {
+        return allInputMethods.querySelectorAll('.list-item:not([hidden])');
+      };
+
+      assertFalse(dialog.$$('#allInputMethodsLabel').hidden);
+      assertEquals('block', getComputedStyle(suggestedInputMethods).display);
+
+      // Expecting a few languages to be displayed when no query exists.
+      assertGE(getItems().length, 1);
+
+      // Search hides suggestedInputMethods and allInputMethodsLabel.
+      searchInput.setValue('v');
+      Polymer.dom.flush();
+      assertTrue(dialog.$$('#allInputMethodsLabel').hidden);
+      assertEquals('none', getComputedStyle(suggestedInputMethods).display);
+
+      // Search input methods name
+      searchInput.setValue('vietnamese');
+      Polymer.dom.flush();
+      assertEquals(1, getItems().length);
+      assertTrue(getItems()[0].textContent.includes('Vietnamese'));
+    });
+
+    test('has escape key behavior working correctly', function() {
+      const searchInput = dialog.$$('cr-search-field');
+      searchInput.setValue('dummyquery');
+
+      // Test that dialog is not closed if 'Escape' is pressed on the input
+      // and a search query exists.
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertTrue(dialog.$.dialog.open);
+
+      // Test that dialog is closed if 'Escape' is pressed on the input and no
+      // search query exists.
+      searchInput.setValue('');
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertFalse(dialog.$.dialog.open);
     });
   });
 

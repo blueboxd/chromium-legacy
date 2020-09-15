@@ -102,7 +102,6 @@
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/media/midi_host.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/native_io/native_io_context.h"
@@ -2415,10 +2414,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&FileSystemManagerImpl::BindReceiver,
                           base::Unretained(file_system_manager_impl_.get())));
 
-  registry->AddInterface(base::BindRepeating(
-      &MidiHost::BindReceiver, GetID(),
-      base::Unretained(BrowserMainLoop::GetInstance()->midi_service())));
-
   if (gpu_client_) {
     // |gpu_client_| outlives the registry, because its destruction is posted to
     // IO thread from the destructor of |this|.
@@ -4193,8 +4188,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // before the commit for the siteless URL arrives, resulting in a renderer
   // kill. See https://crbug.com/970046.
   if (SiteInstanceImpl::ShouldAssignSiteForURL(site_info.site_url()) &&
-      SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context,
-                                                        site_info.site_url())) {
+      SiteInstanceImpl::DoesSiteInfoRequireDedicatedProcess(isolation_context,
+                                                            site_info)) {
     SiteProcessCountTracker* pending_tracker =
         static_cast<SiteProcessCountTracker*>(
             browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));

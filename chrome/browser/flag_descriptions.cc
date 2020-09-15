@@ -674,6 +674,13 @@ const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[] =
     "Persist the throttling of local PWA manifest update checks across browser "
     "restarts.";
 
+const char kDesktopPWAsMigrationUserDisplayModeCleanUpName[] =
+    "Desktop PWAs migration user_display_mode clean up";
+const char kDesktopPWAsMigrationUserDisplayModeCleanUpDescription[] =
+    "Runs clean up code to fix web apps that had their window/browser tab "
+    "launch preference incorrectly migrated. See issue "
+    "https://crbug.com/1125020.";
+
 const char kDesktopPWAsAppIconShortcutsMenuName[] =
     "Desktop PWAs app icon shortcuts menu";
 const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
@@ -1706,6 +1713,12 @@ const char kOmniboxDynamicMaxAutocompleteName[] =
 const char kOmniboxDynamicMaxAutocompleteDescription[] =
     "Configures the maximum number of autocomplete matches displayed in the "
     "Omnibox UI dynamically based on the number of URL matches.";
+
+const char kOmniboxBubbleUrlSuggestionsName[] =
+    "Omnibox Bubble URL Suggestions";
+const char kOmniboxBubbleUrlSuggestionsDescription[] =
+    "Configures the bubbling of URL suggestions after grouping searches "
+    "above URLs.";
 
 const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
     "Omnibox on device head suggestions (incognito only)";

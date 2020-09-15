@@ -1351,55 +1351,88 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
     {"6 matches", kOmniboxMaxURLMatches6, base::size(kOmniboxMaxURLMatches6),
      nullptr}};
 
-const FeatureEntry::FeatureVariation kDynamicMaxAutocompleteVariations[] = {
-    {
-        "9 suggestions if 0 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
-        2,
-        nullptr,
-    },
-    {
-        "9 suggestions if 1 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "1"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
-        2,
-        nullptr,
-    },
-    {
-        "9 suggestions if 2 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "2"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
-        2,
-        nullptr,
-    },
-    {
-        "10 suggestions if 0 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
-        2,
-        nullptr,
-    },
-    {
-        "10 suggestions if 1 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "1"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
-        2,
-        nullptr,
-    },
-    {
-        "10 suggestions if 2 or less URLs",
-        (FeatureEntry::FeatureParam[]){
-            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "2"},
-            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
-        2,
-        nullptr,
-    }};
+const FeatureEntry::FeatureVariation
+    kOmniboxDynamicMaxAutocompleteVariations[] = {
+        {
+            "9 suggestions if 0 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
+            2,
+            nullptr,
+        },
+        {
+            "9 suggestions if 1 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "1"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
+            2,
+            nullptr,
+        },
+        {
+            "9 suggestions if 2 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "2"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
+            2,
+            nullptr,
+        },
+        {
+            "10 suggestions if 0 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
+            2,
+            nullptr,
+        },
+        {
+            "10 suggestions if 1 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "1"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
+            2,
+            nullptr,
+        },
+        {
+            "10 suggestions if 2 or less URLs",
+            (FeatureEntry::FeatureParam[]){
+                {"OmniboxDynamicMaxAutocompleteUrlCutoff", "2"},
+                {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
+            2,
+            nullptr,
+        }};
+
+const FeatureEntry::FeatureVariation kOmniboxBubbleUrlSuggestionsVariations[] =
+    {{
+         "Gap 200, Buffer 100",
+         (FeatureEntry::FeatureParam[]){
+             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "200"},
+             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
+             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "100"},
+             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
+         4,
+         nullptr,
+     },
+     {
+         "Gap 200, Buffer 200",
+         (FeatureEntry::FeatureParam[]){
+             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "200"},
+             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
+             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "200"},
+             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
+         4,
+         nullptr,
+     },
+     {
+         "Gap 400, Buffer 200",
+         (FeatureEntry::FeatureParam[]){
+             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "400"},
+             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
+             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "200"},
+             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
+         4,
+         nullptr,
+     }};
 
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
@@ -1462,12 +1495,6 @@ const FeatureEntry::FeatureVariation
          base::size(kTranslateForceTriggerOnEnglishGeo), nullptr},
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
          base::size(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
-
-const FeatureEntry::FeatureParam kOverscrollHistoryNavigationBottomSheet[] = {
-    {"overscroll_history_navigation_bottom_sheet", "true"}};
-const FeatureEntry::FeatureVariation kOverscrollHistoryNavigationVariations[] =
-    {{"Navigation sheet", kOverscrollHistoryNavigationBottomSheet,
-      base::size(kOverscrollHistoryNavigationBottomSheet), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -2749,12 +2776,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverscrollHistoryNavigationName,
      flag_descriptions::kOverscrollHistoryNavigationDescription,
      kOsAura | kOsAndroid,
-#if defined(OS_ANDROID)
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kOverscrollHistoryNavigation,
-                                    kOverscrollHistoryNavigationVariations,
-                                    "OverscrollNavigation")},
-#else
      FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
+#if !defined(OS_ANDROID)
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},
@@ -3044,6 +3067,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsWithoutExtensionsName,
      flag_descriptions::kDesktopPWAsWithoutExtensionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsWithoutExtensions)},
+    {"enable-desktop-pwas-migration-user-display-mode-clean-up",
+     flag_descriptions::kDesktopPWAsMigrationUserDisplayModeCleanUpName,
+     flag_descriptions::kDesktopPWAsMigrationUserDisplayModeCleanUpDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsMigrationUserDisplayModeCleanUp)},
     {"enable-desktop-pwas-run-on-os-login",
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
      flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsDesktop,
@@ -3961,7 +3989,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDynamicMaxAutocompleteName,
      flag_descriptions::kOmniboxDynamicMaxAutocompleteDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
-                                    kDynamicMaxAutocompleteVariations,
+                                    kOmniboxDynamicMaxAutocompleteVariations,
+                                    "OmniboxBundledExperimentV1")},
+
+    {"omnibox-bubble-url-suggestions",
+     flag_descriptions::kOmniboxBubbleUrlSuggestionsName,
+     flag_descriptions::kOmniboxBubbleUrlSuggestionsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kBubbleUrlSuggestions,
+                                    kOmniboxBubbleUrlSuggestionsVariations,
                                     "OmniboxBundledExperimentV1")},
 
     {"omnibox-ui-swap-title-and-url",

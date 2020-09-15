@@ -79,14 +79,14 @@ Size CustomFlexImpl(bool snap_to_zero,
   const Size large_size = view->GetPreferredSize();
   const Size small_size = Size(large_size.width() / 2, large_size.height() / 2);
   int horizontal = 0;
-  if (!maximum_size.width() || *maximum_size.width() > large_size.width())
+  if (maximum_size.width() >= large_size.width())
     horizontal = large_size.width();
-  else if (*maximum_size.width() >= small_size.width() || !snap_to_zero)
+  else if (maximum_size.width() >= small_size.width() || !snap_to_zero)
     horizontal = small_size.width();
   int vertical = 0;
-  if (!maximum_size.height() || *maximum_size.height() > large_size.height())
+  if (maximum_size.height() >= large_size.height())
     vertical = large_size.height();
-  else if (*maximum_size.height() >= small_size.height() || !snap_to_zero)
+  else if (maximum_size.height() >= small_size.height() || !snap_to_zero)
     vertical = small_size.height();
   return Size(horizontal, vertical);
 }
@@ -2571,9 +2571,7 @@ TEST_F(FlexLayoutTest, FlexAllocationOrderReverse) {
 TEST_F(FlexLayoutTest, FlexRuleContradictsPreferredSize) {
   const FlexSpecification custom_spec(
       base::BindRepeating([](const View* view, const SizeBounds& maximum_size) {
-        return gfx::Size(
-            (!maximum_size.width() || *maximum_size.width() >= 100) ? 100 : 0,
-            100);
+        return gfx::Size((maximum_size.width() >= 100) ? 100 : 0, 100);
       }));
 
   layout_->SetOrientation(LayoutOrientation::kHorizontal);
@@ -3033,6 +3031,20 @@ TEST_F(NestedFlexLayoutTest, UsingDefaultFlexRule) {
   EXPECT_TRUE(grandchild(2, 1)->GetVisible());
   EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 1)->size());
   EXPECT_FALSE(grandchild(2, 2)->GetVisible());
+}
+
+TEST_F(NestedFlexLayoutTest, UnboundedZeroSize) {
+  AddChildren(1);
+  child(1)->SetProperty(views::kFlexBehaviorKey, kUnboundedScaleToZero);
+
+  AddGrandchild(1, gfx::Size(0, 5));
+  grandchild(1, 1)->SetProperty(views::kFlexBehaviorKey, kUnboundedScaleToZero);
+
+  EXPECT_EQ(5, child(1)->GetPreferredSize().height());
+  host_->SetSize(gfx::Size(100, 5));
+  EXPECT_EQ(5, child(1)->GetPreferredSize().height());
+  host_->Layout();
+  EXPECT_EQ(5, child(1)->height());
 }
 
 namespace {

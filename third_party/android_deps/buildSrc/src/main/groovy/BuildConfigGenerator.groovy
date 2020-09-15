@@ -304,7 +304,7 @@ class BuildConfigGenerator extends DefaultTask {
                 |  # Omit this file since we use our own copy, included above.
                 |  # We can remove this once we migrate to AndroidX master for all libraries.
                 |  jar_excluded_patterns = [
-                |    "androidx/fragment/app/DialogFragment.java",
+                |    "androidx/fragment/app/DialogFragment*",
                 |  ]
                 |
                 |  ignore_proguard_configs = true
@@ -438,6 +438,7 @@ class BuildConfigGenerator extends DefaultTask {
                 |
                 |""".stripMargin())
                 break
+            case 'androidx_test_espresso_espresso_contrib':
             case 'androidx_test_espresso_espresso_web':
             case 'androidx_window_window':
                 sb.append('  enable_bytecode_checks = false\n')

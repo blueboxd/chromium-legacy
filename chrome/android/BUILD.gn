@@ -184,6 +184,7 @@ android_resources("chrome_app_java_resources") {
     "//components/autofill/android:autofill_java_resources",
     "//components/blocked_content/android:java_resources",
     "//components/browser_ui/android/bottomsheet:java_resources",
+    "//components/browser_ui/contacts_picker/android:java_resources",
     "//components/browser_ui/http_auth/android:java_resources",
     "//components/browser_ui/modaldialog/android:java_resources",
     "//components/browser_ui/settings/android:java_resources",
@@ -770,6 +771,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/browser_controls/android:junit",
     "//chrome/browser/download/android:java",
     "//chrome/browser/download/android:junit_tests",
+    "//chrome/browser/endpoint_fetcher:java",
     "//chrome/browser/enterprise/util:java",
     "//chrome/browser/flags:flags_junit_tests",
     "//chrome/browser/flags:java",
@@ -1125,6 +1127,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
+    "//url:gurl_javatests",
     "//url:origin_java",
 
     # TODO (bjoyce): Remove recyclerview_v7 when espresso tests are migrated
@@ -1893,6 +1896,7 @@ android_library("browser_java_test_support") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/junit",
+    "//url:gurl_android_test_helper_java",
   ]
 }
 
@@ -1915,6 +1919,7 @@ static_library("browser_test_support") {
     "//components/query_tiles/test:test_support",
     "//content/test:test_support",
     "//net:test_support",
+    "//url:gurl_android_test_helper",
   ]
 }
 
@@ -2945,8 +2950,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
     "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountService.java",
     "java/src/org/chromium/chrome/browser/complex_tasks/TaskTabHelper.java",
-    "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointFetcher.java",
-    "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointResponse.java",
     "java/src/org/chromium/chrome/browser/component_updater/UpdateScheduler.java",
     "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
     "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",

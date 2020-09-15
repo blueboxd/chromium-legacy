@@ -234,7 +234,6 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
-  void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void CloseWidgetSoon() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
@@ -262,7 +261,6 @@ class CONTENT_EXPORT RenderWidget
                      base::OnceCallback<void(bool)> callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
-  void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidCompletePageScaleAnimation() override;
   void RequestNewLayerTreeFrameSink(

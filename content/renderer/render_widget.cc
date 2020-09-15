@@ -568,15 +568,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
       this, std::move(url), std::move(callback), client_name);
 }
 
-void RenderWidget::DidCommitAndDrawCompositorFrame() {
-  // NOTE: Tests may break if this event is renamed or moved. See
-  // tab_capture_performancetest.cc.
-  TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
-
-  for (auto& observer : render_frames_)
-    observer.DidCommitAndDrawCompositorFrame();
-}
-
 void RenderWidget::DidCommitCompositorFrame(base::TimeTicks commit_start_time) {
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
@@ -723,11 +714,6 @@ void RenderWidget::ResizeWebWidget() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
-
-void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
-  for (auto& observer : render_frames_)
-    observer.DidMeaningfulLayout(layout_type);
-}
 
 void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
   GetWebWidget()->SetHandlingInputEvent(handling_input_event);

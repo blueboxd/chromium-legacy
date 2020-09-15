@@ -139,7 +139,7 @@ using xcb_connection_t = struct xcb_connection_t;
 
 enum XEventQueueOwner { XlibOwnsEventQueue = 0, XCBOwnsEventQueue };
 
-using XErrorEvent = struct {
+using XErrorEvent = struct _XErrorEvent {
   int type;
   Display* display;
   XID resourceid;
@@ -149,7 +149,7 @@ using XErrorEvent = struct {
   unsigned char minor_code;
 };
 
-using XRectangle = struct {
+using XRectangle = struct _XRectangle {
   short x, y;
   unsigned short width, height;
 };
@@ -161,7 +161,7 @@ using XExtData = struct _XExtData {
   XPointer private_data;
 };
 
-using Visual = struct {
+using Visual = struct _Visual {
   XExtData* ext_data;
   VisualID visualid;
   int c_class;
@@ -170,7 +170,7 @@ using Visual = struct {
   int map_entries;
 };
 
-using XVisualInfo = struct {
+using XVisualInfo = struct _XVisualInfo {
   Visual* visual;
   VisualID visualid;
   int screen;
@@ -375,14 +375,5 @@ inline int XkbGroupForCoreState(int s) {
 inline int XkbBuildCoreState(int m, int g) {
   return ((g & 0x3) << 13) | (m & 0xff);
 }
-
-// Deprecated.
-namespace x11 {
-static constexpr unsigned long None = 0L;
-static constexpr long CurrentTime = 0L;
-static constexpr int False = 0;
-static constexpr int True = 1;
-static constexpr int Success = 0;
-}  // namespace x11
 
 #endif  // UI_GFX_X_X11_H_

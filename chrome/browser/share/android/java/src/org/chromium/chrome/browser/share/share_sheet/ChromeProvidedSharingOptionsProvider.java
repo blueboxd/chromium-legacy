@@ -97,7 +97,8 @@ class ChromeProvidedSharingOptionsProvider {
         mOrderedFirstPartyOptions = new ArrayList<>();
         initializeFirstPartyOptionsInOrder();
         mChromeOptionShareCallback = chromeOptionShareCallback;
-        mUrl = getUrlToShare(shareParams, chromeShareExtras, mTabProvider.get().getUrl().getSpec());
+        mUrl = getUrlToShare(shareParams, chromeShareExtras,
+                mTabProvider.get().isInitialized() ? mTabProvider.get().getUrl().getSpec() : "");
     }
 
     /**
@@ -340,10 +341,9 @@ class ChromeProvidedSharingOptionsProvider {
                 .setIcon(R.drawable.link, R.string.sharing_highlights)
                 .setFeatureNameForMetrics("SharingHubAndroid.LinkToTextSelected")
                 .setOnClickCallback((view) -> {
-                    LinkToTextCoordinator linkToTextCoordinator = new LinkToTextCoordinator(
-                            mActivity, mTabProvider.get().getWindowAndroid(),
-                            mChromeOptionShareCallback, mShareParams.getUrl(),
-                            mShareParams.getText());
+                    LinkToTextCoordinator linkToTextCoordinator =
+                            new LinkToTextCoordinator(mActivity, mTabProvider.get(),
+                                    mChromeOptionShareCallback, mUrl, mShareParams.getText());
                 })
                 .build();
     }

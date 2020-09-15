@@ -740,6 +740,13 @@ public class Tab {
 
         @Override
         public void onTabDestroyed() {
+            // Prior to 87 this was called *before* onTabRemoved(). Post 87 this is called after
+            // onTabRemoved(). onTabRemoved() needs the Tab to be registered, so unregisterTab()
+            // should only be called in >= 87 (in < 87 it is called from
+            // Browser.prepareForDestroy()).
+            if (WebLayer.getSupportedMajorVersionInternal() >= 87) {
+                unregisterTab(Tab.this);
+            }
             // Ensure that the app will fail fast if the embedder mistakenly tries to call back
             // into the implementation via this Tab.
             mImpl = null;
@@ -874,13 +881,30 @@ public class Tab {
         @Override
         public void onGoogleAccountsRequest(
                 int serviceType, String email, String continueUrl, boolean isSameTab) {
+            StrictModeWorkaround.apply();
             mCallback.onGoogleAccountsRequest(new GoogleAccountsParams(
                     serviceType, email, Uri.parse(continueUrl), isSameTab));
         }
 
         @Override
         public String getGaiaId() {
+            StrictModeWorkaround.apply();
             return mCallback.getGaiaId();
+        }
+
+        @Override
+        public String getFullName() {
+            StrictModeWorkaround.apply();
+            return mCallback.getFullName();
+        }
+
+        @Override
+        public void getAvatar(int desiredSize, IObjectWrapper avatarLoadedWrapper) {
+            StrictModeWorkaround.apply();
+            ValueCallback<Bitmap> avatarLoadedCallback =
+                    (ValueCallback<Bitmap>) ObjectWrapper.unwrap(
+                            avatarLoadedWrapper, ValueCallback.class);
+            mCallback.getAvatar(desiredSize, avatarLoadedCallback);
         }
     }
 }

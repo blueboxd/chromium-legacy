@@ -84,6 +84,17 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     };
 
     /**
+     * @param windowAndroid a window that was created by a {@link BrowserFragmentImpl}. It's not
+     *         valid to call this method with other {@link WindowAndroid} instances. Typically this
+     *         should be the {@link WindowAndroid} of a {@link WebContents}.
+     * @return the associated BrowserImpl instance.
+     */
+    public static BrowserImpl fromWindowAndroid(WindowAndroid windowAndroid) {
+        assert windowAndroid instanceof FragmentWindowAndroid;
+        return ((FragmentWindowAndroid) windowAndroid).getBrowser();
+    }
+
+    /**
      * Allows observing of visible security state of the active tab.
      */
     public static interface VisibleSecurityStateObserver {
@@ -572,7 +583,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         long createBrowser(long profile, BrowserImpl caller);
         void deleteBrowser(long browser);
         void addTab(long nativeBrowserImpl, long nativeTab);
-        void removeTab(long nativeBrowserImpl, long nativeTab);
         TabImpl[] getTabs(long nativeBrowserImpl);
         void setActiveTab(long nativeBrowserImpl, long nativeTab);
         TabImpl getActiveTab(long nativeBrowserImpl);

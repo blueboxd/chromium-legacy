@@ -45,25 +45,27 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   ~MessageBoxView() override;
 
-  // Returns the text box.
-  views::Textfield* text_box() { return prompt_field_; }
+  // Returns the visible prompt field, returns nullptr otherwise.
+  views::Textfield* GetVisiblePromptField();
 
-  // Returns user entered data in the prompt field.
+  // Returns user entered data in the prompt field, returns an empty string if
+  // no visible prompt field.
   base::string16 GetInputText();
 
   // Returns true if this message box has a visible checkbox, false otherwise.
-  bool HasCheckBox() const { return !!checkbox_; }
+  bool HasVisibleCheckBox() const;
 
   // Returns true if a checkbox is selected, false otherwise. (And false if
   // the message box has no checkbox.)
   bool IsCheckBoxSelected();
 
-  // Adds a checkbox with the specified label to the message box if this is the
+  // Shows a checkbox with the specified label to the message box if this is the
   // first call. Otherwise, it changes the label of the current checkbox. To
-  // start, the message box has no checkbox until this function is called.
+  // start, the message box has no visible checkbox until this function is
+  // called.
   void SetCheckBoxLabel(const base::string16& label);
 
-  // Sets the state of the check-box.
+  // Sets the state of the check-box if it is visible.
   void SetCheckBoxSelected(bool selected);
 
   // Sets the text and the callback of the link. |text| must be non-empty.

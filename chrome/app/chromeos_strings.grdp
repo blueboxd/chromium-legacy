@@ -255,8 +255,8 @@
   <message name="IDS_CELLULAR_SETUP_BACK_LABEL" desc="Label for button to go to previous screen during cellular setup">
     Back
   </message>
-  <message name="IDS_CELLULAR_SETUP_FINISH_LABEL" desc="Label for button to finish and exit cellular setup">
-    Finish
+  <message name="IDS_CELLULAR_SETUP_DONE_LABEL" desc="Label for button to finish and exit cellular setup">
+    Done
   </message>
   <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
     Try again
@@ -4578,9 +4578,6 @@
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_INSTALL_IMAGE_LOADER" desc="Text shown in the crostini terminal when it is checking whether the virtual machine component is installed">
     Checking the virtual machine
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONCIERGE" desc="Text shown in the crostini terminal when it is starting the VM controller">
-    Starting the virtual machine controller
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_CREATE_DISK_IMAGE" desc="Text shown in the crostini terminal when it is checking whether the VM image is installed">
     Checking the virtual machine image

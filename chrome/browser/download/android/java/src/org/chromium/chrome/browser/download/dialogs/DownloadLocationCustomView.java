@@ -42,6 +42,7 @@ public class DownloadLocationCustomView
     private Spinner mFileLocation;
     private CheckBox mDontShowAgain;
     private @DownloadLocationDialogType int mDialogType;
+    private long mTotalBytes;
 
     public DownloadLocationCustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -71,6 +72,8 @@ public class DownloadLocationCustomView
 
         mFileName.setText(suggestedPath.getName());
         mTitle.setText(title);
+        mTotalBytes = totalBytes;
+
         switch (dialogType) {
             case DownloadLocationDialogType.DEFAULT:
                 // Show a file size subtitle if file size is available.
@@ -106,7 +109,8 @@ public class DownloadLocationCustomView
             case DownloadLocationDialogType.LOCATION_SUGGESTION:
                 // TODO(vuhung): Add download and storage info to subtitle.
                 // Right now this subtitle is just a placeholder.
-                mSubtitleView.setText(DownloadUtils.getStringForBytes(getContext(), totalBytes));
+                // Putting name too long subtitle here to differentiate with default dialog.
+                mSubtitleView.setText(R.string.download_location_name_too_long);
                 break;
         }
 
@@ -155,6 +159,9 @@ public class DownloadLocationCustomView
                 || mDialogType == DownloadLocationDialogType.LOCATION_FULL
                 || mDialogType == DownloadLocationDialogType.LOCATION_NOT_FOUND) {
             selectedItemId = mDirectoryAdapter.useFirstValidSelectableItemId();
+        }
+        if (mDialogType == DownloadLocationDialogType.LOCATION_SUGGESTION) {
+            selectedItemId = mDirectoryAdapter.useSuggestedItemId(mTotalBytes);
         }
 
         mFileLocation.setAdapter(mDirectoryAdapter);

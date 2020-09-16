@@ -19,7 +19,6 @@ namespace blink {
 
 class HTMLMediaElement;
 class MediaSourceRegistry;
-class TimeRanges;
 class TrackBase;
 class WebMediaSource;
 
@@ -68,42 +67,70 @@ class CORE_EXPORT MediaSourceAttachment
   // attempting to attach to the MediaSource object using this attachment
   // instance. The WebMediaSource is not available to the element initially, so
   // between the two calls, the attachment could be considered partially setup.
-  // If already attached, StartAttachingToMediaElement() returns nullptr.
+  // If attachment start fails (for example, if the underlying MediaSource is
+  // already attached, or if this attachment has already been unregistered from
+  // the MediaSourceRegistry), StartAttachingToMediaElement() sets |*success|
+  // false and returns nullptr. |success| must not be nullptr.
   // Otherwise, the underlying MediaSource must be in 'closed' state, and
-  // indicates success by returning a tracer object useful in at least
-  // same-thread attachments for enabling automatic idle unreferenced
-  // same-thread attachment object garbage collection.
+  // indicates success by setting |*success| true and optionally returning a
+  // tracer object useful in at least same-thread attachments for enabling
+  // automatic idle unreferenced same-thread attachment object garbage
+  // collection. Note that that tracer could be nullptr even if attachment start
+  // was successful, for instance in a cross-thread attachment where there is no
+  // tracer.
   // CompleteAttachingToMediaElement() provides the attached MediaSource with
   // the underlying WebMediaSource, enabling parsing of media provided by the
   // application for playback, for example.
   // Once attached, the MediaSource and the HTMLMediaElement use each other via
   // this attachment to accomplish the extended API.
-  // The MediaSourceTracer argument to calls in this interface enables the
-  // attachment to dynamically retrieve the Oilpan-managed objects without
-  // itself being managed by oilpan. Alternatives like requiring the (non-GC'ed)
-  // attachment to remember the tracer as a Persistent would break the ability
-  // for automatic collection of idle unreferenced same-thread HTMLME+MSE object
-  // collections. The tracer argument must be the same as that returned by the
-  // most recent call to the attachment's StartAttachingToMediaElement. We
-  // cannot have the tracer as a Member, and using Persistent to hold it instead
-  // would break the ability for automatic collection of idle unreferenced
-  // same-thread attached HTMLMediaElement + MediaSource object groups.
-  virtual MediaSourceTracer* StartAttachingToMediaElement(
-      HTMLMediaElement*) = 0;
+  // The MediaSourceTracer argument to calls in this interface enables at least
+  // the same-thread attachment to dynamically retrieve the Oilpan-managed
+  // objects without itself being managed by oilpan. Alternatives like requiring
+  // the (non-GC'ed) attachment to remember the tracer as a Persistent would
+  // break the ability for automatic collection of idle unreferenced same-thread
+  // HTMLME+MSE object collections. The tracer argument must be the same as that
+  // returned by the most recent call to the attachment's
+  // StartAttachingToMediaElement. We cannot have the tracer as a Member, and
+  // using Persistent to hold it instead would break the ability for automatic
+  // collection of idle unreferenced same-thread attached HTMLMediaElement +
+  // MediaSource object groups.
+  virtual MediaSourceTracer* StartAttachingToMediaElement(HTMLMediaElement*,
+                                                          bool* success) = 0;
   virtual void CompleteAttachingToMediaElement(
       MediaSourceTracer* tracer,
       std::unique_ptr<WebMediaSource>) = 0;
 
   virtual void Close(MediaSourceTracer* tracer) = 0;
-  virtual bool IsClosed(MediaSourceTracer* tracer) const = 0;
-  virtual double duration(MediaSourceTracer* tracer) const = 0;
 
   // 'Internal' in these methods doesn't mean private, it means that they are
   // internal to chromium and are not exposed to JavaScript.
   virtual WebTimeRanges BufferedInternal(MediaSourceTracer* tracer) const = 0;
   virtual WebTimeRanges SeekableInternal(MediaSourceTracer* tracer) const = 0;
-  virtual TimeRanges* Buffered(MediaSourceTracer* tracer) const = 0;
+
   virtual void OnTrackChanged(MediaSourceTracer* tracer, TrackBase*) = 0;
+
+  // Provide state updates to the MediaSource that are necessary for its
+  // operation. These are pushed rather than pulled to reduce complexity and
+  // latency, especially when the MediaSource is in a Worker context.
+  // OnElementTimeUpdate() gives the MediaSource a notion of the recent media
+  // element currentTime so that it can more effectively prevent evicting
+  // buffered media near to playback and/or seek target time in its heuristic.
+  // Alternatives such as pumping this via the media pipeline are insufficient,
+  // as the media pipeline may not be aware of overrides to the playback start
+  // position.
+  virtual void OnElementTimeUpdate(double time) = 0;
+
+  // Needed as a precondition in the Prepare Append algorithm, OnElementError()
+  // lets the MediaSource know if the attached media element has transitioned to
+  // having an error.
+  virtual void OnElementError() = 0;
+
+  // Needed in cross-thread attachments to prevent the attachment from UAF of
+  // the media element when the media element's context might be destroyed
+  // before a worker-context MSE's context has been destroyed. In such case,
+  // neither the media element, nor the underlying main-thread-owned MSE demuxer
+  // should be used further.
+  virtual void OnElementContextDestroyed() = 0;
 
  private:
   friend class WTF::ThreadSafeRefCounted<MediaSourceAttachment>;

@@ -300,6 +300,9 @@
       <message name="IDS_MENU_ITEM_MOVE_TO_TOP" desc="Option in item menu. User can click the 'Move to top' option to move the item up to the top of its list. [CHAR-LIMIT=24]">
         Move to top
       </message>
+      <message name="IDS_OPEN_SETTINGS" desc="Generic label for a button to show settings screen. [CHAR-LIMIT=20]">
+        Open settings
+      </message>
 
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU" desc="Content description for the settings menu button.">
         More options
@@ -454,13 +457,13 @@
         <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph> and <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph> blocked
       </message>
       <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_MORE_MIXED" desc="Summary page info permissions string for more than 2 permissions, with a mix of allowed/blocked.">
-        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph> and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more
+        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph>, and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more
       </message>
       <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_MORE_ALLOWED" desc="Summary page info permissions string for more than 2 permissions, all allowed.">
-        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph> and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more allowed
+        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph>, and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more allowed
       </message>
       <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_MORE_BLOCKED" desc="Summary page info permissions string for more than 2 permissions, all blocked.">
-        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph> and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more blocked
+        <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph>, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph>, and <ph name="NUM_MORE">%3$s<ex>2</ex></ph> more blocked
       </message>
       <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
         Open Instant App

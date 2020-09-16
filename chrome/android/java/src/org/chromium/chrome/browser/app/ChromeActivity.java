@@ -50,6 +50,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
@@ -63,6 +64,7 @@ import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.TabbedModeTabDelegateFactory;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.app.flags.ChromeCachedFlags;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingDelegateFactory;
@@ -1054,6 +1056,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     "Android.PlayServices.Installed", playServicesVersion > 0);
             RecordHistogram.recordSparseHistogram(
                     "Android.PlayServices.Version", playServicesVersion);
+
+            FontSizePrefs.getInstance().recordUserFontPrefOnStartup();
         });
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
@@ -1373,7 +1377,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return {@link ObservableSupplier} for the {@link OverviewModeBehavior} for this activity
      *         if it supports an overview mode, null otherwise.
      */
-    public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
+
+    public @Nullable OneshotSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return null;
     }
 

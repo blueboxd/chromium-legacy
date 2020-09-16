@@ -4,35 +4,27 @@
 
 #include "ash/system/holding_space/holding_space_item_context_menu.h"
 
+#include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "ash/public/cpp/holding_space/holding_space_controller.h"
+#include "ash/public/cpp/holding_space/holding_space_model.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/holding_space/holding_space_item_view.h"
+#include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-HoldingSpaceItemContextMenu::HoldingSpaceItemContextMenu() = default;
+HoldingSpaceItemContextMenu::HoldingSpaceItemContextMenu(
+    const HoldingSpaceItem* item)
+    : item_(item) {}
 
 HoldingSpaceItemContextMenu::~HoldingSpaceItemContextMenu() = default;
-
-ui::SimpleMenuModel* HoldingSpaceItemContextMenu::BuildMenuModel() {
-  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-  context_menu_model_->AddItem(
-      HoldingSpaceCommandId::kShowInFolder,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_IN_FOLDER));
-  context_menu_model_->AddItem(
-      HoldingSpaceCommandId::kCopyToClipboard,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_COPY_TO_CLIPBOARD));
-  context_menu_model_->AddItem(
-      HoldingSpaceCommandId::kTogglePinItem,
-      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PIN));
-
-  return context_menu_model_.get();
-}
 
 void HoldingSpaceItemContextMenu::ShowContextMenuForViewImpl(
     views::View* source,
@@ -55,15 +47,50 @@ void HoldingSpaceItemContextMenu::ExecuteCommand(int command_id,
                                                  int event_flags) {
   switch (command_id) {
     case HoldingSpaceCommandId::kCopyToClipboard:
-      // TODO(crbug.com/1127240): Hookup API for copy to clipboard
+      HoldingSpaceController::Get()->client()->CopyToClipboard(
+          *item_, base::DoNothing());
+      break;
+    case HoldingSpaceCommandId::kPinItem:
+      HoldingSpaceController::Get()->client()->PinItem(*item_);
       break;
     case HoldingSpaceCommandId::kShowInFolder:
-      // TODO(crbug.com/1127240): Hookup API for show in folder
+      HoldingSpaceController::Get()->client()->OpenItemInFolder(
+          *item_, base::DoNothing());
       break;
-    case HoldingSpaceCommandId::kTogglePinItem:
-      // TODO(crbug.com/1127240): Hookup API for toggling pin
+    case HoldingSpaceCommandId::kUnpinItem:
+      HoldingSpaceController::Get()->client()->UnpinItem(*item_);
       break;
   }
+}
+
+ui::SimpleMenuModel* HoldingSpaceItemContextMenu::BuildMenuModel() {
+  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+  context_menu_model_->AddItemWithIcon(
+      HoldingSpaceCommandId::kShowInFolder,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_IN_FOLDER),
+      ui::ImageModel::FromVectorIcon(kFolderIcon));
+  context_menu_model_->AddItemWithIcon(
+      HoldingSpaceCommandId::kCopyToClipboard,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_COPY_TO_CLIPBOARD),
+      ui::ImageModel::FromVectorIcon(kCopyIcon));
+
+  bool is_pinned = HoldingSpaceController::Get()->model()->GetItem(
+      HoldingSpaceItem::GetFileBackedItemId(HoldingSpaceItem::Type::kPinnedFile,
+                                            item_->file_path()));
+  if (!is_pinned) {
+    context_menu_model_->AddItemWithIcon(
+        HoldingSpaceCommandId::kPinItem,
+        l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PIN),
+        ui::ImageModel::FromVectorIcon(views::kPinIcon));
+  } else {
+    context_menu_model_->AddItemWithIcon(
+        HoldingSpaceCommandId::kUnpinItem,
+        l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_UNPIN),
+        ui::ImageModel::FromVectorIcon(views::kUnpinIcon));
+  }
+  return context_menu_model_.get();
 }
 
 }  // namespace ash

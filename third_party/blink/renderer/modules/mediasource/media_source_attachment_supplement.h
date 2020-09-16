@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_ATTACHMENT_SUPPLEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_ATTACHMENT_SUPPLEMENT_H_
 
-#include <memory>
-#include "third_party/blink/public/platform/web_time_range.h"
 #include "third_party/blink/renderer/core/html/media/media_source_attachment.h"
 #include "third_party/blink/renderer/core/html/media/media_source_tracer.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source.h"
@@ -33,6 +31,23 @@ class MediaSourceAttachmentSupplement : public MediaSourceAttachment {
   // subsequent retrieval of MediaElement.duration, all on the main thread).
   virtual void NotifyDurationChanged(MediaSourceTracer* tracer,
                                      double duration) = 0;
+
+  // Retrieves the current (or a recent) media element time. Implementations may
+  // choose to either directly, synchronously consult the attached media element
+  // (via |tracer| in a same thread implementation) or rely on a "recent"
+  // currentTime pumped by the attached element via the MediaSourceAttachment
+  // interface (in a cross-thread implementation).
+  virtual double GetRecentMediaTime(MediaSourceTracer* tracer) = 0;
+
+  // Retrieves whether or not the media element currently has an error.
+  // Implementations may choose to either directly, synchronously consult the
+  // attached media element (via |tracer| in a same thread implementation) or
+  // rely on the element to correctly pump when it has an error to this
+  // attachment (in a cross-thread implementation).
+  virtual bool GetElementError(MediaSourceTracer* tracer) = 0;
+
+  virtual void OnMediaSourceContextDestroyed() = 0;
+
   // MediaSourceAttachment
   void Unregister() final;
 

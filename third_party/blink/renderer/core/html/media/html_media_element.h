@@ -565,6 +565,9 @@ class CORE_EXPORT HTMLMediaElement
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
+  void SetError(MediaError* error);
+  void ReportCurrentTimeToMediaSource();
+
   Features GetFeatures() override;
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
@@ -585,6 +588,8 @@ class CORE_EXPORT HTMLMediaElement
   KURL current_src_after_redirects_;
   Member<MediaStreamDescriptor> src_object_;
 
+  // To prevent potential regression when extended by the MSE API, do not set
+  // |error_| outside of constructor and SetError().
   Member<MediaError> error_;
 
   double volume_;
@@ -635,7 +640,8 @@ class CORE_EXPORT HTMLMediaElement
   // of the attachment (same-thread vs cross-thread, for instance) must be the
   // same semantic as the actual derived type of the tracer. Further, if there
   // is no attachment, then there must be no tracer that's tracking an active
-  // attachment.
+  // attachment. Note that some kinds of attachments do not require a tracer;
+  // see MediaSourceAttachment::StartAttachingToMediaElement() for details.
   scoped_refptr<MediaSourceAttachment> media_source_attachment_;
   Member<MediaSourceTracer> media_source_tracer_;
 

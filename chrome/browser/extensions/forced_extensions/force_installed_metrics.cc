@@ -31,6 +31,19 @@ namespace {
 constexpr base::TimeDelta kInstallationTimeout =
     base::TimeDelta::FromMinutes(5);
 
+constexpr char kManifestFetchFailedNetworkErrorCode[] =
+    "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode";
+constexpr char kManifestFetchFailedHttpErrorCode[] =
+    "Extensions.ForceInstalledManifestFetchFailedHttpErrorCode2";
+constexpr char kManifestFetchFailedFetchTries[] =
+    "Extensions.ForceInstalledManifestFetchFailedFetchTries";
+constexpr char kCrxFetchFailedNetworkErrorCode[] =
+    "Extensions.ForceInstalledNetworkErrorCode";
+constexpr char kCrxFetchFailedHttpErrorCode[] =
+    "Extensions.ForceInstalledHttpErrorCode2";
+constexpr char kCrxFetchFailedFetchTries[] =
+    "Extensions.ForceInstalledFetchTries";
+
 #if defined(OS_CHROMEOS)
 // Helper method to convert user_manager::UserType to
 // InstallStageTracker::UserType for histogram purposes.
@@ -126,6 +139,41 @@ void ReportInstallationStageTimes(
         "CRXInstallComplete",
         installation.installation_complete_time.value() -
             installation.finalizing_started_time.value());
+  }
+}
+
+// Reports the network error code, HTTP error code and number of fetch tries
+// made when extension fails to install with MANIFEST_FETCH_FAILED or
+// CRX_FETCH_FAILED.
+void ReportErrorCodes(const InstallStageTracker::InstallationData& installation,
+                      const std::string& network_error_code_histogram,
+                      const std::string& http_error_code_histogram,
+                      const std::string& fetch_tries_histogram) {
+  base::UmaHistogramSparse(network_error_code_histogram,
+                           installation.network_error_code.value());
+
+  if (installation.response_code) {
+    base::UmaHistogramSparse(http_error_code_histogram,
+                             installation.response_code.value());
+  }
+  base::UmaHistogramExactLinear(fetch_tries_histogram,
+                                installation.fetch_tries.value(),
+                                ExtensionDownloader::kMaxRetries);
+}
+
+// Reports installation stage and downloading stage for extensions which are
+// currently in progress of the installation.
+void ReportCurrentStage(
+    const InstallStageTracker::InstallationData& installation) {
+  InstallStageTracker::Stage install_stage = installation.install_stage.value();
+  base::UmaHistogramEnumeration("Extensions.ForceInstalledStage",
+                                install_stage);
+  if (install_stage == InstallStageTracker::Stage::DOWNLOADING) {
+    DCHECK(installation.downloading_stage);
+    ExtensionDownloaderDelegate::Stage downloading_stage =
+        installation.downloading_stage.value();
+    base::UmaHistogramEnumeration("Extensions.ForceInstalledDownloadingStage",
+                                  downloading_stage);
   }
 }
 
@@ -236,17 +284,7 @@ void ForceInstalledMetrics::ReportMetrics() {
             ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN));
     if (!installation.failure_reason && installation.install_stage) {
       installation.failure_reason = FailureReason::IN_PROGRESS;
-      InstallStageTracker::Stage install_stage =
-          installation.install_stage.value();
-      base::UmaHistogramEnumeration("Extensions.ForceInstalledStage",
-                                    install_stage);
-      if (install_stage == InstallStageTracker::Stage::DOWNLOADING) {
-        DCHECK(installation.downloading_stage);
-        ExtensionDownloaderDelegate::Stage downloading_stage =
-            installation.downloading_stage.value();
-        base::UmaHistogramEnumeration(
-            "Extensions.ForceInstalledDownloadingStage", downloading_stage);
-      }
+      ReportCurrentStage(installation);
     }
     if (tracker_->IsMisconfiguration(installation, extension_id))
       misconfigured_extensions++;
@@ -264,35 +302,17 @@ void ForceInstalledMetrics::ReportMetrics() {
 
     // In case of CRX_FETCH_FAILURE, report the network error code, HTTP
     // error code and number of fetch tries made.
-    if (failure_reason == FailureReason::CRX_FETCH_FAILED) {
-      base::UmaHistogramSparse("Extensions.ForceInstalledNetworkErrorCode",
-                               installation.network_error_code.value());
-
-      if (installation.response_code) {
-        base::UmaHistogramSparse("Extensions.ForceInstalledHttpErrorCode2",
-                                 installation.response_code.value());
-      }
-      base::UmaHistogramExactLinear("Extensions.ForceInstalledFetchTries",
-                                    installation.fetch_tries.value(),
-                                    ExtensionDownloader::kMaxRetries);
-    }
+    if (failure_reason == FailureReason::CRX_FETCH_FAILED)
+      ReportErrorCodes(installation, kCrxFetchFailedNetworkErrorCode,
+                       kCrxFetchFailedHttpErrorCode, kCrxFetchFailedFetchTries);
 
     // In case of MANIFEST_FETCH_FAILURE, report the network error code,
     // HTTP error code and number of fetch tries made.
-    if (failure_reason == FailureReason::MANIFEST_FETCH_FAILED) {
-      base::UmaHistogramSparse(
-          "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode",
-          installation.network_error_code.value());
+    if (failure_reason == FailureReason::MANIFEST_FETCH_FAILED)
+      ReportErrorCodes(installation, kManifestFetchFailedNetworkErrorCode,
+                       kManifestFetchFailedHttpErrorCode,
+                       kManifestFetchFailedFetchTries);
 
-      if (installation.response_code) {
-        base::UmaHistogramSparse(
-            "Extensions.ForceInstalledManifestFetchFailedHttpErrorCode2",
-            installation.response_code.value());
-      }
-      base::UmaHistogramExactLinear(
-          "Extensions.ForceInstalledManifestFetchFailedFetchTries",
-          installation.fetch_tries.value(), ExtensionDownloader::kMaxRetries);
-    }
 #if defined(OS_CHROMEOS)
     // Report type of user in case Force Installed Extensions fail to
     // install only if there is a user corresponding to given profile. There can

@@ -945,6 +945,18 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Empty and duplicate usernames"/>
 </enum>
 
+<enum name="AccountConsistencyPromoAction">
+  <int value="0" label="SuppressedNoAccounts">
+    Promo is not shown as there are no accounts on device.
+  </int>
+  <int value="1" label="DismissedBack">
+    User has dismissed the promo by tapping back button.
+  </int>
+  <int value="2" label="AddAccount">
+    User has tapped |Add account to device| from expanded account list.
+  </int>
+</enum>
+
 <enum name="AccountManagerAccountAdditionSource">
   <int value="0" label="Add account button in Settings"/>
   <int value="1" label="Re-auth account button in Settings"/>
@@ -16294,6 +16306,11 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="34" label="movableTabs"/>
 </enum>
 
+<enum name="DevToolsGridOverlayOpenedFrom">
+  <int value="0" label="Adorner"/>
+  <int value="1" label="Layout pane"/>
+</enum>
+
 <enum name="DevtoolsGridSettingChanged">
   <int value="0" label="showGridBorder.none"/>
   <int value="1" label="showGridBorder.dashed"/>
@@ -29163,6 +29180,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3469" label="TimerInstallFromUnload"/>
   <int value="3470" label="ElementAttachInternalsBeforeConstructor"/>
   <int value="3471" label="SMILElementHasRepeatNEventListener"/>
+  <int value="3472" label="WebTransport"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

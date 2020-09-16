@@ -117,6 +117,7 @@ enum class CtapDeviceResponseCode : uint8_t {
   kCtap2ErrRequestTooLarge = 0x39,
   kCtap2ErrUvBlocked = 0x3C,
   kCtap2ErrIntegrityFailure = 0x3D,
+  kCtap2ErrUvInvalid = 0x3F,
   kCtap2ErrOther = 0x7F,
   kCtap2ErrSpecLast = 0xDF,
   kCtap2ErrExtensionFirst = 0xE0,
@@ -125,7 +126,7 @@ enum class CtapDeviceResponseCode : uint8_t {
   kCtap2ErrVendorLast = 0xFF
 };
 
-constexpr std::array<CtapDeviceResponseCode, 50> kCtapResponseCodeList{
+constexpr std::array<CtapDeviceResponseCode, 51> kCtapResponseCodeList{
     CtapDeviceResponseCode::kSuccess,
     CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
     CtapDeviceResponseCode::kCtap1ErrInvalidParameter,
@@ -170,6 +171,7 @@ constexpr std::array<CtapDeviceResponseCode, 50> kCtapResponseCodeList{
     CtapDeviceResponseCode::kCtap2ErrRequestTooLarge,
     CtapDeviceResponseCode::kCtap2ErrUvBlocked,
     CtapDeviceResponseCode::kCtap2ErrIntegrityFailure,
+    CtapDeviceResponseCode::kCtap2ErrUvInvalid,
     CtapDeviceResponseCode::kCtap2ErrOther,
     CtapDeviceResponseCode::kCtap2ErrSpecLast,
     CtapDeviceResponseCode::kCtap2ErrExtensionFirst,
@@ -376,7 +378,18 @@ constexpr char kCableWebSocketProtocol[] = "fido.cable";
 
 // kCableShardIdHeader is the name of an HTTP header that is sent in the reply
 // from the tunnel server and which specifies the server's chosen shard number.
+// TODO(agl): remove. Only being kept around to allow things to compile.
 constexpr char kCableShardIdHeader[] = "X-caBLE-Shard";
+
+// kCableRoutingIdHeader is the name of an HTTP header that is sent in the reply
+// from the tunnel server and which specifies the server's chosen routing ID
+// which other parties can use to reach the same tunnel server.
+constexpr char kCableRoutingIdHeader[] = "X-caBLE-Routing-ID";
+
+// kCableClientPayloadHeader is the name of an HTTP header that is to
+// the tunnel server when performing a state-assisted handshake and which
+// includes the client's nonce and pairing ID.
+constexpr char kCableClientPayloadHeader[] = "X-caBLE-Client-Payload";
 
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;

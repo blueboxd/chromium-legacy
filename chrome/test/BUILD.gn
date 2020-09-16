@@ -1472,6 +1472,7 @@ if (!is_android) {
       "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
       "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.cc",
       "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.h",
+      "../browser/ui/webui/commander/commander_ui_browsertest.cc",
       "../browser/ui/webui/constrained_web_dialog_ui_browsertest.cc",
       "../browser/ui/webui/extensions/extension_settings_browsertest.cc",
       "../browser/ui/webui/extensions/extension_settings_browsertest.h",
@@ -2225,6 +2226,10 @@ if (!is_android) {
           "../browser/ui/views/toolbar/outdated_upgrade_bubble_view_browsertest.cc",
         ]
       }
+    }
+
+    if ((!is_android || enable_vr) && !is_ios) {
+      sources += [ "../browser/ui/views/payments/payment_handler_header_view_ui_browsertest.cc" ]
     }
 
     if ((is_linux || is_chromeos) && !is_component_build) {
@@ -3046,6 +3051,8 @@ if (chromeos_is_browser_only) {
       ":browser_tests_runner",
       ":test_support",
     ]
+
+    data_deps = [ "//chrome:packed_resources" ]
   }
 }
 
@@ -3889,6 +3896,7 @@ test("unit_tests") {
     sources += [
       "../../chromeos/memory/userspace_swap/userspace_swap.cc",
       "../browser/device_identity/chromeos/device_oauth2_token_store_chromeos_unittest.cc",
+      "../browser/nearby_sharing/nearby_share_delegate_impl_unittest.cc",
       "../browser/ui/webui/certificate_provisioning_ui_handler_unittest.cc",
       "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",

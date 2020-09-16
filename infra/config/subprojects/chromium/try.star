@@ -341,6 +341,10 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = "android-pie-arm64-wpt-rel-non-cq",
+)
+
+try_.chromium_android_builder(
     name = "android-weblayer-pie-x86-fyi-rel",
 )
 
@@ -1115,7 +1119,7 @@ try_.chromium_mac_builder(
     branch_selector = branches.STANDARD_RELEASES,
     goma_jobs = goma.jobs.J150,
     main_list_view = settings.main_list_view_name,
-    os = os.MAC_10_13,
+    os = os.MAC_DEFAULT,
     tryjob = try_.job(),
 )
 
@@ -1167,7 +1171,7 @@ try_.chromium_mac_builder(
     name = "mac_chromium_compile_dbg_ng",
     branch_selector = branches.STANDARD_RELEASES,
     goma_jobs = goma.jobs.J150,
-    os = os.MAC_10_13,
+    os = os.MAC_DEFAULT,
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(cancel_stale = False),
 )

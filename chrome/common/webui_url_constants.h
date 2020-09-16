@@ -71,7 +71,8 @@ extern const char kChromeUIDownloadInternalsHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIDriveInternalsHost[];
-extern const char kChromeUIEDUCoexistenceLoginURL[];
+extern const char kChromeUIEDUCoexistenceLoginURLV1[];
+extern const char kChromeUIEDUCoexistenceLoginURLV2[];
 extern const char kChromeUIExtensionIconHost[];
 extern const char kChromeUIExtensionIconURL[];
 extern const char kChromeUIExtensionsHost[];
@@ -333,6 +334,8 @@ extern const char kChromeUITabStripURL[];
 #endif
 
 #if !defined(OS_ANDROID)
+extern const char kChromeUICommanderHost[];
+extern const char kChromeUICommanderURL[];
 extern const char kChromeUITabSearchHost[];
 extern const char kChromeUITabSearchURL[];
 #endif

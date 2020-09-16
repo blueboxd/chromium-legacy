@@ -57,6 +57,7 @@ import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentUIsObserver;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.Section;
+import org.chromium.components.payments.SkipToGPayHelper;
 import org.chromium.components.payments.UrlUtil;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -252,10 +253,10 @@ public class PaymentRequestImpl
         assert details != null;
 
         boolean googlePayBridgeActivated = googlePayBridgeEligible
-                && SkipToGPayHelper.canActivateExperiment(mWebContents, rawMethodData);
+                && SkipToGPayHelperUtil.canActivateExperiment(mWebContents, rawMethodData);
 
-        Map<String, PaymentMethodData> methodData = getValidatedMethodData(
-                rawMethodData, googlePayBridgeActivated, mPaymentUIsManager.getCardEditor());
+        Map<String, PaymentMethodData> methodData =
+                getValidatedMethodData(rawMethodData, googlePayBridgeActivated);
 
         if (methodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -280,10 +281,8 @@ public class PaymentRequestImpl
 
         mSpec = PaymentRequestSpec.createAndValidate(
                 details, mPaymentOptions, methodData, LocaleUtils.getDefaultLocaleString());
-        if (mSpec != null && parseAndValidateDetailsForSkipToGPayHelper(details)) {
-            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
-                    details, mSpec.getRawTotal(), mSpec.getRawLineItems());
-        } else {
+        if (mSpec == null
+                || !parseAndValidateDetailsForSkipToGPayHelper(mSpec.getPaymentDetails())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return false;
@@ -294,6 +293,9 @@ public class PaymentRequestImpl
             disconnectFromClientWithDebugMessage(ErrorStrings.TOTAL_REQUIRED);
             return false;
         }
+
+        mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
+                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
 
         // The first time initializations and validation of all of the parameters of {@link
         // PaymentRequestParams} should be done before {@link
@@ -532,8 +534,7 @@ public class PaymentRequestImpl
     }
 
     private static Map<String, PaymentMethodData> getValidatedMethodData(
-            PaymentMethodData[] methodData, boolean googlePayBridgeEligible,
-            CardEditor paymentMethodsCollector) {
+            PaymentMethodData[] methodData, boolean googlePayBridgeEligible) {
         // Payment methodData are required.
         assert methodData != null;
         if (methodData.length == 0) return null;
@@ -554,8 +555,6 @@ public class PaymentRequestImpl
                 }
             }
             result.put(method, methodData[i]);
-
-            paymentMethodsCollector.addAcceptedPaymentMethodIfRecognized(methodData[i]);
         }
 
         return Collections.unmodifiableMap(result);
@@ -755,16 +754,15 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mSpec.parseAndValidateDetails(details)
-                && parseAndValidateDetailsForSkipToGPayHelper(details)) {
-            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
-                    details, mSpec.getRawTotal(), mSpec.getRawLineItems());
-        } else {
+        if (!mSpec.parseAndValidateDetails(details)
+                || !parseAndValidateDetailsForSkipToGPayHelper(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return;
         }
         mSpec.updateWith(details);
+        mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
+                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
 
         if (mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
@@ -804,16 +802,15 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mSpec.parseAndValidateDetails(details)
-                && parseAndValidateDetailsForSkipToGPayHelper(details)) {
-            mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
-                    details, mSpec.getRawTotal(), mSpec.getRawLineItems());
-        } else {
+        if (!mSpec.parseAndValidateDetails(details)
+                || !parseAndValidateDetailsForSkipToGPayHelper(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return;
         }
         mSpec.updateWith(details);
+        mPaymentUIsManager.updateDetailsOnPaymentRequestUI(
+                mSpec.getPaymentDetails(), mSpec.getRawTotal(), mSpec.getRawLineItems());
 
         if (!TextUtils.isEmpty(details.error)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);

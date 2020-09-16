@@ -193,8 +193,7 @@ const char kEnableLiveCaptionPrefForTesting[] =
 // specific configurations that are signalled via this command line flag.
 // TODO(b/159825227): remove when the "old" video decoder is fully launched.
 const char kPlatformDisallowsChromeOSDirectVideoDecoder[] =
-    // TODO(mcasas): Rename the flag string when crrev.com/c/2268600 lands.
-    "force-disable-new-accelerated-video-decoder";
+    "platform-disallows-chromeos-direct-video-decoder";
 #endif
 
 namespace autoplay {
@@ -457,9 +456,14 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the LiveCaption feature.
+// Enables the Live Caption feature.
 const base::Feature kLiveCaption{"LiveCaption",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the Speech On-Device API (SODA) to power the Live Caption feature instead
+// of the Cloud-based Open Speech API.
+const base::Feature kUseSodaForLiveCaption{"UseSodaForLiveCaption",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prevents UrlProvisionFetcher from making a provisioning request. If
 // specified, any provisioning request made will not be sent to the provisioning

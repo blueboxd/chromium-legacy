@@ -22,6 +22,10 @@
 
 namespace web_app {
 
+InstallOsHooksOptions::InstallOsHooksOptions() = default;
+InstallOsHooksOptions::InstallOsHooksOptions(
+    const InstallOsHooksOptions& other) = default;
+
 // This is adapted from base/barrier_closure.cc. os_hooks_results is maintained
 // to track install results from different OS hooks callers
 class OsHooksBarrierInfo {
@@ -114,7 +118,7 @@ void OsIntegrationManager::InstallOsHooks(
 
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.
-  if (options.add_to_applications_menu &&
+  if (options.os_hooks[OsHookType::kShortcuts] &&
       shortcut_manager_->CanCreateShortcuts()) {
     const bool add_to_desktop = options.add_to_desktop;
     shortcut_manager_->CreateShortcuts(
@@ -132,7 +136,16 @@ void OsIntegrationManager::InstallOsHooks(
   }
 }
 
+void OsIntegrationManager::UninstallAllOsHooks(
+    const AppId& app_id,
+    UninstallOsHooksCallback callback) {
+  OsHooksResults os_hooks;
+  os_hooks.set();
+  UninstallOsHooks(app_id, os_hooks, std::move(callback));
+}
+
 void OsIntegrationManager::UninstallOsHooks(const AppId& app_id,
+                                            const OsHooksResults& os_hooks,
                                             UninstallOsHooksCallback callback) {
   DCHECK(shortcut_manager_);
 
@@ -144,31 +157,42 @@ void OsIntegrationManager::UninstallOsHooks(const AppId& app_id,
           &OsHooksBarrierInfo::Run,
           base::Owned(new OsHooksBarrierInfo(std::move(callback))));
 
-  if (ShouldRegisterShortcutsMenuWithOs()) {
+  if (os_hooks[OsHookType::kShortcutsMenu] &&
+      ShouldRegisterShortcutsMenuWithOs()) {
     barrier.Run(OsHookType::kShortcutsMenu,
                 UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath()));
   } else {
     barrier.Run(OsHookType::kShortcutsMenu, /*completed=*/true);
   }
 
-  std::unique_ptr<ShortcutInfo> shortcut_info =
-      shortcut_manager_->BuildShortcutInfo(app_id);
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
+  if (os_hooks[OsHookType::kShortcuts] || os_hooks[OsHookType::kRunOnOsLogin]) {
+    std::unique_ptr<ShortcutInfo> shortcut_info =
+        shortcut_manager_->BuildShortcutInfo(app_id);
+    base::FilePath shortcut_data_dir =
+        internals::GetShortcutDataDir(*shortcut_info);
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
-    ScheduleUnregisterRunOnOsLogin(
-        shortcut_info->profile_path, shortcut_info->title,
-        base::BindOnce(barrier, OsHookType::kRunOnOsLogin));
+    if (os_hooks[OsHookType::kRunOnOsLogin] &&
+        base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
+      ScheduleUnregisterRunOnOsLogin(
+          shortcut_info->profile_path, shortcut_info->title,
+          base::BindOnce(barrier, OsHookType::kRunOnOsLogin));
+    } else {
+      barrier.Run(OsHookType::kRunOnOsLogin, /*completed=*/true);
+    }
+
+    if (os_hooks[OsHookType::kShortcuts]) {
+      internals::ScheduleDeletePlatformShortcuts(
+          shortcut_data_dir, std::move(shortcut_info),
+          base::BindOnce(barrier, OsHookType::kShortcuts));
+    } else {
+      barrier.Run(OsHookType::kShortcuts, /*completed=*/true);
+    }
   }
-
-  internals::ScheduleDeletePlatformShortcuts(
-      shortcut_data_dir, std::move(shortcut_info),
-      base::BindOnce(barrier, OsHookType::kShortcuts));
 
   // TODO(https://crbug.com/1108109) we should return the result of file handler
   // unregistration and record errors during unregistration.
-  file_handler_manager_->DisableAndUnregisterOsFileHandlers(app_id);
+  if (os_hooks[OsHookType::kFileHandlers])
+    file_handler_manager_->DisableAndUnregisterOsFileHandlers(app_id);
   barrier.Run(OsHookType::kFileHandlers, /*completed=*/true);
 
   DeleteSharedAppShims(app_id);
@@ -272,15 +296,18 @@ void OsIntegrationManager::OnShortcutsCreated(
 
   // TODO(crbug.com/1087219): callback should be run after all hooks are
   // deployed, need to refactor filehandler to allow this.
-  file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
+  if (options.os_hooks[OsHookType::kFileHandlers])
+    file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
   barrier_callback.Run(OsHookType::kFileHandlers, /*completed=*/true);
 
-  if (options.add_to_quick_launch_bar &&
+  if (options.os_hooks[OsHookType::kShortcuts] &&
+      options.add_to_quick_launch_bar &&
       ui_manager_->CanAddAppToQuickLaunchBar()) {
     ui_manager_->AddAppToQuickLaunchBar(app_id);
   }
-  if (shortcuts_created && base::FeatureList::IsEnabled(
-                               features::kDesktopPWAsAppIconShortcutsMenu)) {
+  if (shortcuts_created && options.os_hooks[OsHookType::kShortcutsMenu] &&
+      base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
     if (web_app_info) {
       if (web_app_info->shortcuts_menu_item_infos.empty()) {
         barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/false);
@@ -300,16 +327,16 @@ void OsIntegrationManager::OnShortcutsCreated(
     barrier_callback.Run(OsHookType::kShortcutsMenu, /*completed=*/false);
   }
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
-      options.run_on_os_login) {
+  if (options.os_hooks[OsHookType::kRunOnOsLogin] &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
     // TODO(crbug.com/897302): Implement Run on OS Login mode selection.
     // Currently it is set to be the default: RunOnOsLoginMode::kWindowed
     RegisterRunOnOsLogin(
         app_id, base::BindOnce(barrier_callback, OsHookType::kRunOnOsLogin));
   } else {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(barrier_callback, OsHookType::kRunOnOsLogin, false));
+        FROM_HERE, base::BindOnce(barrier_callback, OsHookType::kRunOnOsLogin,
+                                  /*completed=*/false));
   }
 }
 

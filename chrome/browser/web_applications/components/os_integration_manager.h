@@ -33,12 +33,15 @@ class WebAppUiManager;
 // OsHooksResults contains the result of all Os hook deployments
 using OsHooksResults = std::bitset<OsHookType::kMaxValue + 1>;
 
-// Used to pass install options configured from upstream caller
+// Used to pass install options configured from upstream caller.
+// All options are disabled by default.
 struct InstallOsHooksOptions {
-  bool add_to_applications_menu = false;
+  InstallOsHooksOptions();
+  InstallOsHooksOptions(const InstallOsHooksOptions& other);
+
+  OsHooksResults os_hooks;
   bool add_to_desktop = false;
   bool add_to_quick_launch_bar = false;
-  bool run_on_os_login = false;
 };
 
 // Callback made after InstallOsHooks is finished.
@@ -76,11 +79,20 @@ class OsIntegrationManager {
                               std::unique_ptr<WebApplicationInfo> web_app_info,
                               InstallOsHooksOptions options);
 
-  // Uninstall all OS hooks for the web app.
+  // Uninstall specific OS hooks for the web app.
+  // Used when removing specific hooks resulting from an app setting change.
+  // Example: Running on OS login.
   // TODO(https://crbug.com/1108109) we should record uninstall result and allow
   // callback. virtual for testing
   virtual void UninstallOsHooks(const AppId& app_id,
+                                const OsHooksResults& os_hooks,
                                 UninstallOsHooksCallback callback);
+
+  // Uninstall all OS hooks for the web app.
+  // Used when uninstalling a web app.
+  // virtual for testing
+  virtual void UninstallAllOsHooks(const AppId& app_id,
+                                   UninstallOsHooksCallback callback);
 
   // Update all needed OS hooks for the web app.
   // virtual for testing

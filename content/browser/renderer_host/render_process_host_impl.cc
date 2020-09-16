@@ -2313,14 +2313,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::CreateOneShotSyncService,
-                          weak_factory_.GetWeakPtr()));
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::CreatePeriodicSyncService,
-                          weak_factory_.GetWeakPtr()));
-  AddUIThreadInterface(
-      registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateDomStorageProvider,
                           weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
@@ -2665,6 +2657,7 @@ void RenderProcessHostImpl::BindAecDumpManager(
 void RenderProcessHostImpl::CreateOneShotSyncService(
     mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
         receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetBackgroundSyncContext()->CreateOneShotSyncService(
       std::move(receiver));
 }
@@ -2672,6 +2665,7 @@ void RenderProcessHostImpl::CreateOneShotSyncService(
 void RenderProcessHostImpl::CreatePeriodicSyncService(
     mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
         receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetBackgroundSyncContext()
       ->CreatePeriodicSyncService(std::move(receiver));
 }
@@ -3313,7 +3307,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
     switches::kAutoplayPolicy,
-    switches::kBlinkSettings,
     switches::kMojoCoreLibraryPath,
     switches::kDisable2dCanvasImageChromium,
     switches::kDisableYUVImageDecoding,
@@ -3343,7 +3336,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSkiaRuntimeOpts,
     switches::kDisableSpeechAPI,
     switches::kDisableThreadedCompositing,
-    switches::kDisableThreadedScrolling,
     switches::kDisableTouchDragDrop,
     switches::kDisableV8IdleTasks,
     switches::kDisableVideoCaptureUseGpuMemoryBuffer,
@@ -3393,10 +3385,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMaxActiveWebGLContexts,
     switches::kMSEAudioBufferSizeLimitMb,
     switches::kMSEVideoBufferSizeLimitMb,
-    switches::kNetworkQuietTimeout,
     switches::kNoZygote,
     switches::kOverridePluginPowerSaverForTesting,
-    switches::kPassiveListenersDefault,
     switches::kPerfettoDisableInterning,
     switches::kPpapiInProcess,
     switches::kProfilingAtStart,
@@ -3412,7 +3402,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kSkiaResourceCacheLimitMb,
     switches::kTestType,
     switches::kTouchEventFeatureDetection,
-    switches::kTouchTextSelectionStrategy,
     switches::kTraceToConsole,
     switches::kUseFakeCodecForPeerConnection,
     switches::kUseFakeUIForMediaStream,
@@ -3426,20 +3415,25 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebglMSAASampleCount,
     // Please keep these in alphabetical order.
     blink::switches::kAllowPreCommitInput,
+    blink::switches::kBlinkSettings,
     blink::switches::kDefaultTileWidth,
     blink::switches::kDefaultTileHeight,
     blink::switches::kDisableImageAnimationResync,
     blink::switches::kDisableLowResTiling,
     blink::switches::kDisablePreferCompositingToLCDText,
     blink::switches::kDisableRGBA4444Textures,
+    blink::switches::kDisableThreadedScrolling,
     blink::switches::kEnableLowResTiling,
     blink::switches::kEnablePreferCompositingToLCDText,
     blink::switches::kEnableRGBA4444Textures,
     blink::switches::kMinHeightForGpuRasterTile,
     blink::switches::kMaxUntiledLayerWidth,
     blink::switches::kMaxUntiledLayerHeight,
+    blink::switches::kNetworkQuietTimeout,
+    blink::switches::kPassiveListenersDefault,
     blink::switches::kShowLayoutShiftRegions,
     blink::switches::kShowPaintRects,
+    blink::switches::kTouchTextSelectionStrategy,
     // Please keep these in alphabetical order. Compositor switches here
     // should also be added to
     // chrome/browser/chromeos/login/chrome_restart_request.cc.

@@ -115,8 +115,6 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
-#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
-#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/delayed_warning_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
@@ -473,7 +471,7 @@
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/importer/profile_import.mojom.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/chrome_unscaled_resources.h"  // nogncheck crbug.com/1125897
 #endif  //  !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
@@ -609,13 +607,18 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #endif
 
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
+#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"  // nogncheck crbug.com/1125897
+#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service_factory.h"  // nogncheck crbug.com/1125897
+#endif
+
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"  // nogncheck crbug.com/1125897
 #endif
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -2082,8 +2085,8 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     return;
   }
 
-  if (browser_command_line.HasSwitch(switches::kBlinkSettings) ||
-      command_line->HasSwitch(switches::kBlinkSettings)) {
+  if (browser_command_line.HasSwitch(blink::switches::kBlinkSettings) ||
+      command_line->HasSwitch(blink::switches::kBlinkSettings)) {
     // The field trials should be configured to force users that specify the
     // blink-settings flag into a group with no params, and we return
     // above if no params were specified, so it's an error if we reach
@@ -2093,7 +2096,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     return;
   }
 
-  command_line->AppendSwitchASCII(switches::kBlinkSettings,
+  command_line->AppendSwitchASCII(blink::switches::kBlinkSettings,
                                   base::JoinString(blink_settings, ","));
 }
 

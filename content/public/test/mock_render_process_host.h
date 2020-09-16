@@ -199,6 +199,12 @@ class MockRenderProcessHost : public RenderProcessHost {
       int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
+  void CreateOneShotSyncService(
+      mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+          receiver) override {}
+  void CreatePeriodicSyncService(
+      mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+          receiver) override {}
   void CreatePermissionService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver)

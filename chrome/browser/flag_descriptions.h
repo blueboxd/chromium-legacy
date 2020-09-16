@@ -1326,6 +1326,9 @@ extern const char kTabToGTSAnimationAndroidDescription[];
 extern const char kTabGroupsName[];
 extern const char kTabGroupsDescription[];
 
+extern const char kTabGroupsAutoCreateName[];
+extern const char kTabGroupsAutoCreateDescription[];
+
 extern const char kTabGroupsCollapseName[];
 extern const char kTabGroupsCollapseDescription[];
 
@@ -2625,6 +2628,9 @@ extern const char kEnableMediaFeedsDescription[];
 
 extern const char kEnableMediaFeedsBackgroundFetchName[];
 extern const char kEnableMediaFeedsBackgroundFetchDescription[];
+
+extern const char kEnableOopPrintDriversName[];
+extern const char kEnableOopPrintDriversDescription[];
 
 extern const char kRemoteCopyReceiverName[];
 extern const char kRemoteCopyReceiverDescription[];

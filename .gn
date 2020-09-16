@@ -71,7 +71,6 @@ no_check_targets = [
   "//chrome/browser/updates/announcement_notification:*",  # 15 errors
   "//chrome/browser/updates/internal:*",  # 8 errors
   "//chrome/browser/updates:*",  # 21 errors
-  "//chrome/browser:*",  # 780 errors
   "//chrome/child:*",  # 3 errors
   "//chrome/install_static:*",  # 4 errors
   "//chrome/notification_helper:*",  # 4 errors
@@ -250,7 +249,6 @@ no_check_targets = [
   "//third_party/blink/renderer/core/workers:*",  # 289 errors
   "//third_party/blink/renderer/core/xmlhttprequest:*",  # 49 errors
   "//third_party/blink/renderer/core:*",  # 823 errors
-  "//third_party/blink/renderer/modules/font_access:*",  # 3 errors
   "//third_party/blink/renderer/modules/peerconnection:*",  # 43 errors
 
   "//third_party/breakpad:*",  # 34 errors

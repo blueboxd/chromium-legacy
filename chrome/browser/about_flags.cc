@@ -287,9 +287,9 @@ const FeatureEntry::Choice kOverlayStrategiesChoices[] = {
 const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTouchSelectionStrategyCharacter,
-     switches::kTouchTextSelectionStrategy, "character"},
+     blink::switches::kTouchTextSelectionStrategy, "character"},
     {flag_descriptions::kTouchSelectionStrategyDirection,
-     switches::kTouchTextSelectionStrategy, "direction"}};
+     blink::switches::kTouchTextSelectionStrategy, "direction"}};
 
 const FeatureEntry::Choice kTraceUploadURL[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
@@ -306,9 +306,9 @@ const FeatureEntry::Choice kTraceUploadURL[] = {
 const FeatureEntry::Choice kPassiveListenersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kPassiveEventListenerTrue,
-     switches::kPassiveListenersDefault, "true"},
+     blink::switches::kPassiveListenersDefault, "true"},
     {flag_descriptions::kPassiveEventListenerForceAllTrue,
-     switches::kPassiveListenersDefault, "forcealltrue"},
+     blink::switches::kPassiveListenersDefault, "forcealltrue"},
 };
 
 const FeatureEntry::Choice kDataReductionProxyServerExperiment[] = {
@@ -2909,7 +2909,7 @@ const FeatureEntry kFeatureEntries[] = {
          "IPH_DemoMode")},
     {"disable-threaded-scrolling", flag_descriptions::kThreadedScrollingName,
      flag_descriptions::kThreadedScrollingDescription, kOsAll,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableThreadedScrolling)},
+     SINGLE_DISABLE_VALUE_TYPE(blink::switches::kDisableThreadedScrolling)},
     {"extension-content-verification",
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
@@ -3278,9 +3278,9 @@ const FeatureEntry kFeatureEntries[] = {
      // features controlled by kBlinkSettings, we'll need to add logic to
      // merge the flag values.
      ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
-         switches::kBlinkSettings,
+         blink::switches::kBlinkSettings,
          "disallowFetchForDocWrittenScriptsInMainFrame=true",
-         switches::kBlinkSettings,
+         blink::switches::kBlinkSettings,
          "disallowFetchForDocWrittenScriptsInMainFrame=false")},
 #if defined(OS_WIN)
     {"use-winrt-midi-api", flag_descriptions::kUseWinrtMidiApiName,
@@ -4118,6 +4118,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-groups", flag_descriptions::kTabGroupsName,
      flag_descriptions::kTabGroupsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroups)},
+
+    {"tab-groups-auto-create", flag_descriptions::kTabGroupsAutoCreateName,
+     flag_descriptions::kTabGroupsAutoCreateDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsAutoCreate)},
 
     {"tab-groups-collapse", flag_descriptions::kTabGroupsCollapseName,
      flag_descriptions::kTabGroupsCollapseDescription, kOsDesktop,
@@ -5109,13 +5113,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseImprovedLabelDisambiguation)},
-
-#if defined(OS_ANDROID)
-    {"cct-target-translate-language",
-     flag_descriptions::kCCTTargetTranslateLanguageName,
-     flag_descriptions::kCCTTargetTranslateLanguageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTTargetTranslateLanguage)},
-#endif
 
     {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
      flag_descriptions::kNativeFileSystemAPIDescription, kOsDesktop,
@@ -6457,6 +6454,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-holding-space", flag_descriptions::kHoldingSpaceName,
      flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
+#endif
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+    {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
+     flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

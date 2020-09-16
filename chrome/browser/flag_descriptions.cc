@@ -2311,6 +2311,10 @@ const char kTabGroupsDescription[] =
     "Allows users to organize tabs into visually distinct groups, e.g. to "
     "separate tabs associated with different tasks.";
 
+const char kTabGroupsAutoCreateName[] = "Tab Groups Auto Create";
+const char kTabGroupsAutoCreateDescription[] =
+    "Automatically creates groups for users, if tab groups are enabled.";
+
 const char kTabGroupsCollapseName[] = "Tab Groups Collapse";
 const char kTabGroupsCollapseDescription[] =
     "Allows a tab group to be collapsible and expandable, if tab groups are "
@@ -4505,6 +4509,12 @@ const char kEnableMediaFeedsBackgroundFetchName[] =
 const char kEnableMediaFeedsBackgroundFetchDescription[] =
     "Enables the Media Feeds background fetch feature which allows feeds to be "
     "fetched in the background. Requires #enable-media-feeds to be enabled. ";
+
+const char kEnableOopPrintDriversName[] =
+    "Enables Out-of-Process Printer Drivers";
+const char kEnableOopPrintDriversDescription[] =
+    "Enables printing interactions with the operating system to be performed "
+    "out-of-process.";
 
 const char kRemoteCopyReceiverName[] =
     "Enables the remote copy feature to receive messages";

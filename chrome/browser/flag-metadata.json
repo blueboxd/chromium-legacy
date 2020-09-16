@@ -1890,6 +1890,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-oop-print-drivers",
+    "owners": [ "awscreen", "thestig" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
     "expiry_milestone": 86
@@ -4342,6 +4347,11 @@
     "name": "tab-groups",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "connily" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "tab-groups-auto-create",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
+    "expiry_milestone": 89
   },
   {
     "name": "tab-groups-collapse",

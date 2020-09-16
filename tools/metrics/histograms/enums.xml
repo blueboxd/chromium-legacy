@@ -9325,6 +9325,9 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsRevertReason">
+  <obsolete>
+    Deprecated as of 12/2019.
+  </obsolete>
   <int value="0" label="Menu Cancel"/>
   <int value="1" label="Search provider change"/>
   <int value="2" label="Tab closed"/>
@@ -40599,6 +40602,7 @@ from previous Chrome versions.
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
   <int value="-2017778637" label="PrintSaveToDrive:disabled"/>
   <int value="-2015293660" label="AccessibilityExposeDisplayNone:disabled"/>
+  <int value="-2014948560" label="TabGroupsAutoCreate:enabled"/>
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
   <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
@@ -40704,6 +40708,7 @@ from previous Chrome versions.
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
   <int value="-1921593903" label="ImeInputLogicHmm:disabled"/>
   <int value="-1920912991" label="PermissionChip:disabled"/>
+  <int value="-1919683750" label="EnableOopPrintDrivers:disabled"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
@@ -41711,6 +41716,7 @@ from previous Chrome versions.
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
+  <int value="-948930847" label="EnableOopPrintDrivers:enabled"/>
   <int value="-945806012" label="DownloadsUi:enabled"/>
   <int value="-943304570" label="PaintHolding:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
@@ -41828,6 +41834,7 @@ from previous Chrome versions.
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-816984237" label="OfflinePagesAsyncDownload:enabled"/>
   <int value="-816895294" label="DiscoverApp:disabled"/>
+  <int value="-816404462" label="TabGroupsAutoCreate:disabled"/>
   <int value="-815213125" label="SplitSettings:enabled"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813753274" label="VrBrowsing:disabled"/>

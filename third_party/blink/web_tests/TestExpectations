@@ -1794,6 +1794,9 @@ crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-003.h
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
+# Awaiting DevTools roll.
+crbug.com/1109224 inspector-protocol/overlay/overlay-persistent-overlays.js [ Pass Failure ]
+
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
 crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/* [ Skip ]
@@ -4429,7 +4432,6 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/vertical-align-do-
 
 # [css-logical]
 crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
-crbug.com/865579 external/wpt/css/css-logical/animation-002.html [ Failure Pass ]
 
 # [css-animations]
 crbug.com/993365 external/wpt/css/css-transitions/Element-getAnimations.tentative.html [ Failure Pass ]
@@ -6713,3 +6715,6 @@ crbug.com/1123002 [ Mac11.0 ] external/wpt/html/dom/elements/global-attributes/d
 # Sheriff 2020-09-09
 crbug.com/1126709 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-1.https.html [ Pass Failure ]
 crbug.com/1126709 [ Win ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-1.https.html [ Pass Failure ]
+
+# Sheriff 2020-09-17
+crbug.com/1129347 [ Mac10.13 Debug ] http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Pass Failure ]

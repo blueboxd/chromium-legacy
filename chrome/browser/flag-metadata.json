@@ -144,6 +144,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "app-service-external-protocol",
+    "owners": [ "chromeos-apps-foundation-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "app-service-intent-handling",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 87
@@ -1582,7 +1587,7 @@
   {
     "name": "enable-ftp",
     "owners": [ "asanka" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "enable-fullpage-screenshot",
@@ -4115,16 +4120,6 @@
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 86
-  },
-  {
-    "name": "sharing-peer-connection-receiver",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 88
-  },
-  {
-    "name": "sharing-peer-connection-sender",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 88
   },
   {
     "name": "sharing-prefer-vapid",

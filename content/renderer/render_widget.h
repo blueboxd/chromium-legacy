@@ -32,7 +32,6 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
-#include "content/common/drag_event_source_info.h"
 #include "content/common/renderer.mojom-forward.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -66,7 +65,6 @@
 
 namespace blink {
 struct VisualProperties;
-class WebDragData;
 class WebFrameWidget;
 class WebInputMethodController;
 class WebLocalFrame;
@@ -112,8 +110,7 @@ class CONTENT_EXPORT RenderWidget
       public blink::WebPagePopupClient {  // Is-a WebWidgetClient also
  public:
   RenderWidget(int32_t widget_routing_id,
-               CompositorDependencies* compositor_deps,
-               bool never_composited);
+               CompositorDependencies* compositor_deps);
 
   ~RenderWidget() override;
 
@@ -132,8 +129,7 @@ class CONTENT_EXPORT RenderWidget
   // The method signature matches the RenderWidget constructor.
   using CreateRenderWidgetFunction =
       std::unique_ptr<RenderWidget> (*)(int32_t routing_id,
-                                        CompositorDependencies*,
-                                        bool never_composited);
+                                        CompositorDependencies*);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -144,8 +140,7 @@ class CONTENT_EXPORT RenderWidget
   // by calling InstallCreateForFrameHook().
   static std::unique_ptr<RenderWidget> CreateForFrame(
       int32_t widget_routing_id,
-      CompositorDependencies* compositor_deps,
-      bool never_composited);
+      CompositorDependencies* compositor_deps);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.
@@ -153,8 +148,7 @@ class CONTENT_EXPORT RenderWidget
   // destroyed by the WidgetMsg_Close message. The object can request its own
   // destruction via ClosePopupWidgetSoon().
   static RenderWidget* CreateForPopup(int32_t widget_routing_id,
-                                      CompositorDependencies* compositor_deps,
-                                      bool never_composited);
+                                      CompositorDependencies* compositor_deps);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. The |opener_widget| is the local root
@@ -248,10 +242,6 @@ class CONTENT_EXPORT RenderWidget
       bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
-  void StartDragging(const blink::WebDragData& data,
-                     blink::WebDragOperationsMask mask,
-                     const SkBitmap& drag_image,
-                     const gfx::Point& image_offset) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
@@ -260,7 +250,6 @@ class CONTENT_EXPORT RenderWidget
   void DidCompletePageScaleAnimation() override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
-  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
   bool CanComposeInline() override;
   bool ShouldDispatchImeEventsToPepper() override;
@@ -437,9 +426,6 @@ class CONTENT_EXPORT RenderWidget
   // - Rounding issues with OOPIFs (??).
   gfx::Size size_;
 
-  // Indicates that we are never visible, so never produce graphical output.
-  const bool never_composited_;
-
   // True once Close() is called, during the self-destruction process, and to
   // verify destruction always goes through Close().
   bool closing_ = false;
@@ -499,11 +485,6 @@ class CONTENT_EXPORT RenderWidget
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.
   ShowCallback show_callback_;
-
-  // This field stores drag/drop related info for the event that is currently
-  // being handled. If the current event results in starting a drag/drop
-  // session, this info is sent to the browser along with other drag/drop info.
-  DragEventSourceInfo possible_drag_event_info_;
 
   // Browser controls params such as top and bottom controls heights, whether
   // controls shrink blink size etc.

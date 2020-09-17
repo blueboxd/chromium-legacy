@@ -505,7 +505,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
     cc::LayerTreeSettings layer_tree_settings =
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
-        false, web_widget_client.main_thread_scheduler(),
+        web_widget_client.main_thread_scheduler(),
         web_widget_client.task_graph_runner(), true, ScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     widget->SetCompositorVisible(true);
@@ -4145,6 +4145,12 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
   void AutoscrollFling(const gfx::Vector2dF& position) override {}
   void AutoscrollEnd() override {}
   void DidFirstVisuallyNonEmptyPaint() override {}
+  void StartDragging(const blink::WebDragData& drag_data,
+                     blink::WebDragOperationsMask operations_allowed,
+                     const SkBitmap& bitmap,
+                     const gfx::Vector2d& bitmap_offset_in_dip,
+                     mojom::blink::DragEventSourceInfoPtr event_info) override {
+  }
 
  private:
   mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>
@@ -4189,7 +4195,7 @@ TEST_F(WebViewTest, SetHasTouchEventConsumers) {
     cc::LayerTreeSettings layer_tree_settings =
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
-        false, web_widget_client.main_thread_scheduler(),
+        web_widget_client.main_thread_scheduler(),
         web_widget_client.task_graph_runner(), true, ScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     widget->SetCompositorVisible(true);

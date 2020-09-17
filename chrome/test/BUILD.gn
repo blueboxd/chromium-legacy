@@ -1184,6 +1184,7 @@ if (!is_android) {
       "../browser/policy/cloud/device_management_service_browsertest.cc",
       "../browser/policy/component_updater_policy_browsertest.cc",
       "../browser/policy/content_settings_policy_browsertest.cc",
+      "../browser/policy/developer_tools_policy_browsertest.cc",
       "../browser/policy/hide_webstore_icon_policy_browsertest.cc",
       "../browser/policy/hsts_policy_browsertest.cc",
       "../browser/policy/media_stream_policy_browsertest.cc",
@@ -1192,6 +1193,8 @@ if (!is_android) {
       "../browser/policy/policy_network_browsertest.cc",
       "../browser/policy/policy_prefs_browsertest.cc",
       "../browser/policy/policy_startup_browsertest.cc",
+      "../browser/policy/policy_statistics_collector_browsertest.cc",
+      "../browser/policy/policy_test_google_browsertest.cc",
       "../browser/policy/policy_test_utils.cc",
       "../browser/policy/policy_test_utils.h",
       "../browser/policy/restore_on_startup_policy_browsertest.cc",
@@ -1648,6 +1651,7 @@ if (!is_android) {
         "../browser/policy/arc_policy_browsertest.cc",
         "../browser/policy/assistant_policy_browsertest.cc",
         "../browser/policy/login_policy_test_base_browsertest.cc",
+        "../browser/policy/note_taking_on_lock_screen_policy_browsertest.cc",
         "../browser/policy/suggested_content_policy_browsertest.cc",
         "../browser/policy/system_features_policy_browsertest.cc",
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
@@ -1656,7 +1660,10 @@ if (!is_android) {
     }
 
     if (!is_chromeos) {
-      sources += [ "../browser/ui/views/accessibility/accessibility_focus_highlight_browsertest.cc" ]
+      sources += [
+        "../browser/policy/native_messaging_policy_browsertest.cc",
+        "../browser/ui/views/accessibility/accessibility_focus_highlight_browsertest.cc",
+      ]
     }
 
     if (include_js_tests) {
@@ -1688,6 +1695,8 @@ if (!is_android) {
 
     if (!is_mac) {
       data_deps += [ "//chrome:packed_resources" ]
+      sources +=
+          [ "../browser/policy/full_screen_allowed_policy_browsertest.cc" ]
     }
 
     if (enable_captive_portal_detection) {

@@ -100,6 +100,15 @@ TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
 });
 GEN('#endif');
 
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F(
+    'CrSettingsLanguagesPageV3Test', 'ChromeOSLanguagesSettingsUpdate',
+    function() {
+      mocha.grep(languages_page_tests.TestNames.ChromeOSLanguagesSettingsUpdate)
+          .run();
+    });
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
@@ -404,6 +413,10 @@ TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
+TEST_F('CrSettingsPrivacyPageV3Test', 'ContentSettingsRedesign', function() {
+  runMochaSuite('ContentSettingsRedesign');
+});
+
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F(
     'CrSettingsPrivacyPageV3Test', 'DISABLED_PrivacyPageSoundTests',
@@ -501,7 +514,6 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['Languages', 'languages_tests.js'],
  ['Menu', 'settings_menu_test.js'],
  ['OnStartupPage', 'on_startup_page_tests.js'],
- ['PasswordsLeakDetectionToggle', 'passwords_leak_detection_toggle_test.js'],
  ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],

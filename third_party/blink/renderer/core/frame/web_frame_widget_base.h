@@ -15,6 +15,7 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/drag.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_battery_savings.h"
@@ -73,7 +74,8 @@ class CORE_EXPORT WebFrameWidgetBase
           widget_host,
       CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
           widget,
-      bool hidden);
+      bool hidden,
+      bool never_composited);
   ~WebFrameWidgetBase() override;
 
   // Returns the WebFrame that this widget is attached to. It will be a local
@@ -267,7 +269,6 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // WebWidget methods.
   cc::LayerTreeHost* InitializeCompositing(
-      bool never_composited,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
@@ -606,6 +607,11 @@ class CORE_EXPORT WebFrameWidgetBase
   // When not equal to DragOperationNone, the drag data can be dropped onto the
   // current drop target in this WebView (the drop target can accept the drop).
   WebDragOperation drag_operation_ = kWebDragOperationNone;
+
+  // This field stores drag/drop related info for the event that is currently
+  // being handled. If the current event results in starting a drag/drop
+  // session, this info is sent to the browser along with other drag/drop info.
+  mojom::blink::DragEventSourceInfo possible_drag_event_info_;
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.

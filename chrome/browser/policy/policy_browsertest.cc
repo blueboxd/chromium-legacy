@@ -39,9 +39,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -62,8 +59,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -111,7 +106,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
-#include "components/google/core/common/google_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -223,10 +217,6 @@
 
 #if !defined(OS_MAC)
 #include "base/compiler_specific.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/app_window/native_app_window.h"
-#include "ui/base/window_open_disposition.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -256,11 +246,6 @@ namespace {
 const int kOneHourInMs = 60 * 60 * 1000;
 const int kThreeHoursInMs = 180 * 60 * 1000;
 #endif
-
-#if !defined(OS_MAC)
-const base::FilePath::CharType kUnpackedFullscreenAppName[] =
-    FILE_PATH_LITERAL("fullscreen_app");
-#endif  // !defined(OS_MAC)
 
 // Arbitrary port range for testing the WebRTC UDP port policy.
 const char kTestWebRtcUdpPortRange[] = "10000-10100";
@@ -349,63 +334,6 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestAudioObserver);
 };
-#endif
-
-#if !defined(OS_MAC)
-
-// Observer used to wait for the creation of a new app window.
-class TestAddAppWindowObserver
-    : public extensions::AppWindowRegistry::Observer {
- public:
-  explicit TestAddAppWindowObserver(extensions::AppWindowRegistry* registry);
-  ~TestAddAppWindowObserver() override;
-
-  // extensions::AppWindowRegistry::Observer:
-  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
-
-  extensions::AppWindow* WaitForAppWindow();
-
- private:
-  extensions::AppWindowRegistry* registry_;  // Not owned.
-  extensions::AppWindow* window_;            // Not owned.
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAddAppWindowObserver);
-};
-
-TestAddAppWindowObserver::TestAddAppWindowObserver(
-    extensions::AppWindowRegistry* registry)
-    : registry_(registry), window_(nullptr) {
-  registry_->AddObserver(this);
-}
-
-TestAddAppWindowObserver::~TestAddAppWindowObserver() {
-  registry_->RemoveObserver(this);
-}
-
-void TestAddAppWindowObserver::OnAppWindowAdded(
-    extensions::AppWindow* app_window) {
-  window_ = app_window;
-  run_loop_.Quit();
-}
-
-extensions::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
-  run_loop_.Run();
-  return window_;
-}
-
-#endif
-
-#if !defined(OS_CHROMEOS)
-extensions::MessagingDelegate::PolicyPermission IsNativeMessagingHostAllowed(
-    content::BrowserContext* browser_context,
-    const std::string& native_host_name) {
-  extensions::MessagingDelegate* messaging_delegate =
-      extensions::ExtensionsAPIClient::Get()->GetMessagingDelegate();
-  EXPECT_NE(messaging_delegate, nullptr);
-  return messaging_delegate->IsNativeMessagingHostAllowed(browser_context,
-                                                          native_host_name);
-}
 #endif
 
 }  // namespace
@@ -739,139 +667,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
   }
 }
 
-class PolicyTestGoogle : public PolicyTest {
- public:
-  PolicyTestGoogle() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  net::EmbeddedTestServer* https_server() { return &https_server_; }
-
-  std::map<std::string, net::HttpRequestHeaders> urls_requested() {
-    base::AutoLock auto_lock(lock_);
-    return urls_requested_;
-  }
-
- private:
-  void SetUpOnMainThread() override {
-    PolicyTest::SetUpOnMainThread();
-
-    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
-
-    https_server_.RegisterRequestMonitor(base::BindLambdaForTesting(
-        [&](const net::test_server::HttpRequest& request) {
-          net::HttpRequestHeaders headers;
-          for (auto& header : request.headers)
-            headers.SetHeader(header.first, header.second);
-          base::AutoLock auto_lock(lock_);
-          urls_requested_[request.relative_url] = headers;
-        }));
-
-    ASSERT_TRUE(https_server_.Start());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Note for the google and youtube tests below, the throttles expect that
-    // the URLs are to google.com or youtube.com. Networking code also
-    // automatically upgrades http requests to these domains to https (see the
-    // preload list in https://www.chromium.org/hsts). So as a result we need
-    // to make the requests to an https server. Since the HTTPS server only
-    // serves a valid cert for localhost, so this is needed to load pages from
-    // "www.google.com" without an interstitial.
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-
-    // The production code only allows known ports (80 for http and 443 for
-    // https), but the test server runs on a random port.
-    command_line->AppendSwitch(switches::kIgnoreGooglePortNumbers);
-  }
-
-  net::EmbeddedTestServer https_server_;
-  base::Lock lock_;
-  std::map<std::string, net::HttpRequestHeaders> urls_requested_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyTestGoogle);
-};
-
-IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, ForceGoogleSafeSearch) {
-  ApplySafeSearchPolicy(base::nullopt,  // ForceSafeSearch
-                        base::Value(true),
-                        base::nullopt,   // ForceYouTubeSafetyMode
-                        base::nullopt);  // ForceYouTubeRestrict
-
-  GURL url = https_server()->GetURL("www.google.com",
-                                    "/server-redirect?http://google.com/");
-  CheckSafeSearch(browser(), true, url.spec());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, ForceYouTubeRestrict) {
-  for (int youtube_restrict_mode = safe_search_util::YOUTUBE_RESTRICT_OFF;
-       youtube_restrict_mode < safe_search_util::YOUTUBE_RESTRICT_COUNT;
-       ++youtube_restrict_mode) {
-    ApplySafeSearchPolicy(base::nullopt,  // ForceSafeSearch
-                          base::nullopt,  // ForceGoogleSafeSearch
-                          base::nullopt,  // ForceYouTubeSafetyMode
-                          base::Value(youtube_restrict_mode));
-    {
-      // First check frame requests.
-      GURL youtube_url(https_server()->GetURL("youtube.com", "/empty.html"));
-      ui_test_utils::NavigateToURL(browser(), youtube_url);
-
-      CheckYouTubeRestricted(youtube_restrict_mode,
-                             urls_requested()[youtube_url.path()]);
-    }
-
-    {
-      // Now check subresource loads.
-      GURL youtube_script(https_server()->GetURL("youtube.com", "/json2.js"));
-      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
-                       youtube_script);
-
-      CheckYouTubeRestricted(youtube_restrict_mode,
-                             urls_requested()[youtube_script.path()]);
-    }
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, AllowedDomainsForApps) {
-  for (int allowed_domains = 0; allowed_domains < 2; ++allowed_domains) {
-    std::string allowed_domain;
-    if (allowed_domains) {
-      PolicyMap policies;
-      allowed_domain = "foo.com";
-      SetPolicy(&policies, key::kAllowedDomainsForApps,
-                base::Value(allowed_domain));
-      UpdateProviderPolicy(policies);
-    }
-
-    {
-      // First check frame requests.
-      GURL google_url = https_server()->GetURL("google.com", "/empty.html");
-      ui_test_utils::NavigateToURL(browser(), google_url);
-
-      CheckAllowedDomainsHeader(allowed_domain,
-                                urls_requested()[google_url.path()]);
-    }
-
-    {
-      // Now check subresource loads.
-      GURL google_script =
-          https_server()->GetURL("google.com", "/result_queue.js");
-
-      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
-                       google_script);
-
-      CheckAllowedDomainsHeader(allowed_domain,
-                                urls_requested()[google_script.path()]);
-    }
-
-    {
-      // Double check that a frame to a non-Google url doesn't have the header.
-      GURL non_google_url = https_server()->GetURL("/empty.html");
-      ui_test_utils::NavigateToURL(browser(), non_google_url);
-
-      CheckAllowedDomainsHeader(std::string(),
-                                urls_requested()[non_google_url.path()]);
-    }
-  }
-}
 
 // This test is flaky on Windows 10: https://crbug.com/1069558
 #if defined(OS_WIN)
@@ -905,171 +701,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
   content::CrashTab(contents);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
   EXPECT_TRUE(IsWebGLEnabled(contents));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledByLegacyPolicy) {
-  // Verifies that access to the developer tools can be disabled by setting the
-  // legacy DeveloperToolsDisabled policy.
-
-  // Open devtools.
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  DevToolsWindow* devtools_window =
-      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
-  EXPECT_TRUE(devtools_window);
-
-  // Disable devtools via policy.
-  PolicyMap policies;
-  policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
-               nullptr);
-  content::WindowedNotificationObserver close_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(
-          DevToolsWindowTesting::Get(devtools_window)->main_web_contents()));
-  UpdateProviderPolicy(policies);
-  // wait for devtools close
-  close_observer.Wait();
-  // The existing devtools window should have closed.
-  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
-  // And it's not possible to open it again.
-  EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DeveloperToolsDisabledByDeveloperToolsAvailability) {
-  // Verifies that access to the developer tools can be disabled by setting the
-  // DeveloperToolsAvailability policy.
-
-  // Open devtools.
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  DevToolsWindow* devtools_window =
-      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
-  EXPECT_TRUE(devtools_window);
-
-  // Disable devtools via policy.
-  PolicyMap policies;
-  policies.Set(key::kDeveloperToolsAvailability, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(2 /* DeveloperToolsDisallowed */), nullptr);
-  content::WindowedNotificationObserver close_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(
-          DevToolsWindowTesting::Get(devtools_window)->main_web_contents()));
-  UpdateProviderPolicy(policies);
-  // wait for devtools close
-  close_observer.Wait();
-  // The existing devtools window should have closed.
-  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
-  // And it's not possible to open it again.
-  EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
-}
-
-namespace {
-
-// Utility for waiting until the dev-mode controls are visible/hidden
-// Uses a MutationObserver on the attributes of the DOM element.
-void WaitForExtensionsDevModeControlsVisibility(
-    content::WebContents* contents,
-    const char* dev_controls_accessor_js,
-    const char* dev_controls_visibility_check_js,
-    bool expected_visible) {
-  bool done = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      base::StringPrintf(
-          "var screenElement = %s;"
-          "function SendReplyIfAsExpected() {"
-          "  var is_visible = %s;"
-          "  if (is_visible != %s)"
-          "    return false;"
-          "  observer.disconnect();"
-          "  domAutomationController.send(true);"
-          "  return true;"
-          "}"
-          "var observer = new MutationObserver(SendReplyIfAsExpected);"
-          "if (!SendReplyIfAsExpected()) {"
-          "  var options = { 'attributes': true };"
-          "  observer.observe(screenElement, options);"
-          "}",
-          dev_controls_accessor_js,
-          dev_controls_visibility_check_js,
-          (expected_visible ? "true" : "false")),
-      &done));
-}
-
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
-  // Verifies that when DeveloperToolsDisabled policy is set, the "dev mode"
-  // in chrome://extensions is actively turned off and the checkbox
-  // is disabled.
-  // Note: We don't test the indicator as it is tested in the policy pref test
-  // for kDeveloperToolsDisabled and kDeveloperToolsAvailability.
-
-  // This test depends on the following helper methods to locate the DOM elemens
-  // to be tested.
-  const char define_helpers_js[] =
-      R"(function getToolbar() {
-           const manager = document.querySelector('extensions-manager');
-           return manager.$$('extensions-toolbar');
-         }
-
-         function getToggle() {
-           return getToolbar().$.devMode;
-         }
-
-         function getControls() {
-           return getToolbar().$.devDrawer;
-         }
-        )";
-
-  const char toggle_dev_mode_accessor_js[] = "getToggle()";
-  const char dev_controls_accessor_js[] = "getControls()";
-  const char dev_controls_visibility_check_js[] =
-      "getControls().hasAttribute('expanded')";
-
-  // Navigate to the extensions frame and enabled "Developer mode"
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(contents, std::string(define_helpers_js)));
-
-  EXPECT_TRUE(content::ExecuteScript(
-      contents, base::StringPrintf("domAutomationController.send(%s.click());",
-                                   toggle_dev_mode_accessor_js)));
-
-  WaitForExtensionsDevModeControlsVisibility(contents, dev_controls_accessor_js,
-                                             dev_controls_visibility_check_js,
-                                             true);
-
-  // Disable devtools via policy.
-  PolicyMap policies;
-  policies.Set(key::kDeveloperToolsAvailability, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(2 /*DeveloperToolsDisallowed*/), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // Expect devcontrols to be hidden now...
-  WaitForExtensionsDevModeControlsVisibility(contents, dev_controls_accessor_js,
-                                             dev_controls_visibility_check_js,
-                                             false);
-
-  // ... and checkbox is disabled
-  bool is_toggle_dev_mode_checkbox_disabled = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      base::StringPrintf(
-          "domAutomationController.send(%s.hasAttribute('disabled'))",
-          toggle_dev_mode_accessor_js),
-      &is_toggle_dev_mode_checkbox_disabled));
-  EXPECT_TRUE(is_toggle_dev_mode_checkbox_disabled);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
@@ -1323,66 +954,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UrlKeyedAnonymizedDataCollection) {
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
-#if !defined(OS_MAC)
-IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedBrowser) {
-  PolicyMap policies;
-  policies.Set(key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  BrowserWindow* browser_window = browser()->window();
-  ASSERT_TRUE(browser_window);
-
-  EXPECT_FALSE(browser_window->IsFullscreen());
-  chrome::ToggleFullscreenMode(browser());
-  EXPECT_FALSE(browser_window->IsFullscreen());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
-  PolicyMap policies;
-  policies.Set(key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  scoped_refptr<const extensions::Extension> extension =
-      LoadUnpackedExtension(kUnpackedFullscreenAppName);
-  ASSERT_TRUE(extension);
-
-  // Launch an app that tries to open a fullscreen window.
-  TestAddAppWindowObserver add_window_observer(
-      extensions::AppWindowRegistry::Get(browser()->profile()));
-  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(apps::AppLaunchParams(
-          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::AppLaunchSource::kSourceTest));
-  extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
-  ASSERT_TRUE(window);
-
-  // Verify that the window is not in fullscreen mode.
-  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
-
-  // We have to wait for the navigation to commit since the JS object
-  // registration is delayed (see AppWindowCreateFunction::RunAsync).
-  EXPECT_TRUE(content::WaitForLoadStop(window->web_contents()));
-
-  // Verify that the window cannot be toggled into fullscreen mode via apps
-  // APIs.
-  EXPECT_TRUE(content::ExecuteScript(
-      window->web_contents(),
-      "chrome.app.window.current().fullscreen();"));
-  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
-
-  // Verify that the window cannot be toggled into fullscreen mode from within
-  // Chrome (e.g., using keyboard accelerators).
-  window->Fullscreen();
-  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
-}
-#endif
-
 #if defined(OS_CHROMEOS)
 
 // Flaky on MSan (crbug.com/476964) and regular Chrome OS (crbug.com/645769).
@@ -1555,48 +1126,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivitySatisfied) {
 }
 
 #endif  // defined(OS_CHROMEOS)
-
-
-// Similar to PolicyTest but sets a couple of policies before the browser is
-// started.
-class PolicyStatisticsCollectorTest : public PolicyTest {
- public:
-  PolicyStatisticsCollectorTest() {}
-  ~PolicyStatisticsCollectorTest() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    policies.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
-                 nullptr);
-    policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
-                 nullptr);
-    policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::Value("http://chromium.org"), nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
-  // Verifies that policy usage histograms are collected at startup.
-
-  // BrowserPolicyConnector::Init() has already been called. Make sure the
-  // CompleteInitialization() task has executed as well.
-  content::RunAllPendingInMessageLoop();
-
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram("Enterprise.Policies");
-  std::unique_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
-  // HomepageLocation has policy ID 1.
-  EXPECT_GT(samples->GetCount(1), 0);
-  // ShowHomeButton has policy ID 35.
-  EXPECT_GT(samples->GetCount(35), 0);
-  // BookmarkBarEnabled has policy ID 82.
-  EXPECT_GT(samples->GetCount(82), 0);
-}
 
 // Test that when SSL error overriding is allowed by policy (default), the
 // proceed link appears on SSL blocking pages.
@@ -1805,60 +1334,6 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 }
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlocklistSelective) {
-  base::ListValue blacklist;
-  blacklist.AppendString("host.name");
-  PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
-  EXPECT_EQ(
-      extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
-      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlocklistWildcard) {
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
-  EXPECT_EQ(
-      extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingAllowlist) {
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  base::ListValue allowlist;
-  allowlist.AppendString("host.name");
-  PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
-               nullptr);
-  policies.Set(key::kNativeMessagingAllowlist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, allowlist.Clone(),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
-            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
-  EXPECT_EQ(
-      extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
-}
-
 #endif  // !defined(CHROME_OS)
 
 #if !defined(OS_CHROMEOS)
@@ -1991,108 +1466,6 @@ IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest,
   EXPECT_TRUE(IsShowingInterstitial(tab));
   EXPECT_EQ(1u, num_requests());
 }
-
-#if defined(OS_CHROMEOS)
-
-class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
- public:
-  NoteTakingOnLockScreenPolicyTest() = default;
-  ~NoteTakingOnLockScreenPolicyTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // An app requires lockScreen permission to be enabled as a lock screen app.
-    // This permission is protected by a allowlist, so the test app has to be
-    // allowlisted as well.
-    command_line->AppendSwitchASCII(
-        extensions::switches::kAllowlistedExtensionID, kTestAppId);
-    command_line->AppendSwitch(ash::switches::kAshForceEnableStylusTools);
-    PolicyTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUserLevelPrefValue(const std::string& app_id,
-                             bool enabled_on_lock_screen) {
-    chromeos::NoteTakingHelper* helper = chromeos::NoteTakingHelper::Get();
-    ASSERT_TRUE(helper);
-
-    helper->SetPreferredApp(browser()->profile(), app_id);
-    helper->SetPreferredAppEnabledOnLockScreen(browser()->profile(),
-                                               enabled_on_lock_screen);
-  }
-
-  void SetPolicyValue(base::Optional<base::Value> value) {
-    PolicyMap policies;
-    if (value) {
-      policies.Set(key::kNoteTakingAppsLockScreenAllowlist,
-                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                   POLICY_SOURCE_CLOUD, std::move(value), nullptr);
-    }
-    UpdateProviderPolicy(policies);
-  }
-
-  chromeos::NoteTakingLockScreenSupport GetAppLockScreenStatus(
-      const std::string& app_id) {
-    std::unique_ptr<chromeos::NoteTakingAppInfo> info =
-        chromeos::NoteTakingHelper::Get()->GetPreferredChromeAppInfo(
-            browser()->profile());
-    if (!info || info->app_id != app_id)
-      return chromeos::NoteTakingLockScreenSupport::kNotSupported;
-    return info->lock_screen_support;
-  }
-
-  // The test app ID.
-  static const char kTestAppId[];
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoteTakingOnLockScreenPolicyTest);
-};
-
-const char NoteTakingOnLockScreenPolicyTest::kTestAppId[] =
-    "cadfeochfldmbdgoccgbeianhamecbae";
-
-IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
-                       DisableLockScreenNoteTakingByPolicy) {
-  scoped_refptr<const extensions::Extension> app =
-      LoadUnpackedExtension("lock_screen_apps/app_launch");
-  ASSERT_TRUE(app);
-  ASSERT_EQ(kTestAppId, app->id());
-
-  SetUserLevelPrefValue(app->id(), true);
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
-            GetAppLockScreenStatus(app->id()));
-
-  SetPolicyValue(base::Value(base::Value::Type::LIST));
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kNotAllowedByPolicy,
-            GetAppLockScreenStatus(app->id()));
-
-  SetPolicyValue(base::nullopt);
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
-            GetAppLockScreenStatus(app->id()));
-}
-
-IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
-                       AllowlistLockScreenNoteTakingAppByPolicy) {
-  scoped_refptr<const extensions::Extension> app =
-      LoadUnpackedExtension("lock_screen_apps/app_launch");
-  ASSERT_TRUE(app);
-  ASSERT_EQ(kTestAppId, app->id());
-
-  SetUserLevelPrefValue(app->id(), false);
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
-            GetAppLockScreenStatus(app->id()));
-
-  base::Value policy(base::Value::Type::LIST);
-  policy.Append(kTestAppId);
-  SetPolicyValue(std::move(policy));
-
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
-            GetAppLockScreenStatus(app->id()));
-
-  SetUserLevelPrefValue(app->id(), true);
-  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
-            GetAppLockScreenStatus(app->id()));
-}
-
-#endif  // defined(OS_CHROMEOS)
 
 // Handler for embedded http-server, returns a small page with javascript
 // variable and a link to increment it. It's for JavascriptBlacklistable test.

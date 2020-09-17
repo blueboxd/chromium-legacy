@@ -36,7 +36,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/widget_messages.h"
@@ -49,7 +48,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/drop_data_builder.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -86,7 +84,6 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/clipboard/clipboard_constants.h"
-#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
@@ -224,30 +221,23 @@ void RenderWidget::InstallCreateForFrameHook(
 
 std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
-    CompositorDependencies* compositor_deps,
-    bool never_composited) {
+    CompositorDependencies* compositor_deps) {
   if (g_create_render_widget_for_frame) {
-    return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
-                                            never_composited);
+    return g_create_render_widget_for_frame(widget_routing_id, compositor_deps);
   }
 
-  return std::make_unique<RenderWidget>(widget_routing_id, compositor_deps,
-                                        never_composited);
+  return std::make_unique<RenderWidget>(widget_routing_id, compositor_deps);
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
-    CompositorDependencies* compositor_deps,
-    bool never_composited) {
-  return new RenderWidget(widget_routing_id, compositor_deps, never_composited);
+    CompositorDependencies* compositor_deps) {
+  return new RenderWidget(widget_routing_id, compositor_deps);
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
-                           CompositorDependencies* compositor_deps,
-                           bool never_composited)
-    : routing_id_(widget_routing_id),
-      compositor_deps_(compositor_deps),
-      never_composited_(never_composited) {
+                           CompositorDependencies* compositor_deps)
+    : routing_id_(widget_routing_id), compositor_deps_(compositor_deps) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
@@ -321,7 +311,7 @@ void RenderWidget::Initialize(ShowCallback show_callback,
   // for a provisional frame, this importantly starts the compositor before
   // the frame is inserted into the frame tree, which impacts first paint
   // metrics.
-  if (!web_widget->IsHidden() && !never_composited_)
+  if (!web_widget->IsHidden())
     web_widget->SetCompositorVisible(true);
 }
 
@@ -453,10 +443,6 @@ void RenderWidget::FocusChanged(bool enable) {
 
 void RenderWidget::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
-  // For widgets that are never visible, we don't start the compositor, so we
-  // never get a request for a cc::LayerTreeFrameSink.
-  DCHECK(!never_composited_);
-
   GURL url = GetWebWidget()->GetURLForDebugTrace();
   // The |url| is not always available, fallback to a fixed string.
   if (url.is_empty())
@@ -545,21 +531,9 @@ void RenderWidget::UpdateTextInputState() {
   GetWebWidget()->UpdateTextInputState();
 }
 
-bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
-  possible_drag_event_info_.event_source = ui::mojom::DragEventSource::kTouch;
-  possible_drag_event_info_.event_location =
-      gfx::ToFlooredPoint(event.PositionInScreen());
-
-  return false;
-}
-
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   for (auto& observer : render_frames_)
     observer.RenderWidgetWillHandleMouseEvent();
-
-  possible_drag_event_info_.event_source = ui::mojom::DragEventSource::kMouse;
-  possible_drag_event_info_.event_location =
-      gfx::Point(event.PositionInScreen().x(), event.PositionInScreen().y());
 
   return mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
@@ -659,7 +633,7 @@ void RenderWidget::InitCompositing(const blink::ScreenInfo& screen_info) {
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_host_ = webwidget_->InitializeCompositing(
-      never_composited_, compositor_deps_->GetWebMainThreadScheduler(),
+      compositor_deps_->GetWebMainThreadScheduler(),
       compositor_deps_->GetTaskGraphRunner(), for_child_local_root_frame_,
       screen_info, compositor_deps_->CreateUkmRecorderFactory(),
       /*settings=*/nullptr);
@@ -991,19 +965,6 @@ void RenderWidget::RequestPointerUnlock() {
 bool RenderWidget::IsPointerLocked() {
   return mouse_lock_dispatcher_->IsMouseLockedTo(
       webwidget_mouse_lock_target_.get());
-}
-
-void RenderWidget::StartDragging(const WebDragData& data,
-                                 WebDragOperationsMask mask,
-                                 const SkBitmap& drag_image,
-                                 const gfx::Point& web_image_offset) {
-  blink::WebRect offset_in_window(web_image_offset.x(), web_image_offset.y(), 0,
-                                  0);
-  ConvertViewportToWindow(&offset_in_window);
-  DropData drop_data(DropDataBuilder::Build(data));
-  gfx::Vector2d image_offset(offset_in_window.x, offset_in_window.y);
-  Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask, drag_image,
-                                     image_offset, possible_drag_event_info_));
 }
 
 void RenderWidget::DidNavigate(ukm::SourceId source_id, const GURL& url) {

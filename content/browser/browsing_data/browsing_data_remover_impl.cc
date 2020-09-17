@@ -488,8 +488,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         BrowsingDataFilterBuilder::Mode::kPreserve) {
       // When clearing cache, wipe accumulated network related data
       // (TransportSecurityState and HttpServerPropertiesManager data).
-      network_context->ClearNetworkingHistorySince(
-          delete_begin,
+      network_context->ClearNetworkingHistoryBetween(
+          delete_begin, delete_end,
           CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
     }
 
@@ -537,8 +537,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS)) {
     BrowserContext::GetDefaultStoragePartition(browser_context_)
         ->GetNetworkContext()
-        ->ClearHttpAuthCache(delete_begin, CreateTaskCompletionClosureForMojo(
-                                               TracingDataType::kAuthCache));
+        ->ClearHttpAuthCache(
+            delete_begin_.is_null() ? base::Time::Min() : delete_begin_,
+            delete_end_.is_null() ? base::Time::Max() : delete_end_,
+            CreateTaskCompletionClosureForMojo(TracingDataType::kAuthCache));
   }
 
   //////////////////////////////////////////////////////////////////////////////

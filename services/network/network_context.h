@@ -204,8 +204,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const url::Origin& top_frame_origin) override;
   void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
                            base::OnceClosure done) override;
-  void ClearNetworkingHistorySince(
-      base::Time time,
+  void ClearNetworkingHistoryBetween(
+      base::Time start_time,
+      base::Time end_time,
       base::OnceClosure completion_callback) override;
   void ClearHttpCache(base::Time start_time,
                       base::Time end_time,
@@ -220,6 +221,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
+                          base::Time end_time,
                           ClearHttpAuthCacheCallback callback) override;
   void ClearReportingCacheReports(
       mojom::ClearDataFilterPtr filter,

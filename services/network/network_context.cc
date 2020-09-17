@@ -712,13 +712,14 @@ void NetworkContext::ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
       std::move(filter), std::move(done)));
 }
 
-void NetworkContext::ClearNetworkingHistorySince(
-    base::Time time,
+void NetworkContext::ClearNetworkingHistoryBetween(
+    base::Time start_time,
+    base::Time end_time,
     base::OnceClosure completion_callback) {
   auto barrier = base::BarrierClosure(2, std::move(completion_callback));
 
-  url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
-      time, barrier);
+  url_request_context_->transport_security_state()->DeleteAllDynamicDataBetween(
+      start_time, end_time, barrier);
 
   // TODO(mmenke): Neither of these methods waits until the changes have been
   // commited to disk. They probably should, as most similar methods net/
@@ -764,12 +765,14 @@ void NetworkContext::ClearHostCache(mojom::ClearDataFilterPtr filter,
 }
 
 void NetworkContext::ClearHttpAuthCache(base::Time start_time,
+                                        base::Time end_time,
                                         ClearHttpAuthCacheCallback callback) {
   net::HttpNetworkSession* http_session =
       url_request_context_->http_transaction_factory()->GetSession();
   DCHECK(http_session);
 
-  http_session->http_auth_cache()->ClearEntriesAddedSince(start_time);
+  http_session->http_auth_cache()->ClearEntriesAddedBetween(start_time,
+                                                            end_time);
   // TODO(mmenke): Use another error code for this, as ERR_ABORTED has somewhat
   // magical handling with respect to navigations.
   http_session->CloseAllConnections(net::ERR_ABORTED, "Clearing auth cache");

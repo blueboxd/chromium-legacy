@@ -270,12 +270,24 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
       sequence_id);
 }
 
+std::unique_ptr<gpu::SharedImageFactory> CreateSharedImageFactory(
+    SkiaOutputSurfaceDependency* deps,
+    gpu::MemoryTracker* memory_tracker) {
+  return std::make_unique<gpu::SharedImageFactory>(
+      deps->GetGpuPreferences(), deps->GetGpuDriverBugWorkarounds(),
+      deps->GetGpuFeatureInfo(), deps->GetSharedContextState().get(),
+      deps->GetMailboxManager(), deps->GetSharedImageManager(),
+      deps->GetGpuImageFactory(), memory_tracker,
+      true /* enable_wrapped_sk_image */);
+}
+
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
 CreateSharedImageRepresentationFactory(SkiaOutputSurfaceDependency* deps,
                                        gpu::MemoryTracker* memory_tracker) {
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
       deps->GetSharedImageManager(), memory_tracker);
 }
+
 }  // namespace
 
 // Offscreen surfaces for render passes. It can only be accessed on GPU
@@ -363,6 +375,16 @@ std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
   if (!context_state)
     return nullptr;
 
+  // Even with Vulkan/Dawn compositing, the SharedImageFactory constructor
+  // always initializes a GL-backed SharedImage factory to fall back on.
+  // Creating the SharedImageBackingFactoryGLTexture invokes GL API calls, so
+  // we need to ensure there is a current GL context.
+  if (!context_state->MakeCurrent(nullptr, true /* need_gl */)) {
+    LOG(ERROR) << "Failed to make current during initialization.";
+    return nullptr;
+  }
+  context_state->set_need_context_state_reset(true);
+
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps,
       context_state->feature_info(), renderer_settings, sequence_id,
@@ -390,6 +412,8 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       sync_point_client_state_(
           CreateSyncPointClientState(dependency_, sequence_id)),
       memory_tracker_(dependency_->GetSharedContextState()->memory_tracker()),
+      shared_image_factory_(
+          CreateSharedImageFactory(dependency_, memory_tracker_)),
       shared_image_representation_factory_(
           CreateSharedImageRepresentationFactory(dependency_, memory_tracker_)),
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
@@ -410,6 +434,10 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // |output_device_| may still need |shared_image_factory_|, so release it
+  // first.
+  output_device_.reset();
 
   // Since SharedImageFactory also has a reference to ImplOnGpu's member
   // SharedContextState, we need to explicitly invoke the factory's destructor
@@ -967,51 +995,21 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
   // GL is used on MacOS and GL doesn't need semaphores.
   DCHECK(begin_semaphores.empty());
   DCHECK(end_semaphores.empty());
-  std::vector<gpu::Mailbox> render_pass_overlay_mailboxes;
   for (auto& overlay : overlays) {
     if (!overlay.ddl)
       continue;
+
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {
       cache_use.emplace(dependency_->GetGrShaderCache(),
                         gpu::kDisplayCompositorClientId);
     }
 
-    constexpr auto kOverlayUsage =
-        gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY |
-        gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
     const auto& characterization = overlay.ddl->characterization();
-
-    ResourceFormat resource_format;
-    switch (characterization.colorType()) {
-      case kRGBA_8888_SkColorType:
-        resource_format = ResourceFormat::RGBA_8888;
-        break;
-      case kBGRA_8888_SkColorType:
-        resource_format = ResourceFormat::BGRA_8888;
-        break;
-      case kRGBA_F16_SkColorType:
-        resource_format = ResourceFormat::RGBA_F16;
-        break;
-      default:
-        resource_format = ResourceFormat::RGBA_8888;
-        NOTREACHED();
-    }
-
-    // TODO(https://crbug.com/1100728): reuse shared images.
+    auto backing = GetOrCreateRenderPassOverlayBacking(characterization);
     DCHECK(overlay.mailbox.IsZero());
-    overlay.mailbox = gpu::Mailbox::GenerateForSharedImage();
-    shared_image_factory_->CreateSharedImage(
-        overlay.mailbox, resource_format,
-        gfx::Size(characterization.width(), characterization.height()),
-        gfx::ColorSpace(*characterization.colorSpace()),
-        characterization.origin(), characterization.imageInfo().alphaType(),
-        gpu::kNullSurfaceHandle, kOverlayUsage);
-    auto representation = shared_image_representation_factory_->ProduceSkia(
-        overlay.mailbox, context_state_.get());
-    DCHECK(representation);
-
-    auto scoped_access = representation->BeginScopedWriteAccess(
+    overlay.mailbox = backing->mailbox();
+    auto scoped_access = backing->BeginScopedWriteAccess(
         /*final_msaa_count=*/0, characterization.surfaceProps(),
         /*begin_semaphores=*/nullptr,
         /*end_semaphores=*/nullptr,
@@ -1020,17 +1018,16 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
     DCHECK(result);
     context_state_->gr_context()->flushAndSubmit();
     scoped_access.reset();
-    representation->SetCleared();
-
-    render_pass_overlay_mailboxes.push_back(overlay.mailbox);
+    backing->SetCleared();
+    in_flight_render_pass_overlay_backings_.insert(std::move(backing));
   }
   promise_image_access_helper_.EndAccess();
-
   output_device_->ScheduleOverlays(std::move(overlays));
 
-  for (const auto& mailbox : render_pass_overlay_mailboxes) {
-    shared_image_factory_->DestroySharedImage(mailbox);
-  }
+  // Release any backings which are not reused by the current frame, probably
+  // because the properties of render passes are changed or render passes are
+  // removed.
+  available_render_pass_overlay_backings_.clear();
 #else
   DCHECK(image_contexts.empty());
   output_device_->ScheduleOverlays(std::move(overlays));
@@ -1096,23 +1093,6 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
       return false;
   }
 
-  // Even with Vulkan/Dawn compositing, the SharedImageFactory constructor
-  // always initializes a GL-backed SharedImage factory to fall back on.
-  // Creating the SharedImageBackingFactoryGLTexture invokes GL API calls, so
-  // we need to ensure there is a current GL context.
-  if (!context_state_->MakeCurrent(nullptr, true /* need_gl */)) {
-    LOG(ERROR) << "Failed to make current during initialization.";
-    return false;
-  }
-  context_state_->set_need_context_state_reset(true);
-  shared_image_factory_ = std::make_unique<gpu::SharedImageFactory>(
-      dependency_->GetGpuPreferences(),
-      dependency_->GetGpuDriverBugWorkarounds(),
-      dependency_->GetGpuFeatureInfo(),
-      dependency_->GetSharedContextState().get(),
-      dependency_->GetMailboxManager(), dependency_->GetSharedImageManager(),
-      dependency_->GetGpuImageFactory(), memory_tracker_,
-      true /* enable_wrapped_sk_image */),
   max_resource_cache_bytes_ =
       context_state_->gr_context()->getResourceCacheLimit();
   if (context_state_)
@@ -1146,11 +1126,16 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 
     if (MakeCurrent(true /* need_fbo0 */)) {
       if (gl_surface_->IsSurfaceless()) {
+#if !defined(OS_WIN)
         output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
-            std::make_unique<OutputPresenterGL>(gl_surface_, dependency_,
-                                                memory_tracker_),
-            dependency_, memory_tracker_, GetDidSwapBuffersCompleteCallback());
-
+            std::make_unique<OutputPresenterGL>(
+                gl_surface_, dependency_, shared_image_factory_.get(),
+                shared_image_representation_factory_.get()),
+            dependency_, shared_image_representation_factory_.get(),
+            memory_tracker_, GetDidSwapBuffersCompleteCallback());
+#else
+        NOTIMPLEMENTED();
+#endif
       } else {
         if (dependency_->NeedsSupportForExternalStencil()) {
           output_device_ = std::make_unique<SkiaOutputDeviceWebView>(
@@ -1182,56 +1167,67 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
         context_state_, gfx::SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_,
         GetDidSwapBuffersCompleteCallback());
-  } else {
-#if defined(USE_X11)
-    if (!features::IsUsingOzonePlatform()) {
-      if (!gpu_preferences_.disable_vulkan_surface) {
-        output_device_ = SkiaOutputDeviceVulkan::Create(
-            vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-            memory_tracker_, GetDidSwapBuffersCompleteCallback());
-      }
-      if (!output_device_) {
-        output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-            context_state_, dependency_->GetSurfaceHandle(), memory_tracker_,
-            GetDidSwapBuffersCompleteCallback());
-      }
-    }
-#endif
-    if (!output_device_) {
-#if defined(OS_FUCHSIA)
-      auto output_presenter = OutputPresenterFuchsia::Create(
-          window_surface_.get(), dependency_, memory_tracker_);
-#else
-      auto output_presenter =
-          OutputPresenterGL::Create(dependency_, memory_tracker_);
-      if (output_presenter) {
-        // TODO(https://crbug.com/1012401): don't depend on GL.
-        gl_surface_ = output_presenter->gl_surface();
-      }
-#endif
-      if (output_presenter) {
-        output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
-            std::move(output_presenter), dependency_, memory_tracker_,
-            GetDidSwapBuffersCompleteCallback());
-      } else {
-        auto output_device = SkiaOutputDeviceVulkan::Create(
-            vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-            memory_tracker_, GetDidSwapBuffersCompleteCallback());
-#if defined(OS_WIN)
-        gpu::SurfaceHandle child_surface =
-            output_device ? output_device->GetChildSurfaceHandle()
-                          : gpu::kNullSurfaceHandle;
-        if (child_surface != gpu::kNullSurfaceHandle) {
-          DidCreateAcceleratedSurfaceChildWindow(
-              dependency_->GetSurfaceHandle(), child_surface);
-        }
-#endif
-        output_device_ = std::move(output_device);
-      }
-    }
+    return true;
   }
-#endif
-  return !!output_device_;
+
+#if defined(USE_X11)
+  if (!features::IsUsingOzonePlatform()) {
+    if (!gpu_preferences_.disable_vulkan_surface) {
+      output_device_ = SkiaOutputDeviceVulkan::Create(
+          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+          memory_tracker_, GetDidSwapBuffersCompleteCallback());
+    }
+    if (!output_device_) {
+      output_device_ = std::make_unique<SkiaOutputDeviceX11>(
+          context_state_, dependency_->GetSurfaceHandle(), memory_tracker_,
+          GetDidSwapBuffersCompleteCallback());
+    }
+    if (output_device_)
+      return true;
+  }
+#endif  // defined(USE_X11)
+
+#if !defined(OS_WIN)
+#if defined(OS_FUCHSIA)
+  auto output_presenter = OutputPresenterFuchsia::Create(
+      window_surface_.get(), dependency_, shared_image_factory_.get(),
+      shared_image_representation_factory_.get());
+#else   // defined(OS_FUCHSIA)
+  auto output_presenter =
+      OutputPresenterGL::Create(dependency_, shared_image_factory_.get(),
+                                shared_image_representation_factory_.get());
+  if (output_presenter) {
+    // TODO(https://crbug.com/1012401): don't depend on GL.
+    gl_surface_ = output_presenter->gl_surface();
+  }
+#endif  // !defined(OS_FUCHSIA)
+  if (output_presenter) {
+    output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
+        std::move(output_presenter), dependency_,
+        shared_image_representation_factory_.get(), memory_tracker_,
+        GetDidSwapBuffersCompleteCallback());
+    return true;
+  }
+#endif  // !defined(OS_WIN)
+
+  auto output_device = SkiaOutputDeviceVulkan::Create(
+      vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+      memory_tracker_, GetDidSwapBuffersCompleteCallback());
+  if (!output_device)
+    return false;
+
+#if defined(OS_WIN)
+  gpu::SurfaceHandle child_surface = output_device->GetChildSurfaceHandle();
+  if (child_surface != gpu::kNullSurfaceHandle) {
+    DidCreateAcceleratedSurfaceChildWindow(dependency_->GetSurfaceHandle(),
+                                           child_surface);
+  }
+#endif  // defined(OS_WIN)
+  output_device_ = std::move(output_device);
+  return true;
+#else   // BUILDFLAG(ENABLE_VULKAN)
+  return false;
+#endif  // !BUILDFLAG(ENABLE_VULKAN)
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
@@ -1439,6 +1435,26 @@ void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(
     }
   }
 
+#if defined(OS_APPLE)
+  // |available_render_pass_overlay_backings_| are used or released in
+  // ScheduleOverlays() for every frames.
+  DCHECK(available_render_pass_overlay_backings_.empty());
+
+  // Erase mailboxes of render pass overlays from |params.released_overlays| and
+  // move released backings for those render pass overlays from
+  // |in_flight_render_pass_overlay_backings_| to
+  // |available_render_pass_overlay_backings_| for reusing.
+  base::EraseIf(params.released_overlays, [this](const gpu::Mailbox& mailbox) {
+    auto it = in_flight_render_pass_overlay_backings_.find(mailbox);
+    if (it == in_flight_render_pass_overlay_backings_.end())
+      return false;
+    available_render_pass_overlay_backings_.push_back(std::move(*it));
+    in_flight_render_pass_overlay_backings_.erase(it);
+    return true;
+  });
+
+#endif
+
   PostTaskToClientThread(
       base::BindOnce(did_swap_buffer_complete_callback_, params, pixel_size));
 }
@@ -1488,5 +1504,73 @@ void SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion() {
   gr_context()->checkAsyncWorkCompletion();
   ScheduleCheckReadbackCompletion();
 }
+
+#if defined(OS_APPLE)
+std::unique_ptr<gpu::SharedImageRepresentationSkia>
+SkiaOutputSurfaceImplOnGpu::GetOrCreateRenderPassOverlayBacking(
+    const SkSurfaceCharacterization& characterization) {
+  ResourceFormat resource_format;
+  switch (characterization.colorType()) {
+    case kRGBA_8888_SkColorType:
+      resource_format = ResourceFormat::RGBA_8888;
+      break;
+    case kBGRA_8888_SkColorType:
+      resource_format = ResourceFormat::BGRA_8888;
+      break;
+    case kRGBA_F16_SkColorType:
+      resource_format = ResourceFormat::RGBA_F16;
+      break;
+    default:
+      resource_format = ResourceFormat::RGBA_8888;
+      NOTREACHED();
+  }
+
+  gfx::Size size(characterization.width(), characterization.height());
+  gfx::ColorSpace color_space(*characterization.colorSpace());
+
+  auto it = std::find_if(
+      available_render_pass_overlay_backings_.begin(),
+      available_render_pass_overlay_backings_.end(),
+      [&characterization, &resource_format, &size, &color_space](
+          const std::unique_ptr<gpu::SharedImageRepresentationSkia>& backing) {
+        return backing->format() == resource_format &&
+               backing->size() == size &&
+               backing->color_space() == color_space &&
+               backing->surface_origin() == characterization.origin() &&
+               backing->alpha_type() ==
+                   characterization.imageInfo().alphaType();
+      });
+
+  if (it != available_render_pass_overlay_backings_.end()) {
+    auto backing = std::move(*it);
+    available_render_pass_overlay_backings_.erase(it);
+    return backing;
+  }
+
+  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
+  constexpr auto kOverlayUsage = gpu::SHARED_IMAGE_USAGE_SCANOUT |
+                                 gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                                 gpu::SHARED_IMAGE_USAGE_RASTER;
+
+  bool result = shared_image_factory_->CreateSharedImage(
+      mailbox, resource_format, size, color_space, characterization.origin(),
+      characterization.imageInfo().alphaType(), gpu::kNullSurfaceHandle,
+      kOverlayUsage);
+  if (!result) {
+    LOG(ERROR) << "CreateSharedImage() failed.";
+    return nullptr;
+  }
+
+  auto backing = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_.get());
+  DCHECK(backing);
+
+  // The |backing| will keep a ref on the shared image, so the image will not be
+  // released until |backing| is released.
+  shared_image_factory_->DestroySharedImage(mailbox);
+
+  return backing;
+}
+#endif
 
 }  // namespace viz

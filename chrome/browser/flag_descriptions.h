@@ -1051,9 +1051,6 @@ extern const char kUpdateHoverAtBeginFrameDescription[];
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 
-extern const char kPaintHoldingName[];
-extern const char kPaintHoldingDescription[];
-
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
@@ -1292,9 +1289,6 @@ extern const char kSuggestionsWithSubStringMatchDescription[];
 
 extern const char kSyncAutofillWalletOfferDataName[];
 extern const char kSyncAutofillWalletOfferDataDescription[];
-
-extern const char kSyncDeviceInfoInTransportModeName[];
-extern const char kSyncDeviceInfoInTransportModeDescription[];
 
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
@@ -1935,9 +1929,6 @@ extern const char kOmniboxPedalSuggestionsDescription[];
 
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];
-
-extern const char kOmniboxReverseAnswersName[];
-extern const char kOmniboxReverseAnswersDescription[];
 
 extern const char kPasswordsWeaknessCheckName[];
 extern const char kPasswordsWeaknessCheckDescription[];

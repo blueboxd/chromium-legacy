@@ -103,8 +103,9 @@ void ArCoreGl::Initialize(
   camera_image_size_ = frame_size;
   display_rotation_ = display_rotation;
   // TODO(https://crbug.com/953503): start using the list to control the
-  // behavior & send appropriate data in GetFrameData().
-  enabled_features_ = enabled_features;
+  // behavior of local and unbounded spaces & send appropriate data back in
+  // GetFrameData().
+  enabled_features_.insert(enabled_features.begin(), enabled_features.end());
   should_update_display_geometry_ = true;
 
   if (!InitializeGl(drawing_widget)) {
@@ -122,7 +123,7 @@ void ArCoreGl::Initialize(
   }
 
   arcore_ = arcore_factory->Create();
-  if (!arcore_->Initialize(application_context)) {
+  if (!arcore_->Initialize(application_context, enabled_features_)) {
     DLOG(ERROR) << "ARCore failed to initialize";
     std::move(callback).Run(false);
     return;
@@ -292,6 +293,8 @@ void ArCoreGl::GetFrameData(
     // Get the UV transform matrix from ArCore's UV transform.
     uv_transform_ = arcore_->GetCameraUvFromScreenUvTransform();
 
+    DVLOG(3) << __func__ << ": uv_transform_=" << uv_transform_.ToString();
+
     // We need near/far distances to make a projection matrix. The actual
     // values don't matter, the Renderer will recalculate dependent values
     // based on the application's near/far settngs.
@@ -347,6 +350,9 @@ void ArCoreGl::GetFrameData(
   mojom::VRPosePtr pose = arcore_->Update(&camera_updated);
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta frame_timestamp = arcore_->GetFrameTimestamp();
+
+  DVLOG(3) << __func__ << ": frame_timestamp=" << frame_timestamp;
+
   if (!arcore_last_frame_timestamp_.is_zero()) {
     arcore_frame_interval_ = frame_timestamp - arcore_last_frame_timestamp_;
     arcore_update_next_expected_ = now + arcore_frame_interval_;
@@ -601,7 +607,7 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
     std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
     std::unique_ptr<gfx::GpuFence> gpu_fence2 = gl_fence->GetGpuFence();
     submit_client_->OnSubmitFrameGpuFence(
-        gfx::CloneHandleForIPC(gpu_fence2->GetGpuFenceHandle()));
+        gpu_fence2->GetGpuFenceHandle().Clone());
   }
   // We finished processing a frame, unblock a potentially waiting next frame.
   webxr_->TryDeferredProcessing();
@@ -668,7 +674,7 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
     std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
     std::unique_ptr<gfx::GpuFence> gpu_fence2 = gl_fence->GetGpuFence();
     submit_client_->OnSubmitFrameGpuFence(
-        gfx::CloneHandleForIPC(gpu_fence2->GetGpuFenceHandle()));
+        gpu_fence2->GetGpuFenceHandle().Clone());
   }
   // We finished processing a frame, unblock a potentially waiting next frame.
   webxr_->TryDeferredProcessing();
@@ -855,6 +861,10 @@ void ArCoreGl::ProcessFrame(
   // Get lighting estimation data if it was requested.
   if (options && options->include_lighting_estimation_data) {
     frame_data->light_estimation_data = arcore_->GetLightEstimationData();
+  }
+
+  if (IsFeatureEnabled(device::mojom::XRSessionFeature::DEPTH)) {
+    frame_data->depth_data = arcore_->GetDepthData();
   }
 
   // Running this callback after resolving all the hit-test requests ensures

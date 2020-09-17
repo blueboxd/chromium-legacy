@@ -983,10 +983,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
           ->http_server_properties()
           ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
-  // Now check that ClearNetworkingHistorySince clears the data.
+  // Now check that ClearNetworkingHistoryBetween clears the data.
   base::RunLoop run_loop2;
-  network_context->ClearNetworkingHistorySince(
-      base::Time::Now() - base::TimeDelta::FromHours(1),
+  network_context->ClearNetworkingHistoryBetween(
+      base::Time::Now() - base::TimeDelta::FromHours(1), base::Time::Max(),
       run_loop2.QuitClosure());
   run_loop2.Run();
   EXPECT_FALSE(
@@ -1001,7 +1001,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   ASSERT_TRUE(temp_dir.Delete());
 }
 
-// Checks that ClearNetworkingHistorySince() clears in-memory pref stores and
+// Checks that ClearNetworkingHistoryBetween() clears in-memory pref stores and
 // invokes the closure passed to it.
 TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
@@ -1022,8 +1022,8 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
           ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
   base::RunLoop run_loop;
-  network_context->ClearNetworkingHistorySince(
-      base::Time::Now() - base::TimeDelta::FromHours(1),
+  network_context->ClearNetworkingHistoryBetween(
+      base::Time::Now() - base::TimeDelta::FromHours(1), base::Time::Max(),
       run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(
@@ -1032,7 +1032,7 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
           ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 }
 
-// Checks that ClearNetworkingHistorySince() clears network quality prefs.
+// Checks that ClearNetworkingHistoryBetween() clears network quality prefs.
 TEST_F(NetworkContextTest, ClearingNetworkingHistoryClearNetworkQualityPrefs) {
   const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
   net::TestNetworkQualityEstimator estimator;
@@ -1058,8 +1058,8 @@ TEST_F(NetworkContextTest, ClearingNetworkingHistoryClearNetworkQualityPrefs) {
   // Clear the networking history.
   base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
-  network_context->ClearNetworkingHistorySince(
-      base::Time::Now() - base::TimeDelta::FromHours(1),
+  network_context->ClearNetworkingHistoryBetween(
+      base::Time::Now() - base::TimeDelta::FromHours(1), base::Time::Max(),
       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -1766,20 +1766,38 @@ TEST_F(NetworkContextTest, ClearHttpAuthCache) {
   ASSERT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
                                    net::HttpAuth::AUTH_SCHEME_BASIC,
                                    net::NetworkIsolationKey()));
+  {
+    base::RunLoop run_loop;
+    base::Time test_time;
+    ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
+    network_context->ClearHttpAuthCache(base::Time(), test_time,
+                                        run_loop.QuitClosure());
+    run_loop.Run();
 
-  base::RunLoop run_loop;
-  base::Time test_time;
-  ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
-  network_context->ClearHttpAuthCache(test_time, run_loop.QuitClosure());
-  run_loop.Run();
+    EXPECT_EQ(1u, cache->GetEntriesSizeForTesting());
+    EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER,
+                                     "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC,
+                                     net::NetworkIsolationKey()));
+    EXPECT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY,
+                                     "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC,
+                                     net::NetworkIsolationKey()));
+  }
+  {
+    base::RunLoop run_loop;
+    base::Time test_time;
+    ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
+    network_context->ClearHttpAuthCache(test_time, base::Time::Max(),
+                                        run_loop.QuitClosure());
+    run_loop.Run();
 
-  EXPECT_EQ(1u, cache->GetEntriesSizeForTesting());
-  EXPECT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC,
-                                   net::NetworkIsolationKey()));
-  EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC,
-                                   net::NetworkIsolationKey()));
+    EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
+    EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER,
+                                     "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC,
+                                     net::NetworkIsolationKey()));
+    EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY,
+                                     "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC,
+                                     net::NetworkIsolationKey()));
+  }
 }
 
 TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
@@ -1817,7 +1835,8 @@ TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
                                    net::NetworkIsolationKey()));
 
   base::RunLoop run_loop;
-  network_context->ClearHttpAuthCache(base::Time(), run_loop.QuitClosure());
+  network_context->ClearHttpAuthCache(base::Time(), base::Time::Max(),
+                                      run_loop.QuitClosure());
   run_loop.Run();
 
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
@@ -1841,6 +1860,7 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
 
   base::RunLoop run_loop;
   network_context->ClearHttpAuthCache(base::Time::UnixEpoch(),
+                                      base::Time::Max(),
                                       base::BindOnce(run_loop.QuitClosure()));
   run_loop.Run();
 

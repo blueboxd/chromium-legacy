@@ -4506,6 +4506,7 @@ interface IdleDeadline
     method constructor
     method timeRemaining
 interface IdleDetector : EventTarget
+    static method requestPermission
     attribute @@toStringTag
     getter onchange
     getter screenState
@@ -11392,6 +11393,7 @@ interface XRDepthInformation
     attribute @@toStringTag
     getter data
     getter height
+    getter normTextureFromNormView
     getter width
     method constructor
     method getDepth

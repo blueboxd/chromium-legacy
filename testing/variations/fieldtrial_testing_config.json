@@ -1,4 +1,19 @@
 {
+    "AVFoundationCaptureV2": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AVFoundationCaptureV2"
+                    ]
+                }
+            ]
+        }
+    ],
     "AddToHomescreenMessaging": [
         {
             "platforms": [
@@ -3562,21 +3577,6 @@
             ]
         }
     ],
-    "IllustratedEmptyStates": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IllustratedEmptyStates"
-                    ]
-                }
-            ]
-        }
-    ],
     "IncludeBetaForumMenuItem": [
         {
             "platforms": [
@@ -6278,22 +6278,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabledWithToken"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafetyAndPasswordCheckAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PasswordCheck",
-                        "SafetyCheckAndroid"
                     ]
                 }
             ]

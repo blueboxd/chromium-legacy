@@ -3806,9 +3806,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalKeywordModeName,
      flag_descriptions::kOmniboxExperimentalKeywordModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kExperimentalKeywordMode)},
-    {"omnibox-reverse-answers", flag_descriptions::kOmniboxReverseAnswersName,
-     flag_descriptions::kOmniboxReverseAnswersDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxReverseAnswers)},
     {"omnibox-short-bookmark-suggestions",
      flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
      flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsDesktop,
@@ -4703,11 +4700,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppReinstallZeroState)},
 #endif  // OS_CHROMEOS
 
-    {"enable-sync-device-info-in-transport-mode",
-     flag_descriptions::kSyncDeviceInfoInTransportModeName,
-     flag_descriptions::kSyncDeviceInfoInTransportModeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncDeviceInfoInTransportMode)},
-
     {"enable-resampling-input-events",
      flag_descriptions::kEnableResamplingInputEventsName,
      flag_descriptions::kEnableResamplingInputEventsDescription, kOsAll,
@@ -5034,10 +5026,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHardwareMediaKeyHandlingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
-
-    {"enable-paint-holding", flag_descriptions::kPaintHoldingName,
-     flag_descriptions::kPaintHoldingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kPaintHolding)},
 
 #if defined(OS_CHROMEOS)
     {"app-service-adaptive-icon",

@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3ee25e942eda1847e89600f48cc99304b2d53cc4',
+  'skia_revision': 'e6467c88b64d6967e5d269f4092228bd3d488707',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f2c29ad37e79cc9c21dd7f51c97cfc52321b2763',
+  'v8_revision': '2ff41ff550557b071f58b81126c7048ad9f1904b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c2367695483858cf61d59f34a41c0ead0aac7776',
+  'dawn_revision': '19b910d7964b8c780bcc7e96dff6bf0f61557692',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -891,7 +891,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'f7f147bf051cd7c97ed79a3f4c9f86c4d489b6df',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '9ae272cf722aed2eb5e237f9422f1b228c59d859',
       'condition': 'checkout_linux',
   },
 
@@ -1327,7 +1327,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'cw5KjATCqXEo2ji2ep1Vx88VOe8DdIMAsfq3dV86XzYC'
+              'version': 'ZuvbaFn4WQjlhZAWvjta7blkkX6FDGdZynRPTwiRzqMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1543,7 +1543,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@029801bea6c1e10002ed65fa8fecdeb00c584c9d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d340f4f1fe05d1af1e0101b49dd6aecbb28f84b8',
     'condition': 'checkout_src_internal',
   },
 

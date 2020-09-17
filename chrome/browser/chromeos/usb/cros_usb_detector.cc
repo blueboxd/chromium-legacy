@@ -39,6 +39,7 @@ namespace chromeos {
 namespace {
 
 constexpr uint32_t kAllInterfacesMask = ~0U;
+const char kParallelsShortName[] = "Parallels";
 
 // Not owned locally.
 static CrosUsbDetector* g_cros_usb_detector = nullptr;
@@ -247,7 +248,7 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
         chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath;
   }
   if (plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile())) {
-    vm_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
+    vm_name = base::ASCIIToUTF16(kParallelsShortName);
     rich_notification_data.buttons.emplace_back(
         message_center::ButtonInfo(l10n_util::GetStringFUTF16(
             IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_VM, vm_name)));
@@ -262,8 +263,9 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
         IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION,
         ProductLabelFromDevice(device_info), vm_name);
   } else {
+    // Note: we assume right now that multi-VM is Linux and Plugin VM.
     message = l10n_util::GetStringFUTF16(
-        IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_MULTI_VM,
+        IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_LINUX_PLUGIN_VM,
         ProductLabelFromDevice(device_info));
     settings_sub_page = std::string();
   }
@@ -288,10 +290,6 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
 CrosUsbDeviceInfo::CrosUsbDeviceInfo() = default;
 CrosUsbDeviceInfo::CrosUsbDeviceInfo(const CrosUsbDeviceInfo&) = default;
 CrosUsbDeviceInfo::~CrosUsbDeviceInfo() = default;
-
-CrosUsbDeviceInfo::VmSharingInfo::VmSharingInfo() = default;
-CrosUsbDeviceInfo::VmSharingInfo::VmSharingInfo(const VmSharingInfo&) = default;
-CrosUsbDeviceInfo::VmSharingInfo::~VmSharingInfo() = default;
 
 std::string CrosUsbDetector::MakeNotificationId(const std::string& guid) {
   return "cros:" + guid;
@@ -508,10 +506,8 @@ void CrosUsbDetector::OnDeviceRemoved(
 
   std::string guid = device_info->guid;
   for (const auto& device : usb_devices_) {
-    if (device.guid == guid) {
-      for (const auto& sharing_info_pair : device.vm_sharing_info) {
-        DetachUsbDeviceFromVm(sharing_info_pair.first, guid, base::DoNothing());
-      }
+    if (device.guid == guid && device.shared_vm_name) {
+      DetachUsbDeviceFromVm(*device.shared_vm_name, guid, base::DoNothing());
     }
   }
   const auto& start = std::remove_if(
@@ -534,13 +530,11 @@ void CrosUsbDetector::ConnectSharedDevicesOnVmStartup(
     const std::string& vm_name) {
   // Reattach shared devices when the VM becomes available.
   for (auto& device : usb_devices_) {
-    for (auto& sharing_pair : device.vm_sharing_info) {
-      if (sharing_pair.second.shared && sharing_pair.first == vm_name) {
-        VLOG(1) << "Connecting " << device.label << " to " << vm_name;
-        // Clear any older guest_port setting.
-        sharing_pair.second.guest_port = base::nullopt;
-        AttachUsbDeviceToVm(vm_name, device.guid, base::DoNothing());
-      }
+    if (device.shared_vm_name == vm_name) {
+      VLOG(1) << "Connecting " << device.label << " to " << vm_name;
+      // Clear any older guest_port setting.
+      device.guest_port = base::nullopt;
+      AttachUsbDeviceToVm(vm_name, device.guid, base::DoNothing());
     }
   }
 }
@@ -556,7 +550,7 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
       // restart.
       // Setting this flag early also allows the UI not to flicker because of
       // the notification resulting from the default VM detach below.
-      device.vm_sharing_info[vm_name].shared = true;
+      device.shared_vm_name = vm_name;
       allowed_interfaces_mask = device.allowed_interfaces_mask;
       // The guest port will be set on completion.
       break;
@@ -599,12 +593,9 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
 
   base::Optional<uint8_t> guest_port;
   for (const auto& device : usb_devices_) {
-    if (device.guid == guid) {
-      const auto it = device.vm_sharing_info.find(vm_name);
-      if (it != device.vm_sharing_info.end()) {
-        guest_port = it->second.guest_port;
-        break;
-      }
+    if (device.guid == guid && device.shared_vm_name == vm_name) {
+      guest_port = device.guest_port;
+      break;
     }
   }
 
@@ -650,8 +641,7 @@ void CrosUsbDetector::OnAttachUsbDeviceOpened(
   }
   for (const auto& device : usb_devices_) {
     if (device.guid == device_info->guid) {
-      const auto it = device.vm_sharing_info.find(vm_name);
-      if (it != device.vm_sharing_info.end() && it->second.guest_port) {
+      if (device.shared_vm_name == vm_name && device.guest_port) {
         LOG(ERROR) << "Device " << device.label << " is already shared";
         // The device is already attached.
         std::move(callback).Run(/*success=*/true);
@@ -692,9 +682,8 @@ void CrosUsbDetector::OnUsbDeviceAttachFinished(
   if (success) {
     for (auto& device : usb_devices_) {
       if (device.guid == guid) {
-        auto& vm_sharing_info = device.vm_sharing_info[vm_name];
-        vm_sharing_info.shared = true;
-        vm_sharing_info.guest_port = response->guest_port();
+        device.shared_vm_name = vm_name;
+        device.guest_port = response->guest_port();
         break;
       }
     }
@@ -719,7 +708,8 @@ void CrosUsbDetector::OnUsbDeviceDetachFinished(
 
   for (auto& device : usb_devices_) {
     if (device.guid == guid) {
-      device.vm_sharing_info.erase(vm_name);
+      device.shared_vm_name = base::nullopt;
+      device.guest_port = base::nullopt;
       break;
     }
   }

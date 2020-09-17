@@ -270,9 +270,6 @@ extern const char kExperimentalAccessibilityLanguageDetectionDynamicName[];
 extern const char
     kExperimentalAccessibilityLanguageDetectionDynamicDescription[];
 
-extern const char kExportTaggedPDFName[];
-extern const char kExportTaggedPDFDescription[];
-
 extern const char kFontAccessAPIName[];
 extern const char kFontAccessAPIDescription[];
 
@@ -2536,6 +2533,9 @@ extern const char kStreamlinedUsbPrinterSetupDescription[];
 
 extern const char kSyncWifiConfigurationsName[];
 extern const char kSyncWifiConfigurationsDescription[];
+
+extern const char kSystemLatinPhysicalTypingName[];
+extern const char kSystemLatinPhysicalTypingDescription[];
 
 extern const char kTetherName[];
 extern const char kTetherDescription[];

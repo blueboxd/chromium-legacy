@@ -16,6 +16,11 @@
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_switches.h"
+#include "components/arc/arc_util.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace web_app {
 
 namespace {
@@ -44,6 +49,21 @@ constexpr char kCreateShortcuts[] = "create_shortcuts";
 //  - if the feature is enabled, the app will be installed
 //  - if the feature is not enabled, the app will be removed.
 constexpr char kFeatureName[] = "feature_name";
+
+#if defined(OS_CHROMEOS)
+
+// kDisableIfArcSupported is an optional bool which specifies whether to skip
+// install of the app if the device supports Arc (Chrome OS only).
+// Defaults to false.
+constexpr char kDisableIfArcSupported[] = "disable_if_arc_supported";
+
+// kDisableIfTabletFormFactor is an optional bool which specifies whether to
+// skip install of the app if the device is a tablet form factor.
+// This is only for Chrome OS tablets, Android does not use any of this code.
+// Defaults to false.
+constexpr char kDisableIfTabletFormFactor[] = "disable_if_tablet_form_factor";
+
+#endif  // defined(OS_CHROMEOS)
 
 // kLaunchContainer is a required string which can be "window" or "tab"
 // and controls what sort of container the web app is launched in.
@@ -117,6 +137,10 @@ base::Optional<ExternalInstallOptions> ParseConfig(
     const base::FilePath& file,
     const std::string& user_type,
     const base::Value& app_config) {
+  ExternalInstallOptions result(GURL(), DisplayMode::kStandalone,
+                                ExternalInstallSource::kExternalDefault);
+  result.require_manifest = true;
+
   if (app_config.type() != base::Value::Type::DICTIONARY) {
     LOG(ERROR) << file << " was not a dictionary as the top level";
     return base::nullopt;
@@ -129,6 +153,7 @@ base::Optional<ExternalInstallOptions> ParseConfig(
     return base::nullopt;
   }
 
+  // feature_name
   const base::Value* value =
       app_config.FindKeyOfType(kFeatureName, base::Value::Type::STRING);
   if (value) {
@@ -142,17 +167,19 @@ base::Optional<ExternalInstallOptions> ParseConfig(
     }
   }
 
+  // app_url
   value = app_config.FindKeyOfType(kAppUrl, base::Value::Type::STRING);
   if (!value) {
     LOG(ERROR) << file << " had a missing " << kAppUrl;
     return base::nullopt;
   }
-  GURL app_url(value->GetString());
-  if (!app_url.is_valid()) {
+  result.install_url = GURL(value->GetString());
+  if (!result.install_url.is_valid()) {
     LOG(ERROR) << file << " had an invalid " << kAppUrl;
     return base::nullopt;
   }
 
+  // hide_from_user
   bool hide_from_user = false;
   value = app_config.FindKey(kHideFromUser);
   if (value) {
@@ -162,7 +189,11 @@ base::Optional<ExternalInstallOptions> ParseConfig(
     }
     hide_from_user = value->GetBool();
   }
+  result.add_to_applications_menu = !hide_from_user;
+  result.add_to_search = !hide_from_user;
+  result.add_to_management = !hide_from_user;
 
+  // create_shortcuts
   bool create_shortcuts = false;
   value = app_config.FindKey(kCreateShortcuts);
   if (value) {
@@ -172,27 +203,53 @@ base::Optional<ExternalInstallOptions> ParseConfig(
     }
     create_shortcuts = value->GetBool();
   }
+  result.add_to_desktop = create_shortcuts;
+  result.add_to_quick_launch_bar = create_shortcuts;
 
   // It doesn't make sense to hide the app and also create shortcuts for it.
   DCHECK(!(hide_from_user && create_shortcuts));
 
+#if defined(OS_CHROMEOS)
+  // disable_if_arc_supported
+  value = app_config.FindKey(kDisableIfArcSupported);
+  if (value) {
+    if (!value->is_bool()) {
+      LOG(ERROR) << file << " had an invalid " << kDisableIfArcSupported;
+      return base::nullopt;
+    }
+    if (value->GetBool() && arc::IsArcAvailable())
+      return base::nullopt;
+  }
+
+  // disable_if_tablet_form_factor
+  value = app_config.FindKey(kDisableIfTabletFormFactor);
+  if (value) {
+    if (!value->is_bool()) {
+      LOG(ERROR) << file << " had an invalid " << kDisableIfTabletFormFactor;
+      return base::nullopt;
+    }
+    if (value->GetBool() && chromeos::switches::IsTabletFormFactor())
+      return base::nullopt;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  // launch_container
   value = app_config.FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
   if (!value) {
     LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
     return base::nullopt;
   }
   std::string launch_container_str = value->GetString();
-  auto user_display_mode = DisplayMode::kBrowser;
   if (launch_container_str == kLaunchContainerTab) {
-    user_display_mode = DisplayMode::kBrowser;
+    result.user_display_mode = DisplayMode::kBrowser;
   } else if (launch_container_str == kLaunchContainerWindow) {
-    user_display_mode = DisplayMode::kStandalone;
+    result.user_display_mode = DisplayMode::kStandalone;
   } else {
     LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
     return base::nullopt;
   }
 
-  bool load_and_await_service_worker_registration = true;
+  // load_and_await_service_worker_registration
   value = app_config.FindKey(kLoadAndAwaitServiceWorkerRegistration);
   if (value) {
     if (!value->is_bool()) {
@@ -200,13 +257,13 @@ base::Optional<ExternalInstallOptions> ParseConfig(
                  << kLoadAndAwaitServiceWorkerRegistration;
       return base::nullopt;
     }
-    load_and_await_service_worker_registration = value->GetBool();
+    result.load_and_await_service_worker_registration = value->GetBool();
   }
 
-  base::Optional<GURL> service_worker_registration_url;
+  // service_worker_registration_url
   value = app_config.FindKey(kServiceWorkerRegistrationUrl);
   if (value) {
-    if (!load_and_await_service_worker_registration) {
+    if (!result.load_and_await_service_worker_registration) {
       LOG(ERROR) << file << " should not specify a "
                  << kServiceWorkerRegistrationUrl << " while "
                  << kLoadAndAwaitServiceWorkerRegistration << " is disabled";
@@ -215,15 +272,15 @@ base::Optional<ExternalInstallOptions> ParseConfig(
       LOG(ERROR) << file << " had an invalid " << kServiceWorkerRegistrationUrl;
       return base::nullopt;
     }
-    service_worker_registration_url.emplace(value->GetString());
-    if (!service_worker_registration_url->is_valid()) {
+    result.service_worker_registration_url.emplace(value->GetString());
+    if (!result.service_worker_registration_url->is_valid()) {
       LOG(ERROR) << file << " had an invalid " << kServiceWorkerRegistrationUrl;
       return base::nullopt;
     }
   }
 
+  // uninstall_and_replace
   value = app_config.FindKey(kUninstallAndReplace);
-  std::vector<AppId> uninstall_and_replace_ids;
   if (value) {
     if (!value->is_list()) {
       LOG(ERROR) << file << " had an invalid " << kUninstallAndReplace;
@@ -239,34 +296,20 @@ base::Optional<ExternalInstallOptions> ParseConfig(
                    << " entry";
         break;
       }
-      uninstall_and_replace_ids.push_back(app_id_value.GetString());
+      result.uninstall_and_replace.push_back(app_id_value.GetString());
     }
     if (had_error)
       return base::nullopt;
   }
 
+  // offline_manifest
   value = app_config.FindDictKey(kOfflineManifest);
-  WebApplicationInfoFactory app_info_factory;
-  if (value)
-    app_info_factory = ParseOfflineManifest(file_utils, dir, file, *value);
+  if (value) {
+    result.app_info_factory =
+        ParseOfflineManifest(file_utils, dir, file, *value);
+  }
 
-  ExternalInstallOptions install_options(
-      std::move(app_url), user_display_mode,
-      ExternalInstallSource::kExternalDefault);
-  install_options.add_to_applications_menu = !hide_from_user;
-  install_options.add_to_search = !hide_from_user;
-  install_options.add_to_management = !hide_from_user;
-  install_options.add_to_desktop = create_shortcuts;
-  install_options.add_to_quick_launch_bar = create_shortcuts;
-  install_options.require_manifest = true;
-  install_options.uninstall_and_replace = std::move(uninstall_and_replace_ids);
-  install_options.load_and_await_service_worker_registration =
-      load_and_await_service_worker_registration;
-  install_options.service_worker_registration_url =
-      service_worker_registration_url;
-  install_options.app_info_factory = std::move(app_info_factory);
-
-  return install_options;
+  return result;
 }
 
 WebApplicationInfoFactory ParseOfflineManifest(

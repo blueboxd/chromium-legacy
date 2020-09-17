@@ -3440,6 +3440,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosLanguageSettingsUpdateName,
      flag_descriptions::kCrosLanguageSettingsUpdateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLanguageSettingsUpdate)},
+    {"enable-cros-system-latin-physical-typing",
+     flag_descriptions::kSystemLatinPhysicalTypingName,
+     flag_descriptions::kSystemLatinPhysicalTypingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSystemLatinPhysicalTyping)},
     {"enable-cros-virtual-keyboard-bordered-key",
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
@@ -3901,7 +3905,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          chrome::android::kTabbedAppOverflowMenuRegroup,
          kTabbedAppOverflowMenuRegroupVariations,
-         "TabbedAppOverflowMenuRegroup")},
+         "AndroidAppMenuUiRework")},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -4112,7 +4116,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
     {"read-later", flag_descriptions::kReadLaterName,
-     flag_descriptions::kReadLaterDescription, kOsDesktop,
+     flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kReadLater)},
 
     {"tab-groups", flag_descriptions::kTabGroupsName,
@@ -5999,9 +6003,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
 #endif  // defined(OS_ANDROID)
 
-    {"export-tagged-pdf", flag_descriptions::kExportTaggedPDFName,
-     flag_descriptions::kExportTaggedPDFDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kExportTaggedPDF)},
     {"double-buffer-compositing",
      flag_descriptions::kDoubleBufferCompositingName,
      flag_descriptions::kDoubleBufferCompositingDescription, kOsCrOS,

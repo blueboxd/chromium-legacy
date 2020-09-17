@@ -1380,6 +1380,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-cros-system-latin-physical-typing",
+    "owners": [ "shend", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-cros-virtual-keyboard-bordered-key",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
@@ -1393,11 +1398,6 @@
     "name": "enable-cssom-view-scroll-coordinates",
     "owners": [ "cathiechen@igalia.com", "fwang@igalia.com" ],
     "expiry_milestone": 87
-  },
-  {
-    "name": "enable-custom-mac-paper-sizes",
-    "owners": [ "thestig", "dhoss" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-data-reduction-proxy-server-experiment",
@@ -2247,8 +2247,8 @@
   },
   {
     "name": "enable-translate-sub-frames",
-    "owners": [ "dougarnett", "chrome-language@google.com" ],
-    "expiry_milestone": 86
+    "owners": [ "sclittle", "chrome-language@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-ui-devtools",
@@ -2492,11 +2492,6 @@
     "name": "explore-sites",
     "owners": [ "chili", "dewittj" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "export-tagged-pdf",
-    "owners": [ "dmazzoni", "thestig" ],
-    "expiry_milestone": 86
   },
   {
     "name": "extend-open-in-files-support",
@@ -4621,12 +4616,12 @@
   {
     "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 94
   },
   {
     "name": "use-xps-for-printing-from-pdf",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 95
   },
   {
     "name": "username-first-flow",

@@ -16241,6 +16241,9 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="41" label="Capture CSS Overview clicked"/>
   <int value="42" label="Virtual authenticator environment enabled"/>
   <int value="43" label="Source Order Overlay Activated"/>
+  <int value="44" label="User keyboard shortcut added"/>
+  <int value="45" label="Keyboard shortcut removed"/>
+  <int value="46" label="Keyboard shortcut modified"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -16304,6 +16307,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="32" label="dualScreenSupport"/>
   <int value="33" label="cssGridFeatures"/>
   <int value="34" label="movableTabs"/>
+  <int value="35" label="keyboardShortcutEditor"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -42826,6 +42830,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
+  <int value="225610933" label="SystemLatinPhysicalTyping:enabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="229877058" label="ShelfScrollable:disabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
@@ -44220,6 +44225,7 @@ from previous Chrome versions.
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
+  <int value="1678866761" label="SystemLatinPhysicalTyping:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1680248931" label="use-fake-device-for-media-stream:enabled"/>
   <int value="1683560662" label="ChromeShareHighlightsAndroid:disabled"/>

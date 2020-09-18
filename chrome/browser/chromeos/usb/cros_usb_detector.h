@@ -51,25 +51,15 @@ struct CrosUsbDeviceInfo {
   CrosUsbDeviceInfo(const CrosUsbDeviceInfo&);
   ~CrosUsbDeviceInfo();
 
-  struct VmSharingInfo {
-    VmSharingInfo();
-    VmSharingInfo(const VmSharingInfo&);
-    ~VmSharingInfo();
-
-    // Whether the device is shared with the VM. Note that the device may be
-    // shared but not attached (yet) in which case |guest_port| below would be
-    // unset.
-    bool shared = false;
-    base::Optional<uint8_t> guest_port;
-  };
-
-  // Maps a VM name to the sharing/attach information of the device in the VM
-  // identified by that name.
-  base::flat_map<std::string, VmSharingInfo> vm_sharing_info;
   std::string guid;
   base::string16 label;
   // Whether the device can be shared with guest OSes.
   bool sharable_with_crostini = false;
+  // Name of VM shared with. Unset if not shared. Note that the device may be
+  // shared but not attached (yet) in which case |guest_port| below would be
+  // unset.
+  base::Optional<std::string> shared_vm_name;
+  base::Optional<uint8_t> guest_port;
   // Interfaces shareable with guest OSes
   uint32_t allowed_interfaces_mask = 0;
   // TODO(nverne): Add current state and errors etc.
@@ -181,6 +171,12 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
       const std::string& guid,
       base::OnceCallback<void(bool success)> callback,
       base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> response);
+
+  // Devices will be auto-detached if they are attached to another VM.
+  void AttachAfterDetach(const std::string& vm_name,
+                         const std::string& guid,
+                         base::OnceCallback<void(bool success)> callback,
+                         bool success);
 
   // Returns true when a device should show a notification when attached.
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info,

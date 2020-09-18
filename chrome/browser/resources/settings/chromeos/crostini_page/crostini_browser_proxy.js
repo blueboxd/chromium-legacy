@@ -28,7 +28,8 @@ let CrostiniSharedPath;
 /**
  * @typedef {{label: string,
  *            guid: string,
- *            shared: boolean}}
+ *            shared: boolean,
+ *            shareWillReassign: boolean}}
  */
 let CrostiniSharedUsbDevice;
 
@@ -74,10 +75,8 @@ cr.define('settings', function() {
      */
     getCrostiniSharedPathsDisplayText(paths) {}
 
-    /**
-     * @return {!Promise<!Array<CrostiniSharedUsbDevice>>}
-     */
-    getCrostiniSharedUsbDevices() {}
+    /** Called when page is ready. */
+    notifyCrostiniSharedUsbDevicesPageReady() {}
 
     /**
      * @param {string} guid Unique device identifier.
@@ -268,8 +267,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getCrostiniSharedUsbDevices() {
-      return cr.sendWithPromise('getCrostiniSharedUsbDevices');
+    notifyCrostiniSharedUsbDevicesPageReady() {
+      return cr.sendWithPromise('notifyCrostiniSharedUsbDevicesPageReady');
     }
 
     /** @override */

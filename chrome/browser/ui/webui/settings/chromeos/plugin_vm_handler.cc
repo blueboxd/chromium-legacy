@@ -27,9 +27,10 @@ base::ListValue UsbDevicesToListValue(
     base::Value device_info(base::Value::Type::DICTIONARY);
     device_info.SetStringKey("guid", device.guid);
     device_info.SetStringKey("label", device.label);
-    auto it = device.vm_sharing_info.find(plugin_vm::kPluginVmName);
-    bool shared = it != device.vm_sharing_info.end() && it->second.shared;
+    bool shared = device.shared_vm_name == plugin_vm::kPluginVmName;
     device_info.SetBoolKey("shared", shared);
+    device_info.SetBoolKey("shareWillReassign",
+                           device.shared_vm_name && !shared);
     usb_devices_list.Append(std::move(device_info));
   }
   return usb_devices_list;
@@ -105,22 +106,27 @@ void PluginVmHandler::HandleGetPluginVmSharedPathsDisplayText(
 
 void PluginVmHandler::HandleRemovePluginVmSharedPath(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-  std::string vm_name = args->GetList()[0].GetString();
-  std::string path = args->GetList()[1].GetString();
+  CHECK_EQ(3U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string vm_name = args->GetList()[1].GetString();
+  std::string path = args->GetList()[2].GetString();
 
   guest_os::GuestOsSharePath::GetForProfile(profile_)->UnsharePath(
       vm_name, base::FilePath(path),
       /*unpersist=*/true,
-      base::BindOnce(
-          [](const std::string& path, bool result,
-             const std::string& failure_reason) {
-            if (!result) {
-              LOG(ERROR) << "Error unsharing " << path << ": "
-                         << failure_reason;
-            }
-          },
-          path));
+      base::BindOnce(&PluginVmHandler::OnPluginVmSharedPathRemoved,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id, path));
+}
+
+void PluginVmHandler::OnPluginVmSharedPathRemoved(
+    const std::string& callback_id,
+    const std::string& path,
+    bool success,
+    const std::string& failure_reason) {
+  if (!success) {
+    LOG(ERROR) << "Error unsharing " << path << ": " << failure_reason;
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(success));
 }
 
 void PluginVmHandler::HandleNotifyPluginVmSharedUsbDevicesPageReady(

@@ -15,11 +15,9 @@
   'masters': {
     'chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
-      'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
-      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
       # Don't include unwind tables for the remaining three builders since
       # they monitor binary size growth, which may be affected by the tables.
@@ -169,7 +167,7 @@
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_opt_static',
       'ToTLinuxUBSanVptr': 'clang_tot_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
-      'ToTMacOfficial': 'clang_tot_official',
+      'ToTMacOfficial': 'mac_clang_tot_official',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
       'ToTMacASan': 'asan_disable_nacl_clang_tot_minimal_symbols_static_release',
@@ -668,6 +666,8 @@
 
     'internal.chrome.fyi': {
       'chromeos-amd64-generic-lacros-internal-rel': 'chromeos_amd64-generic_lacros_rel',
+      'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients',
+      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'linux-autofill-captured-sites-rel': 'release_bot',
       'linux-password-manager-captured-sites-rel': 'release_bot',
       'lorenz-graph-dbg': 'android_debug_static_bot',
@@ -2137,6 +2137,9 @@
       'release_trybot', 'arm64',
     ],
 
+    'mac_clang_tot_official': [
+      'clang_tot', 'official', 'no_widevine_cdm_host_verification',
+    ],
 
     'msan_no_origins_release_bot': [
       'msan_no_origins', 'release_bot',

@@ -19,6 +19,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_features.h"
@@ -212,6 +213,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
     }
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
+    InitializeSafetyTipConfig();
     InProcessBrowserTest::SetUp();
   }
 
@@ -450,6 +452,20 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kSkeletonMatchTop500);
 }
 
+// Navigate to a domain that would trigger the warning, but doesn't because it
+// fails-safe when the allowlist isn't available.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       NoMatchOnAllowlistMissing) {
+  const GURL kNavigatedUrl = GetURL("googlé.com");
+
+  // Clear out any existing proto.
+  SetSafetyTipsRemoteConfigProto(nullptr);
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
+}
+
 // Embedding a top domain should show an interstitial when enabled. If disabled
 // this would trigger safety tips when target embedding feature parameter is
 // enabled for safety tips.
@@ -481,12 +497,33 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kTargetEmbedding);
 }
 
-// Target embedding should not trigger on allowlisted domains.
+// Target embedding should not trigger on allowlisted embedder domains.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
-                       TargetEmbedding_Allowlist) {
+                       TargetEmbedding_EmbedderAllowlist) {
+  const GURL kNavigatedUrl = GetURL("google.com.allowlisted.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetSafetyTipAllowlistPatterns({"allowlisted.com/"}, {});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
+}
+
+// Target embedding should not trigger on allowlisted target domains.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       TargetEmbedding_TargetAllowlist) {
   const GURL kNavigatedUrl = GetURL("foo.scholar.google.com.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   SetSafetyTipAllowlistPatterns({}, {"scholar\\.google\\.com"});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
+}
+
+// Navigate to a domain target embedding a domain with no separators, but that
+// matches the target allowlist.  Regression test for crbug.com/1127450.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       TargetEmbedding_TargetAllowlistWithNoSeparators) {
+  const GURL kNavigatedUrl = GetURL("googlecom.example.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckNoUkm();
 }

@@ -304,6 +304,9 @@
   <message name="IDS_OS_SETTINGS_LANGUAGES_SEARCH_INPUT_METHODS_LABEL" translateable="false" desc="Placeholder in the input field to search keyboard layouts or input method editors.">
     Search input methods
   </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_INPUT_METHOD_NOT_ALLOWED" translateable="false" desc="Tooltip for policy icon when an keyboard layout or input method editor is not allowed.">
+    Your administrator doesn't allow this input method
+  </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_TITLE" translateable="false" desc="Title for the section containing all the options for spell check settings. The options include picking between using the system's spell check or using Google's web service and a list of the enabled languages which support spell checking.">
     Spell check
   </message>
@@ -1210,6 +1213,12 @@
   </message>
   <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no avaiable USB devices.">
     Available USB devices will appear here.
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_IN_USE" desc="Dialog title describing that a USB device is currently in use.">
+    Device in use
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_REASSIGN" desc="Confirmation explaining to users that reassigning a USB device from being attached from one VM to another could cause errors.">
+     "<ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph>" is in use. Reassigning the device while it's in use could cause errors. Are you sure you want to continue?
   </message>
   <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE" desc="Title of ARC ADB sideloading section.">
     Develop Android apps
@@ -2574,8 +2583,11 @@
   <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_ON" desc="In Device Settings > Power, menu item for idle behavior that prevents the screen from turning off and prevents the device from sleeping. String must be short enough to fit in a drop-down menu.">
     Keep display on
   </message>
-  <message name="IDS_SETTINGS_POWER_IDLE_OTHER" desc="In Device Settings > Power, menu item for custom idle behavior.">
-    Other
+  <message name="IDS_SETTINGS_POWER_IDLE_SHUT_DOWN" desc="In Device Settings > Power, menu item for idle behavior that shuts the device down when idle.">
+    Shut down
+  </message>
+  <message name="IDS_SETTINGS_POWER_IDLE_STOP_SESSION" desc="In Device Settings > Power, menu item for idle behavior that stops the session when idle.">
+    Sign out
   </message>
   <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL" desc="In Device Settings > Power, label for suspending when cover is closed.">
     Sleep when cover is closed
@@ -3075,6 +3087,15 @@
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a Parallels shared folder.">
     Stop sharing
   </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE" desc="Message to show user when unsharing a Parallels shared folder fails. Do not translate 'Parallels Desktop'">
+    Couldn't unshare because an application is using this folder. The folder will be unshared when Parallels Desktop is next shut down.
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_DIALOG_TITLE" desc="Title of the error dialog shown to a user when unsharing a Parallels shared folder fails.">
+    Unshare failed
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_FAILURE_TRY_AGAIN" desc="Button text in the dialog shown when unsharing a Parallels shared folder fails.  Pressing this button will attempt to unshare the folder again.">
+    Try again
+  </message>
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_LIST_EMPTY_MESSAGE" desc="Message shown when the user has not yet shared any folders in Parallels.">
     Shared folders will appear here
   </message>
@@ -3089,6 +3110,12 @@
   </message>
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no avaiable USB devices.">
     Available USB devices will appear here.
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_IN_USE" desc="Dialog title describing that a USB device is currently in use.">
+    Device in use
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_USB_DEVICES_REASSIGN" desc="Confirmation explaining to users that reassigning a USB device from being attached from one VM to another could cause errors.">
+     "<ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph>" is in use. Reassigning the device while it's in use could cause errors. Are you sure you want to continue?
   </message>
 
   <!-- Storage -->

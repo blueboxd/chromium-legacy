@@ -48,8 +48,8 @@
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -196,7 +196,7 @@ void ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
 
 // static
 bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
-  return ServiceWorkerUtils::ScopeMatches(scope, url);
+  return blink::ServiceWorkerScopeMatches(scope, url);
 }
 
 // static
@@ -247,11 +247,9 @@ void ServiceWorkerContextWrapper::Init(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       non_network_pending_loader_factory_bundle_for_update_check;
-  if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {
-    non_network_pending_loader_factory_bundle_for_update_check =
-        CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
-            storage_partition_->browser_context());
-  }
+  non_network_pending_loader_factory_bundle_for_update_check =
+      CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
+          storage_partition_->browser_context());
 
   RunOrPostTaskOnCoreThread(
       FROM_HERE,
@@ -1886,7 +1884,6 @@ std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
 ServiceWorkerContextWrapper::
     CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
         BrowserContext* browser_context) {
-  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
   ContentBrowserClient::NonNetworkURLLoaderFactoryDeprecatedMap
       non_network_factories;
   GetContentClient()

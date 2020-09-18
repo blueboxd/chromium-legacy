@@ -171,7 +171,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:b022173f8069cf8001d4cf2a87ce7c5f0eae220f',
+  'luci_go': 'git_revision:83c3df996b224edf5061840744395707a0e513e7',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ad48610a0129c3cb66c07815c440811f1e57a7f1',
+  'skia_revision': 'ec598d5b00eb6dedef78218156aaee2de56b6da4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8727abed3a840e39bbebeaa541d756c21e996776',
+  'v8_revision': 'e6a7fb5319a1d0bf2759cc829a621fa929b11f71',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1c79e9ea29ee164e0d46d2e4b88865d52e5023bf',
+  'angle_revision': '68c424fe42405e8459aae786f4f57930f6af0ca8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '11880b30c36028e6d7c1d923d3c9a605d01790c9',
+  'devtools_frontend_revision': '3a2a148556532971556981cc5ab97f0eea5b74f3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ac3765e663cd6569edbc9a219fe19f0df8e09aae',
+  'dawn_revision': 'd6498a41ab4e01926b05dd567e5209dd5c6a61ca',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5956a17ed665aabd4562a4a7337e3f6f56e5f0c1',
+    Var('webrtc_git') + '/src.git' + '@' + '1eb3e4c9ba5c5c943ca22cfadd190e186ad38f06',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1534,7 +1534,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'LEx_9beM5sDJnvOoVCe6f8eM0jit04kZSMJh9SEf87wC',
+          'version': 'nLiRBOlDnLpGaONe3dMmjU3S8K3bfjiA0p4VZkqV2IEC',
         },
       ],
       'dep_type': 'cipd',
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e1e4781e5ec2c96eb56e98781eb8e91907f6a507',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8cf89f57dc90a977bd2deb6819dee8d248011f78',
     'condition': 'checkout_src_internal',
   },
 

@@ -29184,7 +29184,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3470" label="ElementAttachInternalsBeforeConstructor"/>
   <int value="3471" label="SMILElementHasRepeatNEventListener"/>
   <int value="3472" label="WebTransport"/>
-  <int value="3473" label="IdleDetectionPermissionRequested"/>
+  <int value="3473" label="WebkitPrerenderStartEventFired"/>
+  <int value="3474" label="WebkitPrerenderStopEventFired"/>
+  <int value="3475" label="WebkitPrerenderLoadEventFired"/>
+  <int value="3476" label="WebkitPrerenderDOMContentLoadedEventFired"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42654,7 +42657,6 @@ from previous Chrome versions.
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
-  <int value="24124916" label="PrefetchPrivacyChanges:enabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="29212695" label="OfflineIndicator:enabled"/>
@@ -43594,7 +43596,6 @@ from previous Chrome versions.
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
   <int value="1036565901" label="AssistPersonalInfo:enabled"/>
   <int value="1037961753" label="CCTIncognito:disabled"/>
-  <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
   <int value="1038264914" label="PerDeskShelf:enabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
@@ -74106,6 +74107,8 @@ Full version information for the fingerprint enum values:
   <int value="20" label="ApkWebInstallFailed"/>
   <int value="21" label="CancelledOnWebAppProviderShuttingDown"/>
   <int value="22" label="WebAppProviderNotReady"/>
+  <int value="23" label="SuccessOfflineOnlyInstall"/>
+  <int value="24" label="SuccessOfflineFallbackInstall"/>
 </enum>
 
 <enum name="WebAppInstallSource">

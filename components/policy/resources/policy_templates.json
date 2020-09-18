@@ -10637,6 +10637,7 @@
             'browser_settings',
             'os_settings',
             'camera',
+            'scanning',
           ],
         },
       },
@@ -10656,6 +10657,11 @@
           'value': 'camera',
           'caption': '''Camera''',
         },
+        {
+          'name': 'scanning',
+          'value': 'scanning',
+          'caption': '''Scanning (supported since version 87)''',
+        },
       ],
       'supported_on': ['chrome_os:84-'],
       'features': {
@@ -10663,15 +10669,17 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': ['camera', 'browser_settings', 'os_settings'],
+      'example_value': ['camera', 'browser_settings', 'os_settings', 'scanning'],
       'id': 689,
-      'caption': '''Configure the camera, browser settings, and os settings features to be disabled''',
+      'caption': '''Configure the camera, browser settings, os settings, and scanning features to be disabled''',
       'tags': [],
       'desc': '''Allows you to set a list of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features to be disabled.
 
       Disabling any of these features means that the user can't access it from the UI and will see it as "disabled by admin".
 
-      If the policy is left not set, all <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features will be enabled by default and the user can use any of them.''',
+      If the policy is left not set, all <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features will be enabled by default and the user can use any of them.
+
+      Note: The scanning feature is currently disabled by default via a feature flag. If the user enables the feature via the feature flag, the feature can still be disabled by this policy.''',
     },
     {
       'name': 'FloatingAccessibilityMenuEnabled',
@@ -19060,7 +19068,7 @@
       'supported_on': ['chrome.*:71-'],
       'caption': '''Alternative browser to launch for configured websites.''',
       'tags': [],
-      'desc': '''Setting the policy controls which command to use to open URLs in an alternative browser. The policy can be set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph>, <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph> or a file path. When this policy is set to a file path, that file is used as an executable file. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, and <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph>.
+      'desc': '''Setting the policy controls which command to use to open URLs in an alternative browser. The policy can be set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph>, <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph>, <ph name="EDGE_VALUE_PLACEHOLDER">${edge}</ph> or a file path. When this policy is set to a file path, that file is used as an executable file. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> and <ph name="EDGE_VALUE_PLACEHOLDER">${edge}</ph> are only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, and <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph>.
 
       Leaving the policy unset puts a platform-specific default in use: <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> for <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, or <ph name="SAFARI_PRODUCT_NAME">Safari®</ph> for <ph name="MAC_OS_NAME">macOS</ph>. On <ph name="LINUX_OS_NAME">Linux®</ph>, launching an alternative browser will fail.''',
     },

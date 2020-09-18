@@ -1623,7 +1623,8 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
-    {"start_surface_variation", "single"}};
+    {"start_surface_variation", "single"},
+    {"hide_incognito_switch", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -1653,7 +1654,8 @@ const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceSingleTabWithoutMvTiles[] = {
         {"start_surface_variation", "single"},
         {"show_last_active_tab_only", "true"},
-        {"exclude_mv_tiles", "true"}};
+        {"exclude_mv_tiles", "true"},
+        {"hide_incognito_switch", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
@@ -3813,9 +3815,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
-                                    kOmniboxDocumentProviderVariations,
-                                    "OmniboxBundledExperimentV1")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kDocumentProvider,
+         kOmniboxDocumentProviderVariations,
+         "OmniboxDocumentProviderNonDogfoodExperiments")},
     {"omnibox-autocomplete-titles",
      flag_descriptions::kOmniboxAutocompleteTitlesName,
      flag_descriptions::kOmniboxAutocompleteTitlesDescription, kOsDesktop,
@@ -6429,6 +6432,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
+#endif
+
+#if defined(OS_WIN)
+    {"use-serial-bus-enumerator",
+     flag_descriptions::kUseSerialBusEnumeratorName,
+     flag_descriptions::kUseSerialBusEnumeratorDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kUseSerialBusEnumerator)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

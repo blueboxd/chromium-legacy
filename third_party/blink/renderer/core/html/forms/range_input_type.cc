@@ -52,7 +52,8 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -245,7 +246,7 @@ void RangeInputType::CreateShadowSubtree() {
 
   Document& document = GetElement().GetDocument();
   auto* track = MakeGarbageCollected<blink::SliderTrackElement>(document);
-  track->SetShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
+  track->SetShadowPseudoId(shadow_element_names::kPseudoSliderTrack);
   track->setAttribute(html_names::kIdAttr,
                       shadow_element_names::kIdSliderTrack);
   track->AppendChild(MakeGarbageCollected<SliderThumbElement>(document));
@@ -258,13 +259,13 @@ bool RangeInputType::TypeShouldForceLegacyLayout() const {
   return true;
 }
 
-LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&,
-                                                 LegacyLayout) const {
+LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle& style,
+                                                 LegacyLayout legacy) const {
   UseCounter::Count(GetElement().GetDocument(),
                     WebFeature::kLegacyLayoutBySlider);
   // TODO(crbug.com/1040826): input[type=range] should not use
   // LayoutFlexibleBox.
-  return new LayoutFlexibleBox(&GetElement());
+  return LayoutObjectFactory::CreateFlexibleBox(GetElement(), style, legacy);
 }
 
 Decimal RangeInputType::ParseToNumber(const String& src,

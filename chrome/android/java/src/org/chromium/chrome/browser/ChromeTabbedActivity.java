@@ -110,7 +110,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
-import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
@@ -643,8 +642,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             OnClickListener bookmarkClickHandler = v -> addOrEditBookmark(getActivityTab());
 
             Supplier<Boolean> showStartSurfaceSupplier = () -> {
-                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
-                        && !isTablet()) {
+                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePageOnPhone(
+                            isTablet())) {
                     showOverview(OverviewModeState.SHOWING_HOMEPAGE);
                     return true;
                 }
@@ -795,14 +794,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-            if (isWarmOnResume()) {
-                SuggestionsEventReporterBridge.onActivityWarmResumed();
-            } else {
-                SuggestionsEventReporterBridge.onColdStart();
-            }
-        }
 
         if (isWarmOnResume()) {
             NavigationPredictorBridge.onActivityWarmResumed();
@@ -2018,8 +2009,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     private boolean showStartSurfaceHomeForNTP(boolean isNTP, boolean incognito) {
-        if (isNTP && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
-                && !isTablet()) {
+        if (isNTP
+                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceHomeAsNTP(
+                        incognito, isTablet())) {
             getTabModelSelector().selectModel(incognito);
 
             if (TabUiFeatureUtilities.supportInstantStart(isTablet())

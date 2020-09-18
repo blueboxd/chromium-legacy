@@ -136,7 +136,7 @@
   {
     "name": "app-cache",
     "owners": [ "enne" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "app-service-adaptive-icon",
@@ -4412,7 +4412,7 @@
   {
     "name": "trust-tokens",
     "owners": [ "davidvc", "privacy-sandbox-dev" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "turn-off-streaming-media-caching-always",
@@ -4544,6 +4544,11 @@
     "name": "use-search-click-for-right-click",
     "owners": [ "khorimoto", "zentaro" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "use-serial-bus-enumerator",
+    "owners": [ "reillyg" ],
+    "expiry_milestone": 89
   },
   {
     "name": "use-sync-sandbox",

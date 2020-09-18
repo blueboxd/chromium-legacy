@@ -62,8 +62,9 @@ class PDFiumEngine : public PDFEngine,
   // Exposed for testing.
   enum class FocusElementType { kNone, kDocument, kPage };
 
-  // NOTE: |enable_javascript| is ignored when PDF_ENABLE_V8 is not defined.
-  PDFiumEngine(PDFEngine::Client* client, bool enable_javascript);
+  // NOTE: |script_option| is ignored when PDF_ENABLE_V8 is not defined.
+  PDFiumEngine(PDFEngine::Client* client,
+               PDFiumFormFiller::ScriptOption script_option);
   PDFiumEngine(const PDFiumEngine&) = delete;
   PDFiumEngine& operator=(const PDFiumEngine&) = delete;
   ~PDFiumEngine() override;
@@ -142,7 +143,7 @@ class PDFiumEngine : public PDFEngine,
   int GetVerticalScrollbarYPosition() override;
   void SetGrayscale(bool grayscale) override;
   int GetCharCount(int page_index) override;
-  pp::FloatRect GetCharBounds(int page_index, int char_index) override;
+  gfx::RectF GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
   base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> GetTextRunInfo(
       int page_index,

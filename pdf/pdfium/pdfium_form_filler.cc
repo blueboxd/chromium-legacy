@@ -28,8 +28,9 @@ std::string WideStringToString(FPDF_WIDESTRING wide_string) {
 
 }  // namespace
 
-PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
-    : engine_(engine) {
+PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine,
+                                   ScriptOption script_option)
+    : engine_(engine), script_option_(script_option) {
   // Initialize FPDF_FORMFILLINFO member variables.  Deriving from this struct
   // allows the static callbacks to be able to cast the FPDF_FORMFILLINFO in
   // callbacks to ourself instead of maintaining a map of them to
@@ -53,24 +54,6 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_OnFocusChange = Form_OnFocusChange;
   FPDF_FORMFILLINFO::FFI_DoURIActionWithKeyboardModifier =
       Form_DoURIActionWithKeyboardModifier;
-#if defined(PDF_ENABLE_XFA)
-  FPDF_FORMFILLINFO::xfa_disabled = false;
-  FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
-  FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
-  FPDF_FORMFILLINFO::FFI_SetCurrentPage = Form_SetCurrentPage;
-  FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
-  FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
-  FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
-  FPDF_FORMFILLINFO::FFI_PageEvent = Form_PageEvent;
-  FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
-  FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
-  FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
-  FPDF_FORMFILLINFO::FFI_UploadTo = Form_UploadTo;
-  FPDF_FORMFILLINFO::FFI_DownloadFromURL = Form_DownloadFromURL;
-  FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
-  FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
-  FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
-#else
   FPDF_FORMFILLINFO::xfa_disabled = true;
   FPDF_FORMFILLINFO::FFI_EmailTo = nullptr;
   FPDF_FORMFILLINFO::FFI_DisplayCaret = nullptr;
@@ -87,9 +70,10 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_OpenFile = nullptr;
   FPDF_FORMFILLINFO::FFI_GotoURL = nullptr;
   FPDF_FORMFILLINFO::FFI_GetLanguage = nullptr;
-#endif  // defined(PDF_ENABLE_XFA)
+  FPDF_FORMFILLINFO::m_pJsPlatform = nullptr;
 
-  if (enable_javascript) {
+#if defined(PDF_ENABLE_V8)
+  if (script_option != ScriptOption::kNoJavaScript) {
     FPDF_FORMFILLINFO::m_pJsPlatform = this;
     IPDF_JSPLATFORM::version = 3;
     IPDF_JSPLATFORM::app_alert = Form_Alert;
@@ -101,9 +85,28 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
     IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
     IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
     IPDF_JSPLATFORM::Field_browse = nullptr;
-  } else {
-    FPDF_FORMFILLINFO::m_pJsPlatform = nullptr;
   }
+#if defined(PDF_ENABLE_XFA)
+  if (script_option == ScriptOption::kJavaScriptAndXFA) {
+    FPDF_FORMFILLINFO::xfa_disabled = false;
+    FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
+    FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
+    FPDF_FORMFILLINFO::FFI_SetCurrentPage = Form_SetCurrentPage;
+    FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
+    FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
+    FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
+    FPDF_FORMFILLINFO::FFI_PageEvent = Form_PageEvent;
+    FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
+    FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
+    FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
+    FPDF_FORMFILLINFO::FFI_UploadTo = Form_UploadTo;
+    FPDF_FORMFILLINFO::FFI_DownloadFromURL = Form_DownloadFromURL;
+    FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
+    FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
+    FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
+  }
+#endif  // defined(PDF_ENABLE_XFA)
+#endif  // defined(PDF_ENABLE_V8)
 }
 
 PDFiumFormFiller::~PDFiumFormFiller() = default;
@@ -327,6 +330,7 @@ void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
   engine->client_->NavigateTo(std::string(uri), disposition);
 }
 
+#if defined(PDF_ENABLE_V8)
 #if defined(PDF_ENABLE_XFA)
 
 // static
@@ -672,6 +676,8 @@ void PDFiumFormFiller::Form_GotoPage(IPDF_JSPLATFORM* param, int page_number) {
   PDFiumEngine* engine = GetEngine(param);
   engine->ScrollToPage(page_number);
 }
+
+#endif  // defined(PDF_ENABLE_V8)
 
 // static
 PDFiumEngine* PDFiumFormFiller::GetEngine(FPDF_FORMFILLINFO* info) {

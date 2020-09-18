@@ -363,6 +363,7 @@ class CORE_EXPORT NGPhysicalFragment
       TextHeightType height_type) const;
   void AdjustScrollableOverflowForPropagation(
       const NGPhysicalBoxFragment& container,
+      TextHeightType height_type,
       PhysicalRect* overflow) const;
 
   // The allowed touch action is the union of the effective touch action
@@ -427,6 +428,8 @@ class CORE_EXPORT NGPhysicalFragment
                      PhysicalSize size,
                      NGFragmentType type,
                      unsigned sub_type);
+
+  NGPhysicalFragment(const NGPhysicalFragment& other);
 
   const ComputedStyle& SlowEffectiveStyle() const;
 

@@ -3967,6 +3967,10 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Extensions.CrossOriginFetchFromContentScript3">
+  <obsolete>
+    Deprecated in Chrome 87 / September 2020 - it was not needed anymore since
+    CORS-for-content-scripts has succesfully shipped in M85.
+  </obsolete>
   <owner>lukasza@chromium.org</owner>
   <summary>
     This UKM event is logged when an extension which triggers a cross-origin
@@ -9879,6 +9883,12 @@ be describing additional metrics about the same event.
       associated document has finished parsing.
     </summary>
   </metric>
+  <metric name="DelayCompetingLowPriorityRequests" enum="Boolean">
+    <summary>
+      Set to 1 when blink::ResourceLoadScheduler delays competing low priority
+      requests. See https://crbug.com/1112515 for details.
+    </summary>
+  </metric>
 </event>
 
 <event name="PeriodicBackgroundSyncEventCompleted">
@@ -13945,7 +13955,7 @@ be describing additional metrics about the same event.
       State of the 'viewer' feature request.
     </summary>
   </metric>
-  <metric name="Mode" enum="XRSessionModeRequest">
+  <metric name="Mode" enum="XRSessionMode">
     <summary>
       An enum value that indicates that the `requestSession` API was called to
       request session with this mode. See `device::SessionMode` for enum type

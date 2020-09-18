@@ -64,6 +64,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "v8/include/v8.h"
@@ -458,14 +459,15 @@ PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo(
 
 PDFEngine::AccessibilityTextFieldInfo::~AccessibilityTextFieldInfo() = default;
 
-PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
+PDFiumEngine::PDFiumEngine(PDFEngine::Client* client,
+                           PDFiumFormFiller::ScriptOption script_option)
     : client_(client),
-      form_filler_(this, enable_javascript),
+      form_filler_(this, script_option),
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
       print_(this) {
 #if defined(PDF_ENABLE_V8)
-  if (enable_javascript)
+  if (script_option != PDFiumFormFiller::ScriptOption::kNoJavaScript)
     DCHECK(IsV8Initialized());
 #endif  // defined(PDF_ENABLE_V8)
 
@@ -2479,7 +2481,7 @@ int PDFiumEngine::GetCharCount(int page_index) {
   return pages_[page_index]->GetCharCount();
 }
 
-pp::FloatRect PDFiumEngine::GetCharBounds(int page_index, int char_index) {
+gfx::RectF PDFiumEngine::GetCharBounds(int page_index, int char_index) {
   DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetCharBounds(char_index);
 }
@@ -2837,10 +2839,11 @@ void PDFiumEngine::LoadForm() {
       ScopedUnsupportedFeature scoped_unsupported_feature(this);
       document_->InitializeForm(&form_filler_);
     }
-#if defined(PDF_ENABLE_XFA)
-    FPDF_LoadXFA(doc());
-#endif
 
+    if (form_filler_.script_option() ==
+        PDFiumFormFiller::ScriptOption::kJavaScriptAndXFA) {
+      FPDF_LoadXFA(doc());
+    }
     FPDF_SetFormFieldHighlightColor(form(), FPDF_FORMFIELD_UNKNOWN,
                                     kFormHighlightColor);
     FPDF_SetFormFieldHighlightAlpha(form(), kFormHighlightAlpha);

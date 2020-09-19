@@ -7,9 +7,12 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://diagnostics/diagnostics_app.js';
 
 import {SystemDataProviderInterface} from 'chrome://diagnostics/diagnostics_types.js';
+import {fakeSystemInfo} from 'chrome://diagnostics/fake_data.js';
 import {FakeMethodResolver} from 'chrome://diagnostics/fake_method_resolver.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
 import {getSystemDataProvider, setSystemDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('DiagnosticsFakeMethodResolver', () => {
   /** @type {?FakeMethodResolver} */
@@ -57,6 +60,7 @@ suite('DiagnosticsAppTest', () => {
   setup(function() {
     PolymerTest.clearBody();
     page = document.createElement('diagnostics-app');
+    assertTrue(!!page);
     document.body.appendChild(page);
   });
 
@@ -72,6 +76,203 @@ suite('DiagnosticsAppTest', () => {
     // Verify the overview card is in the page.
     const overview = page.$$('#overviewCard');
     assertTrue(!!overview);
+
+    // Verify the memory card is in the page.
+    const memory = page.$$('#memoryCard');
+    assertTrue(!!memory);
+
+    // Verify the CPU card is in the page.
+    const cpu = page.$$('#cpuCard');
+    assertTrue(!!cpu);
+
+    // Verify the battery health card is in the page.
+    const batteryHealth = page.$$('#batteryHealthCard');
+    assertTrue(!!batteryHealth);
+  });
+});
+
+suite('BatteryHealthCardTest', () => {
+  /** @type {?HTMLElement} */
+  let batteryHealthElement = null;
+
+  /** @type {?FakeSystemDataProvider} */
+  let provider = null;
+
+  suiteSetup(() => {
+    provider = new FakeSystemDataProvider();
+    setSystemDataProviderForTesting(provider);
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+  });
+
+  teardown(function() {
+    if (batteryHealthElement) {
+      batteryHealthElement.remove();
+    }
+    batteryHealthElement = null;
+    provider = null;
+  });
+
+  function initializeBatteryHealthCard() {
+    assertFalse(!!batteryHealthElement);
+
+    // Add the battery health card to the DOM.
+    batteryHealthElement = document.createElement('battery-health-card');
+    assertTrue(!!batteryHealthElement);
+    document.body.appendChild(batteryHealthElement);
+
+    return flushTasks();
+  }
+
+  test('BatteryHealthCardPopulated', () => {
+    return initializeBatteryHealthCard().then(() => {
+      // TODO(zentaro): Update when strings are finalized.
+      assertEquals(
+          'Battery Health', batteryHealthElement.$$('#cardTitle').textContent);
+    });
+  });
+});
+
+suite('CpuCardTest', () => {
+  /** @type {?HTMLElement} */
+  let cpuElement = null;
+
+  /** @type {?FakeSystemDataProvider} */
+  let provider = null;
+
+  suiteSetup(() => {
+    provider = new FakeSystemDataProvider();
+    setSystemDataProviderForTesting(provider);
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+  });
+
+  teardown(function() {
+    if (cpuElement) {
+      cpuElement.remove();
+    }
+    cpuElement = null;
+    provider = null;
+  });
+
+  function initializeCpuCard() {
+    assertFalse(!!cpuElement);
+
+    // Add the CPU card to the DOM.
+    cpuElement = document.createElement('cpu-card');
+    assertTrue(!!cpuElement);
+    document.body.appendChild(cpuElement);
+
+    return flushTasks();
+  }
+
+  test('CpuCardPopulated', () => {
+    return initializeCpuCard().then(() => {
+      // TODO(zentaro): Update when strings are finalized.
+      assertEquals('CPU', cpuElement.$$('#cardTitle').textContent);
+    });
+  });
+});
+
+suite('OverviewCardTest', () => {
+  /** @type {?HTMLElement} */
+  let overviewElement = null;
+
+  /** @type {?FakeSystemDataProvider} */
+  let provider = null;
+
+  suiteSetup(() => {
+    provider = new FakeSystemDataProvider();
+    setSystemDataProviderForTesting(provider);
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+  });
+
+  teardown(function() {
+    overviewElement.remove();
+    overviewElement = null;
+    provider = null;
+  });
+
+  /** @param {!SystemInfo} */
+  function initializeOverviewCard(fakeSystemInfo) {
+    assertFalse(!!overviewElement);
+
+    // Initialize the fake data.
+    provider.setFakeSystemInfo(fakeSystemInfo);
+
+    // Add the overview card to the DOM.
+    overviewElement = document.createElement('overview-card');
+    assertTrue(!!overviewElement);
+    document.body.appendChild(overviewElement);
+
+    return flushTasks();
+  }
+
+  test('OverviewCardPopulated', () => {
+    return initializeOverviewCard(fakeSystemInfo).then(() => {
+      assertEquals(
+          fakeSystemInfo.board_name,
+          overviewElement.$$('#boardName').textContent);
+      assertEquals(
+          fakeSystemInfo.cpu_model_name,
+          overviewElement.$$('#cpuModelName').textContent);
+      assertEquals(
+          fakeSystemInfo.total_memory_kib.toString(),
+          overviewElement.$$('#totalMemory').textContent);
+      assertEquals(
+          fakeSystemInfo.version.milestone_version,
+          overviewElement.$$('#version').textContent);
+    });
+  });
+});
+
+suite('MemoryCardTest', () => {
+  /** @type {?HTMLElement} */
+  let memoryElement = null;
+
+  /** @type {?FakeSystemDataProvider} */
+  let provider = null;
+
+  suiteSetup(() => {
+    provider = new FakeSystemDataProvider();
+    setSystemDataProviderForTesting(provider);
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+  });
+
+  teardown(function() {
+    if (memoryElement) {
+      memoryElement.remove();
+    }
+    memoryElement = null;
+    provider = null;
+  });
+
+  function initializeMemoryCard() {
+    assertFalse(!!memoryElement);
+
+    // Add the memory card to the DOM.
+    memoryElement = document.createElement('memory-card');
+    assertTrue(!!memoryElement);
+    document.body.appendChild(memoryElement);
+
+    return flushTasks();
+  }
+
+  test('MemoryCardPopulated', () => {
+    return initializeMemoryCard().then(() => {
+      // TODO(zentaro): Update when strings are finalized.
+      assertEquals('Memory', memoryElement.$$('#cardTitle').textContent);
+    });
   });
 });
 

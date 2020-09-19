@@ -13,6 +13,8 @@ js_type_check("closure_compile_module") {
     ":diagnostics_app",
     ":diagnostics_card",
     ":diagnostics_types",
+    ":fake_method_resolver",
+    ":fake_system_data_provider",
     ":mojo_interface_provider",
   ]
 }
@@ -31,6 +33,14 @@ js_library("diagnostics_card") {
 }
 
 js_library("diagnostics_types") {
+}
+
+js_library("fake_method_resolver") {
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+}
+
+js_library("fake_system_data_provider") {
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("mojo_interface_provider") {

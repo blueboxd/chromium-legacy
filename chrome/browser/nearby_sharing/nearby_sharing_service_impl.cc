@@ -976,8 +976,7 @@ NearbySharingServiceImpl::CreateEndpointInfo(
   if (visibility == Visibility::kAllContacts ||
       visibility == Visibility::kSelectedContacts) {
     base::Optional<NearbyShareEncryptedMetadataKey> encrypted_metadata_key =
-        certificate_manager_->GetValidPrivateCertificate(visibility)
-            .EncryptMetadataKey();
+        certificate_manager_->EncryptPrivateCertificateMetadataKey(visibility);
     if (encrypted_metadata_key) {
       salt = encrypted_metadata_key->salt();
       encrypted_key = encrypted_metadata_key->encrypted_key();
@@ -1177,11 +1176,12 @@ bool NearbySharingServiceImpl::HasAvailableConnectionMediums() {
   // have bluetooth, so wifi LAN is a platform-agnostic check.
   net::NetworkChangeNotifier::ConnectionType connection_type =
       net::NetworkChangeNotifier::GetConnectionType();
-  return IsBluetoothPowered() ||
-         (connection_type ==
-              net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI ||
-          connection_type ==
-              net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET);
+  bool hasNetworkConnection =
+      connection_type ==
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI ||
+      connection_type ==
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET;
+  return IsBluetoothPowered() || (kIsWifiLanSupported && hasNetworkConnection);
 }
 
 void NearbySharingServiceImpl::InvalidateSurfaceState() {

@@ -4604,11 +4604,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilityExposeARIAAnnotationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeARIAAnnotations)},
 
-    {"enable-accessibility-expose-display-none",
-     flag_descriptions::kAccessibilityExposeDisplayNoneName,
-     flag_descriptions::kAccessibilityExposeDisplayNoneDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeDisplayNone)},
-
 #if !defined(OS_ANDROID)
     {"enable-accessibility-live-captions",
      flag_descriptions::kEnableAccessibilityLiveCaptionsName,
@@ -4848,6 +4843,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
      flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
+
+    {"enable-quick-answers-translation",
+     flag_descriptions::kEnableQuickAnswersTranslationName,
+     flag_descriptions::kEnableQuickAnswersTranslationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTranslation)},
 
     {"enable-on-device-assistant",
      flag_descriptions::kEnableOnDeviceAssistantName,

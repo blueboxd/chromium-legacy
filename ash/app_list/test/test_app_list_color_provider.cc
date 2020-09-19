@@ -33,7 +33,7 @@ SkColor TestAppListColorProvider::GetSearchBoxPlaceholderTextColor() const {
 }
 
 SkColor TestAppListColorProvider::GetSearchBoxTextColor() const {
-  return gfx::kGoogleGrey900;
+  return gfx::kGoogleGrey200;
 }
 
 SkColor TestAppListColorProvider::GetSuggestionChipBackgroundColor() const {
@@ -41,10 +41,14 @@ SkColor TestAppListColorProvider::GetSuggestionChipBackgroundColor() const {
 }
 
 SkColor TestAppListColorProvider::GetSuggestionChipTextColor() const {
-  return gfx::kGoogleGrey900;
+  return gfx::kGoogleGrey200;
 }
 
 SkColor TestAppListColorProvider::GetAppListItemTextColor() const {
+  return gfx::kGoogleGrey200;
+}
+
+SkColor TestAppListColorProvider::GetFolderBackgroundColor() const {
   return gfx::kGoogleGrey900;
 }
 
@@ -58,6 +62,22 @@ SkColor TestAppListColorProvider::GetPageSwitcherInkDropBaseColor() const {
 
 SkColor TestAppListColorProvider::GetPageSwitcherInkDropHighlightColor() const {
   return SkColorSetA(SK_ColorBLACK, 0x0F);
+}
+
+SkColor TestAppListColorProvider::GetSearchBoxIconColor() const {
+  return gfx::kGoogleGrey200;
+}
+
+SkColor TestAppListColorProvider::GetFolderTitleTextColor() const {
+  return gfx::kGoogleGrey200;
+}
+
+SkColor TestAppListColorProvider::GetFolderHintTextColor() const {
+  return gfx::kGoogleGrey500;
+}
+
+float TestAppListColorProvider::GetFolderBackgrounBlurSigma() const {
+  return 30.0f;
 }
 
 }  // namespace ash

@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c884631f99427601d903ddcffd926265bcbd2ab7',
+  'skia_revision': 'ca4d074d54ab03d3cb6be1bb845c4cd19e0deeea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '576f2f50e190f171182bb90a04498cd4cd48d8c0',
+  'v8_revision': '80dc1e8055bca07e8da6162bace5ee87f23faccf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5bfca93e1a518f44814f1c10e5c9b529c7017864',
+  'angle_revision': 'd79db25910ffd66f3d1b874b231592b8831ca4a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'eed20333dd52abcac1e54f717ee7eaed931d4ba8',
+  'devtools_frontend_revision': '862107080d587e3b4185c6a7d5f7222afc541f6c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1da25e51036411a3b328b4574f3bc89b4c482d21',
+  'dawn_revision': 'dcd37fa4f47663d1a68c1c7fb10738b6ea0e0a4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -901,7 +901,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd949c910de8c04a1cfaa99a937eb05ba30185c36',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '244d77022cb2b0540668f2383d056b78ffcd4ca1',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'DzAkJgeh2URZiGtnYC9T6X73h_DwPpU64WcP0SEX1rEC'
+              'version': 'UncMpcoIeFj9FKkqbpkwnPCh8YmqHZcucJu-mi7jF1MC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1407,7 +1407,7 @@ deps = {
     Var('swiftshader_git') + '/SwiftShader.git' + '@' +  Var('swiftshader_revision'),
 
   'src/third_party/text-fragments-polyfill/src': {
-    'url': Var('chromium_git') + '/external/github.com/GoogleChromeLabs/text-fragments-polyfill.git' + '@' + '5593fc403e4d1ee06a68ff710932d59c06a87df9',
+    'url': Var('chromium_git') + '/external/github.com/GoogleChromeLabs/text-fragments-polyfill.git' + '@' + '16efd3187052bd875f7a7a8f0b0424f46c82f87f',
     'condition': 'checkout_ios',
   },
 
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '03fd7930c651be97336685379792e18ca9dc31cc',
+    Var('webrtc_git') + '/src.git' + '@' + '14dbf82961c32ae9133bb672c88e146942062ada',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e1e4781e5ec2c96eb56e98781eb8e91907f6a507',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@dbb2342d885d3f87c84df09ea2e4f4eb37a24d14',
     'condition': 'checkout_src_internal',
   },
 

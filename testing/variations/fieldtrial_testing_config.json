@@ -1899,6 +1899,21 @@
             ]
         }
     ],
+    "CryptAuthV2DeviceSync": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200427",
+                    "enable_features": [
+                        "CryptAuthV2DeviceSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "CryptAuthV2Enrollment": [
         {
             "platforms": [
@@ -2055,6 +2070,7 @@
     "DelayAsyncScriptExecution": [
         {
             "platforms": [
+                "android",
                 "android_webview",
                 "chromeos",
                 "linux",
@@ -2066,24 +2082,6 @@
                     "name": "Enabled",
                     "params": {
                         "delay_type": "first_paint_or_finished_parsing"
-                    },
-                    "enable_features": [
-                        "DelayAsyncScriptExecution"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DelayAsyncScriptExecutionM86Android": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "CacaoOracle01",
-                    "params": {
-                        "delay_type": "use_optimization_guide"
                     },
                     "enable_features": [
                         "DelayAsyncScriptExecution"
@@ -5881,6 +5879,23 @@
                         "QueryTiles",
                         "QueryTilesEnableQueryEditing",
                         "QueryTilesInOmnibox"
+                    ]
+                }
+            ]
+        }
+    ],
+    "QuickAnswersLiveExperiment": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "QuickAnswers",
+                        "QuickAnswersRichUi",
+                        "QuickAnswersTextAnnotator"
                     ]
                 }
             ]

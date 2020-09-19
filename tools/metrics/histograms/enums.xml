@@ -24569,6 +24569,7 @@ Called by update_extension_histograms.py.-->
   <int value="1505" label="INPUTMETHODPRIVATE_SETCOMPOSINGRANGE"/>
   <int value="1506" label="AUTOTESTPRIVATE_LAUNCHSYSTEMWEBAPP"/>
   <int value="1507" label="ACCESSIBILITY_PRIVATE_PERFORMACCELERATORACTION"/>
+  <int value="1508" label="DECLARATIVENETREQUEST_ISREGEXSUPPORTED"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -42454,6 +42455,7 @@ from previous Chrome versions.
   <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-306935714" label="lite-video-force-override-decision"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
+  <int value="-304886342" label="QuickAnswersTranslation:disabled"/>
   <int value="-304777110" label="PreconnectToSearch:disabled"/>
   <int value="-300542825" label="ChromeShareQRCode:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
@@ -44032,6 +44034,7 @@ from previous Chrome versions.
       label="AutofillDoNotUploadSaveUnsupportedCards:enabled"/>
   <int value="1353113954" label="EnableMDRoundedCornersOnDialogs:enabled"/>
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
+  <int value="1353749554" label="QuickAnswersTranslation:enabled"/>
   <int value="1355656242"
       label="DesktopPWAsMigrationUserDisplayModeCleanUp:disabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
@@ -59936,6 +59939,32 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="168" label="SILENT_IDLE_TIMEOUT"/>
 </enum>
 
+<enum name="QuicFailToSerializePacketLocation">
+  <int value="0" label="kQuicFailToAppendPacketHeaderFastPath"/>
+  <int value="1" label="kQuicFailToAppendTypeFastPath"/>
+  <int value="2" label="kQuicFailToAppendStreamFrameFastPath"/>
+  <int value="3" label="kQuicFailToAddPaddingFastPath"/>
+  <int value="4" label="kQuicFailToWriteIetfLongHeaderLengthFastPath"/>
+  <int value="5" label="kQuicFailToEncryptPacketFastPath"/>
+  <int value="6" label="kQuicSerializePacketNonEmptyBuffer"/>
+  <int value="7" label="kQuicMissingInitialKey"/>
+  <int value="8" label="kQuicMissingHandshakeKey"/>
+  <int value="9" label="kQuicMissingZeroRttKey"/>
+  <int value="10" label="kQuicMissingOneRttKey"/>
+  <int value="11" label="kQuicFailToBuildPacketWithPaddingInitial"/>
+  <int value="12" label="kQuicFailToBuildPacketInitial"/>
+  <int value="13" label="kQuicFailToBuildPacketWithPaddingHandshake"/>
+  <int value="14" label="kQuicFailToBuildPacketHandshake"/>
+  <int value="15" label="kQuicFailToBuildPacketWithPaddingZeroRtt"/>
+  <int value="16" label="kQuicFailToBuildPacketZeroRtt"/>
+  <int value="17" label="kQuicFailToBuildPacketWithPaddingOneRtt"/>
+  <int value="18" label="kQuicFailToBuildPacketOneRtt"/>
+  <int value="19" label="kQuicFailToEncryptInitial"/>
+  <int value="20" label="kQuicFailToEncryptHandshake"/>
+  <int value="21" label="kQuicFailToEncryptZeroRtt"/>
+  <int value="22" label="kQuicFailToEncryptOneRtt"/>
+</enum>
+
 <enum name="QuicHandshakeFailureReason">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="BLACK_HOLE"/>
@@ -65764,6 +65793,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
   <int value="11" label="[Tests] Force sign-out">
     Signout is forced. Used only for tests.
+  </int>
+  <int value="12" label="User deleted account cookies">
+    User cleared account cookies when there's no sync consent, which has caused
+    sign out.
   </int>
 </enum>
 

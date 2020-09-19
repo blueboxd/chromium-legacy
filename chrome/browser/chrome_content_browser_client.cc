@@ -172,7 +172,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/profiler/stack_sampling_configuration.h"
+#include "chrome/common/profiler/thread_profiler_configuration.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/common/secure_origin_allowlist.h"
@@ -1290,7 +1290,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
   registry->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
-  registry->RegisterListPref(prefs::kEnableDeprecatedWebPlatformFeatures);
   // Register user prefs for mapping SitePerProcess and IsolateOrigins in
   // user policy in addition to the same named ones in Local State (which are
   // used for mapping the command-line flags).
@@ -2207,17 +2206,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kDisable3DAPIs);
       }
 
-      const base::ListValue* switches =
-          prefs->GetList(prefs::kEnableDeprecatedWebPlatformFeatures);
-      if (switches) {
-        // Enable any deprecated features that have been re-enabled by policy.
-        for (auto it = switches->begin(); it != switches->end(); ++it) {
-          std::string switch_to_enable;
-          if (it->GetAsString(&switch_to_enable))
-            command_line->AppendSwitch(switch_to_enable);
-        }
-      }
-
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
       bool client_side_detection_enabled =
           safe_browsing::IsSafeBrowsingEnabled(*prefs) &&
@@ -2417,7 +2405,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 #endif
 
-  StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
+  ThreadProfilerConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type, command_line);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

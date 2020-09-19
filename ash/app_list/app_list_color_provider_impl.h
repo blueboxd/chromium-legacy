@@ -29,6 +29,11 @@ class AppListColorProviderImpl : public AppListColorProvider {
   SkColor GetPageSwitcherButtonColor() const override;
   SkColor GetPageSwitcherInkDropBaseColor() const override;
   SkColor GetPageSwitcherInkDropHighlightColor() const override;
+  SkColor GetSearchBoxIconColor() const override;
+  SkColor GetFolderBackgroundColor() const override;
+  SkColor GetFolderTitleTextColor() const override;
+  SkColor GetFolderHintTextColor() const override;
+  float GetFolderBackgrounBlurSigma() const override;
 
  private:
   // Unowned.

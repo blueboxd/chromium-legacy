@@ -685,6 +685,7 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
       'android-lollipop-arm-rel', # https://crbug.com/1060245
+      'android-marshmallow-x86-rel-non-cq', # runs on MM-x86-rel already
     ],
     'modifications': {
       'Android CFI': {
@@ -1394,7 +1395,15 @@
           # now since we are manually applying the expected device ID above.
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
         },
-      }
+      },
+      'Mac FYI arm64 Release (Apple DTK)': {
+        'args': {
+          # The GPU information is not yet exposed in swarming, so we can't
+          # explicitly request it and have the JSON generation handle this
+          # automatically.
+          '--expected-vendor-id': '106b',
+        },
+      },
     },
   },
   'interactive_ui_tests': {
@@ -1501,6 +1510,11 @@
     },
   },
   'maps_pixel_passthrough_test': {
+    'remove_from': [
+      # TODO(https://crbug.com/1113308): Enable this once the GPU Gold instance
+      # is merged into the general Chrome one.
+      'Mac FYI arm64 Release (Apple DTK)',
+    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -1531,6 +1545,9 @@
     # exception once there is enough capacity to run these tests.
     'remove_from': [
       'Android FYI Release (Pixel 2)',
+      # TODO(https://crbug.com/1113308): Enable this once the GPU Gold instance
+      # is merged into the general Chrome one.
+      'Mac FYI arm64 Release (Apple DTK)',
     ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -2182,11 +2199,6 @@
   },
   'pixel_browser_tests': {
     'modifications': {
-      'Win10 Tests x64': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
-        ],
-      },
       'win-pixel-tester-rel': {
         'non_precommit_args': [
           # Do not allow retry or it will break the bulk approval process.
@@ -2195,32 +2207,15 @@
           # but it will not show on the Skia Gold search page.
           '--test-launcher-retry-limit=0',
         ],
-        'args': [
-          '--gtest_filter='
-          '*PasswordBubbleBrowserTest.*:'
-          'FeaturePromoDialogTest.*:'
-          'GlobalErrorBubbleTest.*:'
-          'HatsBubbleTest.*:'
-          'HungRendererDialogViewBrowserTest.*:'
-          'ImportLockDialogViewBrowserTest.*:'
-          'NativeFileSystemUsageBubbleViewTest.*:'
-          'PageInfoBubbleViewBrowserTest.*:'
-          'PasswordReuseModalWarningTest.*:'
-          'ProfileSigninConfirmationDialogTest.*:'
-          'RelaunchRecommendedBubbleViewDialogTest.*:'
-          'RelaunchRequiredDialogViewDialogTest.*:'
-          'ReopenTabPromoControllerDialogBrowserTest.*:'
-          'ScreenCaptureNotificationUiBrowserTest.*:'
-          'SessionCrashedBubbleViewTest.*:'
-          'TabGroupEditorBubbleViewDialogBrowserTest.*:'
-          'TabHoverCardBubbleViewBrowserTest.*:'
-          'UpdateRecommendedDialogTest.*:'
-          'ZoomBubbleDialogTest.*',
-        ],
       },
     },
   },
   'pixel_skia_gold_passthrough_test': {
+    'remove_from': [
+      # TODO(https://crbug.com/1113308): Enable this once the GPU Gold instance
+      # is merged into the general Chrome one.
+      'Mac FYI arm64 Release (Apple DTK)',
+    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -2247,6 +2242,11 @@
     },
   },
   'pixel_skia_gold_validating_test': {
+    'remove_from': [
+      # TODO(https://crbug.com/1113308): Enable this once the GPU Gold instance
+      # is merged into the general Chrome one.
+      'Mac FYI arm64 Release (Apple DTK)',
+    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.

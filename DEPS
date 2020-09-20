@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '76e90947a8e421308dff9d00c4955717c6667f12',
+  'angle_revision': 'de335c16855f11d1f0a6f0b37bee30c8a09a6c1d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1567,7 +1567,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '28LbU2pPArju4h4PARBvIPs54FVyoRWQW_xuxn1p_8QC',
+        'version': 'J57VQ4DFkmmH1sNkWHkg94_jiIIpAaMQNHyCWaVZhYYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -546,9 +546,13 @@
             ],
             "experiments": [
                 {
-                    "name": "AssistPersonalInfo",
+                    "name": "Enabled_20200917",
                     "enable_features": [
-                        "AssistPersonalInfo"
+                        "AssistPersonalInfo",
+                        "AssistPersonalInfoAddress",
+                        "AssistPersonalInfoEmail",
+                        "AssistPersonalInfoName",
+                        "AssistPersonalInfoPhoneNumber"
                     ]
                 }
             ]
@@ -1041,6 +1045,7 @@
                     "params": {
                         "TimeToLiveInBackForwardCacheInSeconds": "180",
                         "allowed_websites": "https://domain1.org,https://domain2.org",
+                        "enable_same_site": "true",
                         "geolocation_supported": "true",
                         "service_worker_supported": "true"
                     },

@@ -350,6 +350,7 @@
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/public/common/web_preferences/autoplay_policy.h"
 #include "third_party/blink/public/common/web_preferences/image_animation_policy.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
@@ -366,6 +367,8 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/third_party/mozilla/url_parse.h"
+#include "url/url_constants.h"
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
@@ -750,6 +753,12 @@ bool HandleNewTabPageLocationOverride(
       profile->GetPrefs()->GetString(prefs::kNewTabPageLocationOverride);
   if (ntp_location.empty())
     return false;
+  url::Component scheme;
+  if (!url::ExtractScheme(ntp_location.data(),
+                          static_cast<int>(ntp_location.length()), &scheme)) {
+    ntp_location = base::StrCat(
+        {url::kHttpsScheme, url::kStandardSchemeSeparator, ntp_location});
+  }
 
   *url = GURL(ntp_location);
   return true;

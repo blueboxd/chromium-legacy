@@ -8325,15 +8325,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   navigation_request->set_has_user_gesture(params->gesture ==
                                            NavigationGestureUser);
 
-  // TODO(arthursonzogni): Updating this flag for same-document or bfcache
-  // navigation might not be right. Should this be moved to
-  // DidCommitNewDocument()?
-  last_http_status_code_ = params->http_status_code;
-  // TODO(arthursonzogni): Updating this flag for same-document or bfcache
-  // navigation might not be right. Should this be moved to
-  // DidCommitNewDocument()?
-  last_http_method_ = params->method;
-
   UpdateSiteURL(params->url, params->url_is_unreachable);
   if (!is_same_document_navigation)
     UpdateRenderProcessHostFramePriorities();
@@ -8463,6 +8454,16 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   DCHECK(params.embedding_token.has_value());
   SetEmbeddingToken(params.embedding_token.value());
+
+  // TODO(arthursonzogni): Stop relying on DidCommitProvisionalLoad_Params. Use
+  // the NavigationRequest instead. The browser process doesn't need to rely on
+  // the renderer process.
+  last_http_status_code_ = params.http_status_code;
+
+  // TODO(arthursonzogni): Stop relying on DidCommitProvisionalLoad_Params. Use
+  // the NavigationRequest instead. The browser process doesn't need to rely on
+  // the renderer process.
+  last_http_method_ = params.method;
 
   renderer_reported_scheduler_tracked_features_ = 0;
   browser_reported_scheduler_tracked_features_ = 0;

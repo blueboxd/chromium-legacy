@@ -930,6 +930,7 @@ Unknown properties are collapsed to zero. -->
 <enum name="AccessPasswordInSettingsEvent">
   <int value="0" label="Viewed"/>
   <int value="1" label="Copied"/>
+  <int value="2" label="Edited"/>
 </enum>
 
 <enum name="AccountChooserDismissalReason">
@@ -22989,6 +22990,7 @@ Called by update_extension_histograms.py.-->
   <int value="460" label="CERTIFICATEPROVIDER_ON_SIGNATURE_REQUESTED"/>
   <int value="461" label="WINDOWS_ON_BOUNDS_CHANGED"/>
   <int value="462" label="WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER"/>
+  <int value="463" label="PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -24570,6 +24572,7 @@ Called by update_extension_histograms.py.-->
   <int value="1506" label="AUTOTESTPRIVATE_LAUNCHSYSTEMWEBAPP"/>
   <int value="1507" label="ACCESSIBILITY_PRIVATE_PERFORMACCELERATORACTION"/>
   <int value="1508" label="DECLARATIVENETREQUEST_ISREGEXSUPPORTED"/>
+  <int value="1509" label="PASSWORDSPRIVATE_GETWEAKCREDENTIALS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24687,10 +24690,6 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="DOWNLOADING"/>
   <int value="3" label="INSTALLING"/>
   <int value="4" label="COMPLETE"/>
-  <int value="5" label="NOTIFIED_FROM_MANAGEMENT"/>
-  <int value="6" label="NOTIFIED_FROM_MANAGEMENT_NOT_FORCED"/>
-  <int value="7" label="SEEN_BY_POLICY_LOADER"/>
-  <int value="8" label="SEEN_BY_EXTERNAL_PROVIDER"/>
 </enum>
 
 <enum name="ExtensionInstallCause">
@@ -24699,6 +24698,17 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="INSTALL_CAUSE_UPDATE"/>
   <int value="3" label="INSTALL_CAUSE_EXTERNAL_FILE"/>
   <int value="4" label="INSTALL_CAUSE_AUTOMATION"/>
+</enum>
+
+<enum name="ExtensionInstallCreationStage">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="CREATION_INITIATED"/>
+  <int value="2" label="NOTIFIED_FROM_MANAGEMENT_INITIAL_CREATION_FORCED"/>
+  <int value="3" label="NOTIFIED_FROM_MANAGEMENT_INITIAL_CREATION_NOT_FORCED"/>
+  <int value="4" label="NOTIFIED_FROM_MANAGEMENT"/>
+  <int value="5" label="NOTIFIED_FROM_MANAGEMENT_NOT_FORCED"/>
+  <int value="6" label="SEEN_BY_POLICY_LOADER"/>
+  <int value="7" label="SEEN_BY_EXTERNAL_PROVIDER"/>
 </enum>
 
 <enum name="ExtensionInstallPromptExperimentLinkAction">

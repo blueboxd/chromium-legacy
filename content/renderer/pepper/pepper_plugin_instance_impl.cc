@@ -27,7 +27,6 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/pepper/event_conversion.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -107,6 +106,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/modules/media/audio/audio_device_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -515,7 +515,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       sent_initial_did_change_view_(false),
       bound_graphics_2d_platform_(nullptr),
       has_webkit_focus_(false),
-      has_content_area_focus_(false),
       find_identifier_(-1),
       plugin_find_interface_(nullptr),
       plugin_input_event_interface_(nullptr),
@@ -555,10 +554,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     render_frame_->PepperInstanceCreated(this);
     view_data_.is_page_visible =
         !render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->IsHidden();
-
-    // Set the initial focus.
-    SetContentAreaFocus(
-        render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->HasFocus());
 
     if (!module_->IsProxied()) {
       created_in_process_instance_ = true;
@@ -1327,16 +1322,6 @@ void PepperPluginInstanceImpl::SetWebKitFocus(bool has_focus) {
     SendFocusChangeNotification();
 }
 
-void PepperPluginInstanceImpl::SetContentAreaFocus(bool has_focus) {
-  if (has_content_area_focus_ == has_focus)
-    return;
-
-  bool old_plugin_focus = PluginHasFocus();
-  has_content_area_focus_ = has_focus;
-  if (PluginHasFocus() != old_plugin_focus)
-    SendFocusChangeNotification();
-}
-
 void PepperPluginInstanceImpl::PageVisibilityChanged(bool is_visible) {
   if (is_visible == view_data_.is_page_visible)
     return;  // Nothing to do.
@@ -1731,7 +1716,7 @@ void PepperPluginInstanceImpl::UpdateLayerTransform() {
 }
 
 bool PepperPluginInstanceImpl::PluginHasFocus() const {
-  return flash_fullscreen_ || (has_webkit_focus_ && has_content_area_focus_);
+  return flash_fullscreen_ || has_webkit_focus_;
 }
 
 void PepperPluginInstanceImpl::SendFocusChangeNotification() {
@@ -2516,7 +2501,7 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
     PP_Instance instance) {
   return render_frame()
-             ? AudioDeviceFactory::GetOutputDeviceInfo(
+             ? blink::AudioDeviceFactory::GetOutputDeviceInfo(
                    render_frame()->GetWebFrame()->GetLocalFrameToken(),
                    media::AudioSinkParameters())
                    .output_params()
@@ -2527,7 +2512,7 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
     PP_Instance instance) {
   return render_frame()
-             ? AudioDeviceFactory::GetOutputDeviceInfo(
+             ? blink::AudioDeviceFactory::GetOutputDeviceInfo(
                    render_frame()->GetWebFrame()->GetLocalFrameToken(),
                    media::AudioSinkParameters())
                    .output_params()

@@ -65,7 +65,6 @@
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -492,14 +491,6 @@ bool RenderViewImpl::AutoResizeMode() {
   return GetWebView()->AutoResizeMode();
 }
 
-void RenderViewImpl::DidReceiveSetFocusEventForWidget() {
-  // This message must always be received when the main frame is a
-  // WebLocalFrame.
-  // TODO(ajwong): Can this be removed and just check |delegate_| in
-  // RenderWidget instead?
-  CHECK(GetWebView()->MainFrame()->IsWebLocalFrame());
-}
-
 void RenderViewImpl::DidCommitCompositorFrameForWidget() {
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
@@ -808,31 +799,6 @@ void RenderViewImpl::ZoomLevelChanged() {
     observer.OnZoomLevelChanged();
 }
 
-void RenderViewImpl::SetDeviceScaleFactor(bool use_zoom_for_dsf,
-                                          float device_scale_factor) {
-  if (use_zoom_for_dsf)
-    GetWebView()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    GetWebView()->SetDeviceScaleFactor(device_scale_factor);
-}
-
-void RenderViewImpl::SetVisibleViewportSizeForChildLocalRoot(
-    const gfx::Size& visible_viewport_size) {
-  // The main frame is updated on a different path. If we're in the same frame
-  // tree as it, there's nothing to do for child local roots.
-  if (main_render_frame_)
-    return;
-
-  // RenderWidgets in a RenderView's frame tree without a local main frame
-  // set the size of the WebView to be the |visible_viewport_size|, in order
-  // to limit compositing in (out of process) child frames to what is visible.
-  //
-  // Note that child frames in the same process/RenderView frame tree as the
-  // main frame do not do this in order to not clobber the source of truth in
-  // the main frame.
-  GetWebView()->Resize(visible_viewport_size);
-}
-
 void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
     bool use_zoom_for_dsf,
     float device_scale_factor) {
@@ -1066,12 +1032,6 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 void RenderViewImpl::SetPageFrozen(bool frozen) {
   if (GetWebView())
     GetWebView()->SetPageFrozen(frozen);
-}
-
-void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
-  // Auto resize should only happen on local main frames.
-  DCHECK(main_render_frame_);
-  main_render_frame_->GetLocalRootRenderWidget()->DidAutoResize(newSize);
 }
 
 #if defined(OS_ANDROID)

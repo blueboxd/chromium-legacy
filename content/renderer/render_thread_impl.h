@@ -100,7 +100,6 @@ class SyntheticBeginFrameSource;
 
 namespace content {
 class AgentSchedulingGroup;
-class AudioRendererMixerManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class RenderThreadObserver;
@@ -293,11 +292,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
-
-  // AudioRendererMixerManager instance which manages renderer side mixer
-  // instances shared based on configured audio parameters.  Lazily created on
-  // first call.
-  AudioRendererMixerManager* GetAudioRendererMixerManager();
 
   class UnfreezableMessageFilter : public IPC::MessageFilter {
    public:
@@ -522,7 +516,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::RepeatingCallback<void(const AgentSchedulingGroup*)>
       remove_agent_scheduling_group_callback_;
 
-  std::unique_ptr<base::DiscardableMemoryAllocator>
+  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_memory_allocator_;
 
   // These objects live solely on the render thread.
@@ -583,8 +577,6 @@ class CONTENT_EXPORT RenderThreadImpl
       video_frame_compositor_context_provider_;
 
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
-
-  std::unique_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
 
   HistogramCustomizer histogram_customizer_;
 

@@ -68,7 +68,6 @@ struct ImeTextSpan;
 }
 
 namespace blink {
-struct VisualProperties;
 class WebDragData;
 class WebMouseEvent;
 class WebGestureEvent;
@@ -107,9 +106,6 @@ class WebWidgetClient {
   // coordinates. Note, the window includes any decorations such as borders,
   // scrollbars, URL bar, tab strip, etc. if they exist.
   virtual void SetWindowRect(const gfx::Rect&) {}
-
-  // Set the size of the widget.
-  virtual void SetSize(const gfx::Size&) {}
 
   // Requests to lock the mouse cursor for the |requester_frame| in the
   // widget. If true is returned, the success result will be asynchronously
@@ -249,10 +245,6 @@ class WebWidgetClient {
   // Returns the current pepper caret bounds in window coordinates.
   virtual gfx::Rect GetPepperCaretBounds() { return gfx::Rect(); }
 
-  // The state of the focus has changed for the WebWidget. |enabled|
-  // is the new state.
-  virtual void FocusChanged(bool enabled) {}
-
   // Set the composition in pepper.
   virtual void ImeSetCompositionForPepper(
       const WebString& text,
@@ -273,11 +265,6 @@ class WebWidgetClient {
 
   // Called to indicate a syntehtic event was queued.
   virtual void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) {}
-
-  // Apply the visual properties to the widget.
-  virtual void UpdateVisualProperties(
-      bool emulator_enabled,
-      const VisualProperties& visual_properties) {}
 
   // Whether compositing to LCD text should be auto determined. This can be
   // overridden by tests to disable this.

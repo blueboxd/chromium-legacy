@@ -74,10 +74,6 @@ const base::Feature kUseSkiaOutputDeviceBufferQueue{
     "UseSkiaOutputDeviceBufferQueue", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Whether we should split partially occluded quads to reduce overdraw.
-const base::Feature kSplitPartiallyOccludedQuads{
-    "SplitPartiallyOccludedQuads", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether we should log extra debug information to webrtc native log.
 const base::Feature kWebRtcLogCapturePipeline{
     "WebRtcLogCapturePipeline", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -109,15 +105,19 @@ bool IsUsingSkiaRenderer() {
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
       base::android::SDK_VERSION_KITKAT)
     return false;
-
-  // https://crbug.com/1126490 Mali-400 with <= 512 MB is currently broken.
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
-    return false;
 #endif
 
   // Viz for webview requires SkiaRenderer.
   if (IsUsingVizForWebView())
     return true;
+
+#if defined(OS_ANDROID)
+  // https://crbug.com/1126490 Mali-400 with <= 512 MB is currently broken.
+  // Must be checked after IsUsingVizForWebView because it requires
+  // SkiaRenderer.
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
+    return false;
+#endif
 
   return base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
          base::FeatureList::IsEnabled(kVulkan);
@@ -164,10 +164,6 @@ int NumOfFramesToToggleInterval() {
 
 bool ShouldUseRealBuffersForPageFlipTest() {
   return base::FeatureList::IsEnabled(kUseRealBuffersForPageFlipTest);
-}
-
-bool ShouldSplitPartiallyOccludedQuads() {
-  return base::FeatureList::IsEnabled(kSplitPartiallyOccludedQuads);
 }
 
 bool ShouldWebRtcLogCapturePipeline() {

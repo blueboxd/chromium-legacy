@@ -357,11 +357,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "autofill-reject-company-birthyear",
-    "owners": [ "parastoog" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "autofill-restrict-formless-form-extraction",
     "owners": [ "rogerm" ],
     "expiry_milestone": 76
@@ -460,11 +455,6 @@
     "name": "cct-incognito",
     "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "cct-target-translate-language",
-    "owners": [ "amalova" ],
-    "expiry_milestone": 76
   },
   {
     "name": "cdm-factory-daemon",
@@ -1985,17 +1975,17 @@
   {
     "name": "enable-quick-answers",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "enable-quick-answers-rich-ui",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "enable-quick-answers-text-annotator",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "enable-quick-answers-translation",
@@ -2361,11 +2351,6 @@
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "alessiob" ],
     "expiry_milestone": 103
-  },
-  {
-    "name": "enable-webrtc-new-encode-cpu-load-estimator",
-    "owners": [ "nisse" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-pipewire-capturer",
@@ -2763,12 +2748,12 @@
   {
     "name": "happiness-tracking-surveys-for-desktop-settings",
     "owners": [ "msramek", "chrome-friendly-settings@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-settings-privacy",
     "owners": [ "msramek", "chrome-friendly-settings@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "hardware-media-key-handling",
@@ -2823,11 +2808,6 @@
     "name": "illustrated-empty-states",
     "owners": [ "mcharland", "tmartino" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "improved-cookie-controls",
-    "owners": [ "dullweber", "huanzhong" ],
-    "expiry_milestone": 86
   },
   {
     "name": "impulse-scroll-animations",
@@ -3637,11 +3617,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "passive-mixed-content-warning",
-    "owners": [ "carlosil", "estark" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "password-change-in-settings",
     "owners": [ "kolos" ],
     "expiry_milestone": 89
@@ -4227,11 +4202,6 @@
     "name": "snapshot-draw-view",
     "owners": [ "//ios/chrome/browser/snapshots/OWNERS", "bling-flags" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "split-partially-occluded-quads",
-    "owners": [ "dcastagna", "sashamcintosh", "gildekel" ],
-    "expiry_milestone": 84
   },
   {
     "name": "split-settings-sync",

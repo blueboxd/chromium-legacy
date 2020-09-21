@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
-struct VisualProperties;
 class WebCoalescedInputEvent;
 class WebGestureEvent;
 
@@ -70,13 +69,8 @@ class WebExternalWidgetClient {
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) {}
 
-  // The state of the focus has changed for the WebWidget. |enabled|
-  // is the new state.
-  virtual void FocusChanged(bool enabled) {}
-
-  // Apply the visual properties to the widget.
-  virtual void UpdateVisualProperties(
-      const VisualProperties& visual_properties) {}
+  // Callback to notify new visual properties have been applied.
+  virtual void DidUpdateVisualProperties() {}
 };
 
 }  // namespace blink

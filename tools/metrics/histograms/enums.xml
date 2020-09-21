@@ -3049,6 +3049,17 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Panel"/>
 </enum>
 
+<enum name="AppTypeToMenuEntry">
+  <int value="0" label="WebApk install, menu item unknown (failure mode)"/>
+  <int value="1"
+      label="WebApk install, menu showed 'Add To Homescreen' (failure mode)"/>
+  <int value="2" label="WebApk install, menu showed 'Install'"/>
+  <int value="3" label="Shortcut install, menu item unknown (failure mode)"/>
+  <int value="4" label="Shortcut install, menu showed 'Add To Homescreen'"/>
+  <int value="5"
+      label="Shortcut install, menu showed 'Install' (failure mode)"/>
+</enum>
+
 <enum name="AppWindowDragEndWindowState">
   <int value="0" label="Maximized or Fullscreen"/>
   <int value="1" label="In Overview"/>
@@ -7065,6 +7076,7 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BookmarkType">
   <int value="0" label="Normal"/>
   <int value="1" label="Partner"/>
+  <int value="2" label="ReadingList"/>
 </enum>
 
 <enum name="Boolean">
@@ -21580,6 +21592,7 @@ Called by update_document_policy_enum.py.-->
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
+  <int value="585" label="UnsafeEventsReportingEnabled"/>
   <int value="586" label="BlockLargeFileTransfer"/>
   <int value="587" label="DelayDeliveryUntilVerdict"/>
   <int value="588" label="AllowPasswordProtectedFiles"/>

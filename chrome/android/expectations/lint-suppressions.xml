@@ -18,15 +18,6 @@ Still reading?
     <ignore regexp="chrome/android/java/res_base/xml/network_security_config.xml"/>
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/xml/network_security_config.xml"/>
   </issue>
-  <issue id="Autofill">
-    <!-- Filed https://crbug.com/1073966 to fix -->
-    <ignore regexp="chrome/android/features/tab_ui/java/res/layout/bottom_tab_grid_toolbar.xml"/>
-    <ignore regexp="chrome/android/java/res/layout/password_entry_editor.xml"/>
-    <ignore regexp="components/browser_ui/widget/android/java/res/layout/radio_button_with_edit_text.xml"/>
-  </issue>
-  <issue id="ButtonOrder">
-    <ignore regexp="chrome/android/java/res/layout/homepage_editor.xml"/>
-  </issue>
   <issue id="ContentDescription">
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="components/browser_ui/contacts_picker/android/java/res/layout/contacts_list_item_view.xml"/>
@@ -318,6 +309,27 @@ Still reading?
     <ignore regexp="The resource `R.string.reading_list_unread_page_count` appears to be unused"/>
     <ignore regexp="The resource `R.string.reading_list_intro_text` appears to be unused"/>
     <ignore regexp="The resource `R.string.reading_list_find_in_bookmarks` appears to be unused"/>
+
+    <!-- crbug.com/1127531 remove this line and following 9 lines after the bug is resolved -->
+    <ignore regexp="The resource `R.string.app_language_title` appears to be unused"/>
+    <ignore regexp="The resource `R.string.change_chrome_lang` appears to be unused"/>
+    <ignore regexp="The resource `R.string.default_lang_subtitle` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_content_description` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_content_title` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_infobar_ready` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_infobar_restart` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_select_suggested` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_select_other` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_select` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_send_translate_switch` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_title` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_advanced` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_automatic` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_dont_offer_lang` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_dont_offer_sites` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_settings_target` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_split_downloading` appears to be unused"/>
+    <ignore regexp="The resource `R.string.languages_split_ready` appears to be unused"/>
 
     <!-- Old-style and new-style WebAPKs use same resources for simplicity. Old-style WebAPKs do
          not use R.style.SplashTheme but new-style WebAPKs do.

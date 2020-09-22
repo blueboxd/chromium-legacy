@@ -1219,6 +1219,14 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
 #endif  // defined(OS_ANDROID)
 };
 
+const FeatureEntry::FeatureVariation
+    kOmniboxOnFocusSuggestionsContextualWebVariations[] = {
+        {"GOC Only", {}, 0, "t3317583"},
+        {"GOC, pSuggest Fallback", {}, 0, "t3317692"},
+        {"GOC, pSuggest Backfill", {}, 0, "t3317694"},
+        {"GOC, Default Hidden", {}, 0, "t3317834"},
+};
+
 const FeatureEntry::FeatureVariation kMaxZeroSuggestMatchesVariations[] = {
     {
         "5",
@@ -3710,8 +3718,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxClobberTriggersContextualWebZeroSuggestName,
      flag_descriptions::
          kOmniboxClobberTriggersContextualWebZeroSuggestDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kClobberTriggersContextualWebZeroSuggest)},
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kClobberTriggersContextualWebZeroSuggest,
+         // On-clobber has the same variations and forcing IDs as on-focus.
+         kOmniboxOnFocusSuggestionsContextualWebVariations,
+         "OmniboxGoogleOnContent")},
 
     {"omnibox-on-device-head-suggestions-incognito",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
@@ -3737,7 +3749,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebName,
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebDescription,
-     kOsAll, FEATURE_VALUE_TYPE(omnibox::kOnFocusSuggestionsContextualWeb)},
+     kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kOnFocusSuggestionsContextualWeb,
+         kOmniboxOnFocusSuggestionsContextualWebVariations,
+         "OmniboxGoogleOnContent")},
 
     {"omnibox-local-zero-suggest-frecency-ranking",
      flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingName,
@@ -5468,6 +5484,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsForCast)},
 
+    {"global-media-controls-for-chromeos",
+     flag_descriptions::kGlobalMediaControlsForChromeOSName,
+     flag_descriptions::kGlobalMediaControlsForChromeOSDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsForChromeOS)},
+
     {"global-media-controls-modern-ui",
      flag_descriptions::kGlobalMediaControlsModernUIName,
      flag_descriptions::kGlobalMediaControlsModernUIDescription,
@@ -6025,11 +6046,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAvatarToolbarButtonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
 #endif  // defined(OS_CHROMEOS)
-
-    {"omnibox-context-menu-show-full-urls",
-     flag_descriptions::kOmniboxContextMenuShowFullUrlsName,
-     flag_descriptions::kOmniboxContextMenuShowFullUrlsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxContextMenuShowFullUrls)},
 
     {"color-provider-redirection",
      flag_descriptions::kColorProviderRedirectionName,

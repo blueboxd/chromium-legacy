@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7a1f241c0134effb3064ac78dad75573f8c3086c',
+  'skia_revision': '187b04b3577743ae5ad9fe8699181027d51624e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ff52c73e00a4a1743dbef2b031ec8289aa89aefa',
+  'v8_revision': 'eb373a50aa03b266fc6f809f3b7252e25237aee2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '44623aeccd064e7f82161671574d510e3bf46181',
+  'angle_revision': '9ff58ddd0adf823ad753e36ea652b9b664c54c79',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dcc28c9f5a3de1a94a6431928aff02675ccdc452',
+  'devtools_frontend_revision': 'f46b7d67f8f26acccc89e44b210a313ba7e96ff1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'aeda49ba504669ff3206ab68685df143d024011f',
+  'dawn_revision': '6db3a24c19e7580a0aaee7aff8a52c16489c6abe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9cf7a56afbcf780c4ee33bad7f8d1e39d5b9d36d',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3c7133e86f13c51143c0139fb55f2ffff28d0587',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'zVhDYckO5pABaht9PlF8y1S_JicWTnMzwymJyNabQj4C'
+              'version': 'laU2vAii09mMfCaTLtA8O6UYjPdUXy0B-0zzOR0OPekC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6a7c1f2e304e0c79b33feea676dccfba2e46a90d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2fb4be6e85e6d0b06b023b29fb2b2770360a2b75',
     'condition': 'checkout_src_internal',
   },
 
@@ -1556,7 +1556,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'uUASMSmV6UorqpFx9y7e18sqPKALaf9znxQWuHu6J5IC',
+        'version': 'mkV9yCGYkfTE2DLD-MHNfrrbpo8vMhrcvgRQwtJGUjMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1567,7 +1567,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'cIWqR5ZGkLWwRsrEQfxfW_msq-yAvUIUa0Xxwz6bCXkC',
+        'version': 'u9IxXetAD5rBCs-E3qW49qhhcWCVkh51yLFjLWQfwOIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

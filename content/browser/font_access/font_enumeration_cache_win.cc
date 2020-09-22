@@ -185,32 +185,6 @@ FontEnumerationCache* FontEnumerationCache::GetInstance() {
   return instance.get();
 }
 
-void FontEnumerationCacheWin::QueueShareMemoryRegionWhenReady(
-    scoped_refptr<base::TaskRunner> task_runner,
-    blink::mojom::FontAccessManager::EnumerateLocalFontsCallback callback) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kFontAccess));
-
-  callbacks_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &FontEnumerationCacheWin::RunPendingCallback,
-          // Safe because this is an initialized singleton.
-          base::Unretained(this),
-          CallbackOnTaskRunner(std::move(task_runner), std::move(callback))));
-
-  if (!enumeration_cache_build_started_.IsSet()) {
-    enumeration_cache_build_started_.Set();
-
-    SchedulePrepareFontEnumerationCache();
-  }
-}
-
-bool FontEnumerationCacheWin::IsFontEnumerationCacheReady() {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kFontAccess));
-
-  return enumeration_cache_built_.IsSet() && IsFontEnumerationCacheValid();
-}
-
 void FontEnumerationCacheWin::InitializeDirectWrite() {
   if (direct_write_initialized_)
     return;

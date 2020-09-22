@@ -392,6 +392,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "autofill-use-renderer-ids",
+    "owners": [ "kazinova" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "avatar-toolbar-button",
     "owners": [ "droger", "my-chrome-everywhere@google.com" ],
     "expiry_milestone": 86
@@ -2684,6 +2689,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "global-media-controls-for-chromeos",
+    "owners": [ "jazzhsu", "steimel", "media-dev" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "global-media-controls-modern-ui",
     "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
     "expiry_milestone": 95
@@ -3303,11 +3313,6 @@
   {
     "name": "omnibox-compact-suggestions",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 87
-  },
-  {
-    "name": "omnibox-context-menu-show-full-urls",
-    "owners": [ "livvielin", "chrome-security-enamel@google.com" ],
     "expiry_milestone": 87
   },
   {

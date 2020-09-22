@@ -1819,6 +1819,8 @@ Unknown properties are collapsed to zero. -->
   <int value="262154" label="4.10"/>
   <int value="262157" label="4.13"/>
   <int value="262158" label="4.14"/>
+  <int value="262163" label="4.19"/>
+  <int value="327684" label="5.4"/>
 </enum>
 
 <enum name="AndroidManageSpaceButton">
@@ -20961,6 +20963,15 @@ Called by update_document_policy_enum.py.-->
   <int value="59" label="Device not pre-provisioned">
     The device is not pre-provisioned for Zero-Touch.
   </int>
+  <int value="60" label="Enterprise account is not eligible to enroll">
+    The enterprise account is not eligible to enroll.
+  </int>
+  <int value="61" label="Tos is not accepted">
+    The term of service is not accepted by enterprise.
+  </int>
+  <int value="62" label="Too many requests">
+    Too many requests are uploaded within a short time.
+  </int>
 </enum>
 
 <enum name="EnterpriseExistingInstallAttributesLockType">
@@ -29331,6 +29342,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3576" label="IdentifiabilityStudyReserved3576"/>
   <int value="3577" label="IdentifiabilityStudyReserved3577"/>
   <int value="3578" label="CascadedCSSZoomNotEqualToOne"/>
+  <int value="3579" label="ForcedDarkMode"/>
+  <int value="3580" label="PreferredColorSchemeDark"/>
+  <int value="3581" label="PreferredColorSchemeDarkSetting"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42326,6 +42340,7 @@ from previous Chrome versions.
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>
   <int value="-473087416" label="DragTabsInTabletMode:enabled"/>
+  <int value="-473052940" label="ContextualSearchLegacyHttpPolicy:enabled"/>
   <int value="-472477695" label="AutofillSaveCardImprovedUserConsent:enabled"/>
   <int value="-472014137" label="HomepageTile:disabled"/>
   <int value="-472013317" label="WebRTC-H264WithOpenH264FFmpeg:disabled"/>
@@ -42611,6 +42626,7 @@ from previous Chrome versions.
       label="WebPaymentsPerMethodCanMakePaymentQuota:enabled"/>
   <int value="-174564579"
       label="ServiceWorkerImportedScriptUpdateCheck:enabled"/>
+  <int value="-174425466" label="ContextualSearchLegacyHttpPolicy:disabled"/>
   <int value="-174319545" label="BulkPrinters:enabled"/>
   <int value="-173268856" label="GesturePropertiesDBusService"/>
   <int value="-171232290" label="ListAllDisplayModes:disabled"/>
@@ -43231,6 +43247,7 @@ from previous Chrome versions.
   <int value="482232604" label="PercentBasedScrolling:enabled"/>
   <int value="482429100"
       label="OmniboxClobberIsZeroSuggestEntrypoint:disabled"/>
+  <int value="483155358" label="GlobalMediaControlsForChromeOS:disabled"/>
   <int value="485957747" label="finch-seed-ignore-pending-download"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
@@ -43607,6 +43624,7 @@ from previous Chrome versions.
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
   <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
   <int value="877059804" label="AutofillPreventMixedFormsFilling:disabled"/>
+  <int value="877235225" label="GlobalMediaControlsForChromeOS:enabled"/>
   <int value="877238334" label="WebUITabStripTabDragIntegration:enabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>

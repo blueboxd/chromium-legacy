@@ -45,12 +45,9 @@ class CONTENT_EXPORT FontEnumerationCacheWin : public FontEnumerationCache {
   };
   static FontEnumerationCacheWin* GetInstance();
 
-  // FontEnumerationCache methods.
-  void QueueShareMemoryRegionWhenReady(
-      scoped_refptr<base::TaskRunner> task_runner,
-      blink::mojom::FontAccessManager::EnumerateLocalFontsCallback callback)
-      override;
-  bool IsFontEnumerationCacheReady() override;
+ protected:
+  // FontEnumerationCache interface.
+  void SchedulePrepareFontEnumerationCache() override;
 
  private:
   friend class base::NoDestructor<FontEnumerationCacheWin>;
@@ -59,7 +56,6 @@ class CONTENT_EXPORT FontEnumerationCacheWin : public FontEnumerationCache {
   friend class FontEnumerationCache;
 
   void InitializeDirectWrite();
-  void SchedulePrepareFontEnumerationCache();
   void PrepareFontEnumerationCache();
   void AppendFontDataAndFinalizeIfNeeded(
       std::unique_ptr<FamilyDataResult> family_data_result);
@@ -68,6 +64,9 @@ class CONTENT_EXPORT FontEnumerationCacheWin : public FontEnumerationCache {
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   uint32_t outstanding_family_results_ = 0;
+
+  // Protobuf structure temporarily used during cache construction and shared.
+  std::unique_ptr<blink::FontEnumerationTable> font_enumeration_table_;
 
   std::map<HRESULT, unsigned> enumeration_errors_;
   std::unique_ptr<base::ElapsedTimer> enumeration_timer_;

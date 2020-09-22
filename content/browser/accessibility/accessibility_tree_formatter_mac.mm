@@ -23,7 +23,6 @@
 using base::StringPrintf;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
-using base::SysUTF16ToNSString;
 using content::a11y::AttributeInvoker;
 using content::a11y::AttributeNamesOf;
 using content::a11y::AttributeValueOf;
@@ -75,6 +74,13 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
       const TreeSelector& selector) override;
 
  private:
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForAXUIElement(
+      AXUIElementRef node) const;
+
+  // Return AXElement in a tree by a given criteria
+  using FindCriteria = base::RepeatingCallback<bool(id)>;
+  id FindAXUIElement(const id node, const FindCriteria& criteria) const;
+
   void RecursiveBuildAccessibilityTree(const id node,
                                        const LineIndexer* line_indexer,
                                        base::DictionaryValue* dict) const;
@@ -98,6 +104,9 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
+  base::Value PopulatePoint(NSPoint) const;
+  base::Value PopulateSize(NSSize) const;
+  base::Value PopulateRect(NSRect) const;
   base::Value PopulateRange(NSRange) const;
   base::Value PopulateTextPosition(
       BrowserAccessibilityPosition::AXPositionInstance::pointer,
@@ -164,12 +173,8 @@ AccessibilityTreeFormatterMac::BuildAccessibilityTree(
 std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterMac::BuildAccessibilityTreeForWindow(
     gfx::AcceleratedWidget widget) {
-  AXUIElementRef application = AXUIElementCreateApplication(widget);
-  LineIndexer line_indexer(static_cast<id>(application));
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  RecursiveBuildAccessibilityTree(static_cast<id>(application), &line_indexer,
-                                  dict.get());
-  return dict;
+  return BuildAccessibilityTreeForAXUIElement(
+      AXUIElementCreateApplication(widget));
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -179,34 +184,74 @@ AccessibilityTreeFormatterMac::BuildAccessibilityTreeForSelector(
       kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements,
       kCGNullWindowID);
 
-  std::string title = selector.pattern;
-  switch (selector.type) {
-    case TreeSelector::Chrome:
-      title = kChromeTitle;
-      break;
-    case TreeSelector::Chromium:
-      title = kChromiumTitle;
-      break;
-    case TreeSelector::Firefox:
-      title = kFirefoxTitle;
-      break;
-    case TreeSelector::Safari:
-      title = kSafariTitle;
-      break;
-    default:
-      break;
+  std::string title;
+  if (selector.types & TreeSelector::Chrome) {
+    title = kChromeTitle;
+  } else if (selector.types & TreeSelector::Chromium) {
+    title = kChromiumTitle;
+  } else if (selector.types & TreeSelector::Firefox) {
+    title = kFirefoxTitle;
+  } else if (selector.types & TreeSelector::Safari) {
+    title = kSafariTitle;
   }
 
   for (NSDictionary* window_info in windows) {
-    NSString* window_name =
-        (NSString*)[window_info objectForKey:@"kCGWindowOwnerName"];
-    if (SysNSStringToUTF8(window_name) == title) {
-      NSNumber* pid =
-          (NSNumber*)[window_info objectForKey:@"kCGWindowOwnerPID"];
+    NSNumber* pid =
+        static_cast<NSNumber*>([window_info objectForKey:@"kCGWindowOwnerPID"]);
+    std::string window_name = SysNSStringToUTF8(static_cast<NSString*>(
+        [window_info objectForKey:@"kCGWindowOwnerName"]));
+
+    if (window_name == selector.pattern) {
       return BuildAccessibilityTreeForWindow([pid intValue]);
+    }
+
+    if (window_name == title) {
+      AXUIElementRef node = AXUIElementCreateApplication([pid intValue]);
+      if (selector.types & TreeSelector::ActiveTab) {
+        node = static_cast<AXUIElementRef>(FindAXUIElement(
+            static_cast<id>(node), base::BindRepeating([](const id node) {
+              // Only active tab in exposed in browsers, thus find first
+              // AXWebArea role.
+              NSString* role =
+                  AttributeValueOf(node, NSAccessibilityRoleAttribute);
+              return SysNSStringToUTF8(role) == "AXWebArea";
+            })));
+      }
+
+      if (node) {
+        return BuildAccessibilityTreeForAXUIElement(node);
+      }
     }
   }
   return nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterMac::BuildAccessibilityTreeForAXUIElement(
+    AXUIElementRef node) const {
+  LineIndexer line_indexer(static_cast<id>(node));
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  RecursiveBuildAccessibilityTree(static_cast<id>(node), &line_indexer,
+                                  dict.get());
+  return dict;
+}
+
+id AccessibilityTreeFormatterMac::FindAXUIElement(
+    const id node,
+    const FindCriteria& criteria) const {
+  if (criteria.Run(node)) {
+    return node;
+  }
+
+  NSArray* children = ChildrenOf(node);
+  for (id child in children) {
+    id found = FindAXUIElement(child, criteria);
+    if (found != nil) {
+      return found;
+    }
+  }
+
+  return nil;
 }
 
 void AccessibilityTreeFormatterMac::RecursiveBuildAccessibilityTree(
@@ -346,6 +391,39 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
     return PopulateTextMarkerRange(value, line_indexer);
   }
 
+  // AXValue
+  if (CFGetTypeID(value) == AXValueGetTypeID()) {
+    AXValueType type = AXValueGetType(static_cast<AXValueRef>(value));
+    switch (type) {
+      case kAXValueCGPointType: {
+        NSPoint point;
+        if (AXValueGetValue(static_cast<AXValueRef>(value), type, &point)) {
+          return PopulatePoint(point);
+        }
+      } break;
+      case kAXValueCGSizeType: {
+        NSSize size;
+        if (AXValueGetValue(static_cast<AXValueRef>(value), type, &size)) {
+          return PopulateSize(size);
+        }
+      } break;
+      case kAXValueCGRectType: {
+        NSRect rect;
+        if (AXValueGetValue(static_cast<AXValueRef>(value), type, &rect)) {
+          return PopulateRect(rect);
+        }
+      } break;
+      case kAXValueCFRangeType: {
+        NSRange range;
+        if (AXValueGetValue(static_cast<AXValueRef>(value), type, &range)) {
+          return PopulateRange(range);
+        }
+      } break;
+      default:
+        break;
+    }
+  }
+
   // Accessible object
   if (IsBrowserAccessibilityCocoa(value) || IsAXUIElement(value)) {
     return base::Value(NodeToLineIndex(value, line_indexer));
@@ -354,6 +432,32 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
   // Scalar value.
   return base::Value(
       SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]));
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulatePoint(
+    NSPoint point_value) const {
+  base::Value point(base::Value::Type::DICTIONARY);
+  point.SetIntPath("x", static_cast<int>(point_value.x));
+  point.SetIntPath("y", static_cast<int>(point_value.y));
+  return point;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateSize(
+    NSSize size_value) const {
+  base::Value size(base::Value::Type::DICTIONARY);
+  size.SetIntPath("w", static_cast<int>(size_value.width));
+  size.SetIntPath("h", static_cast<int>(size_value.height));
+  return size;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateRect(
+    NSRect rect_value) const {
+  base::Value rect(base::Value::Type::DICTIONARY);
+  rect.SetIntPath("x", static_cast<int>(rect_value.origin.x));
+  rect.SetIntPath("y", static_cast<int>(rect_value.origin.y));
+  rect.SetIntPath("w", static_cast<int>(rect_value.size.width));
+  rect.SetIntPath("h", static_cast<int>(rect_value.size.height));
+  return rect;
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateRange(

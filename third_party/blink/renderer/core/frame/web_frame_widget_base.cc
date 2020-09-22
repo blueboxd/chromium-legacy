@@ -699,15 +699,6 @@ void WebFrameWidgetBase::WillBeginMainFrame() {
   Client()->WillBeginMainFrame();
 }
 
-void WebFrameWidgetBase::SubmitThroughputData(
-    ukm::SourceId source_id,
-    int aggregated_percent,
-    int impl_percent,
-    base::Optional<int> main_percent) {
-  local_root_->Client()->SubmitThroughputData(source_id, aggregated_percent,
-                                              impl_percent, main_percent);
-}
-
 void WebFrameWidgetBase::ScheduleAnimation() {
   Client()->ScheduleAnimation();
 }
@@ -1143,7 +1134,7 @@ void WebFrameWidgetBase::SetHandlingInputEvent(bool handling) {
   widget_base_->input_handler().set_handling_input_event(handling);
 }
 
-void WebFrameWidgetBase::ProcessInputEventSynchronously(
+void WebFrameWidgetBase::ProcessInputEventSynchronouslyForTesting(
     const WebCoalescedInputEvent& event,
     HandledEventCallback callback) {
   widget_base_->input_handler().HandleInputEvent(event, std::move(callback));

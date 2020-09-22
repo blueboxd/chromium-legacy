@@ -284,8 +284,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetCursor(const ui::Cursor& cursor) override;
   bool HandlingInputEvent() override;
   void SetHandlingInputEvent(bool handling) override;
-  void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
-                                      HandledEventCallback) override;
+  void ProcessInputEventSynchronouslyForTesting(const WebCoalescedInputEvent&,
+                                                HandledEventCallback) override;
   void UpdateTextInputState() override;
   void UpdateSelectionBounds() override;
   void ShowVirtualKeyboard() override;
@@ -332,10 +332,6 @@ class CORE_EXPORT WebFrameWidgetBase
       base::TimeTicks first_scroll_timestamp) override;
   void DidBeginMainFrame() override;
   void WillBeginMainFrame() override;
-  void SubmitThroughputData(ukm::SourceId source_id,
-                            int aggregated_percent,
-                            int impl_percent,
-                            base::Optional<int> main_percent) override;
   void FocusChangeComplete() override;
   bool WillHandleGestureEvent(const WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const WebMouseEvent& event) override;

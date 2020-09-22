@@ -31,12 +31,9 @@ class CONTENT_EXPORT FontEnumerationCacheMac : public FontEnumerationCache {
 
   static FontEnumerationCacheMac* GetInstance();
 
-  // FontEnumerationCache methods.
-  void QueueShareMemoryRegionWhenReady(
-      scoped_refptr<base::TaskRunner> task_runner,
-      blink::mojom::FontAccessManager::EnumerateLocalFontsCallback callback)
-      override;
-  bool IsFontEnumerationCacheReady() override;
+ protected:
+  // FontEnumerationCache interface.
+  void SchedulePrepareFontEnumerationCache() override;
 
  private:
   friend class base::NoDestructor<FontEnumerationCacheMac>;
@@ -44,7 +41,6 @@ class CONTENT_EXPORT FontEnumerationCacheMac : public FontEnumerationCache {
   // constructor.
   friend class FontEnumerationCache;
 
-  void SchedulePrepareFontEnumerationCache();
   void PrepareFontEnumerationCache();
 };
 

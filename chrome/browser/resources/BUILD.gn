@@ -87,7 +87,6 @@ if (enable_js_type_check) {
         "internals/notifications:closure_compile",
         "internals/query_tiles:closure_compile",
         "offline_pages:closure_compile",
-        "snippets_internals:closure_compile",
         "video_tutorials:closure_compile",
         "webapks:closure_compile",
       ]
@@ -235,7 +234,7 @@ if (!is_android) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    defines = chrome_grit_defines
+    defines = chrome_grit_defines + [ "is_official_build=$is_official_build" ]
     outputs = [
       "grit/new_tab_page_resources.h",
       "grit/new_tab_page_resources_map.cc",

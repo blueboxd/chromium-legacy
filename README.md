@@ -1,6 +1,7 @@
 # Chromium-legacy
 
 Chromium-legacy is the latest Chromium patched & built for legacy Mac OS X Lion series (10.7/10.8).
+**Not working on 10.9 for now.**
 
 **NB: Not for natively supported environments (10.10+).**
 

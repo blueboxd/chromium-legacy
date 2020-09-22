@@ -961,6 +961,13 @@ Unknown properties are collapsed to zero. -->
     interstitial then confirmed opening the page in the incognito tab by tapping
     |Continue| in the incognito interstitial.
   </int>
+  <int value="4" label="SignedInWithDefaultAccount">
+    User has selected the default account and signed in with it.
+  </int>
+  <int value="5" label="SignedInWithNonDefaultAccount">
+    User has selected one of the non default accounta and signed in with it.
+  </int>
+  <int value="6" label="Shown">The promo was shown to user.</int>
 </enum>
 
 <enum name="AccountManagerAccountAdditionSource">
@@ -40830,6 +40837,7 @@ from previous Chrome versions.
       label="enable-experimental-accessibility-switch-access"/>
   <int value="-1953145846" label="TargetEmbeddingLookalikes:disabled"/>
   <int value="-1953121360" label="EphemeralTab:disabled"/>
+  <int value="-1950469963" label="SeparatePointingStickSettings:enabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
@@ -44108,6 +44116,7 @@ from previous Chrome versions.
   <int value="1387356699" label="PolicyAtomicGroup:enabled"/>
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1392935139" label="KidsManagementUrlClassification:enabled"/>
+  <int value="1393413889" label="SeparatePointingStickSettings:disabled"/>
   <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1394896630" label="PrinterStatusDialog:enabled"/>
@@ -46282,6 +46291,7 @@ Called by update_use_counter_css.py.-->
   <int value="673" label="descent-override"/>
   <int value="674" label="advance-override"/>
   <int value="675" label="line-gap-override"/>
+  <int value="676" label="math-shift"/>
 </enum>
 
 <enum name="MappedEditingCommands">

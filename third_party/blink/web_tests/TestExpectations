@@ -416,6 +416,9 @@ crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descenda
 # Flaky test.
 crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
+# Regression from crbug.com/109224.
+crbug.com/1128962 svg/filters/feDisplacementMap.svg [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -6746,3 +6749,6 @@ crbug.com/1130500 [ Mac10.13 Debug ] virtual/omt-worker-fetch/external/wpt/xhr/x
 
 # Sheriff 2020-09-22
 crbug.com/1130533 [ Mac ] external/wpt/xhr/xhr-timeout-longtask.any.html [ Pass Failure ]
+
+# Sheriff 2020-09-22
+crbug.com/1130533 [ Mac ] external/wpt/xhr/xhr-timeout-longtask.any.worker.html [ Pass Failure ]

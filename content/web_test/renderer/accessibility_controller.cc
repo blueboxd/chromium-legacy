@@ -251,7 +251,7 @@ v8::Local<v8::Object> AccessibilityController::FocusedElement() {
          "local frame.";
   blink::WebAXObject focused_element =
       blink::WebAXObject::FromWebDocumentFocused(
-          frame->ToWebLocalFrame()->GetDocument());
+          frame->ToWebLocalFrame()->GetDocument(), true);
   if (focused_element.IsNull())
     focused_element = GetAccessibilityObjectForMainFrame();
   return elements_.GetOrCreate(focused_element);
@@ -263,9 +263,11 @@ v8::Local<v8::Object> AccessibilityController::RootElement() {
 
 v8::Local<v8::Object> AccessibilityController::AccessibleElementById(
     const std::string& id) {
+  blink::WebAXObject::UpdateLayout(
+      web_view()->MainFrame()->ToWebLocalFrame()->GetDocument());
   blink::WebAXObject root_element = GetAccessibilityObjectForMainFrame();
 
-  if (!root_element.UpdateLayoutAndCheckValidity())
+  if (!root_element.MaybeUpdateLayoutAndCheckValidity())
     return v8::Local<v8::Object>();
 
   return FindAccessibleElementByIdRecursive(

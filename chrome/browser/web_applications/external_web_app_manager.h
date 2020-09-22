@@ -26,6 +26,10 @@ class PendingAppManager;
 
 class ExternalWebAppManager {
  public:
+  static const char* kHistogramEnabledCount;
+  static const char* kHistogramDisabledCount;
+  static const char* kHistogramConfigErrorCount;
+
   explicit ExternalWebAppManager(Profile* profile);
   ~ExternalWebAppManager();
 
@@ -38,18 +42,17 @@ class ExternalWebAppManager {
   // described at https://developer.chrome.com/apps/external_extensions
   //
   // This function performs file I/O, and must not be scheduled on UI threads.
-  static std::vector<ExternalInstallOptions>
-  ScanDirForExternalWebAppsForTesting(
+  static std::vector<ExternalInstallOptions> ReloadInstallOptionsForTesting(
       std::unique_ptr<FileUtilsWrapper> file_utils,
       const base::FilePath& dir,
       Profile* profile);
 
-  using ScanCallback =
+  using LoadCallback =
       base::OnceCallback<void(std::vector<ExternalInstallOptions>)>;
 
-  void ScanForExternalWebApps(ScanCallback callback);
+  void LoadInstallOptions(LoadCallback callback);
 
-  static void SkipStartupScanForTesting();
+  static void SkipStartupForTesting();
 
   void SynchronizeAppsForTesting(
       std::unique_ptr<FileUtilsWrapper> file_utils,

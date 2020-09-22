@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
   friend class FileStreamReader;
   friend class LocalFileStreamReaderTest;
 
-  LocalFileStreamReader(base::TaskRunner* task_runner,
+  LocalFileStreamReader(scoped_refptr<base::TaskRunner> task_runner,
                         const base::FilePath& file_path,
                         int64_t initial_offset,
                         const base::Time& expected_modification_time);
@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
   const base::FilePath file_path_;
   const int64_t initial_offset_;
   const base::Time expected_modification_time_;
-  bool has_pending_open_;
+  bool has_pending_open_ = false;
   base::WeakPtrFactory<LocalFileStreamReader> weak_factory_{this};
 };
 

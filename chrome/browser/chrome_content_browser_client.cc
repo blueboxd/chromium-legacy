@@ -460,7 +460,7 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
-#include "chrome/browser/safe_browsing/dm_token_utils.h"
+#include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/serial/chrome_serial_delegate.h"
@@ -3755,7 +3755,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
-    mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MAC)
@@ -4374,7 +4374,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     bool is_enterprise_lookup_enabled =
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
         safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-            profile->GetPrefs(), safe_browsing::GetDMToken(profile).is_valid(),
+            profile->GetPrefs(), policy::GetDMToken(profile).is_valid(),
             profile->IsOffTheRecord());
 #else
         false;
@@ -4721,6 +4721,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     base::Optional<int64_t> navigation_id,
+    base::UkmSourceId ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
@@ -4740,7 +4741,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     bool use_proxy_for_web_request =
         web_request_api->MaybeProxyURLLoaderFactory(
             browser_context, frame, render_process_id, type,
-            std::move(navigation_id), factory_receiver, header_client);
+            std::move(navigation_id), ukm_source_id, factory_receiver,
+            header_client);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;

@@ -37,6 +37,8 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(const HoldingSpaceItem* item)
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kHoldingSpaceChipPadding), kHoldingSpaceChipChildSpacing));
 
+  SetPreferredSize(gfx::Size(kHoldingSpaceChipWidth, kHoldingSpaceChipHeight));
+
   image_ =
       AddChildView(std::make_unique<tray::RoundedImageView>(kTrayItemSize / 2));
 
@@ -97,8 +99,6 @@ void HoldingSpaceItemChipView::ButtonPressed(views::Button* sender,
     HoldingSpaceController::Get()->client()->UnpinItem(*item());
   else
     HoldingSpaceController::Get()->client()->PinItem(*item());
-
-  UpdatePin();
 }
 
 void HoldingSpaceItemChipView::AddPinButton() {

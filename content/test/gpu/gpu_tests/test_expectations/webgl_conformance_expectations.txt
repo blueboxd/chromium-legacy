@@ -7,6 +7,7 @@
 # tags: [ android-chromium android-webview-instrumentation ]
 # tags: [ debug debug-x64 release ]
 # tags: [ amd amd-0x6613 amd-0x699f amd-0x679e
+#         apple apple-apple-a12z
 #         intel intel-0xa011 intel-0xa2e
 #         nvidia nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9
 #         arm-mali-t860
@@ -472,6 +473,15 @@ crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/renderi
 crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/rendering/more-than-65536-indices.html [ Failure ]
 crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/textures/misc/texture-mips.html [ Failure ]
 
+# Mac ARM-based DTKs
+crbug.com/1130703 [ mac apple-apple-a12z no-passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1130703 [ mac apple-apple-a12z no-passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
+crbug.com/1130758 [ mac apple-apple-a12z ] conformance/extensions/webgl-depth-texture.html [ Failure ]
+crbug.com/1130759 [ mac apple-apple-a12z metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1130759 [ mac apple-apple-a12z metal ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/1130760 [ mac apple-apple-a12z metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1130760 [ mac apple-apple-a12z metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+
 ####################
 # Linux failures   #
 ####################
@@ -707,7 +717,6 @@ crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
 
 crbug.com/1081973 [ chromeos ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/1127052 [ chromeos ] conformance/extensions/webgl-compressed-texture-etc.html [ Failure ]
 
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]

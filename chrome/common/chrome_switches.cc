@@ -499,6 +499,9 @@ const char kSilentLaunch[]                  = "silent-launch";
 // Simulates a critical update being available.
 const char kSimulateCriticalUpdate[]        = "simulate-critical-update";
 
+// Simulates that elevation is needed to recover upgrade channel.
+const char kSimulateElevatedRecovery[]      = "simulate-elevated-recovery";
+
 // Simulates that current version is outdated.
 const char kSimulateOutdated[]              = "simulate-outdated";
 

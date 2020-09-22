@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/holding_space/holding_space_item_chip_view.h"
 #include "ash/system/holding_space/holding_space_item_chips_container.h"
 #include "ash/system/holding_space/holding_space_item_screenshot_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -25,7 +26,9 @@ RecentFilesContainer::RecentFilesContainer() {
   SetID(kHoldingSpaceRecentFilesContainerId);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kHoldingSpaceContainerPadding));
+      views::BoxLayout::Orientation::kVertical, kHoldingSpaceContainerPadding,
+      kHoldingSpaceContainerChildSpacing));
+
   auto setup_layered_child = [](views::View* child) {
     child->SetPaintToLayer();
     child->layer()->SetFillsBoundsOpaquely(false);
@@ -40,17 +43,9 @@ RecentFilesContainer::RecentFilesContainer() {
 
   screenshots_container_ = AddChildView(std::make_unique<views::View>());
   screenshots_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(16, 0, 24, 0),
-      8));
-
-  // TODO(crbug.com/1125254): Populate containers if and when holding space
-  // model is attached, below is a temporary solution.
-  for (const auto& item : HoldingSpaceController::Get()->model()->items()) {
-    if (item->type() == HoldingSpaceItem::Type::kScreenshot) {
-      screenshots_container_->AddChildView(
-          std::make_unique<HoldingSpaceItemScreenshotView>(item.get()));
-    }
-  }
+      views::BoxLayout::Orientation::kHorizontal,
+      kHoldingSpaceScreenshotsContainerPadding,
+      kHoldingSpaceScreenshotSpacing));
 
   auto* recent_downloads_label = AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_RECENT_DOWNLOADS_TITLE)));
@@ -60,18 +55,43 @@ RecentFilesContainer::RecentFilesContainer() {
   recent_downloads_container_ =
       AddChildView(std::make_unique<HoldingSpaceItemChipsContainer>());
 
-  // TODO(crbug.com/1125254): Populate containers if and when holding space
-  // model is attached, below is a temporary solution.
-  for (const auto& item : HoldingSpaceController::Get()->model()->items()) {
-    if (item->type() == HoldingSpaceItem::Type::kDownload)
-      recent_downloads_container_->AddItemChip(item.get());
-  }
+  if (HoldingSpaceController::Get()->model())
+    OnHoldingSpaceModelAttached(HoldingSpaceController::Get()->model());
 }
 
 RecentFilesContainer::~RecentFilesContainer() = default;
 
-const char* RecentFilesContainer::GetClassName() const {
-  return "RecentFilesContainer";
+void RecentFilesContainer::AddHoldingSpaceItemView(
+    const HoldingSpaceItem* item) {
+  DCHECK(!base::Contains(views_by_item_id_, item->id()));
+  if (item->type() == HoldingSpaceItem::Type::kScreenshot) {
+    views_by_item_id_[item->id()] = screenshots_container_->AddChildViewAt(
+        std::make_unique<HoldingSpaceItemScreenshotView>(item), 0 /*index*/);
+  } else if (item->type() == HoldingSpaceItem::Type::kDownload) {
+    views_by_item_id_[item->id()] = recent_downloads_container_->AddChildViewAt(
+        std::make_unique<HoldingSpaceItemChipView>(item), 0 /*index*/);
+  }
+}
+
+void RecentFilesContainer::RemoveAllHoldingSpaceItemViews() {
+  views_by_item_id_.clear();
+  screenshots_container_->RemoveAllChildViews(true);
+  recent_downloads_container_->RemoveAllChildViews(true);
+}
+
+void RecentFilesContainer::RemoveHoldingSpaceItemView(
+    const HoldingSpaceItem* item) {
+  auto it = views_by_item_id_.find(item->id());
+  if (it == views_by_item_id_.end())
+    return;
+  views::View* view = it->second;
+
+  if (item->type() == HoldingSpaceItem::Type::kScreenshot) {
+    screenshots_container_->RemoveChildViewT(view);
+  } else if (item->type() == HoldingSpaceItem::Type::kDownload) {
+    recent_downloads_container_->RemoveChildViewT(view);
+  }
+  views_by_item_id_.erase(it);
 }
 
 }  // namespace ash

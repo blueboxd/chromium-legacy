@@ -727,6 +727,19 @@ def LoadAndPostProcessSizeInfo(path, file_obj=None):
   return size_info
 
 
+def LoadAndPostProcessDeltaSizeInfo(path, file_obj=None):
+  """Returns a tuple of SizeInfos for the given |path|."""
+  logging.debug('Loading results from: %s', path)
+  before_size_info, after_size_info = file_format.LoadDeltaSizeInfo(
+      path, file_obj=file_obj)
+  logging.info('Normalizing symbol names')
+  _NormalizeNames(before_size_info.raw_symbols)
+  _NormalizeNames(after_size_info.symbols)
+  logging.info('Loaded %d + %d symbols', len(before_size_info.raw_symbols),
+               len(after_size_info.raw_symbols))
+  return before_size_info, after_size_info
+
+
 def _CollectModuleSizes(minimal_apks_path):
   sizes_by_module = collections.defaultdict(int)
   with zipfile.ZipFile(minimal_apks_path) as z:
@@ -1246,9 +1259,11 @@ def _ParseApkOtherSymbols(section_ranges, apk_path, apk_so_path,
   apk_symbols = []
   dex_size = 0
   zip_info_total = 0
+  zipalign_total = 0
   with zipfile.ZipFile(apk_path) as z:
     for zip_info in z.infolist():
       zip_info_total += zip_info.compress_size
+      zipalign_total += len(zip_info.extra)
       # Skip main shared library, pak, and dex files as they are accounted for.
       if (zip_info.filename == apk_so_path
           or zip_info.filename.endswith('.pak')):
@@ -1268,11 +1283,16 @@ def _ParseApkOtherSymbols(section_ranges, apk_path, apk_so_path,
               zip_info.compress_size,
               source_path=source_path,
               full_name=resource_filename))  # Full name must disambiguate
-  overhead_size = os.path.getsize(apk_path) - zip_info_total
+  overhead_size = os.path.getsize(apk_path) - zip_info_total - zipalign_total
   assert overhead_size >= 0, 'Apk overhead must be non-negative'
   zip_overhead_symbol = models.Symbol(
       models.SECTION_OTHER, overhead_size, full_name='Overhead: APK file')
   apk_symbols.append(zip_overhead_symbol)
+  if zipalign_total > 0:
+    zipalign_symbol = models.Symbol(models.SECTION_OTHER,
+                                    zipalign_total,
+                                    full_name='Overhead: zipalign')
+    apk_symbols.append(zipalign_symbol)
   _ExtendSectionRange(section_ranges, models.SECTION_OTHER,
                       sum(s.size for s in apk_symbols))
   return dex_size, apk_symbols

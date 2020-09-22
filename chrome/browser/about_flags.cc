@@ -3744,14 +3744,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kOnFocusSuggestionsContextualWeb)},
 
-    {"omnibox-preserve-default-match-against-async-update",
-     flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
-     flag_descriptions::
-         kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)},
-
     {"omnibox-local-zero-suggest-frecency-ranking",
      flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingName,
      flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingDescription,
@@ -5201,10 +5193,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-metered-toggle", flag_descriptions::kMeteredShowToggleName,
      flag_descriptions::kMeteredShowToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kMeteredShowToggle)},
-
-    {"enable-print-server-ui", flag_descriptions::kPrintServerUiName,
-     flag_descriptions::kPrintServerUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kPrintServerUi)},
 
     {"printer-status", flag_descriptions::kPrinterStatusName,
      flag_descriptions::kPrinterStatusDescription, kOsCrOS,

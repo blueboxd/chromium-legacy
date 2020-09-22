@@ -25,6 +25,12 @@ namespace switches {
 // media/base/media_switches.cc or ui/gl/gl_switches.cc or one of the
 // .cc files corresponding to the *_switches.h files included above
 // instead.
+//
+// Want to remove obsolete switches? Ensure that the switch isn't still in use
+// by the Android Java code (ChromeSwitches.java.tmpl) under an aliased name.
+// Also perform a string search to make sure the switch isn't in use only by a
+// build-configuration, e.g. BUILDFLAG(GOOGLE_CHROME_BRANDING), that is not
+// indexed for cross-reference or built by the CQ bots.
 // -----------------------------------------------------------------------------
 
 // All switches in alphabetical order. The switches should be documented
@@ -147,6 +153,7 @@ extern const char kShortReportingDelay[];
 extern const char kSilentDebuggerExtensionAPI[];
 extern const char kSilentLaunch[];
 extern const char kSimulateCriticalUpdate[];
+extern const char kSimulateElevatedRecovery[];
 extern const char kSimulateOutdated[];
 extern const char kSimulateOutdatedNoAU[];
 extern const char kSimulateUpgrade[];

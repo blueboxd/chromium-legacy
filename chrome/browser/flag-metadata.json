@@ -795,8 +795,8 @@
   },
   {
     "name": "detect-target-embedding-lookalikes",
-    "owners": [ "jdeblasio", "behnoodm" ],
-    "expiry_milestone": 86
+    "owners": [ "jdeblasio", "meacer" ],
+    "expiry_milestone": 87
   },
   {
     "name": "device-discovery-notifications",
@@ -1483,14 +1483,9 @@
     "expiry_milestone": 87
   },
   {
-    "name": "enable-experimental-accessibility-switch-access",
-    "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "enable-experimental-accessibility-switch-access-text",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "enable-experimental-cookie-features",
@@ -1920,7 +1915,7 @@
   {
     "name": "enable-pixel-canvas-recording",
     "owners": [ "malaykeshav", "oshima" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 95
   },
   {
     "name": "enable-play-store-search",
@@ -1951,11 +1946,6 @@
     "name": "enable-previews-coin-flip",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-print-server-ui",
-    "owners": [ "jimmyxgong" ],
-    "expiry_milestone": 84
   },
   {
     "name": "enable-process-sharing-with-default-site-instances",
@@ -3419,11 +3409,6 @@
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "omnibox-preserve-default-match-against-async-update",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "omnibox-rich-autocompletion",

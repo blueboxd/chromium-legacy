@@ -992,9 +992,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
-extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
-extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
-
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
@@ -2464,9 +2461,6 @@ extern const char kOsSettingsPolymer3Description[];
 
 extern const char kPhoneHubName[];
 extern const char kPhoneHubDescription[];
-
-extern const char kPrintServerUiName[];
-extern const char kPrintServerUiDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

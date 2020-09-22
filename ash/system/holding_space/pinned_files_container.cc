@@ -26,7 +26,8 @@ PinnedFilesContainer::PinnedFilesContainer() {
   SetID(kHoldingSpacePinnedFilesContainerId);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kHoldingSpaceContainerPadding));
+      views::BoxLayout::Orientation::kVertical, kHoldingSpaceContainerPadding,
+      kHoldingSpaceContainerChildSpacing));
 
   auto* title_label = AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_PINNED_TITLE)));
@@ -39,18 +40,35 @@ PinnedFilesContainer::PinnedFilesContainer() {
   item_chips_container_ =
       AddChildView(std::make_unique<HoldingSpaceItemChipsContainer>());
 
-  // TODO(crbug.com/1125254): Populate containers if and when holding space
-  // model is attached, below is a temporary solution.
-  for (const auto& item : HoldingSpaceController::Get()->model()->items()) {
-    if (item->type() == HoldingSpaceItem::Type::kPinnedFile)
-      item_chips_container_->AddItemChip(item.get());
-  }
+  if (HoldingSpaceController::Get()->model())
+    OnHoldingSpaceModelAttached(HoldingSpaceController::Get()->model());
 }
 
 PinnedFilesContainer::~PinnedFilesContainer() = default;
 
-const char* PinnedFilesContainer::GetClassName() const {
-  return "PinnedFilesContainer";
+void PinnedFilesContainer::AddHoldingSpaceItemView(
+    const HoldingSpaceItem* item) {
+  DCHECK(!base::Contains(views_by_item_id_, item->id()));
+
+  if (item->type() == HoldingSpaceItem::Type::kPinnedFile) {
+    views_by_item_id_[item->id()] = item_chips_container_->AddChildViewAt(
+        std::make_unique<HoldingSpaceItemChipView>(item), 0 /*index*/);
+  }
+}
+
+void PinnedFilesContainer::RemoveAllHoldingSpaceItemViews() {
+  views_by_item_id_.clear();
+  item_chips_container_->RemoveAllChildViews(true);
+}
+
+void PinnedFilesContainer::RemoveHoldingSpaceItemView(
+    const HoldingSpaceItem* item) {
+  auto it = views_by_item_id_.find(item->id());
+  if (it == views_by_item_id_.end())
+    return;
+
+  item_chips_container_->RemoveChildViewT(it->second);
+  views_by_item_id_.erase(it->first);
 }
 
 }  // namespace ash

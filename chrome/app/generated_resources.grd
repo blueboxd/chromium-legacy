@@ -1352,14 +1352,14 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <if expr="not use_titlecase">
         <message name="IDS_EDIT_SEARCH_ENGINES"
-                 desc="Title of the popup menu item for editing search engines">
-          &amp;Edit search engines...
+                 desc="Title of the popup menu item that takes the user to 'Manage search engines' in Settings.">
+          &amp;Manage search engines...
         </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_EDIT_SEARCH_ENGINES"
-                 desc="In Title Case: Title of the popup menu item for editing search engines">
-          &amp;Edit Search Engines...
+                 desc="In Title Case: Title of the popup menu item that takes the user to 'Manage search engines' in Settings.">
+          &amp;Manage Search Engines...
         </message>
       </if>
 
@@ -6739,6 +6739,37 @@ the Bookmarks menu.">
         </if>
       </if>
 
+      <!-- Tab Search -->
+      <if expr="enable_tab_search">
+        <message name="IDS_TAB_SEARCH_SEARCH_TABS" desc="The label on the tab search search filed when user input is empty.">
+          Search Tabs
+        </message>
+        <message name="IDS_TAB_SEARCH_NO_RESULTS_FOUND" desc="Indicator when no tabs are found filtered by user search input.">
+          No Results Found
+        </message>
+        <message name="IDS_TAB_SEARCH_CLOSE_TAB" desc="Label of the close tab button in the tab list item.">
+          Close Tab
+        </message>
+        <message name="IDS_TAB_SEARCH_SUBMIT_FEEDBACK" desc="Label of the submit feedback button.">
+          Submit Feedback
+        </message>
+        <message name="IDS_TAB_SEARCH_A11Y_TAB_CLOSED" desc="A11y message after user clicks on the close tab button in the list item.">
+          Tab Closed
+        </message>
+        <message name="IDS_TAB_SEARCH_A11Y_FOUND_TAB" desc="Singular form of a11y message after user changes search field when search filed is empty.">
+          Found <ph name="NUM">$1<ex>1</ex></ph> Tab
+        </message>
+        <message name="IDS_TAB_SEARCH_A11Y_FOUND_TABS" desc="Plural form of a11y message after user changes search field when search filed is empty.">
+          Found <ph name="NUM">$1<ex>2</ex></ph> Tabs
+        </message>
+        <message name="IDS_TAB_SEARCH_A11Y_FOUND_TAB_FOR" desc="Singular form of a11y message after user changes search field when search filed is not empty.">
+          Found <ph name="NUM">$1<ex>1</ex></ph> Tab For '<ph name="SEARCH_TEXT">$2<ex>google</ex></ph>'
+        </message>
+        <message name="IDS_TAB_SEARCH_A11Y_FOUND_TABS_FOR" desc="Plural form of a11y message after user changes search field when search filed is not empty.">
+          Found <ph name="NUM">$1<ex>2</ex></ph> Tabs For '<ph name="SEARCH_TEXT">$2<ex>google</ex></ph>'
+        </message>
+      </if>
+
       <!-- Strings for Window Titles in Menus -->
       <if expr="not use_titlecase">
         <message name="IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY" desc="The format for details of the title displayed in tabs and popup windows. [ICU Syntax]">
@@ -10889,7 +10920,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_URL_ARM"
                desc="Mac system-specific infobar link for Arm64-on-Arm64."
                translateable="false">
-        https://www.google.com
+        https://support.google.com/chrome/?p=mac_ARM
       </message>
       <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_TEXT_ROSETTA"
                desc="Mac system-specific infobar link text for Intel-on-Arm64."
@@ -10899,7 +10930,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_URL_ROSETTA"
                desc="Mac system-specific infobar link for Intel-on-Arm64."
                translateable="false">
-        https://www.google.com
+        https://support.google.com/chrome/?p=mac_ARM
       </message>
     </if>
   </messages>

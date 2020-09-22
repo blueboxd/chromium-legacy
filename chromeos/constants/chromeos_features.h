@@ -79,8 +79,6 @@ extern const base::Feature kCrostiniUseBusterImage;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniGpuSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kCrostiniUsbAllowUnsupported;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUseDlc;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDiagnosticsApp;
@@ -110,6 +108,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kExoOrdinalMotion;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kExoPointerLock;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kFilesCameraFolder;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesNG;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
@@ -161,8 +161,6 @@ extern const base::Feature kLoginDisplayPasswordButton;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMediaApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kMinimumChromeVersion;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kNewOsSettingsSearch;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kOobeScreensPriority;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -252,8 +250,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kViewBasedMultiprofileLogin;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVirtualKeyboardBorderedKey;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kVirtualKeyboardFloatingResizable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kWifiSyncAndroid;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

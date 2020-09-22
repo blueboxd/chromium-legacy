@@ -1013,9 +1013,6 @@ extern const char kOopRasterizationDescription[];
 extern const char kOopRasterizationDDLName[];
 extern const char kOopRasterizationDDLDescription[];
 
-extern const char kNewOsSettingsSearchName[];
-extern const char kNewOsSettingsSearchDescription[];
-
 extern const char kOsSettingsDeepLinkingName[];
 extern const char kOsSettingsDeepLinkingDescription[];
 
@@ -1969,9 +1966,6 @@ extern const char kUseAngleD3D11[];
 extern const char kUseAngleD3D9[];
 extern const char kUseAngleD3D11on12[];
 
-extern const char kUseSerialBusEnumeratorName[];
-extern const char kUseSerialBusEnumeratorDescription[];
-
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
 
@@ -2127,9 +2121,6 @@ extern const char kCrostiniUseBusterImageDescription[];
 
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
-
-extern const char kCrostiniUsbAllowUnsupportedName[];
-extern const char kCrostiniUsbAllowUnsupportedDescription[];
 
 extern const char kCrostiniWebUIUpgraderName[];
 extern const char kCrostiniWebUIUpgraderDescription[];
@@ -2344,6 +2335,9 @@ extern const char kExperimentalAccessibilityCursorColorsDescription[];
 extern const char kFilesAppCopyImageName[];
 extern const char kFilesAppCopyImageDescription[];
 
+extern const char kFilesCameraFolderName[];
+extern const char kFilesCameraFolderDescription[];
+
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
 
@@ -2551,9 +2545,6 @@ extern const char kVaapiWebPImageDecodeAccelerationDescription[];
 
 extern const char kVirtualKeyboardBorderedKeyName[];
 extern const char kVirtualKeyboardBorderedKeyDescription[];
-
-extern const char kVirtualKeyboardFloatingResizableName[];
-extern const char kVirtualKeyboardFloatingResizableDescription[];
 
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];

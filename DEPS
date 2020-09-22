@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '44dff4f2012da1be49dc81834483871e30021626',
+  'skia_revision': '7a1f241c0134effb3064ac78dad75573f8c3086c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd56d50c3f11bf7014df1b0234ad7010de3dd9983',
+  'v8_revision': 'ff52c73e00a4a1743dbef2b031ec8289aa89aefa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1b436e07b1e0db2153ee0d3cf664924604629f6f',
+  'angle_revision': '5ec560fb8c75b408dcf6b87858f4d007051560eb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9c946ee143640ec431d6eddd1ff9d46239d08770',
+  'devtools_frontend_revision': '0ee96f1137699f04c3db626792d5b5d07d5fea10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -520,12 +520,12 @@ deps = {
   },
 
   'src/ios/third_party/earl_grey2/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '3f5086309f486b6be45f25954415417415280415',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'e8573af9803f1b393a1ddb07b779f882cf947036',
       'condition': 'checkout_ios',
   },
 
     'src/ios/third_party/edo/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '97121c64019fa0e8bfbc8254e3ccb5572c500746',
+      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + 'e8a984232246078667bfb2699494bc0fc0b363fb',
       'condition': 'checkout_ios',
   },
 
@@ -901,7 +901,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'cc29098042868c6b833efa40c09762f8c4be326b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '02ffb6f47a212714e68e34028d6bc23235f43f3c',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd41c2a6b8aeb8a2bfec29689c68cba79638d902a',
+    Var('webrtc_git') + '/src.git' + '@' + 'edd7f9e94d43312ee839e7bed9acc5d8eda7ae81',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9c00c7f418c4b66663a8743b11107df81810a265',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@80297a032922dd427a77af0bca375d00f0a4072c',
     'condition': 'checkout_src_internal',
   },
 

@@ -158,10 +158,6 @@ const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini usb mounting for unsupported devices.
-const base::Feature kCrostiniUsbAllowUnsupported{
-    "CrostiniUsbAllowUnsupported", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables the new WebUI Crostini upgrader.
 const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -232,6 +228,10 @@ const base::Feature kExoOrdinalMotion{"ExoOrdinalMotion",
 // Enable or disable pointer lock for Crostini windows.
 const base::Feature kExoPointerLock{"ExoPointerLock",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the camera folder handling in files app.
+const base::Feature kFilesCameraFolder{"FilesCameraFolder",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -372,11 +372,6 @@ const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kOobeScreensPriority{"OobeScreensPriority",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether to enable OS Settings fuzzy search, and disable search using
-// exact string matching.
-const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables a unique URL for each path in CrOS settings.
 // This allows deep linking to individual settings, i.e. in settings search.
 const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
@@ -446,8 +441,8 @@ const base::Feature kQuickAnswersTranslation{"QuickAnswersTranslation",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the PIN auto submit feature is enabled.
-const base::Feature kQuickUnlockPinAutosubmit{
-    "QuickUnlockPinAutosubmit", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kQuickUnlockPinAutosubmit{"QuickUnlockPinAutosubmit",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1104164) - Remove this once most
 // users have their preferences backfilled.
@@ -575,10 +570,6 @@ const base::Feature kUseSearchClickForRightClick{
 // Enable or disable bordered key for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable or disable resizable floating virtual keyboard on Chrome OS.
-const base::Feature kVirtualKeyboardFloatingResizable{
-    "VirtualKeyboardFloatingResizable", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable syncing of Wi-Fi configurations between
 // ChromeOS and a connected Android phone.

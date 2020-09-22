@@ -3450,10 +3450,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
-    {"enable-cros-virtual-keyboard-floating-resizable",
-     flag_descriptions::kVirtualKeyboardFloatingResizableName,
-     flag_descriptions::kVirtualKeyboardFloatingResizableDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardFloatingResizable)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -3606,10 +3602,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-gpu-support", flag_descriptions::kCrostiniGpuSupportName,
      flag_descriptions::kCrostiniGpuSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniGpuSupport)},
-    {"crostini-usb-allow-unsupported",
-     flag_descriptions::kCrostiniUsbAllowUnsupportedName,
-     flag_descriptions::kCrostiniUsbAllowUnsupportedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbAllowUnsupported)},
     {"disable-camera-frame-rotation-at-source",
      flag_descriptions::kDisableCameraFrameRotationAtSourceName,
      flag_descriptions::kDisableCameraFrameRotationAtSourceDescription, kOsCrOS,
@@ -3617,6 +3609,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-app-copy-image", flag_descriptions::kFilesAppCopyImageName,
      flag_descriptions::kFilesAppCopyImageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFilesAppCopyImage)},
+    {"files-camera-folder", flag_descriptions::kFilesCameraFolderName,
+     flag_descriptions::kFilesCameraFolderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesCameraFolder)},
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
@@ -5848,9 +5843,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"split-settings-sync", flag_descriptions::kSplitSettingsSyncName,
      flag_descriptions::kSplitSettingsSyncDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettingsSync)},
-    {"new-os-settings-search", flag_descriptions::kNewOsSettingsSearchName,
-     flag_descriptions::kNewOsSettingsSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kNewOsSettingsSearch)},
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
@@ -6415,13 +6407,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
-#endif
-
-#if defined(OS_WIN)
-    {"use-serial-bus-enumerator",
-     flag_descriptions::kUseSerialBusEnumeratorName,
-     flag_descriptions::kUseSerialBusEnumeratorDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kUseSerialBusEnumerator)},
 #endif
 
 #if defined(OS_CHROMEOS)

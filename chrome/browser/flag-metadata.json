@@ -697,11 +697,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "crostini-usb-allow-unsupported",
-    "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "crostini-use-buster-image",
     "owners": [ "davidmunro@google.com", "benwells" ],
     "expiry_milestone": 86
@@ -2481,6 +2476,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "files-camera-folder",
+    "owners": [ "wtlee", "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "files-filters-in-recents",
     "owners": [ "fukino", "weifangsun" ],
     "expiry_milestone": 90
@@ -3134,11 +3134,6 @@
     "name": "new-content-suggestions-feed",
     "owners": [ "adamta", "sczs", "gogerald", "bling-flags" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "new-os-settings-search",
-    "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
-    "expiry_milestone": 86
   },
   {
     "name": "new-shortcut-mapping",
@@ -4168,8 +4163,8 @@
   },
   {
     "name": "smbfs-file-shares",
-    "owners": [ "amistry", "dats" ],
-    "expiry_milestone": 86
+    "owners": [ "simmonsjosh@google.com", "dats" ],
+    "expiry_milestone": 90
   },
   {
     "name": "smooth-scrolling",
@@ -4509,11 +4504,6 @@
     "name": "use-search-click-for-right-click",
     "owners": [ "khorimoto", "zentaro" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "use-serial-bus-enumerator",
-    "owners": [ "reillyg" ],
-    "expiry_milestone": 89
   },
   {
     "name": "use-sync-sandbox",

@@ -1452,11 +1452,6 @@ const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
     "New implementation of tabstrip animations.";
 
-const char kNewOsSettingsSearchName[] = "New OS Settings Search";
-const char kNewOsSettingsSearchDescription[] =
-    "Enables New OS Settings search with fuzzy matching, and disables the old "
-    "OS settings search using exact string matching.";
-
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on shelf app icons and "
@@ -3436,11 +3431,6 @@ const char kUseAngleD3D11[] = "D3D11";
 const char kUseAngleD3D9[] = "D3D9";
 const char kUseAngleD3D11on12[] = "D3D11on12";
 
-const char kUseSerialBusEnumeratorName[] = "Use system serial port enumerator";
-const char kUseSerialBusEnumeratorDescription[] =
-    "Use the system-supplied enumerator for serial port devices instead of "
-    "enumerating devices implementing the COM port interface.";
-
 const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 const char kUseWinrtMidiApiDescription[] =
     "Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or "
@@ -3683,11 +3673,6 @@ const char kCrostiniUseBusterImageDescription[] =
 
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
-
-const char kCrostiniUsbAllowUnsupportedName[] =
-    "Crostini Usb Allow Unsupported";
-const char kCrostiniUsbAllowUnsupportedDescription[] =
-    "Allow mounting unsupported Usb devices in Crostini. At your own risk. ";
 
 const char kCrostiniWebUIUpgraderName[] = "Crostini WebUI Upgrader";
 const char kCrostiniWebUIUpgraderDescription[] =
@@ -4047,6 +4032,12 @@ const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =
     "Enables the Files App to copy images selected to the system clipboard";
 
+const char kFilesCameraFolderName[] =
+    "Enable Camera folder handling in Files App";
+const char kFilesCameraFolderDescription[] =
+    "Enables the Files App to display Camera folder with i18n name and make it "
+    "nonmodifiable";
+
 const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";
@@ -4384,11 +4375,6 @@ const char kVaapiWebPImageDecodeAccelerationDescription[] =
 const char kVirtualKeyboardBorderedKeyName[] = "Virtual Keyboard Bordered Key";
 const char kVirtualKeyboardBorderedKeyDescription[] =
     "Show virtual keyboard with bordered key";
-
-const char kVirtualKeyboardFloatingResizableName[] =
-    "Virtual Keyboard Resizable Mode";
-const char kVirtualKeyboardFloatingResizableDescription[] =
-    "Show virtual keyboard with resizable floating mode";
 
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] =

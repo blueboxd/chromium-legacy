@@ -14,8 +14,13 @@ source_set("internal") {
     "proto_conversions.cc",
     "proto_conversions.h",
     "store.h",
+    "tutorial_fetcher.cc",
+    "tutorial_fetcher.h",
     "tutorial_group.cc",
     "tutorial_group.h",
+    "tutorial_manager.h",
+    "tutorial_manager_impl.cc",
+    "tutorial_manager_impl.h",
     "tutorial_service_impl.cc",
     "tutorial_service_impl.h",
     "tutorial_store.cc",
@@ -29,6 +34,7 @@ source_set("internal") {
     "//chrome/browser/video_tutorials:public",
     "//chrome/browser/video_tutorials/proto",
     "//components/leveldb_proto",
+    "//content/public/browser",
   ]
 
   if (is_android) {
@@ -87,7 +93,9 @@ source_set("unit_tests") {
   sources = [
     "config_unittest.cc",
     "proto_conversions_unittest.cc",
+    "tutorial_fetcher_unittest.cc",
     "tutorial_group_unittest.cc",
+    "tutorial_manager_impl_unittest.cc",
     "tutorial_store_unittest.cc",
   ]
 
@@ -100,6 +108,8 @@ source_set("unit_tests") {
     "//chrome/browser/video_tutorials/test:test_lib",
     "//components/leveldb_proto",
     "//components/leveldb_proto:test_support",
+    "//components/prefs:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -55,6 +55,7 @@ public class Tab {
     private Profile.DownloadCallbackClientImpl mDownloadCallbackClient;
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private NewTabCallback mNewTabCallback;
+    private final ObserverList<ScrollOffsetCallback> mScrollOffsetCallbacks;
     // Id from the remote side.
     private final int mId;
 
@@ -65,6 +66,7 @@ public class Tab {
         mFindInPageController = null;
         mMediaCaptureController = null;
         mCallbacks = null;
+        mScrollOffsetCallbacks = null;
         mId = 0;
     }
 
@@ -79,6 +81,7 @@ public class Tab {
         }
 
         mCallbacks = new ObserverList<TabCallback>();
+        mScrollOffsetCallbacks = new ObserverList<ScrollOffsetCallback>();
         mNavigationController = NavigationController.create(mImpl);
         mFindInPageController = new FindInPageController(mImpl);
         mMediaCaptureController = new MediaCaptureController(mImpl);
@@ -351,6 +354,48 @@ public class Tab {
         ThreadCheck.ensureOnUiThread();
         throwIfDestroyed();
         mCallbacks.removeObserver(callback);
+    }
+
+    /**
+     * Registers {@link callback} to be notified when the scroll offset changes. <b>WARNING:</b>
+     * adding a {@link ScrollOffsetCallback} impacts performance, ensure
+     * {@link ScrollOffsetCallback} are only installed when needed. See {@link ScrollOffsetCallback}
+     * for more details.
+     *
+     * @param callback The ScrollOffsetCallback to notify
+     *
+     * @since 87
+     */
+    public void registerScrollOffsetCallback(@NonNull ScrollOffsetCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        throwIfDestroyed();
+        if (WebLayer.getSupportedMajorVersionInternal() < 87) {
+            throw new UnsupportedOperationException();
+        }
+        if (mScrollOffsetCallbacks.isEmpty()) {
+            try {
+                mImpl.setScrollOffsetsEnabled(true);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+        mScrollOffsetCallbacks.addObserver(callback);
+    }
+
+    public void unregisterScrollOffsetCallback(@NonNull ScrollOffsetCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        throwIfDestroyed();
+        if (WebLayer.getSupportedMajorVersionInternal() < 87) {
+            throw new UnsupportedOperationException();
+        }
+        mScrollOffsetCallbacks.removeObserver(callback);
+        if (mScrollOffsetCallbacks.isEmpty()) {
+            try {
+                mImpl.setScrollOffsetsEnabled(false);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
     }
 
     /**
@@ -742,20 +787,6 @@ public class Tab {
         }
 
         @Override
-        public void onCloseTab() {
-            StrictModeWorkaround.apply();
-
-            // Prior to 84 this method was used to signify that the embedder should take action to
-            // close the Tab; 84+ it's deprecated and no longer sent..
-            assert WebLayer.getSupportedMajorVersionInternal() < 84;
-
-            // This should only be hit if setNewTabCallback() has been called with a non-null
-            // value.
-            assert mNewTabCallback != null;
-            mNewTabCallback.onCloseTab();
-        }
-
-        @Override
         public void onTabDestroyed() {
             // Prior to 87 this was called *before* onTabRemoved(). Post 87 this is called after
             // onTabRemoved(). onTabRemoved() needs the Tab to be registered, so unregisterTab()
@@ -833,6 +864,14 @@ public class Tab {
             StrictModeWorkaround.apply();
             for (TabCallback callback : mCallbacks) {
                 callback.onScrollNotification(notificationType, currentScrollRatio);
+            }
+        }
+
+        @Override
+        public void onVerticalScrollOffsetChanged(int value) {
+            StrictModeWorkaround.apply();
+            for (ScrollOffsetCallback callback : mScrollOffsetCallbacks) {
+                callback.onVerticalScrollOffsetChanged(value);
             }
         }
     }

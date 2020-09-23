@@ -11,10 +11,18 @@
  */
 
 /**
+ * Type of SystemDataProviderInterface.ObserveCpuUsage function.
+ * @typedef {!function(!CpuUsageObserver): !Promise}
+ */
+export let ObserveCpuUsageFunction;
+
+/**
  * Type alias for the SystemDataProviderInterface.
  * TODO(zentaro): Replace with a real mojo type when implemented.
  * @typedef {{
- *   getSystemInfo: !function(): !Promise<!SystemInfo>
+ *   getBatteryInfo: !function(): !Promise<!BatteryInfo>,
+ *   getSystemInfo: !function(): !Promise<!SystemInfo>,
+ *   observeCpuUsage: !ObserveCpuUsageFunction,
  * }}
  */
 export let SystemDataProviderInterface;
@@ -47,3 +55,30 @@ export let VersionInfo;
  * }}
  */
 export let SystemInfo;
+
+/**
+ * Type alias for BatteryInfo.
+ * @typedef {{
+ *   charge_full_design_milliamp_hours: number,
+ *   manufacturer: string,
+ * }}
+ */
+export let BatteryInfo;
+
+/**
+ * Type alias for CpuUsageObserver.
+ * @typedef {{
+ *   onCpuUsageUpdated: !function(!CpuUsage),
+ * }}
+ */
+export let CpuUsageObserver;
+
+/**
+ * Type alias for CpuUsage.
+ * @typedef {{
+ *   cpu_temp_degrees_celcius: number,
+ *   percent_usage_system: number,
+ *   percent_usage_user: number,
+ * }}
+ */
+export let CpuUsage;

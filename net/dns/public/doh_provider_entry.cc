@@ -113,6 +113,13 @@ const DohProviderEntry::List& DohProviderEntry::GetList() {
                            "privacy" /* privacy_policy */,
                            true /* display_globally */,
                            {} /* display_countries */),
+      new DohProviderEntry(
+          "GoogleDns64", base::nullopt /* provider_id_for_histogram */,
+          {"2001:4860:4860::64", "2001:4860:4860::6464"},
+          {"dns64.dns.google"} /* dns_over_tls_hostnames */,
+          "https://dns64.dns.google/dns-query{?dns}", "" /* ui_name */,
+          "" /* privacy_policy */, false /* display_globally */,
+          {} /* display_countries */),
       new DohProviderEntry("Iij", DohProviderIdForHistogram::kIij,
                            {} /* ip_strs */, {} /* dns_over_tls_hostnames */,
                            "https://public.dns.iij.jp/dns-query",
@@ -120,6 +127,12 @@ const DohProviderEntry::List& DohProviderEntry::GetList() {
                            "https://public.dns.iij.jp/" /* privacy_policy */,
                            false /* display_globally */,
                            {"JP"} /* display_countries */),
+      new DohProviderEntry(
+          "NextDns", DohProviderIdForHistogram::kNextDns, {} /* ip_strs */,
+          {} /* dns_over_tls_hostnames */, "https://chromium.dns.nextdns.io",
+          "NextDNS" /* ui_name */,
+          "https://nextdns.io/privacy" /* privacy_policy */,
+          false /* display_globally */, {"US"} /* display_countries */),
       new DohProviderEntry(
           "OpenDNS", base::nullopt /* provider_id_for_histogram */,
           {"208.67.222.222", "208.67.220.220", "2620:119:35::35",

@@ -679,13 +679,6 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
                         << Br{} << form;
   }
 
-  // TODO(crbug.com/801698): handle PROBABLY_FORM_SUBMITTED.
-  if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED &&
-      !base::FeatureList::IsEnabled(
-          features::kAutofillSaveOnProbablySubmitted)) {
-    return;
-  }
-
   // Always upload page language metrics.
   LogLanguageMetrics(client_->GetLanguageState());
 
@@ -1436,9 +1429,17 @@ void AutofillManager::OnLoadedServerPredictions(
     return;
 
   // Parse and store the server predictions.
-  FormStructure::ParseApiQueryResponse(std::move(response), queried_forms,
-                                       signatures,
-                                       form_interactions_ukm_logger_.get());
+  if (base::FeatureList::IsEnabled(features::kAutofillUseApi)) {
+    // Parse response from API.
+    FormStructure::ParseApiQueryResponse(std::move(response), queried_forms,
+                                         signatures,
+                                         form_interactions_ukm_logger_.get());
+  } else {
+    // Parse response from legacy server.
+    FormStructure::ParseQueryResponse(std::move(response), queried_forms,
+                                      signatures,
+                                      form_interactions_ukm_logger_.get());
+  }
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.

@@ -14,6 +14,27 @@
 
 import pickle
 
+
+class BackwardCompatibilityChecker(object):
+  """Used for memoization while recursively checking two type definitions for
+  backward-compatibility."""
+
+  def __init__(self):
+    self._cache = {}
+
+  def IsBackwardCompatible(self, new_kind, old_kind):
+    key = (new_kind, old_kind)
+    result = self._cache.get(key)
+    if result is None:
+      # Assume they're compatible at first to effectively ignore recursive
+      # checks between these types, e.g. if both kinds are a struct or union
+      # that references itself in a field.
+      self._cache[key] = True
+      result = new_kind.IsBackwardCompatible(old_kind, self)
+      self._cache[key] = result
+    return result
+
+
 # We use our own version of __repr__ when displaying the AST, as the
 # AST currently doesn't capture which nodes are reference (e.g. to
 # types) and which nodes are definitions. This allows us to e.g. print
@@ -114,6 +135,10 @@ class Kind(object):
     # during a subsequent run of the parser.
     return hash((self.spec, self.parent_kind))
 
+  # pylint: disable=unused-argument
+  def IsBackwardCompatible(self, rhs, checker):
+    return self == rhs
+
 
 class ReferenceKind(Kind):
   """ReferenceKind represents pointer and handle types.
@@ -194,6 +219,10 @@ class ReferenceKind(Kind):
 
   def __hash__(self):
     return hash((super(ReferenceKind, self).__hash__(), self.is_nullable))
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return (super(ReferenceKind, self).IsBackwardCompatible(rhs, checker)
+            and self.is_nullable == rhs.is_nullable)
 
 
 # Initialize the set of primitive types. These can be accessed by clients.
@@ -376,14 +405,11 @@ class UnionField(Field):
   pass
 
 
-def _IsFieldBackwardCompatible(new_field, old_field):
+def _IsFieldBackwardCompatible(new_field, old_field, checker):
   if (new_field.min_version or 0) != (old_field.min_version or 0):
     return False
 
-  if isinstance(new_field.kind, (Enum, Struct, Union)):
-    return new_field.kind.IsBackwardCompatible(old_field.kind)
-
-  return new_field.kind == old_field.kind
+  return checker.IsBackwardCompatible(new_field.kind, old_field.kind)
 
 
 class Struct(ReferenceKind):
@@ -458,7 +484,7 @@ class Struct(ReferenceKind):
     for constant in self.constants:
       constant.Stylize(stylizer)
 
-  def IsBackwardCompatible(self, older_struct):
+  def IsBackwardCompatible(self, older_struct, checker):
     """This struct is backward-compatible with older_struct if and only if all
     of the following conditions hold:
       - Any newly added field is tagged with a [MinVersion] attribute specifying
@@ -497,7 +523,7 @@ class Struct(ReferenceKind):
       old_field = old_fields[ordinal]
       if (old_field.min_version or 0) > max_old_min_version:
         max_old_min_version = old_field.min_version
-      if not _IsFieldBackwardCompatible(new_field, old_field):
+      if not _IsFieldBackwardCompatible(new_field, old_field, checker):
         # Type or min-version mismatch between old and new versions of the same
         # ordinal field.
         return False
@@ -591,7 +617,7 @@ class Union(ReferenceKind):
     for field in self.fields:
       field.Stylize(stylizer)
 
-  def IsBackwardCompatible(self, older_union):
+  def IsBackwardCompatible(self, older_union, checker):
     """This union is backward-compatible with older_union if and only if all
     of the following conditions hold:
       - Any newly added field is tagged with a [MinVersion] attribute specifying
@@ -624,7 +650,7 @@ class Union(ReferenceKind):
       if not new_field:
         # A field was removed, which is not OK.
         return False
-      if not _IsFieldBackwardCompatible(new_field, old_field):
+      if not _IsFieldBackwardCompatible(new_field, old_field, checker):
         # An field changed its type or MinVersion, which is not OK.
         return False
       old_min_version = old_field.min_version or 0
@@ -704,6 +730,10 @@ class Array(ReferenceKind):
   def __hash__(self):
     return id(self)
 
+  def IsBackwardCompatible(self, rhs, checker):
+    return (isinstance(rhs, Array) and self.length == rhs.length
+            and checker.IsBackwardCompatible(self.kind, rhs.kind))
+
 
 class Map(ReferenceKind):
   """A map.
@@ -748,6 +778,11 @@ class Map(ReferenceKind):
   def __hash__(self):
     return id(self)
 
+  def IsBackwardCompatible(self, rhs, checker):
+    return (isinstance(rhs, Map)
+            and checker.IsBackwardCompatible(self.key_kind, rhs.key_kind)
+            and checker.IsBackwardCompatible(self.value_kind, rhs.value_kind))
+
 
 class PendingRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -768,6 +803,10 @@ class PendingRemote(ReferenceKind):
 
   def __hash__(self):
     return id(self)
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return (isinstance(rhs, PendingRemote)
+            and checker.IsBackwardCompatible(self.kind, rhs.kind))
 
 
 class PendingReceiver(ReferenceKind):
@@ -790,6 +829,10 @@ class PendingReceiver(ReferenceKind):
   def __hash__(self):
     return id(self)
 
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(rhs, PendingReceiver) and checker.IsBackwardCompatible(
+        self.kind, rhs.kind)
+
 
 class PendingAssociatedRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -810,6 +853,11 @@ class PendingAssociatedRemote(ReferenceKind):
 
   def __hash__(self):
     return id(self)
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(rhs,
+                      PendingAssociatedRemote) and checker.IsBackwardCompatible(
+                          self.kind, rhs.kind)
 
 
 class PendingAssociatedReceiver(ReferenceKind):
@@ -832,6 +880,11 @@ class PendingAssociatedReceiver(ReferenceKind):
   def __hash__(self):
     return id(self)
 
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(
+        rhs, PendingAssociatedReceiver) and checker.IsBackwardCompatible(
+            self.kind, rhs.kind)
+
 
 class InterfaceRequest(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -851,6 +904,10 @@ class InterfaceRequest(ReferenceKind):
 
   def __hash__(self):
     return id(self)
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(rhs, InterfaceRequest) and checker.IsBackwardCompatible(
+        self.kind, rhs.kind)
 
 
 class AssociatedInterfaceRequest(ReferenceKind):
@@ -873,6 +930,11 @@ class AssociatedInterfaceRequest(ReferenceKind):
 
   def __hash__(self):
     return id(self)
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(
+        rhs, AssociatedInterfaceRequest) and checker.IsBackwardCompatible(
+            self.kind, rhs.kind)
 
 
 class Parameter(object):
@@ -1035,7 +1097,7 @@ class Interface(ReferenceKind):
     for constant in self.constants:
       constant.Stylize(stylizer)
 
-  def IsBackwardCompatible(self, older_interface):
+  def IsBackwardCompatible(self, older_interface, checker):
     """This interface is backward-compatible with older_interface if and only
     if all of the following conditions hold:
       - All defined methods in older_interface (when identified by ordinal) have
@@ -1073,8 +1135,8 @@ class Interface(ReferenceKind):
         # A method was removed, which is not OK.
         return False
 
-      if not new_method.param_struct.IsBackwardCompatible(
-          old_method.param_struct):
+      if not checker.IsBackwardCompatible(new_method.param_struct,
+                                          old_method.param_struct):
         # The parameter list is not backward-compatible, which is not OK.
         return False
 
@@ -1087,8 +1149,8 @@ class Interface(ReferenceKind):
         if new_method.response_param_struct is None:
           # A reply was removed from a message, which is not OK.
           return False
-        if not new_method.response_param_struct.IsBackwardCompatible(
-            old_method.response_param_struct):
+        if not checker.IsBackwardCompatible(new_method.response_param_struct,
+                                            old_method.response_param_struct):
           # The new message's reply is not backward-compatible with the old
           # message's reply, which is not OK.
           return False
@@ -1149,6 +1211,11 @@ class AssociatedInterface(ReferenceKind):
 
   def __hash__(self):
     return id(self)
+
+  def IsBackwardCompatible(self, rhs, checker):
+    return isinstance(rhs,
+                      AssociatedInterface) and checker.IsBackwardCompatible(
+                          self.kind, rhs.kind)
 
 
 class EnumField(object):
@@ -1222,7 +1289,8 @@ class Enum(Kind):
       prefix = self.module.GetNamespacePrefix()
     return '%s%s' % (prefix, self.mojom_name)
 
-  def IsBackwardCompatible(self, older_enum):
+  # pylint: disable=unused-argument
+  def IsBackwardCompatible(self, older_enum, checker):
     """This enum is backward-compatible with older_enum if and only if one of
     the following conditions holds:
         - Neither enum is [Extensible] and both have the exact same set of valid

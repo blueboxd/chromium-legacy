@@ -1104,19 +1104,10 @@ void TabImpl::CloseContents(content::WebContents* source) {
   DCHECK(browser_);
 
 #if defined(OS_ANDROID)
-  // Prior to 84 closing tabs was delegated to the embedder. In 84 closing tabs
-  // was changed to be done internally in the implementation, but as this
-  // required changes on the client side as well as in the implementation the
-  // prior flow needs to be preserved when the client is expecting it.
-  if (WebLayerFactoryImplAndroid::GetClientMajorVersion() < 84) {
-    if (new_tab_delegate_)
-      new_tab_delegate_->CloseTab();
-  } else {
-    JNIEnv* env = AttachCurrentThread();
-    Java_TabImpl_handleCloseFromWebContents(env, java_impl_);
-    // The above call resulted in the destruction of this; nothing to do but
-    // return.
-  }
+  JNIEnv* env = AttachCurrentThread();
+  Java_TabImpl_handleCloseFromWebContents(env, java_impl_);
+  // The above call resulted in the destruction of this; nothing to do but
+  // return.
 #else
   browser_->DestroyTab(this);
 #endif
@@ -1181,9 +1172,9 @@ void TabImpl::OnFindResultAvailable(content::WebContents* web_contents) {
 
 #if defined(OS_ANDROID)
 void TabImpl::OnBrowserControlsStateStateChanged(
+    ControlsVisibilityReason reason,
     content::BrowserControlsState state) {
-  SetBrowserControlsConstraint(ControlsVisibilityReason::kPostNavigation,
-                               state);
+  SetBrowserControlsConstraint(reason, state);
 }
 
 void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
@@ -1204,10 +1195,6 @@ void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
         current_browser_controls_visibility_constraint_ !=
             content::BROWSER_CONTROLS_STATE_HIDDEN);
   }
-}
-
-void TabImpl::OnForceBrowserControlsShown() {
-  Java_TabImpl_onForceBrowserControlsShown(AttachCurrentThread(), java_impl_);
 }
 
 #endif

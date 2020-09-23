@@ -707,7 +707,6 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(
              omnibox::kOmniboxShortBookmarkSuggestions) ||
-         base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles) ||
          base::FeatureList::IsEnabled(omnibox::kRichAutocompletion);
 }
 
@@ -731,6 +730,10 @@ bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {
 
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
+}
+
+bool OmniboxFieldTrial::IsRefinedFocusStateEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxRefinedFocusState);
 }
 
 bool OmniboxFieldTrial::IsRichAutocompletionEnabled() {

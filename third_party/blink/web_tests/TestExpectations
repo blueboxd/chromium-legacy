@@ -1117,7 +1117,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-ins
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/nested-with-composited-and-multicol-crash.html [ Crash ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-padding.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-single-tall-line.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/newmulticol/breaks-3-columns-3.html [ Failure ]
 crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/newmulticol/clipping-overflow-hidden.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/newmulticol/orphans-and-widows-balance.html [ Failure ]
@@ -1332,9 +1331,6 @@ crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ 
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 
-crbug.com/1058822 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-alpha.html [ Failure ]
-crbug.com/1058822 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque.html [ Failure ]
-crbug.com/1058822 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque-cross-origin.sub.html [ Failure ]
 crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Failure ]
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
 

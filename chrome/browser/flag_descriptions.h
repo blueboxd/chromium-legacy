@@ -876,9 +876,6 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
-extern const char kOmniboxAutocompleteTitlesName[];
-extern const char kOmniboxAutocompleteTitlesDescription[];
-
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
@@ -1918,6 +1915,9 @@ extern const char kOmniboxPedalSuggestionsDescription[];
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];
 
+extern const char kOmniboxRefinedFocusStateName[];
+extern const char kOmniboxRefinedFocusStateDescription[];
+
 extern const char kPasswordsWeaknessCheckName[];
 extern const char kPasswordsWeaknessCheckDescription[];
 
@@ -2305,6 +2305,9 @@ extern const char kEnableZeroStateSuggestionsDescription[];
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
 
+extern const char kEnhancedDeskAnimationsName[];
+extern const char kEnhancedDeskAnimationsDescription[];
+
 extern const char kEnterpriseReportingInChromeOSName[];
 extern const char kEnterpriseReportingInChromeOSDescription[];
 
@@ -2461,6 +2464,9 @@ extern const char kReduceDisplayNotificationsDescription[];
 
 extern const char kReleaseNotesNotificationName[];
 extern const char kReleaseNotesNotificationDescription[];
+
+extern const char kReleaseNotesNotificationAllChannelsName[];
+extern const char kReleaseNotesNotificationAllChannelsDescription[];
 
 extern const char kScanningUIName[];
 extern const char kScanningUIDescription[];

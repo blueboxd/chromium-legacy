@@ -116,11 +116,6 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to autocomplete bookmark, history, and document suggestions when
-// the user input is a prefix of their titles, as opposed to their URLs.
-const base::Feature kAutocompleteTitles{"OmniboxAutocompleteTitles",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Returns whether IsInstantExtendedAPIEnabled should be ignored when deciding
 // the number of Google-provided search suggestions.
 const base::Feature kOmniboxDisableInstantExtendedLimit{
@@ -347,6 +342,10 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 // Feature used to enable the keyword search button.
 const base::Feature kOmniboxKeywordSearchButton{
     "OmniboxKeywordSearchButton", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables new UI changes indicating focus and hover states.
+const base::Feature kOmniboxRefinedFocusState{
+    "OmniboxRefinedFocusState", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using an Android RecyclerView to render the suggestions dropdown
 // instead of a ListView.

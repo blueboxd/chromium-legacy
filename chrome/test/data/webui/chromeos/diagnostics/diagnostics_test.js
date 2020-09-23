@@ -7,10 +7,12 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://diagnostics/diagnostics_app.js';
 
 import {SystemDataProviderInterface} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeSystemInfo} from 'chrome://diagnostics/fake_data.js';
+import {fakeBatteryInfo, fakeCpuUsage, fakeSystemInfo} from 'chrome://diagnostics/fake_data.js';
 import {FakeMethodResolver} from 'chrome://diagnostics/fake_method_resolver.js';
+import {FakeObservables} from 'chrome://diagnostics/fake_observables.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
 import {getSystemDataProvider, setSystemDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
@@ -85,57 +87,9 @@ suite('DiagnosticsAppTest', () => {
     const cpu = page.$$('#cpuCard');
     assertTrue(!!cpu);
 
-    // Verify the battery health card is in the page.
-    const batteryHealth = page.$$('#batteryHealthCard');
-    assertTrue(!!batteryHealth);
-
     // Verify the battery status card is in the page.
     const batteryStatus = page.$$('#batteryStatusCard');
     assertTrue(!!batteryStatus);
-  });
-});
-
-suite('BatteryHealthCardTest', () => {
-  /** @type {?HTMLElement} */
-  let batteryHealthElement = null;
-
-  /** @type {?FakeSystemDataProvider} */
-  let provider = null;
-
-  suiteSetup(() => {
-    provider = new FakeSystemDataProvider();
-    setSystemDataProviderForTesting(provider);
-  });
-
-  setup(function() {
-    PolymerTest.clearBody();
-  });
-
-  teardown(function() {
-    if (batteryHealthElement) {
-      batteryHealthElement.remove();
-    }
-    batteryHealthElement = null;
-    provider = null;
-  });
-
-  function initializeBatteryHealthCard() {
-    assertFalse(!!batteryHealthElement);
-
-    // Add the battery health card to the DOM.
-    batteryHealthElement = document.createElement('battery-health-card');
-    assertTrue(!!batteryHealthElement);
-    document.body.appendChild(batteryHealthElement);
-
-    return flushTasks();
-  }
-
-  test('BatteryHealthCardPopulated', () => {
-    return initializeBatteryHealthCard().then(() => {
-      // TODO(zentaro): Update when strings are finalized.
-      assertEquals(
-          'Battery Health', batteryHealthElement.$$('#cardTitle').textContent);
-    });
   });
 });
 
@@ -163,8 +117,15 @@ suite('BatteryStatusCardTest', () => {
     provider = null;
   });
 
-  function initializeBatteryStatusCard() {
+  /**
+   * @param {!BatteryInfo} batteryInfo
+   * @return {!Promise}
+   */
+  function initializeBatteryStatusCard(batteryInfo) {
     assertFalse(!!batteryStatusElement);
+
+    // Initialize the fake data.
+    provider.setFakeBatteryInfo(batteryInfo);
 
     // Add the battery status card to the DOM.
     batteryStatusElement = document.createElement('battery-status-card');
@@ -174,11 +135,14 @@ suite('BatteryStatusCardTest', () => {
     return flushTasks();
   }
 
-  test('BatterStatusCardPopulated', () => {
-    return initializeBatteryStatusCard().then(() => {
+  test('BatteryStatusCardPopulated', () => {
+    return initializeBatteryStatusCard(fakeBatteryInfo).then(() => {
       // TODO(zentaro): Update when strings are finalized.
       assertEquals(
           'Battery Status', batteryStatusElement.$$('#cardTitle').textContent);
+      assertEquals(
+          fakeBatteryInfo.manufacturer,
+          batteryStatusElement.$$('#manufacturer').textContent);
     });
   });
 });
@@ -207,8 +171,15 @@ suite('CpuCardTest', () => {
     provider = null;
   });
 
-  function initializeCpuCard() {
+  /**
+   * @param {!CpuUsage} cpuUsage
+   * @return {!Promise}
+   */
+  function initializeCpuCard(cpuUsage) {
     assertFalse(!!cpuElement);
+
+    // Initialize the fake data.
+    provider.setFakeCpuUsage(cpuUsage);
 
     // Add the CPU card to the DOM.
     cpuElement = document.createElement('cpu-card');
@@ -219,9 +190,19 @@ suite('CpuCardTest', () => {
   }
 
   test('CpuCardPopulated', () => {
-    return initializeCpuCard().then(() => {
+    return initializeCpuCard(fakeCpuUsage).then(() => {
       // TODO(zentaro): Update when strings are finalized.
       assertEquals('CPU', cpuElement.$$('#cardTitle').textContent);
+
+      assertEquals(
+          fakeCpuUsage[0].cpu_temp_degrees_celcius.toString(),
+          cpuElement.$$('#cpuTemp').textContent);
+      assertEquals(
+          fakeCpuUsage[0].percent_usage_user.toString(),
+          cpuElement.$$('#cpuUsageUser').textContent);
+      assertEquals(
+          fakeCpuUsage[0].percent_usage_system.toString(),
+          cpuElement.$$('#cpuUsageSystem').textContent);
     });
   });
 });
@@ -334,6 +315,36 @@ suite('FakeMojoProviderTest', () => {
   });
 });
 
+suite('FakeObservablesTest', () => {
+  /** @type {?FakeObservables} */
+  let observables = null;
+
+  setup(() => {
+    observables = new FakeObservables();
+  });
+
+  teardown(() => {
+    observables = null;
+  });
+
+  test('RegisterSimpleObservable', () => {
+    observables.register('ObserveFoo_OnFooUpdated');
+    /** @type !Array<string> */
+    const expected = ['bar'];
+    observables.setObservableData('ObserveFoo_OnFooUpdated', expected);
+
+    let resolver = new PromiseResolver();
+    observables.observe('ObserveFoo_OnFooUpdated', (foo) => {
+      assertEquals(expected[0], foo);
+      resolver.resolve();
+    });
+
+    observables.trigger('ObserveFoo_OnFooUpdated');
+    return resolver.promise;
+  });
+});
+
+
 suite('FakeSystemDataProviderTest', () => {
   /** @type {?FakeSystemDataProvider} */
   let provider = null;
@@ -371,5 +382,25 @@ suite('FakeSystemDataProviderTest', () => {
     return provider.getSystemInfo().then((systemInfo) => {
       assertDeepEquals(expected, systemInfo);
     });
+  });
+
+  test('GetBatteryInfo', () => {
+    provider.setFakeBatteryInfo(fakeBatteryInfo);
+    return provider.getBatteryInfo().then((batteryInfo) => {
+      assertDeepEquals(fakeBatteryInfo, batteryInfo);
+    });
+  });
+
+  test('ObserveCpuUsage', () => {
+    provider.setFakeCpuUsage(fakeCpuUsage);
+
+    /** @type {!CpuUsageObserver} */
+    const cpuObserverRemote = {
+      onCpuUsageUpdated: (cpuUsage) => {
+        assertDeepEquals(fakeCpuUsage[0], cpuUsage);
+      }
+    };
+
+    return provider.observeCpuUsage(cpuObserverRemote);
   });
 });

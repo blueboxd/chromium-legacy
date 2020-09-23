@@ -21,6 +21,7 @@ class ToggleImageButton;
 namespace ash {
 
 class HoldingSpaceItem;
+class HoldingSpaceItemViewDelegate;
 
 namespace tray {
 class RoundedImageView;
@@ -33,7 +34,8 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView,
  public:
   METADATA_HEADER(HoldingSpaceItemChipView);
 
-  explicit HoldingSpaceItemChipView(const HoldingSpaceItem* item);
+  HoldingSpaceItemChipView(HoldingSpaceItemViewDelegate* delegate,
+                           const HoldingSpaceItem* item);
   HoldingSpaceItemChipView(const HoldingSpaceItemChipView&) = delete;
   HoldingSpaceItemChipView& operator=(const HoldingSpaceItemChipView&) = delete;
   ~HoldingSpaceItemChipView() override;
@@ -46,7 +48,7 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView,
 
  private:
   void AddPinButton();
-  void Update();
+  void UpdateImage();
   void UpdatePin();
 
   tray::RoundedImageView* image_ = nullptr;
@@ -54,6 +56,8 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView,
   views::ToggleImageButton* pin_ = nullptr;
 
   std::unique_ptr<HoldingSpaceImage::Subscription> image_subscription_;
+
+  base::WeakPtrFactory<HoldingSpaceItemChipView> weak_factory_{this};
 };
 
 }  // namespace ash

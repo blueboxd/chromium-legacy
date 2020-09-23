@@ -23,7 +23,6 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
@@ -31,16 +30,18 @@
 
 namespace ash {
 
-HoldingSpaceItemChipView::HoldingSpaceItemChipView(const HoldingSpaceItem* item)
-    : HoldingSpaceItemView(item) {
+HoldingSpaceItemChipView::HoldingSpaceItemChipView(
+    HoldingSpaceItemViewDelegate* delegate,
+    const HoldingSpaceItem* item)
+    : HoldingSpaceItemView(delegate, item) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kHoldingSpaceChipPadding), kHoldingSpaceChipChildSpacing));
 
   SetPreferredSize(gfx::Size(kHoldingSpaceChipWidth, kHoldingSpaceChipHeight));
 
-  image_ =
-      AddChildView(std::make_unique<tray::RoundedImageView>(kTrayItemSize / 2));
+  image_ = AddChildView(
+      std::make_unique<tray::RoundedImageView>(kHoldingSpaceChipIconSize / 2));
 
   label_ = AddChildView(std::make_unique<views::Label>(item->text()));
   label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
@@ -54,23 +55,19 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(const HoldingSpaceItem* item)
   SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
-      kHoldingSpaceChipCornerRadius));
+      kHoldingSpaceCornerRadius));
 
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetInkDropVisibleOpacity(
       ShelfConfig::Get()->GetInkDropRippleAttributes().inkdrop_opacity);
   SetNotifyEnterExitOnChild(true);
 
-  // Ink drop layers should be clipped to match the corner radius of this view.
-  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                kHoldingSpaceChipCornerRadius);
-
   // Subscribe to be notified of changes to `item_`'s image.
   image_subscription_ =
       item->image().AddImageSkiaChangedCallback(base::BindRepeating(
-          &HoldingSpaceItemChipView::Update, base::Unretained(this)));
+          &HoldingSpaceItemChipView::UpdateImage, base::Unretained(this)));
 
-  Update();
+  UpdateImage();
 }
 
 HoldingSpaceItemChipView::~HoldingSpaceItemChipView() = default;
@@ -90,15 +87,19 @@ void HoldingSpaceItemChipView::OnMouseEvent(ui::MouseEvent* event) {
 void HoldingSpaceItemChipView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
   DCHECK_EQ(sender, pin_);
-  bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
+  const bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
       HoldingSpaceItem::GetFileBackedItemId(HoldingSpaceItem::Type::kPinnedFile,
                                             item()->file_path()));
-  pin_->SetToggled(!is_item_pinned);
 
+  // Unpinning `item()` may result in the destruction of this view.
+  auto weak_ptr = weak_factory_.GetWeakPtr();
   if (is_item_pinned)
     HoldingSpaceController::Get()->client()->UnpinItem(*item());
   else
     HoldingSpaceController::Get()->client()->PinItem(*item());
+
+  if (weak_ptr)
+    UpdatePin();
 }
 
 void HoldingSpaceItemChipView::AddPinButton() {
@@ -117,7 +118,7 @@ void HoldingSpaceItemChipView::AddPinButton() {
   pin_->SetToggledImage(views::Button::STATE_NORMAL, &pinned_icon);
 }
 
-void HoldingSpaceItemChipView::Update() {
+void HoldingSpaceItemChipView::UpdateImage() {
   image_->SetImage(
       item()->image().image_skia(),
       gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize));
@@ -129,7 +130,7 @@ void HoldingSpaceItemChipView::UpdatePin() {
     return;
   }
 
-  bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
+  const bool is_item_pinned = HoldingSpaceController::Get()->model()->GetItem(
       HoldingSpaceItem::GetFileBackedItemId(HoldingSpaceItem::Type::kPinnedFile,
                                             item()->file_path()));
 

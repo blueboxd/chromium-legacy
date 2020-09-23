@@ -1501,11 +1501,6 @@ const char kOmniboxAssistantVoiceSearchDescription[] =
     "When enabled, use Assistant for omnibox voice query recognition instead of"
     " Android's built-in voice recognition service. Only works on Android.";
 
-const char kOmniboxAutocompleteTitlesName[] = "Omnibox Autocomplete Titles";
-const char kOmniboxAutocompleteTitlesDescription[] =
-    "Allows autocompleting bookmark, history, and document suggestions when the"
-    " user input is a prefix of their titles, as opposed to their URLs.";
-
 const char kOmniboxClobberTriggersContextualWebZeroSuggestName[] =
     "Omnibox Clobber Triggers Contextual Web ZeroSuggest";
 const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
@@ -3350,6 +3345,10 @@ const char kOmniboxKeywordSearchButtonDescription[] =
     "on specific sites from the omnibox. This flag has no effect unless "
     "\"Omnibox suggestion button row\" is also enabled.";
 
+const char kOmniboxRefinedFocusStateName[] = "Omnibox refined focus state UI";
+const char kOmniboxRefinedFocusStateDescription[] =
+    "Enables new changes to the UI indicating focus and hover states.";
+
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
@@ -3980,6 +3979,12 @@ const char kEnableSuggestedFilesDescription[] =
     "Enable Suggested Files feature in Launcher, which will show file "
     "suggestions in the suggestion chips when the launcher is opened";
 
+const char kEnhancedDeskAnimationsName[] =
+    "Enable Enhanced Virtual Desks Animations";
+const char kEnhancedDeskAnimationsDescription[] =
+    "Allows pressing multiple keyboard shortcuts to switch multiple desks, and "
+    "to have touchpad swipes continuously move desks.";
+
 const char kEnterpriseReportingInChromeOSName[] =
     "Enterprise cloud reporting in Chrome OS";
 const char kEnterpriseReportingInChromeOSDescription[] =
@@ -4226,6 +4231,11 @@ const char kReduceDisplayNotificationsDescription[] =
 const char kReleaseNotesNotificationName[] = "Release Notes Notification";
 const char kReleaseNotesNotificationDescription[] =
     "Enables the release notes notification and suggestion chip";
+
+const char kReleaseNotesNotificationAllChannelsName[] =
+    "Release Notes Notification All Channels";
+const char kReleaseNotesNotificationAllChannelsDescription[] =
+    "Enables the release notes notification for all Chrome OS channels";
 
 const char kScanningUIName[] = "Scanning UI";
 const char kScanningUIDescription[] =

@@ -17,8 +17,8 @@ interface ITabClient {
 
   void onRenderProcessGone() = 2;
 
-  // Deprecated in 84.
-  void onCloseTab() = 3;
+  // Removed in 87.
+  // void onCloseTab() = 3;
 
   // Added in M82.
   void showContextMenu(in IObjectWrapper pageUrl, in IObjectWrapper linkUrl,
@@ -43,4 +43,7 @@ interface ITabClient {
   // Added in M85
   void onScrollNotification(
           in int notificationType, in float currentScrollRatio) = 10;
+
+  // Added in M87
+  void onVerticalScrollOffsetChanged(in int offset) = 11;
 }

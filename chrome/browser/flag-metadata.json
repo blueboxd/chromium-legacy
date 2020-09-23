@@ -1569,7 +1569,7 @@
   {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "enable-google-srp-isolated-prerender-nsp",
@@ -2404,6 +2404,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enhanced-desk-animations",
+    "owners": ["sammiequon", "tclaiborne"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enterprise-reporting-in-chromeos",
     "owners": [ "anqing" ],
     "expiry_milestone": 87
@@ -3148,7 +3153,7 @@
   {
     "name": "new-shortcut-mapping",
     "owners": [ "oshima", "afakhry" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "new-tabstrip-animation",
@@ -3296,11 +3301,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "omnibox-autocomplete-titles",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "omnibox-bubble-url-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -3409,6 +3409,11 @@
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-refined-focus-state",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-rich-autocompletion",
@@ -3854,6 +3859,13 @@
     "name": "release-notes-notification",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "release-notes-notification-all-channels",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    // This is required by test teams to verify functionality on dev/beta
+    // channels on devices which have no access to commandline flags.
+    "expiry_milestone": -1
   },
   {
     "name": "reload-sad-tab",

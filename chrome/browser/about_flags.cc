@@ -3815,6 +3815,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxKeywordSearchButtonName,
      flag_descriptions::kOmniboxKeywordSearchButtonDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxKeywordSearchButton)},
+    {"omnibox-refined-focus-state",
+     flag_descriptions::kOmniboxRefinedFocusStateName,
+     flag_descriptions::kOmniboxRefinedFocusStateDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxRefinedFocusState)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
@@ -3822,10 +3826,6 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kDocumentProvider,
          kOmniboxDocumentProviderVariations,
          "OmniboxDocumentProviderNonDogfoodExperiments")},
-    {"omnibox-autocomplete-titles",
-     flag_descriptions::kOmniboxAutocompleteTitlesName,
-     flag_descriptions::kOmniboxAutocompleteTitlesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kAutocompleteTitles)},
     {"omnibox-rich-autocompletion",
      flag_descriptions::kOmniboxRichAutocompletionName,
      flag_descriptions::kOmniboxRichAutocompletionDescription, kOsDesktop,
@@ -5884,6 +5884,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReleaseNotesNotificationName,
      flag_descriptions::kReleaseNotesNotificationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotesNotification)},
+    {"release-notes-notification-all-channels",
+     flag_descriptions::kReleaseNotesNotificationAllChannelsName,
+     flag_descriptions::kReleaseNotesNotificationAllChannelsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kReleaseNotesNotificationAllChannels)},
     {"use-wallpaper-staging-url",
      flag_descriptions::kUseWallpaperStagingUrlName,
      flag_descriptions::kUseWallpaperStagingUrlDescription, kOsCrOS,
@@ -6416,6 +6422,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-holding-space", flag_descriptions::kHoldingSpaceName,
      flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
+
+    {"enhanced-desk-animations", flag_descriptions::kEnhancedDeskAnimationsName,
+     flag_descriptions::kEnhancedDeskAnimationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnhancedDeskAnimations)},
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \

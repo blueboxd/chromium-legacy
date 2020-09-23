@@ -30,6 +30,11 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_CELLULAR_SETUP_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/internet_page/cellular_setup_dialog.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_INTERNET_KNOWN_NETWORKS_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/internet_page/internet_known_networks_page.m.js"
            use_base_dir="false"
@@ -156,11 +161,6 @@
            type="BINDATA" />
   <include name="IDR_OS_SETTINGS_LANGUAGES_PAGE_OS_LANGUAGES_SECTION_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/os_languages_page/os_languages_section.m.js"
-           use_base_dir="false"
-           compress="false"
-           type="BINDATA" />
-    <include name="IDR_OS_SETTINGS_LANGUAGES_PAGE_REMOVE_INPUT_METHOD_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/os_languages_page/remove_input_method_dialog.m.js"
            use_base_dir="false"
            compress="false"
            type="BINDATA" />

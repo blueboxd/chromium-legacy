@@ -17414,6 +17414,7 @@ Called by update_document_policy_enum.py.-->
   <int value="5" label="QUAD9_SECURE"/>
   <int value="6" label="DNS_SB"/>
   <int value="7" label="CZ_NIC"/>
+  <int value="8" label="NEXT_DNS"/>
 </enum>
 
 <enum name="DomainBoundCerts.DBLoadStatus">
@@ -29304,7 +29305,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3538" label="IdentifiabilityStudyReserved3538"/>
   <int value="3539" label="IdentifiabilityStudyReserved3539"/>
   <int value="3540" label="IdentifiabilityStudyReserved3540"/>
-  <int value="3541" label="IdentifiabilityStudyReserved3541"/>
+  <int value="3541" label="V8WheelEvent_DeltaMode_AttributeGetter"/>
   <int value="3542" label="IdentifiabilityStudyReserved3542"/>
   <int value="3543" label="IdentifiabilityStudyReserved3543"/>
   <int value="3544" label="IdentifiabilityStudyReserved3544"/>
@@ -40688,6 +40689,7 @@ from previous Chrome versions.
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
+  <int value="-2112601037" label="OmniboxRefinedFocusState:enabled"/>
   <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
   <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
@@ -40828,6 +40830,7 @@ from previous Chrome versions.
   <int value="-1972312724" label="OfflinePagesLoadSignalCollecting:enabled"/>
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
   <int value="-1971086581" label="print-scaling"/>
+  <int value="-1969636234" label="OmniboxRefinedFocusState:disabled"/>
   <int value="-1967387994" label="ArcEnableApplicationZoomFeature:disabled"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
@@ -40900,6 +40903,7 @@ from previous Chrome versions.
   <int value="-1912999136" label="enable-automatic-password-saving:enabled"/>
   <int value="-1911316813" label="BlockTabUnders:disabled"/>
   <int value="-1911153473" label="enable-easy-signin"/>
+  <int value="-1910305102" label="EnhancedDeskAnimations:enabled"/>
   <int value="-1909983714" label="ExperimentalTabController:disabled"/>
   <int value="-1909702940" label="WebXRARModule:disabled"/>
   <int value="-1909356390"
@@ -41474,6 +41478,7 @@ from previous Chrome versions.
   <int value="-1357655121" label="enable-iframe-based-signin"/>
   <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
   <int value="-1356379431" label="GlobalMediaControlsOverlayControls:enabled"/>
+  <int value="-1355886577" label="ReleaseNotesNotificationAllChannels:enabled"/>
   <int value="-1353865639" label="InteractiveWindowCycleList:disabled"/>
   <int value="-1353714232" label="FilesTransferDetails:enabled"/>
   <int value="-1353195918" label="UseSkiaRenderer:enabled"/>
@@ -42824,6 +42829,7 @@ from previous Chrome versions.
   <int value="21055794" label="OpenXR:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
+  <int value="26945819" label="EnhancedDeskAnimations:disabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="29212695" label="OfflineIndicator:enabled"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
@@ -44044,6 +44050,7 @@ from previous Chrome versions.
   <int value="1305792241" label="SafeBrowsingEnhancedProtection:disabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
+  <int value="1310000273" label="ReleaseNotesNotificationAllChannels:disabled"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
   <int value="1313476409" label="ReportFeedUserActions:disabled"/>

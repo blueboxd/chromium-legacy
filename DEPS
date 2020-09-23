@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '4f973a50bbbc59c19795cea52d33f1c01d388767',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd937502d15b95ef582e2231dab96564f3bdb3fce',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'edd7f9e94d43312ee839e7bed9acc5d8eda7ae81',
+    Var('webrtc_git') + '/src.git' + '@' + 'aac41bd6780a152f51dfae7813d94dcc6f1dad49',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

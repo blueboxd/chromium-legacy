@@ -149,6 +149,12 @@ BubbleDialogModelHost::~BubbleDialogModelHost() {
 }
 
 View* BubbleDialogModelHost::GetInitiallyFocusedView() {
+  // TODO(pbos): Try to prevent uses of GetInitiallyFocusedView() after Close()
+  // and turn this in to a DCHECK for |model_| existence. This should fix
+  // https://crbug.com/1130181 for now.
+  if (!model_)
+    return BubbleDialogDelegateView::GetInitiallyFocusedView();
+
   base::Optional<int> unique_id = model_->initially_focused_field(GetPassKey());
 
   if (!unique_id)
@@ -185,6 +191,11 @@ void BubbleDialogModelHost::Close() {
   // Notify the model of window closing before destroying it (as if
   // Widget::Close)
   model_->OnWindowClosing(GetPassKey());
+
+  // TODO(pbos): Note that this is in place because GridLayout doesn't handle
+  // View removal correctly (keeps stale pointers). This is in place to prevent
+  // UAFs between Widget::Close() and destroying |this|.
+  SetLayoutManager(nullptr);
 
   // TODO(pbos): Consider turning this into for-each-field remove field.
   RemoveAllChildViews(true);

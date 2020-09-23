@@ -76,11 +76,6 @@ extern const char kAutofillSaveCardDismissOnNavigationDescription[];
 extern const char kAutofillSaveCardInfobarEditSupportName[];
 extern const char kAutofillSaveCardInfobarEditSupportDescription[];
 
-// Title and description for the flag to control if prefilled value filter
-// profiles.
-extern const char kAutofillShowAllSuggestionsOnPrefilledFormsName[];
-extern const char kAutofillShowAllSuggestionsOnPrefilledFormsDescription[];
-
 // Title and description for the flag to restrict extraction of formless forms
 // to checkout flows.
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
@@ -472,6 +467,9 @@ extern const char kWebPageTextAccessibilityDescription[];
 
 extern const char kWellKnownChangePasswordName[];
 extern const char kWellKnownChangePasswordDescription[];
+
+extern const char kRestoreGaiaCookiesIfDeletedName[];
+extern const char kRestoreGaiaCookiesIfDeletedDescription[];
 
 // Please add names and descriptions above in alphabetical order.
 

@@ -186,11 +186,6 @@ const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
 const base::Feature kAutofillOffNoServerData{"AutofillOffNoServerData",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, autofill server will override field types with rater
-// consensus data before returning to client.
-const base::Feature kAutofillOverrideWithRaterConsensus{
-    "AutofillOverrideWithRaterConsensus", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If feature is enabled, autofill will be disabled for mixed forms (forms on
 // HTTPS sites that submit over HTTP).
 const base::Feature kAutofillPreventMixedFormsFilling{
@@ -252,12 +247,6 @@ const base::Feature kAutofillSectionUponRedundantNameInfo{
 const base::Feature kAutofillServerCommunication{
     "AutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether autofill suggestions are filtered by field values previously
-// filled by website.
-const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{
-    "AutofillShowAllSuggestionsOnPrefilledForms",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether we show warnings in the Dev console for misused autocomplete
 // types.
 const base::Feature kAutofillShowAutocompleteConsoleWarnings{
@@ -289,6 +278,7 @@ const base::Feature kAutofillTokenPrefixMatching{
 const base::Feature kAutofillTouchToFill = {"TouchToFillAndroid",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Autofill upload throttling is used for testing.
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 

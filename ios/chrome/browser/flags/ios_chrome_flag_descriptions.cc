@@ -103,12 +103,6 @@ const char kAutofillSaveCardInfobarEditSupportDescription[] =
     "When enabled and saving a credit card to Google Payments, a dialog is "
     "displayed that allows editing the card info before confirming save.";
 
-const char kAutofillShowAllSuggestionsOnPrefilledFormsName[] =
-    "Enable showing all suggestions when focusing prefilled field";
-const char kAutofillShowAllSuggestionsOnPrefilledFormsDescription[] =
-    "When enabled: show all suggestions when the focused field value has not "
-    "been entered by the user. When disabled: use the field value as a filter.";
-
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
     "Restrict formless form extraction";
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
@@ -423,6 +417,12 @@ const char kReloadSadTabName[] = "Reload SadTab automatically";
 const char kReloadSadTabDescription[] =
     "When enabled, the first time the renderer crashes, the page is reloaded "
     "instead of showing the SadTab";
+
+const char kRestoreGaiaCookiesIfDeletedName[] =
+    "Restore GAIA cookies if deleted";
+const char kRestoreGaiaCookiesIfDeletedDescription[] =
+    "When enabled, will restore GAIA cookies for signed-in Chrome users if "
+    "they are deleted.";
 
 const char kSafeBrowsingAvailableName[] = "Make Safe Browsing available";
 const char kSafeBrowsingAvailableDescription[] =

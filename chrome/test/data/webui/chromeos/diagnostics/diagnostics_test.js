@@ -7,7 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://diagnostics/diagnostics_app.js';
 
 import {SystemDataProviderInterface} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeBatteryInfo, fakeCpuUsage, fakeSystemInfo} from 'chrome://diagnostics/fake_data.js';
+import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCpuUsage, fakeMemoryUsage, fakeSystemInfo} from 'chrome://diagnostics/fake_data.js';
 import {FakeMethodResolver} from 'chrome://diagnostics/fake_method_resolver.js';
 import {FakeObservables} from 'chrome://diagnostics/fake_observables.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
@@ -119,12 +119,17 @@ suite('BatteryStatusCardTest', () => {
 
   /**
    * @param {!BatteryInfo} batteryInfo
+   * @param {!BatteryChargeStatus} batteryChargeStatus
+   * @param {!BatteryHealth} batteryHealth
    * @return {!Promise}
    */
-  function initializeBatteryStatusCard(batteryInfo) {
+  function initializeBatteryStatusCard(
+      batteryInfo, batteryChargeStatus, batteryHealth) {
     assertFalse(!!batteryStatusElement);
 
     // Initialize the fake data.
+    provider.setFakeBatteryChargeStatus(batteryChargeStatus);
+    provider.setFakeBatteryHealth(batteryHealth);
     provider.setFakeBatteryInfo(batteryInfo);
 
     // Add the battery status card to the DOM.
@@ -136,14 +141,33 @@ suite('BatteryStatusCardTest', () => {
   }
 
   test('BatteryStatusCardPopulated', () => {
-    return initializeBatteryStatusCard(fakeBatteryInfo).then(() => {
-      // TODO(zentaro): Update when strings are finalized.
-      assertEquals(
-          'Battery Status', batteryStatusElement.$$('#cardTitle').textContent);
-      assertEquals(
-          fakeBatteryInfo.manufacturer,
-          batteryStatusElement.$$('#manufacturer').textContent);
-    });
+    return initializeBatteryStatusCard(
+               fakeBatteryInfo, fakeBatteryChargeStatus, fakeBatteryHealth)
+        .then(() => {
+          // TODO(zentaro): Update when strings are finalized.
+          assertEquals(
+              'Battery Status',
+              batteryStatusElement.$$('#cardTitle').textContent);
+          assertEquals(
+              fakeBatteryInfo.manufacturer,
+              batteryStatusElement.$$('#manufacturer').textContent);
+          assertEquals(
+              fakeBatteryHealth[0].charge_full_design_milliamp_hours.toString(),
+              batteryStatusElement.$$('#chargeFullDesign').textContent);
+          assertEquals(
+              fakeBatteryChargeStatus[0]
+                  .charge_full_now_milliamp_hours.toString(),
+              batteryStatusElement.$$('#chargeFullNow').textContent);
+          assertEquals(
+              fakeBatteryChargeStatus[0].charge_now_milliamp_hours.toString(),
+              batteryStatusElement.$$('#chargeNow').textContent);
+          assertEquals(
+              fakeBatteryChargeStatus[0].power_time,
+              batteryStatusElement.$$('#powerTime').textContent);
+          assertEquals(
+              fakeBatteryChargeStatus[0].power_adapter_status.toString(),
+              batteryStatusElement.$$('#adapterStatus').textContent);
+        });
   });
 });
 
@@ -286,8 +310,15 @@ suite('MemoryCardTest', () => {
     provider = null;
   });
 
-  function initializeMemoryCard() {
+  /**
+   * @param {!MemoryUsage} memoryUsage
+   * @return {!Promise}
+   */
+  function initializeMemoryCard(memoryUsage) {
     assertFalse(!!memoryElement);
+
+    // Initialize the fake data.
+    provider.setFakeMemoryUsage(memoryUsage);
 
     // Add the memory card to the DOM.
     memoryElement = document.createElement('memory-card');
@@ -298,9 +329,19 @@ suite('MemoryCardTest', () => {
   }
 
   test('MemoryCardPopulated', () => {
-    return initializeMemoryCard().then(() => {
+    return initializeMemoryCard(fakeMemoryUsage).then(() => {
       // TODO(zentaro): Update when strings are finalized.
       assertEquals('Memory', memoryElement.$$('#cardTitle').textContent);
+
+      assertEquals(
+          fakeMemoryUsage[0].total_memory_kib.toString(),
+          memoryElement.$$('#memoryTotal').textContent);
+      assertEquals(
+          fakeMemoryUsage[0].available_memory_kib.toString(),
+          memoryElement.$$('#memoryAvailable').textContent);
+      assertEquals(
+          fakeMemoryUsage[0].free_memory_kib.toString(),
+          memoryElement.$$('#memoryFree').textContent);
     });
   });
 });
@@ -339,6 +380,56 @@ suite('FakeObservablesTest', () => {
       resolver.resolve();
     });
 
+    observables.trigger('ObserveFoo_OnFooUpdated');
+    return resolver.promise;
+  });
+
+  test('TwoResults', () => {
+    observables.register('ObserveFoo_OnFooUpdated');
+    /** @type !Array<string> */
+    const expected = ['bar1', 'bar2'];
+    observables.setObservableData('ObserveFoo_OnFooUpdated', expected);
+
+    // The first call will get 'bar1', and the second 'bar2'.
+    let resolver = new PromiseResolver();
+    const expectedCallCount = 2;
+    let callCount = 0;
+    observables.observe('ObserveFoo_OnFooUpdated', (foo) => {
+      assertEquals(expected[callCount % expected.length], foo);
+      callCount++;
+      if (callCount === expectedCallCount) {
+        resolver.resolve();
+      }
+    });
+
+    // Trigger the observer twice.
+    observables.trigger('ObserveFoo_OnFooUpdated');
+    observables.trigger('ObserveFoo_OnFooUpdated');
+    return resolver.promise;
+  });
+
+  test('ObservableDataWraps', () => {
+    observables.register('ObserveFoo_OnFooUpdated');
+    /** @type !Array<string> */
+    const expected = ['bar1', 'bar2'];
+    observables.setObservableData('ObserveFoo_OnFooUpdated', expected);
+
+    // With 3 calls and 2 observable values the response should cycle
+    // 'bar1', 'bar2', 'bar1'
+    let resolver = new PromiseResolver();
+    const expectedCallCount = 3;
+    let callCount = 0;
+    observables.observe('ObserveFoo_OnFooUpdated', (foo) => {
+      assertEquals(expected[callCount % expected.length], foo);
+      callCount++;
+      if (callCount === expectedCallCount) {
+        resolver.resolve();
+      }
+    });
+
+    // Trigger the observer three times.
+    observables.trigger('ObserveFoo_OnFooUpdated');
+    observables.trigger('ObserveFoo_OnFooUpdated');
     observables.trigger('ObserveFoo_OnFooUpdated');
     return resolver.promise;
   });
@@ -391,6 +482,33 @@ suite('FakeSystemDataProviderTest', () => {
     });
   });
 
+  test('ObserveBatteryHealth', () => {
+    provider.setFakeBatteryHealth(fakeBatteryHealth);
+
+    /** @type {!BatteryHealthObserver} */
+    const batteryHealthObserverRemote = {
+      onBatteryHealthUpdated: (batteryHealth) => {
+        assertDeepEquals(fakeBatteryHealth[0], batteryHealth);
+      }
+    };
+
+    return provider.observeBatteryHealth(batteryHealthObserverRemote);
+  });
+
+  test('ObserveBatteryChargeStatus', () => {
+    provider.setFakeBatteryChargeStatus(fakeBatteryChargeStatus);
+
+    /** @type {!BatteryChargeStatusObserver} */
+    const batteryChargeStatusObserverRemote = {
+      onBatteryChargeStatusUpdated: (batteryChargeStatus) => {
+        assertDeepEquals(fakeBatteryChargeStatus[0], batteryChargeStatus);
+      }
+    };
+
+    return provider.observeBatteryChargeStatus(
+        batteryChargeStatusObserverRemote);
+  });
+
   test('ObserveCpuUsage', () => {
     provider.setFakeCpuUsage(fakeCpuUsage);
 
@@ -402,5 +520,18 @@ suite('FakeSystemDataProviderTest', () => {
     };
 
     return provider.observeCpuUsage(cpuObserverRemote);
+  });
+
+  test('ObserveMemoryUsage', () => {
+    provider.setFakeMemoryUsage(fakeMemoryUsage);
+
+    /** @type {!MemoryUsageObserver} */
+    const memoryUsageObserverRemote = {
+      onMemoryUsageUpdated: (memoryUsage) => {
+        assertDeepEquals(fakeMemoryUsage[0], memoryUsage);
+      }
+    };
+
+    return provider.observeMemoryUsage(memoryUsageObserverRemote);
   });
 });

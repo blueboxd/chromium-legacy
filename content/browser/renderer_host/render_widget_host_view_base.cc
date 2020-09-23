@@ -793,8 +793,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
   DCHECK_GT(device_scale_factor, 0.0f);
-  gfx::Point3F point_in_pixels(
-      gfx::ConvertPointToPixel(device_scale_factor, point));
+  gfx::Point3F point_in_pixels =
+      gfx::Point3F(gfx::ConvertPointToPixels(point, device_scale_factor));
   // TODO(crbug.com/966995): Optimize so that |point_in_pixels| doesn't need to
   // be in the coordinate space of the root surface in HitTestQuery.
   gfx::Transform transform_root_to_original;
@@ -802,12 +802,14 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
                               &transform_root_to_original);
   if (!transform_root_to_original.TransformPointReverse(&point_in_pixels))
     return false;
+  gfx::PointF transformed_point_in_physical_pixels;
   if (!query->TransformLocationForTarget(
-          target_ancestors, point_in_pixels.AsPointF(), transformed_point)) {
+          target_ancestors, point_in_pixels.AsPointF(),
+          &transformed_point_in_physical_pixels)) {
     return false;
   }
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  *transformed_point = gfx::ConvertPointToDips(
+      transformed_point_in_physical_pixels, device_scale_factor);
   return true;
 }
 

@@ -276,6 +276,9 @@ crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-ifr
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-013.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-013.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-014.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
 
 crbug.com/936084 external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
 
@@ -799,6 +802,8 @@ crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-021.tentative.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.tentative.html [ Failure ]
 
 # Untriaged flex failures
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-wmvert-001.xhtml [ Failure ]
@@ -1176,7 +1181,6 @@ crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/float-after-forced-b
 crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/overflow-crossing-boundary.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/remove-unbreakable-block-in-line-float.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/scrolling-contents-scroll.html [ Failure ]
 
 ### With LayoutNGFragmentTraversal (and LayoutNGFragmentItem) enabled:
 
@@ -2674,9 +2678,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-021.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.tentative.html [ Failure ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
@@ -2690,8 +2691,6 @@ crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css
 crbug.com/626703 external/wpt/web-share/share-url-invalid.https.html [ Crash ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/pageshow-event.window.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/frame-src/frame-src-same-document.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-forwarddelete.tentative.html [ Timeout ]
@@ -2997,6 +2996,8 @@ crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [
 
 # Tests pass under virtual/webrtc-wpt-plan-b
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Pass ]
+
+crbug.com/1131471 external/wpt/web-locks/clientids.tentative.https.html [ Failure ]
 
 # See also crbug.com/920100 (sheriff 2019-01-09).
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout Failure ]
@@ -5582,7 +5583,6 @@ crbug.com/945774 external/wpt/content-security-policy/frame-ancestors/frame-ance
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally timeout,
 # but the test coverage is still good.
 crbug.com/919789 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Pass Timeout ]
-crbug.com/919789 compositing/transitions/transform-on-large-layer.html [ Pass Timeout ]
 crbug.com/919789 compositing/transitions/transform-on-large-layer-expected.html [ Pass Timeout ]
 crbug.com/919789 fast/autoresize/turn-off-autoresize.html [ Pass Timeout ]
 crbug.com/919789 fast/autoresize/basic.html [ Pass Timeout ]
@@ -6734,7 +6734,6 @@ crbug.com/1126709 [ Win ] virtual/threaded/external/wpt/animation-worklet/workle
 # Sheriff 2020-09-17
 crbug.com/1129347 [ Mac10.13 Debug ] http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Pass Failure ]
 ### virtual/scroll-unification/fast/scrolling/scrollbars/
-virtual/scroll-unification/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure ]
 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Failure ]
@@ -6748,3 +6747,9 @@ crbug.com/1130533 [ Mac ] external/wpt/xhr/xhr-timeout-longtask.any.html [ Pass 
 
 # Sheriff 2020-09-22
 crbug.com/1130533 [ Mac ] external/wpt/xhr/xhr-timeout-longtask.any.worker.html [ Pass Failure ]
+
+# Sheriff 2020-09-23
+crbug.com/1131551 compositing/transitions/transform-on-large-layer.html [ Pass Failure Timeout ]
+crbug.com/1057060 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
+crbug.com/1057060 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
+crbug.com/1057060 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]

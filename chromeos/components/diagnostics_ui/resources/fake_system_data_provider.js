@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BatteryInfo, CpuUsage, CpuUsageObserver, SystemInfo} from './diagnostics_types.js';
+import {BatteryChargeStatus, BatteryHealth, BatteryInfo, CpuUsage, CpuUsageObserver, ExternalPowerSource, MemoryUsage, MemoryUsageObserver, SystemInfo} from './diagnostics_types.js';
 import {FakeMethodResolver} from './fake_method_resolver.js';
 import {FakeObservables} from './fake_observables.js';
 
@@ -24,7 +24,11 @@ export class FakeSystemDataProvider {
     this.methods_.register('getBatteryInfo');
 
     // Setup observables.
+    this.observables_.register(
+        'BatteryChargeStatusObserver_onBatteryChargeStatusUpdated');
+    this.observables_.register('BatteryHealthObserver_onBatteryHealthUpdated');
     this.observables_.register('CpuUsageObserver_onCpuUsageUpdated');
+    this.observables_.register('MemoryUsageObserver_onMemoryUsageUpdated');
   }
 
   /**
@@ -59,6 +63,63 @@ export class FakeSystemDataProvider {
   }
 
   /*
+   * Implements SystemDataProviderInterface.ObserveBatteryChargeStatus.
+   * @param {!BatteryChargeStatusObserver} remote
+   * @return {!Promise}
+   */
+  observeBatteryChargeStatus(remote) {
+    return new Promise((resolve) => {
+      this.observables_.observe(
+          'BatteryChargeStatusObserver_onBatteryChargeStatusUpdated',
+          (batteryChargeStatus) => {
+            remote.onBatteryChargeStatusUpdated(
+                /** @type {!BatteryChargeStatus} */ (batteryChargeStatus));
+          });
+
+      this.observables_.trigger(
+          'BatteryChargeStatusObserver_onBatteryChargeStatusUpdated');
+      resolve();
+    });
+  }
+
+  /**
+   * Sets the values that will observed from observeBatteryChargeStatus.
+   * @param {!Array<!BatteryChargeStatus>} batteryChargeStatusList
+   */
+  setFakeBatteryChargeStatus(batteryChargeStatusList) {
+    this.observables_.setObservableData(
+        'BatteryChargeStatusObserver_onBatteryChargeStatusUpdated',
+        batteryChargeStatusList);
+  }
+
+  /*
+   * Implements SystemDataProviderInterface.ObserveBatteryHealth.
+   * @param {!BatteryHealthObserver} remote
+   * @return {!Promise}
+   */
+  observeBatteryHealth(remote) {
+    return new Promise((resolve) => {
+      this.observables_.observe(
+          'BatteryHealthObserver_onBatteryHealthUpdated', (batteryHealth) => {
+            remote.onBatteryHealthUpdated(
+                /** @type {!BatteryHealth} */ (batteryHealth));
+          });
+
+      this.observables_.trigger('BatteryHealthObserver_onBatteryHealthUpdated');
+      resolve();
+    });
+  }
+
+  /**
+   * Sets the values that will observed from observeBatteryHealth.
+   * @param {!Array<!BatteryHealth>} batteryHealthList
+   */
+  setFakeBatteryHealth(batteryHealthList) {
+    this.observables_.setObservableData(
+        'BatteryHealthObserver_onBatteryHealthUpdated', batteryHealthList);
+  }
+
+  /*
    * Implements SystemDataProviderInterface.ObserveCpuUsage.
    * @param {!CpuUsageObserver} remote
    * @return {!Promise}
@@ -83,5 +144,32 @@ export class FakeSystemDataProvider {
   setFakeCpuUsage(cpuUsageList) {
     this.observables_.setObservableData(
         'CpuUsageObserver_onCpuUsageUpdated', cpuUsageList);
+  }
+
+  /*
+   * Implements SystemDataProviderInterface.ObserveMemoryUsage.
+   * @param {!MemoryUsageObserver} remote
+   * @return {!Promise}
+   */
+  observeMemoryUsage(remote) {
+    return new Promise((resolve) => {
+      this.observables_.observe(
+          'MemoryUsageObserver_onMemoryUsageUpdated', (memoryUsage) => {
+            remote.onMemoryUsageUpdated(
+                /** @type {!MemoryUsage} */ (memoryUsage));
+          });
+
+      this.observables_.trigger('MemoryUsageObserver_onMemoryUsageUpdated');
+      resolve();
+    });
+  }
+
+  /**
+   * Sets the values that will observed from ObserveCpuUsage.
+   * @param {!Array<!MemoryUsage>} memoryUsageList
+   */
+  setFakeMemoryUsage(memoryUsageList) {
+    this.observables_.setObservableData(
+        'MemoryUsageObserver_onMemoryUsageUpdated', memoryUsageList);
   }
 }

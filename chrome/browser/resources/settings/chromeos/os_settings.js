@@ -8,6 +8,7 @@ import './bluetooth_page/bluetooth_page.m.js';
 import './bluetooth_page/bluetooth_subpage.m.js';
 import './bluetooth_page/bluetooth_device_list_item.m.js';
 import './internet_page/cellular_setup_dialog.m.js';
+import './internet_page/internet_config.m.js';
 import './internet_page/internet_known_networks_page.m.js';
 import './nearby_share_page/nearby_share_receive_dialog.m.js';
 import './nearby_share_page/nearby_share_subpage.m.js';
@@ -38,6 +39,7 @@ export {NearbySettings, NearbyShareSettingsBehavior} from '../shared/nearby_shar
 export {AmbientModeBrowserProxyImpl} from './ambient_mode_page/ambient_mode_browser_proxy.m.js';
 export {AmbientModeTemperatureUnit, AmbientModeTopicSource} from './ambient_mode_page/constants.m.js';
 export {bluetoothApis} from './bluetooth_page/bluetooth_page.m.js';
+export {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page/internet_page_browser_proxy.m.js';
 export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.m.js';
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.m.js';
 export {Account, NearbyAccountManagerBrowserProxy, NearbyAccountManagerBrowserProxyImpl} from './nearby_share_page/nearby_account_manager_browser_proxy.m.js';

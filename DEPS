@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd2ea1c897ee3decbdd4ab0103c205df56cd89773',
+  'v8_revision': 'e0d5b2a8208346a0c10ac96bfef2a78311b7f7a0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b44af6625286df933a688779d139ec33cd3e492a',
+  'angle_revision': 'ee7ae7aba2c91034b6304dcad1df5823ff3d5702',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1032,7 +1032,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '18e09b9197a3b1d771c077c530d1a4ebad04c167',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '83b2ac66d1572c2357e1184d2c54d91e7e92c524',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'aef20f06d47ba76fdf13abcdb033e2a408b5a94d',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1544,7 +1544,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'nLiRBOlDnLpGaONe3dMmjU3S8K3bfjiA0p4VZkqV2IEC',
+          'version': 'McQX6w7ojyNaDcWISrmicbt00IsXxTSvxjuEPfPLiIEC',
         },
       ],
       'dep_type': 'cipd',
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@df9a5f7482cee6f7ce20be86a88f8be2aa778ab5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aad83522fd172502e4b3783190db56538bb706bd',
     'condition': 'checkout_src_internal',
   },
 

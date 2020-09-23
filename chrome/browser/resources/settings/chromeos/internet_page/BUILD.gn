@@ -4,6 +4,7 @@
 
 import("//chrome/browser/resources/settings/chromeos/os_settings.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -181,11 +182,11 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
     ":cellular_setup_dialog.m",
-#    ":internet_config.m",
+    ":internet_config.m",
 #    ":internet_detail_page.m",
     ":internet_known_networks_page.m",
 #    ":internet_page.m",
-#    ":internet_page_browser_proxy.m",
+    ":internet_page_browser_proxy.m",
     ":internet_shared_css.m",
 #    ":internet_subpage.m",
 #    ":network_proxy_section.m",
@@ -209,7 +210,16 @@ js_library("cellular_setup_dialog.m") {
 js_library("internet_config.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/internet_config.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":internet_shared_css.m",
+    "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
+    "//chrome/browser/resources/settings:router.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-flex-layout:iron-flex-layout",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_components/chromeos/network:network_config.m",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:util.m",
   ]
   extra_deps = [ ":internet_config_module" ]
 }
@@ -327,6 +337,8 @@ polymer_modulizer("internet_config") {
   js_file = "internet_config.js"
   html_file = "internet_config.html"
   html_type = "dom-module"
+  auto_imports = os_settings_auto_imports
+  namespace_rewrites = os_settings_namespace_rewrites
 }
 
 polymer_modulizer("internet_detail_page") {
@@ -391,8 +403,7 @@ polymer_modulizer("cellular_setup_dialog") {
   html_type = "dom-module"
 }
 
-import("//ui/webui/resources/tools/js_modulizer.gni")
-
 js_modulizer("modulize") {
   input_files = [ "internet_page_browser_proxy.js" ]
+  namespace_rewrites = os_settings_namespace_rewrites
 }

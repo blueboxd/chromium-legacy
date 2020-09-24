@@ -852,7 +852,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path, tool_prefix,
         key += '-' + name
       metadata[key] = size
 
-  return metadata or None
+  return metadata
 
 
 def _ResolveThinArchivePaths(raw_symbols, thin_archives):
@@ -1264,7 +1264,12 @@ def _ParseApkOtherSymbols(section_ranges, apk_path, apk_so_path,
   with zipfile.ZipFile(apk_path) as z:
     for zip_info in z.infolist():
       zip_info_total += zip_info.compress_size
+      # Account for zipalign overhead that exists in local file header.
       zipalign_total += zip_util.ReadZipInfoExtraFieldLength(z, zip_info)
+      # Account for zipalign overhead that exists in central directory header.
+      # Happens when python aligns entries in apkbuilder.py, but does not
+      # exist when using Android's zipalign. E.g. for bundle .apks files.
+      zipalign_total += len(zip_info.extra)
       # Skip main shared library, pak, and dex files as they are accounted for.
       if (zip_info.filename == apk_so_path
           or zip_info.filename.endswith('.pak')):

@@ -2754,19 +2754,6 @@
             ]
         }
     ],
-    "ExtensionInstallVerification": [
-        {
-            "platforms": [
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enforce"
-                }
-            ]
-        }
-    ],
     "ExtensionSettingsOverriddenDialogs": [
         {
             "platforms": [
@@ -6490,21 +6477,6 @@
                     },
                     "enable_features": [
                         "SharingMatchPulseInterval"
-                    ]
-                }
-            ]
-        }
-    ],
-    "Show109ObsoleteInfobar": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "Show109ObsoleteInfobar"
                     ]
                 }
             ]

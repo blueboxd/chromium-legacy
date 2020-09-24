@@ -253,8 +253,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableExperimentalProductivityFeatures,
      features::kExperimentalProductivityFeatures},
     {wf::EnableFeaturePolicyForSandbox, features::kFeaturePolicyForSandbox},
-    {wf::EnableAccessibilityExposeARIAAnnotations,
-     features::kEnableAccessibilityExposeARIAAnnotations},
     {wf::EnableAccessibilityExposeDisplayNone,
      features::kEnableAccessibilityExposeDisplayNone},
     {wf::EnableAccessibilityExposeHTMLElement,
@@ -379,6 +377,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"UserAgentClientHint", features::kUserAgentClientHint},
           {"WebAppManifestDisplayOverride",
            features::kWebAppManifestDisplayOverride},
+          {"WebXRMultiGpu", blink::features::kWebXrMultiGpu},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

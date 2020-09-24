@@ -22,12 +22,6 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
-const char kAccessibilityExposeARIAAnnotationsName[] =
-    "Expose ARIA Annotation roles";
-const char kAccessibilityExposeARIAAnnotationsDescription[] =
-    "Expose annotation- prefixed roles from ARIA Annotations draft "
-    "specification at https://w3c.github.io/annotation-aria/.";
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char kAccessiblePDFFormName[] = "Accessible PDF Forms";
 const char kAccessiblePDFFormDescription[] =
@@ -2806,11 +2800,6 @@ const char kIntentBlockExternalFormRedirectsNoGestureDescription[] =
     "Require a user gesture that triggered a form submission in order to "
     "allow for redirecting to an external intent.";
 
-const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
-const char kInterestFeedNotificationsDescription[] =
-    "Show notifications for some suggested content from the interest feed. "
-    "#interest-feed-content-suggestions should also be enabled.";
-
 const char kInterestFeedContentSuggestionsDescription[] =
     "Use the interest feed to render content suggestions. Currently "
     "content "
@@ -3229,6 +3218,12 @@ const char kGlobalMediaControlsCastStartStopName[] =
 const char kGlobalMediaControlsCastStartStopDescription[] =
     "Allows global media controls to control when a Cast session is started "
     "or stopped instead of relying on the Cast dialog.";
+
+const char kMuteNotificationsDuringScreenShareName[] =
+    "Mute notifications during screen share";
+const char kMuteNotificationsDuringScreenShareDescription[] =
+    "Prevents new notifications from being shown while a screen is being "
+    "shared.";
 
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =

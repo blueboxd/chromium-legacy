@@ -52,9 +52,6 @@ extern const char kAcceleratedVideoDecodeDescription[];
 extern const char kAcceleratedVideoEncodeName[];
 extern const char kAcceleratedVideoEncodeDescription[];
 
-extern const char kAccessibilityExposeARIAAnnotationsName[];
-extern const char kAccessibilityExposeARIAAnnotationsDescription[];
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 extern const char kAccessiblePDFFormName[];
 extern const char kAccessiblePDFFormDescription[];
@@ -1623,9 +1620,6 @@ extern const char kInstantStartDescription[];
 extern const char kIntentBlockExternalFormRedirectsNoGestureName[];
 extern const char kIntentBlockExternalFormRedirectsNoGestureDescription[];
 
-extern const char kInterestFeedNotificationsName[];
-extern const char kInterestFeedNotificationsDescription[];
-
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
@@ -1850,6 +1844,9 @@ extern const char kCopyLinkToTextDescription[];
 
 extern const char kGlobalMediaControlsCastStartStopName[];
 extern const char kGlobalMediaControlsCastStartStopDescription[];
+
+extern const char kMuteNotificationsDuringScreenShareName[];
+extern const char kMuteNotificationsDuringScreenShareDescription[];
 
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];

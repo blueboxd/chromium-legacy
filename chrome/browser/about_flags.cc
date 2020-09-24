@@ -3344,10 +3344,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"interest-feed-feedback", flag_descriptions::kInterestFeedFeedbackName,
      flag_descriptions::kInterestFeedFeedbackDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedFeedback)},
-    {"interest-feed-notifications",
-     flag_descriptions::kInterestFeedNotificationsName,
-     flag_descriptions::kInterestFeedNotificationsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kInterestFeedNotifications)},
     {"interest-feed-v2", flag_descriptions::kInterestFeedV2Name,
      flag_descriptions::kInterestFeedV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2)},
@@ -4598,11 +4594,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
 #endif  // OS_CHROMEOS
-
-    {"enable-accessibility-expose-aria-annotations",
-     flag_descriptions::kAccessibilityExposeARIAAnnotationsName,
-     flag_descriptions::kAccessibilityExposeARIAAnnotationsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeARIAAnnotations)},
 
 #if !defined(OS_ANDROID)
     {"enable-accessibility-live-captions",
@@ -6440,6 +6431,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSeparatePointingStickSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSeparatePointingStickSettings)},
 #endif
+
+#if !defined(OS_ANDROID)
+    {"mute-notifications-during-screen-share",
+     flag_descriptions::kMuteNotificationsDuringScreenShareName,
+     flag_descriptions::kMuteNotificationsDuringScreenShareDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMuteNotificationsDuringScreenShare)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

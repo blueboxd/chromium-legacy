@@ -1035,11 +1035,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-accessibility-expose-aria-annotations",
-    "owners": [ "aleventhal@chromium.org", "//third_party/blink/renderer/modules/accessibility/OWNERS", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "enable-accessibility-live-captions",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 90
@@ -2887,11 +2882,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "interest-feed-notifications",
-    "owners": [ "iwells", "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "interest-feed-v2",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 95
@@ -3134,6 +3124,11 @@
     "name": "multi-display-overview-and-split-view",
     "owners": [ "amusbach@chromium.org", "xdai@chromium.org" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "mute-notifications-during-screen-share",
+    "owners": [ "knollr@chromium.org", "peter@chromium.org" ],
+    "expiry_milestone": 90
   },
   {
     "name": "native-file-system-api",

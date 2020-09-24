@@ -1439,10 +1439,10 @@ const char kNewProfilePickerName[] = "New profile picker";
 const char kNewProfilePickerDescription[] =
     "Enables new profile picker implementation.";
 
-const char kSignInProfileCreationFlowName[] = "Signin profile creation flow";
-const char kSignInProfileCreationFlowDescription[] =
-    "Enables signin promo page for the new profile creation flow in the "
-    "profile picker.";
+const char kProfilesUIRevampName[] = "Revamp of profiles UI";
+const char kProfilesUIRevampDescription[] =
+    "Enables several profile-related features including a new signin flow, "
+    "profile promo bubbles and a color picker in settings";
 
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
@@ -3358,10 +3358,6 @@ const char kTabFreezeDescription[] =
     "Enables freezing eligible tabs when they have been backgrounded for 5 "
     "minutes.";
 
-const char kSyncSetupFriendlySettingsName[] = "Sync setup friendly settings";
-const char kSyncSetupFriendlySettingsDescription[] =
-    "Enable the new sync setup friendly settings";
-
 #endif  // !defined(OS_ANDROID)
 
 // Windows ---------------------------------------------------------------------
@@ -3675,6 +3671,10 @@ const char kCrostiniUseDlcName[] = "Crostini Use DLC";
 const char kCrostiniUseDlcDescription[] =
     "Download the termina VM using the new DLC service instead of the old "
     "component updater.";
+
+const char kCrostiniEnableDlcName[] = "Crostini Enable DLC";
+const char kCrostiniEnableDlcDescription[] =
+    "Signal to Crostini that the DLC service is available for use.";
 
 const char kCryptAuthV2DeviceActivityStatusName[] =
     "CryptAuth Device Activity Status";

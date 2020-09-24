@@ -2932,6 +2932,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
      flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},
+    {"crostini-enable-dlc", flag_descriptions::kCrostiniEnableDlcName,
+     flag_descriptions::kCrostiniEnableDlcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniEnableDlc)},
     {"pluginvm-show-camera-permissions",
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
@@ -4771,11 +4774,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNewProfilePicker)},
 
-    {"enable-sign-in-profile-creation-flow",
-     flag_descriptions::kSignInProfileCreationFlowName,
-     flag_descriptions::kSignInProfileCreationFlowDescription,
+    {"enable-profiles-ui-revamp", flag_descriptions::kProfilesUIRevampName,
+     flag_descriptions::kProfilesUIRevampDescription,
      kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kSignInProfileCreationFlow)},
+     FEATURE_VALUE_TYPE(features::kProfilesUIRevamp)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -5919,13 +5921,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup)},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-    {"sync-setup-friendly-settings",
-     flag_descriptions::kSyncSetupFriendlySettingsName,
-     flag_descriptions::kSyncSetupFriendlySettingsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSyncSetupFriendlySettings)},
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
     {"block-external-form-redirects-no-gesture",

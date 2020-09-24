@@ -34,15 +34,13 @@ extern const base::Feature kNewTabstripAnimation;
 
 extern const base::Feature kPermissionChip;
 
-extern const base::Feature kProfileThemeSelectorInSettings;
-
 extern const base::Feature kProminentDarkModeActiveTabTitle;
 
 extern const base::Feature kReadLater;
 
 extern const base::Feature kScrollableTabStrip;
 
-extern const base::Feature kSignInProfileCreationFlow;
+extern const base::Feature kProfilesUIRevamp;
 
 extern const base::Feature kTabGroups;
 
@@ -70,8 +68,6 @@ extern const base::Feature kUseTextForUpdateButton;
 extern const base::Feature kWebFooterExperiment;
 
 extern const base::Feature kWebUITabStrip;
-
-extern const base::Feature kSyncSetupFriendlySettings;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kHiddenNetworkWarning;

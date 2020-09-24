@@ -148,7 +148,6 @@ static_library("browser") {
     "password_feature_manager.h",
     "password_feature_manager_impl.cc",
     "password_feature_manager_impl.h",
-    "password_form.h",
     "password_form_filling.cc",
     "password_form_filling.h",
     "password_form_manager.cc",
@@ -272,6 +271,7 @@ static_library("browser") {
   }
 
   public_deps = [
+    ":password_form",
     "//base",
     "//components/safe_browsing:buildflags",
     "//components/sync",
@@ -404,6 +404,17 @@ source_set("csv_unittests") {
     "//testing/gtest",
     "//url",
   ]
+}
+
+# PasswordForm is an extremely common struct used by many sub-components and
+# sub-directories. Having its own target makes it possible to break up several
+# cyclic dependencies.
+source_set("password_form") {
+  sources = [
+    "password_form.h",
+    "password_form_forward.h",
+  ]
+  deps = [ "//components/autofill/core/common" ]
 }
 
 static_library("password_generator") {
@@ -787,8 +798,8 @@ source_set("affiliation_unittests") {
   sources = [ "android_affiliation/affiliation_utils_unittest.cc" ]
   deps = [
     ":affiliation",
+    ":password_form",
     "//base",
-    "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

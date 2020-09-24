@@ -42,11 +42,6 @@ const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
 const base::Feature kPermissionChip{"PermissionChip",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the theme selector in the manage profile settings.
-// https://crbug.com/1129186
-const base::Feature kProfileThemeSelectorInSettings{
-    "ProfileThemeSelectorInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables a more prominent active tab title in dark mode to aid with
 // accessibility.
 const base::Feature kProminentDarkModeActiveTabTitle{
@@ -60,10 +55,9 @@ const base::Feature kReadLater{"ReadLater", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the signin promo page for the profile creation flow.
-// https:://crbug.com/1105865
-const base::Feature kSignInProfileCreationFlow{
-    "SignInProfileCreationFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+// Revamp of profiles. https://crbug.com/1108289
+const base::Feature kProfilesUIRevamp{"ProfilesUIRevamp",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -125,11 +119,6 @@ const base::Feature kWebFooterExperiment{"WebFooterExperiment",
 // feature only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables friendly settings for the |chrome://settings/syncSetup| page.
-// https://crbug.com/1035421.
-const base::Feature kSyncSetupFriendlySettings{
-    "SyncSetupFriendlySettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables a warning about connecting to hidden WiFi networks.

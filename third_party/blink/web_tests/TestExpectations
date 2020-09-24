@@ -150,6 +150,18 @@ virtual/composite-after-paint/paint/frames/* [ Pass ]
 virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
+# TODO(crbug.com/1121630): These tests are temporarily disabled during
+# investigation of the performance regression.
+crbug.com/1121630 compositing/composited-text-subpixel-translation.html [ Failure ]
+crbug.com/1121630 fast/overflow/overflow-of-video-outline.html [ Failure ]
+crbug.com/1121630 http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/1121630 media/controls-layout-direction.html [ Failure ]
+crbug.com/1121630 media/media-controls-clone.html [ Failure ]
+crbug.com/1121630 media/media-controls-grey-scrubber.html [ Failure ]
+crbug.com/1121630 paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
+crbug.com/1121630 virtual/composite-after-paint/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
+crbug.com/1121630 virtual/dark-color-scheme/media/audio-controls-rendering.html [ Failure ]
+
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
 crbug.com/1124352 media/picture-in-picture/controls/picture-in-picture-button.html [ Crash Pass ]
@@ -2678,6 +2690,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
@@ -5591,7 +5604,6 @@ crbug.com/919789 fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
 crbug.com/1021627 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Pass Failure Timeout ]
 crbug.com/919789 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/919789 fast/events/resize-events-count.html [ Pass Timeout ]
-crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Timeout ]
 crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize-expected.html [ Pass Timeout ]
 crbug.com/919789 virtual/text-antialias/line-break-between-text-nodes-with-inline-blocks.html [ Pass Timeout ]
 crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Pass Timeout ]
@@ -6753,3 +6765,4 @@ crbug.com/1131551 compositing/transitions/transform-on-large-layer.html [ Pass F
 crbug.com/1057060 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
 crbug.com/1057060 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
 crbug.com/1057060 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
+crbug.com/1045599 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Failure Timeout ]

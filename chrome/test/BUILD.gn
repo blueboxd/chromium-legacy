@@ -1454,6 +1454,7 @@ if (!is_android) {
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
       "../browser/ui/views/sharing/sharing_browsertest.cc",
       "../browser/ui/views/sharing/sharing_browsertest.h",
+      "../browser/ui/views/tabs/tab_search_button_browsertest.cc",
       "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_frame_toolbar_browsertest.cc",
@@ -1932,7 +1933,6 @@ if (!is_android) {
         "../browser/extensions/extension_context_menu_browsertest.cc",
         "../browser/extensions/extension_csp_bypass_browsertest.cc",
         "../browser/extensions/extension_disabled_ui_browsertest.cc",
-        "../browser/extensions/extension_dom_apitest.cc",
         "../browser/extensions/extension_dom_clipboard_apitest.cc",
         "../browser/extensions/extension_fileapi_apitest.cc",
         "../browser/extensions/extension_function_registration_test.cc",
@@ -2917,7 +2917,7 @@ if (!is_android) {
     if (is_mac || is_win || is_chromeos) {
       sources += [ "../browser/extensions/api/networking_cast_private/networking_cast_private_apitest.cc" ]
     }
-    if (is_desktop_linux || is_mac) {
+    if ((is_desktop_linux && !chromeos_is_browser_only) || is_mac) {
       sources +=
           [ "../browser/first_run/first_run_internal_posix_browsertest.cc" ]
     }
@@ -4457,6 +4457,7 @@ test("unit_tests") {
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
       "../browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
+      "../browser/ui/thumbnails/thumbnail_scheduler_impl_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
       "../browser/ui/toolbar/location_bar_model_unittest.cc",

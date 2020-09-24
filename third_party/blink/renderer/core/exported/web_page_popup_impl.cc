@@ -502,7 +502,7 @@ void WebPagePopupImpl::SetScreenRects(const gfx::Rect& widget_screen_rect,
 }
 
 gfx::Size WebPagePopupImpl::VisibleViewportSizeInDIPs() {
-  return widget_base_->BlinkSpaceToDIPs(widget_base_->VisibleViewportSize());
+  return widget_base_->VisibleViewportSizeInDIPs();
 }
 
 void WebPagePopupImpl::SetPendingWindowRect(
@@ -662,7 +662,7 @@ void WebPagePopupImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
 }
 
 bool WebPagePopupImpl::WillHandleGestureEvent(const WebGestureEvent& event) {
-  return WidgetClient()->WillHandleGestureEvent(event);
+  return false;
 }
 
 bool WebPagePopupImpl::WillHandleMouseEvent(const WebMouseEvent& event) {
@@ -674,8 +674,6 @@ void WebPagePopupImpl::ObserveGestureEventAndResult(
     const gfx::Vector2dF& unused_delta,
     const cc::OverscrollBehavior& overscroll_behavior,
     bool event_processed) {
-  WidgetClient()->DidHandleGestureScrollEvent(
-      gesture_event, unused_delta, overscroll_behavior, event_processed);
 }
 
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(
@@ -813,8 +811,8 @@ void WebPagePopupImpl::UpdateVisualProperties(
           viz::LocalSurfaceIdAllocation()),
       visual_properties.compositor_viewport_pixel_rect,
       visual_properties.screen_info);
-  widget_base_->SetVisibleViewportSize(
-      widget_base_->DIPsToBlinkSpace(visual_properties.visible_viewport_size));
+  widget_base_->SetVisibleViewportSizeInDIPs(
+      visual_properties.visible_viewport_size);
 
   Resize(WebSize(widget_base_->DIPsToBlinkSpace(visual_properties.new_size)));
 }

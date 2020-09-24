@@ -164,15 +164,20 @@ Polymer({
   /** @private */
   onRowClick_: function() {
     if (this.isRowClickable_()) {
-      // TODO(crbug.com/1103015): Log action and histogram:
-      // SafetyCheckInteractions.SAFETY_CHECK_SAFE_BROWSING_NAVIGATE
-      // Settings.SafetyCheck.NavigateToSafeBrowsing
+      // Log click both in action and histogram.
+      this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
+          SafetyCheckInteractions
+              .SAFETY_CHECK_SAFE_BROWSING_MANAGE_THROUGH_CARET_NAVIGATION);
+      this.metricsBrowserProxy_.recordAction(
+          'Settings.SafetyCheck.ManageSafeBrowsingThroughCaretNavigation');
       this.openSecurityPage_();
     }
   },
 
   /** @private */
   openSecurityPage_: function() {
+    this.metricsBrowserProxy_.recordAction(
+        'SafeBrowsing.Settings.ShowedFromSafetyCheck');
     Router.getInstance().navigateTo(
         routes.SECURITY, /* dynamicParams= */ null,
         /* removeSearch= */ true);

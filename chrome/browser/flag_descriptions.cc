@@ -1207,7 +1207,7 @@ const char kGlobalMediaControlsForCastDescription[] =
     "#global-media-controls and #cast-media-route-provider to also be enabled.";
 
 const char kGlobalMediaControlsForChromeOSName[] =
-    "Global Media Conrols for ChromeOS";
+    "Global Media Controls for ChromeOS";
 const char kGlobalMediaControlsForChromeOSDescription[] =
     "Enable Global Media Controls UI in shelf and quick settings.";
 
@@ -1478,12 +1478,6 @@ const char kUpdateHoverAtBeginFrameDescription[] =
 const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
-
-const char kOfferStoreUnmaskedWalletCardsName[] =
-    "Google Payments card saving checkbox";
-const char kOfferStoreUnmaskedWalletCardsDescription[] =
-    "Show the checkbox to offer local saving of a credit card downloaded from "
-    "the server.";
 
 const char kOmniboxAdaptiveSuggestionsCountName[] =
     "Adaptive Omnibox Suggestions count";

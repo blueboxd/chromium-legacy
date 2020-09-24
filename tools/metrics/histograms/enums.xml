@@ -24338,7 +24338,7 @@ Called by update_extension_histograms.py.-->
   <int value="1245" label="AUTOTESTPRIVATE_UPDATEPRINTER"/>
   <int value="1246" label="AUTOTESTPRIVATE_REMOVEPRINTER"/>
   <int value="1247" label="WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL"/>
-  <int value="1248" label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED"/>
+  <int value="1248" label="ACCESSIBILITY_PRIVATE_SETSELECTTOSPEAKSTATE"/>
   <int value="1249" label="INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS"/>
   <int value="1250" label="DELETED_FILEMANAGERPRIVATE_ISCROSTINIENABLED"/>
   <int value="1251" label="FILEMANAGERPRIVATE_MOUNTCROSTINI"/>
@@ -65095,6 +65095,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Safety check, review extensions"/>
   <int value="5" label="Safety check, reboot via Chrome cleaner"/>
   <int value="6" label="Safety check, review Chrome cleaner infected state"/>
+  <int value="7"
+      label="Safety check, manage passwords through caret navigation"/>
+  <int value="8"
+      label="Safety check, manage safe browsing through caret navigation"/>
+  <int value="9"
+      label="Safety check, review extensions through caret navigation"/>
 </enum>
 
 <enum name="SettingsSections">

@@ -37,7 +37,6 @@
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
@@ -758,7 +757,7 @@ bool FormStructure::EncodeUploadRequest(
 // static
 bool FormStructure::EncodeQueryRequest(
     const std::vector<FormStructure*>& forms,
-    AutofillQueryContents* query,
+    AutofillPageQueryRequest* query,
     FormAndFieldSignatures* encoded_signatures) {
   DCHECK(encoded_signatures);
   encoded_signatures->clear();
@@ -782,7 +781,7 @@ bool FormStructure::EncodeQueryRequest(
     if (form->IsMalformed())
       continue;
 
-    form->EncodeFormForQuery(query->add_form(), encoded_signatures);
+    form->EncodeFormForQuery(query->add_forms(), encoded_signatures);
   }
 
   return !encoded_signatures->empty();
@@ -1964,7 +1963,7 @@ void FormStructure::RationalizeFieldTypePredictions() {
 }
 
 void FormStructure::EncodeFormForQuery(
-    AutofillQueryContents::Form* query_form,
+    AutofillPageQueryRequest::Form* query_form,
     FormAndFieldSignatures* encoded_signatures) const {
   DCHECK(!IsMalformed());
 
@@ -1973,24 +1972,24 @@ void FormStructure::EncodeFormForQuery(
   encoded_signatures->back().first = form_signature();
 
   if (is_rich_query_enabled_) {
-    EncodeFormMetadataForQuery(*this, query_form->mutable_form_metadata());
+    EncodeFormMetadataForQuery(*this, query_form->mutable_metadata());
   }
 
   for (const auto& field : fields_) {
     if (ShouldSkipField(*field))
       continue;
 
-    AutofillQueryContents::Form::Field* added_field = query_form->add_field();
+    AutofillPageQueryRequest::Form::Field* added_field =
+        query_form->add_fields();
     added_field->set_signature(field->GetFieldSignature().value());
     encoded_signatures->back().second.push_back(field->GetFieldSignature());
 
     if (is_rich_query_enabled_) {
-      EncodeFieldMetadataForQuery(*field,
-                                  added_field->mutable_field_metadata());
+      EncodeFieldMetadataForQuery(*field, added_field->mutable_metadata());
     }
 
     if (IsAutofillFieldMetadataEnabled()) {
-      added_field->set_type(field->form_control_type);
+      added_field->set_control_type(field->form_control_type);
 
       if (!field->name.empty())
         added_field->set_name(base::UTF16ToUTF8(field->name));

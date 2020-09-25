@@ -11486,6 +11486,11 @@ Called by update_net_error_codes.py.-->
   <int value="32" label="HTTP/3 (T049)"/>
   <int value="33" label="HTTP/3 (T050)"/>
   <int value="34" label="HTTP/3 (T099)"/>
+  <int value="35" label="HTTP/3 (draft-25)"/>
+  <int value="36" label="HTTP/3 (draft-27)"/>
+  <int value="37" label="HTTP/3 (draft-28)"/>
+  <int value="38" label="HTTP/3 (draft-29)"/>
+  <int value="39" label="HTTP/3 (T051)"/>
 </enum>
 
 <enum name="ConnectionResult">
@@ -29301,12 +29306,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3530" label="IdentifiabilityStudyReserved3530"/>
   <int value="3531" label="IdentifiabilityStudyReserved3531"/>
   <int value="3532" label="IdentifiabilityStudyReserved3532"/>
-  <int value="3533" label="V8SpeechSynthesisVoice_Default_AttributeGetter"/>
-  <int value="3534" label="V8SpeechSynthesisVoice_Lang_AttributeGetter"/>
-  <int value="3535"
-      label="V8SpeechSynthesisVoice_LocalService_AttributeGetter"/>
-  <int value="3536" label="V8SpeechSynthesisVoice_Name_AttributeGetter"/>
-  <int value="3537" label="V8SpeechSynthesisVoice_VoiceURI_AttributeGetter"/>
+  <int value="3533" label="IdentifiabilityStudyReserved3533"/>
+  <int value="3534" label="IdentifiabilityStudyReserved3534"/>
+  <int value="3535" label="IdentifiabilityStudyReserved3535"/>
+  <int value="3536" label="IdentifiabilityStudyReserved3536"/>
+  <int value="3537" label="IdentifiabilityStudyReserved3537"/>
   <int value="3538" label="IdentifiabilityStudyReserved3538"/>
   <int value="3539" label="IdentifiabilityStudyReserved3539"/>
   <int value="3540" label="IdentifiabilityStudyReserved3540"/>
@@ -40869,6 +40873,7 @@ from previous Chrome versions.
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
   <int value="-2047071651" label="NearbySharing:enabled"/>
+  <int value="-2043331707" label="PasswordScriptsFetching:disabled"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2042278511" label="SmartSuggestionForLargeDownloads:disabled"/>
   <int value="-2041281386" label="MultiPaste:disabled"/>
@@ -41002,6 +41007,7 @@ from previous Chrome versions.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1927080237" label="Vulkan:enabled"/>
+  <int value="-1925453192" label="BlockInsecurePrivateNetworkRequests:enabled"/>
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
   <int value="-1921593903" label="ImeInputLogicHmm:disabled"/>
@@ -41801,6 +41807,7 @@ from previous Chrome versions.
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
   <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
   <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
+  <int value="-1160797265" label="PasswordScriptsFetching:enabled"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
   <int value="-1159369873" label="TabGroupsUiImprovementsAndroid:disabled"/>
@@ -44510,6 +44517,7 @@ from previous Chrome versions.
   <int value="1659082220" label="EnableManualSaving:disabled"/>
   <int value="1659372520" label="WebXrRenderPath:disabled"/>
   <int value="1660491118" label="AllowAmbientEQ:enabled"/>
+  <int value="1661354480" label="BlockInsecurePrivateNetworkRequests:disabled"/>
   <int value="1661925474" label="silent-debugger-extension-api"/>
   <int value="1664401033" label="ColorCorrectRendering:enabled"/>
   <int value="1665349789" label="spurious-power-button-window"/>
@@ -62127,6 +62135,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="109"
       label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES"/>
   <int value="110" label="IDC_CONTENT_CONTEXT_GENERATE_QR_CODE"/>
+  <int value="111" label="IDC_CONTENT_CLIPBOARD_HISTORY_MENU"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

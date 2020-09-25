@@ -288,26 +288,13 @@ is_android = current_os == "android"
 is_chromeos = current_os == "chromeos"
 is_fuchsia = current_os == "fuchsia"
 is_ios = current_os == "ios"
-is_linux = current_os == "chromeos" || current_os == "linux"
+is_linux = current_os == "linux"
 is_mac = current_os == "mac"
 is_nacl = current_os == "nacl"
 is_win = current_os == "win" || current_os == "winuwp"
 
 is_apple = is_ios || is_mac
 is_posix = !is_win && !is_fuchsia
-
-# =============================================================================
-# SOURCES FILTERS
-# =============================================================================
-#
-# Compatibility to allow incremental migration of BUILD.gn files away from
-# depending on global call of set_sources_assignment_filter. Will be removed
-# when all files that depend on the assignment have been converted to import
-# the file directly. See https://crbug.com/1018739#c69.
-
-import("//build/config/deprecated_default_sources_assignment_filter.gni")
-sources_assignment_filter = deprecated_default_sources_assignment_filter
-set_sources_assignment_filter(sources_assignment_filter)
 
 # =============================================================================
 # TARGET DEFAULTS

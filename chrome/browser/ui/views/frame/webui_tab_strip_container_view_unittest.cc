@@ -65,24 +65,23 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
 }
 
 TEST_F(WebUITabStripContainerViewTest, ButtonsPresentInToolbar) {
-  ASSERT_NE(nullptr,
-            browser_view()->webui_tab_strip()->tab_counter_for_testing());
+  ASSERT_NE(nullptr, browser_view()->webui_tab_strip()->tab_counter());
   EXPECT_TRUE(browser_view()->toolbar()->Contains(
-      browser_view()->webui_tab_strip()->tab_counter_for_testing()));
+      browser_view()->webui_tab_strip()->tab_counter()));
 }
 
 TEST_F(WebUITabStripContainerViewTest, PreventsInvalidTabDrags) {
   content::DropData empty_drop_data;
   EXPECT_FALSE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, empty_drop_data, blink::kWebDragOperationMove));
+          nullptr, empty_drop_data, blink::kDragOperationMove));
 
   content::DropData invalid_drop_data;
   invalid_drop_data.custom_data.insert(std::make_pair(
       base::ASCIIToUTF16(kWebUITabIdDataType), base::ASCIIToUTF16("3000")));
   EXPECT_FALSE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, invalid_drop_data, blink::kWebDragOperationMove));
+          nullptr, invalid_drop_data, blink::kDragOperationMove));
 
   AddTab(browser(), GURL("http://foo"));
   int valid_tab_id = extensions::ExtensionTabUtil::GetTabId(
@@ -93,7 +92,7 @@ TEST_F(WebUITabStripContainerViewTest, PreventsInvalidTabDrags) {
                      base::NumberToString16(valid_tab_id)));
   EXPECT_TRUE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, valid_drop_data, blink::kWebDragOperationMove));
+          nullptr, valid_drop_data, blink::kDragOperationMove));
 }
 
 TEST_F(WebUITabStripContainerViewTest, PreventsInvalidGroupDrags) {
@@ -103,7 +102,7 @@ TEST_F(WebUITabStripContainerViewTest, PreventsInvalidGroupDrags) {
                      base::ASCIIToUTF16("not a real group")));
   EXPECT_FALSE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, invalid_drop_data, blink::kWebDragOperationMove));
+          nullptr, invalid_drop_data, blink::kDragOperationMove));
 
   AddTab(browser(), GURL("http://foo"));
   tab_groups::TabGroupId group_id =
@@ -114,7 +113,7 @@ TEST_F(WebUITabStripContainerViewTest, PreventsInvalidGroupDrags) {
                      base::ASCIIToUTF16(group_id.ToString())));
   EXPECT_TRUE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, valid_drop_data, blink::kWebDragOperationMove));
+          nullptr, valid_drop_data, blink::kDragOperationMove));
 
   // Another group from a different profile.
   std::unique_ptr<BrowserWindow> new_window(
@@ -132,7 +131,7 @@ TEST_F(WebUITabStripContainerViewTest, PreventsInvalidGroupDrags) {
                      base::ASCIIToUTF16(new_group_id.ToString())));
   EXPECT_FALSE(
       browser_view()->webui_tab_strip()->web_view_for_testing()->CanDragEnter(
-          nullptr, different_profile_drop_data, blink::kWebDragOperationMove));
+          nullptr, different_profile_drop_data, blink::kDragOperationMove));
 
   // Close all tabs before destructing.
   new_browser.get()->tab_strip_model()->CloseAllTabs();
@@ -154,64 +153,6 @@ TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
   ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);
   ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
-}
-
-class WebUITabStripIPHTest : public WebUITabStripContainerViewTest {
- public:
-  void SetUp() override {
-    WebUITabStripContainerViewTest::SetUp();
-
-    mock_tracker_ = static_cast<MockTracker*>(
-        feature_engagement::TrackerFactory::GetForBrowserContext(
-            browser()->profile()));
-  }
-
- protected:
-  using MockTracker =
-      ::testing::NiceMock<feature_engagement::test::MockTracker>;
-
-  TestingProfile::TestingFactories GetTestingFactories() override {
-    auto factories = WebUITabStripContainerViewTest::GetTestingFactories();
-    factories.emplace_back(feature_engagement::TrackerFactory::GetInstance(),
-                           base::Bind(MakeMockTracker));
-    return factories;
-  }
-
-  MockTracker* mock_tracker_;
-
- private:
-  static std::unique_ptr<KeyedService> MakeMockTracker(
-      content::BrowserContext* _context) {
-    using ::testing::_;
-    using ::testing::AnyNumber;
-    using ::testing::Return;
-
-    auto mock_tracker = std::make_unique<MockTracker>();
-
-    // By default, allow calls to ShouldTriggerHelpUI. Other features
-    // may query this. We will set WebUI tab strip-specific expectations
-    // later.
-    EXPECT_CALL(*mock_tracker, ShouldTriggerHelpUI(_))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    return mock_tracker;
-  }
-};
-
-TEST_F(WebUITabStripIPHTest, OpeningNewTabAttemptsIPH) {
-  using ::testing::Eq;
-  using ::testing::Field;
-  using ::testing::Return;
-
-  // Ensure the IPH attempts to show upon opening a new tab.
-  EXPECT_CALL(*mock_tracker_,
-              ShouldTriggerHelpUI(
-                  Field(&base::Feature::name,
-                        Eq(feature_engagement::kIPHWebUITabStripFeature.name))))
-      .Times(1)
-      .WillOnce(Return(false));
-
-  chrome::NewTab(browser());
 }
 
 // TODO(crbug.com/1066624): add coverage of open and close gestures.

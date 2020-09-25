@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 
 namespace content {
 
@@ -40,7 +40,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder {
                          float client_y,
                          float screen_x,
                          float screen_y,
-                         blink::WebDragOperation operation);
+                         blink::DragOperation operation);
 
   // Indicates that a drag operation has entered into the bounds of a given
   // |guest|. Returns whether the |guest| also started the operation.
@@ -84,8 +84,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder {
 
   void ClearGuestDragStateIfApplicable();
 
-  static bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
-
   // Closes modal dialogs in |guest_web_contents|.
   static bool CancelDialogs(WebContents* guest_web_contents);
 
@@ -110,8 +108,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder {
 
   // Keeps track of "dragend" state.
   bool guest_drag_ending_;
-
-  base::WeakPtrFactory<BrowserPluginEmbedder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginEmbedder);
 };

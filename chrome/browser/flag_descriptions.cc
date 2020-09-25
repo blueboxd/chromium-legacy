@@ -851,6 +851,15 @@ const char kEnableWindowsGamingInputDataFetcherDescription[] =
     "Enable Windows.Gaming.Input by default to provide game controller "
     "support on Windows 10 desktop.";
 
+const char kBlockInsecurePrivateNetworkRequestsName[] =
+    "Block insecure private network requests.";
+const char kBlockInsecurePrivateNetworkRequestsDescription[] =
+    "Prevents non-secure contexts from making sub-resource requests to "
+    "more-private IP addresses. An IP address IP1 is more private than IP2 if "
+    "1) IP1 is localhost and IP2 is not, or 2) IP1 is private and IP2 is "
+    "public. This is a first step towards full enforcement of CORS-RFC1918: "
+    "https://wicg.github.io/cors-rfc1918";
+
 const char kCorsForContentScriptsName[] = "CORS for content scripts";
 const char kCorsForContentScriptsDescription[] =
     "Prevent content scripts of Chrome Extensions from bypassing CORS. "
@@ -1408,11 +1417,6 @@ const char kMouseSubframeNoImplicitCaptureName[] =
 const char kMouseSubframeNoImplicitCaptureDescription[] =
     "When enable, mouse down does not implicit capture for iframe.";
 
-const char kNativeFileSystemAPIName[] = "Native File System API";
-const char kNativeFileSystemAPIDescription[] =
-    "Enables the experimental Native File System API, giving websites access "
-    "to the native file system";
-
 const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
@@ -1832,6 +1836,10 @@ const char kPasswordChangeDescription[] =
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
+
+const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
+const char kPasswordScriptsFetchingDescription[] =
+    "Fetches scripts for password change flows.";
 
 const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =

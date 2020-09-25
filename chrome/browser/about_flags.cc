@@ -2955,11 +2955,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
-    {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
-     flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAssist)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
      flag_descriptions::kSiteIsolationForPasswordSitesDescription, kOsAndroid,
@@ -4037,6 +4032,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kHandwritingGestureEditing)},
 #endif  // OS_CHROMEOS
 
+    {"block-insecure-private-network-requests",
+     flag_descriptions::kBlockInsecurePrivateNetworkRequestsName,
+     flag_descriptions::kBlockInsecurePrivateNetworkRequestsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBlockInsecurePrivateNetworkRequests)},
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"cors-for-content-scripts", flag_descriptions::kCorsForContentScriptsName,
      flag_descriptions::kCorsForContentScriptsDescription, kOsDesktop,
@@ -5087,10 +5087,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseImprovedLabelDisambiguation)},
 
-    {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
-     flag_descriptions::kNativeFileSystemAPIDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},
-
     {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
      flag_descriptions::kFileHandlingAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingAPI)},
@@ -5982,6 +5978,10 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordChangeInSettings,
          kPasswordChangeInSettingsFeatureVariations,
          "PasswordChangeInSettingsFeatureVariations")},
+    {"password-scripts-fetching",
+     flag_descriptions::kPasswordScriptsFetchingName,
+     flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordScriptsFetching)},
     {"password-change-support", flag_descriptions::kPasswordChangeName,
      flag_descriptions::kPasswordChangeDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordChange,
@@ -6559,6 +6559,10 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   if (!strcmp("password-change-support", entry.internal_name)) {
+    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
+  }
+
+  if (!strcmp("password-scripts-fetching", entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 #endif  // OS_ANDROID

@@ -16,7 +16,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
-#include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -69,9 +69,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::HoverType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::web_pref::ImageAnimationPolicy,
                               blink::web_pref::kImageAnimationPolicyAllowed,
                               blink::web_pref::kImageAnimationPolicyNoAnimation)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::web_pref::WebViewportStyle,
-                              blink::web_pref::WebViewportStyle::kDefault,
-                              blink::web_pref::WebViewportStyle::kTelevision)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::web_pref::ViewportStyle,
+                              blink::web_pref::ViewportStyle::kDefault,
+                              blink::web_pref::ViewportStyle::kTelevision)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     blink::web_pref::AutoplayPolicy,
     blink::web_pref::AutoplayPolicy::kNoUserGestureRequired,
@@ -335,7 +335,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
 #endif
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
+IPC_ENUM_TRAITS(blink::DragOperation)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(content::DropData::Kind,
                           content::DropData::Kind::LAST)
 

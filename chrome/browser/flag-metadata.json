@@ -417,6 +417,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "block-insecure-private-network-requests",
+    "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "bluetooth-aggressive-appearance-filter",
     "owners": [ "hansberry", "cros-system-services@google.com" ],
     "expiry_milestone": 85
@@ -3138,11 +3143,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "native-file-system-api",
-    "owners": [ "mek", "pwnall" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "nearby-sharing",
     "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 90
@@ -3627,6 +3627,11 @@
     "name": "password-check",
     "owners": [ "jdoerrie", "vasilii" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "password-scripts-fetching",
+    "owners": [ "kolos" ],
+    "expiry_milestone": 89
   },
   {
     "name": "PasswordImport",

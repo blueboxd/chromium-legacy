@@ -472,6 +472,9 @@ extern const char kEnableTranslateSubFramesDescription[];
 extern const char kEnableWindowsGamingInputDataFetcherName[];
 extern const char kEnableWindowsGamingInputDataFetcherDescription[];
 
+extern const char kBlockInsecurePrivateNetworkRequestsName[];
+extern const char kBlockInsecurePrivateNetworkRequestsDescription[];
+
 extern const char kCorsForContentScriptsName[];
 extern const char kCorsForContentScriptsDescription[];
 extern const char kForceEmptyCorbAndCorsAllowlistName[];
@@ -824,9 +827,6 @@ extern const char kMobileIdentityConsistencyDescription[];
 extern const char kMouseSubframeNoImplicitCaptureName[];
 extern const char kMouseSubframeNoImplicitCaptureDescription[];
 
-extern const char kNativeFileSystemAPIName[];
-extern const char kNativeFileSystemAPIDescription[];
-
 extern const char kNearbySharingName[];
 extern const char kNearbySharingDescription[];
 
@@ -1058,6 +1058,9 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
+
+extern const char kPasswordScriptsFetchingName[];
+extern const char kPasswordScriptsFetchingDescription[];
 
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];

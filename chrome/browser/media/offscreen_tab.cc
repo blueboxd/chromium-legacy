@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
-#include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "components/media_router/browser/presentation/presentation_navigation_policy.h"
+#include "components/media_router/browser/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/presentation_receiver_flags.h"
@@ -269,10 +269,9 @@ bool OffscreenTab::PreHandleGestureEvent(WebContents* source,
   return true;
 }
 
-bool OffscreenTab::CanDragEnter(
-    WebContents* source,
-    const content::DropData& data,
-    blink::WebDragOperationsMask operations_allowed) {
+bool OffscreenTab::CanDragEnter(WebContents* source,
+                                const content::DropData& data,
+                                blink::DragOperationsMask operations_allowed) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Halt all drag attempts onto the page since there should be no direct user
   // interaction with it.

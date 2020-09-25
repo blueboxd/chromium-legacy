@@ -90,12 +90,10 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
-#import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
@@ -393,17 +391,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self.appState.appCommandDispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(BrowsingDataCommands)];
-
-  if (@available(iOS 13, *)) {
-    if (IsSceneStartupSupported()) {
-      // Subscribe for scene connection and disconnection notifications.
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(sceneWillConnect:)
-                 name:UISceneWillConnectNotification
-               object:nil];
-    }
-  }
 }
 
 - (void)startUpBrowserBackgroundInitialization {
@@ -603,20 +590,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)appStateDidExitSafeMode:(AppState*)appState {
   [self startUpAfterFirstWindowCreated];
-}
-
-#pragma mark - Scene notifications
-
-// Handler for UISceneWillConnectNotification.
-- (void)sceneWillConnect:(NSNotification*)notification {
-  DCHECK(IsSceneStartupSupported());
-  if (@available(iOS 13, *)) {
-    UIWindowScene* scene =
-        base::mac::ObjCCastStrict<UIWindowScene>(notification.object);
-    SceneDelegate* sceneDelegate =
-        base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
-    sceneDelegate.sceneController.mainController = self;
-  }
 }
 
 #pragma mark - Property implementation.
@@ -1060,7 +1033,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-- (void)prepareForFirstRunUI:(SceneState*)presentingScene {
+- (void)prepareForFirstRunUI {
   // Register for notification when First Run is completed.
   // Some initializations are held back until First Run modal dialog
   // is dismissed.

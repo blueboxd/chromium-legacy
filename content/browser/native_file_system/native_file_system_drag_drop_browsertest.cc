@@ -6,7 +6,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/drop_data.h"
@@ -28,8 +27,6 @@ class NativeFileSystemDragDropBrowserTest : public ContentBrowserTest {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kNativeFileSystemAPI);
     ASSERT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUp();
   }
@@ -69,7 +66,6 @@ class NativeFileSystemDragDropBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -138,11 +134,11 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemDragDropBrowserTest, DropFile) {
   render_widget_host_impl->FilterDropData(&drop_data);
   render_widget_host_impl->DragTargetDragEnter(
       drop_data, client_point, screen_point,
-      blink::WebDragOperationsMask::kWebDragOperationEvery,
+      blink::DragOperationsMask::kDragOperationEvery,
       /*key_modifiers=*/0);
   render_widget_host_impl->DragTargetDragOver(
       client_point, screen_point,
-      blink::WebDragOperationsMask::kWebDragOperationEvery,
+      blink::DragOperationsMask::kDragOperationEvery,
       /*key_modifiers=*/0);
   render_widget_host_impl->DragTargetDrop(drop_data, client_point, screen_point,
                                           /*key_modifiers=*/0);
@@ -223,11 +219,11 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemDragDropBrowserTest, DropDirectory) {
   render_widget_host_impl->FilterDropData(&drop_data);
   render_widget_host_impl->DragTargetDragEnter(
       drop_data, client_point, screen_point,
-      blink::WebDragOperationsMask::kWebDragOperationEvery,
+      blink::DragOperationsMask::kDragOperationEvery,
       /*key_modifiers=*/0);
   render_widget_host_impl->DragTargetDragOver(
       client_point, screen_point,
-      blink::WebDragOperationsMask::kWebDragOperationEvery,
+      blink::DragOperationsMask::kDragOperationEvery,
       /*key_modifiers=*/0);
   render_widget_host_impl->DragTargetDrop(drop_data, client_point, screen_point,
                                           /*key_modifiers=*/0);

@@ -24450,7 +24450,7 @@ Called by update_extension_histograms.py.-->
   <int value="1350" label="ACTION_SETICON"/>
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
   <int value="1352"
-      label="ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND"/>
+      label="ACCESSIBILITY_PRIVATE_HANDLESCROLLABLEBOUNDSFORPOINTFOUND"/>
   <int value="1353" label="ACTION_GETPOPUP"/>
   <int value="1354" label="ACTION_SETPOPUP"/>
   <int value="1355" label="ACTION_GETTITLE"/>
@@ -29246,9 +29246,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3475" label="WebkitPrerenderLoadEventFired"/>
   <int value="3476" label="WebkitPrerenderDOMContentLoadedEventFired"/>
   <int value="3477" label="IdleDetectionPermissionRequested"/>
-  <int value="3478" label="V8MediaDeviceInfo_Kind_AttributeGetter"/>
-  <int value="3479" label="V8MediaDeviceInfo_GroupId_AttributeGetter"/>
-  <int value="3480" label="V8MediaDeviceInfo_Label_AttributeGetter"/>
+  <int value="3478" label="IdentifiabilityStudyReserved3478"/>
+  <int value="3479" label="IdentifiabilityStudyReserved3479"/>
+  <int value="3480" label="IdentifiabilityStudyReserved3480"/>
   <int value="3481" label="V8Navigator_JavaEnabled_Method"/>
   <int value="3482" label="IdentifiabilityStudyReserved3482"/>
   <int value="3483" label="IdentifiabilityStudyReserved3483"/>
@@ -29342,7 +29342,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="V8HIDReportItem_UnitFactorTimeExponent_AttributeGetter"/>
   <int value="3564" label="V8HIDReportItem_UsageMaximum_AttributeGetter"/>
   <int value="3565" label="V8HIDReportItem_UsageMinimum_AttributeGetter"/>
-  <int value="3566" label="IdentifiabilityStudyReserved3566"/>
+  <int value="3566" label="V8BaseAudioContext_SampleRate_AttributeGetter"/>
   <int value="3567" label="IdentifiabilityStudyReserved3567"/>
   <int value="3568" label="IdentifiabilityStudyReserved3568"/>
   <int value="3569" label="IdentifiabilityStudyReserved3569"/>
@@ -46437,6 +46437,7 @@ Called by update_use_counter_css.py.-->
   <int value="674" label="advance-override"/>
   <int value="675" label="line-gap-override"/>
   <int value="676" label="math-shift"/>
+  <int value="677" label="math-depth"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -75244,6 +75245,9 @@ Called by update_scheduler_enums.py.-->
   <int value="10" label="Security details opened"/>
   <int value="11" label="Third-party cookies allowed for site"/>
   <int value="12" label="Third-party cookies blocked for site"/>
+  <int value="13" label="Cookies deleted for site"/>
+  <int value="14" label="Permission dialog opened"/>
+  <int value="15" label="Permission deleted for site"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

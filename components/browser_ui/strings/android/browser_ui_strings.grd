@@ -435,6 +435,12 @@
       <message name="IDS_PAGE_INFO_PERMISSIONS_TITLE" desc="Label used in the Page Info dialog above the permissions list.">
         Permissions
       </message>
+      <message name="IDS_PAGE_INFO_PERMISSIONS_RESET" desc="The label for the button allowing users to reset the permissions for a website.">
+        Reset permissions
+      </message>
+      <message name="IDS_PAGE_INFO_PERMISSIONS_RESET_CONFIRMATION" desc="The confirmation text asking if the user is sure about resetting the permissions for a site.">
+        Are you sure you want to reset all permissions for this website?
+      </message>
       <message name="IDS_PAGE_INFO_PERMISSIONS_OS_WARNING" desc="Text to show an OS-level permission warning.">
         <ph name="PERMISSION">%1$s<ex>Location</ex></ph> - <ph name="WARNING_MESSAGE">%2$s<ex>Turned off for this device</ex></ph>
       </message>
@@ -444,7 +450,9 @@
       <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_1_BLOCKED" desc="Summary page info permissions string for for one blocked permission.">
         <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph> blocked
       </message>
-      <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_2_MIXED" desc="Summary page info permissions string for 2 permissions, with a mix of allowed/blocked.">
+      <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_2_MIXED" desc="Summary page info permissions string for 2 permissions, with a mix of allowed/blocked.
+      For the languages in which allowed/blocked have to agree with the gender of the permission, a translation of the string 'PERMISSION_1 and PERMISSION_2' should be used instead.
+      Refer to b/168814348 for more details.">
         <ph name="PERMISSION_1">%1$s<ex>Location</ex></ph> allowed, <ph name="PERMISSION_2">%2$s<ex>Sound</ex></ph> blocked
       </message>
       <message name="IDS_PAGE_INFO_PERMISSIONS_SUMMARY_2_ALLOWED" desc="Summary page info permissions string for 2 permissions, all allowed.">

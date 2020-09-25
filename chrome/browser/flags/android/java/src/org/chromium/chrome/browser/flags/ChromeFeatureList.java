@@ -199,7 +199,6 @@ public abstract class ChromeFeatureList {
             "AutofillDownstreamCvcPromptUseGooglePayLogo";
     public static final String AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT =
             "AutofillEnableCardNicknameManagement";
-    public static final String AUTOFILL_ENABLE_COMPANY_NAME = "AutofillEnableCompanyName";
     public static final String AUTOFILL_ENABLE_GOOGLE_ISSUED_CARD =
             "AutofillEnableGoogleIssuedCard";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
@@ -316,7 +315,6 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_INFRASTRUCTURE =
             "MessagesForAndroidInfrastructure";
     public static final String MOBILE_IDENTITY_CONSISTENCY = "MobileIdentityConsistency";
-    public static final String MODAL_PERMISSION_PROMPTS = "ModalPermissionPrompts";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String NEW_PHOTO_PICKER = "NewPhotoPicker";
     public static final String NOTIFICATION_SUSPENDER = "NotificationSuspender";

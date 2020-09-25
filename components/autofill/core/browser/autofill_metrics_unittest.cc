@@ -596,30 +596,6 @@ INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
                          AutofillMetricsIFrameTest,
                          testing::Bool());
 
-// Test parameter indicates if the metrics are being logged for a form
-// with a companyname field specified.
-class AutofillMetricsCompanyTest : public AutofillMetricsTest,
-                                   public testing::WithParamInterface<bool> {
- public:
-  AutofillMetricsCompanyTest() : company_name_enabled_(GetParam()) {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kAutofillEnableCompanyName, company_name_enabled_);
-    AutofillMetricsTest::SetUp();
-  }
-
- protected:
-  const bool company_name_enabled_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
-                         AutofillMetricsCompanyTest,
-                         testing::Bool());
-
 // Test that we log quality metrics appropriately.
 TEST_F(AutofillMetricsTest, QualityMetrics) {
   // Set up our form data.
@@ -4283,7 +4259,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
 // Test that we log the correct number of Company Name Autofill suggestions when
 // filling a form.
-TEST_P(AutofillMetricsCompanyTest, CompanyNameSuggestions) {
+TEST_F(AutofillMetricsTest, CompanyNameSuggestions) {
   // Set up our form data.
   FormData form;
   form.unique_renderer_id = MakeFormRendererId();
@@ -4314,12 +4290,8 @@ TEST_P(AutofillMetricsCompanyTest, CompanyNameSuggestions) {
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
 
-    if (company_name_enabled_) {
-      histogram_tester.ExpectUniqueSample("Autofill.AddressSuggestionsCount", 2,
-                                          1);
-    } else {
-      histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 0);
-    }
+    histogram_tester.ExpectUniqueSample("Autofill.AddressSuggestionsCount", 2,
+                                        1);
   }
 }
 
@@ -10421,16 +10393,9 @@ TEST_F(AutofillMetricsTest,
 // Verify that we don't log Autofill.WebOTP.OneTimeCode.FromAutocomplete if the
 // frame has no form.
 TEST_F(AutofillMetricsTest, FrameHasNoForm) {
-#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/1127005): Test is failing on iOS 12 device.
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    return;
-  }
-#endif
-
+  base::HistogramTester histogram_tester;
   autofill_manager_.reset();
-  EXPECT_FALSE(base::StatisticsRecorder::FindHistogram(
-      "Autofill.WebOTP.OneTimeCode.FromAutocomplete"));
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.OneTimeCode.FromAutocomplete", 0);
 }
 
 // Verify that we correctly log metrics if a frame has

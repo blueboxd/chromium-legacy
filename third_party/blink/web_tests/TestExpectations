@@ -2684,7 +2684,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/screen-capture/feature-policy.https.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/testdriver/actions/wheelScroll.html [ Timeout ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
@@ -4887,7 +4888,6 @@ crbug.com/757165 [ Win ] fast/spatial-navigation/snav-unit-overflow-and-scroll-i
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-z-index.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
-crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
@@ -5349,9 +5349,6 @@ crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass
 # Broken when smooth scrolling was enabled in Mac web tests (real failure)
 crbug.com/1044137 [ Mac ] fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
 
-# Test frequently times out on Mac CQ bots.
-crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
-
 # Sheriff 2018-08-20
 crbug.com/862589 virtual/threaded/fast/idle-callback/long_idle_periods.html [ Timeout Pass ]
 
@@ -5797,7 +5794,6 @@ crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/988246 external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_mismatched_subscription.tentative.https.any.serviceworker.html [ Skip ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
-crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ Pass Timeout ]
 
 # WebRTC tests that fails (by timing out) because `getSynchronizationSources()`
 # on the audio side needs a hardware sink for the returned dictionary entries to

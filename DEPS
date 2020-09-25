@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2f1c84284f6e7538e6eaf272de99c92f492a7f9b',
+  'v8_revision': 'c325a42248b0cbe55503acfe385d5d6604da04ec',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd59bccb5df722d82e9cd90a0f4b9418a69b19c4e',
+  'angle_revision': '962e347302d7997433c45da614317ee690a624d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e11be3c4ad0438fda453a7179a601b9f74ffada0',
+  'devtools_frontend_revision': 'b398c83894c654fb3e681c07e10fba8eef454a09',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e9b0eee25d5465c5fe43551754afcd7536879a41',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e1afe22cfb01722fd7e52a3ac61503e90e3a89c9',
       'condition': 'checkout_ios',
   },
 
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'df53732e1b695553e7ac2fc23cc874961034e637',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8f47f320f6f31d28a32c2120e471ca1c7871ab27',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'E-5mQKtC1iTlxrYCskskqJebP37mgKGmQhNKk_fPQ3UC'
+              'version': 'z3Y-aSDMgxmhNtf5bQA-fxN5koCx5dB1xr_k0mZybpAC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1534,7 +1534,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '1qkV-5d6qu6v6W60NcAt1E8QDBmBNVS9ndWZPH93OVwC',
+          'version': '4faik34WiW106WOvsK6NNM4Q1Bz0vY5c29bxlSAWOWMC',
         },
       ],
       'dep_type': 'cipd',
@@ -1544,7 +1544,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'McQX6w7ojyNaDcWISrmicbt00IsXxTSvxjuEPfPLiIEC',
+          'version': '_s8IulBrrqUxGhXDY3zbvzauPXhMHKLl63qibypfwXcC',
         },
       ],
       'dep_type': 'cipd',

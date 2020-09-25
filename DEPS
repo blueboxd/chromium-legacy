@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'be75fbcca886a8c821ce6543df38e3e2f5e9fbf1',
+  'angle_revision': '68a5baeb5ba08575c2a3a6e31a0bd8eb4b39d4de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a09406249fa35754129856e6eba2ab9a8dae88d5',
+  'swiftshader_revision': 'b94db86cf9b3369ebd3c99ffe0d4072bac0a7b75',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '85d92d37c4c268323dbaeded5dd1de8e2a1abbc7',
+  'catapult_revision': '3cd3b4e18cd1d23b2d514f149aecd16f0efc0ef8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -270,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
-  'libprotobuf-mutator': '439e81f8f4847ec6e2bf11b3aa634a5d8485633d',
+  'libprotobuf-mutator': '8942a9ba43d8bb196230c321d46d6a137957a719',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3d8fd27d9a8ae4431ebae8f9d163489d89cd9b9a',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'df53732e1b695553e7ac2fc23cc874961034e637',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'kVxPs86vReFhkroiE9m-5oTHDydp7wn3ehJbz9Pf40UC'
+              'version': 'E-5mQKtC1iTlxrYCskskqJebP37mgKGmQhNKk_fPQ3UC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'afef7a74a7964fbd488f5e3956c3f07b2b084f25',
+    Var('webrtc_git') + '/src.git' + '@' + '9e81182f8ea5f17339aa10b307f8f875422b667f',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1524,7 +1524,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'XNeE-uWpzXzcRoD6ylUJHEbIn411jlyiRNiGMUlyH9wC',
+          'version': 'afwCiHe5Fh5p0UN2CvmhSo6uWXlU0d289Yml61Egvg0C',
         },
       ],
       'dep_type': 'cipd',
@@ -1566,7 +1566,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'uJOBjWHF-V8jOwZMkbWeP1rWi_kNv9l_Fsc2gObjg3wC',
+        'version': 'pmx13oYqsBxVgUj6p9fCwrTtgN1M6INq4nvwNMlYmL4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '2a08myhDLFnYjNwtbn3d4RoitoxiNvUZkfWohkxJIP8C',
+        'version': 'jVnFFKK_QUsuM6vpE9PGM0P46Dc1MxtkuRNyoYqmMlEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4628,17 +4628,53 @@ hooks = [
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
-        #
+
   # Download Telemetry's benchmark binary dependencies via conditionals
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies',
+    'condition': 'checkout_telemetry_dependencies and checkout_linux',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
+                '-p',
+                'linux'
     ],
   },
+  {
+    'name': 'checkout_telemetry_benchmark_deps',
+    'condition': 'checkout_telemetry_dependencies and checkout_win',
+    'pattern': '.',
+    'action': [ 'vpython',
+                'src/tools/perf/fetch_benchmark_deps.py',
+                '-f',
+                '-p',
+                'win'
+    ],
+  },
+  {
+    'name': 'checkout_telemetry_benchmark_deps',
+    'condition': 'checkout_telemetry_dependencies and checkout_mac',
+    'pattern': '.',
+    'action': [ 'vpython',
+                'src/tools/perf/fetch_benchmark_deps.py',
+                '-f',
+                '-p',
+                'mac'
+    ],
+  },
+  {
+    'name': 'checkout_telemetry_benchmark_deps',
+    'condition': 'checkout_telemetry_dependencies and checkout_android',
+    'pattern': '.',
+    'action': [ 'vpython',
+                'src/tools/perf/fetch_benchmark_deps.py',
+                '-f',
+                '-p',
+                'android'
+    ],
+  },
+
 
   # This is used to ensure that all network operations are properly
   # annotated so we can document what they're for.

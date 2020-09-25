@@ -1342,7 +1342,6 @@ component("base") {
       if (is_apple) {
         sources += [
           "allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc",
-          "allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.h",
         ]
       }
       if (is_chromeos || is_linux) {
@@ -3216,6 +3215,12 @@ test("base_unittests") {
       "mac/objc_release_properties_unittest.mm",
       "mac/scoped_nsobject_unittest.mm",
       "strings/sys_string_conversions_mac_unittest.mm",
+    ]
+
+    sources -= [
+      # The immediate crash tests require shared libraries, which we don't
+      # support loading on iOS.
+      "immediate_crash_unittest.cc",
     ]
 
     if (use_allocator_shim) {

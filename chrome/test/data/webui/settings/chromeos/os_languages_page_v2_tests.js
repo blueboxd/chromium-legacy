@@ -304,28 +304,33 @@ suite('languages page', () => {
       actionMenu.close();
     });
 
-    test('test translate target language is labelled', function() {
-      // Translate target language disabled.
+    test('test translate target language is labelled', () => {
       const targetLanguageCode = languageHelper.languages.translateTarget;
       assertTrue(!!targetLanguageCode);
-      assertTrue(languageHelper.languages.enabled.some(
-          l => languageHelper.convertLanguageCodeForTranslate(
-                   l.language.code) === targetLanguageCode));
-      assertTrue(languageHelper.languages.enabled.some(
-          l => languageHelper.convertLanguageCodeForTranslate(
-                   l.language.code) !== targetLanguageCode));
-      let translateTargetLabel = null;
-      let item = null;
+
+      // Add 'en' to have more than one translate-target language.
+      languageHelper.enableLanguage('en');
+      const isTranslateTarget = languageState =>
+          languageHelper.convertLanguageCodeForTranslate(
+              languageState.language.code) === targetLanguageCode;
+      const translateTargets =
+          languageHelper.languages.enabled.filter(isTranslateTarget);
+      assertTrue(translateTargets.length > 1);
+      // Ensure there is at least one non-translate-target language.
+      assertTrue(
+          translateTargets.length < languageHelper.languages.enabled.length);
 
       const listItems = languagesList.querySelectorAll('.list-item');
       const domRepeat = languagesList.querySelector('dom-repeat');
       assertTrue(!!domRepeat);
 
+      let translateTargetLabel;
+      let item;
       let num_visibles = 0;
-      Array.from(listItems).forEach(function(el) {
+      Array.from(listItems).forEach(el => {
         item = domRepeat.itemForElement(el);
         if (item) {
-          translateTargetLabel = el.querySelector('.secondary');
+          translateTargetLabel = el.querySelector('.target-info');
           assertTrue(!!translateTargetLabel);
           if (getComputedStyle(translateTargetLabel).display !== 'none') {
             num_visibles++;
@@ -523,5 +528,53 @@ suite('languages page', () => {
 
       assertTrue(await metricsProxy.whenCalled('recordToggleTranslate'));
     });
+  });
+});
+
+suite('change device language button', () => {
+  test('is hidden for guest users', () => {
+    loadTimeData.overrideValues({
+      isGuest: true,
+    });
+    const page = document.createElement('os-settings-languages-page-v2');
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+
+    assertFalse(!!page.$$('#changeDeviceLanguage'));
+    assertFalse(!!page.$$('#changeDeviceLanguagePolicyIndicator'));
+  });
+
+  test('is disabled for secondary users', () => {
+    loadTimeData.overrideValues(
+        {isGuest: false, isSecondaryUser: true, primaryUserEmail: 'test.com'});
+    const page = document.createElement('os-settings-languages-page-v2');
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+
+    const changeDeviceLanguageButton = page.$$('#changeDeviceLanguage');
+    assertTrue(changeDeviceLanguageButton.disabled);
+    assertFalse(changeDeviceLanguageButton.hidden);
+
+    const changeDeviceLanguagePolicyIndicator =
+        page.$$('#changeDeviceLanguagePolicyIndicator');
+    assertFalse(changeDeviceLanguagePolicyIndicator.hidden);
+    assertEquals(
+        'test.com', changeDeviceLanguagePolicyIndicator.indicatorSourceName);
+  });
+
+  test('is enabled for primary users', () => {
+    loadTimeData.overrideValues({
+      isGuest: false,
+      isSecondaryUser: false,
+    });
+    const page = document.createElement('os-settings-languages-page-v2');
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+
+    const changeDeviceLanguageButton = page.$$('#changeDeviceLanguage');
+    assertFalse(changeDeviceLanguageButton.disabled);
+    assertFalse(changeDeviceLanguageButton.hidden);
+
+    assertFalse(!!page.$$('#changeDeviceLanguagePolicyIndicator'));
   });
 });

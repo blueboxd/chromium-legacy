@@ -300,8 +300,16 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   if (!LocalRootImpl())
     return;
 
+  // Dirty bit on MouseEventManager is not cleared in OOPIFs after scroll
+  // or layout changes. Ensure the hover state is recomputed if necessary.
+  LocalRootImpl()
+      ->GetFrame()
+      ->GetEventHandler()
+      .RecomputeMouseHoverStateIfNeeded();
+
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
+
   if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
     SCOPED_UMA_AND_UKM_TIMER(
         LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator(),
@@ -1180,8 +1188,7 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
     const VisualProperties& visual_properties) {
   SetWindowSegments(visual_properties.root_widget_window_segments);
   widget_base_->UpdateSurfaceAndScreenInfo(
-      visual_properties.local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation()),
+      visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
       visual_properties.compositor_viewport_pixel_rect,
       visual_properties.screen_info);
 
@@ -1199,11 +1206,12 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
   // main frame do not do this in order to not clobber the source of truth in
   // the main frame.
   if (!View()->MainFrameImpl()) {
-    View()->Resize(WebSize(widget_base_->DIPsToBlinkSpace(
+    View()->Resize(WebSize(widget_base_->DIPsToCeiledBlinkSpace(
         widget_base_->VisibleViewportSizeInDIPs())));
   }
 
-  Resize(WebSize(widget_base_->DIPsToBlinkSpace(visual_properties.new_size)));
+  Resize(WebSize(
+      widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size)));
 }
 
 }  // namespace blink

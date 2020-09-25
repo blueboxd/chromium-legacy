@@ -241,12 +241,6 @@ const char kAutofillEnableStickyPaymentsBubbleDescription[] =
     "When enabled, all Autofill payments bubbles will not be dismissed upon "
     "navigation.";
 
-const char kAutofillEnableSurfacingServerCardNicknameName[] =
-    "Enable surfacing masked server card nicknames";
-const char kAutofillEnableSurfacingServerCardNicknameDescription[] =
-    "When enabled, if Google Payments cards were given nicknames in a Google "
-    "Pay app, Autofill will surface these nicknames in suggestions.";
-
 const char kAutofillEnableToolbarStatusChipName[] =
     "Move Autofill omnibox icons next to the profile avatar icon";
 const char kAutofillEnableToolbarStatusChipDescription[] =
@@ -755,6 +749,10 @@ const char kEnableGenericSensorExtraClassesDescription[] =
 const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
+
+const char kGuestOsExternalProtocolName[] = "Guest OS External Protocol";
+const char kGuestOsExternalProtocolDescription[] =
+    "Enable Guest OS external protocol handlers";
 
 const char kEnableImplicitRootScrollerName[] = "Implicit Root Scroller";
 const char kEnableImplicitRootScrollerDescription[] =

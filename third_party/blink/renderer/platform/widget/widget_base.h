@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/browser_controls_params.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
@@ -226,9 +226,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
                    mojom::blink::PointerLockContextInterfaceBase>)> callback);
   bool ComputePreferCompositingToLCDText();
 
-  const viz::LocalSurfaceIdAllocation&
-  local_surface_id_allocation_from_parent() {
-    return local_surface_id_allocation_from_parent_;
+  const viz::LocalSurfaceId& local_surface_id_from_parent() {
+    return local_surface_id_from_parent_;
   }
 
   // Called to get the position of the widget's window in screen
@@ -270,15 +269,16 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Converts from DIPs to Blink coordinate space (ie. Viewport/Physical
   // pixels).
   gfx::PointF DIPsToBlinkSpace(const gfx::PointF& point);
-  gfx::Point DIPsToBlinkSpace(const gfx::Point& point);
-  gfx::Size DIPsToBlinkSpace(const gfx::Size& size);
+  gfx::Point DIPsToRoundedBlinkSpace(const gfx::Point& point);
+  gfx::Size DIPsToCeiledBlinkSpace(const gfx::Size& size);
 
   // Converts from Blink coordinate (ie. Viewport/Physical pixels) space to
   // DIPs.
   gfx::PointF BlinkSpaceToDIPs(const gfx::PointF& point);
-  gfx::Point BlinkSpaceToDIPs(const gfx::Point& point);
-  gfx::Size BlinkSpaceToDIPs(const gfx::Size& size);
-  gfx::Rect BlinkSpaceToDIPs(const gfx::Rect& rect);
+  gfx::Point BlinkSpaceToFlooredDIPs(const gfx::Point& point);
+  gfx::Size BlinkSpaceToCeiledDIPs(const gfx::Size& size);
+  gfx::Rect BlinkSpaceToEnclosingDIPs(const gfx::Rect& rect);
+  gfx::RectF BlinkSpaceToDIPs(const gfx::RectF& rectF);
 
   // Returns whether Zoom for DSF is enabled for the widget.
   bool UseZoomForDsf() { return use_zoom_for_dsf_; }
@@ -293,12 +293,12 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Update the surface allocation information, compositor viewport rect and
   // screen info on the widget.
   void UpdateSurfaceAndScreenInfo(
-      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect,
       const ScreenInfo& new_screen_info);
   // Similar to UpdateSurfaceAndScreenInfo but the screen info remains the same.
   void UpdateSurfaceAndCompositorRect(
-      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect);
   // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
   // and compositor viewport rect remains the same.
@@ -314,9 +314,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       const gfx::Rect& compositor_viewport_pixel_rect);
   const ScreenInfo& GetScreenInfo();
 
-  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
-      const {
-    return local_surface_id_allocation_from_parent_;
+  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
+    return local_surface_id_from_parent_;
   }
 
  private:
@@ -406,7 +405,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // do not include any scaling by device scale factor, so are logical pixels
   // not physical device pixels.
   ScreenInfo screen_info_;
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
+  viz::LocalSurfaceId local_surface_id_from_parent_;
 
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.

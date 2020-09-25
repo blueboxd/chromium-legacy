@@ -297,11 +297,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "autofill-enable-surfacing-server-card-nickname",
-    "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "autofill-enable-toolbar-status-chip",
     "owners": [ "siyua" ],
     "expiry_milestone": 88
@@ -2719,6 +2714,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "guest-os-external-protocol",
+    "owners": [ "joelhockey", "crostini-syd" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "h264-decoder-is-buffer-complete-frame",
     "owners": [ "jkardatzke", "mcasas" ],
     "expiry_milestone": 89
@@ -4268,7 +4268,7 @@
   {
     "name": "system-keyboard-lock",
     "owners": [ "joedow", "garykac", "jamiewalch" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 95
   },
   {
     "name": "system-tray-mic-gain",

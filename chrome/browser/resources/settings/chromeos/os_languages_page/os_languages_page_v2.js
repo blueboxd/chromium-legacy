@@ -55,6 +55,30 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isGuest');
+      },
+    },
+
+    /** @private */
+    isSecondaryUser_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isSecondaryUser');
+      },
+    },
+
+    /** @private */
+    primaryUserEmail_: {
+      type: String,
+      value() {
+        return loadTimeData.getString('primaryUserEmail');
+      },
+    },
+
     /**
      * Used by DeepLinkingBehavior to focus this page's deep links.
      * @type {!Set<!chromeos.settings.mojom.Setting>}
@@ -108,7 +132,7 @@ Polymer({
   /** @private */
   onChangeDeviceLanguageDialogClose_() {
     this.showChangeDeviceLanguageDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$.changeDeviceLanguage));
+    cr.ui.focusWithoutInk(assert(this.$$('#changeDeviceLanguage')));
   },
 
   /**
@@ -257,12 +281,14 @@ Polymer({
 
   /**
    * @param {string} languageCode The language code identifying a language.
-   * @param {string} translateTarget The target language.
-   * @return {boolean} true if |languageCode| matches the target language
+   * @param {string} translateTarget The translate target language.
+   * @return {string} class name for whether it's a translate-target or not.
    * @private
    */
-  isTranslationTarget_(languageCode, translateTarget) {
+  getTranslationTargetClass_(languageCode, translateTarget) {
     return this.languageHelper.convertLanguageCodeForTranslate(languageCode) ===
-        translateTarget;
+            translateTarget ?
+        'translate-target' :
+        'non-translate-target';
   },
 });

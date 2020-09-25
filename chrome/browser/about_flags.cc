@@ -2935,6 +2935,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-enable-dlc", flag_descriptions::kCrostiniEnableDlcName,
      flag_descriptions::kCrostiniEnableDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniEnableDlc)},
+    {"guest-os-external-protocol",
+     flag_descriptions::kGuestOsExternalProtocolName,
+     flag_descriptions::kGuestOsExternalProtocolDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kGuestOsExternalProtocol)},
     {"pluginvm-show-camera-permissions",
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
@@ -6084,12 +6088,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidMultipleDisplayDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidMultipleDisplay)},
 #endif  // defined(OS_ANDROID)
-    {"autofill-enable-surfacing-server-card-nickname",
-     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameName,
-     flag_descriptions::kAutofillEnableSurfacingServerCardNicknameDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableSurfacingServerCardNickname)},
 
     {"app-cache", flag_descriptions::kAppCacheName,
      flag_descriptions::kAppCacheDescription, kOsAll,

@@ -857,6 +857,10 @@
                   'chrome/android/javatests/src/org/chromium/chrome/browser/contextualsearch/|' \
                   'components/contextual_search/',
     },
+    'core_web_vitals_plm': {
+      'filepath': 'chrome/browser/page_load_metrics/observers/core/|' \
+                  'components/page_load_metrics/browser/observers/core/',
+    },
     'courgette': {
       'filepath': 'courgette/',
     },
@@ -2062,7 +2066,8 @@
                       'nektar+watch@chromium.org',
                       'sarakato+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
-    'accessibility_component_extensions': ['anastasi+watch@google.com'],
+    'accessibility_component_extensions': ['anastasi+watch@google.com',
+                                           'shannc+watch@chromium.org'],
     'accessibility_minimal_core': ['aleventhal+watcha11y@chromium.org'],
     'add_to_homescreen': ['dominickn+watch-a2hs@chromium.org',
                           'hanxi+watch@chromium.org',
@@ -2412,6 +2417,7 @@
                        'kinuko+watch@chromium.org'],
     'contextual_search': ['donnd+watch@chromium.org',
                           'twellington+watch@chromium.org'],
+    'core_web_vitals_plm': ['core-web-vitals-plm-reviews@chromium.org'],
     'courgette': ['huangs+watch@chromium.org',
                   'wfh+watch@chromium.org'],
     'cq': ['cq-config-changes@chromium.org',

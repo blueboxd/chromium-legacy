@@ -153,9 +153,6 @@ extern const char kAutofillEnableOffersInDownstreamDescription[];
 extern const char kAutofillEnableStickyPaymentsBubbleName[];
 extern const char kAutofillEnableStickyPaymentsBubbleDescription[];
 
-extern const char kAutofillEnableSurfacingServerCardNicknameName[];
-extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];
-
 extern const char kAutofillEnableToolbarStatusChipName[];
 extern const char kAutofillEnableToolbarStatusChipDescription[];
 
@@ -714,6 +711,9 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
+
+extern const char kGuestOsExternalProtocolName[];
+extern const char kGuestOsExternalProtocolDescription[];
 
 extern const char kH264DecoderBufferIsCompleteFrameName[];
 extern const char kH264DecoderBufferIsCompleteFrameDescription[];

@@ -807,14 +807,14 @@ void WebPagePopupImpl::ScheduleAnimation() {
 void WebPagePopupImpl::UpdateVisualProperties(
     const VisualProperties& visual_properties) {
   widget_base_->UpdateSurfaceAndScreenInfo(
-      visual_properties.local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation()),
+      visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
       visual_properties.compositor_viewport_pixel_rect,
       visual_properties.screen_info);
   widget_base_->SetVisibleViewportSizeInDIPs(
       visual_properties.visible_viewport_size);
 
-  Resize(WebSize(widget_base_->DIPsToBlinkSpace(visual_properties.new_size)));
+  Resize(WebSize(
+      widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size)));
 }
 
 const ScreenInfo& WebPagePopupImpl::GetOriginalScreenInfo() {

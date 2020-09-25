@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/WICG/is-input-pending
-dictionary IsInputPendingOptionsInit {
-  boolean includeContinuous = false;
+onconnect = (event) => {
+  const port = event.ports[0];
+  port.onmessage = (e) => {
+    if (e.data === 'ping') {
+      port.postMessage('pong');
+    }
+  };
 };

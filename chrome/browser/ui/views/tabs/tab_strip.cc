@@ -94,6 +94,7 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -1383,7 +1384,8 @@ void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
   // active tab is not in the group.
   if (model_index == selected_tabs_.active() && group.has_value() &&
       controller()->IsGroupCollapsed(group.value())) {
-    controller()->ToggleTabGroupCollapsedState(group.value(), false);
+    controller()->ToggleTabGroupCollapsedState(
+        group.value(), ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
   }
 
   ExitTabClosingMode();
@@ -1422,11 +1424,16 @@ void TabStrip::OnGroupVisualsChanged(const tab_groups::TabGroupId& group) {
 
 void TabStrip::ToggleTabGroup(const tab_groups::TabGroupId& group,
                               bool is_collapsing,
-                              bool from_mouse_event) {
-  if (is_collapsing && from_mouse_event) {
+                              ToggleTabGroupCollapsedStateOrigin origin) {
+  if (is_collapsing && GetWidget()) {
     in_tab_close_ = true;
-    if (GetWidget())
+    if (origin == ToggleTabGroupCollapsedStateOrigin::kMouse) {
       AddMessageLoopObserver();
+    } else if (origin == ToggleTabGroupCollapsedStateOrigin::kGesture) {
+      StartResizeLayoutTabsFromTouchTimer();
+    } else {
+      return;
+    }
 
     // The current group header is expanded which is slightly smaller than the
     // size when the header is collapsed. Calculate the size of the header once
@@ -1593,7 +1600,8 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       // If the tab that is about to be activated is in a collapsed group,
       // automatically expand the group.
       if (controller()->IsGroupCollapsed(new_group))
-        controller()->ToggleTabGroupCollapsedState(new_group, false);
+        controller()->ToggleTabGroupCollapsedState(
+            new_group, ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
       UpdateTabGroupVisuals(new_group);
     }
 
@@ -1977,8 +1985,7 @@ void TabStrip::OnMouseEventInTab(views::View* source,
   // Record time from cursor entering the tabstrip to first tap on a tab to
   // switch.
   if (mouse_entered_tabstrip_time_.has_value() &&
-      event.type() == ui::ET_MOUSE_PRESSED &&
-      !strcmp(source->GetClassName(), Tab::kViewClassName)) {
+      event.type() == ui::ET_MOUSE_PRESSED && views::IsViewClass<Tab>(source)) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "TabStrip.TimeToSwitch",
         base::TimeTicks::Now() - mouse_entered_tabstrip_time_.value());
@@ -2419,7 +2426,7 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
     // want to interfere.
     views::View* v = View::GetTooltipHandlerForPoint(point);
-    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
+    if (v && v != this && !views::IsViewClass<Tab>(v))
       return v;
 
     views::View* tab = FindTabHitByPoint(point);
@@ -3352,7 +3359,7 @@ void TabStrip::TabContextMenuController::ShowContextMenuForViewImpl(
     ui::MenuSourceType source_type) {
   // We are only intended to be installed as a context-menu handler for tabs, so
   // this cast should be safe.
-  DCHECK_EQ(Tab::kViewClassName, source->GetClassName());
+  DCHECK(views::IsViewClass<Tab>(source));
   Tab* const tab = static_cast<Tab*>(source);
   if (tab->closing())
     return;
@@ -3791,7 +3798,7 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
     // want to interfere.
     views::View* v = views::ViewTargeterDelegate::TargetForRect(root, rect);
-    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
+    if (v && v != this && !views::IsViewClass<Tab>(v))
       return v;
 
     views::View* tab = FindTabHitByPoint(point);

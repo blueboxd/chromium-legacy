@@ -2314,14 +2314,14 @@ MainThreadSchedulerImpl::NonWakingTaskRunner() {
   return non_waking_task_runner_;
 }
 
-AgentGroupSchedulerImpl* MainThreadSchedulerImpl::EnsureAgentGroupScheduler() {
+AgentGroupSchedulerImpl& MainThreadSchedulerImpl::EnsureAgentGroupScheduler() {
   // TODO(crbug/1113102): Currently, MainThreadSchedulerImpl owns
   // AgentGroupSchedulerImpl
   if (!agent_group_scheduler_) {
-    agent_group_scheduler_ = std::make_unique<AgentGroupSchedulerImpl>(this);
+    agent_group_scheduler_ = std::make_unique<AgentGroupSchedulerImpl>(*this);
     AddAgentGroupScheduler(agent_group_scheduler_.get());
   }
-  return agent_group_scheduler_.get();
+  return *agent_group_scheduler_.get();
 }
 
 void MainThreadSchedulerImpl::RemoveAgentGroupScheduler(
@@ -2348,7 +2348,21 @@ AgentGroupScheduler* MainThreadSchedulerImpl::GetCurrentAgentGroupScheduler() {
 void MainThreadSchedulerImpl::SetCurrentAgentGroupScheduler(
     AgentGroupSchedulerImpl* agent_group_scheduler_impl) {
   helper_.CheckOnValidThread();
+  if (current_agent_group_scheduler_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        TRACE_DISABLED_BY_DEFAULT("agent_scheduling_group"), "ASG_scope", this);
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        TRACE_DISABLED_BY_DEFAULT("agent_scheduling_group"), "MTS_scope", this);
+  }
   current_agent_group_scheduler_ = agent_group_scheduler_impl;
+  if (current_agent_group_scheduler_) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("agent_scheduling_group"), "ASG_scope", this);
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("agent_scheduling_group"), "MTS_scope", this);
+  }
   if (agent_group_scheduler_impl) {
     sequence_manager_->SetDefaultTaskRunner(
         agent_group_scheduler_impl->DefaultTaskRunner());

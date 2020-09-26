@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5e1545fa00c80d61d788ce456862446f7870bdc3',
+  'skia_revision': 'eabce08bb2f2e32d97fabb299b3b8bb31e861626',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a8e978ac76a86d30d5d88f5fa2b32ebd47a86ae8',
+  'devtools_frontend_revision': '7950eb55c0765d2529779fecc71fa2dd9fcface4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -901,7 +901,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5b4d110a2b90191bfa97889a3776acd8e2786241',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0081a12803bfb28b19f21b1d4f604802a8ff92d7',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -952,7 +952,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'bacaef3237c515e40d1a24722be48c0a0b30f75f',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1815d86a224b75abc1dd084789c20f7da3c9fed0',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1079,7 +1079,7 @@ deps = {
 
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git'
-      + '@' + '645250b6690785be60ab6780ce4b58698d884d11', # release 1.9.1
+      + '@' + '9059f5cad030ba11d37818847443a53918c327b1', # release 1.9.4
 
   'src/third_party/junit/src': {
       'url': Var('chromium_git') + '/external/junit.git' + '@' + '64155f8a9babcfcf4263cf4d08253a1556e75481',
@@ -1351,7 +1351,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '2be1c17fda0d6b0c8e3758b07d70ebe0af5eb2d2',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'a5548b3d57822f9234b51a3b0d969b245bf82cf4',
 
   'src/third_party/r8': {
       'packages': [
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@dc972dc72cd926ce760f71675fa2424e1fb09a5d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@25acdad71baebfc4da1dc9650aac1c57c257f008',
     'condition': 'checkout_src_internal',
   },
 
@@ -1566,7 +1566,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'yjdlXACke1cTwXW-bd8ntMjFTSjSN2nWza75K8xGzDIC',
+        'version': 'NV_ZV-z9XX-Yv6UVmMCUAHjBiVWkCwmVmCDBB59wP4YC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'wdyeXKN2Sqps4c-dKz5p7osNT-u5oIOm6T_oySHQw9gC',
+        'version': 'mVKYYOx8-pidKaj9alMphEN2AZUhCsmPzuRBc-FsDhMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

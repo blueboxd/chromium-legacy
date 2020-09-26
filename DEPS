@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '68861e3913134f21da6799d228afe2288108d77d',
+  'skia_revision': '5e1545fa00c80d61d788ce456862446f7870bdc3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fc4e3cf24f9be6f2be293abd89c8d848a1f6dd4a',
+  'angle_revision': 'dff9331631e4353eddfc0bc9949480dc75ccf8db',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '2841e0538b4480b360adf1dc800b335ec33666a6',
+  'devtools_frontend_revision': 'a8e978ac76a86d30d5d88f5fa2b32ebd47a86ae8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -901,7 +901,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd08de190472710b01cad27897c693a025faeaa1a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5b4d110a2b90191bfa97889a3776acd8e2786241',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'xLEXHxiI436fV8RnHI4abyphW-sGIZXTB1AYnyhbjL0C'
+              'version': 'H7hrpKGUlOVzq9skYXcIJ0DSDdaFuCLaA8hiD5ii0fEC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@76b5fbb58db795be8d62156d0246a4889a349b5a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@dc972dc72cd926ce760f71675fa2424e1fb09a5d',
     'condition': 'checkout_src_internal',
   },
 

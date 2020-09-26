@@ -15831,6 +15831,12 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="8" label="kDeclarativeWebRequestWebviewGetRules"/>
 </enum>
 
+<enum name="DeclarativeContentActionType">
+  <int value="0" label="kShowAction"/>
+  <int value="1" label="kSetIcon"/>
+  <int value="2" label="kRequestContentScript"/>
+</enum>
+
 <enum name="DecodedImageOrientation">
   <int value="0" label="Unknown"/>
   <int value="1" label="Top Left"/>
@@ -28814,6 +28820,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3047" label="PluginElementLoadedImage"/>
   <int value="3048" label="PluginElementLoadedExternal"/>
   <int value="3049" label="RenderSubtreeAttribute"/>
+  <int value="3050" label="ARIAAnnotations"/>
   <int value="3051" label="IntersectionObserverV2"/>
   <int value="3052" label="HeavyAdIntervention"/>
   <int value="3053" label="UserTimingL3"/>
@@ -29463,6 +29470,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3680" label="IdentifiabilityStudyReserved3680"/>
   <int value="3681" label="IdentifiabilityStudyReserved3681"/>
   <int value="3682" label="UndeferrableThirdPartySubresourceRequestWithCookie"/>
+  <int value="3683" label="XRDepthSensing"/>
+  <int value="3684" label="XRFrameGetDepthInformation"/>
+  <int value="3685" label="XRDepthInformationGetDepth"/>
+  <int value="3686" label="XRDepthInformationDataAttribute"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41492,6 +41503,7 @@ from previous Chrome versions.
   <int value="-1454397907" label="OptimizationHints:disabled"/>
   <int value="-1454264660" label="ProminentDarkModeActiveTabTitle:disabled"/>
   <int value="-1453647118" label="PasswordLeakDetection:disabled"/>
+  <int value="-1452010225" label="WindowNaming:disabled"/>
   <int value="-1451644187" label="OverviewSwipeToClose:enabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
   <int value="-1449590570" label="RestrictGamepadAccess:enabled"/>
@@ -41773,6 +41785,7 @@ from previous Chrome versions.
       label="ContextualSuggestionsIPHReverseScroll:enabled"/>
   <int value="-1198304634"
       label="ProcessSharingWithDefaultSiteInstances:disabled"/>
+  <int value="-1197916855" label="WindowNaming:enabled"/>
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
@@ -42154,6 +42167,8 @@ from previous Chrome versions.
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-810110236" label="EditPasswordsInSettings:enabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
+  <int value="-806549905"
+      label="TabbedAppOverflowMenuThreeButtonActionbar:disabled"/>
   <int value="-806480547" label="SyncDeviceInfoInTransportMode:enabled"/>
   <int value="-805480822" label="RemoteCopyImageNotification:disabled"/>
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
@@ -44182,6 +44197,8 @@ from previous Chrome versions.
   <int value="1313476409" label="ReportFeedUserActions:disabled"/>
   <int value="1313570156"
       label="HappinessTrackingSurveysForDesktopMigration:enabled"/>
+  <int value="1313608203"
+      label="TabbedAppOverflowMenuThreeButtonActionbar:enabled"/>
   <int value="1313850691" label="Metal:disabled"/>
   <int value="1314681756" label="NoStatePrefetch:disabled"/>
   <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>
@@ -44880,7 +44897,6 @@ from previous Chrome versions.
   <int value="2014629801" label="view-passwords:disabled"/>
   <int value="2015335629" label="shelf-hover-previews"/>
   <int value="2015547864" label="NetworkServiceInProcess:enabled"/>
-  <int value="2018386804" label="IPH_ReopenTab:disabled"/>
   <int value="2018956925" label="UseAAudioDriver:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2022294878" label="WifiSyncAndroid:enabled"/>
@@ -44893,7 +44909,6 @@ from previous Chrome versions.
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2038036881" label="NewShortcutMapping:enabled"/>
   <int value="2039276757" label="EnableOverviewRoundedCorners:enabled"/>
-  <int value="2040316611" label="IPH_ReopenTab:enabled"/>
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>

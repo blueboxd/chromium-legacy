@@ -35,9 +35,9 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/public/dns_config_overrides.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -50,6 +50,7 @@
 #include "services/network/crl_set_distributor.h"
 #include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/dns_config_change_manager.h"
+#include "services/network/first_party_sets/preloaded_first_party_sets.h"
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
@@ -371,6 +372,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
+
+  preloaded_first_party_sets_ = std::make_unique<PreloadedFirstPartySets>();
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
@@ -793,6 +796,10 @@ void NetworkService::BindTestInterface(
     auto pipe = receiver.PassPipe();
     registry_->TryBindInterface(mojom::NetworkServiceTest::Name_, &pipe);
   }
+}
+
+void NetworkService::SetPreloadedFirstPartySets(const std::string& raw_sets) {
+  preloaded_first_party_sets_->ParseAndSet(raw_sets);
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>

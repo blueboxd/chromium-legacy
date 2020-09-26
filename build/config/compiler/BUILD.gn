@@ -123,13 +123,12 @@ declare_args() {
   # recognizable in the debugger, and crashes on memory accesses through
   # uninitialized pointers.
   #
-  # TODO(crbug.com/977230): Enabling this when 'is_android' is true breaks
-  # content_shell_test_apk on android-kitkat-arm-rel. Enabling this when
-  # 'use_xcode_clang' is true may call an old clang that doesn't support
-  # auto-init.
-  init_stack_vars =
-      !(is_android && (target_cpu == "arm" || target_cpu == "arm64")) &&
-      !use_xcode_clang
+  # TODO(crbug.com/1131993): Enabling this when 'is_android' is true breaks
+  # content_shell_test_apk on both ARM and x86.
+  #
+  # TODO(crbug.com/977230): Enabling this when 'use_xcode_clang' is true may
+  # call an old clang that doesn't support auto-init.
+  init_stack_vars = !is_android && !use_xcode_clang
 
   # This argument is to control whether enabling text section splitting in the
   # final binary. When enabled, the separated text sections with prefix
@@ -2002,7 +2001,7 @@ config("default_stack_frames") {
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
-    if (chrome_pgo_phase == 0) {
+    if (chrome_pgo_phase != 2) {
       # Favor size over speed, /O1 must be before the common flags.
       # /O1 implies /Os and /GF.
       cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
@@ -2168,9 +2167,9 @@ if (is_clang && is_a_target_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(is_android || is_desktop_linux || is_chromeos,
+    assert(is_android || chromeos_is_browser_only || is_chromeos,
            "The current platform has no default profile")
-    if (is_android || is_desktop_linux) {
+    if (is_android) {
       _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
     } else {
       assert(

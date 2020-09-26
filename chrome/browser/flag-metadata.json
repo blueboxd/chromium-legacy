@@ -2005,11 +2005,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-reopen-tab-in-product-help",
-    "owners": [ "collinbaker" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-resampling-input-events",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 85
@@ -4338,6 +4333,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "tabbed-app-overflow-menu-three-button-actionbar",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "textfield-focus-on-tap-up",
     "owners": [ "collinbaker" ],
     "expiry_milestone": 86
@@ -4667,6 +4667,11 @@
     "name": "win-use-native-spellchecker",
     "owners": [ "gujen@google.com", "chrome-language@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "window-naming",
+    "owners": [ "ellyjones" ],
+    "expiry_milestone": 89
   },
   {
     "name": "zero-copy-video-capture",

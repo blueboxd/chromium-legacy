@@ -32,6 +32,7 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -197,6 +198,14 @@ void AmbientAshTestBase::SetScreenBrightnessAndWait(double percent) {
   base::RunLoop().RunUntilIdle();
 }
 
+views::View* AmbientAshTestBase::GetMediaStringViewTextContainer() {
+  return GetMediaStringView()->media_text_container_for_testing();
+}
+
+views::Label* AmbientAshTestBase::GetMediaStringViewTextLabel() {
+  return GetMediaStringView()->media_text_label_for_testing();
+}
+
 void AmbientAshTestBase::SimulateMediaMetadataChanged(
     media_session::MediaMetadata metadata) {
   GetMediaStringView()->MediaSessionMetadataChanged(metadata);
@@ -262,6 +271,10 @@ void AmbientAshTestBase::IssueAccessToken(const std::string& token,
 
 bool AmbientAshTestBase::IsAccessTokenRequestPending() const {
   return ambient_client_->IsAccessTokenRequestPending();
+}
+
+base::TimeDelta AmbientAshTestBase::GetRefreshTokenDelay() {
+  return token_controller()->GetTimeUntilReleaseForTesting();
 }
 
 AmbientController* AmbientAshTestBase::ambient_controller() {

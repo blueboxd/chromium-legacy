@@ -14,16 +14,11 @@
 
     <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
         android:id="@+id/menu_item_text"
-        style="@style/AppMenuItemText"
+        style="@style/AppMenuItemTextViewWithCompoundDrawables"
         android:layout_weight="1"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:text="@string/menu_new_incognito_tab"
-        android:drawablePadding="12dp"
-        app:chromeDrawableTint="@color/default_icon_color_secondary"
-        android:tintMode="src_in"
-        app:drawableWidth="24dp"
-        app:drawableHeight="24dp"/>
+        android:text="@string/menu_new_incognito_tab" />
 
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/management_icon"

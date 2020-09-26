@@ -526,11 +526,9 @@ const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
 const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCSSReducedFontLoadingInvalidations{
-    "CSSReducedFontLoadingInvalidations", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCSSReducedFontLoadingLayoutInvalidations{
     "CSSReducedFontLoadingLayoutInvalidations",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
@@ -633,8 +631,7 @@ const base::Feature kAVIF{"AVIF", base::FEATURE_ENABLED_BY_DEFAULT};
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
 // do not become a source of bad LCP.
 const base::Feature kAlignFontDisplayAutoTimeoutWithLCPGoal{
-    "AlignFontDisplayAutoTimeoutWithLCPGoal",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AlignFontDisplayAutoTimeoutWithLCPGoal", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The amount of time allowed for 'display: auto' web fonts to load without
 // intervention, counted from navigation start.
@@ -650,7 +647,7 @@ const base::FeatureParam<AlignFontDisplayAutoTimeoutWithLCPGoalMode>::Option
 const base::FeatureParam<AlignFontDisplayAutoTimeoutWithLCPGoalMode>
     kAlignFontDisplayAutoTimeoutWithLCPGoalModeParam{
         &kAlignFontDisplayAutoTimeoutWithLCPGoal, "intervention-mode",
-        AlignFontDisplayAutoTimeoutWithLCPGoalMode::kToFailurePeriod,
+        AlignFontDisplayAutoTimeoutWithLCPGoalMode::kToSwapPeriod,
         &align_font_display_auto_timeout_with_lcp_goal_modes};
 
 // Enable throttling of fetch() requests from service workers in the

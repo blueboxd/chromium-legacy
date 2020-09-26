@@ -1891,6 +1891,21 @@ const FeatureEntry::FeatureVariation kTabbedAppOverflowMenuRegroupVariations[] =
       base::size(kTabbedAppOverflowMenuRegroupBackward), nullptr},
      {"(share button)", kTabbedAppOverflowMenuRegroupShare,
       base::size(kTabbedAppOverflowMenuRegroupShare), nullptr}};
+const FeatureEntry::FeatureParam
+    kTabbedAppOverflowMenuThreeButtonActionbarAction[] = {
+        {"three_button_action_bar", "action_chip_view"}};
+const FeatureEntry::FeatureParam
+    kTabbedAppOverflowMenuThreeButtonActionbarDestination[] = {
+        {"three_button_action_bar", "destination_chip_view"}};
+const FeatureEntry::FeatureVariation
+    kTabbedAppOverflowMenuThreeButtonActionbarVariations[] = {
+        {"(three button with action chip view)",
+         kTabbedAppOverflowMenuThreeButtonActionbarAction,
+         base::size(kTabbedAppOverflowMenuThreeButtonActionbarAction), nullptr},
+        {"(three button with destination chip view)",
+         kTabbedAppOverflowMenuThreeButtonActionbarDestination,
+         base::size(kTabbedAppOverflowMenuThreeButtonActionbarDestination),
+         nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::FeatureVariation
@@ -3898,6 +3913,14 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kTabbedAppOverflowMenuRegroup,
          kTabbedAppOverflowMenuRegroupVariations,
          "AndroidAppMenuUiRework")},
+    {"tabbed-app-overflow-menu-three-button-actionbar",
+     flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarName,
+     flag_descriptions::kTabbedAppOverflowMenuThreeButtonActionbarDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kTabbedAppOverflowMenuThreeButtonActionbar,
+         kTabbedAppOverflowMenuThreeButtonActionbarVariations,
+         "AndroidAppMenuThreeButtonActionbar")},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -4973,15 +4996,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableStereoAudioInput)},
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-    {"enable-reopen-tab-in-product-help",
-     flag_descriptions::kReopenTabInProductHelpName,
-     flag_descriptions::kReopenTabInProductHelpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(feature_engagement::kIPHReopenTabFeature)},
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
 
     {"enable-audio-focus-enforcement",
      flag_descriptions::kEnableAudioFocusEnforcementName,
@@ -6368,6 +6382,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWellKnownChangePasswordName,
      flag_descriptions::kWellKnownChangePasswordDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kWellKnownChangePassword)},
+
+    {"window-naming", flag_descriptions::kWindowNamingName,
+     flag_descriptions::kWindowNamingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWindowNaming)},
 
 #if defined(OS_MAC)
     {"videotoolbox-vp9-decoding",

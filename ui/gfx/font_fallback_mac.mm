@@ -8,11 +8,13 @@
 #include <CoreText/CoreText.h>
 #import <Foundation/Foundation.h>
 
+#include "base/i18n/char_iterator.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback_skia_impl.h"
 #include "ui/gfx/platform_font.h"
@@ -46,6 +48,21 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
 
 
 namespace gfx {
+
+namespace {
+
+bool TextSequenceHasEmoji(base::StringPiece16 text) {
+  base::i18n::UTF16CharIterator iter(text.data(), text.length());
+  while (!iter.end()) {
+    const UChar32 codepoint = iter.get();
+    if (u_hasBinaryProperty(codepoint, UCHAR_EMOJI))
+      return true;
+    iter.Advance();
+  }
+  return false;
+}
+
+}  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   DCHECK(font.GetNativeFont());
@@ -85,6 +102,11 @@ bool GetFallbackFont(const Font& font,
                      base::StringPiece16 text,
                      Font* result) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
+
+  if (TextSequenceHasEmoji(text)) {
+    *result = Font("Apple Color Emoji", font.GetFontSize());
+    return true;
+  }
 
   sk_sp<SkTypeface> fallback_typeface =
       GetSkiaFallbackTypeface(font, locale, text);

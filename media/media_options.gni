@@ -58,6 +58,13 @@ declare_args() {
     media_use_libvpx = false
   }
 
+  # Enable usage of libvpx within the media library. Used for software based
+  # encoding of H264 content.
+  media_use_openh264 = true
+  if (is_ios || is_android || !proprietary_codecs) {
+    media_use_openh264 = false
+  }
+
   # Override to dynamically link the cras (ChromeOS audio) library.
   use_cras = is_chromeos_device
 
@@ -196,7 +203,7 @@ if (is_chromecast) {
     "video_decoder",
   ]
   _default_mojo_media_host = "gpu"
-} else if (is_chromeos || is_mac || is_win || (is_desktop_linux && use_vaapi)) {
+} else if (is_chromeos || is_mac || is_win || (is_linux && use_vaapi)) {
   _default_mojo_media_services = [ "video_decoder" ]
   _default_mojo_media_host = "gpu"
 }

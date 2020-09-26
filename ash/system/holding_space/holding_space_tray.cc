@@ -13,13 +13,13 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/pinned_files_container.h"
 #include "ash/system/holding_space/recent_files_container.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -43,7 +43,8 @@ void SetupChildLayer(views::View* child) {
 
   auto* layer = child->layer();
   layer->SetRoundedCornerRadius(gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
-  layer->SetColor(UnifiedSystemTrayView::GetBackgroundColor());
+  layer->SetColor(AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80));
   layer->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
   layer->SetFillsBoundsOpaquely(false);
   layer->SetIsFastRoundedCorner(true);
@@ -53,10 +54,9 @@ void SetupChildLayer(views::View* child) {
 
 HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  icon_ = tray_container()->AddChildView(std::make_unique<views::ImageView>());
-  icon_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_SCREENSHOTS_TITLE));
 
+  icon_ = tray_container()->AddChildView(std::make_unique<views::ImageView>());
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
   icon_->SetImage(CreateVectorIcon(kHoldingSpaceIcon,
                                    ShelfConfig::Get()->shelf_icon_color()));
 
@@ -83,12 +83,11 @@ void HoldingSpaceTray::ClickedOutsideBubble() {
 }
 
 base::string16 HoldingSpaceTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_SCREENSHOTS_TITLE);
+  return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
 }
 
 void HoldingSpaceTray::HandleLocaleChange() {
-  icon_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_SCREENSHOTS_TITLE));
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
 }
 
 void HoldingSpaceTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {}
@@ -105,6 +104,11 @@ void HoldingSpaceTray::HideBubble(const TrayBubbleView* bubble_view) {
   CloseBubble();
 }
 
+void HoldingSpaceTray::OnWidgetDestroying(views::Widget* widget) {
+  widget->RemoveObserver(this);
+  CloseBubble();
+}
+
 void HoldingSpaceTray::AnchorUpdated() {
   if (bubble_)
     bubble_->bubble_view()->UpdateBubble();
@@ -117,6 +121,15 @@ bool HoldingSpaceTray::PerformAction(const ui::Event& event) {
   }
 
   ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
+
+  // Activate the bubble for a11y or if it was shown via keypress. Otherwise
+  // focus will remain on the tray when it should enter the bubble.
+  if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY)) {
+    DCHECK(bubble_ && bubble_->GetBubbleWidget());
+    bubble_->GetBubbleWidget()->widget_delegate()->SetCanActivate(true);
+    bubble_->GetBubbleWidget()->Activate();
+  }
+
   return true;
 }
 
@@ -126,6 +139,15 @@ void HoldingSpaceTray::UpdateAfterLoginStatusChange() {
 }
 
 void HoldingSpaceTray::CloseBubble() {
+  if (!bubble_)
+    return;
+
+  // If the call to `CloseBubble()` originated from `OnWidgetDestroying()`, as
+  // would be the case when closing due to ESC key press, the bubble widget will
+  // have already been destroyed.
+  if (bubble_->GetBubbleWidget())
+    bubble_->GetBubbleWidget()->RemoveObserver(this);
+
   bubble_.reset();
   SetIsActive(false);
 }
@@ -173,6 +195,12 @@ void HoldingSpaceTray::ShowBubble(bool show_by_click) {
   // Set bubble frame to be invisible.
   bubble_->GetBubbleWidget()->non_client_view()->frame_view()->SetVisible(
       false);
+
+  // Observe the bubble widget so that we can do proper clean up when it is
+  // being destroyed. If destruction is due to a call to `CloseBubble()` we will
+  // have already cleaned up state but there are cases where the bubble widget
+  // is destroyed independent of a call to `CloseBubble()`, e.g. ESC key press.
+  bubble_->GetBubbleWidget()->AddObserver(this);
 
   SetIsActive(true);
 }

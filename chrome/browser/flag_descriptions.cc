@@ -2528,6 +2528,10 @@ const char kWellKnownChangePasswordDescription[] =
     ".well-known/change-password it is checked if a fallback url is available. "
     "Otherwise the user is redirected to the origin.";
 
+const char kWindowNamingName[] = "Window Naming";
+const char kWindowNamingDescription[] =
+    "Whether the window naming UI is enabled.";
+
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";
@@ -3186,6 +3190,11 @@ const char kTabbedAppOverflowMenuRegroupName[] =
     "Android tabbed app overflow menu Regroup";
 const char kTabbedAppOverflowMenuRegroupDescription[] =
     "If enabled, regroup overflow menu items.";
+
+const char kTabbedAppOverflowMenuThreeButtonActionbarName[] =
+    "Android tabbed app overflow menu three buttons actionbar";
+const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[] =
+    "If enabled, the actionbar in the overflow menu will have 3 buttons.";
 
 // Non-Android -----------------------------------------------------------------
 
@@ -4427,11 +4436,6 @@ const char kTextfieldFocusOnTapUpName[] = "Focus UI text fields on touch-up";
 const char kTextfieldFocusOnTapUpDescription[] =
     "When enabled, Views-based text fields take focus on touch-up instead of "
     "touch-down. This includes the Omnibox.";
-
-const char kReopenTabInProductHelpName[] = "Reopen tab in-product help";
-const char kReopenTabInProductHelpDescription[] =
-    "Enable in-product help that guides a user to reopen a tab if it looks "
-    "like they accidentally closed it.";
 
 const char kEnableNewBadgeOnMenuItemsName[] =
     "Enable 'New' badge on menu items";

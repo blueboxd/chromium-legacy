@@ -1455,6 +1455,9 @@ extern const char kWebXrMultiGpuDescription[];
 extern const char kWellKnownChangePasswordName[];
 extern const char kWellKnownChangePasswordDescription[];
 
+extern const char kWindowNamingName[];
+extern const char kWindowNamingDescription[];
+
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 
@@ -1825,6 +1828,9 @@ extern const char kTabbedAppOverflowMenuIconsDescription[];
 
 extern const char kTabbedAppOverflowMenuRegroupName[];
 extern const char kTabbedAppOverflowMenuRegroupDescription[];
+
+extern const char kTabbedAppOverflowMenuThreeButtonActionbarName[];
+extern const char kTabbedAppOverflowMenuThreeButtonActionbarDescription[];
 
 // Non-Android ----------------------------------------------------------------
 
@@ -2578,9 +2584,6 @@ extern const char kInstallableInkDropDescription[];
 
 extern const char kTextfieldFocusOnTapUpName[];
 extern const char kTextfieldFocusOnTapUpDescription[];
-
-extern const char kReopenTabInProductHelpName[];
-extern const char kReopenTabInProductHelpDescription[];
 
 extern const char kEnableNewBadgeOnMenuItemsName[];
 extern const char kEnableNewBadgeOnMenuItemsDescription[];

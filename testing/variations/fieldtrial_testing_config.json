@@ -41,31 +41,6 @@
             ]
         }
     ],
-    "AlignFontDisplayAutoTimeoutWithLCPGoal": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithSwapModeAndTimeout1000ms",
-                    "params": {
-                        "intervention-mode": "swap",
-                        "lcp-limit-in-ms": "1000"
-                    },
-                    "enable_features": [
-                        "AlignFontDisplayAutoTimeoutWithLCPGoal"
-                    ]
-                }
-            ]
-        }
-    ],
     "AllPassiveMixedContentAutoupgrade": [
         {
             "platforms": [
@@ -1256,27 +1231,6 @@
                     "name": "EnableCSSOMViewScrollCoordinates",
                     "enable_features": [
                         "CSSOMViewScrollCoordinates"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CSSReducedFontLoadingLayoutInvalidations": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CSSReducedFontLoadingLayoutInvalidations"
                     ]
                 }
             ]
@@ -4730,11 +4684,14 @@
                     "name": "DesktopExperiments",
                     "params": {
                         "MaxZeroSuggestMatches": "10",
+                        "OmniboxLocalZeroSuggestAgeThreshold": "7",
                         "OmniboxMaxURLMatches": "7",
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxLocalZeroSuggestAgeThreshold",
+                        "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxReactiveZeroSuggestionsOnNTPOmnibox",
@@ -5262,6 +5219,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CompromisedPasswordsReengagement"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordScriptsFetching": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordScriptsFetching"
                     ]
                 }
             ]

@@ -433,6 +433,19 @@ crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Fa
 # Regression from crbug.com/109224.
 crbug.com/1128962 svg/filters/feDisplacementMap.svg [ Failure ]
 
+# Disabled for Skia roll (https://crbug.com/skia/10744).
+paint/invalidation/svg/feImage-multiple-targets-id-change.svg [ Skip ]
+paint/invalidation/svg/feImage-reference-invalidation.svg [ Skip ]
+paint/invalidation/svg/feImage-target-add-to-document.svg [ Skip ]
+paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection-2.svg [ Skip ]
+paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection.svg [ Skip ]
+paint/invalidation/svg/feImage-target-attribute-change.svg [ Skip ]
+paint/invalidation/svg/feImage-target-inline-style-change.svg [ Skip ]
+paint/invalidation/svg/feImage-target-property-change.svg [ Skip ]
+paint/invalidation/svg/feImage-target-reappend-to-document.svg [ Skip ]
+paint/invalidation/svg/feImage-target-remove-from-document.svg [ Skip ]
+paint/invalidation/svg/feImage-target-style-change.svg [ Skip ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -747,7 +760,7 @@ crbug.com/1111708 external/wpt/css/css-flexbox/flexbox_justifycontent-center-ove
 crbug.com/1111128 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
 crbug.com/1128262 external/wpt/css/css-flexbox/table-as-item-specified-width.html [ Failure ]
 
-# These have some incorrect expectations and will supposedly be deleted soon (Sep 2020) by mozilla.
+# These are scheduled to deleted by mozilla. https://bugzilla.mozilla.org/show_bug.cgi?id=1664938
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003.html [ Failure ]
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004.html [ Failure ]
@@ -1974,6 +1987,9 @@ crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/style-ranges-over
 # CSS Font Feature Resolution is not implemented yet
 crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-001.html [ Failure ]
 crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-002.html [ Failure ]
+
+# The WPT asserts browser-specific behavior. Need to modify the test.
+crbug.com/1132458 external/wpt/css/css-fonts/font-display/font-display.html [ Failure ]
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]

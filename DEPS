@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'eabce08bb2f2e32d97fabb299b3b8bb31e861626',
+  'skia_revision': '0922403dcdc6b9ea70d39149a3a67295034f14ca',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7950eb55c0765d2529779fecc71fa2dd9fcface4',
+  'devtools_frontend_revision': 'aaed4d13394f4e81a4979dc87282bd0cfbabeb32',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ddef7a04a2d3f66b3914576caf6057b43e135e3d',
+  'dawn_revision': 'ed2b465f860720be30eeba35a56088dc5ba66d46',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -952,7 +952,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1815d86a224b75abc1dd084789c20f7da3c9fed0',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'd0e7ed37fc4ee17948a8a6597ce95a4fdab2b769',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),

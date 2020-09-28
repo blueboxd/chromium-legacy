@@ -952,7 +952,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'd0e7ed37fc4ee17948a8a6597ce95a4fdab2b769',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f05c076e26b04cbcc9bf2df815bbdc9c620d89ad',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bdcc7579412186b5cb5daaf2dacde4492465b02e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@296dd3b4062e20311746d291e68849736fac3a33',
     'condition': 'checkout_src_internal',
   },
 

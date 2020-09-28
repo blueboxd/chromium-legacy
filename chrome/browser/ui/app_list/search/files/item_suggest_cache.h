@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -59,6 +60,10 @@ class ItemSuggestCache {
   ItemSuggestCache(const ItemSuggestCache&) = delete;
   ItemSuggestCache& operator=(const ItemSuggestCache&) = delete;
 
+  // Returns the results currently in the cache.
+  base::Optional<ItemSuggestCache::Results> GetResults();
+
+  // Updates the cache by calling ItemSuggest.
   void UpdateCache();
 
   static base::Optional<ItemSuggestCache::Results> ConvertJsonForTest(
@@ -76,6 +81,9 @@ class ItemSuggestCache {
       &kExperiment, "server_url",
       "https://appsitemsuggest-pa.googleapis.com/v1/items"};
 
+  static constexpr base::FeatureParam<int> kMinMinutesBetweenUpdates{
+      &kExperiment, "min_minutes_between_updates", 15};
+
   void OnTokenReceived(GoogleServiceAuthError error,
                        signin::AccessTokenInfo token_info);
   void OnSuggestionsReceived(const std::unique_ptr<std::string> json_response);
@@ -85,8 +93,13 @@ class ItemSuggestCache {
 
   base::Optional<Results> results_;
 
+  // Records the time of the last call to UpdateResults(), used to limit the
+  // number of queries to the ItemSuggest backend.
+  base::Time time_of_last_update_;
+
   const bool enabled_;
   const GURL server_url_;
+  const base::TimeDelta min_time_between_updates_;
 
   Profile* profile_;
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;

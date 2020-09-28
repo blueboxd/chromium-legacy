@@ -406,9 +406,6 @@ extern const char kDesktopPWAsWithoutExtensionsDescription[];
 extern const char kDesktopPWAsRunOnOsLoginName[];
 extern const char kDesktopPWAsRunOnOsLoginDescription[];
 
-extern const char kEnableSystemWebAppsName[];
-extern const char kEnableSystemWebAppsDescription[];
-
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
 
@@ -711,9 +708,6 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
-
-extern const char kGuestOsExternalProtocolName[];
-extern const char kGuestOsExternalProtocolDescription[];
 
 extern const char kH264DecoderBufferIsCompleteFrameName[];
 extern const char kH264DecoderBufferIsCompleteFrameDescription[];

@@ -27,27 +27,21 @@ class MockKeyPermissionsService : public KeyPermissionsService {
   ~MockKeyPermissionsService() override;
 
   MOCK_METHOD(void,
-              GetPermissionsForExtension,
-              (const std::string& extension_id,
-               const PermissionsCallback& callback),
-              (override));
-
-  MOCK_METHOD(bool,
-              CanUserGrantPermissionFor,
+              CanUserGrantPermissionForKey,
               (const std::string& public_key_spki_der,
-               const std::vector<platform_keys::TokenId>& key_locations),
+               CanUserGrantPermissionForKeyCallback callback),
               (const override));
 
-  MOCK_METHOD(bool,
+  MOCK_METHOD(void,
               IsCorporateKey,
               (const std::string& public_key_spki_der_b64,
-               const std::vector<platform_keys::TokenId>& key_locations),
+               IsCorporateKeyCallback callback),
               (const override));
 
   MOCK_METHOD(void,
               SetCorporateKey,
               (const std::string& public_key_spki_der_b64,
-               platform_keys::TokenId key_location),
+               SetCorporateKeyCallback callback),
               (const override));
 };
 

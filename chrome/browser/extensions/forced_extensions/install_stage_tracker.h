@@ -38,10 +38,13 @@ class InstallStageTracker : public KeyedService {
  public:
   // Stage of extension installing process. Typically forced extensions from
   // policies should go through all stages in this order, other extensions skip
-  // CREATED stage.
-  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
-  // update enums.xml (name: ExtensionInstallationStage) when adding new
-  // entries. Don't forget to update device_management_backend.proto (name:
+  // CREATED stage. The stages are recorded in the increasing order of their
+  // values, therefore always verify that values are in increasing order and
+  // items are in order in which they appear. Exceptions are handled in
+  // ShouldOverrideCurrentStage method. Note: enum used for UMA. Do NOT reorder
+  // or remove entries. Don't forget to update enums.xml (name:
+  // ExtensionInstallationStage) when adding new entries. Don't forget to update
+  // device_management_backend.proto (name:
   // ExtensionInstallReportLogEvent::InstallationStage) when adding new entries.
   // Don't forget to update ConvertInstallationStageToProto method in
   // ExtensionInstallEventLogCollector.
@@ -79,6 +82,12 @@ class InstallStageTracker : public KeyedService {
   // Intermediate stage of extension installation when the Stage is CREATED.
   // TODO(crbug.com/989526): These stages are temporary ones for investigation.
   // Remove them after investigation will complete.
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: InstallCreationStage) when adding new
+  // entries. Don't forget to update device_management_backend.proto (name:
+  // ExtensionInstallReportLogEvent::InstallCreationStage) when adding new
+  // entries. Don't forget to update ConvertInstallCreationStageToProto method
+  // in ExtensionInstallEventLogCollector.
   enum InstallCreationStage {
     UNKNOWN = 0,
 
@@ -367,6 +376,11 @@ class InstallStageTracker : public KeyedService {
     virtual void OnExtensionDownloadingStageChanged(
         const ExtensionId& id,
         ExtensionDownloaderDelegate::Stage stage) {}
+
+    // Called when InstallCreationStage of extension is updated.
+    virtual void OnExtensionInstallCreationStageChanged(
+        const ExtensionId& id,
+        InstallCreationStage stage) {}
   };
 
   explicit InstallStageTracker(const content::BrowserContext* context);

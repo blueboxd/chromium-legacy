@@ -163,7 +163,11 @@ const CGFloat kBubblePresentationDelay = 1;
   // The bottom toolbar and Discover feed header menu don't use the
   // isUserEngaged, so don't check if the user is engaged here.
   [self presentBottomToolbarTipBubble];
-  [self presentDiscoverFeedHeaderTipBubble];
+
+  // TODO(crbug.com/1132757): Reenable this once the DCHECKS for bubble size in
+  // [BubbleViewControllerPresenter frameForBubbleInRect:atAnchorPoint:] stop
+  // being hit.
+  // [self presentDiscoverFeedHeaderTipBubble];
 }
 
 - (void)presentLongPressBubble {
@@ -174,7 +178,8 @@ const CGFloat kBubblePresentationDelay = 1;
     return;
 
   BubbleArrowDirection arrowDirection =
-      IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
+      IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
+                                                  : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
   CGPoint tabGridButtonAnchor = [self anchorPointToGuide:kTabSwitcherGuide
@@ -225,7 +230,7 @@ presentBubbleForFeature:(const base::Feature&)feature
 // Presents a bubble associated with the bottom toolbar tip in-product help
 // promotion. This method requires that |self.browserState| is not NULL.
 - (void)presentBottomToolbarTipBubble {
-  if (!IsSplitToolbarMode())
+  if (!IsSplitToolbarMode(self.rootViewController))
     return;
 
   if (![self canPresentBubble])
@@ -307,7 +312,8 @@ presentBubbleForFeature:(const base::Feature&)feature
     return;
 
   BubbleArrowDirection arrowDirection =
-      IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
+      IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
+                                                  : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor = [self anchorPointToGuide:kTabSwitcherGuide
@@ -336,7 +342,8 @@ presentBubbleForFeature:(const base::Feature&)feature
     return;
 
   BubbleArrowDirection arrowDirection =
-      IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
+      IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
+                                                  : BubbleArrowDirectionUp;
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
 

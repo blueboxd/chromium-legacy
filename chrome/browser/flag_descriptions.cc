@@ -868,10 +868,6 @@ const char kForceEmptyCorbAndCorsAllowlistDescription[] =
     "https://www.chromium.org/Home/chromium-security/"
     "extension-content-script-fetches";
 
-const char kCrossOriginOpenerPolicyName[] = "Cross Origin Opener Policy";
-const char kCrossOriginOpenerPolicyDescription[] =
-    "Enables Cross Origin Opener Policy.";
-
 const char kCrossOriginOpenerPolicyReportingName[] =
     "Cross Origin Opener Policy reporting";
 const char kCrossOriginOpenerPolicyReportingDescription[] =
@@ -4544,6 +4540,13 @@ const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+const char kEnableEphemeralGuestProfilesOnDesktopName[] =
+    "Enable ephemeral Guest profiles on Desktop";
+const char kEnableEphemeralGuestProfilesOnDesktopDescription[] =
+    "Enables ephemeral Guest profiles on Windows, Linux, and Mac.";
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
 
 // Feature flags --------------------------------------------------------------
 

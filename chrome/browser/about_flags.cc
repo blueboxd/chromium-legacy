@@ -4064,11 +4064,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kForceEmptyCorbAllowlist)},
 #endif
 
-    {"cross-origin-opener-policy",
-     flag_descriptions::kCrossOriginOpenerPolicyName,
-     flag_descriptions::kCrossOriginOpenerPolicyDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kCrossOriginOpenerPolicy)},
-
     {"cross-origin-opener-policy-reporting",
      flag_descriptions::kCrossOriginOpenerPolicyReportingName,
      flag_descriptions::kCrossOriginOpenerPolicyReportingDescription, kOsAll,
@@ -6458,6 +6453,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMuteNotificationsDuringScreenShare)},
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+    {"enable-ephemeral-guest-profiles-on-desktop",
+     flag_descriptions::kEnableEphemeralGuestProfilesOnDesktopName,
+     flag_descriptions::kEnableEphemeralGuestProfilesOnDesktopDescription,
+     kOsWin | kOsLinux | kOsMac,
+     FEATURE_VALUE_TYPE(features::kEnableEphemeralGuestProfilesOnDesktop)},
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

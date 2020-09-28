@@ -672,11 +672,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "cross-origin-opener-policy",
-    "owners": [ "ahemery", "clamy", "pmeuleman" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "cross-origin-opener-policy-access-reporting",
     "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
     "expiry_milestone": 88
@@ -1441,6 +1436,11 @@
     "name": "enable-encryption-migration",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ephemeral-guest-profiles-on-desktop",
+    "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "enable-ephemeral-tab",
@@ -4620,13 +4620,18 @@
     "expiry_milestone": 89
   },
   {
+    "name": "webpage-alternative-text-zoom",
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "webpage-default-zoom-from-dynamic-type",
-    "owners": [ "rkgibson", "bling-flags" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 87
   },
   {
     "name": "webpage-text-accessibility",
-    "owners": [ "rkgibson", "bling-flags" ],
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 86
   },
   {

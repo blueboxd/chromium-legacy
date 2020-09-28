@@ -228,6 +228,9 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
       !credential.username.empty() && ShouldOfferAutomaticPasswordChange() &&
       password_script_fetcher_->IsScriptAvailable(
           url::Origin::Create(credential.url.GetOrigin()));
+  // TODO(crbug.com/1132230): Implement separate logic for scripts fetching and
+  // auto buttons. For now, has_auto_change_button <=> has_script.
+  ui_credential.has_auto_change_button = ui_credential.has_script;
 
   if (facet.IsValidAndroidFacetURI()) {
     const PasswordForm& android_form =

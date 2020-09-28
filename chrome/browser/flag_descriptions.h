@@ -477,9 +477,6 @@ extern const char kCorsForContentScriptsDescription[];
 extern const char kForceEmptyCorbAndCorsAllowlistName[];
 extern const char kForceEmptyCorbAndCorsAllowlistDescription[];
 
-extern const char kCrossOriginOpenerPolicyName[];
-extern const char kCrossOriginOpenerPolicyDescription[];
-
 extern const char kCrossOriginOpenerPolicyReportingName[];
 extern const char kCrossOriginOpenerPolicyReportingDescription[];
 
@@ -2652,6 +2649,11 @@ extern const char kUserDataSnapshotDescription[];
 extern const char kWebShareName[];
 extern const char kWebShareDescription[];
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+extern const char kEnableEphemeralGuestProfilesOnDesktopName[];
+extern const char kEnableEphemeralGuestProfilesOnDesktopDescription[];
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
 
 // Feature flags --------------------------------------------------------------
 

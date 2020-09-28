@@ -603,6 +603,7 @@ static_library("ui") {
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//components/browser_ui/util/android",
+      "//components/infobars/content",
       "//components/query_tiles",
       "//components/security_state/content/android",
     ]
@@ -2774,8 +2775,6 @@ static_library("ui") {
       "views/profiles/badged_profile_photo.h",
       "views/profiles/profile_picker_view.cc",
       "views/profiles/profile_picker_view.h",
-      "views/profiles/profile_picker_view_sync_delegate.cc",
-      "views/profiles/profile_picker_view_sync_delegate.h",
       "views/profiles/user_manager_view.cc",
       "views/profiles/user_manager_view.h",
       "webui/app_launcher_page_ui.cc",

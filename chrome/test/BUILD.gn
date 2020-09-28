@@ -319,6 +319,8 @@ static_library("test_support") {
       "../browser/webshare/win/fake_data_transfer_manager.h",
       "../browser/webshare/win/fake_data_transfer_manager_interop.cc",
       "../browser/webshare/win/fake_data_transfer_manager_interop.h",
+      "../browser/webshare/win/scoped_fake_data_transfer_manager_interop.cc",
+      "../browser/webshare/win/scoped_fake_data_transfer_manager_interop.h",
       "//chrome/app/chrome_crash_reporter_client_win.cc",
     ]
     public_deps += [
@@ -3060,11 +3062,6 @@ if (!is_android) {
           [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
     }
 
-    if (is_win || is_mac || (is_desktop_linux && !chromeos_is_browser_only)) {
-      sources +=
-          [ "../browser/ui/views/profiles/profile_picker_view_browsertest.cc" ]
-    }
-
     sources += metric_integration_sources
   }
 }
@@ -3481,6 +3478,7 @@ test("unit_tests") {
     "../browser/notifications/notification_permission_context_unittest.cc",
     "../browser/notifications/notification_platform_bridge_chromeos_unittest.cc",
     "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
+    "../browser/notifications/notification_platform_bridge_mac_utils_unittest.mm",
     "../browser/notifications/notification_trigger_scheduler_unittest.cc",
     "../browser/notifications/persistent_notification_handler_unittest.cc",
     "../browser/notifications/platform_notification_service_unittest.cc",
@@ -5622,6 +5620,7 @@ test("unit_tests") {
       "../browser/ui/cocoa/main_menu_builder_unittest.mm",
       "../browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm",
       "../browser/ui/cocoa/notifications/notification_response_builder_mac_unittest.mm",
+      "../browser/ui/cocoa/notifications/unnotification_response_builder_mac_unittest.mm",
       "../browser/ui/cocoa/nsmenuitem_additions_unittest.mm",
       "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
@@ -5663,6 +5662,7 @@ test("unit_tests") {
       "../browser/ui/views/uninstall_view_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_interop_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_unittest.cc",
+      "../browser/webshare/win/show_share_ui_for_window_operation_unittest.cc",
     ]
     deps += [
       "//chrome:other_version",
@@ -6158,6 +6158,9 @@ if (!is_android) {
       "../browser/password_manager/password_manager_interactive_test_base.h",
       "../browser/password_manager/password_manager_interactive_uitest.cc",
       "../browser/portal/portal_interactive_uittest.cc",
+      "../browser/renderer_context_menu/copy_link_to_text_menu_observer_interactive_uitest.cc",
+      "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
+      "../browser/renderer_context_menu/mock_render_view_context_menu.h",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
       "../browser/resource_coordinator/tab_metrics_logger_interactive_uitest.cc",

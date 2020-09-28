@@ -430,19 +430,6 @@ crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descenda
 # Flaky test.
 crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
-# Disabled for Skia roll (https://crbug.com/skia/10744).
-paint/invalidation/svg/feImage-multiple-targets-id-change.svg [ Skip ]
-paint/invalidation/svg/feImage-reference-invalidation.svg [ Skip ]
-paint/invalidation/svg/feImage-target-add-to-document.svg [ Skip ]
-paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection-2.svg [ Skip ]
-paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection.svg [ Skip ]
-paint/invalidation/svg/feImage-target-attribute-change.svg [ Skip ]
-paint/invalidation/svg/feImage-target-inline-style-change.svg [ Skip ]
-paint/invalidation/svg/feImage-target-property-change.svg [ Skip ]
-paint/invalidation/svg/feImage-target-reappend-to-document.svg [ Skip ]
-paint/invalidation/svg/feImage-target-remove-from-document.svg [ Skip ]
-paint/invalidation/svg/feImage-target-style-change.svg [ Skip ]
-
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -766,9 +753,7 @@ crbug.com/704294 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
 
 # These require css-align-3 positional keywords that Blink doesn't yet support for flexbox.
@@ -1112,7 +1097,6 @@ crbug.com/1061423 virtual/layout_ng_block_frag/fast/multicol/flipped-blocks-hit-
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary-fixed-multicol-height.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-moved-by-child-line-and-unbreakable.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-paginate-empty-lines.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block-and-unbreakable.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block.html [ Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure ]
@@ -2693,6 +2677,9 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Backspace [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?TypingA [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Delete [ Timeout ]
 crbug.com/626703 external/wpt/screen-capture/feature-policy.https.html [ Timeout ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/wheelScroll.html [ Timeout ]
 crbug.com/626703 [ Fuchsia ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-immediately.https.html [ Failure ]
@@ -4461,9 +4448,6 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/should-not-collaps
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/swap-lines-if-start-is-further-endward-than-end-line.html [ Failure Crash ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/vertical-align-do-not-effect-grid-items.html [ Failure Crash ]
 
-# [css-logical]
-crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
-
 # [css-animations]
 crbug.com/993365 external/wpt/css/css-transitions/Element-getAnimations.tentative.html [ Failure Pass ]
 
@@ -6169,7 +6153,7 @@ crbug.com/1043920 [ Release Mac ] http/tests/devtools/stylesheet-source-mapping.
 crbug.com/1044350 [ Release ] http/tests/devtools/network/network-xhr-replay.js [ Pass Timeout ]
 crbug.com/1044414 [ Release ] http/tests/devtools/elements/styles/selector-line-sourcemap-header.js [ Pass Timeout ]
 crbug.com/1044415 [ Release ] http/tests/devtools/runtime/evaluate-without-side-effects.js [ Pass Timeout ]
-crbug.com/1044424 [ Release ] http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Timeout ]
+# crbug.com/1044424 [ Release ] http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Timeout ]
 crbug.com/1044425 [ Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-1.js [ Pass Timeout ]
 crbug.com/1044429 [ Release ] http/tests/devtools/oopif/oopif-navigator.js [ Pass Timeout ]
 crbug.com/1002914 http/tests/devtools/elements/elements-panel-styles.js [ Pass Timeout Failure ]
@@ -6340,6 +6324,7 @@ crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/te
 
 # DevTools roll
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
+crbug.com/1131801 http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Failure Timeout ]
 
 # Sheriff 2020-02-18
 crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Skip ]
@@ -6438,8 +6423,11 @@ crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 # The "timeout" was detected by the wpt-importer bot.
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
 
-# COOP access reporting. This needs to be implemented in chrome to pass.
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property.https.html [ Pass Timeout Failure ]
+# COOP access reporting:
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-frames.https.html [ Timeout ]
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-opener-set.https.html [ Timeout ]
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-self.https.html [ Timeout ]
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-window.https.html [ Timeout ]
 
 # Sheriff 2020-04-17
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]

@@ -1203,6 +1203,8 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      base::size(kOmniboxNTPZPSRemoteLocal), /* variation_id */ "t3317569"},
     {"Contextual Web", kOmniboxNTPZPSRemoteLocal,
      base::size(kOmniboxNTPZPSRemoteLocal), /* variation_id */ "t3317605"},
+    {"Trending Queries", kOmniboxNTPZPSRemoteLocal,
+     base::size(kOmniboxNTPZPSRemoteLocal), /* variation_id */ "t3317858"},
 #else   // !defined(OS_ANDROID)
     {"NTP Omnibox - Remote History, Local History", kNTPOmniboxZPSRemoteLocal,
      base::size(kNTPOmniboxZPSRemoteLocal), nullptr /* variation_id */},
@@ -5147,11 +5149,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-scroll-settings", flag_descriptions::kAllowScrollSettingsName,
      flag_descriptions::kAllowScrollSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAllowScrollSettings)},
-
-    {"enable-streamlined-usb-printer-setup",
-     flag_descriptions::kStreamlinedUsbPrinterSetupName,
-     flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kStreamlinedUsbPrinterSetup)},
 
     {"enable-media-session-notifications",
      flag_descriptions::kMediaSessionNotificationsName,

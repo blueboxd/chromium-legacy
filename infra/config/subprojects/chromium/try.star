@@ -265,7 +265,7 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 20,
     ),
 )
 
@@ -324,7 +324,7 @@ try_.chromium_android_builder(
     # TODO(crbug.com/1111436): Enable on CQ fully once the tests run fine.
     main_list_view = settings.main_list_view_name,
     tryjob = try_.job(
-        experiment_percentage = 60,
+        experiment_percentage = 80,
     ),
 )
 

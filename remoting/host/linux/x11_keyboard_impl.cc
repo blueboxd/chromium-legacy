@@ -10,6 +10,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gfx/x/xkb.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xtest.h"
 
 namespace {
@@ -20,24 +21,25 @@ bool FindKeycodeForKeySym(Display* display,
                           uint32_t* modifiers) {
   uint32_t found_keycode = XKeysymToKeycode(display, key_sym);
 
-  const uint32_t kModifiersToTry[] = {
-      0,
-      ShiftMask,
-      Mod2Mask,
-      Mod3Mask,
-      Mod4Mask,
-      ShiftMask | Mod2Mask,
-      ShiftMask | Mod3Mask,
-      ShiftMask | Mod4Mask,
+  const x11::KeyButMask kModifiersToTry[] = {
+      {},
+      x11::KeyButMask::Shift,
+      x11::KeyButMask::Mod2,
+      x11::KeyButMask::Mod3,
+      x11::KeyButMask::Mod4,
+      x11::KeyButMask::Shift | x11::KeyButMask::Mod2,
+      x11::KeyButMask::Shift | x11::KeyButMask::Mod3,
+      x11::KeyButMask::Shift | x11::KeyButMask::Mod4,
   };
 
   // TODO(sergeyu): Is there a better way to find modifiers state?
   for (auto i : kModifiersToTry) {
+    int mods = static_cast<int>(i);
     unsigned long key_sym_with_mods;
-    if (XkbLookupKeySym(display, found_keycode, i, nullptr,
+    if (XkbLookupKeySym(display, found_keycode, mods, nullptr,
                         &key_sym_with_mods) &&
         key_sym_with_mods == key_sym) {
-      *modifiers = i;
+      *modifiers = mods;
       *keycode = found_keycode;
       return true;
     }
@@ -103,17 +105,18 @@ bool X11KeyboardImpl::FindKeycode(uint32_t code_point,
 }
 
 bool X11KeyboardImpl::ChangeKeyMapping(uint32_t keycode, uint32_t code_point) {
-  KeySym sym = NoSymbol;
+  x11::KeySym sym{};
   if (code_point > 0) {
     std::string sym_hex = base::StringPrintf("U%x", code_point);
-    sym = XStringToKeysym(sym_hex.c_str());
-    if (sym == NoSymbol) {
+    sym = static_cast<x11::KeySym>(XStringToKeysym(sym_hex.c_str()));
+    if (sym == x11::KeySym{}) {
       // The server may not support Unicode-to-KeySym translation.
       return false;
     }
   }
 
-  KeySym syms[2]{sym, sym};  // {lower-case, upper-case}
+  KeySym syms[2]{static_cast<KeySym>(sym) /* lower-case */,
+                 static_cast<KeySym>(sym) /* upper-case */};
   XChangeKeyboardMapping(display_, keycode, 2, syms, 1);
   return true;
 }
@@ -123,7 +126,7 @@ void X11KeyboardImpl::Flush() {
 }
 
 void X11KeyboardImpl::Sync() {
-  XSync(display_, false);
+  connection_->Sync();
 }
 
 }  // namespace remoting

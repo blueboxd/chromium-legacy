@@ -5,9 +5,9 @@
 self.addEventListener('install', evt => {
   evt.waitUntil(async function() {
     return Promise.all([
-      fetch('./foo/1?block'),
-      fetch('./foo/2?block'),
-      fetch('./foo/3?block'),
+      fetch('./foo/1?block').then(r => r.blob()),
+      fetch('./foo/2?block').then(r => r.blob()),
+      fetch('./foo/3?block').then(r => r.blob()),
     ]);
   }());
 });

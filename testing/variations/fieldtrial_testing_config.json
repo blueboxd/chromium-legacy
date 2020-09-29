@@ -701,6 +701,25 @@
             ]
         }
     ],
+    "AutofillEnableStickyBubbleAndUpdatedLogging": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableFixedPaymentsBubbleLogging",
+                        "AutofillEnableStickyPaymentsBubble"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -3370,7 +3389,7 @@
             ]
         }
     ],
-    "IOSLookalikeUrlInterstitial": [
+    "IOSLookalikeInterstitials": [
         {
             "platforms": [
                 "ios"
@@ -5069,26 +5088,6 @@
             ]
         }
     ],
-    "OverflowIconsForMediaControls": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OverflowIconsForMediaControls"
-                    ]
-                }
-            ]
-        }
-    ],
     "PaintHoldingCrossOrigin": [
         {
             "platforms": [
@@ -6453,6 +6452,9 @@
             "experiments": [
                 {
                     "name": "AllDisplayExperimentsEnabled",
+                    "params": {
+                        "enable_keyword_elision": "false"
+                    },
                     "enable_features": [
                         "OmniboxUIExperimentElideToRegistrableDomain",
                         "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",

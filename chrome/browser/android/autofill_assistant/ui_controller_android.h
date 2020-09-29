@@ -168,7 +168,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantBottomBarNativeDelegate:
   bool OnBackButtonClicked();
-  void OnBottomSheetDismissed();
+  void OnBottomSheetClosedWithSwipe();
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -203,7 +203,8 @@ class UiControllerAndroid : public ControllerObserver {
                   jboolean visible);
   void OnTabSwitched(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jcaller,
-                     jint state);
+                     jint state,
+                     jboolean activity_changed);
   void OnTabSelected(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jcaller);
 

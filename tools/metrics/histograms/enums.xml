@@ -21829,6 +21829,8 @@ Called by update_document_policy_enum.py.-->
   <int value="784" label="QuickUnlockModeAllowlist"/>
   <int value="785" label="AttestationExtensionAllowlist"/>
   <int value="786" label="DataLeakPreventionRulesList"/>
+  <int value="787" label="WebRtcAllowLegacyTLSProtocols"/>
+  <int value="788" label="MediaRecommendationsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29771,6 +29773,13 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="ERROR"/>
   <int value="1" label="NO_CONTENT"/>
   <int value="2" label="CONTENT_DISMISSED"/>
+</enum>
+
+<enum name="FetchFontName">
+  <int value="0" label="Other"/>
+  <int value="1" label="Google Sans Regular"/>
+  <int value="2" label="Google Sans Medium"/>
+  <int value="3" label="Google Sans Bold"/>
 </enum>
 
 <enum name="FetchFontResult">
@@ -54881,6 +54890,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Password Breach Dialog"/>
 </enum>
 
+<enum name="PasswordCheckResolutionAction">
+  <int value="0" label="Opened a site to change password manually"/>
+  <int value="1" label="Started an automated password change flow"/>
+  <int value="2" label="Removed a password"/>
+  <int value="3" label="Edited a password"/>
+  <int value="4" label="Did nothing"/>
+</enum>
+
 <enum name="PasswordCheckUIUserActionAndroid">
   <int value="0" label="Start check automatically"/>
   <int value="1" label="Start check manually"/>
@@ -71710,6 +71727,18 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Error 5xx"/>
   <int value="2" label="Page unavailable offline"/>
   <int value="3" label="Digital assetlinks verification failure"/>
+</enum>
+
+<enum name="TrustTokenRequestHelperFactoryOutcome">
+  <int value="0" label="Successfully created an issuance helper"/>
+  <int value="1" label="Successfully created a redemption helper"/>
+  <int value="2" label="Successfully created a signing helper"/>
+  <int value="3" label="Empty 'issuers' parameter"/>
+  <int value="4" label="Unsuitable issuer in 'issuers' parameter"/>
+  <int value="5" label="Unsuitable top frame origin"/>
+  <int value="6"
+      label="Request rejected due to bearing an internal Trust Tokens header"/>
+  <int value="7" label="Rejected by authorizer (check cookie settings?)"/>
 </enum>
 
 <enum name="TunnelRedirectHistogramValue">

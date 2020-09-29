@@ -9348,14 +9348,9 @@
         'admin-sharing',
         'google-sharing',
       ],
-      'desc': '''Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google.
+      'desc': '''Setting the policy to Enabled has <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> report usage metrics and diagnostic data, including crash reports, back to Google. Setting the policy to Disabled turns off metrics and diagnostic data reporting.
 
-      If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics and diagnostic data.
-
-      If set to false, metrics and diagnostic data reporting will be disabled.
-
-      If not configured, metrics and diagnostic data reporting will be disabled on unmanaged devices and enabled on managed devices.''',
-
+       Leaving the policy unset keeps metrics and diagnostic data reporting off on unmanaged devices and on for managed devices.''',
       'arc_support': 'This policy also controls Android usage and diagnostic data collection.',
     },
     {
@@ -23415,7 +23410,45 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       - Format the URL patterns according to this format ( https://www.chromium.org/administrators/url-blacklist-filter-format ).
 
       If the policy is left not set, no restrictions will be applied.''',
-    }
+    },
+    {
+      'name': 'WebRtcAllowLegacyTLSProtocols',
+      'owners': ['hta@chromium.org', 'guidou@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:87-', 'chrome_os:87-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 787,
+      'caption': '''Allow legacy TLS/DTLS downgrade in WebRTC''',
+      'tags': [],
+      'desc': '''If enabled, WebRTC peer connections can downgrade to obsolete
+      versions of the TLS/DTLS (DTLS 1.0, TLS 1.0 and TLS 1.1) protocols.
+      When this policy is disabled or not set, these TLS/DTLS versions are
+      disabled.
+
+      This policy is temporary and will be removed in a future version
+      of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'MediaRecommendationsEnabled',
+      'owners': ['beccahughes@chromium.org', 'steimel@chromium.org', 'mlamouri@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:87-', 'chrome_os:87-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 788,
+      'caption': 'Enable Media Recommendations',
+      'tags': [],
+      'desc': '''By default the browser will show media recommendations that are personalized to the user. Setting this policy to Disabled will result in these recommendations being hidden from the user. Setting this policy to Enabled or leaving it unset will result in the media recommendations being shown to the user.''',
+    },
   ],
 
   'messages': {
@@ -24340,6 +24373,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 412, 476, 544, 546, 562, 569, 578],
-  'highest_id_currently_used': 786,
+  'highest_id_currently_used': 788,
   'highest_atomic_group_id_currently_used': 40
 }

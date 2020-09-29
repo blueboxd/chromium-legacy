@@ -567,6 +567,8 @@ const base::Feature kFontPreloadingDelaysRendering{
 const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
     &kFontPreloadingDelaysRendering, "delay-in-ms", 50};
 
+const base::Feature kFlexAspectRatio{"FlexAspectRatio",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kFlexNG{"FlexNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
@@ -747,11 +749,6 @@ const base::Feature kReducedReferrerGranularity{
 // Enables the user activated exponential delay in the ContentCapture task.
 const base::Feature kContentCaptureUserActivatedDelay = {
     "ContentCaptureUserActivatedDelay", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable ReadableStream, WritableStream and TransformStream objects to be
-// transferred with postMessage().
-const base::Feature kTransferableStreams{"TransferableStreams",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Dispatches a fake fetch event to a service worker to check the offline
 // capability of the site before promoting installation.

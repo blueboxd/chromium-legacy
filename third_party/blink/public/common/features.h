@@ -177,6 +177,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
 
+BLINK_COMMON_EXPORT extern const base::Feature kFlexAspectRatio;
 BLINK_COMMON_EXPORT extern const base::Feature kFlexNG;
 
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
@@ -301,8 +302,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kContentCaptureUserActivatedDelay;
-
-BLINK_COMMON_EXPORT extern const base::Feature kTransferableStreams;
 
 BLINK_COMMON_EXPORT extern const base::Feature kCheckOfflineCapability;
 

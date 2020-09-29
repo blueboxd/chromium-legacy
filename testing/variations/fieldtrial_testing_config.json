@@ -6611,26 +6611,6 @@
             ]
         }
     ],
-    "SyncReuploadBookmarkFullTitles": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncReuploadBookmarkFullTitles"
-                    ]
-                }
-            ]
-        }
-    ],
     "SyncTriggerFullKeystoreMigration": [
         {
             "platforms": [
@@ -6938,27 +6918,6 @@
                     },
                     "enable_features": [
                         "EnableAppRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TransferableStreams": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TransferableStreams"
                     ]
                 }
             ]

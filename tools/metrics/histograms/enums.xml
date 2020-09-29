@@ -38524,6 +38524,24 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Saved via list pref"/>
 </enum>
 
+<enum name="ItemSuggestCacheStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Disabled by experiment"/>
+  <int value="2" label="Disabled by policy"/>
+  <int value="3" label="Invalid server URL"/>
+  <int value="4" label="No identity manager"/>
+  <int value="5" label="Google auth error"/>
+  <int value="6" label="Net error"/>
+  <int value="7" label="Response too large"/>
+  <int value="8" label="3xx status"/>
+  <int value="9" label="4xx status"/>
+  <int value="10" label="5xx status"/>
+  <int value="11" label="Empty response"/>
+  <int value="12" label="No results in response"/>
+  <int value="13" label="JSON parse failure"/>
+  <int value="14" label="JSON conversion failure"/>
+</enum>
+
 <enum name="JavaScriptDialogDismissalCause">
   <int value="0" label="Tab closed">The tab owning the dialog was closed</int>
   <int value="1" label="New dialog">
@@ -41483,6 +41501,8 @@ from previous Chrome versions.
   <int value="-1472825316" label="ContextualSearchLongpressResolve:enabled"/>
   <int value="-1471021059"
       label="OmniboxUIExperimentShowSuggestionFavicons:disabled"/>
+  <int value="-1469555275"
+      label="VmCameraMicIndicatorsAndNotifications:enabled"/>
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
@@ -42771,6 +42791,8 @@ from previous Chrome versions.
   <int value="-177974995" label="CrostiniShowMicSetting:disabled"/>
   <int value="-177085741"
       label="EnableEphemeralGuestProfilesOnDesktop:disabled"/>
+  <int value="-176524053"
+      label="VmCameraMicIndicatorsAndNotifications:disabled"/>
   <int value="-175666252" label="Portals:disabled"/>
   <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>
   <int value="-174706795"
@@ -48332,6 +48354,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="ModuleIndex">
+  <obsolete>
+    Removed in M87.
+  </obsolete>
   <int value="0" label="chrome.dll"/>
   <int value="1" label="chrome_elf.dll"/>
   <int value="2" label="ntdll.dll"/>

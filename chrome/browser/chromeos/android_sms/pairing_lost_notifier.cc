@@ -47,7 +47,12 @@ PairingLostNotifier::PairingLostNotifier(
       pref_service_(pref_service),
       android_sms_app_helper_delegate_(android_sms_app_helper_delegate) {
   multidevice_setup_client_->AddObserver(this);
-  HandleMessagesFeatureState();
+
+  // Wait until the app registry is loaded before querying for installed PWA
+  // info.
+  android_sms_app_helper_delegate_->ExecuteOnAppRegistryReady(
+      base::BindOnce(&PairingLostNotifier::HandleMessagesFeatureState,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 PairingLostNotifier::~PairingLostNotifier() {
@@ -61,15 +66,27 @@ void PairingLostNotifier::OnFeatureStatesChanged(
 }
 
 void PairingLostNotifier::HandleMessagesFeatureState() {
+  if (!android_sms_app_helper_delegate_->IsAppRegistryReady()) {
+    return;
+  }
+
   multidevice_setup::mojom::FeatureState state =
       multidevice_setup_client_->GetFeatureStates()
           .find(multidevice_setup::mojom::Feature::kMessages)
           ->second;
 
-  // If Messages is currently enabled or disabled, the user has completed the
-  // setup process.
-  if (state == multidevice_setup::mojom::FeatureState::kDisabledByUser ||
-      state == multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+  // If the feature is disabled we should never show any notifications or
+  // track the pairing state.  To avoid showing the notification immediately
+  // if the feature is ever enabled in the future, the pref should also be
+  // cleared.
+  if (state == multidevice_setup::mojom::FeatureState::kDisabledByUser) {
+    pref_service_->SetBoolean(kWasPreviouslySetUpPrefName, false);
+    ClosePairingLostNotificationIfVisible();
+    return;
+  }
+
+  // If Messages is enabled, the user has completed the setup process.
+  if (state == multidevice_setup::mojom::FeatureState::kEnabledByUser) {
     HandleSetUpFeatureState();
     return;
   }

@@ -825,7 +825,7 @@
     },
     {
       name: "FlexAspectRatio",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FocuslessSpatialNavigation",
@@ -1868,14 +1868,9 @@
       origin_trial_feature_name: "ForceTouchEventFeatureDetectionForInspector",
       status: "stable",
     },
-    // When enabled, tracks the number of times each LayoutBlock
-    // goes through layout. For testing purposes only.
-    {
-      name: "TrackLayoutPassesPerBlock",
-    },
     {
       name: "TransferableStreams",
-      status: "experimental",
+      status: "stable",
       origin_trial_feature_name: "RTCInsertableStreams",
       implied_by: ["RTCInsertableStreams"],
     },

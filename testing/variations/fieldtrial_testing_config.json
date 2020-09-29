@@ -2959,30 +2959,6 @@
             ]
         }
     ],
-    "GamepadPollingInterval": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledGamepadPolling250Hz",
-                    "params": {
-                        "interval-ms": "4"
-                    },
-                    "enable_features": [
-                        "GamepadPollingInterval"
-                    ]
-                }
-            ]
-        }
-    ],
     "GestureNavigation": [
         {
             "platforms": [
@@ -4563,6 +4539,7 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DisableSearchSuggestChips",
+                        "IframeOneGoogleBar",
                         "NtpWebUI"
                     ]
                 }
@@ -5772,30 +5749,6 @@
                     "enable_features": [
                         "IPH_QuietNotificationPrompts",
                         "QuietNotificationPrompts"
-                    ]
-                }
-            ]
-        }
-    ],
-    "QuotaExpandPoolSize": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Pool_Four_Fifths_Origin_ThreeQuarters_20190710",
-                    "params": {
-                        "PerHostRatio": "0.75",
-                        "PoolSizeRatio": "0.8"
-                    },
-                    "enable_features": [
-                        "QuotaExpandPoolSize"
                     ]
                 }
             ]

@@ -310,6 +310,9 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     const ComputedStyle& style = containing_block->StyleRef();
     LogicalSize size = containing_block_fragment->Size().ConvertToLogical(
         style.GetWritingMode());
+    size.block_size =
+        LayoutBoxUtils::TotalBlockSize(*ToLayoutBox(containing_block));
+
     const NGPhysicalBoxFragment* fragment =
         To<NGPhysicalBoxFragment>(containing_block_fragment);
 
@@ -743,13 +746,16 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   bool should_be_considered_as_replaced = node.ShouldBeConsideredAsReplaced();
   bool absolute_needs_child_block_size =
       AbsoluteNeedsChildBlockSize(candidate_style);
+  base::Optional<MinMaxSizes> minmax_intrinsic_sizes_for_ar;
 
   // We also include items with aspect ratio here, because if the inline size
   // is auto and we have a definite block size, we want to use that for the
   // inline size calculation.
+  bool compute_inline_from_ar =
+      IsInlineSizeComputableFromBlockSize(candidate_style);
   if (AbsoluteNeedsChildInlineSize(candidate_style) ||
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced ||
-      IsInlineSizeComputableFromBlockSize(candidate_style)) {
+      compute_inline_from_ar) {
     MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kContent);
     if (is_replaced) {
       input.percentage_resolution_block_size =
@@ -763,6 +769,15 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
           default_writing_mode, container_direction, &node_dimensions);
       has_computed_block_dimensions = true;
       input.percentage_resolution_block_size = node_dimensions.size.block_size;
+    }
+    if (compute_inline_from_ar &&
+        candidate_style.OverflowInlineDirection() == EOverflow::kVisible) {
+      MinMaxSizesInput intrinsic_input(input);
+      intrinsic_input.type = MinMaxSizesType::kIntrinsic;
+      minmax_intrinsic_sizes_for_ar =
+          node.ComputeMinMaxSizes(candidate_writing_mode, intrinsic_input,
+                                  &candidate_constraint_space)
+              .sizes;
     }
 
     min_max_sizes = node.ComputeMinMaxSizes(candidate_writing_mode, input,
@@ -795,10 +810,11 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
                     kIndefiniteSize};
   }
 
-  ComputeOutOfFlowInlineDimensions(
-      candidate_constraint_space, candidate_style, border_padding,
-      candidate_static_position, min_max_sizes, replaced_size,
-      default_writing_mode, container_direction, &node_dimensions);
+  ComputeOutOfFlowInlineDimensions(candidate_constraint_space, candidate_style,
+                                   border_padding, candidate_static_position,
+                                   min_max_sizes, minmax_intrinsic_sizes_for_ar,
+                                   replaced_size, default_writing_mode,
+                                   container_direction, &node_dimensions);
 
   // |should_be_considered_as_replaced| sets the inline-size.
   // It does not set the block-size. This is a compatibility quirk.
@@ -1185,8 +1201,9 @@ const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
     column_size.block_size = column_size.block_size.ClampNegativeToZero();
   }
 
-  // TODO(layout-dev): Calculate correct percentage resolution size.
-  LogicalSize percentage_resolution_size = column_size;
+  LogicalSize percentage_resolution_size =
+      LogicalSize(column_size.inline_size,
+                  container_builder_->ChildAvailableSize().block_size);
 
   // TODO(bebeaudr): Need to handle different fragmentation types. It won't
   // always be multi-column.

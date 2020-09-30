@@ -719,7 +719,7 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
@@ -1002,10 +1002,6 @@
       status: "stable",
     },
     {
-      name: "LayoutNGFlexBox",
-      status: "stable",
-    },
-    {
       name: "LayoutNGForControls",
       depends_on: ["LayoutNG"],
       status: "experimental",
@@ -1110,7 +1106,7 @@
     },
     {
       name: "MediaCapturePanTilt",
-      status: "experimental",
+      status: "stable",
     },
     // Set to reflect the MediaCastOverlayButton feature.
     {

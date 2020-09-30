@@ -35414,6 +35414,29 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Different from baseUrl"/>
 </enum>
 
+<enum name="HoldingSpaceDownloadsAction">
+  <int value="0" label="kClick"/>
+</enum>
+
+<enum name="HoldingSpaceItemAction">
+  <int value="0" label="kCopy"/>
+  <int value="1" label="kDrag"/>
+  <int value="2" label="kLaunch"/>
+  <int value="3" label="kPin"/>
+  <int value="4" label="kShowInFolder"/>
+  <int value="5" label="kUnpin"/>
+</enum>
+
+<enum name="HoldingSpaceItemType">
+  <int value="0" label="kPinnedFile"/>
+  <int value="1" label="kScreenshot"/>
+  <int value="2" label="kDownload"/>
+</enum>
+
+<enum name="HoldingSpacePodAction">
+  <int value="0" label="kClick"/>
+</enum>
+
 <enum name="HomeButtonPreferenceStateType">
   <int value="0" label="User Disabled"/>
   <int value="1" label="User Enabled"/>
@@ -42654,6 +42677,7 @@ from previous Chrome versions.
   <int value="-339103761" label="ArcGraphicBuffersVisualizationTool:enabled"/>
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-338606027" label="TrimOnMemoryPressure:disabled"/>
+  <int value="-338277966" label="DecoupleSyncFromAndroidMasterSync:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
@@ -43144,6 +43168,7 @@ from previous Chrome versions.
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="181150000" label="CrosVmCupsProxy:enabled"/>
+  <int value="182788555" label="DecoupleSyncFromAndroidMasterSync:disabled"/>
   <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="186463628" label="DnsOverHttps:disabled"/>

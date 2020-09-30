@@ -56,6 +56,7 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
+#include "content/browser/file_system_access/native_file_system_manager_impl.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -69,7 +70,6 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
-#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
@@ -8536,17 +8536,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_commit_params_ = std::move(params);
   }
 
-  // TODO(arthursonzogni): Recording the metrics again for same-document or
-  // bfcache navigation is a no-op. They were already recorded when the document
-  // committed. This should be moved toward NewDocumentCreatedFromNavigation().
-  RecordCrossOriginIsolationMetrics(this);
-
-  // TODO(arthursonzogni): Calling this for same-document navigation doesn't
-  // hurt, but this is useless. This should be executed only once per new
-  // document. This should be moved to CommitNewDocumentFromNavigation().
-  CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
-      frame_tree_node_);
-
   return true;
 }
 
@@ -8632,6 +8621,11 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   is_mhtml_document_ =
       navigation_request->GetMimeType() == "multipart/related" ||
       navigation_request->GetMimeType() == "message/rfc822";
+
+  RecordCrossOriginIsolationMetrics(this);
+
+  CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
+      frame_tree_node_);
 }
 
 void RenderFrameHostImpl::OnSameDocumentCommitProcessed(

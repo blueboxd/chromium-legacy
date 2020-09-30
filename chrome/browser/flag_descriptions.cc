@@ -1382,6 +1382,10 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
+const char kMetricsSettingsAndroidName[] = "Metrics Settings on Android";
+const char kMetricsSettingsAndroidDescription[] =
+    "Enables the new design of metrics settings.";
+
 const char kMixedFormsDisableAutofillName[] =
     "Disable autofill for mixed forms";
 const char kMixedFormsDisableAutofillDescription[] =
@@ -1558,6 +1562,11 @@ const char kOmniboxRichAutocompletionShowAdditionalTextName[] =
 const char kOmniboxRichAutocompletionShowAdditionalTextDescription[] =
     "Show the suggestion title or URL additional text when the input matches "
     "the URL or title respectively. Defaults to true.";
+const char kOmniboxRichAutocompletionSplitName[] =
+    "Omnibox Rich Autocompletion Split";
+const char kOmniboxRichAutocompletionSplitDescription[] =
+    "Allow splitting the user input to intermix with autocompletions; e.g., "
+    "the user input 'x z' could be autocompleted as 'x [y ]z'.";
 const char kOmniboxRichAutocompletionPromisingName[] =
     "Omnibox Rich Autocompletion Promising Combinations";
 const char kOmniboxRichAutocompletionPromisingDescription[] =
@@ -1774,6 +1783,17 @@ const char kOverlayStrategiesUnoccluded[] =
 const char kOverlayStrategiesOccludedAndUnoccluded[] =
     "Occluded and unoccluded buffers "
     "(single-fullscreen,single-on-top,underlay)";
+
+const char kOverrideLanguagePrefsForHrefTranslateName[] =
+    "Override user-blocklisted languages for hrefTranslate";
+const char kOverrideLanguagePrefsForHrefTranslateDescription[] =
+    "When using hrefTranslate, ignore the user's blocklist of languages that "
+    "shouldn't be translated.";
+const char kOverrideSitePrefsForHrefTranslateName[] =
+    "Override user-blocklisted sites for hrefTranslate";
+const char kOverrideSitePrefsForHrefTranslateDescription[] =
+    "When using hrefTranslate, ignore the user's blocklist of websites that "
+    "shouldn't be translated.";
 
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
@@ -3959,6 +3979,11 @@ const char kEnableQuickAnswersTranslationName[] =
     "Enable Quick Answers translation";
 const char kEnableQuickAnswersTranslationDescription[] =
     "Enable Quick Answers translation.";
+
+const char kEnableQuickAnswersTranslationCloudAPIName[] =
+    "Enable Quick Answers translation using the Cloud API";
+const char kEnableQuickAnswersTranslationCloudAPIDescription[] =
+    "Enable Quick Answers translation using the Cloud API.";
 
 const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
 const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";

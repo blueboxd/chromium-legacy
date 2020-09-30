@@ -1,9 +1,14 @@
 <style>
+  :host(:focus) {
+    outline: none;
+  }
+
   #thumbnails {
     box-sizing: border-box;
     height: 100%;
     overflow: auto;
     padding: 24px 0;
+    padding-inline-end: var(--viewer-thumbnail-bar-padding-inline-end);
     text-align: center;
   }
 
@@ -14,7 +19,7 @@
 <div id="thumbnails">
   <template is="dom-repeat" items="[[pageNumbers_]]"
       on-dom-change="onDomChange_">
-    <viewer-thumbnail tabindex="0"
+    <viewer-thumbnail tabindex="0" clockwise-rotations="[[clockwiseRotations]]"
         is-active="[[isActivePage_(item, activePage)]]" page-number="[[item]]">
     </viewer-thumbnail>
   </template>

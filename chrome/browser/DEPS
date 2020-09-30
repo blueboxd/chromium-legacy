@@ -1,5 +1,6 @@
 include_rules = [
   "+apps",
+  "+cc/metrics",
   "+cc/paint",
   "+cc/test",
 
@@ -183,7 +184,6 @@ include_rules = [
   "+components/network_session_configurator/browser",
   "+components/network_session_configurator/common",
   "+components/network_time",
-  "+components/ntp_snippets",
   "+components/ntp_tiles",
   "+components/offline_items_collection/core",
   "+components/offline_pages/buildflags",

@@ -3311,7 +3311,7 @@ void WebGLRenderingContextBase::RecordIdentifiableGLParameterDigest(
     return;
   if (const auto& ukm_params = GetUkmParameters()) {
     blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
-        .Set(blink::IdentifiableSurface::FromTypeAndInput(
+        .Set(blink::IdentifiableSurface::FromTypeAndToken(
                  blink::IdentifiableSurface::Type::kWebGLParameter, pname),
              value)
         .Record(ukm_params->ukm_recorder);
@@ -4637,7 +4637,7 @@ void WebGLRenderingContextBase::readPixels(
   if (IdentifiabilityStudySettings::Get()->IsActive()) {
     if (const auto& ukm_params = GetUkmParameters()) {
       blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
-          .Set(blink::IdentifiableSurface::FromTypeAndInput(
+          .Set(blink::IdentifiableSurface::FromTypeAndToken(
                    blink::IdentifiableSurface::Type::kCanvasReadback,
                    GetContextType()),
                0)
@@ -7150,6 +7150,7 @@ ScriptValue WebGLRenderingContextBase::GetIntParameter(
         break;
     }
   }
+  RecordIdentifiableGLParameterDigest(pname, value);
   return WebGLAny(script_state, value);
 }
 
@@ -7195,7 +7196,7 @@ ScriptValue WebGLRenderingContextBase::GetWebGLFloatArrayParameter(
       ShouldMeasureGLParam(pname)) {
     blink::IdentifiableTokenBuilder builder;
     for (unsigned i = 0; i < length; i++) {
-      builder.AddToken(value[i]);
+      builder.AddValue(value[i]);
     }
     RecordIdentifiableGLParameterDigest(pname, builder.GetToken());
   }
@@ -7224,7 +7225,7 @@ ScriptValue WebGLRenderingContextBase::GetWebGLIntArrayParameter(
       ShouldMeasureGLParam(pname)) {
     blink::IdentifiableTokenBuilder builder;
     for (unsigned i = 0; i < length; i++) {
-      builder.AddToken(value[i]);
+      builder.AddValue(value[i]);
     }
     RecordIdentifiableGLParameterDigest(pname, builder.GetToken());
   }

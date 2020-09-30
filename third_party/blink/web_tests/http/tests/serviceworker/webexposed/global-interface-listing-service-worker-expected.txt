@@ -1065,6 +1065,7 @@ interface OffscreenCanvasRenderingContext2D
     method putImageData
     method quadraticCurveTo
     method rect
+    method reset
     method resetTransform
     method restore
     method rotate
@@ -3804,11 +3805,11 @@ interface WebSocketStream
 interface WebTransport
     attribute @@toStringTag
     getter closed
+    getter datagramReadable
+    getter datagramWritable
     getter incomingBidirectionalStreams
     getter incomingUnidirectionalStreams
-    getter readableDatagrams
     getter ready
-    getter writableDatagrams
     method close
     method constructor
     method createBidirectionalStream

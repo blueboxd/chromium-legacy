@@ -82,19 +82,19 @@ class AccessibilityControllerImpl;
 class AccessibilityDelegate;
 class AccessibilityFocusRingControllerImpl;
 class AmbientController;
+class AppListControllerImpl;
+class AshColorProvider;
 class AshDBusServices;
 class AshFocusRules;
-class AppListControllerImpl;
-class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AssistantControllerImpl;
 class AutoclickController;
 class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
+class BloomUiControllerImpl;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
-class AshColorProvider;
 class CaptureModeController;
 class CrosDisplayConfig;
 class DesksController;
@@ -102,6 +102,7 @@ class DetachableBaseHandler;
 class DetachableBaseNotificationController;
 class DisplayAlignmentController;
 class DisplayColorManager;
+class NativeCursorManagerAsh;
 class DisplayConfigurationController;
 class DisplayConfigurationObserver;
 class DisplayErrorObserver;
@@ -539,6 +540,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   BackGestureEventHandler* back_gesture_event_handler() {
     return back_gesture_event_handler_.get();
   }
+  ui::EventHandler* shell_tab_handler() { return shell_tab_handler_.get(); }
   ToplevelWindowEventHandler* toplevel_window_event_handler() {
     return toplevel_window_event_handler_.get();
   }
@@ -674,6 +676,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AssistantControllerImpl> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
+  std::unique_ptr<BloomUiControllerImpl> bloom_ui_controller_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<DesksController> desks_controller_;
@@ -761,6 +764,10 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // An event filter which handles swiping back from left side of the window.
   std::unique_ptr<BackGestureEventHandler> back_gesture_event_handler_;
+
+  // An event filter which redirects focus when tab is pressed on a RootWindow
+  // with no active windows.
+  std::unique_ptr<ui::EventHandler> shell_tab_handler_;
 
   // An event filter which handles moving and resizing windows.
   std::unique_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;

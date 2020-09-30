@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -342,6 +343,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 
   int changed_button_flags = flags;
 
+  flags |= ui::EF_IS_SYNTHESIZED;
   if (mouse_data->touch_accessibility && *(mouse_data->touch_accessibility))
     flags |= ui::EF_TOUCH_ACCESSIBILITY;
 
@@ -406,6 +408,22 @@ AccessibilityPrivateHandleScrollableBoundsForPointFoundFunction::Run() {
   gfx::Rect bounds(rect.left, rect.top, rect.width, rect.height);
   ash::AccessibilityController::Get()->HandleAutoclickScrollableBoundsFound(
       bounds);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateMoveMagnifierToRectFunction::Run() {
+  std::unique_ptr<accessibility_private::MoveMagnifierToRect::Params> params =
+      accessibility_private::MoveMagnifierToRect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::ScreenRect rect = std::move(params->rect);
+  gfx::Rect bounds(rect.left, rect.top, rect.width, rect.height);
+
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+  if (magnification_manager)
+    magnification_manager->HandleMoveMagnifierToRectIfEnabled(bounds);
+
   return RespondNow(NoArguments());
 }
 

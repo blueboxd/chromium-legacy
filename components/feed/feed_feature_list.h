@@ -15,6 +15,9 @@ namespace feed {
 extern const base::Feature kInterestFeedContentSuggestions;
 extern const base::Feature kInterestFeedV2;
 
+bool IsV1Enabled();
+bool IsV2Enabled();
+
 extern const base::FeatureParam<std::string> kDisableTriggerTypes;
 extern const base::FeatureParam<int> kSuppressRefreshDurationMinutes;
 extern const base::FeatureParam<int> kTimeoutDurationSeconds;
@@ -27,6 +30,7 @@ extern const base::Feature kInterestFeedFeedback;
 // for personalization. Also enables the feed header menu to manage the feed.
 extern const base::Feature kReportFeedUserActions;
 
+std::string GetFeedReferrerUrl();
 
 }  // namespace feed
 

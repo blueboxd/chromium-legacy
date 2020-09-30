@@ -3,6 +3,7 @@
     background-color: var(--ntp-background-override-color);
     border: solid var(--ntp-border-color) 1px;
     border-radius: 5px;
+    box-sizing: border-box;
     display: block;
     overflow: hidden;
   }
@@ -16,6 +17,15 @@
 
   #title {
     color: var(--cr-primary-text-color);
+    font-size: 15px;
+  }
+
+  #headerSpacer {
+    flex-grow: 1;
+  }
+
+  #infoButton {
+    --cr-icon-image: url(./icons/info.svg);
   }
 
   #moduleElement {
@@ -26,5 +36,11 @@
 </style>
 <div id="header">
   <span id="title">[[descriptor.title]]</span>
+  <div id="headerSpacer"></div>
+  <template is="dom-if" if="[[descriptor.actions.info]]">
+    <cr-icon-button id="infoButton" title="$i18n{moduleInfoButtonTitle}"
+        on-click="onInfoButtonClick_">
+    </cr-icon-button>
+  </template>
 </div>
 <div id="moduleElement"></div>

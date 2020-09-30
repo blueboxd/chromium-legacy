@@ -104,8 +104,6 @@ import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
-import org.chromium.chrome.browser.incognito.IncognitoNotificationPresenceController;
-import org.chromium.chrome.browser.incognito.IncognitoProfileDestroyer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
@@ -198,6 +196,7 @@ import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -404,7 +403,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         ChromeActivityCommonsModule commonsModule = overridenCommonsFactory == null
                 ? new ChromeActivityCommonsModule(this,
-                        mRootUiCoordinator.getBottomSheetController(), mTabModelSelectorSupplier,
+                        mRootUiCoordinator::getBottomSheetController, mTabModelSelectorSupplier,
                         getBrowserControlsManager(), getBrowserControlsManager(),
                         getBrowserControlsManager(), getFullscreenManager(),
                         getLayoutManagerSupplier(), getLifecycleDispatcher(),
@@ -413,14 +412,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         this::getCurrentTabCreator, this::isCustomTab,
                         getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
                         this::getNotificationManagerProxy)
-                : overridenCommonsFactory.create(this,
-                        mRootUiCoordinator.getBottomSheetController(), mTabModelSelectorSupplier,
+                : overridenCommonsFactory.create(this, mRootUiCoordinator::getBottomSheetController,
+                        mTabModelSelectorSupplier, getBrowserControlsManager(),
                         getBrowserControlsManager(), getBrowserControlsManager(),
-                        getBrowserControlsManager(), getFullscreenManager(),
-                        getLayoutManagerSupplier(), getLifecycleDispatcher(),
-                        this::getSnackbarManager, mActivityTabProvider, getTabContentManager(),
-                        getWindowAndroid(), this::getCompositorViewHolder, this,
-                        this::getCurrentTabCreator, this::isCustomTab,
+                        getFullscreenManager(), getLayoutManagerSupplier(),
+                        getLifecycleDispatcher(), this::getSnackbarManager, mActivityTabProvider,
+                        getTabContentManager(), getWindowAndroid(), this::getCompositorViewHolder,
+                        this, this::getCurrentTabCreator, this::isCustomTab,
                         getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
                         this::getNotificationManagerProxy);
 
@@ -657,9 +655,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mIncognitoTabCreator = tabCreators.second;
 
         OfflinePageUtils.observeTabModelSelector(this, mTabModelSelector);
-        IncognitoProfileDestroyer.observeTabModelSelector(mTabModelSelector);
-        IncognitoNotificationPresenceController.observeTabModelSelector(mTabModelSelector);
-
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
@@ -859,8 +854,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator. This requires
         // SystemUiCoordinator to be created before WebappActivty#onResume().
         if (mStatusBarColorController == null) {
-            mStatusBarColorController =
-                    new StatusBarColorController(this, getActivityTabProvider());
+            // Context is ready, but AsyncInitializationActivity#isTablet won't be ready until
+            // after #createComponent() is called. Using
+            // DeviceFormFactor.isNonMultiDisplayContextOnTablet(...) directly instead.
+            mStatusBarColorController = new StatusBarColorController(getWindow(),
+                    DeviceFormFactor.isNonMultiDisplayContextOnTablet(/* Context */ this),
+                    getResources(),
+                    /* StatusBarColorProvider */ this, getOverviewModeBehaviorSupplier(),
+                    getLifecycleDispatcher(), getActivityTabProvider());
         }
 
         return mStatusBarColorController;

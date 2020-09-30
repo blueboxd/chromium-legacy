@@ -71,6 +71,7 @@ using autofill::FormRendererId;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
 using autofill::FieldPropertiesFlags::kAutofilledOnUserTrigger;
+using autofill::kNotSetRendererID;
 
 namespace {
 
@@ -454,7 +455,9 @@ autofillManagerFromWebState:(web::WebState*)webState
     __weak AutofillAgent* weakSelf = self;
     [_jsAutofillManager
         clearAutofilledFieldsForFormName:formName
+                            formUniqueID:uniqueFormID
                          fieldIdentifier:fieldIdentifier
+                           fieldUniqueID:uniqueFieldID
                                  inFrame:frame
                        completionHandler:^(NSString* jsonString) {
                          AutofillAgent* strongSelf = weakSelf;
@@ -904,6 +907,8 @@ autofillManagerFromWebState:(web::WebState*)webState
             value:(const base::string16)value
           inFrame:(web::WebFrame*)frame {
   auto data = std::make_unique<base::DictionaryValue>();
+  data->SetInteger("unique_renderer_id",
+                   uniqueFieldID ? uniqueFieldID.value() : kNotSetRendererID);
   data->SetString("identifier", fieldIdentifier);
   data->SetString("form", formName);
   data->SetString("value", value);

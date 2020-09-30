@@ -143,13 +143,18 @@
 #   'per_profile' controls whether a user policy applies to every user logging
 #   into the browser or only one profile.
 #   'cloud_only' Set to True if the policy is forced or recommended to set from
-#   Admin console only. This hides the policy from policy templates and
-#   documentation.
+#   Admin console only. This hides the policy from policy templates and Chrome
+#   documentation in policy_templates.zip. The documentation will NOT be hidden
+#   from the https://cloud.google.com/docs/chrome-enterprise/policies/.
 #   'platform_only' Set to True if the policy can only be set from platform
 #   policy but do not support Admin console. This is only used as a hint for
 #   Admin console.
 #   'internal_only' Set to True if the policy is used for internal development
 #   or testing purposes and will never be used by any external administrator.
+#   'unlisted' Set to True if the policy is controlled by Admin Console
+#   without any user interface for administrator. It can only be used for
+#   policies with the 'cloud_only' tag. Policy with the 'unlisted' tag will be
+#   hidden from all documentations, policy templates and Admin Console UI.
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for
@@ -865,6 +870,7 @@
         'DeviceLoginScreenSitePerProcess',
         'DeviceLoginScreenAutoSelectCertificateForUrls',
         'DeviceShowNumericKeyboardForPassword',
+        'DeviceFamilyLinkAccountsAllowed'
       ],
     },
     {
@@ -5791,9 +5797,7 @@
 
       Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
 
-      URL patterns in this policy shouldn't conflict with those configured through <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph> and <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>.
-
-      Values for this policy and <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME">DeviceWebUsbAllowDevicesForUrls</ph> merge.''',
+      URL patterns in this policy shouldn't conflict with those configured through <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph> and <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>.''',
     },
     {
       'name': 'DeviceLoginScreenWebUsbAllowDevicesForUrls',
@@ -9255,7 +9259,8 @@
       'tags': [],
       'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_ALLOWLIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_ALLOWLIST_ENTRY_WILDCARD">*@domain</ph>.
 
-      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
+      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.
+      If <ph name="DEVICE_FAMILY_LINK_ACCOUNTS_ALLOWED_POLICY_NAME">DeviceFamilyLinkAccountsAllowed</ph> is enabled, Family Link users will be allowed additionally to the accounts defined in this policy.''',
       'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY_POLICY_NAME">ArcPolicy</ph>.',
     },
     {
@@ -23449,6 +23454,29 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''By default the browser will show media recommendations that are personalized to the user. Setting this policy to Disabled will result in these recommendations being hidden from the user. Setting this policy to Enabled or leaving it unset will result in the media recommendations being shown to the user.''',
     },
+    {
+      'name': 'DeviceFamilyLinkAccountsAllowed',
+      'owners': ['agawronska@chromium.org', 'cros-families-eng@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 789,
+      'caption': '''Allow addition of Family Link accounts to the device''',
+      'tags': [],
+      'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new Family Link user accounts to be added on the device.
+      This policy is only useful in combination with <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph>. It allows Family Link accounts additionally to the accounts defined in the allowlist.
+      This policy does not affect the behavior of other sign-in policies. Particularly it will not have any effect when:
+      - Adding new users to the device is disabled with <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy.
+      - Adding all users is allowed with <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph> policy.
+
+      If this policy is set to false (or not configured), no additional rules will be applied to Family Link accounts.
+      If this policy is set to true, new Family Link user accounts will be allowed additionally to those defined in <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph>.''',
+    },
   ],
 
   'messages': {
@@ -23610,6 +23638,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'doc_feature_internal_only': {
       'desc': '''The name of the feature that indicates whether a policy is used for internal development or testing purposes.''',
       'text': '''Internal Only'''
+    },
+    'doc_feature_unlisted': {
+      'desc': '''The name of the feature that indicates whether a policy is set from cloud without any user interface.''',
+      'text': '''Private Only'''
     },
     'doc_deprecated': {
       'desc': '''Text appended in parentheses to the policy name to indicate that it has been deprecated''',
@@ -23879,7 +23911,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
     'DeviceCrostiniArcAdbSideloadingAllowed': 'device_crostini_arc_adb_sideloading_allowed.mode',
     'DeviceMinimumVersionAueMessage': 'device_minimum_version_aue_message.value',
-    'ManagedGuestSessionPrivacyWarningsEnabled' : 'managed_guest_session_privacy_warnings.enabled',
+    'ManagedGuestSessionPrivacyWarningsEnabled': 'managed_guest_session_privacy_warnings.enabled',
+    'DeviceFamilyLinkAccountsAllowed': 'family_link_accounts_allowed.family_link_accounts_allowed',
   },
   'policy_atomic_group_definitions': [
     {
@@ -24373,6 +24406,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 412, 476, 544, 546, 562, 569, 578],
-  'highest_id_currently_used': 788,
+  'highest_id_currently_used': 789,
   'highest_atomic_group_id_currently_used': 40
 }

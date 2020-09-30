@@ -23,6 +23,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/bloom/bloom_ui_controller_impl.h"
+#include "ash/bloom/bloom_ui_delegate_impl.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/child_accounts/parent_access_controller_impl.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
@@ -95,6 +97,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_observer.h"
+#include "ash/shell_tab_handler.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/style/ash_color_provider.h"
@@ -174,10 +177,12 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/components/bloom/public/cpp/bloom_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/usb/usbguard_client.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -623,6 +628,9 @@ Shell::~Shell() {
   // handler that depends on this shell and some of its members. Destroy early.
   capture_mode_controller_.reset();
 
+  RemovePreTargetHandler(shell_tab_handler_.get());
+  shell_tab_handler_.reset();
+
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
 
@@ -1024,6 +1032,8 @@ void Shell::Init(
   shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
+  shell_tab_handler_ = std::make_unique<ShellTabHandler>(this);
+  AddPreTargetHandler(shell_tab_handler_.get());
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());
   speech_feedback_handler_ = SpokenFeedbackToggler::CreateHandler();
@@ -1108,6 +1118,9 @@ void Shell::Init(
   // used by the latter.
   if (chromeos::features::IsAmbientModeEnabled())
     ambient_controller_ = std::make_unique<AmbientController>();
+
+  if (chromeos::assistant::features::IsBloomEnabled())
+    bloom_ui_controller_ = std::make_unique<BloomUiControllerImpl>();
 
   home_screen_controller_ = std::make_unique<HomeScreenController>();
 

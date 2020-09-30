@@ -65,7 +65,7 @@ bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
       gfx::Size(dpi_x, dpi_y),
       gfx::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
-      autorotate, use_color);
+      autorotate, use_color, /*render_for_printing=*/true);
   return engine_exports->RenderPDFPageToDC(pdf_buffer, page_number, settings,
                                            dc);
 }
@@ -119,16 +119,15 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            void* bitmap_buffer,
                            const gfx::Size& bitmap_size,
                            const gfx::Size& dpi,
-                           bool stretch_to_bounds,
-                           bool keep_aspect_ratio,
-                           bool autorotate,
-                           bool use_color) {
+                           const RenderOptions& options) {
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   PDFEngineExports::RenderingSettings settings(
       dpi, gfx::Rect(bitmap_size),
-      /*fit_to_bounds=*/true, stretch_to_bounds, keep_aspect_ratio,
-      /*center_in_bounds=*/true, autorotate, use_color);
+      /*fit_to_bounds=*/true, options.stretch_to_bounds,
+      options.keep_aspect_ratio,
+      /*center_in_bounds=*/true, options.autorotate, options.use_color,
+      options.render_device_type == RenderDeviceType::kPrinter);
   return engine_exports->RenderPDFPageToBitmap(pdf_buffer, page_number,
                                                settings, bitmap_buffer);
 }

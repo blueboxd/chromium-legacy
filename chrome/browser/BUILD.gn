@@ -931,10 +931,6 @@ static_library("browser") {
     "notifications/scheduler/notification_schedule_service_factory.h",
     "notifications/system_notification_helper.cc",
     "notifications/system_notification_helper.h",
-    "ntp_snippets/content_suggestions_service_factory.cc",
-    "ntp_snippets/content_suggestions_service_factory.h",
-    "ntp_snippets/ntp_snippets_metrics.cc",
-    "ntp_snippets/ntp_snippets_metrics.h",
     "ntp_tiles/chrome_custom_links_manager_factory.cc",
     "ntp_tiles/chrome_custom_links_manager_factory.h",
     "ntp_tiles/chrome_most_visited_sites_factory.cc",
@@ -2571,6 +2567,17 @@ static_library("browser") {
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
       "android/feature_engagement/tracker_factory_android.cc",
+      "android/feed/v2/background_refresh_task.cc",
+      "android/feed/v2/background_refresh_task.h",
+      "android/feed/v2/feed_image_fetch_client.cc",
+      "android/feed/v2/feed_service_bridge.cc",
+      "android/feed/v2/feed_service_bridge.h",
+      "android/feed/v2/feed_service_factory.cc",
+      "android/feed/v2/feed_service_factory.h",
+      "android/feed/v2/feed_stream_surface.cc",
+      "android/feed/v2/feed_stream_surface.h",
+      "android/feed/v2/refresh_task_scheduler_impl.cc",
+      "android/feed/v2/refresh_task_scheduler_impl.h",
       "android/feedback/connectivity_checker.cc",
       "android/feedback/process_id_feedback_source.cc",
       "android/feedback/screenshot_task.cc",
@@ -2645,16 +2652,10 @@ static_library("browser") {
       "android/navigation_predictor/navigation_predictor_bridge.cc",
       "android/net/nqe/network_quality_provider.cc",
       "android/net/nqe/network_quality_provider.h",
-      "android/ntp/get_remote_suggestions_scheduler.cc",
-      "android/ntp/get_remote_suggestions_scheduler.h",
       "android/ntp/most_visited_sites_bridge.cc",
       "android/ntp/most_visited_sites_bridge.h",
       "android/ntp/new_tab_page_url_handler.cc",
       "android/ntp/new_tab_page_url_handler.h",
-      "android/ntp/ntp_snippets_bridge.cc",
-      "android/ntp/ntp_snippets_bridge.h",
-      "android/ntp/ntp_snippets_launcher.cc",
-      "android/ntp/ntp_snippets_launcher.h",
       "android/ntp/recent_tabs_page_prefs.cc",
       "android/ntp/recent_tabs_page_prefs.h",
       "android/omnibox/autocomplete_controller_android.cc",
@@ -3082,7 +3083,6 @@ static_library("browser") {
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
       "//components/image_fetcher/core",
-      "//components/ntp_snippets",
     ]
     deps += [
       ":client_discourse_context_proto",
@@ -3110,6 +3110,7 @@ static_library("browser") {
       "//chrome/browser/share/android:jni_headers",
       "//chrome/browser/tab:jni_headers",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
+      "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//chrome/browser/updates",
       "//chrome/browser/updates:factory",
       "//chrome/browser/video_tutorials/internal",
@@ -3139,6 +3140,7 @@ static_library("browser") {
       "//components/favicon/core:database",
       "//components/feed:buildflags",
       "//components/feed:feature_list",
+      "//components/feed/core/v2:feed_core_v2",
       "//components/image_fetcher/core:metrics",
       "//components/infobars/android",
       "//components/invalidation/impl:feature_list",
@@ -3957,7 +3959,6 @@ static_library("browser") {
       "//components/feedback",
       "//components/image_fetcher/core",
       "//components/keep_alive_registry",
-      "//components/ntp_snippets",
       "//components/pref_registry",
       "//components/printing/common:mojo_interfaces",
       "//components/schema_org",
@@ -5494,7 +5495,7 @@ static_library("browser") {
     }
   }
 
-  if (enable_feed_in_chrome) {
+  if (enable_feed_v1) {
     sources += [
       "android/feed/feed_content_bridge.cc",
       "android/feed/feed_content_bridge.h",
@@ -5516,23 +5517,8 @@ static_library("browser") {
       "android/feed/feed_scheduler_bridge.h",
       "android/feed/history/feed_history_helper.cc",
       "android/feed/history/feed_history_helper.h",
-      "android/feed/v2/background_refresh_task.cc",
-      "android/feed/v2/background_refresh_task.h",
-      "android/feed/v2/feed_image_fetch_client.cc",
-      "android/feed/v2/feed_service_bridge.cc",
-      "android/feed/v2/feed_service_bridge.h",
-      "android/feed/v2/feed_service_factory.cc",
-      "android/feed/v2/feed_service_factory.h",
-      "android/feed/v2/feed_stream_surface.cc",
-      "android/feed/v2/feed_stream_surface.h",
-      "android/feed/v2/refresh_task_scheduler_impl.cc",
-      "android/feed/v2/refresh_task_scheduler_impl.h",
     ]
-    deps += [
-      "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
-      "//components/feed/content:feed_content",
-      "//components/feed/core/v2:feed_core_v2",
-    ]
+    deps += [ "//components/feed/content:feed_content" ]
   }
 
   if (enable_library_cdms) {

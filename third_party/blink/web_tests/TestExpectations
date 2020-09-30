@@ -273,7 +273,6 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 
 # Not supported yet
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-013.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-014.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/replaced-element-016.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/replaced-element-021.tentative.html [ Failure ]
@@ -1317,9 +1316,6 @@ crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-m
 
 crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Failure ]
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
-
-crbug.com/1127347 external/wpt/css/selectors/invalidation/is.html [ Failure ]
-crbug.com/1127347 external/wpt/css/selectors/invalidation/where.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2483,7 +2479,6 @@ crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
-crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-024.html [ Failure ]
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 crbug.com/1108711 external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
 crbug.com/1110393 external/wpt/css/css-pseudo/active-selection-021.html [ Failure ]
@@ -2655,6 +2650,15 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-027.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-backgrounds/border-image-slice-007.htm [ Failure ]
+crbug.com/626703 external/wpt/css/css-backgrounds/border-image-slice-005.htm [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/scroll-to-text-fragment/redirects.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-025.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-023.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-pseudo/active-selection-027.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-pseudo/active-selection-025.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/operator-dictionary-symmetric-005.html [ Failure Crash ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Backspace [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?TypingA [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-non-collapsed-selection.tentative.html?Delete [ Timeout ]
@@ -6611,6 +6615,10 @@ crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-file
 crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Pass Failure ]
 crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Pass Timeout ]
 crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Failure Crash ]
+
+# Temporarily disable tests to allow refactoring DevTools ad hoc fields in DOMNode
+crbug.com/1133675 http/tests/devtools/elements/elements-child-node-count-mismatch.js [ Pass Failure ]
+crbug.com/1133675 http/tests/devtools/elements/move-node.js [ Pass Failure ]
 
 # Sheriff 2020-07-20
 crbug.com/1107572 [ Mac ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Failure ]

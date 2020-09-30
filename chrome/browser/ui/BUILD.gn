@@ -449,7 +449,6 @@ static_library("ui") {
     "//components/metrics_services_manager",
     "//components/navigation_metrics",
     "//components/net_log",
-    "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/offline_pages/buildflags",
     "//components/omnibox/browser",
@@ -603,18 +602,14 @@ static_library("ui") {
       "//chrome/app:chromium_strings",
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
+      "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//components/browser_ui/util/android",
+      "//components/feed/core/common:feed_core_common",
+      "//components/feed/core/v2:feed_core_v2",
       "//components/infobars/content",
       "//components/query_tiles",
       "//components/security_state/content/android",
     ]
-    if (enable_feed_in_chrome) {
-      deps += [
-        "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
-        "//components/feed/core/common:feed_core_common",
-        "//components/feed/core/v2:feed_core_v2",
-      ]
-    }
   } else {
     # !is_android
     deps += [ "//components/autofill/content/browser/webauthn" ]
@@ -783,12 +778,20 @@ static_library("ui") {
       "webui/webapks_ui.cc",
       "webui/webapks_ui.h",
     ]
-    if (enable_feed_in_chrome) {
+    if (enable_feed_v1 || enable_feed_v2) {
+      sources += [
+        "webui/feed_internals/feed_internals_ui.cc",
+        "webui/feed_internals/feed_internals_ui.h",
+      ]
+    }
+    if (enable_feed_v1) {
       sources += [
         "webui/feed_internals/feed_internals_page_handler.cc",
         "webui/feed_internals/feed_internals_page_handler.h",
-        "webui/feed_internals/feed_internals_ui.cc",
-        "webui/feed_internals/feed_internals_ui.h",
+      ]
+    }
+    if (enable_feed_v2) {
+      sources += [
         "webui/feed_internals/feedv2_internals_page_handler.cc",
         "webui/feed_internals/feedv2_internals_page_handler.h",
       ]
@@ -2216,6 +2219,8 @@ static_library("ui") {
       "webui/chromeos/login/base_screen_handler.h",
       "webui/chromeos/login/base_webui_handler.cc",
       "webui/chromeos/login/base_webui_handler.h",
+      "webui/chromeos/login/cookie_waiter.cc",
+      "webui/chromeos/login/cookie_waiter.h",
       "webui/chromeos/login/core_oobe_handler.cc",
       "webui/chromeos/login/core_oobe_handler.h",
       "webui/chromeos/login/debug/debug_overlay_handler.cc",

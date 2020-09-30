@@ -5299,6 +5299,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="DohProviderId" separator="." ordering="prefix,4">
+  <suffix name="AlekBergNl" label="alekberg.net Amsterdam."/>
   <suffix name="CleanBrowsingAdult" label="CleanBrowsing adult filter."/>
   <suffix name="CleanBrowsingFamily" label="CleanBrowsing family filter."/>
   <suffix name="CleanBrowsingSecure" label="CleanBrowsing secure filter."/>
@@ -5317,6 +5318,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Quad9Cdn" label="Quad9 cdn service."/>
   <suffix name="Quad9Insecure" label="Quad9 insecure service."/>
   <suffix name="Quad9Secure" label="Quad9 secure service."/>
+  <suffix name="Spectrum1"
+      label="Charter Communications/Spectrum DoH endpoint1."/>
+  <suffix name="Spectrum2"
+      label="Charter Communications/Spectrum DoH endpoint2."/>
   <suffix name="Switch" label="SWITCH Public DNS."/>
   <affected-histogram name="Net.DNS.DnsTransaction.Insecure.FailureTime"/>
   <affected-histogram name="Net.DNS.DnsTransaction.Insecure.SuccessTime"/>
@@ -11116,6 +11121,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Fresh" label="Fresh logo from network."/>
   <suffix name="FromCache" label="Logo from cache."/>
   <affected-histogram name="NewTabPage.LogoShown"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NewTabPageModules" separator=".">
+  <suffix name="dummy" label="Module ID for a dummy module"/>
+  <suffix name="dummy2" label="Module ID for another dummy module"/>
+  <suffix name="kaleidoscope" label="Module ID for Kaleidoscope"/>
+  <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
+  <affected-histogram name="NewTabPage.Modules.Impression"/>
+  <affected-histogram name="NewTabPage.Modules.Usage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">

@@ -7,10 +7,12 @@
 #import <WebKit/WebKit.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/common/google_util.h"
@@ -53,12 +55,33 @@ constexpr base::TimeDelta kDelayThresholdToUpdateGaiaCookie =
 
 const char* kGoogleUrl = "https://google.com";
 const char* kYoutubeUrl = "https://youtube.com";
+const char* kGaiaDomain = "accounts.google.com";
 
 // Returns the registered, organization-identifying host, but no subdomains,
 // from the given GURL. Returns an empty string if the GURL is invalid.
 static std::string GetDomainFromUrl(const GURL& url) {
+  if (gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+    return kGaiaDomain;
+  }
   return net::registry_controlled_domains::GetDomainAndRegistry(
       url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
+// Allows for manual testing by reducing the polling interval for verifying the
+// existence of the GAIA cookie.
+base::TimeDelta GetDelayThresholdToUpdateGaiaCookie() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          signin::kDelayThresholdMinutesToUpdateGaiaCookie)) {
+    std::string delayString = command_line->GetSwitchValueASCII(
+        signin::kDelayThresholdMinutesToUpdateGaiaCookie);
+    int commandLineDelay = 0;
+    if (base::StringToInt(delayString, &commandLineDelay)) {
+      return base::TimeDelta::FromMinutes(commandLineDelay);
+    }
+  }
+  return kDelayThresholdToUpdateGaiaCookie;
 }
 
 // WebStatePolicyDecider that monitors the HTTP headers on Gaia responses,
@@ -202,6 +225,12 @@ void AccountConsistencyHandler::PageLoaded(
   }
   [delegate_ onShowConsistencyPromo];
   show_consistency_promo_ = false;
+
+  // Chrome uses the CHROME_CONNECTED cookie to determine whether the
+  // eligibility promo should be shown. Once it is shown we should remove the
+  // cookie, since it should otherwise not be used unless the user is signed in.
+  account_consistency_service_->RemoveAllChromeConnectedCookies(
+      base::OnceClosure());
 }
 
 void AccountConsistencyHandler::WebStateDestroyed(web::WebState* web_state) {}
@@ -269,7 +298,7 @@ void AccountConsistencyService::SetGaiaCookiesIfDeleted() {
   // for signed-in users to prevent calling the expensive method
   // |GetAllCookies| in the cookie manager.
   if (base::Time::Now() - last_gaia_cookie_verification_time_ <
-          kDelayThresholdToUpdateGaiaCookie ||
+          GetDelayThresholdToUpdateGaiaCookie() ||
       !identity_manager_->HasPrimaryAccount()) {
     return;
   }

@@ -3055,9 +3055,6 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   if (dispatching_pagehide) {
     RemoveFocusAndTextInputState();
   }
-  if (hiding_page) {
-    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
-  }
   if (dispatching_pagehide) {
     // Note that |dispatching_pagehide| is different than |hiding_page|.
     // |dispatching_pagehide| will only be true when we're navigating away from
@@ -3065,6 +3062,9 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     // the tab containing a page is backgrounded, and might be false even when
     // we're navigating away from a page, if the page is already hidden.
     DispatchPagehide(new_state->pagehide_dispatch);
+  }
+  if (hiding_page) {
+    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
   if (storing_in_bfcache) {
     Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
@@ -3085,6 +3085,9 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   }
   if (resuming_page)
     SetPageFrozen(false);
+  if (showing_page) {
+    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
+  }
   if (dispatching_pageshow) {
     DCHECK(restoring_from_bfcache);
     DispatchPageshow(page_restore_params->navigation_start);
@@ -3093,9 +3096,6 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     DCHECK(dispatching_pageshow);
     DCHECK(page_restore_params);
     Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
-  }
-  if (showing_page) {
-    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
 
   // Make sure no TrackedFeaturesUpdate message is sent after the ACK
@@ -3454,16 +3454,13 @@ void WebViewImpl::UpdatePreferredSize() {
     return;
   needs_preferred_size_update_ = false;
 
-  WebSize web_size = ContentsPreferredMinimumSize();
-  WebRect web_rect(0, 0, web_size.width, web_size.height);
-  MainFrameImpl()->LocalRootFrameWidget()->Client()->ConvertViewportToWindow(
-      &web_rect);
-  WebSize size(web_rect.width, web_rect.height);
+  gfx::Size size_in_dips =
+      MainFrameImpl()->LocalRootFrameWidget()->BlinkSpaceToFlooredDIPs(
+          gfx::Size(ContentsPreferredMinimumSize()));
 
-  if (size != preferred_size_) {
-    preferred_size_ = size;
-    local_main_frame_host_remote_->ContentsPreferredSizeChanged(
-        gfx::Size(size));
+  if (size_in_dips != preferred_size_in_dips_) {
+    preferred_size_in_dips_ = size_in_dips;
+    local_main_frame_host_remote_->ContentsPreferredSizeChanged(size_in_dips);
   }
 }
 
@@ -4238,7 +4235,7 @@ int32_t WebViewImpl::AutoplayFlagsForTest() {
 }
 
 WebSize WebViewImpl::GetPreferredSizeForTest() {
-  return preferred_size_;
+  return WebSize(preferred_size_in_dips_);
 }
 
 void WebViewImpl::StopDeferringMainFrameUpdate() {

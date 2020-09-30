@@ -15,6 +15,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -23,6 +25,7 @@ import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS
 
 import android.os.Build;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.test.filters.MediumTest;
 
@@ -34,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -43,6 +47,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -143,6 +148,20 @@ public class PageInfoViewTest {
         });
     }
 
+    private void expectHasPermissions(String url, boolean hasPermissions) {
+        // The default value for these types is ask.
+        @ContentSettingValues
+        int expected = hasPermissions ? ContentSettingValues.ALLOW : ContentSettingValues.ASK;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals(expected,
+                    WebsitePreferenceBridgeJni.get().getNotificationSettingForOrigin(
+                            Profile.getLastUsedRegularProfile(), url));
+            assertEquals(expected,
+                    WebsitePreferenceBridgeJni.get().getGeolocationSettingForOrigin(
+                            Profile.getLastUsedRegularProfile(), url, "*"));
+        });
+    }
+
     private void addDefaultSettingPermissions(String url) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebsitePreferenceBridge.setContentSettingForPattern(Profile.getLastUsedRegularProfile(),
@@ -206,6 +225,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "https://crbug.com/1133770")
     public void testShowOnExpiredCertificateWebsite() throws IOException {
         mTestServerRule.setCertificateType(ServerCertificate.CERT_EXPIRED);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -300,20 +320,6 @@ public class PageInfoViewTest {
     }
 
     /**
-     * Tests that the permissions page of the new PageInfo UI is gone when there are no permissions
-     * set.
-     */
-    @Test
-    @MediumTest
-    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
-    public void testNoPermissionsSubpage() throws IOException {
-        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
-        View dialog = (View) getPageInfoView().getParent();
-        onView(withId(R.id.page_info_permissions_row))
-                .check(matches(withEffectiveVisibility(GONE)));
-    }
-
-    /**
      * Tests the permissions page of the new PageInfo UI with permissions.
      */
     @Test
@@ -342,6 +348,20 @@ public class PageInfoViewTest {
     }
 
     /**
+     * Tests that the permissions page of the new PageInfo UI is gone when there are no permissions
+     * set.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testNoPermissionsSubpage() throws IOException {
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        View dialog = (View) getPageInfoView().getParent();
+        onView(withId(R.id.page_info_permissions_row))
+                .check(matches(withEffectiveVisibility(GONE)));
+    }
+
+    /**
      * Tests clearing cookies on the cookies page of the new PageInfo UI.
      */
     @Test
@@ -364,6 +384,33 @@ public class PageInfoViewTest {
         // Wait until the UI navigates back and check cookies are deleted.
         onViewWaiting(allOf(withId(R.id.page_info_cookies_row), isDisplayed()));
         expectHasCookies(false);
+    }
+
+    /**
+     * Tests resetting permissions on the permissions page of the new PageInfo UI.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testResetPermissionsOnSubpage() throws Exception {
+        mActivityTestRule.loadUrl(mTestServerRule.getServer().getURL(sSiteDataHtml));
+        String url = mTestServerRule.getServer().getURL("/");
+        // Create permissions.
+        expectHasPermissions(url, false);
+        addSomePermissions(url);
+        expectHasPermissions(url, true);
+        // Go to permissions subpage.
+        onView(withId(R.id.location_bar_status_icon)).perform(click());
+        onView(withId(R.id.page_info_permissions_row)).perform(click());
+        // Clear permissions in page info.
+        onView(withText("Reset permissions")).perform(click());
+        onView(allOf(is(instanceOf(Button.class)), withText("Reset permissions"))).perform(click());
+        // Wait until the UI navigates back and check permissions are reset.
+        onViewWaiting(allOf(withId(R.id.page_info_row_wrapper), isDisplayed()));
+        // Make sure that the permission section is gone because there are no longer exceptions.
+        onView(withId(R.id.page_info_permissions_row))
+                .check(matches(withEffectiveVisibility(GONE)));
+        expectHasPermissions(url, false);
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

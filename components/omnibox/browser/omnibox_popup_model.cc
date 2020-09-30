@@ -176,8 +176,8 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
     // If the new selection is a Header, the temporary text is an empty string.
     edit_model_->OnPopupDataChanged(base::string16(),
                                     /*is_temporary_text=*/true,
-                                    base::string16(), keyword, is_keyword_hint,
-                                    base::string16());
+                                    base::string16(), base::string16(), keyword,
+                                    is_keyword_hint, base::string16());
   } else if (old_selection.line != selection_.line ||
              (old_selection.IsButtonFocused() &&
               !new_selection.IsButtonFocused() &&
@@ -187,14 +187,15 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
     // Updating the edit model for every state change breaks keyword mode.
     if (reset_to_default) {
       edit_model_->OnPopupDataChanged(
-          match.inline_autocompletion,
-          /*is_temporary_text=*/false, match.prefix_autocompletion, keyword,
-          is_keyword_hint, match.fill_into_edit_additional_text);
+          base::string16(),
+          /*is_temporary_text=*/false, match.inline_autocompletion,
+          match.prefix_autocompletion, keyword, is_keyword_hint,
+          match.fill_into_edit_additional_text);
     } else {
       edit_model_->OnPopupDataChanged(
           match.fill_into_edit,
-          /*is_temporary_text=*/true, base::UTF8ToUTF16(""), keyword,
-          is_keyword_hint, match.fill_into_edit_additional_text);
+          /*is_temporary_text=*/true, base::string16(), base::string16(),
+          keyword, is_keyword_hint, match.fill_into_edit_additional_text);
     }
   }
 }
@@ -325,7 +326,10 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
       return edit_model_->client()->GetSizedIcon(favicon);
   }
 
-  const auto& vector_icon_type = match.GetVectorIcon(IsStarredMatch(match));
+  // The below lines are deliberately separate to try to debug
+  // https://crbug.com/1024114.
+  bool is_starred_match = IsStarredMatch(match);
+  const auto& vector_icon_type = match.GetVectorIcon(is_starred_match);
 
   return edit_model_->client()->GetSizedIcon(vector_icon_type,
                                              vector_icon_color);

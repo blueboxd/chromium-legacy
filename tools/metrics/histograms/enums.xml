@@ -3610,6 +3610,7 @@ Unknown properties are collapsed to zero. -->
   <int value="9" label="kLauncherSearchBoxIcon"/>
   <int value="10" label="kProactiveSuggestions"/>
   <int value="11" label="kLauncherChip"/>
+  <int value="12" label="kBloom"/>
 </enum>
 
 <enum name="AssistantExitPoint">
@@ -3684,6 +3685,7 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="kQuickAnswers"/>
   <int value="12" label="kLauncherChip"/>
   <int value="13" label="kBetterOnboarding"/>
+  <int value="14" label="kBloom"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -4428,6 +4430,11 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Seen and accepted"/>
   <int value="1" label="Seen and rejected"/>
   <int value="2" label="Already accepted"/>
+</enum>
+
+<enum name="AutofillAssistantLiteScriptShownToUser">
+  <int value="0" label="Running"/>
+  <int value="1" label="Ui shown"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptStarted">
@@ -17430,6 +17437,7 @@ Called by update_document_policy_enum.py.-->
   <int value="7" label="CZ_NIC"/>
   <int value="8" label="NEXT_DNS"/>
   <int value="9" label="OPEN_DNS"/>
+  <int value="10" label="ALEK_BERG_NL"/>
 </enum>
 
 <enum name="DomainBoundCerts.DBLoadStatus">
@@ -21831,6 +21839,7 @@ Called by update_document_policy_enum.py.-->
   <int value="786" label="DataLeakPreventionRulesList"/>
   <int value="787" label="WebRtcAllowLegacyTLSProtocols"/>
   <int value="788" label="MediaRecommendationsEnabled"/>
+  <int value="789" label="DeviceFamilyLinkAccountsAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -24625,6 +24634,7 @@ Called by update_extension_histograms.py.-->
   <int value="1507" label="ACCESSIBILITY_PRIVATE_PERFORMACCELERATORACTION"/>
   <int value="1508" label="DECLARATIVENETREQUEST_ISREGEXSUPPORTED"/>
   <int value="1509" label="PASSWORDSPRIVATE_GETWEAKCREDENTIALS"/>
+  <int value="1510" label="ACCESSIBILITY_PRIVATE_MOVEMAGNIFIERTORECT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29261,7 +29271,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3476" label="WebkitPrerenderDOMContentLoadedEventFired"/>
   <int value="3477" label="IdleDetectionPermissionRequested"/>
   <int value="3478" label="IdentifiabilityStudyReserved3478"/>
-  <int value="3479" label="IdentifiabilityStudyReserved3479"/>
+  <int value="3479" label="SpeechSynthesis_GetVoices_Method"/>
   <int value="3480" label="IdentifiabilityStudyReserved3480"/>
   <int value="3481" label="V8Navigator_JavaEnabled_Method"/>
   <int value="3482" label="IdentifiabilityStudyReserved3482"/>
@@ -29281,7 +29291,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3496" label="IdentifiabilityStudyReserved3496"/>
   <int value="3497" label="IdentifiabilityStudyReserved3497"/>
   <int value="3498" label="IdentifiabilityStudyReserved3498"/>
-  <int value="3499" label="IdentifiabilityStudyReserved3499"/>
+  <int value="3499"
+      label="V8BackgroundFetchRegistration_FailureReason_AttributeGetter"/>
   <int value="3500" label="IdentifiabilityStudyReserved3500"/>
   <int value="3501" label="IdentifiabilityStudyReserved3501"/>
   <int value="3502" label="IdentifiabilityStudyReserved3502"/>
@@ -29324,7 +29335,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3539" label="IdentifiabilityStudyReserved3539"/>
   <int value="3540" label="IdentifiabilityStudyReserved3540"/>
   <int value="3541" label="V8WheelEvent_DeltaMode_AttributeGetter"/>
-  <int value="3542" label="IdentifiabilityStudyReserved3542"/>
+  <int value="3542" label="V8Touch_Force_AttributeGetter"/>
   <int value="3543" label="IdentifiabilityStudyReserved3543"/>
   <int value="3544" label="IdentifiabilityStudyReserved3544"/>
   <int value="3545" label="IdentifiabilityStudyReserved3545"/>
@@ -41377,6 +41388,7 @@ from previous Chrome versions.
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
   <int value="-1620046590" label="UseMediaHistoryStore:enabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
+  <int value="-1619146163" label="OverrideSitePrefsForHrefTranslate:disabled"/>
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
@@ -41527,6 +41539,8 @@ from previous Chrome versions.
   <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
   <int value="-1477560322" label="kiosk"/>
   <int value="-1476930281" label="Windows10CustomTitlebar:enabled"/>
+  <int value="-1474724634"
+      label="OverrideLanguagePrefsForHrefTranslate:enabled"/>
   <int value="-1473878093" label="HideArcMediaNotifications:disabled"/>
   <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
@@ -42442,6 +42456,7 @@ from previous Chrome versions.
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
   <int value="-574000901" label="AVIF:enabled"/>
+  <int value="-573570330" label="QuickAnswersTranslationCloudAPI:disabled"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
   <int value="-571236436" label="AppManagement:disabled"/>
@@ -43732,6 +43747,8 @@ from previous Chrome versions.
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="757645375" label="AndroidDarkSearch:disabled"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
+  <int value="761770770"
+      label="OverrideLanguagePrefsForHrefTranslate:disabled"/>
   <int value="762700519" label="enable-checker-imaging"/>
   <int value="763947368" label="HomepageLocationPolicy:disabled"/>
   <int value="765266228" label="TabGroupsCollapse:disabled"/>
@@ -44440,6 +44457,7 @@ from previous Chrome versions.
   <int value="1489915799" label="disable-permissions-blacklist"/>
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
+  <int value="1492541927" label="QuickAnswersTranslationCloudAPI:enabled"/>
   <int value="1495341532" label="disable-mtp-write-support"/>
   <int value="1495748045" label="SignedHTTPExchange:enabled"/>
   <int value="1496135626" label="UploadCrashReportsUsingJobScheduler:enabled"/>
@@ -44532,6 +44550,7 @@ from previous Chrome versions.
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1601582484" label="enable-crash-reporter-for-testing"/>
+  <int value="1602627012" label="OverrideSitePrefsForHrefTranslate:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1604893983" label="VizForWebView:disabled"/>
@@ -51242,6 +51261,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Redirect Found"/>
 </enum>
 
+<enum name="NetworkPortalStatus">
+  <summary>
+    The portal status types from NetworkPortalDetector::CaptivePortalStatus
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Offline"/>
+  <int value="2" label="Online"/>
+  <int value="3" label="Portal"/>
+  <int value="4" label="ProxyAuthRequired"/>
+</enum>
+
 <enum name="NetworkProblemType">
   <int value="0" label="Congested TCP Queue"/>
   <int value="1" label="DNS Failure"/>
@@ -51348,7 +51378,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Ethernet"/>
   <int value="2" label="Ethernet EAP"/>
   <int value="3" label="WiFi"/>
-  <int value="4" label="WiMax"/>
+  <int value="4" label="Tether"/>
   <int value="5" label="VPN"/>
   <int value="6" label="Unknown"/>
 </enum>
@@ -75379,6 +75409,7 @@ Called by update_scheduler_enums.py.-->
   <int value="13" label="Cookies deleted for site"/>
   <int value="14" label="Permission dialog opened"/>
   <int value="15" label="Permission deleted for site"/>
+  <int value="16" label="Permission changed for site"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

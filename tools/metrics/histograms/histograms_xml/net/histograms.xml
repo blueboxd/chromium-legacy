@@ -1219,7 +1219,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Net.DNS_Resolution_And_TCP_Connection_Latency2" units="ms"
-    expires_after="M85">
+    expires_after="never">
+<!-- expires-never: Core network stack health metric -->
+
   <owner>mmenke@chromium.org</owner>
   <summary>
     The time measured before starting DNS lookup until after the connection is
@@ -1806,6 +1808,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     for unknown reasons. This records the number of times it fails in a row
     before a successful call. If it never succeeds, or takes over 100 tries, a
     value of 100 is recorded. See http://crbug.com/69198
+  </summary>
+</histogram>
+
+<histogram name="Net.Ntlm.HashDependsOnLocale" enum="Boolean"
+    expires_after="M90">
+  <owner>eroman@chromium.org</owner>
+  <owner>src/net/OWNERS</owner>
+  <summary>
+    Whether the NTLM hash depends on the user's current locale. More
+    specifically, this measures whether a locale-sensitive uppercasing of the
+    username gives a different result from an ASCII-only uppercasing. The spec
+    doesn't define uppercasing rules for NTLM. This histogram is intended to
+    inform https://crbug.com/1051924 on how often an ambiguity would arise
+    should we switch to an ASCII-only approach.
   </summary>
 </histogram>
 

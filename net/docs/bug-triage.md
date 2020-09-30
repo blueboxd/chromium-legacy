@@ -76,7 +76,7 @@ bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-modified&q=Ne
 
 * If the requested feedback was provided, review the new information and repeat
   the same steps as (1) to re-triage based on the new information.
-* If the bug had the `Needs-Feedback` label for over a week and the
+* If the bug had the `Needs-Feedback` label for over 30 days, and the
   feedback needed to make progress was not yet provided, archive the bug.
 
 ## 3. Ensure P0 and P1 bugs have an owner
@@ -162,3 +162,7 @@ generating and modifying shifts
 * The issue tracker doesn't track any official mappings between components and
   OWNERS. This [internal document](https://goto.google.com/kojfj) enumerates
   the known owners for subcomponents.
+
+* [Web Platform Team SLOs](https://docs.google.com/document/d/18ylPve6jd43m8B7Dil6xmS4G9MHL2_DhQon72je-O9o/edit)
+
+* [(Internal) Web Platform bug triage guidelines](http://go/xnzwn)

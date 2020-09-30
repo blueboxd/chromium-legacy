@@ -695,17 +695,6 @@ void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
   }
 }
 
-void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
-  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    float device_scale_factor =
-        GetWebWidget()->GetOriginalScreenInfo().device_scale_factor;
-    rect->x *= device_scale_factor;
-    rect->y *= device_scale_factor;
-    rect->width *= device_scale_factor;
-    rect->height *= device_scale_factor;
-  }
-}
-
 void RenderWidget::UpdateSelectionBounds() {
   GetWebWidget()->UpdateSelectionBounds();
 }
@@ -746,6 +735,12 @@ void RenderWidget::DidNavigate(ukm::SourceId source_id, const GURL& url) {
   // compositor. Note that the metrics for all frames are keyed to the main
   // frame's URL.
   layer_tree_host_->SetSourceURL(source_id, url);
+
+  DCHECK(for_frame());
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
+  render_frame->SetUpSharedMemoryForSmoothness(
+      layer_tree_host_->CreateSharedMemoryForSmoothnessUkm());
 }
 
 blink::WebInputMethodController* RenderWidget::GetInputMethodController()

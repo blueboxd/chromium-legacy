@@ -318,6 +318,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_GOOGLE_SERVICES" desc="Title for the group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account. [CHAR-LIMIT=40]">
         Google services
       </message>
+      <message name="IDS_OFFER_CHROME_SIGNIN_TITLE" desc="Title for a checkbox in Google services that controls sign-in and sync prompts.">
+        Allow Chrome sign-in
+      </message>
+      <message name="IDS_OFFER_CHROME_SIGNIN_SUMMARY" desc="Summary for a checkbox in Google services that controls sign-in and sync prompts.">
+        Show Chrome sign-in prompts when you sign in to your Google Account
+      </message>
       <message name="IDS_AUTOCOMPLETE_SEARCHES_AND_URLS_TITLE" desc="Title for a checkbox in Settings that controls URL and search autocompletion and informs the user about the data shared by this feature.">
         Autocomplete searches and URLs
       </message>
@@ -1475,7 +1481,7 @@ Your Google account may have other forms of browsing history like searches and a
         Initial sync setup was not finished. Sync is off.
       </message>
       <message name="IDS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
-        Tap to continue sync setup
+        Tap to set up sync
       </message>
       <message name="IDS_SYNC_IS_DISABLED_BY_ADMINISTRATOR" desc="Message to show when Chrome sync is disabled by administrator">
         Sync is disabled by your administrator

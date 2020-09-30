@@ -2535,14 +2535,16 @@ void LocalFrame::InstallCoopAccessMonitor(
     const base::UnguessableToken& accessed_window,
     mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
         reporter,
-    bool endpoint_defined) {
+    bool endpoint_defined,
+    const WTF::String& reported_window_url) {
   blink::Frame* accessed_frame = Frame::ResolveFrame(accessed_window);
   // The Frame might have been deleted during the cross-process communication.
   if (!accessed_frame)
     return;
 
   accessed_frame->DomWindow()->InstallCoopAccessMonitor(
-      report_type, this, std::move(reporter), endpoint_defined);
+      report_type, this, std::move(reporter), endpoint_defined,
+      std::move(reported_window_url));
 }
 
 void LocalFrame::OnPortalActivated(
@@ -2812,18 +2814,15 @@ void LocalFrame::CopyImageAtViewportPoint(const IntPoint& viewport_point) {
 }
 
 void LocalFrame::CopyImageAt(const gfx::Point& window_point) {
-  blink::WebFloatRect viewport_position(window_point.x(), window_point.y(), 0,
-                                        0);
-  GetPage()->GetChromeClient().WindowToViewportRect(*this, &viewport_position);
-  CopyImageAtViewportPoint(IntPoint(viewport_position.x, viewport_position.y));
+  gfx::Point viewport_position =
+      GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
+  CopyImageAtViewportPoint(IntPoint(viewport_position));
 }
 
 void LocalFrame::SaveImageAt(const gfx::Point& window_point) {
-  blink::WebFloatRect viewport_position(window_point.x(), window_point.y(), 0,
-                                        0);
-  GetPage()->GetChromeClient().WindowToViewportRect(*this, &viewport_position);
-
-  IntPoint location(viewport_position.x, viewport_position.y);
+  gfx::Point viewport_position =
+      GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
+  IntPoint location(viewport_position);
   Node* node =
       HitTestResultForVisualViewportPos(location).InnerNodeOrImageMapImage();
   if (!node || !(IsA<HTMLCanvasElement>(*node) || IsA<HTMLImageElement>(*node)))
@@ -2964,10 +2963,9 @@ void LocalFrame::DownloadURL(
 void LocalFrame::MediaPlayerActionAt(
     const gfx::Point& window_point,
     blink::mojom::blink::MediaPlayerActionPtr action) {
-  blink::WebFloatRect viewport_position(window_point.x(), window_point.y(), 0,
-                                        0);
-  GetPage()->GetChromeClient().WindowToViewportRect(*this, &viewport_position);
-  IntPoint location(viewport_position.x, viewport_position.y);
+  gfx::Point viewport_position =
+      GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
+  IntPoint location(viewport_position);
 
   MediaPlayerActionAtViewportPoint(location, action->type, action->enable);
 }

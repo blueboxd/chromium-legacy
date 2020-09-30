@@ -1990,7 +1990,12 @@
   {
     "name": "enable-quick-answers-translation",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-quick-answers-translation-cloud-api",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-reader-mode",
@@ -3088,6 +3093,20 @@
     "expiry_milestone": 83
   },
   {
+    "name": "metrics-settings-android",
+    "owners": [
+      "andzaytsev",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "minutes-delay-to-restore-gaia-cookies-if-deleted",
+    "owners": ["fernandex", "chrome-signin-team"],
+    "expiry_milestone": 90
+  },
+  {
     "name": "mixed-forms-disable-autofill",
     "owners": [ "carlosil" ],
     "expiry_milestone": 88
@@ -3433,6 +3452,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-rich-autocompletion-split",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-rich-entities-in-launcher",
     "owners": ["jiameng", "thanhdng", "wrong"],
     "expiry_milestone": 95
@@ -3567,6 +3591,16 @@
     // This flag is used for QA & debugging on ChromeOS, which has no way to
     // customize switches.
     "expiry_milestone": -1
+  },
+  {
+    "name": "override-language-prefs-for-href-translate",
+    "owners": [ "sclittle", "chrome-language" ],
+    "expiry_milestone": 91
+  },
+  {
+    "name": "override-site-prefs-for-href-translate",
+    "owners": [ "sclittle", "chrome-language" ],
+    "expiry_milestone": 91
   },
   {
     "name": "overscroll-history-navigation",

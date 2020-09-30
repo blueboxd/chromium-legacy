@@ -31,7 +31,7 @@
   }
 
   .image {
-    background: #F6F6F6;
+    background: var(--google-grey-50);
     border-radius: 4px;
     box-sizing: border-box;
     height: 120px;
@@ -117,11 +117,25 @@
     margin-inline-end: 12px;
     margin-inline-start: 8px;
   }
+
+  cr-dialog::part(dialog) {
+    width: 459px;
+  }
+
+  cr-dialog [slot='body'] div:not(:last-of-type) {
+    margin-bottom: 24px;
+  }
+
+  cr-dialog [slot='body'] a[href] {
+    color: var(--cr-link-color);
+    text-decoration: none;
+  }
 </style>
 <div id="products">
   <template is="dom-repeat" id="productsRepeat"
       items="[[shoppingTask.products]]">
-    <a class="product" href="[[item.targetUrl.url]]">
+    <a class="product" href="[[item.targetUrl.url]]" on-click="onClick_"
+        on-auxclick="onClick_">
       <div class="image">
         <img is="ntp-img" auto-src="[[item.imageUrl.url]]"></img>
       </div>
@@ -134,9 +148,24 @@
 <div id="relatedSearches">
   <template is="dom-repeat"  id="relatedSearchesRepeat"
       items="[[shoppingTask.relatedSearches]]">
-    <a class="pill" href="[[item.targetUrl.url]]">
+    <a class="pill" href="[[item.targetUrl.url]]" on-click="onClick_"
+        on-auxclick="onClick_">
       <div class="loupe"></div>
       <div class="search-text">[[item.text]]</div>
     </a>
   </template>
 </div>
+<template is="dom-if" if="[[showInfoDialog]]" restamp>
+  <cr-dialog show-on-attach>
+    <div slot="title">$i18n{modulesShoppingTasksInfoTitle}</div>
+    <div slot="body">
+      <div>$i18nRaw{modulesShoppingTasksInfo1}</div>
+      <div>$i18nRaw{modulesShoppingTasksInfo2}</div>
+    </div>
+    <div slot="button-container">
+      <cr-button class="action-button" on-click="onCloseClick_">
+        $i18n{modulesShoppingTasksInfoClose}
+      </cr-button>
+    </div>
+  </cr-dialog>
+</template>

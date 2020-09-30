@@ -514,6 +514,21 @@
             ]
         }
     ],
+    "AssistAutocorrect": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200925",
+                    "enable_features": [
+                        "AssistAutocorrect"
+                    ]
+                }
+            ]
+        }
+    ],
     "AssistPersonalInfo": [
         {
             "platforms": [
@@ -1584,9 +1599,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithVisualModel",
+                    "name": "EnabledWithVisualModel2",
                     "params": {
-                        "ModelNum": "5"
+                        "ModelNum": "6"
                     },
                     "enable_features": [
                         "ClientSideDetectionModel"
@@ -2466,6 +2481,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "DownloadLater",
                         "DownloadsAutoResumptionNative"
                     ]
                 }
@@ -3424,22 +3440,6 @@
             ]
         }
     ],
-    "IOSSSLCommittedInterstitials": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SSLCommittedInterstitials",
-                        "SafeBrowsingAvailableOnIOS"
-                    ]
-                }
-            ]
-        }
-    ],
     "Identifiability": [
         {
             "platforms": [
@@ -3619,20 +3619,6 @@
                     "enable_features": [
                         "InspectionResultsCache"
                     ]
-                }
-            ]
-        }
-    ],
-    "InstanceID": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }
@@ -5285,6 +5271,24 @@
             ]
         }
     ],
+    "PdfViewerUpdate": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PdfViewerUpdate"
+                    ]
+                }
+            ]
+        }
+    ],
     "PerProcessReclaim": [
         {
             "platforms": [
@@ -6431,10 +6435,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Stable",
+                    "name": "Experiment_Triple_Key_20201001",
                     "enable_features": [
                         "AppendFrameOriginToNetworkIsolationKey",
-                        "SplitCacheByNetworkIsolationKey"
+                        "SplitCacheByNetworkIsolationKey",
+                        "UseRegistrableDomainInNetworkIsolationKey"
                     ]
                 }
             ]

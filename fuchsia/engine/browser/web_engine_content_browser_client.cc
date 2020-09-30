@@ -136,8 +136,8 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*uniquely_owned_factories)[cr_fuchsia::kFuchsiaDirScheme] =
-        std::make_unique<ContentDirectoryLoaderFactory>();
+    factories->emplace(cr_fuchsia::kFuchsiaDirScheme,
+                       ContentDirectoryLoaderFactory::Create());
   }
 }
 
@@ -149,8 +149,8 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*uniquely_owned_factories)[cr_fuchsia::kFuchsiaDirScheme] =
-        std::make_unique<ContentDirectoryLoaderFactory>();
+    factories->emplace(cr_fuchsia::kFuchsiaDirScheme,
+                       ContentDirectoryLoaderFactory::Create());
   }
 }
 
@@ -168,6 +168,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kForceProtectedVideoOutputBuffers,
       switches::kMaxDecodedImageSizeMb,
       switches::kPlayreadyKeySystem,
+      switches::kUseOverlaysForVideo,
   };
 
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),

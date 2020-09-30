@@ -806,6 +806,9 @@ extern const char kMediaHistoryDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
+extern const char kMetricsSettingsAndroidName[];
+extern const char kMetricsSettingsAndroidDescription[];
+
 extern const char kMixedFormsDisableAutofillName[];
 extern const char kMixedFormsDisableAutofillDescription[];
 
@@ -896,6 +899,8 @@ extern const char kOmniboxRichAutocompletionMinCharName[];
 extern const char kOmniboxRichAutocompletionMinCharDescription[];
 extern const char kOmniboxRichAutocompletionShowAdditionalTextName[];
 extern const char kOmniboxRichAutocompletionShowAdditionalTextDescription[];
+extern const char kOmniboxRichAutocompletionSplitName[];
+extern const char kOmniboxRichAutocompletionSplitDescription[];
 extern const char kOmniboxRichAutocompletionPromisingName[];
 extern const char kOmniboxRichAutocompletionPromisingDescription[];
 
@@ -1017,6 +1022,11 @@ extern const char kOverlayStrategiesNone[];
 extern const char kOverlayStrategiesUnoccludedFullscreen[];
 extern const char kOverlayStrategiesUnoccluded[];
 extern const char kOverlayStrategiesOccludedAndUnoccluded[];
+
+extern const char kOverrideLanguagePrefsForHrefTranslateName[];
+extern const char kOverrideLanguagePrefsForHrefTranslateDescription[];
+extern const char kOverrideSitePrefsForHrefTranslateName[];
+extern const char kOverrideSitePrefsForHrefTranslateDescription[];
 
 extern const char kUpdateHoverAtBeginFrameName[];
 extern const char kUpdateHoverAtBeginFrameDescription[];
@@ -2283,6 +2293,9 @@ extern const char kEnableQuickAnswersTextAnnotatorDescription[];
 
 extern const char kEnableQuickAnswersTranslationName[];
 extern const char kEnableQuickAnswersTranslationDescription[];
+
+extern const char kEnableQuickAnswersTranslationCloudAPIName[];
+extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
 
 extern const char kPluginVmShowCameraPermissionsName[];
 extern const char kPluginVmShowCameraPermissionsDescription[];

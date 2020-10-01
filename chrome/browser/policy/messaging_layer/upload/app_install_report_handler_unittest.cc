@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/messaging_layer/upload/app_install_report_handler.h"
 
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
@@ -25,13 +24,13 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::Return;
+using ::testing::WithArgs;
+
 namespace reporting {
 namespace {
-
-using testing::_;
-using testing::Invoke;
-using testing::Return;
-using testing::WithArgs;
 
 MATCHER_P(MatchValue, expected, "matches base::Value") {
   std::string arg_string;

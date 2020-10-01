@@ -62,6 +62,7 @@ js2gtest("accessibility_common_extjs_tests") {
     "autoclick/autoclick_test.js",
   ]
   gen_include_files = [
+    "../common/rect_util.js",
     "../common/testing/callback_helper.js",
     "../common/testing/e2e_test_base.js",
     "../common/testing/mock_accessibility_private.js",
@@ -87,6 +88,7 @@ js_library("accessibility_common") {
   deps = [
     ":autoclick",
     ":magnifier",
+    "../common:instance_checker",
   ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
@@ -97,6 +99,7 @@ js_library("accessibility_common") {
 
 js_library("autoclick") {
   sources = [ "autoclick/autoclick.js" ]
+  deps = [ "../common:event_handler" ]
   externs_list = [
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",

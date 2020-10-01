@@ -265,6 +265,13 @@ bool BrowserAccessibilityAndroid::IsRangeType() const {
           (GetRole() == ax::mojom::Role::kSplitter && IsFocusable()));
 }
 
+bool BrowserAccessibilityAndroid::IsReportingCheckable() const {
+  // To communicate kMixed state Checkboxes, we will rely on state description,
+  // so we will not report node as checkable to avoid duplicate utterances.
+  return IsCheckable() &&
+         GetData().GetCheckedState() != ax::mojom::CheckedState::kMixed;
+}
+
 bool BrowserAccessibilityAndroid::IsScrollable() const {
   return GetBoolAttribute(ax::mojom::BoolAttribute::kScrollable);
 }
@@ -557,6 +564,19 @@ base::string16 BrowserAccessibilityAndroid::GetStateDescription() const {
   if (GetRole() == ax::mojom::Role::kToggleButton)
     return GetToggleButtonStateDescription();
 
+  // For Checkboxes, if we are in a kMixed state, we will communicate
+  // "partially checked" through the state description.
+  if (IsCheckable() && !IsReportingCheckable())
+    return GetCheckboxStateDescription();
+
+  // For list boxes, use state description to communicate child item count.
+  if (GetRole() == ax::mojom::Role::kListBox)
+    return GetListBoxStateDescription();
+
+  // For list box items, use state description to communicate index of item.
+  if (GetRole() == ax::mojom::Role::kListBoxOption)
+    return GetListBoxItemStateDescription();
+
   // Otherwise we will not use state description
   return base::string16();
 }
@@ -602,6 +622,50 @@ base::string16 BrowserAccessibilityAndroid::GetToggleButtonStateDescription()
     return content_client->GetLocalizedString(IDS_AX_TOGGLE_BUTTON_ON);
 
   return content_client->GetLocalizedString(IDS_AX_TOGGLE_BUTTON_OFF);
+}
+
+base::string16 BrowserAccessibilityAndroid::GetCheckboxStateDescription()
+    const {
+  content::ContentClient* content_client = content::GetContentClient();
+
+  return content_client->GetLocalizedString(IDS_AX_CHECKBOX_PARTIALLY_CHECKED);
+}
+
+base::string16 BrowserAccessibilityAndroid::GetListBoxStateDescription() const {
+  content::ContentClient* content_client = content::GetContentClient();
+
+  // For empty list boxes, we will return an empty string.
+  int item_count = GetItemCount();
+  if (!item_count)
+    return base::string16();
+
+  // Otherwise, we will communicate "x items" as the state description.
+  return content_client->GetLocalizedString(IDS_AX_LIST_BOX_STATE_DESCRIPTION,
+                                            base::NumberToString16(item_count));
+}
+
+base::string16 BrowserAccessibilityAndroid::GetListBoxItemStateDescription()
+    const {
+  content::ContentClient* content_client = content::GetContentClient();
+
+  BrowserAccessibilityAndroid* parent =
+      static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());
+
+  // If we cannot find the parent collection, escape with an empty string.
+  if (!parent)
+    return base::string16();
+
+  // For list box items, we will communicate "in list, item x of y". We add
+  // one (1) to our index to offset from counting at 0.
+  int item_index = GetItemIndex() + 1;
+  int item_count = parent->GetItemCount();
+
+  return base::ReplaceStringPlaceholders(
+      content_client->GetLocalizedString(
+          IDS_AX_LIST_BOX_ITEM_STATE_DESCRIPTION),
+      std::vector<base::string16>({base::NumberToString16(item_index),
+                                   base::NumberToString16(item_count)}),
+      nullptr);
 }
 
 std::string BrowserAccessibilityAndroid::GetRoleString() const {

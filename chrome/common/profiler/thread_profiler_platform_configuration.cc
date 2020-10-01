@@ -5,18 +5,13 @@
 #include "chrome/common/profiler/thread_profiler_platform_configuration.h"
 
 #include "base/command_line.h"
+#include "base/notreached.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
-#include "extensions/buildflags/buildflags.h"
-#include "sandbox/policy/sandbox.h"
+#include "chrome/common/profiler/process_type.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/android/modules/stack_unwinder/public/module.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/switches.h"
 #endif
 
 namespace {
@@ -30,22 +25,21 @@ class DefaultPlatformConfiguration
 
   // ThreadProfilerPlatformConfiguration:
   RuntimeModuleState GetRuntimeModuleState(
-      bool is_chrome_branded,
-      version_info::Channel channel) const override;
+      base::Optional<version_info::Channel> release_channel) const override;
 
   RelativePopulations GetEnableRates(
-      bool is_chrome_branded,
-      version_info::Channel channel) const override;
+      base::Optional<version_info::Channel> release_channel) const override;
 
   double GetChildProcessEnableFraction(
-      const base::CommandLine& child_process_command_line) const override;
+      metrics::CallStackProfileParams::Process process) const override;
+
+  bool IsEnabledForThread(
+      metrics::CallStackProfileParams::Process process,
+      metrics::CallStackProfileParams::Thread thread) const override;
 
  protected:
-  bool IsSupportedForChannel(bool is_chrome_branded,
-                             version_info::Channel channel) const override;
-
-  // True if the command line corresponds to an extension renderer process.
-  bool IsExtensionRenderer(const base::CommandLine& command_line) const;
+  bool IsSupportedForChannel(
+      base::Optional<version_info::Channel> release_channel) const override;
 
   bool browser_test_mode_enabled() const { return browser_test_mode_enabled_; }
 
@@ -59,88 +53,68 @@ DefaultPlatformConfiguration::DefaultPlatformConfiguration(
 
 ThreadProfilerPlatformConfiguration::RuntimeModuleState
 DefaultPlatformConfiguration::GetRuntimeModuleState(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
+    base::Optional<version_info::Channel> release_channel) const {
   return RuntimeModuleState::kModuleNotRequired;
 }
 
 ThreadProfilerPlatformConfiguration::RelativePopulations
 DefaultPlatformConfiguration::GetEnableRates(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
-  // TODO(https://crbug.com/1129939): Make this logic consistent with
-  // IsSupportedForChannel() for identifying local/CQ builds.
-  switch (channel) {
-    // Enable the profiler unconditionally for development/waterfall builds.
-    case version_info::Channel::UNKNOWN:
-      return RelativePopulations{100, 0};
+    base::Optional<version_info::Channel> release_channel) const {
+  CHECK(IsSupportedForChannel(release_channel));
 
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV:
-      return RelativePopulations{80, 20};
-
-    default:
-      return RelativePopulations{0, 0};
+  if (!release_channel) {
+    // This is a local/CQ build.
+    return RelativePopulations{100, 0};
   }
+
+  CHECK(*release_channel == version_info::Channel::CANARY ||
+        *release_channel == version_info::Channel::DEV);
+
+  return RelativePopulations{80, 20};
 }
 
 double DefaultPlatformConfiguration::GetChildProcessEnableFraction(
-    const base::CommandLine& child_process_command_line) const {
-  const std::string& process_type =
-      child_process_command_line.GetSwitchValueASCII(switches::kProcessType);
+    metrics::CallStackProfileParams::Process process) const {
+  DCHECK_NE(metrics::CallStackProfileParams::BROWSER_PROCESS, process);
 
-  if (process_type == switches::kGpuProcess)
-    return 1.0;
+  switch (process) {
+    case metrics::CallStackProfileParams::GPU_PROCESS:
+    case metrics::CallStackProfileParams::NETWORK_SERVICE_PROCESS:
+      return 1.0;
+      break;
 
-  // The network service is the only utility process that is profiled for now.
-  if (process_type == switches::kUtilityProcess &&
-      sandbox::policy::SandboxTypeFromCommandLine(child_process_command_line) ==
-          sandbox::policy::SandboxType::kNetwork) {
-    return 1.0;
+    case metrics::CallStackProfileParams::RENDERER_PROCESS:
+      // Run the profiler in all renderer processes if the browser test mode is
+      // enabled, otherwise run in 20% of the processes to collect roughly as
+      // many profiles for renderer processes as browser processes.
+      return browser_test_mode_enabled() ? 1.0 : 0.2;
+      break;
+
+    default:
+      return 0.0;
   }
+}
 
-  // Only start the profiler for non-extension renderer processes.
-  if (process_type == switches::kRendererProcess &&
-      !IsExtensionRenderer(child_process_command_line)) {
-    // Run the profiler in all renderer processes if the browser test mode is
-    // enabled, otherwise run in 20% of the processes to collect roughly as
-    // many profiles for renderer processes as browser processes.
-    return browser_test_mode_enabled() ? 1.0 : 0.2;
-  }
-
-  return 0.0;
+bool DefaultPlatformConfiguration::IsEnabledForThread(
+    metrics::CallStackProfileParams::Process process,
+    metrics::CallStackProfileParams::Thread thread) const {
+  // Enable for all supported threads.
+  return true;
 }
 
 bool DefaultPlatformConfiguration::IsSupportedForChannel(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
+    base::Optional<version_info::Channel> release_channel) const {
   // The profiler is always supported for local builds and the CQ.
-  if (!is_chrome_branded)
+  if (!release_channel)
     return true;
 
   // Canary and dev are the only channels currently supported in release
   // builds.
-  return channel == version_info::Channel::CANARY ||
-         channel == version_info::Channel::DEV;
-}
-
-// True if the command line corresponds to an extension renderer process.
-bool DefaultPlatformConfiguration::IsExtensionRenderer(
-    const base::CommandLine& command_line) const {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return command_line.HasSwitch(extensions::switches::kExtensionProcess);
-#else
-  return false;
-#endif
+  return *release_channel == version_info::Channel::CANARY ||
+         *release_channel == version_info::Channel::DEV;
 }
 
 #if defined(OS_ANDROID)
-bool IsBrowserProcess() {
-  return base::CommandLine::ForCurrentProcess()
-      ->GetSwitchValueASCII(switches::kProcessType)
-      .empty();
-}
-
 // The configuration to use for the Android platform. Applies to ARM32 which is
 // the only Android architecture currently supported by StackSamplingProfiler.
 // Defined in terms of DefaultPlatformConfiguration where Android does not
@@ -151,17 +125,20 @@ class AndroidPlatformConfiguration : public DefaultPlatformConfiguration {
 
   // DefaultPlatformConfiguration:
   RuntimeModuleState GetRuntimeModuleState(
-      bool is_chrome_branded,
-      version_info::Channel channel) const override;
+      base::Optional<version_info::Channel> release_channel) const override;
 
   void RequestRuntimeModuleInstall() const override;
 
   double GetChildProcessEnableFraction(
-      const base::CommandLine& child_process_command_line) const override;
+      metrics::CallStackProfileParams::Process process) const override;
+
+  bool IsEnabledForThread(
+      metrics::CallStackProfileParams::Process process,
+      metrics::CallStackProfileParams::Thread thread) const override;
 
  protected:
-  bool IsSupportedForChannel(bool is_chrome_branded,
-                             version_info::Channel channel) const override;
+  bool IsSupportedForChannel(
+      base::Optional<version_info::Channel> release_channel) const override;
 };
 
 AndroidPlatformConfiguration::AndroidPlatformConfiguration(
@@ -170,22 +147,21 @@ AndroidPlatformConfiguration::AndroidPlatformConfiguration(
 
 ThreadProfilerPlatformConfiguration::RuntimeModuleState
 AndroidPlatformConfiguration::GetRuntimeModuleState(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
+    base::Optional<version_info::Channel> release_channel) const {
   // The module will be present in releases due to having been installed via
   // RequestRuntimeModuleInstall(), and in local/CQ builds of bundle targets
   // where the module was installed with the bundle.
   if (stack_unwinder::Module::IsInstalled())
     return RuntimeModuleState::kModulePresent;
 
-  if (is_chrome_branded) {
+  if (release_channel) {
     // We only want to incur the cost of universally downloading the module in
     // early channels, where profiling will occur over substantially all of
     // the population. When supporting later channels in the future we will
     // enable profiling for only a fraction of users and only download for
     // those users.
-    if (channel == version_info::Channel::CANARY ||
-        channel == version_info::Channel::DEV) {
+    if (*release_channel == version_info::Channel::CANARY ||
+        *release_channel == version_info::Channel::DEV) {
       return RuntimeModuleState::kModuleAbsentButAvailable;
     }
 
@@ -201,7 +177,8 @@ AndroidPlatformConfiguration::GetRuntimeModuleState(
 
 void AndroidPlatformConfiguration::RequestRuntimeModuleInstall() const {
   // The install can only be done in the browser process.
-  CHECK(IsBrowserProcess());
+  CHECK_EQ(metrics::CallStackProfileParams::BROWSER_PROCESS,
+           GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
 
   // The install occurs asynchronously, with the module available at the first
   // run of Chrome following install.
@@ -209,21 +186,26 @@ void AndroidPlatformConfiguration::RequestRuntimeModuleInstall() const {
 }
 
 double AndroidPlatformConfiguration::GetChildProcessEnableFraction(
-    const base::CommandLine& child_process_command_line) const {
+    metrics::CallStackProfileParams::Process process) const {
   // Profile all processes in browser test mode since they're disabled
   // otherwise.
-  if (browser_test_mode_enabled()) {
-    return DefaultPlatformConfiguration::GetChildProcessEnableFraction(
-        child_process_command_line);
-  }
+  if (browser_test_mode_enabled())
+    return DefaultPlatformConfiguration::GetChildProcessEnableFraction(process);
 
   // TODO(https://crbug.com/1004855): Enable for all the default processes.
   return 0.0;
 }
 
+bool AndroidPlatformConfiguration::IsEnabledForThread(
+    metrics::CallStackProfileParams::Process process,
+    metrics::CallStackProfileParams::Thread thread) const {
+  // Disable for all supported threads pending launch. Enable only for browser
+  // tests.
+  return browser_test_mode_enabled();
+}
+
 bool AndroidPlatformConfiguration::IsSupportedForChannel(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
+    base::Optional<version_info::Channel> release_channel) const {
   // On Android profiling is only enabled in its own dedicated browser tests
   // in local builds and the CQ.
   // TODO(https://crbug.com/1004855): Enable across all browser tests.
@@ -245,8 +227,7 @@ ThreadProfilerPlatformConfiguration::Create(bool browser_test_mode_enabled) {
 }
 
 bool ThreadProfilerPlatformConfiguration::IsSupported(
-    bool is_chrome_branded,
-    version_info::Channel channel) const {
+    base::Optional<version_info::Channel> release_channel) const {
   return base::StackSamplingProfiler::IsSupportedForCurrentPlatform() &&
-         IsSupportedForChannel(is_chrome_branded, channel);
+         IsSupportedForChannel(release_channel);
 }

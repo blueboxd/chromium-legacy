@@ -445,9 +445,9 @@ public class WebsitePermissionsFetcherTest {
         websitePreferenceBridge.addPermissionInfo(
                 new PermissionInfo(ContentSettingsType.AR, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
-                ContentSettingsType.GEOLOCATION, googleOrigin, SITE_WILDCARD, false));
-        websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 ContentSettingsType.IDLE_DETECTION, googleOrigin, SITE_WILDCARD, false));
+        websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
+                ContentSettingsType.GEOLOCATION, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 ContentSettingsType.MIDI_SYSEX, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(
@@ -473,7 +473,7 @@ public class WebsitePermissionsFetcherTest {
         // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(65, ContentSettingsType.NUM_TYPES);
+        Assert.assertEquals(66, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.COOKIES, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource));
@@ -537,19 +537,25 @@ public class WebsitePermissionsFetcherTest {
 
             // Check content setting exception types.
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.COOKIES));
+                    site.getContentSetting(
+                            UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.COOKIES));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.POPUPS));
+                    site.getContentSetting(
+                            UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.POPUPS));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.ADS));
+                    site.getContentSetting(UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.ADS));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.JAVASCRIPT));
+                    site.getContentSetting(
+                            UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.JAVASCRIPT));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.SOUND));
+                    site.getContentSetting(
+                            UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.SOUND));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.BACKGROUND_SYNC));
+                    site.getContentSetting(
+                            UNUSED_BROWSER_CONTEXT_HANDLE, ContentSettingsType.BACKGROUND_SYNC));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingsType.AUTOMATIC_DOWNLOADS));
+                    site.getContentSetting(UNUSED_BROWSER_CONTEXT_HANDLE,
+                            ContentSettingsType.AUTOMATIC_DOWNLOADS));
 
             // Check storage info.
             ArrayList<StorageInfo> storageInfos = new ArrayList<>(site.getStorageInfo());

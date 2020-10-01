@@ -23,6 +23,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/work_area_insets.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -65,11 +66,11 @@ void SetupViewLayer(views::View* view) {
   layer->SetIsFastRoundedCorner(true);
 }
 
-// HoldingSpaceBubbleContainerView ---------------------------------------------
+// HoldingSpaceBubbleContainer -------------------------------------------------
 
-class HoldingSpaceBubbleContainerView : public views::View {
+class HoldingSpaceBubbleContainer : public views::View {
  public:
-  HoldingSpaceBubbleContainerView() {
+  HoldingSpaceBubbleContainer() {
     layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         kHoldingSpaceContainerSpacing));
@@ -79,11 +80,16 @@ class HoldingSpaceBubbleContainerView : public views::View {
     layout_->SetFlexForView(child, flex);
   }
 
+ private:
+  // views::View:
   void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
   }
 
- private:
+  void ChildVisibilityChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
   views::BoxLayout* layout_ = nullptr;
 };
 
@@ -98,7 +104,11 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
   TrayBubbleView::InitParams init_params;
   init_params.delegate = holding_space_tray;
   init_params.parent_window = holding_space_tray->GetBubbleWindowContainer();
-  init_params.anchor_view = holding_space_tray->GetBubbleAnchor();
+  init_params.anchor_view = nullptr;
+  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
+  init_params.anchor_rect =
+      holding_space_tray->shelf()->GetSystemTrayAnchorRect();
+  init_params.insets = GetTrayBubbleInsets();
   init_params.shelf_alignment = holding_space_tray->shelf()->alignment();
   init_params.preferred_width = kHoldingSpaceBubbleWidth;
   init_params.close_on_deactivate = true;
@@ -107,25 +117,19 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
 
   // Create and customize bubble view.
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
-  bubble_view->set_anchor_view_insets(
-      holding_space_tray->GetBubbleAnchorInsets());
-  bubble_view->set_margins(GetSecondaryBubbleInsets());
-
   bubble_view->SetMaxHeight(CalculateMaxHeight());
 
-  HoldingSpaceBubbleContainerView* bubble_container_view =
-      bubble_view->AddChildView(
-          std::make_unique<HoldingSpaceBubbleContainerView>());
+  HoldingSpaceBubbleContainer* bubble_container = bubble_view->AddChildView(
+      std::make_unique<HoldingSpaceBubbleContainer>());
 
   // Add pinned files container.
-  pinned_files_container_ = bubble_container_view->AddChildView(
+  pinned_files_container_ = bubble_container->AddChildView(
       std::make_unique<PinnedFilesContainer>(&delegate_));
-  bubble_container_view->SetFlexForChild(pinned_files_container_, 1);
-
+  bubble_container->SetFlexForChild(pinned_files_container_, 1);
   SetupViewLayer(pinned_files_container_);
 
   // Add recent files container.
-  recent_files_container_ = bubble_container_view->AddChildView(
+  recent_files_container_ = bubble_container->AddChildView(
       std::make_unique<RecentFilesContainer>(&delegate_));
   SetupViewLayer(recent_files_container_);
 
@@ -172,17 +176,19 @@ views::Widget* HoldingSpaceTrayBubble::GetBubbleWidget() {
 }
 
 int HoldingSpaceTrayBubble::CalculateMaxHeight() const {
-  gfx::Rect anchor_bounds =
-      holding_space_tray_->GetBubbleAnchor()->GetBoundsInScreen();
-  int bottom = holding_space_tray_->shelf()->IsHorizontalAlignment()
-                   ? anchor_bounds.y() - kHoldingSpaceTrayIconMainAxisMargin
-                   : anchor_bounds.bottom();
-  WorkAreaInsets* work_area = WorkAreaInsets::ForWindow(
+  const WorkAreaInsets* work_area = WorkAreaInsets::ForWindow(
       holding_space_tray_->shelf()->GetWindow()->GetRootWindow());
-  int free_space_height_above_anchor =
+
+  const int bottom =
+      holding_space_tray_->shelf()->IsHorizontalAlignment()
+          ? holding_space_tray_->shelf()->GetShelfBoundsInScreen().y()
+          : work_area->user_work_area_bounds().bottom();
+
+  const int free_space_height_above_anchor =
       bottom - work_area->user_work_area_bounds().y();
 
-  int bubble_vertical_margin = GetSecondaryBubbleInsets().bottom() * 2;
+  const gfx::Insets insets = GetTrayBubbleInsets();
+  const int bubble_vertical_margin = insets.top() + insets.bottom();
 
   return free_space_height_above_anchor - bubble_vertical_margin;
 }

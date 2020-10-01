@@ -1115,6 +1115,9 @@ extern const char kQuicDescription[];
 extern const char kQuietNotificationPromptsName[];
 extern const char kQuietNotificationPromptsDescription[];
 
+extern const char kAbusiveNotificationPermissionRevocationName[];
+extern const char kAbusiveNotificationPermissionRevocationDescription[];
+
 extern const char kContentSettingsRedesignName[];
 extern const char kContentSettingsRedesignDescription[];
 
@@ -1758,6 +1761,9 @@ extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
 
 extern const char kSafeBrowsingEnhancedProtectionAndroidName[];
 extern const char kSafeBrowsingEnhancedProtectionAndroidDescription[];
+
+extern const char kEnhancedProtectionPromoAndroidName[];
+extern const char kEnhancedProtectionPromoAndroidDescription[];
 
 extern const char kSafeBrowsingSecuritySectionUiAndroidName[];
 extern const char kSafeBrowsingSecuritySectionUiAndroidDescription[];

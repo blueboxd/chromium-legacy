@@ -238,6 +238,11 @@ std::string AppsSection::GetSectionPath() const {
   return mojom::kAppsSectionPath;
 }
 
+bool AppsSection::LogMetric(mojom::Setting setting, base::Value& value) const {
+  // Unimplemented.
+  return false;
+}
+
 void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kTurnOnPlayStore);
 

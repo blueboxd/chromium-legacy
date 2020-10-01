@@ -379,10 +379,11 @@ class DeclarativeNetRequestBrowserTest
   void AddDynamicRules(const ExtensionId& extension_id,
                        const std::vector<TestRule>& rules) {
     static constexpr char kScript[] = R"(
-      chrome.declarativeNetRequest.updateDynamicRules([], $1, function () {
-        window.domAutomationController.send(chrome.runtime.lastError ?
-            chrome.runtime.lastError.message : 'success');
-      });
+      chrome.declarativeNetRequest.updateDynamicRules({addRules: $1},
+        function () {
+          window.domAutomationController.send(chrome.runtime.lastError ?
+              chrome.runtime.lastError.message : 'success');
+        });
     )";
 
     // Serialize |rules|.
@@ -399,10 +400,11 @@ class DeclarativeNetRequestBrowserTest
   void RemoveDynamicRules(const ExtensionId& extension_id,
                           const std::vector<int> rule_ids) {
     static constexpr char kScript[] = R"(
-      chrome.declarativeNetRequest.updateDynamicRules($1, [], function () {
-        window.domAutomationController.send(chrome.runtime.lastError ?
-            chrome.runtime.lastError.message : 'success');
-      });
+      chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds: $1},
+        function () {
+          window.domAutomationController.send(chrome.runtime.lastError ?
+              chrome.runtime.lastError.message : 'success');
+        });
     )";
 
     // Serialize |rule_ids|.
@@ -420,7 +422,11 @@ class DeclarativeNetRequestBrowserTest
       const std::vector<std::string>& ruleset_ids_to_remove,
       const std::vector<std::string>& ruleset_ids_to_add) {
     static constexpr char kScript[] = R"(
-      chrome.declarativeNetRequest.updateEnabledRulesets($1, $2, () => {
+      let params = {
+        disableRulesetIds: $1,
+        enableRulesetIds: $2
+      };
+      chrome.declarativeNetRequest.updateEnabledRulesets(params, () => {
         window.domAutomationController.send(chrome.runtime.lastError ?
             chrome.runtime.lastError.message : 'success');
       });

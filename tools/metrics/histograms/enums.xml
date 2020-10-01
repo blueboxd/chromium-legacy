@@ -9060,6 +9060,9 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="CastPlayBackState">
+  <obsolete>
+    Obsoleted on September 2020 as it's no longer being collected.
+  </obsolete>
   <int value="0" label="YT_PLAYER_SUCCESS"/>
   <int value="1" label="YT_PLAYER_FAILURE"/>
   <int value="2" label="DEFAULT_PLAYER_SUCCESS"/>
@@ -9824,6 +9827,20 @@ histogram as enum -->
   <int value="44" label="ZoomCustom"/>
   <int value="45" label="ThumbnailNavigateFirst"/>
   <int value="46" label="ThumbnailNavigate"/>
+  <int value="47" label="SaveOriginalOnlyFirst"/>
+  <int value="48" label="SaveOriginalOnly"/>
+  <int value="49" label="SaveOriginalFirst"/>
+  <int value="50" label="SaveOriginal"/>
+  <int value="51" label="SaveEditedFirst"/>
+  <int value="52" label="SaveEdited"/>
+  <int value="53" label="ToggleSidenavFirst"/>
+  <int value="54" label="ToggleSidenav"/>
+  <int value="55" label="SelectSidenavThumbnailsFirst"/>
+  <int value="56" label="SelectSidenavThumbnails"/>
+  <int value="57" label="SelectSidenavOutlineFirst"/>
+  <int value="58" label="SelectSidenavOutline"/>
+  <int value="59" label="ToggleDisplayAnnotationsFirst"/>
+  <int value="60" label="ToggleDisplayAnnotations"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">
@@ -13686,6 +13703,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="10" label="OSVersionTooOld"/>
   <int value="11" label="OldIncompleteMeta"/>
   <int value="12" label="FinishedUploading"/>
+  <int value="13" label="AlreadyUploaded"/>
 </enum>
 
 <enum name="CrosDictationToggleDictationMethod">
@@ -19170,6 +19188,14 @@ Called by update_document_policy_enum.py.-->
   <int value="0" label="Resumable"/>
   <int value="1" label="Multipart"/>
   <int value="2" label="Batch"/>
+</enum>
+
+<enum name="DriveZeroStateProviderStatus">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Drive FS not mounted"/>
+  <int value="2" label="No results"/>
+  <int value="3" label="Path location failed"/>
+  <int value="4" label="File error"/>
 </enum>
 
 <enum name="DspHotwordDetectionStatus">
@@ -39060,6 +39086,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Media Feeds Consent"/>
 </enum>
 
+<enum name="KaleidoscopeNavigation">
+  <int value="0" label="Normal navigation"/>
+</enum>
+
 <enum name="KeepaliveRequestBlockStatus">
   <int value="0" label="Not Blocked"/>
   <int value="1" label="Blocked due to NetworkContext::CanCreateLoader"/>
@@ -40904,6 +40934,8 @@ from previous Chrome versions.
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2095519429" label="FtpProtocol:enabled"/>
+  <int value="-2093047873"
+      label="AbusiveOriginNotificationPermissionRevocation:enabled"/>
   <int value="-2092067251" label="NativeFilesystemAPI:disabled"/>
   <int value="-2091414992" label="DlcSettingsUi:disabled"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
@@ -43229,6 +43261,7 @@ from previous Chrome versions.
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
+  <int value="247200195" label="EnhancedProtectionPromoCard:enabled"/>
   <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="258621334"
@@ -44076,6 +44109,8 @@ from previous Chrome versions.
   <int value="1112817963" label="WebViewConnectionlessSafeBrowsing:enabled"/>
   <int value="1113196543" label="ShowManagedUi:disabled"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
+  <int value="1113558288"
+      label="AbusiveOriginNotificationPermissionRevocation:disabled"/>
   <int value="1114270092" label="PortalsCrossOrigin:disabled"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
@@ -44415,6 +44450,7 @@ from previous Chrome versions.
       label="EnablePasswordsAccountStorageSavingUi:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
+  <int value="1454028829" label="EnhancedProtectionPromoCard:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>
   <int value="1454363479" label="disable-storage-manager"/>
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>
@@ -53847,6 +53883,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="App service unavailable"/>
   <int value="2" label="No settings icon"/>
   <int value="3" label="Search handler unavailable"/>
+  <int value="4" label="Hierarchy empty"/>
+  <int value="5" label="No hierarchy"/>
+  <int value="6" label="Settings app not ready"/>
 </enum>
 
 <enum name="OsSettingsSearchResultType">
@@ -59890,6 +59929,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="Service Worker error"/>
   <int value="6" label="event.waitUntil promise rejected"/>
   <int value="7" label="Service Worker timeout while processing event"/>
+  <int value="8"
+      label="Origin no longer has permission (auto-revoked due to abuse)"/>
 </enum>
 
 <enum name="PushGetRegistrationStatus">
@@ -59939,6 +59980,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10" label="Service Worker database got wiped"/>
   <int value="11" label="Subscription has expired"/>
   <int value="12" label="Subscription has been refreshed"/>
+  <int value="13" label="Abusive origin permission auto-revoked"/>
 </enum>
 
 <enum name="PushUnregistrationStatus">
@@ -70334,6 +70376,7 @@ would be helpful to identify which type is being sent.
   <int value="9" label="Unexpected Version"/>
   <int value="10" label="Capture Expired"/>
   <int value="11" label="No Capture"/>
+  <int value="12" label="Timed Out"/>
 </enum>
 
 <enum name="TabbedPaintPreviewExitCause">

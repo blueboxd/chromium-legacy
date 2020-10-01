@@ -3424,6 +3424,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="password-protection" label="Password protection"/>
   <suffix name="permission-autoblocking-data"
       label="Permission autoblocking data"/>
+  <suffix name="permission-autorevocation-data"
+      label="Permission autorevocation data"/>
   <suffix name="plugins" label="Plugins exceptions"/>
   <suffix name="popups" label="Popups exceptions"/>
   <suffix name="ppapi-broker" label="Ppapi broker exceptions"/>
@@ -15896,6 +15898,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="SafetyCheck"
       label="The user enters the Safe Browsing settings page from the
              SafetyCheck page."/>
+  <suffix name="SurfaceExplorerPromoSlinger"
+      label="The user enters the Safe Browsing settings page from the Surface
+             Explorer page."/>
   <affected-histogram name="SafeBrowsing.Settings.UserAction"/>
 </histogram_suffixes>
 

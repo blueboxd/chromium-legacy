@@ -6,19 +6,11 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/profiler/profiler_buildflags.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
-#include "content/public/common/content_switches.h"
-#include "extensions/buildflags/buildflags.h"
-#include "sandbox/policy/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/switches.h"
-#endif
 
 #if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
     (defined(OS_MAC) && defined(ARCH_CPU_X86_64)) || \
@@ -52,30 +44,6 @@ class ThreadProfilerPlatformConfigurationTest : public ::testing::Test {
   const std::unique_ptr<ThreadProfilerPlatformConfiguration> config_;
 };
 
-// Utility type and function for testing various command line switches.
-struct Switch {
-  explicit Switch(const char* name, const char* value = nullptr)
-      : name(name), value(value) {}
-
-  const char* name;
-  const char* value;
-};
-
-// Second argument should be a lambda running the expectations for the given
-// switch configuration.
-template <typename Func>
-void WithSwitches(std::initializer_list<Switch> switches, const Func& func) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  for (const auto& switch_pair : switches) {
-    if (!switch_pair.value)
-      command_line.AppendSwitch(switch_pair.name);
-    else
-      command_line.AppendSwitchASCII(switch_pair.name, switch_pair.value);
-  }
-
-  func(command_line);
-}
-
 }  // namespace
 
 // Glue functions to make RelativePopulations work with googletest.
@@ -95,47 +63,29 @@ bool operator==(
 
 TEST_F(ThreadProfilerPlatformConfigurationTest, IsSupported) {
 #if !THREAD_PROFILER_SUPPORTED_ON_PLATFORM
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::UNKNOWN));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::CANARY));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::DEV));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::BETA));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::STABLE));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::CANARY));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::DEV));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/false,
-                                     version_info::Channel::UNKNOWN));
+  EXPECT_FALSE(config()->IsSupported(base::nullopt));
 #elif defined(OS_ANDROID)
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::UNKNOWN));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::CANARY));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::DEV));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::BETA));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::STABLE));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::CANARY));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::DEV));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/false,
-                                     version_info::Channel::UNKNOWN));
+  EXPECT_FALSE(config()->IsSupported(base::nullopt));
 #else
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::UNKNOWN));
-  EXPECT_TRUE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                    version_info::Channel::CANARY));
-  EXPECT_TRUE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                    version_info::Channel::DEV));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::BETA));
-  EXPECT_FALSE(config()->IsSupported(/*is_chrome_branded=*/true,
-                                     version_info::Channel::STABLE));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
+  EXPECT_TRUE(config()->IsSupported(version_info::Channel::CANARY));
+  EXPECT_TRUE(config()->IsSupported(version_info::Channel::DEV));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
+  EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_TRUE(config()->IsSupported(/*is_chrome_branded=*/false,
-                                    version_info::Channel::UNKNOWN));
+  EXPECT_TRUE(config()->IsSupported(base::nullopt));
 #endif
 }
 
@@ -145,133 +95,130 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
       ThreadProfilerPlatformConfiguration::RuntimeModuleState;
 #if defined(OS_ANDROID)
   EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::UNKNOWN));
+            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
   EXPECT_EQ(RuntimeModuleState::kModuleAbsentButAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::CANARY));
+            config()->GetRuntimeModuleState(version_info::Channel::CANARY));
   EXPECT_EQ(RuntimeModuleState::kModuleAbsentButAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::DEV));
+            config()->GetRuntimeModuleState(version_info::Channel::DEV));
   EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::BETA));
+            config()->GetRuntimeModuleState(version_info::Channel::BETA));
   EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::STABLE));
+            config()->GetRuntimeModuleState(version_info::Channel::STABLE));
 
   EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::UNKNOWN));
+            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
 #else
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::UNKNOWN));
+            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::CANARY));
+            config()->GetRuntimeModuleState(version_info::Channel::CANARY));
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::DEV));
+            config()->GetRuntimeModuleState(version_info::Channel::DEV));
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::BETA));
+            config()->GetRuntimeModuleState(version_info::Channel::BETA));
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::STABLE));
+            config()->GetRuntimeModuleState(version_info::Channel::STABLE));
 
   EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(/*is_chrome_branded=*/true,
-                                            version_info::Channel::UNKNOWN));
+            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
 #endif
 }
 
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetEnableRates) {
+  // Note: death tests aren't supported on Android. Otherwise this test would
+  // check that all inputs result in CHECKs.
+#if !defined(OS_ANDROID)
   using RelativePopulations =
       ThreadProfilerPlatformConfiguration::RelativePopulations;
-  EXPECT_EQ((RelativePopulations{100, 0}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::UNKNOWN));
+  EXPECT_CHECK_DEATH(config()->GetEnableRates(version_info::Channel::UNKNOWN));
   EXPECT_EQ((RelativePopulations{80, 20}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::CANARY));
+            config()->GetEnableRates(version_info::Channel::CANARY));
   EXPECT_EQ((RelativePopulations{80, 20}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::DEV));
-  EXPECT_EQ((RelativePopulations{0, 0}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::BETA));
-  EXPECT_EQ((RelativePopulations{0, 0}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::STABLE));
+            config()->GetEnableRates(version_info::Channel::DEV));
+  EXPECT_CHECK_DEATH(config()->GetEnableRates(version_info::Channel::BETA));
+  EXPECT_CHECK_DEATH(config()->GetEnableRates(version_info::Channel::STABLE));
 
   EXPECT_EQ((RelativePopulations{100, 0}),
-            config()->GetEnableRates(/*is_chrome_branded=*/true,
-                                     version_info::Channel::UNKNOWN));
+            config()->GetEnableRates(base::nullopt));
+#endif
 }
 
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetChildProcessEnableFraction) {
 #if defined(OS_ANDROID)
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kGpuProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kUtilityProcess),
-       Switch(sandbox::policy::switches::kServiceSandboxType,
-              sandbox::policy::switches::kNetworkSandbox)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kUtilityProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kRendererProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  // Should be an unrecognized scenario.
-  WithSwitches({}, [this](const base::CommandLine command_line) {
-    EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-  });
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::GPU_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::RENDERER_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::NETWORK_SERVICE_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::UTILITY_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::UNKNOWN_PROCESS));
 #else
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kGpuProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kUtilityProcess),
-       Switch(sandbox::policy::switches::kServiceSandboxType,
-              sandbox::policy::switches::kNetworkSandbox)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kUtilityProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kRendererProcess),
-       Switch(extensions::switches::kExtensionProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-      });
-  WithSwitches(
-      {Switch(switches::kProcessType, switches::kRendererProcess)},
-      [this](const base::CommandLine command_line) {
-        EXPECT_EQ(0.2, config()->GetChildProcessEnableFraction(command_line));
-      });
-  // Should be an unrecognized scenario.
-  WithSwitches({}, [this](const base::CommandLine command_line) {
-    EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(command_line));
-  });
+  EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::GPU_PROCESS));
+  EXPECT_EQ(0.2, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::RENDERER_PROCESS));
+  EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::NETWORK_SERVICE_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::UTILITY_PROCESS));
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::UNKNOWN_PROCESS));
+#endif
+}
+
+MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
+                             IsEnabledForThread) {
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::BROWSER_PROCESS,
+      metrics::CallStackProfileParams::MAIN_THREAD));
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::BROWSER_PROCESS,
+      metrics::CallStackProfileParams::IO_THREAD));
+
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::GPU_PROCESS,
+      metrics::CallStackProfileParams::MAIN_THREAD));
+  EXPECT_FALSE(
+      config()->IsEnabledForThread(metrics::CallStackProfileParams::GPU_PROCESS,
+                                   metrics::CallStackProfileParams::IO_THREAD));
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::GPU_PROCESS,
+      metrics::CallStackProfileParams::COMPOSITOR_THREAD));
+
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::RENDERER_PROCESS,
+      metrics::CallStackProfileParams::MAIN_THREAD));
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::RENDERER_PROCESS,
+      metrics::CallStackProfileParams::IO_THREAD));
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::RENDERER_PROCESS,
+      metrics::CallStackProfileParams::COMPOSITOR_THREAD));
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::RENDERER_PROCESS,
+      metrics::CallStackProfileParams::SERVICE_WORKER_THREAD));
+
+  EXPECT_FALSE(config()->IsEnabledForThread(
+      metrics::CallStackProfileParams::NETWORK_SERVICE_PROCESS,
+      metrics::CallStackProfileParams::IO_THREAD));
+#else
+  // Profiling should be enabled without restriction across all threads. Not all
+  // these combinations actually make sense or are implemented in the code, but
+  // iterating over all combinations is the simplest way to test.
+  for (int i = 0; i <= metrics::CallStackProfileParams::MAX_PROCESS; ++i) {
+    const auto process =
+        static_cast<metrics::CallStackProfileParams::Process>(i);
+    for (int j = 0; j <= metrics::CallStackProfileParams::MAX_THREAD; ++j) {
+      const auto thread =
+          static_cast<metrics::CallStackProfileParams::Thread>(j);
+      EXPECT_TRUE(config()->IsEnabledForThread(process, thread));
+    }
+  }
 #endif
 }

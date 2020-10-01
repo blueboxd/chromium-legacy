@@ -1934,6 +1934,15 @@ const char kQuietNotificationPromptsDescription[] =
     "When a site wishes to show notifications, the usual modal dialog is "
     "replaced with a quieter version.";
 
+const char kAbusiveNotificationPermissionRevocationName[] =
+    "Abusive notification permission revocation";
+const char kAbusiveNotificationPermissionRevocationDescription[] =
+    "Enables notification permission revocation for abusive origins. "
+    "Prior to dispatching a push message to the service worker, the origin is "
+    "verified through Safe Browsing. Origins with abusive notification "
+    "permission requests or content will have the notification permission "
+    "revoked.";
+
 const char kContentSettingsRedesignName[] = "Content settings page redesign";
 const char kContentSettingsRedesignDescription[] =
     "Enables a new content settings page UI.";
@@ -3060,6 +3069,12 @@ const char kSafeBrowsingEnhancedProtectionAndroidDescription[] =
     "dangerous websites, downloads, and extensions. To enable enhanced "
     "protection from the settings page, please enable "
     "safe-browsing-security-section-ui-android and this flag together.";
+
+const char kEnhancedProtectionPromoAndroidName[] =
+    "Enable enhanced protection promo card on Android on the New Tab Page";
+const char kEnhancedProtectionPromoAndroidDescription[] =
+    "Enable enhanced protection promo card for users that have not signed up "
+    "for enhanced protection.";
 
 const char kSafeBrowsingSecuritySectionUiAndroidName[] =
     "Security Section on Android";

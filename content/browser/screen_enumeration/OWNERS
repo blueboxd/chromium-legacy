@@ -4,5 +4,5 @@ msw@chromium.org
 # Secondary
 pwnall@chromium.org
 
-# TEAM: storage-dev@chromium.org
-# COMPONENT: Blink>Storage
+# TEAM: pwa-dev@chromium.org
+# COMPONENT: UI>Browser>WebAppInstalls

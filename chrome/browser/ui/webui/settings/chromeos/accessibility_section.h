@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ACCESSIBILITY_SECTION_H_
 
 #include "base/scoped_observer.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/tts_controller.h"
@@ -41,6 +42,7 @@ class AccessibilitySection : public OsSettingsSection,
   mojom::Section GetSection() const override;
   mojom::SearchResultIcon GetSectionIcon() const override;
   std::string GetSectionPath() const override;
+  bool LogMetric(mojom::Setting setting, base::Value& value) const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   // content::VoicesChangedDelegate:

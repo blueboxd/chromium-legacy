@@ -654,7 +654,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       // AspectRatio(), but to avoid introducing a behavior change we only
       // do this for the aspect-ratio property for now until FlexNG ships.
       bool use_container_cross_size_for_aspect_ratio =
-          (child.Style().AspectRatio() ||
+          (!child.Style().AspectRatio().IsAuto() ||
            (child.HasAspectRatio() &&
             RuntimeEnabledFeatures::FlexAspectRatioEnabled())) &&
           WillChildCrossSizeBeContainerCrossSize(child);
@@ -898,7 +898,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                        min_max_sizes_in_main_axis_direction,
                        min_max_sizes_in_cross_axis_direction,
                        main_axis_border_padding, cross_axis_border_padding,
-                       physical_child_margins, scrollbars)
+                       physical_child_margins, scrollbars,
+                       min_max_sizes.has_value())
         .ng_input_node = child;
   }
 }
@@ -1277,6 +1278,13 @@ bool NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
       if (!ignore_child_scrollbar_changes_) {
         if (flex_item.scrollbars !=
             ComputeScrollbarsForNonAnonymous(flex_item.ng_input_node))
+          success = false;
+
+        // The flex-item scrollbars may not have changed, but an descendant's
+        // scrollbars might have causing the min/max sizes to be incorrect.
+        if (flex_item.depends_on_min_max_sizes &&
+            flex_item.ng_input_node.GetLayoutBox()
+                ->IntrinsicLogicalWidthsDirty())
           success = false;
       } else {
         DCHECK_EQ(flex_item.scrollbars,

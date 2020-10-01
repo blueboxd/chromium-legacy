@@ -40,6 +40,7 @@
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
+#include "chrome/browser/permissions/abusive_origin_notifications_permission_revocation_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
@@ -1515,11 +1516,18 @@ const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
 const FeatureEntry::FeatureParam
     kPromoBrowserCommandOpenSafetyCheckCommandParam[] = {
         {features::kPromoBrowserCommandIdParam, "1"}};
+const FeatureEntry::FeatureParam
+    kPromoBrowserCommandOpenSafeBrowsingSettingsCommandParam[] = {
+        {features::kPromoBrowserCommandIdParam, "2"}};
 const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
     {"- Unknown Command", kPromoBrowserCommandUnknownCommandParam,
      base::size(kPromoBrowserCommandUnknownCommandParam), nullptr},
     {"- Open Safety Check", kPromoBrowserCommandOpenSafetyCheckCommandParam,
-     base::size(kPromoBrowserCommandOpenSafetyCheckCommandParam), nullptr}};
+     base::size(kPromoBrowserCommandOpenSafetyCheckCommandParam), nullptr},
+    {"- Open Safe Browsing Settings",
+     kPromoBrowserCommandOpenSafeBrowsingSettingsCommandParam,
+     base::size(kPromoBrowserCommandOpenSafeBrowsingSettingsCommandParam),
+     nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
@@ -5513,6 +5521,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafeBrowsingEnhancedProtectionAndroidDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(safe_browsing::kEnhancedProtection)},
 
+    {"safe-browsing-enhanced-protection-promo-android",
+     flag_descriptions::kEnhancedProtectionPromoAndroidName,
+     flag_descriptions::kEnhancedProtectionPromoAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEnhancedProtectionPromoCard)},
+
     {"safe-browsing-security-section-ui-android",
      flag_descriptions::kSafeBrowsingSecuritySectionUiAndroidName,
      flag_descriptions::kSafeBrowsingSecuritySectionUiAndroidDescription,
@@ -5735,6 +5748,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kQuietNotificationPrompts,
                                     kQuietNotificationPromptsVariations,
                                     "QuietNotificationPrompts")},
+    {"abusive-notification-permission-revocation",
+     flag_descriptions::kAbusiveNotificationPermissionRevocationName,
+     flag_descriptions::kAbusiveNotificationPermissionRevocationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kAbusiveNotificationPermissionRevocation)},
 
 #if defined(OS_ANDROID)
     {"context-menu-google-lens-chip",

@@ -418,6 +418,12 @@ std::string MultiDeviceSection::GetSectionPath() const {
   return mojom::kMultiDeviceSectionPath;
 }
 
+bool MultiDeviceSection::LogMetric(mojom::Setting setting,
+                                   base::Value& value) const {
+  // Unimplemented.
+  return false;
+}
+
 void MultiDeviceSection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpMultiDevice);

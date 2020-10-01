@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ABOUT_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ABOUT_SECTION_H_
 
+#include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -37,6 +38,7 @@ class AboutSection : public OsSettingsSection {
   mojom::Section GetSection() const override;
   mojom::SearchResultIcon GetSectionIcon() const override;
   std::string GetSectionPath() const override;
+  bool LogMetric(mojom::Setting setting, base::Value& value) const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

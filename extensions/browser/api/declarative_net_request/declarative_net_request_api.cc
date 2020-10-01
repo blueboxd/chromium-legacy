@@ -77,6 +77,18 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
+  std::vector<int> rule_ids_to_remove;
+  if (params->options.remove_rule_ids)
+    rule_ids_to_remove = std::move(*params->options.remove_rule_ids);
+
+  std::vector<api::declarative_net_request::Rule> rules_to_add;
+  if (params->options.add_rules)
+    rules_to_add = std::move(*params->options.add_rules);
+
+  // Early return if there is nothing to do.
+  if (rule_ids_to_remove.empty() && rules_to_add.empty())
+    return RespondNow(NoArguments());
+
   auto* rules_monitor_service =
       declarative_net_request::RulesMonitorService::Get(browser_context());
   DCHECK(rules_monitor_service);
@@ -85,10 +97,9 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
   auto callback = base::BindOnce(
       &DeclarativeNetRequestUpdateDynamicRulesFunction::OnDynamicRulesUpdated,
       this);
-
   rules_monitor_service->UpdateDynamicRules(
-      *extension(), std::move(params->rule_ids_to_remove),
-      std::move(params->rules_to_add), std::move(callback));
+      *extension(), std::move(rule_ids_to_remove), std::move(rules_to_add),
+      std::move(callback));
   return RespondLater();
 }
 
@@ -163,43 +174,51 @@ DeclarativeNetRequestUpdateEnabledRulesetsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
-  auto* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(browser_context());
-  DCHECK(rules_monitor_service);
-  DCHECK(extension());
-
   std::set<RulesetID> ids_to_disable;
   std::set<RulesetID> ids_to_enable;
   const DNRManifestData::ManifestIDToRulesetMap& public_id_map =
       DNRManifestData::GetManifestIDToRulesetMap(*extension());
 
-  for (const std::string& public_id_to_enable : params->ruleset_ids_to_enable) {
-    auto it = public_id_map.find(public_id_to_enable);
-    if (it == public_id_map.end()) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          declarative_net_request::kInvalidRulesetIDError,
-          public_id_to_enable)));
-    }
+  if (params->options.enable_ruleset_ids) {
+    for (const std::string& public_id_to_enable :
+         *params->options.enable_ruleset_ids) {
+      auto it = public_id_map.find(public_id_to_enable);
+      if (it == public_id_map.end()) {
+        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+            declarative_net_request::kInvalidRulesetIDError,
+            public_id_to_enable)));
+      }
 
-    ids_to_enable.insert(it->second->id);
+      ids_to_enable.insert(it->second->id);
+    }
   }
 
-  for (const std::string& public_id_to_disable :
-       params->ruleset_ids_to_disable) {
-    auto it = public_id_map.find(public_id_to_disable);
-    if (it == public_id_map.end()) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          declarative_net_request::kInvalidRulesetIDError,
-          public_id_to_disable)));
+  if (params->options.disable_ruleset_ids) {
+    for (const std::string& public_id_to_disable :
+         *params->options.disable_ruleset_ids) {
+      auto it = public_id_map.find(public_id_to_disable);
+      if (it == public_id_map.end()) {
+        return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+            declarative_net_request::kInvalidRulesetIDError,
+            public_id_to_disable)));
+      }
+
+      // |ruleset_ids_to_enable| takes priority over |ruleset_ids_to_disable|.
+      RulesetID id = it->second->id;
+      if (base::Contains(ids_to_enable, id))
+        continue;
+
+      ids_to_disable.insert(id);
     }
-
-    // |ruleset_ids_to_enable| takes priority over |ruleset_ids_to_disable|.
-    RulesetID id = it->second->id;
-    if (base::Contains(ids_to_enable, id))
-      continue;
-
-    ids_to_disable.insert(id);
   }
+
+  if (ids_to_enable.empty() && ids_to_disable.empty())
+    return RespondNow(NoArguments());
+
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+  DCHECK(extension());
 
   rules_monitor_service->UpdateEnabledStaticRulesets(
       *extension(), std::move(ids_to_disable), std::move(ids_to_enable),

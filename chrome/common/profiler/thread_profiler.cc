@@ -22,12 +22,14 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/common/profiler/process_type.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "sandbox/policy/sandbox.h"
+#include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include <sys/types.h>
@@ -60,33 +62,6 @@ ThreadProfiler* g_main_thread_instance = nullptr;
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
 
-CallStackProfileParams::Process GetProcess() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  if (process_type.empty())
-    return CallStackProfileParams::BROWSER_PROCESS;
-  if (process_type == switches::kRendererProcess)
-    return CallStackProfileParams::RENDERER_PROCESS;
-  if (process_type == switches::kGpuProcess)
-    return CallStackProfileParams::GPU_PROCESS;
-  if (process_type == switches::kUtilityProcess) {
-    auto sandbox_type =
-        sandbox::policy::SandboxTypeFromCommandLine(*command_line);
-    if (sandbox_type == sandbox::policy::SandboxType::kNetwork)
-      return CallStackProfileParams::NETWORK_SERVICE_PROCESS;
-    return CallStackProfileParams::UTILITY_PROCESS;
-  }
-  if (process_type == switches::kZygoteProcess)
-    return CallStackProfileParams::ZYGOTE_PROCESS;
-  if (process_type == switches::kPpapiPluginProcess)
-    return CallStackProfileParams::PPAPI_PLUGIN_PROCESS;
-  if (process_type == switches::kPpapiBrokerProcess)
-    return CallStackProfileParams::PPAPI_BROKER_PROCESS;
-  return CallStackProfileParams::UNKNOWN_PROCESS;
-}
-
 bool IsCurrentProcessBackgrounded() {
 #if defined(OS_MAC)
   // Port provider that returns the calling process's task port, ignoring its
@@ -112,7 +87,7 @@ class ChromeUnwinderCreator {
 
     base::MemoryMappedFile::Region cfi_region;
     int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
-    DCHECK(fd >= 0);
+    DCHECK_GE(fd, 0);
     bool mapped_file_ok =
         chrome_cfi_file_.Initialize(base::File(fd), cfi_region);
     DCHECK(mapped_file_ok);
@@ -301,8 +276,10 @@ void ThreadProfiler::SetMainThreadTaskRunner(
 
 void ThreadProfiler::SetAuxUnwinderFactory(
     const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
-  if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+  if (!ThreadProfilerConfiguration::Get()
+           ->IsProfilerEnabledForCurrentProcessAndThread(thread_)) {
     return;
+  }
 
   aux_unwinder_factory_ = factory;
   startup_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
@@ -318,8 +295,10 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
       base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>
       child_thread_profiler_sequence_local_storage;
 
-  if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+  if (!ThreadProfilerConfiguration::Get()
+           ->IsProfilerEnabledForCurrentProcessAndThread(thread)) {
     return;
+  }
 
   child_thread_profiler_sequence_local_storage->emplace(
       new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
@@ -338,7 +317,8 @@ void ThreadProfiler::SetCollectorForChildProcess(
   if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
+  DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS,
+            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(collector));
 }
@@ -364,13 +344,16 @@ void ThreadProfiler::SetCollectorForChildProcess(
 ThreadProfiler::ThreadProfiler(
     CallStackProfileParams::Thread thread,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
-    : process_(GetProcess()),
+    : process_(
+          GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess())),
       thread_(thread),
       owning_thread_task_runner_(owning_thread_task_runner),
       work_id_recorder_(std::make_unique<WorkIdRecorder>(
           base::WorkIdProvider::GetForCurrentThread())) {
-  if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+  if (!ThreadProfilerConfiguration::Get()
+           ->IsProfilerEnabledForCurrentProcessAndThread(thread_)) {
     return;
+  }
 
   const base::StackSamplingProfiler::SamplingParams sampling_params =
       ThreadProfilerConfiguration::Get()->GetSamplingParams();
@@ -413,8 +396,10 @@ void ThreadProfiler::OnPeriodicCollectionCompleted(
 
 void ThreadProfiler::SetMainThreadTaskRunnerImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+  if (!ThreadProfilerConfiguration::Get()
+           ->IsProfilerEnabledForCurrentProcessAndThread(thread_)) {
     return;
+  }
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

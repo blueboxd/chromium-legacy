@@ -353,7 +353,7 @@ bool AbsoluteNeedsChildBlockSize(const ComputedStyle& style) {
 
 bool IsInlineSizeComputableFromBlockSize(const ComputedStyle& style) {
   DCHECK(style.HasOutOfFlowPosition());
-  if (!style.AspectRatio())
+  if (style.AspectRatio().IsAuto())
     return false;
   // An explicit block size should take precedence over specified insets.
   bool have_inline_size =
@@ -450,25 +450,24 @@ void ComputeOutOfFlowInlineDimensions(
 
   // This implements the transferred min/max sizes per
   // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
-  if (style.AspectRatio() && dimensions->size.block_size == kIndefiniteSize) {
+  if (!style.AspectRatio().IsAuto() &&
+      dimensions->size.block_size == kIndefiniteSize) {
     MinMaxSizes sizes = ComputeMinMaxInlineSizesFromAspectRatio(
         space, style, border_padding, LengthResolvePhase::kLayout);
     min_inline_size = std::max(sizes.min_size, min_inline_size);
     max_inline_size = std::min(sizes.max_size, max_inline_size);
   }
 
-  bool is_table = style.IsDisplayTableBox();
+  // Tables are never allowed to go below their min-content size.
+  const bool is_table = style.IsDisplayTableBox();
+  if (is_table)
+    min_inline_size = std::max(min_inline_size, minmax_content_sizes->min_size);
+
   base::Optional<LayoutUnit> inline_size;
   if (!style.LogicalWidth().IsAuto()) {
-    LayoutUnit resolved_inline_size =
+    inline_size =
         ResolveMainInlineLength(space, style, border_padding,
                                 minmax_content_sizes, style.LogicalWidth());
-
-    // Tables use the inline-size as a minimum.
-    if (is_table)
-      min_inline_size = std::max(min_inline_size, resolved_inline_size);
-    else
-      inline_size = resolved_inline_size;
   } else if (replaced_size.has_value()) {
     inline_size = replaced_size->inline_size;
   } else if (IsInlineSizeComputableFromBlockSize(style)) {
@@ -528,18 +527,16 @@ void ComputeOutOfFlowBlockDimensions(
       space, style, border_padding, style.LogicalMaxHeight(),
       LengthResolvePhase::kLayout);
 
-  bool is_table = style.IsDisplayTableBox();
+  // Tables are never allowed to go below their "auto" block-size.
+  const bool is_table = style.IsDisplayTableBox();
+  if (is_table)
+    min_block_size = std::max(min_block_size, min_max_sizes->min_size);
+
   base::Optional<LayoutUnit> block_size;
   if (!style.LogicalHeight().IsAuto()) {
-    LayoutUnit resolved_block_size = ResolveMainBlockLength(
+    block_size = ResolveMainBlockLength(
         space, style, border_padding, style.LogicalHeight(),
         child_block_size_or_indefinite, LengthResolvePhase::kLayout);
-
-    // Tables use the block-size as a minimum.
-    if (is_table)
-      min_block_size = std::max(min_block_size, resolved_block_size);
-    else
-      block_size = resolved_block_size;
   } else if (replaced_size.has_value()) {
     block_size = replaced_size->block_size;
   }

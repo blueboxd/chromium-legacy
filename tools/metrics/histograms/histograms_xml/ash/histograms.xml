@@ -209,6 +209,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.ClipboardHistory.ContextMenu.MenuOptionSelected"
+    units="index" expires_after="2021-09-01">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The command ID index within the Clipboard History contextual menu that was
+    selected by the user. Recorded when the menu item is selected.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ClipboardHistory.ContextMenu.NumberOfItemsShown"
     units="Items Shown" expires_after="2021-09-01">
   <owner>andrewxu@chromium.org</owner>
@@ -867,7 +877,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.AnimationSmoothness.Close" units="%"
-    expires_after="M85">
+    expires_after="2021-12-31">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -880,7 +890,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.AnimationSmoothness.Enter" units="%"
-    expires_after="M85">
+    expires_after="2021-12-31">
 <!-- Name completed by histogram_suffixes
      name="OverviewAnimationMode" -->
 
@@ -894,7 +904,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.AnimationSmoothness.Exit" units="%"
-    expires_after="M85">
+    expires_after="2021-12-31">
 <!-- Name completed by histogram_suffixes
      name="OverviewAnimationMode" -->
 
@@ -929,7 +939,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.WindowDrag.PresentationTime"
-    units="ms" expires_after="M85">
+    units="ms" expires_after="2021-12-31">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -940,7 +950,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Ash.Overview.WindowDrag.PresentationTime.MaxLatency" units="ms"
-    expires_after="M85">
+    expires_after="2021-12-31">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -1038,6 +1048,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     ideally smooth 60 frames per second. 50% represents only 30 frames per
     second is achieved during the animations. 0% should not happen. This metric
     is recorded exactly once when the user rotates the screen.
+  </summary>
+</histogram>
+
+<histogram name="Ash.ScreenshotController.ScreenshotsPerDay" units="int"
+    expires_after="2021-09-29">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the number of screenshots that have been taken via the
+    ScreenshotController every 24 hours. Note that counts are not persisted
+    across crashes, restarts, or sessions so this is only intended to give a
+    rough approximation.
+  </summary>
+</histogram>
+
+<histogram name="Ash.ScreenshotController.ScreenshotsPerWeek" units="int"
+    expires_after="2021-09-29">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the number of screenshots that have been taken via the
+    ScreenshotController every 7 days. Note that counts are not persisted across
+    crashes, restarts, or sessions so this is only intended to give a rough
+    approximation. This means that this metric will only be recorded in sessions
+    spanning at least 7 days.
   </summary>
 </histogram>
 

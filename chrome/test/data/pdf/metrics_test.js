@@ -177,12 +177,18 @@ chrome.test.runTests(function() {
       chrome.test.succeed();
     },
 
-    function testMetricsThumbnail() {
+    function testMetricsSideNav() {
       PDFMetrics.resetForTesting();
 
       chrome.metricsPrivate = new MockMetricsPrivate();
       PDFMetrics.record(UserAction.DOCUMENT_OPENED);
 
+      PDFMetrics.record(UserAction.TOGGLE_SIDENAV);
+      PDFMetrics.record(UserAction.TOGGLE_SIDENAV);
+      PDFMetrics.record(UserAction.TOGGLE_SIDENAV);
+      PDFMetrics.record(UserAction.SELECT_SIDENAV_OUTLINE);
+      PDFMetrics.record(UserAction.SELECT_SIDENAV_THUMBNAILS);
+      PDFMetrics.record(UserAction.SELECT_SIDENAV_THUMBNAILS);
       PDFMetrics.record(UserAction.THUMBNAIL_NAVIGATE);
       PDFMetrics.record(UserAction.THUMBNAIL_NAVIGATE);
 
@@ -190,7 +196,56 @@ chrome.test.runTests(function() {
           {
             [UserAction.DOCUMENT_OPENED]: 1,
             [UserAction.THUMBNAIL_NAVIGATE_FIRST]: 1,
-            [UserAction.THUMBNAIL_NAVIGATE]: 2
+            [UserAction.THUMBNAIL_NAVIGATE]: 2,
+            [UserAction.TOGGLE_SIDENAV_FIRST]: 1,
+            [UserAction.TOGGLE_SIDENAV]: 3,
+            [UserAction.SELECT_SIDENAV_THUMBNAILS_FIRST]: 1,
+            [UserAction.SELECT_SIDENAV_THUMBNAILS]: 2,
+            [UserAction.SELECT_SIDENAV_OUTLINE_FIRST]: 1,
+            [UserAction.SELECT_SIDENAV_OUTLINE]: 1
+          },
+          chrome.metricsPrivate.actionCounter);
+      chrome.test.succeed();
+    },
+
+    function testMetricsSaving() {
+      PDFMetrics.resetForTesting();
+
+      chrome.metricsPrivate = new MockMetricsPrivate();
+      PDFMetrics.record(UserAction.DOCUMENT_OPENED);
+
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_ORIGINAL_ONLY);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_ORIGINAL_ONLY);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_ORIGINAL);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_EDITED);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_ORIGINAL);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_ORIGINAL);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_EDITED);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_WITH_ANNOTATION);
+      PDFMetrics.record(UserAction.SAVE);
+      PDFMetrics.record(UserAction.SAVE_WITH_ANNOTATION);
+
+      chrome.test.assertEq(
+          {
+            [UserAction.DOCUMENT_OPENED]: 1,
+            [UserAction.SAVE_FIRST]: 1,
+            [UserAction.SAVE]: 9,
+            [UserAction.SAVE_WITH_ANNOTATION_FIRST]: 1,
+            [UserAction.SAVE_WITH_ANNOTATION]: 2,
+            [UserAction.SAVE_ORIGINAL_ONLY_FIRST]: 1,
+            [UserAction.SAVE_ORIGINAL_ONLY]: 2,
+            [UserAction.SAVE_ORIGINAL_FIRST]: 1,
+            [UserAction.SAVE_ORIGINAL]: 3,
+            [UserAction.SAVE_EDITED_FIRST]: 1,
+            [UserAction.SAVE_EDITED]: 2
           },
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();

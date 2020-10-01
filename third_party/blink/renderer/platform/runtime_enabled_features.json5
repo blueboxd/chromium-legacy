@@ -665,8 +665,6 @@
     },
     {
       name: "DigitalGoods",
-      origin_trial_feature_name: "DigitalGoods",
-      origin_trial_os: ["android"],
       status: "experimental",
     },
     {
@@ -953,8 +951,8 @@
       status: "stable",
     },
     {
-      // Enabled when blink::features::kInterestCohortAPI is enabled.
       name: "InterestCohortAPI",
+      origin_trial_feature_name: "InterestCohortAPI",
     },
     {
       name: "IntersectionObserverDocumentScrollingElementRoot",

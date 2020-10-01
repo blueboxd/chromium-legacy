@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/metrics/total_frame_counter.h"
+#include "cc/metrics/ukm_smoothness_data.h"
 
 namespace cc {
 
@@ -50,10 +51,27 @@ void DroppedFrameCounter::AddDroppedFrameAffectingSmoothness() {
 }
 
 void DroppedFrameCounter::ReportFrames() {
-  TRACE_EVENT2(
-      "cc,benchmark", "SmoothnessDroppedFrame", "total",
-      total_counter_->ComputeTotalVisibleFrames(base::TimeTicks::Now()),
-      "smoothness", total_smoothness_dropped_);
+  const auto total_frames =
+      total_counter_->ComputeTotalVisibleFrames(base::TimeTicks::Now());
+  TRACE_EVENT2("cc,benchmark", "SmoothnessDroppedFrame", "total", total_frames,
+               "smoothness", total_smoothness_dropped_);
+
+  if (ukm_smoothness_data_ && total_frames > 0) {
+    UkmSmoothnessData smoothness_data;
+    smoothness_data.avg_smoothness =
+        static_cast<double>(total_smoothness_dropped_) * 100 / total_frames;
+
+    ukm_smoothness_data_->seq_lock.WriteBegin();
+    device::OneWriterSeqLock::AtomicWriterMemcpy(&ukm_smoothness_data_->data,
+                                                 &smoothness_data,
+                                                 sizeof(UkmSmoothnessData));
+    ukm_smoothness_data_->seq_lock.WriteEnd();
+  }
+}
+
+void DroppedFrameCounter::SetUkmSmoothnessDestination(
+    UkmSmoothnessDataShared* smoothness_data) {
+  ukm_smoothness_data_ = smoothness_data;
 }
 
 void DroppedFrameCounter::Reset() {

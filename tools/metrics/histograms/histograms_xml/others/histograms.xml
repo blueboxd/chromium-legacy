@@ -5133,6 +5133,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Time to retrieve the fallback fonts on the system.</summary>
 </histogram>
 
+<histogram name="Fonts.AccessAPI.EnumerationCache.DuplicateFontCount"
+    units="count" expires_after="M90">
+  <owner>oyiptong@chromium.org</owner>
+  <owner>storage-dev@chromium.org</owner>
+  <summary>
+    The number of duplicate fonts returned by system APIs. This is recorded when
+    fonts are enumerated to be returned to script as a result of a call to the
+    Font Access API.
+  </summary>
+</histogram>
+
 <histogram name="Fonts.AccessAPI.EnumerationCache.Dwrite.FamilyCount"
     units="families" expires_after="M90">
   <owner>oyiptong@chromium.org</owner>
@@ -5171,6 +5182,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="Fonts.AccessAPI.EnumerationCache.Fontconfig.DuplicateFontCount"
     units="count" expires_after="M90">
+  <obsolete>
+    Removed in M86 in favor of
+    Fonts.AccessAPI.EnumerationCache.DuplicateFontCount.
+  </obsolete>
   <owner>oyiptong@chromium.org</owner>
   <owner>storage-dev@chromium.org</owner>
   <summary>The number of duplicate fonts returned by fontconfig.</summary>
@@ -5490,6 +5505,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     frames are displayed (as opposed to the number of checkerboard frames
     produced), since the same checkerboard frame can be displayed more than
     once.
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Smoothness.Diagnostic.ReadSharedMemoryDuration"
+    units="microseconds" expires_after="2021-09-01">
+  <owner>sadrul@chromium.org</owner>
+  <owner>behdadb@chromium.org</owner>
+  <summary>
+    Diagnostic metric to track how long it takes to read the smoothness data
+    from shared memory.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution.
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Smoothness.Diagnostic.ReadSharedMemoryUKMSuccess"
+    units="boolean" expires_after="2021-09-01">
+  <owner>sadrul@chromium.org</owner>
+  <owner>fangzhoug@chromium.org</owner>
+  <summary>
+    Diagnostic metric to track how often reading the smoothness data for UKM
+    from the shared memory (using atomic memcpy) fails (or succeeds).
   </summary>
 </histogram>
 

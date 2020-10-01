@@ -545,7 +545,7 @@ group("gn_all") {
 
     if (enable_extensions) {
       deps += [ "//extensions/shell:app_shell" ]
-      if (is_desktop_linux && is_official_build) {
+      if (is_linux && is_official_build) {
         deps += [ "//extensions/shell:app_shell_linux_symbols" ]
       }
     }
@@ -1108,6 +1108,9 @@ if (!is_ios) {
     }
 
     data = [
+      "//testing/scripts/common.py",
+      "//testing/scripts/run_isolated_script_test.py",
+      "//testing/xvfb.py",
       "//third_party/blink/tools/",
       "//third_party/blink/web_tests/VirtualTestSuites",
       "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_8.json",

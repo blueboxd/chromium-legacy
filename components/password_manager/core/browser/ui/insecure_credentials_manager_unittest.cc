@@ -552,8 +552,6 @@ TEST_F(InsecureCredentialsManagerTest, WeakCredentialsNotFound) {
                                         2 * kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 0, 1);
-  histogram_tester().ExpectTotalCount(
-      "PasswordManager.WeakCheck.PasswordLength", 2);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.PasswordScore", 4, 2);
 }
@@ -587,8 +585,6 @@ TEST_F(InsecureCredentialsManagerTest, DetectedWeakCredential) {
                                         kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 1, 1);
-  histogram_tester().ExpectTotalCount(
-      "PasswordManager.WeakCheck.PasswordLength", 2);
   histogram_tester().ExpectTotalCount("PasswordManager.WeakCheck.PasswordScore",
                                       2);
 }
@@ -622,8 +618,6 @@ TEST_F(InsecureCredentialsManagerTest,
                                         kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 2, 1);
-  histogram_tester().ExpectTotalCount(
-      "PasswordManager.WeakCheck.PasswordLength", 2);
   histogram_tester().ExpectTotalCount("PasswordManager.WeakCheck.PasswordScore",
                                       2);
 }
@@ -657,9 +651,6 @@ TEST_F(InsecureCredentialsManagerTest,
                                         kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 1, 1);
-  // Length of kWeakPassword1 is 6.
-  histogram_tester().ExpectUniqueSample(
-      "PasswordManager.WeakCheck.PasswordLength", 6, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.PasswordScore", 0, 1);
 }
@@ -702,8 +693,6 @@ TEST_F(InsecureCredentialsManagerTest, BothWeakAndCompromisedCredentialsExist) {
                                         kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 1, 1);
-  histogram_tester().ExpectTotalCount(
-      "PasswordManager.WeakCheck.PasswordLength", 2);
   histogram_tester().ExpectTotalCount("PasswordManager.WeakCheck.PasswordScore",
                                       2);
 }
@@ -751,9 +740,6 @@ TEST_F(InsecureCredentialsManagerTest, SingleCredentialIsWeakAndCompromised) {
                                         kDelay, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.WeakPasswords", 1, 1);
-  // Length of kWeakPassword1 is 6.
-  histogram_tester().ExpectUniqueSample(
-      "PasswordManager.WeakCheck.PasswordLength", 6, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.WeakCheck.PasswordScore", 0, 1);
 }

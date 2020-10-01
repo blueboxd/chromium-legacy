@@ -1194,6 +1194,43 @@ const FeatureEntry::FeatureVariation
         },
 };
 
+const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
+    {
+        "Default UI (Title - URL)",
+        (FeatureEntry::FeatureParam[]){},
+        0,
+        nullptr,
+    },
+    {
+        "Replace title (Path/Title - URL)",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxBookmarkPathsUiReplaceTitle", "true"}},
+        1,
+        nullptr,
+    },
+    {
+        "Replace URL (Title - Path)",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxBookmarkPathsUiReplaceUrl", "true"}},
+        1,
+        nullptr,
+    },
+    {
+        "Append after title (Title : Path - URL)",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxBookmarkPathsUiAppendAfterTitle", "true"}},
+        1,
+        nullptr,
+    },
+    {
+        "Dynamic Replace URL (Title - Path|URL)",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxBookmarkPathsUiDynamicReplaceUrl", "true"}},
+        1,
+        nullptr,
+    },
+};
+
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -3985,6 +4022,11 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kRichAutocompletion,
          kOmniboxRichAutocompletionPromisingVariations,
          "OmniboxBundledExperimentV1")},
+    {"omnibox-bookmark-paths", flag_descriptions::kOmniboxBookmarkPathsName,
+     flag_descriptions::kOmniboxBookmarkPathsDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kBookmarkPaths,
+                                    kOmniboxBookmarkPathsVariations,
+                                    "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -6602,6 +6644,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(switches::kDecoupleSyncFromAndroidMasterSync)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-browsing-data-lifetime-manager",
+     flag_descriptions::kEnableBrowsingDataLifetimeManagerName,
+     flag_descriptions::kEnableBrowsingDataLifetimeManagerDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         browsing_data::features::kEnableBrowsingDataLifetimeManager)},
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

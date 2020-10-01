@@ -610,6 +610,12 @@ const char kEnableRemovingAllThirdPartyCookiesDescription[] =
     "Enables UI on chrome://settings/siteData to remove all third-party "
     "cookies and site data.";
 
+const char kEnableBrowsingDataLifetimeManagerName[] =
+    "Enables the BrowsingDataLifetimeManager service to run.";
+const char kEnableBrowsingDataLifetimeManagerDescription[] =
+    "Enables the BrowsingDataLifetimeManager service to run and periodically "
+    "delete browsing data as specified by the BrowsingDataLifetime policy.";
+
 const char kColorProviderRedirectionName[] = "Color Provider Redirection";
 const char kColorProviderRedirectionDescription[] =
     "Redirects color requests to the color provider where possible.";
@@ -1476,6 +1482,12 @@ const char kOmniboxAssistantVoiceSearchName[] =
 const char kOmniboxAssistantVoiceSearchDescription[] =
     "When enabled, use Assistant for omnibox voice query recognition instead of"
     " Android's built-in voice recognition service. Only works on Android.";
+
+extern const char kOmniboxBookmarkPathsName[] = "Omnibox Bookmark Paths";
+extern const char kOmniboxBookmarkPathsDescription[] =
+    "Allows inputs to match with bookmark paths. E.g. 'planets jupiter' can "
+    "suggest a bookmark titled 'Jupiter' with URL "
+    "'en.wikipedia.org/wiki/Jupiter' located in a path containing 'planet.'";
 
 const char kOmniboxClobberTriggersContextualWebZeroSuggestName[] =
     "Omnibox Clobber Triggers Contextual Web ZeroSuggest";
@@ -3888,6 +3900,12 @@ const char kEnhancedClipboardDescription[] =
     "switching. After copying to the clipboard, press search + v to show the "
     "history. Selecting something from the menu will result in a paste to the "
     "active window.";
+
+const char kEnhancedClipboardSimpleRenderName[] =
+    "Only renders html in the Enhanced Clipboard if there are img or table "
+    "tags";
+const char kEnhancedClipboardSimpleRenderDescription[] =
+    "This will result in less HTML rendering in the Enhanced Clipboard menu.";
 
 const char kMultiDisplayOverviewAndSplitViewName[] =
     "Enable multi-display overview and split view.";

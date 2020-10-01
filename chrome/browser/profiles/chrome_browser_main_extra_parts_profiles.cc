@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
+#include "chrome/browser/autofill/autofill_offer_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -109,6 +110,7 @@
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
@@ -232,6 +234,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   AutocompleteClassifierFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
+  autofill::AutofillOfferManagerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_BACKGROUND_CONTENTS)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
@@ -243,6 +246,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   CaptivePortalServiceFactory::GetInstance();
 #endif
   CertificateReportingServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  ChromeBrowsingDataLifetimeManagerFactory::GetInstance();
+#endif
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
   ChromeSigninClientFactory::GetInstance();
   ClientHintsFactory::GetInstance();

@@ -137,6 +137,8 @@ static_library("browser") {
     "autofill/autocomplete_history_manager_factory.h",
     "autofill/autofill_gstatic_reader.cc",
     "autofill/autofill_gstatic_reader.h",
+    "autofill/autofill_offer_manager_factory.cc",
+    "autofill/autofill_offer_manager_factory.h",
     "autofill/autofill_profile_validator_factory.cc",
     "autofill/autofill_profile_validator_factory.h",
     "autofill/personal_data_manager_factory.cc",
@@ -292,8 +294,8 @@ static_library("browser") {
     "component_updater/file_type_policies_component_installer.h",
     "component_updater/first_party_sets_component_installer.cc",
     "component_updater/first_party_sets_component_installer.h",
-    "component_updater/floc_blocklist_component_installer.cc",
-    "component_updater/floc_blocklist_component_installer.h",
+    "component_updater/floc_component_installer.cc",
+    "component_updater/floc_component_installer.h",
     "component_updater/games_component_installer.cc",
     "component_updater/games_component_installer.h",
     "component_updater/mei_preload_component_installer.cc",
@@ -2225,7 +2227,6 @@ static_library("browser") {
     "//services/proxy_resolver/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
-    "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/shape_detection/public/mojom",
     "//services/strings",
@@ -3301,6 +3302,10 @@ static_library("browser") {
       "browsing_data/access_context_audit_service.h",
       "browsing_data/access_context_audit_service_factory.cc",
       "browsing_data/access_context_audit_service_factory.h",
+      "browsing_data/chrome_browsing_data_lifetime_manager.cc",
+      "browsing_data/chrome_browsing_data_lifetime_manager.h",
+      "browsing_data/chrome_browsing_data_lifetime_manager_factory.cc",
+      "browsing_data/chrome_browsing_data_lifetime_manager_factory.h",
       "certificate_viewer.h",
       "chrome_browser_field_trials_desktop.cc",
       "chrome_browser_field_trials_desktop.h",
@@ -4787,7 +4792,7 @@ static_library("browser") {
     }
   }
 
-  if (is_desktop_linux) {
+  if (is_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
       "download/download_status_updater_linux.cc",
@@ -4866,7 +4871,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_mac || is_desktop_linux) {
+  if (is_win || is_mac || is_linux) {
     sources += [
       "browser_switcher/alternative_browser_driver.h",
       "browser_switcher/browser_switcher_navigation_throttle.cc",
@@ -4885,7 +4890,7 @@ static_library("browser") {
     if (is_win) {
       sources += [ "browser_switcher/alternative_browser_driver_win.cc" ]
     }
-    if (is_mac || is_desktop_linux) {
+    if (is_mac || is_linux) {
       sources += [ "browser_switcher/alternative_browser_driver_posix.cc" ]
     }
   }
@@ -6096,7 +6101,7 @@ static_library("browser") {
     if (is_chromeos) {
       sources += [ "net/nss_context_chromeos.cc" ]
     }
-    if (is_desktop_linux) {
+    if (is_linux) {
       sources += [ "net/nss_context_linux.cc" ]
     }
   }
@@ -6242,7 +6247,7 @@ grit("resources") {
     }
   }
 
-  if (is_win || is_mac || is_desktop_linux || is_chromeos) {
+  if (is_win || is_mac || is_linux || is_chromeos) {
     deps += [
       "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/resources/gaia_auth_host:modulize",

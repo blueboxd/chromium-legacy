@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -24,11 +23,13 @@ import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -126,7 +127,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
         mActivityLifecycleDispatcher.register(this);
 
-
+        // TODO(meiliang): Potential leak if the observer is added after restoreCompleted. Fix it.
         // Record the group count after all tabs are being restored. This only happen once per life
         // cycle, therefore remove the observer after recording. We only focus on normal tab model
         // because we don't restore tabs in incognito tab model.
@@ -214,6 +215,22 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private void recordTabGroupCount() {
         TabModelFilterProvider provider =
                 mActivity.getTabModelSelector().getTabModelFilterProvider();
+
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            TabModelFilter normalTabModelFilter = provider.getTabModelFilter(false);
+
+            if (!(normalTabModelFilter instanceof TabGroupModelFilter)) {
+                String actualType = normalTabModelFilter == null
+                        ? "null"
+                        : normalTabModelFilter.getClass().getName();
+                assert false
+                    : "Please file bug, this is unexpected. Expected TabGroupModelFilter, but was "
+                      + actualType;
+
+                return;
+            }
+        }
+
         TabGroupModelFilter normalFilter = (TabGroupModelFilter) provider.getTabModelFilter(false);
         TabGroupModelFilter incognitoFilter =
                 (TabGroupModelFilter) provider.getTabModelFilter(true);
@@ -238,6 +255,23 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     }
 
     private void recordSessionCount() {
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            TabModelFilter normalTabModelFilter =
+                    mActivity.getTabModelSelector().getTabModelFilterProvider().getTabModelFilter(
+                            false);
+
+            if (!(normalTabModelFilter instanceof TabGroupModelFilter)) {
+                String actualType = normalTabModelFilter == null
+                        ? "null"
+                        : normalTabModelFilter.getClass().getName();
+                assert false
+                    : "Please file bug, this is unexpected. Expected TabGroupModelFilter, but was "
+                      + actualType;
+
+                return;
+            }
+        }
+
         OverviewModeBehavior overviewModeBehavior =
                 (OverviewModeBehavior) mActivity.getOverviewModeBehaviorSupplier().get();
 

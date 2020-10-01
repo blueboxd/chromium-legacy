@@ -5320,6 +5320,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Quad9Cdn" label="Quad9 cdn service."/>
   <suffix name="Quad9Insecure" label="Quad9 insecure service."/>
   <suffix name="Quad9Secure" label="Quad9 secure service."/>
+  <suffix name="Quickline" label="Quickline AS15600"/>
   <suffix name="Spectrum1"
       label="Charter Communications/Spectrum DoH endpoint1."/>
   <suffix name="Spectrum2"
@@ -7443,8 +7444,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="OfflinePages"
       label="Showing cache patterns only for OfflinePages."/>
   <suffix name="QueryTiles" label="Showing Query tiles images."/>
-  <suffix name="VideoTutorials"
-      label="Showing thumbnails for video tutorials."/>
+  <suffix name="VideoTutorialsIPH"
+      label="Showing thumbnails for video tutorials IPH."/>
+  <suffix name="VideoTutorialsList"
+      label="Showing thumbnails for video tutorials list view."/>
   <affected-histogram name="ImageFetcher.Events"/>
   <affected-histogram name="ImageFetcher.ImageLoadFromCacheTime"/>
   <affected-histogram name="ImageFetcher.ImageLoadFromCacheTimeJava"/>
@@ -11131,8 +11134,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="dummy2" label="Module ID for another dummy module"/>
   <suffix name="kaleidoscope" label="Module ID for Kaleidoscope"/>
   <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
+  <affected-histogram name="NewTabPage.Modules.Dismissed"/>
   <affected-histogram name="NewTabPage.Modules.Impression"/>
   <affected-histogram name="NewTabPage.Modules.Loaded"/>
+  <affected-histogram name="NewTabPage.Modules.Restored"/>
   <affected-histogram name="NewTabPage.Modules.Usage"/>
 </histogram_suffixes>
 

@@ -366,6 +366,9 @@ extern const char kEnableNoScriptPreviewsDescription[];
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
 
+extern const char kEnableBrowsingDataLifetimeManagerName[];
+extern const char kEnableBrowsingDataLifetimeManagerDescription[];
+
 extern const char kDataReductionProxyServerAlternative1[];
 extern const char kDataReductionProxyServerAlternative2[];
 extern const char kDataReductionProxyServerAlternative3[];
@@ -860,6 +863,9 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
+
+extern const char kOmniboxBookmarkPathsName[];
+extern const char kOmniboxBookmarkPathsDescription[];
 
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
@@ -2239,6 +2245,9 @@ extern const char kDragToSnapInClamshellModeDescription[];
 
 extern const char kEnhancedClipboardName[];
 extern const char kEnhancedClipboardDescription[];
+
+extern const char kEnhancedClipboardSimpleRenderName[];
+extern const char kEnhancedClipboardSimpleRenderDescription[];
 
 extern const char kMultiDisplayOverviewAndSplitViewName[];
 extern const char kMultiDisplayOverviewAndSplitViewDescription[];

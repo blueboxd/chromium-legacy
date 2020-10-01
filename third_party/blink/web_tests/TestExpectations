@@ -1114,7 +1114,6 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/nested-multicol.html [ Failure ]
-crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/overflow-content.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/positioned-outside-of-columns.html [ Crash Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/positioned-split.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/shadow-breaking.html [ Failure ]
@@ -1472,14 +1471,13 @@ crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/* [ Skip ]
 
 # TODO(oshima): Move the event scaling code to eventSender and remove this.
-crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
-crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
+crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.html [ Timeout Failure ]
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Timeout Failure ]
 crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Timeout Failure ]
-crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
-crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
-crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
-crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
+crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Timeout Failure ]
+crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Timeout Failure ]
+crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Timeout Failure ]
+crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Timeout Failure ]
 crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Timeout Failure ]
 crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Timeout Failure ]
 
@@ -5316,7 +5314,6 @@ crbug.com/1044137 [ Mac ] fast/scrolling/no-hover-during-smooth-keyboard-scroll.
 crbug.com/862589 virtual/threaded/fast/idle-callback/long_idle_periods.html [ Timeout Pass ]
 
 # fast/events/middleClickAutoscroll-* are failing on Mac
-crbug.com/874162 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Skip ]
@@ -5328,6 +5325,9 @@ crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden
 # The next also fails due to crbug.com/891427, thus disabled on all platforms.
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
+
+# Passes in threaded mode, fails without it. This is a real bug.
+crbug.com/1112183 fast/scrolling/autoscroll-iframe-no-scrolling.html [ Failure ]
 
 # Sheriff 2018-09-10
 crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]

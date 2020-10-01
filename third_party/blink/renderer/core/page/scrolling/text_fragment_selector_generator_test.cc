@@ -52,7 +52,27 @@ class TextFragmentSelectorGeneratorTest : public SimTest {
 
     EXPECT_TRUE(callback_called);
   }
+
+  void VerifySelectorFailed(Position selected_start, Position selected_end) {
+    GenerateAndVerifySelector(selected_start, selected_end, "");
+  }
 };
+
+// Basic exact selector case.
+TEST_F(TextFragmentSelectorGeneratorTest, EmptySelection) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id='first'>First paragraph</p>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& selected_start = Position(first_paragraph, 5);
+  const auto& selected_end = Position(first_paragraph, 6);
+  ASSERT_EQ(" ", PlainText(EphemeralRange(selected_start, selected_end)));
+
+  VerifySelectorFailed(selected_start, selected_end);
+}
 
 // Basic exact selector case.
 TEST_F(TextFragmentSelectorGeneratorTest, ExactTextSelector) {
@@ -271,7 +291,7 @@ TEST_F(TextFragmentSelectorGeneratorTest, ExactTextSelector_SamePreffixSuffix) {
   ASSERT_EQ("not unique snippet of text",
             PlainText(EphemeralRange(selected_start, selected_end)));
 
-  GenerateAndVerifySelector(selected_start, selected_end, "");
+  VerifySelectorFailed(selected_start, selected_end);
 }
 
 // Exact selector with context test. Case when available prefix and suffix for
@@ -295,7 +315,7 @@ TEST_F(TextFragmentSelectorGeneratorTest,
   ASSERT_EQ("not unique snippet of text",
             PlainText(EphemeralRange(selected_start, selected_end)));
 
-  GenerateAndVerifySelector(selected_start, selected_end, "");
+  VerifySelectorFailed(selected_start, selected_end);
 }
 
 // Exact selector with context test. Case when no prefix is available.
@@ -544,7 +564,7 @@ text_text_text_text_text_text_text_text_text_text_text_text_text_\
 text_text_text_text_text_text_text_text_text_and_last_text",
       PlainText(EphemeralRange(selected_start, selected_end)));
 
-  GenerateAndVerifySelector(selected_start, selected_end, "");
+  VerifySelectorFailed(selected_start, selected_end);
 }
 
 // Selection should be autocompleted to contain full words.
@@ -582,6 +602,27 @@ TEST_F(TextFragmentSelectorGeneratorTest, WordLimit_ExtraSpaces) {
   const auto& selected_start = Position(first_paragraph, 11);
   const auto& selected_end = Position(first_paragraph, 41);
   ASSERT_EQ("aragraph text that is long",
+            PlainText(EphemeralRange(selected_start, selected_end)));
+
+  GenerateAndVerifySelector(selected_start, selected_end,
+                            "paragraph%20text%20that%20is%20longer");
+}
+
+// When selection starts at the end of a word, selection shouldn't be
+// autocompleted to contain extra words.
+TEST_F(TextFragmentSelectorGeneratorTest,
+       WordLimit_SelectionStartsAndEndsAtWordLimit) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div>Test page</div>
+    <p id='first'>First paragraph text that is longer  than 20 chars</p>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& selected_start = Position(first_paragraph, 5);
+  const auto& selected_end = Position(first_paragraph, 37);
+  ASSERT_EQ(" paragraph text that is longer ",
             PlainText(EphemeralRange(selected_start, selected_end)));
 
   GenerateAndVerifySelector(selected_start, selected_end,

@@ -1150,13 +1150,15 @@
       'name': 'ParentalSupervision',
       'type': 'group',
       'caption': '''Parental supervision settings''',
-      'desc': '''Controls parental supervision policies, that are applied to child accounts only.''',
+      'desc': '''Controls parental supervision policies, that are applied to child accounts only.
+      These policies are not set in the admin console, but configured directly by Kids API Server.''',
       'policies': [
         'ParentAccessCodeConfig',
         'PerAppTimeLimits',
         'PerAppTimeLimitsWhitelist',
         'PerAppTimeLimitsAllowlist',
         'UsageTimeLimit',
+        'EduCoexistenceToSVersion',
       ],
     },
     {
@@ -3490,6 +3492,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': '${users}/${user_name}/Chrome',
       'id': 63,
@@ -3619,15 +3622,15 @@
 
        Setting the policy to:
 
-      * Block dangerous downloads means all downloads are allowed, except for those that carry Safe Browsing warnings.
+      * Block dangerous downloads means all downloads are allowed, except for those that carry safety warnings.
 
-      * Block potentially dangerous downloads means all downloads allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
+      * Block potentially dangerous downloads means all downloads allowed, except for those that carry safety warnings of potentially dangerous downloads.
 
       * Block all downloads means all downloads are blocked.
 
-      * Block malicious downloads means all downloads are allowed, except for those that Safe Browsing assesses to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
+      * Block malicious downloads means all downloads are allowed, except for those assessed to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
 
-      * No special restrictions means the downloads go through the usual security restrictions based on Safe Browsing analysis results.
+      * No special restrictions means the downloads go through the usual security restrictions based on safety analysis results.
 
       Note: These restrictions apply to downloads triggered from webpage content, as well as the Download link... menu option. They don't apply to the download of the currently displayed page or to saving as PDF from the printing options. Read more about Safe Browsing ( https://developers.google.com/safe-browsing ).''',
       'label': '''Download restrictions''',
@@ -13654,7 +13657,7 @@
       'tags': [],
       'desc': '''Setting the policy to a valid value means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't use SSL/TLS versions less than the specified version. Unrecognized values are ignored.
 
-      If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version of TLS 1.0.''',
+      If this policy is not set, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an error for TLS 1.0 and TLS 1.1, but the user will be able to bypass it.''',
     },
     {
       'name': 'SSLVersionFallbackMin',
@@ -16678,6 +16681,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': False,
       'id': 381,
@@ -17664,6 +17668,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': '37185d02-e055-11e7-80c1-9a214cf093ae',
       'id': 428,
@@ -17684,6 +17689,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': '37185d02-e055-11e7-80c1-9a214cf093ae',
       'id': 510,
@@ -17703,6 +17709,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': True,
       'id': 505,
@@ -22932,7 +22939,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['tellier@google.com', 'rsorokin@chromium.org', 'cros-oac@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:84-'],
+      'supported_on': ['chrome_os:86-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
@@ -23205,6 +23212,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,
       },
       'example_value': True,
       'id': 760,
@@ -23477,6 +23485,85 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is set to false (or not configured), no additional rules will be applied to Family Link accounts.
       If this policy is set to true, new Family Link user accounts will be allowed additionally to those defined in <ph name="DEVICE_USER_ALLOWLIST_POLICY_NAME">DeviceUserAllowlist</ph>.''',
     },
+    {
+      'name': 'EduCoexistenceToSVersion',
+      'owners': ['agawronska@chromium.org', 'danan@chromium.org', 'yilkal@chromium.org', 'cros-families-eng@google.com'],
+      'type': 'string',
+      'schema': {
+        'type': 'string',
+        'description': '''The valid version of Terms of Service derived from Google3 cl that introduced new Terms version.'''
+      },
+      'future_on': ['chrome_os'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': '333024512',
+      'id': 790,
+      'caption': '''The valid version of Edu Coexistence Terms of Service''',
+      'desc': '''This policy indicates current valid version of Edu Coexistence Terms of Service.
+      It is compared with the version last accepted by the parent and used to prompt parent permission renewal when needed.
+
+      When this policy is set Terms of Service version can be validated.
+      When this policy is unset it is not possible to verify validity of Edu Coexistence Terms of Service.
+
+      This policy is only used for Family Link users.''',
+    },
+    {
+      'name': 'BrowsingDataLifetime',
+      'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'time_to_live_in_hours': { 'type': 'integer', 'minimum': 1 },
+            'data_types': {
+              'type': 'array',
+              'items': {
+                'type': 'string',
+                'enum': [
+                  'browsing_history',
+                  'download_history',
+                  'cookies_and_other_site_data',
+                  'cached_images_and_files',
+                  'password_signin',
+                  'autofill',
+                  'site_settings',
+                  'hosted_app_data',
+                ],
+              },
+            },
+          },
+        },
+      },
+      'future_on': ['android'],
+      'supported_on': ['chrome.*:87-', 'chrome_os:87-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [
+        {
+          'time_to_live_in_hours': 24,
+          'data_types': ['browsing_history'],
+        },
+        {
+          'time_to_live_in_hours': 12,
+          'data_types': ['password_signin', 'autofill'],
+        },
+      ],
+      'id': 791,
+      'caption': 'Browsing Data Lifetime Settings',
+      'tags': [],
+      'desc': '''Configures browsing data lifetime settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy controls the time to live of selected browsing data. This policy has no effect if Sync is enabled.
+      The available data types are the <ph name="DATA_TYPE_BROWSING_HISTORY">'browsing_history'</ph>, <ph name="DATA_TYPE_DOWNLOAD_HISTORY">'download_history'</ph>, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA">'cookies_and_other_site_data'</ph>, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES">'cached_images_and_files'</ph>, <ph name="DATA_TYPE_PASSWORD">'password_signin'</ph>, <ph name="DATA_TYPE_AUTOFILL">'autofill'</ph>, <ph name="DATA_TYPE_SITE_SETTINGS">'site_settings'</ph> and <ph name="DATA_TYPE_HOSTED_APP_DATA">'hosted_app_data'</ph>.
+      Chrome will regularly remove data of selected types that is older than <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>. As this deletion only happens in certain intervals, some data might live for slightly longer but never more than twice its expected <ph name="TIME_TO_LIVE_IN_HOURS">'time_to_live_in_hours'</ph>.
+      '''
+    }
   ],
 
   'messages': {
@@ -24406,6 +24493,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 412, 476, 544, 546, 562, 569, 578],
-  'highest_id_currently_used': 789,
+  'highest_id_currently_used': 791,
   'highest_atomic_group_id_currently_used': 40
 }

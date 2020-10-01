@@ -947,6 +947,7 @@ if (!is_android) {
       "../browser/browser_encoding_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest.cc",
+      "../browser/browsing_data/chrome_browsing_data_lifetime_manager_browsertest.cc",
       "../browser/browsing_data/counters/autofill_counter_browsertest.cc",
       "../browser/browsing_data/counters/browsing_data_counter_utils_browsertest.cc",
       "../browser/browsing_data/counters/cache_counter_browsertest.cc",
@@ -2928,7 +2929,7 @@ if (!is_android) {
     if (is_mac || is_win || is_chromeos) {
       sources += [ "../browser/extensions/api/networking_cast_private/networking_cast_private_apitest.cc" ]
     }
-    if ((is_desktop_linux && !chromeos_is_browser_only) || is_mac) {
+    if ((is_linux && !chromeos_is_browser_only) || is_mac) {
       sources +=
           [ "../browser/first_run/first_run_internal_posix_browsertest.cc" ]
     }
@@ -3349,7 +3350,7 @@ test("unit_tests") {
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
     "../browser/component_updater/crl_set_component_installer_unittest.cc",
     "../browser/component_updater/first_party_sets_component_installer_unittest.cc",
-    "../browser/component_updater/floc_blocklist_component_installer_unittest.cc",
+    "../browser/component_updater/floc_component_installer_unittest.cc",
     "../browser/component_updater/games_component_installer_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
@@ -3863,6 +3864,7 @@ test("unit_tests") {
     sources += [
       "../browser/browsing_data/access_context_audit_database_unittest.cc",
       "../browser/browsing_data/access_context_audit_service_unittest.cc",
+      "../browser/browsing_data/chrome_browsing_data_lifetime_manager_unittest.cc",
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/component_updater/soda_en_us_component_installer_unittest.cc",
       "../browser/component_updater/soda_ja_jp_component_installer_unittest.cc",
@@ -4677,7 +4679,7 @@ test("unit_tests") {
 
   if (enable_native_notifications) {
     # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
-    if (is_desktop_linux && !chromeos_is_browser_only) {
+    if (is_linux && !chromeos_is_browser_only) {
       sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
     }
 
@@ -5460,7 +5462,6 @@ test("unit_tests") {
       "../common/safe_browsing/ipc_protobuf_message_test_messages.h",
       "../common/safe_browsing/ipc_protobuf_message_unittest.cc",
       "../common/safe_browsing/mach_o_image_reader_mac_unittest.cc",
-      "../renderer/safe_browsing/features_unittest.cc",
       "../renderer/safe_browsing/murmurhash3_util_unittest.cc",
       "../renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc",
       "../renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc",
@@ -5828,7 +5829,7 @@ test("unit_tests") {
       "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
       "../browser/ui/views/window_name_prompt_unittest.cc",
     ]
-    if (is_desktop_linux) {
+    if (is_linux) {
       sources += [ "../browser/ui/views/frame/desktop_linux_browser_frame_view_layout_unittest.cc" ]
     }
     if (enable_plugins) {
@@ -5915,7 +5916,7 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_widevine_cdm_component && is_desktop_linux) {
+  if (enable_widevine_cdm_component && is_linux) {
     sources +=
         [ "../common/media/component_widevine_cdm_hint_file_linux_unittest.cc" ]
   }
@@ -6278,6 +6279,7 @@ if (!is_android) {
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/renderer",
+      "//components/feature_engagement/test:test_support",
       "//components/keep_alive_registry",
       "//components/media_router/browser:test_support",
       "//components/resources",
@@ -6359,6 +6361,7 @@ if (!is_android) {
         "../browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc",
         "../browser/ui/views/frame/tab_strip_region_view_interactive_uitest.cc",
         "../browser/ui/views/fullscreen_control/fullscreen_control_view_interactive_uitest.cc",
+        "../browser/ui/views/in_product_help/feature_promo_snooze_interactive_uitest.cc",
         "../browser/ui/views/keyboard_access_browsertest.cc",
         "../browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc",
         "../browser/ui/views/location_bar/selected_keyword_view_interactive_uitest.cc",

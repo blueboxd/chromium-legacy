@@ -71,6 +71,10 @@ if (is_android) {
       "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerMediator.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerProperties.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerView.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/list/TutorialCardProperties.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/list/TutorialCardViewBinder.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/list/TutorialListCoordinatorImpl.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/list/TutorialListMediator.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/metrics/VideoTutorialMetrics.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/player/VideoPlayerCoordinatorImpl.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/player/VideoPlayerMediator.java",
@@ -113,6 +117,7 @@ if (is_android) {
       "android/java/res/layout/language_picker.xml",
       "android/java/res/layout/video_player_controls.xml",
       "android/java/res/layout/video_player_loading.xml",
+      "android/java/res/layout/video_tutorial_large_card.xml",
     ]
 
     deps = [
@@ -140,13 +145,18 @@ if (is_android) {
     # Skip platform checks since Robolectric depends on requires_android targets.
     bypass_platform_checks = true
     testonly = true
-    sources = [ "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerMediatorUnitTest.java" ]
+    sources = [
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerMediatorUnitTest.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/player/VideoPlayerMediatorUnitTest.java",
+    ]
+
     deps = [
       ":java",
       "//base:base_java",
       "//base:base_junit_test_support",
       "//chrome/browser/video_tutorials:java",
       "//chrome/browser/video_tutorials:test_support_java",
+      "//content/public/android:content_java",
       "//third_party/android_deps:robolectric_all_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
@@ -158,11 +168,15 @@ if (is_android) {
   android_library("javatests") {
     testonly = true
 
-    sources = [ "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerTest.java" ]
+    sources = [
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/iph/VideoIPHTest.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/languages/LanguagePickerTest.java",
+    ]
     deps = [
       ":java",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//chrome/browser/image_fetcher:java",
       "//chrome/browser/video_tutorials:java",
       "//chrome/browser/video_tutorials:test_support_java",
       "//chrome/test/android:chrome_java_test_support",
@@ -171,6 +185,7 @@ if (is_android) {
       "//third_party/android_deps:androidx_test_runner_java",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_support_test_runner:rules_java",
+      "//third_party/gif_player:gif_player_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
       "//third_party/mockito:mockito_java",

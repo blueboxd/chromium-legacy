@@ -1258,6 +1258,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-browsing-data-lifetime-manager",
+    "owners": ["ydago"],
+    "expiry_milestone": 91
+  },
+  {
     "name": "enable-clipboard-provider-image-suggestions",
     "owners": [ "rkgibson", "gangwu", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 90
@@ -2419,6 +2424,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enhanced_clipboard_simple_render",
+    "owners":["newcomer@chromium.org", "gzadina@google.com"],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enhanced-desk-animations",
     "owners": ["sammiequon", "tclaiborne"],
     "expiry_milestone": 92
@@ -3330,6 +3340,11 @@
     "name": "omnibox-assistant-voice-search",
     "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "omnibox-bookmark-paths",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-bubble-url-suggestions",

@@ -46,7 +46,7 @@ constexpr base::FeatureParam<bool> kAmbientModeDefaultFeedEnabled{
     &kAmbientModeFeature, "DefaultFeedEnabled", false};
 
 constexpr base::FeatureParam<bool> kAmbientModePersonalPhotosEnabled{
-    &kAmbientModeFeature, "PersonalPhotosEnabled", false};
+    &kAmbientModeFeature, "PersonalPhotosEnabled", true};
 
 constexpr base::FeatureParam<bool> kAmbientModeFeaturedPhotosEnabled{
     &kAmbientModeFeature, "FeaturedPhotosEnabled", false};
@@ -302,6 +302,11 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 const base::Feature kClipboardHistory{"ClipboardHistory",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables rendering html in Clipboard History only if an img or table tag is
+// present.
+const base::Feature kClipboardHistorySimpleRender{
+    "ClipboardHistorySimpleRender", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables copying an image to the system clipboard to support pasting onto
 // different surfaces
 const base::Feature kEnableFilesAppCopyImage{"EnableFilesAppCopyImage",
@@ -427,7 +432,7 @@ const base::Feature kPrinterStatus{"PrinterStatus",
 // Controls whether to show printer statuses on the Print Preview destination
 // dialog.
 const base::Feature kPrinterStatusDialog{"PrinterStatusDialog",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the Print Job Management App.
 const base::Feature kPrintJobManagementApp{"PrintJobManagementApp",
@@ -670,7 +675,12 @@ bool IsMinimumChromeVersionEnabled() {
 }
 
 bool IsClipboardHistoryEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistory);
+  return base::FeatureList::IsEnabled(kClipboardHistory) ||
+         base::FeatureList::IsEnabled(kClipboardHistorySimpleRender);
+}
+
+bool IsClipboardHistorySimpleRenderEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistorySimpleRender);
 }
 
 bool IsParentalControlsSettingsEnabled() {

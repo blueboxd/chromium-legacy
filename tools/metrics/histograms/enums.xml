@@ -21874,6 +21874,8 @@ Called by update_document_policy_enum.py.-->
   <int value="787" label="WebRtcAllowLegacyTLSProtocols"/>
   <int value="788" label="MediaRecommendationsEnabled"/>
   <int value="789" label="DeviceFamilyLinkAccountsAllowed"/>
+  <int value="790" label="EduCoexistenceToSVersion"/>
+  <int value="791" label="BrowsingDataLifetime"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29329,10 +29331,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3498" label="IdentifiabilityStudyReserved3498"/>
   <int value="3499"
       label="V8BackgroundFetchRegistration_FailureReason_AttributeGetter"/>
-  <int value="3500" label="IdentifiabilityStudyReserved3500"/>
-  <int value="3501" label="IdentifiabilityStudyReserved3501"/>
-  <int value="3502" label="IdentifiabilityStudyReserved3502"/>
-  <int value="3503" label="IdentifiabilityStudyReserved3503"/>
+  <int value="3500" label="V8Document_ElementFromPoint_Method"/>
+  <int value="3501" label="V8Document_ElementsFromPoint_Method"/>
+  <int value="3502" label="V8ShadowRoot_ElementFromPoint_Method"/>
+  <int value="3503" label="V8ShadowRoot_ElementsFromPoint_Method"/>
   <int value="3504" label="IdentifiabilityStudyReserved3504"/>
   <int value="3505" label="IdentifiabilityStudyReserved3505"/>
   <int value="3506" label="IdentifiabilityStudyReserved3506"/>
@@ -32279,6 +32281,10 @@ Called by update_feature_policy_enum.py.-->
   <int value="19" label="kSamplingProfiler"/>
   <int value="20" label="kSnapshotCreator"/>
   <int value="21" label="kTesting"/>
+  <int value="22" label="kExternalFinalize"/>
+  <int value="23" label="kGlobalAllocationLimit"/>
+  <int value="24" label="kMeasureMemory"/>
+  <int value="25" label="kBackgroundAllocationFailure"/>
 </enum>
 
 <enum name="GATTCharacteristicHash">
@@ -43079,6 +43085,7 @@ from previous Chrome versions.
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="8891567" label="CaptionSettings:enabled"/>
+  <int value="9609535" label="BrowsingDataLifetimeManager:disabled"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="12016364" label="OmniboxBubbleUrlSuggestions:enabled"/>
@@ -44749,6 +44756,7 @@ from previous Chrome versions.
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
   <int value="1749028785" label="SubresourceRedirect:disabled"/>
+  <int value="1750658031" label="OmniboxBookmarkPaths:enabled"/>
   <int value="1750693293" label="AutofillPreventMixedFormsFilling:enabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
@@ -44764,6 +44772,7 @@ from previous Chrome versions.
   <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
+  <int value="1775652804" label="OmniboxBookmarkPaths:disabled"/>
   <int value="1775730290" label="OmniboxKeywordSearchButton:enabled"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
@@ -45095,6 +45104,7 @@ from previous Chrome versions.
   <int value="2093235103" label="default-tile-width"/>
   <int value="2093949489" label="ArrayPrototypeValues:enabled"/>
   <int value="2094335682" label="StreamlinedUsbPrinterSetup:enabled"/>
+  <int value="2096736155" label="BrowsingDataLifetimeManager:enabled"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
@@ -61683,8 +61693,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="RelaunchNotificationShowResult">
   <int value="0" label="Shown"/>
-  <int value="1" label="Not shown for unknown reason"/>
-  <int value="2" label="Not shown due to background mode with no windows"/>
+  <int value="1" label="Not shown for unknown reason (deprecated)"/>
+  <int value="2"
+      label="Not shown due to background mode with no windows (deprecated)"/>
 </enum>
 
 <enum name="RemoteBookmarkUpdateError">
@@ -66913,6 +66924,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="Notification interaction"/>
 </enum>
 
+<enum name="SiteInstanceProcessAssignment">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Reused existing render process"/>
+  <int value="2" label="Used spare process"/>
+  <int value="3" label="Created new process"/>
+</enum>
+
 <enum name="SiteIsolatedCodeCacheJSBehaviour">
   <int value="0" label="Hit">Available in code cache</int>
   <int value="1" label="Miss">Not available in cache</int>
@@ -69605,12 +69623,18 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SwapThrashingLevel">
+  <obsolete>
+    Obsolete as of 07/2020.
+  </obsolete>
   <int value="0" label="No swap thrashing"/>
   <int value="1" label="Suspiscion of swap thrashing"/>
   <int value="2" label="Confirmed swap thrashing"/>
 </enum>
 
 <enum name="SwapThrashingLevelChanges">
+  <obsolete>
+    Obsolete as of 07/2020.
+  </obsolete>
   <int value="0" label="None to Suspected"/>
   <int value="1" label="Suspected to Confirmed"/>
   <int value="2" label="Confirmed to Suspected"/>
@@ -76632,7 +76656,7 @@ Called by update_scheduler_enums.py.-->
   <int value="-529697949" label="EH_EXCEPTION_NUMBER"/>
   <int value="-36863" label="0xFFFF7001 - Crashpad kCrashExitCodeNoDump."/>
   <int value="-36862" label="0xFFFF7002 - Crashpad kFailedTerminationCode."/>
-  <int value="0" label="service_manager::RESULT_CODE_NORMAL_EXIT"/>
+  <int value="0" label="content::RESULT_CODE_NORMAL_EXIT"/>
   <int value="1" label="content::RESULT_CODE_KILLED"/>
   <int value="2" label="content::RESULT_CODE_HUNG"/>
   <int value="3" label="content::RESULT_CODE_KILLED_BAD_MESSAGE"/>

@@ -38,8 +38,6 @@ constexpr int kLowSeverityScore = 2;
 
 // Returns the |password| score.
 int PasswordWeakCheck(base::StringPiece16 password16) {
-  base::UmaHistogramCounts100("PasswordManager.WeakCheck.PasswordLength",
-                              password16.size());
   // zxcvbn's computation time explodes for long passwords, so cap at that
   // number.
   std::string password =

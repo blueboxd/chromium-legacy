@@ -5217,6 +5217,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="User explicitly closed the the bubble"/>
   <int value="2" label="User did not interact with the bubble"/>
   <int value="3" label="Bubble lost focus and was deactivated"/>
+  <int value="4" label="Bubble result unknown"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationBubbleUserInteraction">
@@ -5397,6 +5398,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Closed"/>
   <int value="3" label="Not interacted"/>
   <int value="4" label="Lost focus"/>
+  <int value="5" label="Unknown"/>
 </enum>
 
 <enum name="AutofillSaveType">
@@ -10817,6 +10819,12 @@ histogram as enum -->
   <int value="6" label="CustomData"/>
   <int value="7" label="WebSmartPaste"/>
   <int value="8" label="Svg"/>
+</enum>
+
+<enum name="ClipboardHistoryDisplayFormat">
+  <int value="0" label="Text"/>
+  <int value="1" label="Bitmap"/>
+  <int value="2" label="Html"/>
 </enum>
 
 <enum name="ClockdriftLevel">
@@ -24661,6 +24669,7 @@ Called by update_extension_histograms.py.-->
   <int value="1508" label="DECLARATIVENETREQUEST_ISREGEXSUPPORTED"/>
   <int value="1509" label="PASSWORDSPRIVATE_GETWEAKCREDENTIALS"/>
   <int value="1510" label="ACCESSIBILITY_PRIVATE_MOVEMAGNIFIERTORECT"/>
+  <int value="1511" label="FILEMANAGERPRIVATE_SINGLEPARTITIONFORMAT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -42288,6 +42297,7 @@ from previous Chrome versions.
   <int value="-793383355" label="StrictOriginIsolation:enabled"/>
   <int value="-792785226" label="TemporaryUnexpireFlagsM78:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
+  <int value="-790900615" label="NtpShoppingTasksModule:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
@@ -43167,6 +43177,7 @@ from previous Chrome versions.
   <int value="116287989"
       label="ignore-litepage-redirect-optimization-blacklist"/>
   <int value="116697601" label="OmniboxSuggestionButtonRow:disabled"/>
+  <int value="117076190" label="DriveFsBidirectionalNativeMessaging:disabled"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="119185738"
       label="OmniboxUIExperimentMaxAutocompleteMatches:disabled"/>
@@ -44544,6 +44555,7 @@ from previous Chrome versions.
   <int value="1552753678" label="DnsHttpssvc:disabled"/>
   <int value="1553310752" label="AccessibilityCursorColor:enabled"/>
   <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
+  <int value="1556554961" label="DriveFsBidirectionalNativeMessaging:enabled"/>
   <int value="1558410842" label="FilesZipNoNaCl:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
@@ -44723,6 +44735,7 @@ from previous Chrome versions.
   <int value="1731522433" label="enable-offer-store-unmasked-wallet-cards"/>
   <int value="1731612996" label="CrostiniFiles:disabled"/>
   <int value="1733390925" label="force-enable-stylus-tools"/>
+  <int value="1734685331" label="NtpShoppingTasksModule:enabled"/>
   <int value="1735934914" label="OverlayScrollbarFlashWhenMouseEnter:disabled"/>
   <int value="1736698988" label="FsNosymfollow:disabled"/>
   <int value="1738520473" label="SystemTrayMicGainSetting:disabled"/>
@@ -73805,6 +73818,22 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Video frame extraction failed"/>
   <int value="2" label="Video frame decode failed"/>
   <int value="3" label="Video thumbnail request completed"/>
+</enum>
+
+<enum name="VideoTutorials.UserAction">
+  <int value="0" label="Change language"/>
+  <int value="1" label="Watch next video"/>
+  <int value="2" label="Try now"/>
+  <int value="3" label="Share"/>
+  <int value="4" label="Close"/>
+  <int value="5" label="Back pressed when showing video player"/>
+</enum>
+
+<enum name="VideoTutorials.WatchState">
+  <int value="0" label="Started"/>
+  <int value="1" label="Completed"/>
+  <int value="2" label="Paused"/>
+  <int value="3" label="Resumed"/>
 </enum>
 
 <enum name="ViewFileType">

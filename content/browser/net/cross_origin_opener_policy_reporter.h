@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
 #include "services/network/public/mojom/source_location.mojom-forward.h"
 #include "url/gurl.h"
@@ -29,13 +29,13 @@ class RenderFrameHostImpl;
 // pass the receiver to other processes.
 // Any functions other than the destructor must not be called after the
 // associated StoragePartition is destructed.
-class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
-    : public network::mojom::CrossOriginOpenerPolicyReporter {
+class CONTENT_EXPORT CrossOriginOpenerPolicyReporter {
  public:
   CrossOriginOpenerPolicyReporter(StoragePartition* storage_partition,
                                   const GURL& context_url,
+                                  const GURL& context_referrer_url,
                                   const network::CrossOriginOpenerPolicy& coop);
-  ~CrossOriginOpenerPolicyReporter() override;
+  ~CrossOriginOpenerPolicyReporter();
   CrossOriginOpenerPolicyReporter(const CrossOriginOpenerPolicyReporter&) =
       delete;
   CrossOriginOpenerPolicyReporter& operator=(
@@ -45,16 +45,15 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
     storage_partition_ = storage_partition;
   }
 
-  // network::mojom::CrossOriginOpenerPolicyReporter implementation.
   void QueueAccessReport(network::mojom::CoopAccessReportType report_type,
                          const std::string& property,
                          network::mojom::SourceLocationPtr source_location,
-                         const std::string& reported_window_url) final;
+                         const std::string& reported_window_url,
+                         const std::string& initial_popup_url) const;
 
   // Sends reports when COOP causing a browsing context group switch that
   // breaks opener relationships.
   void QueueNavigationToCOOPReport(const GURL& previous_url,
-                                   const GURL& referrer_url,
                                    bool same_origin_with_previous,
                                    bool is_report_only);
   void QueueNavigationAwayFromCOOPReport(const GURL& next_url,
@@ -66,10 +65,6 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   // different virtual browsing context group, install the necessary
   // CoopAccessMonitor. The first window is identified by |node|.
   static void InstallAccessMonitorsIfNeeded(FrameTreeNode* node);
-
-  void Clone(
-      mojo::PendingReceiver<network::mojom::CrossOriginOpenerPolicyReporter>
-          receiver) override;
 
   // Generate a new, previously unused, virtualBrowsingContextId.
   static int NextVirtualBrowsingContextGroup();
@@ -89,9 +84,10 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   GURL source_url_;
   GlobalFrameRoutingId source_routing_id_;
   const GURL context_url_;
+  const std::string context_referrer_url_;
   const network::CrossOriginOpenerPolicy coop_;
 
-  mojo::ReceiverSet<network::mojom::CrossOriginOpenerPolicyReporter>
+  mojo::UniqueReceiverSet<network::mojom::CrossOriginOpenerPolicyReporter>
       receiver_set_;
 };
 

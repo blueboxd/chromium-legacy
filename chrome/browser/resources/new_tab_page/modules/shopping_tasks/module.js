@@ -4,6 +4,7 @@
 
 import '../../img.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 import {ShoppingTasksHandlerProxy} from './shopping_tasks_handler_proxy.js';
@@ -27,12 +28,43 @@ class ShoppingTasksModuleElement extends PolymerElement {
     return {
       /** @type {shoppingTasks.mojom.ShoppingTask} */
       shoppingTask: Object,
+
+      /** @type {boolean} */
+      showInfoDialog: Boolean,
     };
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    /** @type {IntersectionObserver} */
+    this.intersectionObserver_ = null;
   }
 
   /** @private */
   onClick_() {
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+  }
+
+  /** @private */
+  onCloseClick_() {
+    this.showInfoDialog = false;
+  }
+
+  /** @private */
+  onDomChange_() {
+    if (!this.intersectionObserver_) {
+      this.intersectionObserver_ = new IntersectionObserver(entries => {
+        entries.forEach(({intersectionRatio, target}) => {
+          target.style.visibility =
+              intersectionRatio < 1 ? 'hidden' : 'visible';
+        });
+      }, {root: this, threshold: 1});
+    } else {
+      this.intersectionObserver_.disconnect();
+    }
+    this.shadowRoot.querySelectorAll('.product, .pill')
+        .forEach(el => this.intersectionObserver_.observe(el));
   }
 }
 
@@ -51,6 +83,15 @@ async function createModule() {
   return {
     element: element,
     title: shoppingTask.title,
+    actions: {
+      info: () => {
+        element.showInfoDialog = true;
+      },
+      dismiss: () => {
+        return loadTimeData.getStringF(
+            'dismissModuleToastMessage', shoppingTask.name);
+      },
+    },
   };
 }
 

@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8e0aa441a55036c5cf8fa554cd480774b79bec41',
+  'skia_revision': '8c337a36b2e85634f96134527e01f273657322fb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c4be5db90558c1c8dd93893203412b2360bbbedd',
+  'v8_revision': 'e9a57883aeb0307c0417ce98deb2188afcf34515',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b3859a3cba6063433d12165397c0f669580f467e',
+  'angle_revision': '11d94d866e23cdda9f040eebb66c09c4d9850064',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'de0105d0bb7a58985fb71095168a3b78079c5f0c',
+  'swiftshader_revision': '5e947adaf26eee51de47e406a9f7943afd1a882f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ca3683da3ad69e6a8fe0c301613d4bc0f50dd838',
+  'devtools_frontend_revision': 'fae3f2841bd0bf60e8a66ba316da8b6140903bde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.

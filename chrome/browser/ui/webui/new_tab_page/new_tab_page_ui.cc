@@ -181,11 +181,27 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"themeCreatedBy", IDS_NEW_TAB_ATTRIBUTION_INTRO},
 
       // Modules.
+      {"dismissModuleToastMessage", IDS_NTP_MODULES_DISMISS_TOAST_MESSAGE},
+      {"moduleInfoButtonTitle", IDS_NTP_MODULES_INFO_BUTTON_TITLE},
+      {"moduleDismissButtonTitle", IDS_NTP_MODULES_DISMISS_BUTTON_TITLE},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesDummy2Title", IDS_NTP_MODULES_DUMMY2_TITLE},
       {"modulesKaleidoscopeTitle", IDS_NTP_MODULES_KALEIDOSCOPE_TITLE},
+      {"modulesShoppingTasksInfoTitle",
+       IDS_NTP_MODULES_SHOPPING_TASKS_INFO_TITLE},
+      {"modulesShoppingTasksInfoClose",
+       IDS_NTP_MODULES_SHOPPING_TASKS_INFO_CLOSE},
   };
   AddLocalizedStringsBulk(source, kStrings);
+
+  source->AddString("modulesShoppingTasksInfo1",
+                    l10n_util::GetStringFUTF16(
+                        IDS_NTP_MODULES_SHOPPING_TASKS_INFO_1,
+                        base::UTF8ToUTF16("https://myactivity.google.com/")));
+  source->AddString("modulesShoppingTasksInfo2",
+                    l10n_util::GetStringFUTF16(
+                        IDS_NTP_MODULES_SHOPPING_TASKS_INFO_2,
+                        base::UTF8ToUTF16("https://policies.google.com/")));
 
   // Register images that are purposefully not inlined in the HTML and instead
   // are set in Javascript.

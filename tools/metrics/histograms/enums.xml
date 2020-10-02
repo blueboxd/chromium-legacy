@@ -1262,6 +1262,18 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="InferenceExecutionFailed"/>
 </enum>
 
+<enum name="AllPasswordsBottomSheetActions">
+  <int value="0" label="Credential selected"/>
+  <int value="1" label="Sheet dismissed"/>
+  <int value="2" label="Search is used before selecting a credential"/>
+</enum>
+
+<enum name="AllPasswordsWarningActions">
+  <int value="0" label="Warning shown"/>
+  <int value="1" label="Warning accepted"/>
+  <int value="2" label="Warning canceled"/>
+</enum>
+
 <enum name="AlsaSampleFormatType">
   <int value="-1" label="SND_PCM_FORMAT_UNKNOWN"/>
   <int value="0" label="SND_PCM_FORMAT_S8"/>
@@ -29335,7 +29347,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3501" label="V8Document_ElementsFromPoint_Method"/>
   <int value="3502" label="V8ShadowRoot_ElementFromPoint_Method"/>
   <int value="3503" label="V8ShadowRoot_ElementsFromPoint_Method"/>
-  <int value="3504" label="IdentifiabilityStudyReserved3504"/>
+  <int value="3504" label="WindowScreenTouchSupport"/>
   <int value="3505" label="IdentifiabilityStudyReserved3505"/>
   <int value="3506" label="IdentifiabilityStudyReserved3506"/>
   <int value="3507" label="IdentifiabilityStudyReserved3507"/>
@@ -43213,6 +43225,8 @@ from previous Chrome versions.
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="147645817" label="DnsHttpssvc:enabled"/>
   <int value="149914698" label="SearchReadyOmnibox:disabled"/>
+  <int value="150820177"
+      label="SafeBrowsingEnhancedProtectionMessageInInterstitials:enabled"/>
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="151630887" label="WebUIA11yEnhancements:disabled"/>
@@ -44893,6 +44907,8 @@ from previous Chrome versions.
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>
   <int value="1889076955" label="disable-app-link"/>
   <int value="1889198874" label="TabSwitcherOnReturn:disabled"/>
+  <int value="1890329937"
+      label="SafeBrowsingEnhancedProtectionMessageInInterstitials:disabled"/>
   <int value="1891210939" label="enable-blink-features"/>
   <int value="1891312456" label="AndroidMessagesProdEndpoint:disabled"/>
   <int value="1892201400" label="enable-password-separated-signin-flow"/>

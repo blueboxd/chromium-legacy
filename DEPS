@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '64eb64a034cb725baf3dea089f3badbbab77a0be',
+  'angle_revision': 'eb1df14b18a0dd67ae416e9b426dca3a18c3fc5c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '1e5bef4469199e4daba5d8fd885966112f8a45d5',
+  'catapult_revision': '8c88c750bd4516075f6879b4aed5e3bf22ef4424',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'da5828c06b4c7cbe428283a1516a4fb73d5836be',
+  'dawn_revision': '16ebcf601d7f814ec1e017f499276b7da92d61b5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '3c3e8905ad7ef0dded8d6231087fcc6e3b6a1051',
+  'quiche_revision': '89ec3381ca3daf5d6aa9b151a8da6bf03edbe3be',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'cbfa5400ede2c383980953311ee01a3e0937af32',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '791596b851fdac175b51f3685016b71c91d285e7',
       'condition': 'checkout_ios',
   },
 
@@ -896,12 +896,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'd5ad6a50d168252d431f99cd227e327a86c567ff',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '5df72efed1de3c81f7590dbc09b240cb6edc4cd6',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '98218e9219b11e9681420b7a61e126bdb6fafec3',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '69e30b23c45f22df585dc12f464479ca3deafb69',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1237,7 +1237,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'cdeac3d486534391442819547bf9ba8383675bee',
+    Var('chromium_git') + '/openscreen' + '@' + 'be82703d7841625b84506bc1302d879641548762',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '72a6843cad229008303a50ac8813e3f9c30b9227',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd2958971d9c5140dc046c60e02229fbb569df502',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '1hf_Qc-S06rqD9f-iPsgfnzfAQrZOCzZzzcMI6_T3ooC'
+              'version': 'UABC8VAzZj56bPNLe3ou7AIlBjwHbiXOu6R9f5RbZWcC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'dba4db5668d6dd95475dc4e8aa42de3011b4a15e',
+    Var('webrtc_git') + '/src.git' + '@' + '7f0e83e82ba966d9fc6dbe914a9921a9fe60addf',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@30ea8e724567e2cf48359b2b41b4bcefcb32e9ac',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@444cee2905f58844878dbba7ac6f40670636c10e',
     'condition': 'checkout_src_internal',
   },
 

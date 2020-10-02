@@ -31,27 +31,22 @@ const base::Feature kAImageReader{"AImageReader",
 
 // Enable GPU Rasterization by default. This can still be overridden by
 // --force-gpu-rasterization or --disable-gpu-rasterization.
-#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
-    defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS, and
 // Android.
 const base::Feature kDefaultEnableGpuRasterization{
-    "DefaultEnableGpuRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
+  "DefaultEnableGpuRasterization",
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
+    defined(OS_ANDROID) || defined(OS_FUCHSIA)
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kDefaultEnableGpuRasterization{
-    "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // Enable out of process rasterization by default.  This can still be overridden
-// by --enable-oop-rasterization or --disable-oop-rasterization.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
-    defined(OS_WIN) || defined(OS_FUCHSIA)
+// by --disable-oop-rasterization.
 const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kDefaultEnableOopRasterization{
-    "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_WIN)
 // Use a high priority for GPU process on Windows.
@@ -60,13 +55,14 @@ const base::Feature kGpuProcessHighPriorityWin{
 #endif
 
 // Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
+const base::Feature kGpuUseDisplayThreadPriority{
+  "GpuUseDisplayThreadPriority",
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
-const base::Feature kGpuUseDisplayThreadPriority{
-    "GpuUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kGpuUseDisplayThreadPriority{
-    "GpuUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // Gpu watchdog V2 to simplify the logic and reduce GPU hangs
 const base::Feature kGpuWatchdogV2{"GpuWatchdogV2",

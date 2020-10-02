@@ -66,7 +66,7 @@ const base::Feature kAppActivityReporting{"AppActivityReporting",
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceExternalProtocol{
     "AppServiceExternalProtocol", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceIntentHandling{"AppServiceIntentHandling",
@@ -384,6 +384,11 @@ const base::Feature kFlocIdComputedEventLogging{
 // If enabled, a computed floc will be invalidated if it appears in a blocklist.
 const base::Feature kFlocIdBlocklistFiltering{
     "FlocIdBlocklistFiltering", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the sim-hash floc computed from history will be further encoded
+// based on the sorting-lsh.
+const base::Feature kFlocIdSortingLshBasedComputation{
+    "FlocIdSortingLshBasedComputation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Focus Mode which brings up a PWA-like window look.
 const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};

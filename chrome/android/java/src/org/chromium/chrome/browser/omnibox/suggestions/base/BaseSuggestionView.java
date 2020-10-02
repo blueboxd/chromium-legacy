@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatImageView;
 
@@ -33,6 +33,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     private final List<ImageView> mActionButtons;
     private final DecoratedSuggestionView<T> mDecoratedView;
     private SuggestionViewDelegate mDelegate;
+    private @Nullable Runnable mOnFocusViaSelectionListener;
 
     /**
      * Constructs a new suggestion view.
@@ -122,18 +123,6 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        // Whenever the suggestion dropdown is touched, we dispatch onGestureDown which is
-        // used to let autocomplete controller know that it should stop updating suggestions.
-        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mDelegate.onGestureDown();
-        } else if (ev.getActionMasked() == MotionEvent.ACTION_UP) {
-            mDelegate.onGestureUp(ev.getEventTime());
-        }
-        return super.dispatchTouchEvent(ev);
-    }
-
-    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         if ((!isRtl && KeyNavigationUtil.isGoRight(event))
@@ -149,8 +138,8 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     @Override
     public void setSelected(boolean selected) {
         mDecoratedView.setSelected(selected);
-        if (selected) {
-            mDelegate.onSetUrlToSuggestion();
+        if (selected && mOnFocusViaSelectionListener != null) {
+            mOnFocusViaSelectionListener.run();
         }
     }
 
@@ -181,6 +170,15 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
      */
     void setDelegate(SuggestionViewDelegate delegate) {
         mDelegate = delegate;
+    }
+
+    /**
+     * Specify the listener receiving a call when the user highlights this Suggestion.
+     *
+     * @param listener The listener to be notified about selection.
+     */
+    void setOnFocusViaSelectionListener(@Nullable Runnable listener) {
+        mOnFocusViaSelectionListener = listener;
     }
 
     /** @return Widget holding suggestion decoration icon. */

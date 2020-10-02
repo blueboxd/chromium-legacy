@@ -55,12 +55,12 @@ void WebViewFrameWidget::Close(
   self_keep_alive_.Clear();
 }
 
-WebSize WebViewFrameWidget::Size() {
-  return web_view_->Size();
+gfx::Size WebViewFrameWidget::Size() {
+  return gfx::Size(web_view_->Size());
 }
 
-void WebViewFrameWidget::Resize(const WebSize& size) {
-  size_ = gfx::Size(size);
+void WebViewFrameWidget::Resize(const gfx::Size& size) {
+  size_ = size;
   web_view_->Resize(size);
 }
 
@@ -325,7 +325,7 @@ void WebViewFrameWidget::SetDeviceScaleFactorForTesting(float factor) {
   if (!AutoResizeMode()) {
     // This picks up the new device scale factor as
     // UpdateCompositorViewportAndScreenInfo has applied a new value.
-    Resize(WebSize(widget_base_->DIPsToCeiledBlinkSpace(size_in_dips)));
+    Resize(widget_base_->DIPsToCeiledBlinkSpace(size_in_dips));
   }
 }
 
@@ -416,6 +416,11 @@ bool WebViewFrameWidget::UpdateScreenRects(
   return true;
 }
 
+void WebViewFrameWidget::RunPaintBenchmark(int repeat_count,
+                                           cc::PaintBenchmarkResult& result) {
+  web_view_->RunPaintBenchmark(repeat_count, result);
+}
+
 const ScreenInfo& WebViewFrameWidget::GetOriginalScreenInfo() {
   if (device_emulator_)
     return device_emulator_->original_screen_info();
@@ -444,7 +449,7 @@ void WebViewFrameWidget::SetScreenInfoAndSize(
 
   UpdateScreenInfo(screen_info);
   widget_base_->SetVisibleViewportSizeInDIPs(visible_viewport_size_in_dips);
-  Resize(WebSize(widget_base_->DIPsToCeiledBlinkSpace(widget_size_in_dips)));
+  Resize(widget_base_->DIPsToCeiledBlinkSpace(widget_size_in_dips));
 }
 
 void WebViewFrameWidget::SetWindowRectSynchronouslyForTesting(
@@ -473,7 +478,7 @@ void WebViewFrameWidget::SetWindowRectSynchronously(
       widget_base_->local_surface_id_from_parent(),
       compositor_viewport_pixel_rect, widget_base_->GetScreenInfo());
 
-  Resize(WebSize(new_window_rect.size()));
+  Resize(new_window_rect.size());
   widget_base_->SetScreenRects(new_window_rect, new_window_rect);
 }
 
@@ -543,9 +548,9 @@ void WebViewFrameWidget::ApplyVisualPropertiesSizing(
     size_ = widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size);
 
     View()->ResizeWithBrowserControls(
-        WebSize(size_),
-        WebSize(widget_base_->DIPsToCeiledBlinkSpace(
-            widget_base_->VisibleViewportSizeInDIPs())),
+        size_,
+        widget_base_->DIPsToCeiledBlinkSpace(
+            widget_base_->VisibleViewportSizeInDIPs()),
         visual_properties.browser_controls_params);
   }
 }

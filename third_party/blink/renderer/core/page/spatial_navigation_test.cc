@@ -1128,7 +1128,7 @@ TEST_F(SpatialNavigationTest, HasRemoteFrame) {
                                      "<iframe id='iframe'></iframe>",
                                      base_url);
 
-  webview->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, false);
+  webview->ResizeWithBrowserControls(gfx::Size(400, 400), 50, 0, false);
   UpdateAllLifecyclePhases(webview->MainFrameImpl()->GetFrame()->View());
 
   Element* iframe =
@@ -1230,7 +1230,7 @@ TEST_F(FocuslessSpatialNavigationSimTest, OpenSelectPopup) {
   if (!RuntimeEnabledFeatures::PagePopupEnabled())
     return;
 
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   WebView().MainFrameWidget()->SetFocus(true);
   WebView().SetIsActive(true);
 

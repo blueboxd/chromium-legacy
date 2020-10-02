@@ -751,14 +751,18 @@
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
-    // Enables navigator.scheduling.isInputPending and
-    // navigator.scheduling.isFramePending, allowing long-running JS to
-    // be able to yield itself when user input is queued (crbug.com/910421) or a
-    // display update is scheduled.
+    // Enables navigator.scheduling.isFramePending, allowing long-running JS to
+    // be able to yield itself when a display update is scheduled.
+    {
+      name: "ExperimentalIsFramePending",
+      status: "experimental"
+    },
+    // Enables navigator.scheduling.isInputPending, allowing long-running JS to
+    // be able to yield itself when user input is queued (crbug.com/910421).
     {
       name: "ExperimentalIsInputPending",
       origin_trial_feature_name: "ExperimentalIsInputPending",
-      status: "experimental"
+      status: "stable"
     },
     // Enables a DOM-exposed interface to profile client JS.
     // https://github.com/WICG/js-self-profiling
@@ -1633,7 +1637,7 @@
     // Enables the use of |RTCRtpTransceiver::stop()|
     {
       name: "RTCRtpTransceiverStop",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",

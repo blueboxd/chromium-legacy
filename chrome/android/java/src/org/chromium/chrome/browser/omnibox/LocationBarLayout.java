@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.MarginLayoutParamsCompat;
@@ -42,6 +43,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -74,6 +76,9 @@ import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -128,7 +133,7 @@ public class LocationBarLayout extends FrameLayout
 
     private OmniboxPrerender mOmniboxPrerender;
 
-    protected float mUrlFocusChangePercent;
+    protected float mUrlFocusChangeFraction;
     protected LinearLayout mUrlActionContainer;
 
     private VoiceRecognitionHandler mVoiceRecognitionHandler;
@@ -142,6 +147,7 @@ public class LocationBarLayout extends FrameLayout
     private ObservableSupplier<Profile> mProfileSupplier;
     private Callback<Profile> mProfileSupplierObserver;
     private CallbackController mCallbackController = new CallbackController();
+    private TemplateUrlServiceObserver mTemplateUrlObserver;
 
     /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
@@ -259,6 +265,11 @@ public class LocationBarLayout extends FrameLayout
             mProfileSupplier = null;
             mProfileSupplierObserver = null;
         }
+
+        if (mTemplateUrlObserver != null) {
+            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
+            mTemplateUrlObserver = null;
+        }
     }
 
     @Override
@@ -346,6 +357,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mAutocompleteCoordinator.setOverviewModeBehavior(overviewModeBehavior);
+    }
+
+    @Override
     public void onDeferredStartup() {
         mAutocompleteCoordinator.prefetchZeroSuggestResults();
     }
@@ -355,6 +371,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void onNativeLibraryReady() {
+        TemplateUrlServiceFactory.get().runWhenLoaded(this::registerTemplateUrlObserver);
         mNativeInitialized = true;
 
         mAutocompleteCoordinator.onNativeInitialized();
@@ -380,6 +397,43 @@ public class LocationBarLayout extends FrameLayout
         mVoiceRecognitionHandler.setAssistantVoiceSearchService(mAssistantVoiceSearchService);
         onAssistantVoiceSearchServiceChanged();
         setProfile(mProfileSupplier.get());
+    }
+
+    @Override
+    @CallSuper
+    public void setUrlFocusChangeFraction(float fraction) {
+        mUrlFocusChangeFraction = fraction;
+    }
+
+    private void registerTemplateUrlObserver() {
+        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
+        assert mTemplateUrlObserver == null;
+        mTemplateUrlObserver = new TemplateUrlServiceObserver() {
+            private TemplateUrl mSearchEngine =
+                    templateUrlService.getDefaultSearchEngineTemplateUrl();
+
+            @Override
+            public void onTemplateURLServiceChanged() {
+                TemplateUrl searchEngine = templateUrlService.getDefaultSearchEngineTemplateUrl();
+                if ((mSearchEngine == null && searchEngine == null)
+                        || (mSearchEngine != null && mSearchEngine.equals(searchEngine))) {
+                    return;
+                }
+
+                mSearchEngine = searchEngine;
+                updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                                     mToolbarDataProvider.isIncognito()),
+                        TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                        SearchEngineLogoUtils.getSearchLogoUrl());
+            }
+        };
+        templateUrlService.addObserver(mTemplateUrlObserver);
+
+        // Force an update once to populate initial data.
+        updateSearchEngineStatusIcon(SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                             mToolbarDataProvider.isIncognito()),
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                SearchEngineLogoUtils.getSearchLogoUrl());
     }
 
     /**
@@ -1075,8 +1129,7 @@ public class LocationBarLayout extends FrameLayout
         mStatusCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
     }
 
-    @Override
-    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+    protected void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         mStatusCoordinator.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
@@ -1173,7 +1226,7 @@ public class LocationBarLayout extends FrameLayout
     protected void updateMicButtonVisibility() {
         boolean visible = !shouldShowDeleteButton();
         boolean showMicButton = mVoiceSearchEnabled && visible
-                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || mUrlFocusChangePercent > 0f
+                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || mUrlFocusChangeFraction > 0f
                         || mShouldShowMicButtonWhenUnfocused);
         mMicButton.setVisibility(showMicButton ? VISIBLE : GONE);
     }

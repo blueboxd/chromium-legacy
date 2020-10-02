@@ -15,7 +15,6 @@ import android.view.View;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -58,7 +57,7 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+    protected void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         super.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
@@ -211,15 +210,17 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     /**
-     * Updates percentage of current the URL focus change animation.
-     * @param percent 1.0 is 100% focused, 0 is completely unfocused.
+     * Updates progress of current the URL focus change animation.
+     *
+     * @param fraction 1.0 is 100% focused, 0 is completely unfocused.
      */
-    public void setUrlFocusChangePercent(float percent) {
-        mUrlFocusChangePercent = percent;
+    @Override
+    public void setUrlFocusChangeFraction(float fraction) {
+        super.setUrlFocusChangeFraction(fraction);
 
-        if (percent > 0f) {
+        if (fraction > 0f) {
             mUrlActionContainer.setVisibility(VISIBLE);
-        } else if (percent == 0f && !isUrlFocusChangeInProgress()) {
+        } else if (fraction == 0f && !isUrlFocusChangeInProgress()) {
             // If a URL focus change is in progress, then it will handle setting the visibility
             // correctly after it completes.  If done here, it would cause the URL to jump due
             // to a badly timed layout call.
@@ -227,7 +228,7 @@ public class LocationBarPhone extends LocationBarLayout {
         }
 
         updateButtonVisibility();
-        mStatusCoordinator.setUrlFocusChangePercent(percent);
+        mStatusCoordinator.setUrlFocusChangePercent(fraction);
     }
 
     @Override
@@ -325,10 +326,6 @@ public class LocationBarPhone extends LocationBarLayout {
         try (TraceEvent e = TraceEvent.scoped("LocationBarPhone.onLayout")) {
             super.onLayout(changed, left, top, right, bottom);
         }
-    }
-
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mAutocompleteCoordinator.setOverviewModeBehavior(overviewModeBehavior);
     }
 
     /** Update the status visibility according to the current state held in LocationBar. */

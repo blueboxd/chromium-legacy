@@ -15,6 +15,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
@@ -91,6 +92,13 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
     void updateVisualsForState();
 
     /**
+     * Updates progress of current the URL focus change animation.
+     *
+     * @param fraction 1.0 is 100% focused, 0 is completely unfocused.
+     */
+    void setUrlFocusChangeFraction(float fraction);
+
+    /**
      * Sets the displayed URL to be the URL of the page currently showing.
      *
      * <p>The URL is converted to the most user friendly format (removing HTTP:// for example).
@@ -120,6 +128,11 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
      * Sets the {@link ToolbarDataProvider} to be used for accessing {@link Toolbar} state.
      */
     void setToolbarDataProvider(ToolbarDataProvider model);
+
+    /**
+     * Sets the {@link OverviewModeBehavior}.
+     */
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior);
 
     /**
      * Gets the {@link ToolbarDataProvider} to be used for accessing {@link Toolbar} state.
@@ -204,17 +217,6 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
      * @param unfocusedWidth The unfocused location bar width.
      */
     void setUnfocusedWidth(int unfocusedWidth);
-
-    /**
-     * Called when the default search engine changes.
-     * @param shouldShowSearchEngineLogo True if the search engine should be shown. Prefer to call
-     *                                   {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo}.
-     * @param isSearchEngineGoogle True if the current search engine is Google.
-     * @param searchEngineUrl The url for the current search engine's logo, usually just a base url
-     *                        that we use to fetch the favicon.
-     */
-    void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-            boolean isSearchEngineGoogle, String searchEngineUrl);
 
     /**
      * Sets the (observable) supplier of the active profile. This supplier will notify observers of

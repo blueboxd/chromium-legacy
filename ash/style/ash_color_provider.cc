@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/session/session_controller_impl.h"
@@ -290,6 +291,38 @@ void AshColorProvider::DecorateCloseButton(views::ImageButton* button,
   // added separately so its easier to monitor performance.
 }
 
+void AshColorProvider::DecorateIconButton(views::ImageButton* button,
+                                          ButtonType type,
+                                          const gfx::VectorIcon& icon,
+                                          bool toggled,
+                                          int icon_size) {
+  DCHECK(!icon.is_empty());
+  const SkColor normal_color =
+      GetContentLayerColor(ContentLayerType::kButtonIconColor);
+  const SkColor toggled_icon_color =
+      GetContentLayerColor(ContentLayerType::kButtonIconColorPrimary);
+  const SkColor icon_color = toggled ? toggled_icon_color : normal_color;
+
+  // Skip repainting if the incoming icon is the same as the current icon. If
+  // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
+  // grab the ImageSkia from a cache, so it will be cheap. Note that this
+  // assumes that toggled/disabled images changes at the same time as the normal
+  // image, which it currently does.
+  const gfx::ImageSkia new_normal_image =
+      gfx::CreateVectorIcon(icon, icon_size, icon_color);
+  const gfx::ImageSkia& old_normal_image =
+      button->GetImage(views::Button::STATE_NORMAL);
+  if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
+      new_normal_image.BackedBySameObjectAs(old_normal_image)) {
+    return;
+  }
+
+  button->SetImage(views::Button::STATE_NORMAL, new_normal_image);
+  button->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, icon_size, GetDisabledColor(normal_color)));
+}
+
 void AshColorProvider::AddObserver(ColorModeObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -299,6 +332,9 @@ void AshColorProvider::RemoveObserver(ColorModeObserver* observer) {
 }
 
 bool AshColorProvider::IsDarkModeEnabled() const {
+  if (!features::IsDarkLightModeEnabled() && override_light_mode_as_default_)
+    return false;
+
   if (!active_user_pref_service_)
     return kDefaultDarkModeEnabled;
   return active_user_pref_service_->GetBoolean(prefs::kDarkModeEnabled);

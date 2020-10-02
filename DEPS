@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'eb1df14b18a0dd67ae416e9b426dca3a18c3fc5c',
+  'angle_revision': '1fd3e5d89a8f840f859fb9c379e58defe9c399ab',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'UABC8VAzZj56bPNLe3ou7AIlBjwHbiXOu6R9f5RbZWcC'
+              'version': 'KmGtEkDfwHxQu0H8Vjg__Xqkj_7wy2sK8nS-v1WZhSwC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '7f0e83e82ba966d9fc6dbe914a9921a9fe60addf',
+    Var('webrtc_git') + '/src.git' + '@' + '5b5abd79106a1770bb6fdab9e40f7270c7d4259a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@444cee2905f58844878dbba7ac6f40670636c10e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fbeee8fe0c0bc1ee5a70f7375dd0cb048ea7bafe',
     'condition': 'checkout_src_internal',
   },
 

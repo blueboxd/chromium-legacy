@@ -1846,6 +1846,25 @@
             ]
         }
     ],
+    "CrosSchedulerCore": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "config": "core-scheduling"
+                    },
+                    "enable_features": [
+                        "CoreSchedulingEnabled",
+                        "SchedulerConfiguration"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrostiniWebUIUpgrader": [
         {
             "platforms": [
@@ -2816,27 +2835,6 @@
                     "name": "Enabled_20200406",
                     "enable_features": [
                         "FlexNG"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FlocIdComputedEventLogging": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FlocIdComputedEventLogging"
                     ]
                 }
             ]

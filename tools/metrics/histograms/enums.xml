@@ -12202,6 +12202,7 @@ Called by update_net_error_codes.py.-->
   <int value="17" label="Cut text"/>
   <int value="18" label="Paste text"/>
   <int value="19" label="Go to URL"/>
+  <int value="20" label="Copy link to text"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -29066,7 +29067,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3213" label="OBSOLETE_LegacyLayoutByMenuList"/>
   <int value="3214" label="LegacyLayoutByMultiCol"/>
   <int value="3215" label="LegacyLayoutByPrinting"/>
-  <int value="3216" label="LegacyLayoutByRuby"/>
+  <int value="3216" label="OBSOLETE_LegacyLayoutByRuby"/>
   <int value="3217" label="LegacyLayoutBySVG"/>
   <int value="3218" label="LegacyLayoutBySlider"/>
   <int value="3219" label="LegacyLayoutByTable"/>
@@ -29849,6 +29850,34 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="ERROR"/>
   <int value="1" label="NO_CONTENT"/>
   <int value="2" label="CONTENT_DISMISSED"/>
+</enum>
+
+<enum name="FetchFailedReasonOrResourceRequestBlockedReason">
+  <int value="0" label="kRedirectToDataUrlWithImpermissibleFetchMode"/>
+  <int value="1" label="kContentSecurityPolicyViolation"/>
+  <int value="2" label="kSameOriginModeButUrlNotSameOrigin"/>
+  <int value="3" label="kModeIsNoCorsButRedirectModeIsNotFollow"/>
+  <int value="4" label="kCorsRequestToUrlWithUnsupportedScheme"/>
+  <int value="5" label="kSchemeFetchToUrlWithUnsupportedScheme"/>
+  <int value="6" label="kSubresourceIntegrityVerificationError"/>
+  <int value="7" label="kFailedRedirectCheck"/>
+  <int value="8" label="kTrustTokensError"/>
+  <int value="9" label="kOtherNonBlockReason"/>
+  <int value="10" label="kBlockedBecauseOther"/>
+  <int value="11" label="kBlockedBecauseCSP"/>
+  <int value="12" label="kBlockedBecauseMixedContent"/>
+  <int value="13" label="kBlockedBecauseOrigin"/>
+  <int value="14" label="kBlockedBecauseInspector"/>
+  <int value="15" label="kBlockedBecauseSubresourceFilter"/>
+  <int value="16" label="kBlockedBecauseContentType"/>
+  <int value="17" label="kBlockedBecauseCollapsedByClient"/>
+  <int value="18" label="kBlockedBecauseCoepFrameResourceNeedsCoepHeader"/>
+  <int value="19"
+      label="kBlockedBecauseCoopSandboxedIFrameCannotNavigateToCoopPage"/>
+  <int value="20" label="kBlockedBecauseCorpNotSameOrigin"/>
+  <int value="21"
+      label="kBlockedBecauseCorpNotSameOriginAfterDefaultedToSameOriginByCoep"/>
+  <int value="22" label="kBlockedBecauseCorpNotSameSite"/>
 </enum>
 
 <enum name="FetchFontName">
@@ -40225,6 +40254,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="20" label="kOtherReason"/>
 </enum>
 
+<enum name="LinkGenerationError">
+  <int value="0" label="Incorrect selector"/>
+  <int value="1" label="No range available"/>
+  <int value="2" label="No context available"/>
+  <int value="3" label="Available context exhausted"/>
+  <int value="4" label="Context word limit reached"/>
+  <int value="5" label="Empty selection"/>
+</enum>
+
 <enum name="LinkMonitorFailureType">
   <int value="0" label="Local MAC Address Not Found"/>
   <int value="1" label="Client Startup Failure"/>
@@ -41167,6 +41205,8 @@ from previous Chrome versions.
   <int value="-1925453192" label="BlockInsecurePrivateNetworkRequests:enabled"/>
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
+  <int value="-1922176861"
+      label="WalletRequiresFirstSyncSetupComplete:disabled"/>
   <int value="-1921593903" label="ImeInputLogicHmm:disabled"/>
   <int value="-1920912991" label="PermissionChip:disabled"/>
   <int value="-1919683750" label="EnableOopPrintDrivers:disabled"/>
@@ -43723,6 +43763,7 @@ from previous Chrome versions.
   <int value="652561231" label="CustomContextMenu:enabled"/>
   <int value="653795860" label="HelpAppReleaseNotes:disabled"/>
   <int value="654199907" label="AllowSyncXHRInPageDismissal:disabled"/>
+  <int value="654879464" label="WalletRequiresFirstSyncSetupComplete:enabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
@@ -70765,6 +70806,11 @@ would be helpful to identify which type is being sent.
   <int value="6" label="TextRangeWithPrefix"/>
   <int value="7" label="TextRangeWithSuffix"/>
   <int value="8" label="TextRangeWithContext"/>
+</enum>
+
+<enum name="TextFragmentLinkOpenSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="SearchEngine"/>
 </enum>
 
 <enum name="TextToSpeechEvent">

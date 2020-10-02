@@ -101,6 +101,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   bool IsFixedTableLayout() const;
   const NGBoxStrut& GetTableBorders() const;
+  LayoutUnit ComputeTableInlineSize(const NGConstraintSpace&,
+                                    const NGBoxStrut& border_padding) const;
 
   // Return true if this block node establishes an inline formatting context.
   // This will only be the case if there is actual inline content. Empty nodes
@@ -206,8 +208,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGConstraintSpace&,
       const NGLayoutResult&,
       const NGBlockBreakToken* previous_break_token) const;
-  void CopyFragmentItemsToLayoutBox(const NGPhysicalBoxFragment& container,
-                                    const NGFragmentItems& items) const;
+  void CopyFragmentItemsToLayoutBox(
+      const NGPhysicalBoxFragment& container,
+      const NGFragmentItems& items,
+      const NGBlockBreakToken* previous_break_token) const;
   void CopyFragmentDataToLayoutBoxForInlineChildren(
       const NGPhysicalContainerFragment& container,
       LayoutUnit initial_container_width,

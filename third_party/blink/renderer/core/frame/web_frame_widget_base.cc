@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
@@ -1619,13 +1620,13 @@ bool WebFrameWidgetBase::GetSelectionBoundsInWindow(
     *anchor = *focus;
     return true;
   }
-  WebRect focus_webrect;
-  WebRect anchor_webrect;
-  SelectionBounds(focus_webrect, anchor_webrect);
+  gfx::Rect focus_root_frame;
+  gfx::Rect anchor_root_frame;
+  CalculateSelectionBounds(focus_root_frame, anchor_root_frame);
   gfx::Rect focus_rect_in_dips =
-      widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(focus_webrect));
+      widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(focus_root_frame));
   gfx::Rect anchor_rect_in_dips =
-      widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(anchor_webrect));
+      widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(anchor_root_frame));
 
   // if the bounds are the same return false.
   if (focus_rect_in_dips == *focus && anchor_rect_in_dips == *anchor)
@@ -2297,6 +2298,23 @@ void WebFrameWidgetBase::WasShown(bool was_evicted) {
           remote_frame->Client()->WasEvicted();
         }));
   }
+}
+
+void WebFrameWidgetBase::NotifyInputObservers(
+    const WebCoalescedInputEvent& coalesced_event) {
+  LocalFrame* frame = FocusedLocalFrameInWidget();
+  if (!frame)
+    return;
+
+  LocalFrameView* frame_view = frame->View();
+  if (!frame_view)
+    return;
+
+  const WebInputEvent& input_event = coalesced_event.Event();
+  auto& paint_timing_detector = frame_view->GetPaintTimingDetector();
+
+  if (paint_timing_detector.NeedToNotifyInputOrScroll())
+    paint_timing_detector.NotifyInputEvent(input_event.GetType());
 }
 
 }  // namespace blink

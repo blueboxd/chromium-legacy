@@ -554,6 +554,11 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual void ApplyVisualPropertiesSizing(
       const VisualProperties& visual_properties) = 0;
 
+  // Calculates the selection bounds in the root frame. Returns bounds unchanged
+  // when there is no focused frame or no selection.
+  virtual void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
+                                        gfx::Rect& focus_in_root_frame) = 0;
+
   // Update the surface allocation information, compositor viewport rect and
   // screen info on the widget.
   void UpdateSurfaceAndScreenInfo(
@@ -601,6 +606,11 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void NotifyPageScaleFactorChanged(float page_scale_factor,
                                     bool is_pinch_gesture_active);
+
+  // Helper for notifying frame-level objects that care about input events.
+  // TODO: With some effort, this could be folded into a common implementation
+  // of WebViewImpl::HandleInputEvent and WebFrameWidgetImpl::HandleInputEvent.
+  void NotifyInputObservers(const WebCoalescedInputEvent& coalesced_event);
 
   // A copy of the web drop data object we received from the browser.
   Member<DataObject> current_drag_data_;

@@ -67,6 +67,11 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
 
+// Implements WebFrameWidget for a child local root frame (OOPIF). This object
+// is created in the child renderer and attached to the OOPIF's WebLocalFrame.
+//
+// For the main frame's WebFrameWidget implementation, see WebViewFrameWidget.
+//
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:
@@ -99,7 +104,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetCursorVisibilityState(bool is_visible) override;
 
   void MouseCaptureLost() override;
-  bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
   void SetIsInertForSubFrame(bool) override;
   void SetInheritedEffectiveTouchActionForSubFrame(TouchAction) override;
@@ -136,6 +140,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                          float device_scale_factor) override;
   void ApplyVisualPropertiesSizing(
       const VisualProperties& visual_properties) override;
+  void CalculateSelectionBounds(gfx::Rect& anchor, gfx::Rect& focus) override;
 
   // FrameWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

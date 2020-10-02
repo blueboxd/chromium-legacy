@@ -516,11 +516,6 @@ WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
   return main_frame ? main_frame->DevToolsAgentImpl() : nullptr;
 }
 
-bool WebViewImpl::TabKeyCyclesThroughElements() const {
-  DCHECK(page_);
-  return page_->TabKeyCyclesThroughElements();
-}
-
 void WebViewImpl::SetTabKeyCyclesThroughElements(bool value) {
   if (page_)
     page_->SetTabKeyCyclesThroughElements(value);
@@ -1646,10 +1641,6 @@ void WebViewImpl::Resize(const gfx::Size& new_size) {
                             GetBrowserControls().ShrinkViewport());
 }
 
-gfx::Size WebViewImpl::GetSize() {
-  return size_;
-}
-
 void WebViewImpl::SetScreenOrientationOverrideForTesting(
     base::Optional<blink::mojom::ScreenOrientation> orientation) {
   screen_orientation_override_ = orientation;
@@ -1875,6 +1866,7 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
 // static
 void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
                                   WebView* web_view) {
+  WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(web_view);
   WebSettings* settings = web_view->GetSettings();
   ApplyFontsFromMap(prefs.standard_font_family_map,
                     SetStandardFontFamilyWrapper, settings);
@@ -1956,7 +1948,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
-  web_view->SetTabsToLinks(prefs.tabs_to_links);
+  web_view_impl->SetTabsToLinks(prefs.tabs_to_links);
 
   settings->SetAllowRunningOfInsecureContent(
       prefs.allow_running_insecure_content);
@@ -2066,7 +2058,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetAllowCustomScrollbarInMainFrame(false);
   settings->SetAccessibilityFontScaleFactor(prefs.font_scale_factor);
   settings->SetDeviceScaleAdjustment(prefs.device_scale_adjustment);
-  web_view->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
+  web_view_impl->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetAutoZoomFocusedNodeToLegibleScale(true);
   settings->SetDefaultVideoPosterURL(
       WebString::FromASCII(prefs.default_video_poster_url.spec()));
@@ -2249,7 +2241,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetTouchDragEndContextMenu(prefs.touch_dragend_context_menu);
 
 #if defined(OS_MAC)
-  web_view->SetMaximumLegibleScale(prefs.default_maximum_page_scale_factor);
+  web_view_impl->SetMaximumLegibleScale(
+      prefs.default_maximum_page_scale_factor);
 #endif
 
 #if defined(OS_WIN)
@@ -2323,6 +2316,9 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     return WebInputEventResult::kNotHandled;
   DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
 
+  WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl();
+  DCHECK(widget);
+
   GetPage()->GetVisualViewport().StartTrackingPinchStats();
 
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
@@ -2330,7 +2326,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
 
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel.
-  if (MainFrameImpl()->FrameWidgetImpl()->DoingDragAndDrop() &&
+  if (widget->DoingDragAndDrop() &&
       input_event.GetType() != WebInputEvent::Type::kPointerCancel)
     return WebInputEventResult::kHandledSuppressed;
 
@@ -2350,14 +2346,12 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   UIEventWithKeyState::ClearNewTabModifierSetFromIsolatedWorld();
 
   bool is_pointer_locked = false;
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl()) {
-    if (WebWidgetClient* client = widget->Client())
-      is_pointer_locked = client->IsPointerLocked();
-  }
+  if (WebWidgetClient* client = widget->Client())
+    is_pointer_locked = client->IsPointerLocked();
 
   if (is_pointer_locked &&
       WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    MainFrameImpl()->FrameWidgetImpl()->PointerLockMouseEvent(coalesced_event);
+    widget->PointerLockMouseEvent(coalesced_event);
     return WebInputEventResult::kHandledSystem;
   }
 
@@ -2377,16 +2371,12 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     }
   }
 
+  widget->NotifyInputObservers(coalesced_event);
+
   // Notify the focus frame of the input. Note that the other frames are not
   // notified as input is only handled by the focused frame.
   Frame* frame = FocusedCoreFrame();
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    if (local_frame->View() && local_frame->View()
-                                   ->GetPaintTimingDetector()
-                                   .NeedToNotifyInputOrScroll()) {
-      local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
-          input_event.GetType());
-    }
     if (auto* content_capture_manager =
             local_frame->LocalFrameRoot().GetContentCaptureManager()) {
       content_capture_manager->NotifyInputEvent(input_event.GetType(),
@@ -2533,30 +2523,6 @@ void WebViewImpl::SetFocus(bool enable) {
       ime_accept_events_ = false;
     }
   }
-}
-
-bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
-                                  WebRect& focus_web) const {
-  const Frame* frame = FocusedCoreFrame();
-  const auto* local_frame = DynamicTo<LocalFrame>(frame);
-  if (!local_frame)
-    return false;
-
-  LocalFrameView* frame_view = local_frame->View();
-  if (!frame_view)
-    return false;
-
-  IntRect anchor;
-  IntRect focus;
-  if (!local_frame->Selection().ComputeAbsoluteBounds(anchor, focus))
-    return false;
-
-  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  anchor_web = visual_viewport.RootFrameToViewport(
-      frame_view->ConvertToRootFrame(anchor));
-  focus_web = visual_viewport.RootFrameToViewport(
-      frame_view->ConvertToRootFrame(focus));
-  return true;
 }
 
 // WebView --------------------------------------------------------------------
@@ -2746,8 +2712,8 @@ bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
 }
 
 void WebViewImpl::ZoomAndScrollToFocusedEditableElementRect(
-    const WebRect& element_bounds_in_document,
-    const WebRect& caret_bounds_in_document,
+    const IntRect& element_bounds_in_document,
+    const IntRect& caret_bounds_in_document,
     bool zoom_into_legible_scale) {
   float scale;
   IntPoint scroll;
@@ -3636,10 +3602,6 @@ void WebViewImpl::ConfigureAutoResizeMode() {
   } else {
     MainFrameImpl()->GetFrame()->View()->DisableAutoSizeMode();
   }
-}
-
-uint64_t WebViewImpl::CreateUniqueIdentifierForRequest() {
-  return CreateUniqueIdentifier();
 }
 
 void WebViewImpl::SetCompositorDeviceScaleFactorOverride(

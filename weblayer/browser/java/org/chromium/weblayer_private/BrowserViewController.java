@@ -265,6 +265,10 @@ public final class BrowserViewController
         mContentView.setIsObscuredForAccessibility(isObscured);
     }
 
+    public View getViewForMagnifierReadback() {
+        return mContentViewRenderView.getViewForMagnifierReadback();
+    }
+
     @Override
     public void refreshPageHeight() {
         adjustWebContentsHeightIfNecessary();
@@ -276,6 +280,12 @@ public final class BrowserViewController
         if (mTab == null) return;
         mTab.setBrowserControlsVisibilityConstraint(
                 ImplControlsVisibilityReason.ANIMATION, constraint);
+    }
+
+    @Override
+    public void onOffsetsChanged(boolean isTop, int controlsOffset) {
+        if (mTab == null) return;
+        mTab.getBrowser().onBrowserControlsOffsetsChanged(mTab, isTop, controlsOffset);
     }
 
     @Override

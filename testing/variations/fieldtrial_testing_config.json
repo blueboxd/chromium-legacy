@@ -2518,7 +2518,6 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "DownloadLater",
                         "DownloadsAutoResumptionNative"
                     ]
                 }
@@ -6937,18 +6936,6 @@
                     "params": {
                         "server_params": "smrd"
                     }
-                }
-            ]
-        }
-    ],
-    "TriggeredResetFieldTrial": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "On"
                 }
             ]
         }

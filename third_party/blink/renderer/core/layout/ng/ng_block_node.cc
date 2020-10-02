@@ -58,6 +58,8 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_row_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_section_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
@@ -157,6 +159,10 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
   const LayoutBox& box = *params.node.GetLayoutBox();
   if (box.IsLayoutNGFlexibleBox()) {
     CreateAlgorithmAndRun<NGFlexLayoutAlgorithm>(params, callback);
+  } else if (box.IsTableRow()) {
+    CreateAlgorithmAndRun<NGTableRowLayoutAlgorithm>(params, callback);
+  } else if (box.IsTableSection()) {
+    CreateAlgorithmAndRun<NGTableSectionLayoutAlgorithm>(params, callback);
   } else if (box.IsLayoutNGCustom()) {
     CreateAlgorithmAndRun<NGCustomLayoutAlgorithm>(params, callback);
   } else if (box.IsMathML()) {
@@ -717,7 +723,7 @@ void NGBlockNode::FinishLayout(
             Style().IsFlippedBlocksWritingMode());
         block_flow->SetPaintFragment(break_token, &physical_fragment);
       } else if (items) {
-        CopyFragmentItemsToLayoutBox(physical_fragment, *items);
+        CopyFragmentItemsToLayoutBox(physical_fragment, *items, break_token);
       }
     } else {
       // We still need to clear paint fragments in case it had inline children,
@@ -1022,6 +1028,14 @@ const NGBoxStrut& NGBlockNode::GetTableBorders() const {
   return table_borders->TableBorder();
 }
 
+LayoutUnit NGBlockNode::ComputeTableInlineSize(
+    const NGConstraintSpace& space,
+    const NGBoxStrut& border_padding) const {
+  DCHECK(IsNGTable());
+  return LayoutUnit();
+  // TODO(atotic) call NGTableLayoutAlgorithm::ComputeTableInlineSize
+}
+
 bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (box.ForceLegacyLayout())
@@ -1204,7 +1218,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     // (but rather inside fragment items). Make sure that they get positioned,
     // too.
     if (const NGFragmentItems* items = column->Items())
-      CopyFragmentItemsToLayoutBox(*column, *items);
+      CopyFragmentItemsToLayoutBox(*column, *items, previous_break_token);
 
     previous_break_token = To<NGBlockBreakToken>(column->BreakToken());
   }
@@ -1298,9 +1312,13 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
 
 void NGBlockNode::CopyFragmentItemsToLayoutBox(
     const NGPhysicalBoxFragment& container,
-    const NGFragmentItems& items) const {
+    const NGFragmentItems& items,
+    const NGBlockBreakToken* previous_break_token) const {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
 
+  LayoutUnit previously_consumed_block_size;
+  if (previous_break_token)
+    previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
   bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
   for (NGInlineCursor cursor(items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.Current().BoxFragment()) {
@@ -1317,6 +1335,10 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
                                       child->Size().width -
                                       maybe_flipped_offset.left;
         }
+        if (container.Style().IsHorizontalWritingMode())
+          maybe_flipped_offset.top += previously_consumed_block_size;
+        else
+          maybe_flipped_offset.left += previously_consumed_block_size;
         layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(
             maybe_flipped_offset.ToLayoutPoint());
         if (UNLIKELY(layout_box->HasSelfPaintingLayer()))

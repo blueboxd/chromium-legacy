@@ -72,12 +72,20 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
     private boolean mFragmentResumed;
-    private boolean mFragmentStoppedForConfigurationChange;
+
+    // Tracks whether the fragment is in the middle of a configuration change and was attached when
+    // the configuration change started. This is set to true in onFragmentStop() and false when
+    // isViewAttachedToWindow() is true in either onViewAttachedToWindow() or onFragmentStarted().
+    // It's important to only set this to false when isViewAttachedToWindow() is true, as otherwise
+    // the WebContents may be prematurely hidden.
+    private boolean mInConfigurationChangeAndWasAttached;
+
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
     private Float mFontScale;
     private boolean mViewAttachedToWindow;
+    private boolean mNotifyOnBrowserControlsOffsetsChanged;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -157,7 +165,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         mWindowAndroid = windowAndroid;
         mEmbedderActivityContext = embedderAppContext;
         mViewController = new BrowserViewController(
-                windowAndroid, this, mViewControllerState, mFragmentStoppedForConfigurationChange);
+                windowAndroid, this, mViewControllerState, mInConfigurationChangeAndWasAttached);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
@@ -471,6 +479,21 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         return mUrlBarController;
     }
 
+    @Override
+    public void setBrowserControlsOffsetsEnabled(boolean enable) {
+        mNotifyOnBrowserControlsOffsetsChanged = enable;
+    }
+
+    public void onBrowserControlsOffsetsChanged(TabImpl tab, boolean isTop, int controlsOffset) {
+        if (mNotifyOnBrowserControlsOffsetsChanged && tab == getActiveTab()) {
+            try {
+                mClient.onBrowserControlsOffsetsChanged(isTop, controlsOffset);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+    }
+
     public View getFragmentView() {
         return getViewController().getView();
     }
@@ -495,15 +518,17 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     }
 
     public void onFragmentStart() {
-        mFragmentStoppedForConfigurationChange = false;
         mFragmentStarted = true;
+        if (mViewAttachedToWindow) {
+            mInConfigurationChangeAndWasAttached = false;
+        }
         BrowserImplJni.get().onFragmentStart(mNativeBrowser);
         updateAllTabs();
         checkPreferences();
     }
 
     public void onFragmentStop(boolean forConfigurationChange) {
-        mFragmentStoppedForConfigurationChange = forConfigurationChange;
+        mInConfigurationChangeAndWasAttached = forConfigurationChange;
         mFragmentStarted = false;
         updateAllTabs();
     }
@@ -527,8 +552,8 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         return mFragmentResumed;
     }
 
-    public boolean isFragmentStoppedForConfigurationChange() {
-        return mFragmentStoppedForConfigurationChange;
+    public boolean isInConfigurationChangeAndWasAttached() {
+        return mInConfigurationChangeAndWasAttached;
     }
 
     public boolean isViewAttachedToWindow() {
@@ -538,6 +563,9 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     @Override
     public void onViewAttachedToWindow(View v) {
         mViewAttachedToWindow = true;
+        if (mFragmentStarted) {
+            mInConfigurationChangeAndWasAttached = false;
+        }
         updateAllTabsViewAttachedState();
     }
 

@@ -148,7 +148,8 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 }
 
 // Tests API behaviors, including info queries, and constraints violations.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
+// Disabled due to high flake rate; see https://crbug.com/764464.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ApiTests) {
   AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
@@ -321,7 +322,13 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, FullscreenEvents) {
 }
 
 // Make sure tabCapture API can be granted for Chrome:// pages.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GrantForChromePages) {
+// Disabled due to flakes on macOS; see https://crbug.com/1134562.
+#if defined(OS_MAC)
+#define MAYBE_GrantForChromePages DISABLED_GrantForChromePages
+#else
+#define MAYBE_GrantForChromePages GrantForChromePages
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   ExtensionTestMessageListener before_open_tab("ready1", true);
   ASSERT_TRUE(RunExtensionSubtest("tab_capture",
                                   "active_tab_chrome_pages.html"))

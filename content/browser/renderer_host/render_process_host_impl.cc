@@ -1571,7 +1571,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
       instance_weak_factory_(base::in_place, this),
-      frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
   CHECK(!browser_context->ShutdownStarted());
   TRACE_EVENT2("shutdown", "RenderProcessHostImpl", "render_process_host", this,
@@ -2302,11 +2301,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::BindFrameSinkProvider,
-                          weak_factory_.GetWeakPtr()));
-
-  AddUIThreadInterface(
-      registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindCompositingModeReporter,
                           weak_factory_.GetWeakPtr()));
 
@@ -2580,11 +2574,6 @@ void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
             GetHostFrameSinkManager(), renderer_client_id);
   }
   embedded_frame_sink_provider_->Add(std::move(receiver));
-}
-
-void RenderProcessHostImpl::BindFrameSinkProvider(
-    mojo::PendingReceiver<mojom::FrameSinkProvider> receiver) {
-  frame_sink_provider_.Bind(std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindCompositingModeReporter(
@@ -4158,8 +4147,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
       // destination that doesn't require a dedicated process, even for the
       // same site. This can happen with dynamic isolated origins (see
       // https://crbug.com/950453).
-      if (!SiteInstanceImpl::ShouldLockProcess(isolation_context, site_info,
-                                               is_guest))
+      if (!site_info.ShouldLockProcessToSite(isolation_context, is_guest))
         return false;
 
       // If the destination requires a different process lock, this process
@@ -4176,8 +4164,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
         return false;
       }
 
-      if (!host->IsUnused() && SiteInstanceImpl::ShouldLockProcess(
-                                   isolation_context, site_info, is_guest)) {
+      if (!host->IsUnused() &&
+          site_info.ShouldLockProcessToSite(isolation_context, is_guest)) {
         // If this process has been used to host any other content, it cannot
         // be reused if the destination site requires a dedicated process and
         // should use a process locked to just that site.
@@ -4199,8 +4187,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // before the commit for the siteless URL arrives, resulting in a renderer
   // kill. See https://crbug.com/970046.
   if (SiteInstanceImpl::ShouldAssignSiteForURL(site_info.site_url()) &&
-      SiteInstanceImpl::DoesSiteInfoRequireDedicatedProcess(isolation_context,
-                                                            site_info)) {
+      site_info.RequiresDedicatedProcess(isolation_context)) {
     SiteProcessCountTracker* pending_tracker =
         static_cast<SiteProcessCountTracker*>(
             browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
@@ -4694,11 +4681,6 @@ void RenderProcessHostImpl::ResetIPC() {
     storage_partition_impl_->UnbindDomStorage(receiver_id);
 
   instance_weak_factory_.emplace(this);
-
-  // If RenderProcessHostImpl is reused, the next renderer will send a new
-  // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
-  // for that.
-  frame_sink_provider_.Unbind();
 
   // If RenderProcessHostImpl is reused, the next renderer will send a new
   // request for CodeCacheHost.  Make sure that we clear the stale

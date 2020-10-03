@@ -1575,6 +1575,22 @@ Unknown properties are collapsed to zero. -->
   <int value="12" label="OFFLINE_CONTENT_NOTIFICATION"/>
 </enum>
 
+<enum name="AndroidEnhancedProtectionPromoAction">
+  <int value="0" label="Promo created">
+    The Android Safe Browsing Enhanced Protection promo was created on the new
+    tab page.
+  </int>
+  <int value="1" label="Promo shown">
+    The Android Safe Browsing Enhanced Protection promo was shown.
+  </int>
+  <int value="2" label="Promo dismissed">
+    User dismissed the Safe Browsing Enhanced Protection promo.
+  </int>
+  <int value="3" label="Promo accepted">
+    User navigated to the Settings page by accepting the promo.
+  </int>
+</enum>
+
 <enum name="AndroidEvictionReason">
   <int value="0" label="TabUnusedTooLong"/>
   <int value="1" label="TabUnusedInSession"/>
@@ -24701,6 +24717,8 @@ Called by update_extension_histograms.py.-->
   <int value="1511" label="FILEMANAGERPRIVATE_SINGLEPARTITIONFORMAT"/>
   <int value="1512" label="TABS_REMOVECSS"/>
   <int value="1513" label="IDENTITY_CLEARALLCACHEDAUTHTOKENS"/>
+  <int value="1514" label="TABS_GROUP"/>
+  <int value="1515" label="TABS_UNGROUP"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -67201,7 +67219,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="SMSReceiverOutcome">
   <int value="0" label="Success"/>
-  <int value="1" label="Timed out"/>
+  <int value="1" label="Unhandled Request"/>
   <int value="2" label="Connection Error"/>
   <int value="3" label="Cancelled"/>
   <int value="4" label="Aborted"/>

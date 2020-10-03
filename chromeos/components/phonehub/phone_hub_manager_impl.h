@@ -29,6 +29,8 @@ class SecureChannelClient;
 
 namespace phonehub {
 
+class BrowserTabsModelController;
+class BrowserTabsModelProvider;
 class ConnectionManager;
 class MessageSender;
 class MessageReceiver;
@@ -43,7 +45,9 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
       device_sync::DeviceSyncClient* device_sync_client,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      std::unique_ptr<BrowserTabsModelProvider> browser_tabs_model_provider,
       const base::RepeatingClosure& show_multidevice_setup_dialog_callback);
+
   ~PhoneHubManagerImpl() override;
 
   // PhoneHubManager:
@@ -61,11 +65,11 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  std::unique_ptr<DoNotDisturbController> do_not_disturb_controller_;
   std::unique_ptr<ConnectionManager> connection_manager_;
   std::unique_ptr<FeatureStatusProvider> feature_status_provider_;
   std::unique_ptr<MessageReceiver> message_receiver_;
   std::unique_ptr<MessageSender> message_sender_;
+  std::unique_ptr<DoNotDisturbController> do_not_disturb_controller_;
   std::unique_ptr<ConnectionScheduler> connection_scheduler_;
   std::unique_ptr<FindMyDeviceController> find_my_device_controller_;
   std::unique_ptr<NotificationAccessManager> notification_access_manager_;
@@ -74,6 +78,8 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   std::unique_ptr<MutablePhoneModel> phone_model_;
   std::unique_ptr<PhoneStatusProcessor> phone_status_processor_;
   std::unique_ptr<TetherController> tether_controller_;
+  std::unique_ptr<BrowserTabsModelProvider> browser_tabs_model_provider_;
+  std::unique_ptr<BrowserTabsModelController> browser_tabs_model_controller_;
 };
 
 }  // namespace phonehub

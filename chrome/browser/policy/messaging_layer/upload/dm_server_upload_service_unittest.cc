@@ -72,53 +72,46 @@ TEST(DmServerUploadServiceTest, DeniesNullptrProfile) {
 
 class TestCallbackWaiter {
  public:
-  TestCallbackWaiter()
-      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  TestCallbackWaiter() : run_loop_(std::make_unique<base::RunLoop>()) {}
 
   void CompleteExpectSuccess(
       DmServerUploadService::CompletionResponse response) {
-    DCHECK(!completed_.IsSignaled());
     EXPECT_TRUE(response.ok());
-    completed_.Signal();
+    run_loop_->Quit();
   }
 
   void CompleteExpectUnimplemented(
       DmServerUploadService::CompletionResponse response) {
-    DCHECK(!completed_.IsSignaled());
     EXPECT_FALSE(response.ok());
     EXPECT_EQ(response.status().error_code(), error::UNIMPLEMENTED);
-    completed_.Signal();
+    run_loop_->Quit();
   }
 
   void CompleteExpectInvalidArgument(
       DmServerUploadService::CompletionResponse response) {
-    DCHECK(!completed_.IsSignaled());
     EXPECT_FALSE(response.ok());
     EXPECT_EQ(response.status().error_code(), error::INVALID_ARGUMENT);
-    completed_.Signal();
+    run_loop_->Quit();
   }
 
   void CompleteExpectFailedPrecondition(
       DmServerUploadService::CompletionResponse response) {
-    DCHECK(!completed_.IsSignaled());
     EXPECT_FALSE(response.ok());
     EXPECT_EQ(response.status().error_code(), error::FAILED_PRECONDITION);
-    completed_.Signal();
+    run_loop_->Quit();
   }
 
   void CompleteExpectDeadlineExceeded(
       DmServerUploadService::CompletionResponse response) {
-    DCHECK(!completed_.IsSignaled());
     EXPECT_FALSE(response.ok());
     EXPECT_EQ(response.status().error_code(), error::DEADLINE_EXCEEDED);
-    completed_.Signal();
+    run_loop_->Quit();
   }
 
-  void Wait() { completed_.Wait(); }
+  void Wait() { run_loop_->Run(); }
 
  private:
-  base::WaitableEvent completed_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 class TestRecordHandler : public DmServerUploadService::RecordHandler {
@@ -165,8 +158,7 @@ class DmServerUploaderTest : public testing::Test {
   policy::MockCloudPolicyClient client_;
 };
 
-// Disabled due to high flakes; see https://crbug.com/1133962.
-TEST_F(DmServerUploaderTest, DISABLED_ProcessesRecord) {
+TEST_F(DmServerUploaderTest, ProcessesRecord) {
   // Add an empty record.
   records_->emplace_back();
 
@@ -183,8 +175,7 @@ TEST_F(DmServerUploaderTest, DISABLED_ProcessesRecord) {
   callback_waiter.Wait();
 }
 
-// Disabled due to high flakes; see https://crbug.com/1133962.
-TEST_F(DmServerUploaderTest, DISABLED_ProcessesRecords) {
+TEST_F(DmServerUploaderTest, ProcessesRecords) {
   for (uint64_t i = 0; i < 10; i++) {
     EncryptedRecord record;
     auto* sequencing_info = record.mutable_sequencing_information();

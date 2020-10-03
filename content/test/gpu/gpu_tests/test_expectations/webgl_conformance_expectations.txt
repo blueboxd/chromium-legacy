@@ -126,6 +126,7 @@ crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_WEBGL_draw_
 # Fails on all platforms
 
 crbug.com/1081973 conformance/buffers/buffer-data-and-buffer-sub-data.html [ Failure ]
+crbug.com/1100470 conformance/textures/misc/exif-orientation.html [ Skip ]
 crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1018028 [ win vulkan nvidia ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 crbug.com/1110111 [ win nvidia ] conformance/rendering/point-no-attributes.html [ RetryOnFailure ]
@@ -835,3 +836,7 @@ crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+
+crbug.com/1134756 [ mac swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
+crbug.com/1134756 [ mac swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
+crbug.com/1134756 [ mac swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]

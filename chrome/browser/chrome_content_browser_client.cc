@@ -1685,16 +1685,11 @@ bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
   return false;
 }
 
-// TODO(creis, nick): https://crbug.com/160576 describes a weakness in our
-// origin-lock enforcement, where we don't have a way to efficiently know
-// effective URLs on the IO thread, and wind up killing processes that e.g.
-// request cookies for their actual URL. This whole function (and its
-// ExtensionsPart) should be removed once we add that ability to the IO thread.
-bool ChromeContentBrowserClient::ShouldLockProcess(
+bool ChromeContentBrowserClient::ShouldLockProcessToSite(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!ChromeContentBrowserClientExtensionsPart::ShouldLockProcess(
+  if (!ChromeContentBrowserClientExtensionsPart::ShouldLockProcessToSite(
           browser_context, effective_site_url)) {
     return false;
   }
@@ -4469,10 +4464,9 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 #if defined(OS_CHROMEOS)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  uniquely_owned_factories->emplace(
-      content::kExternalFileScheme,
-      std::make_unique<chromeos::ExternalFileURLLoaderFactory>(
-          profile, content::ChildProcessHost::kInvalidUniqueID));
+  factories->emplace(content::kExternalFileScheme,
+                     chromeos::ExternalFileURLLoaderFactory::Create(
+                         profile, content::ChildProcessHost::kInvalidUniqueID));
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
 }
@@ -4626,10 +4620,9 @@ void ChromeContentBrowserClient::
   if (web_contents) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    uniquely_owned_factories->emplace(
-        content::kExternalFileScheme,
-        std::make_unique<chromeos::ExternalFileURLLoaderFactory>(
-            profile, render_process_id));
+    factories->emplace(content::kExternalFileScheme,
+                       chromeos::ExternalFileURLLoaderFactory::Create(
+                           profile, render_process_id));
   }
 #endif  // defined(OS_CHROMEOS)
 

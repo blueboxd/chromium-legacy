@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '09b9eade20d3f4213d9846521ffc69c7a5ba851e',
+  'skia_revision': '0f7242f28fa652d97c9bde72aafdaa552c6bd1bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8ae7ae8f008b045cc872c4c1371f2183f53fec67',
+  'v8_revision': '5310c080792f473a43fbade25e0be422fdb7cdde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'ce72574b54b131c70c0a5cbd40a7435aacbe63d0',
+  'pdfium_revision': 'fca083c57b5f095e62bf2fc3121a429227a8487f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '370195bd3b3f7eb5434081e8d82c8e5b7af080a7',
+  'devtools_frontend_revision': '75443e831f3d96593febf6fde0d802d740046145',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7fcc5da17c02a6ad1d53fdab0976308f6cb2fe90',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0aa5b77625683c862433761914de70d8337c968e',
     'condition': 'checkout_src_internal',
   },
 
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'V6gjYXMRLJxHGHFBf1xdXOzgqXS9c8VnXY5Dm66uN6AC',
+        'version': 'dNc5FbDaj3gbQaxQ4ry26cgrsQFxY1F8_-qnbO6VNwgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

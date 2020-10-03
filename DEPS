@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c488f0c909e256c68962c3f098199228696aaef1',
+  'angle_revision': '500704812409749c6a6bd0e4fbddf03a60a07cb9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '2c28e29e9c928ad10a3f1ea1c04631014c4c69a6',
+  'devtools_frontend_revision': 'ccfe87efdd67cda46bb486286b25c9ad4162c6d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1237,7 +1237,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'af79da9ee416a7fa259e5e0d264ca92af1bd2fcc',
+    Var('chromium_git') + '/openscreen' + '@' + '25493aef9427e1a0d93d993b441dec9e64266725',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'L4Yg7-xN6xRY3FEAIYBqj7hMnWwvvnPYTNQr_umZm-IC'
+              'version': 'FgthknmEoQugl3GqOyqz_RsAjIMmeLsa960mZcmhE9UC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a474fbf41353ac752280181e3c548a606ca5c53c',
+    Var('webrtc_git') + '/src.git' + '@' + '765d6c19b78942756927575481b8bbb6fbd835da',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@35539ee2653d362d91f97663f466745e08780dcd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c6254ae8d22121d615437666d96285d340a830dc',
     'condition': 'checkout_src_internal',
   },
 

@@ -189,7 +189,6 @@ component("views") {
     "input_event_activation_protector.h",
     "layout/animating_layout_manager.h",
     "layout/box_layout.h",
-    "layout/box_layout_view.h",
     "layout/fill_layout.h",
     "layout/flex_layout.h",
     "layout/flex_layout_types.h",
@@ -393,7 +392,6 @@ component("views") {
     "input_event_activation_protector.cc",
     "layout/animating_layout_manager.cc",
     "layout/box_layout.cc",
-    "layout/box_layout_view.cc",
     "layout/fill_layout.cc",
     "layout/flex_layout.cc",
     "layout/flex_layout_types.cc",
@@ -1012,6 +1010,7 @@ source_set("test_support") {
         "test/ui_controls_factory_desktop_aurax11.cc",
         "test/ui_controls_factory_desktop_aurax11.h",
       ]
+      deps += [ "//ui/base/x:test_support" ]
     }
   }
   if (use_x11) {
@@ -1102,7 +1101,6 @@ test("views_unittests") {
     "focus/focus_traversal_unittest.cc",
     "layout/animating_layout_manager_unittest.cc",
     "layout/box_layout_unittest.cc",
-    "layout/box_layout_view_unittest.cc",
     "layout/composite_layout_tests.cc",
     "layout/fill_layout_unittest.cc",
     "layout/flex_layout_unittest.cc",

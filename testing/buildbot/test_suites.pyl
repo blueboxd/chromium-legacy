@@ -934,10 +934,13 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
-        }
+        },
       },
       'webdriver_tests_suite': {
         'isolate_name': 'webdriver_wpt_tests',
@@ -973,6 +976,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -996,6 +1002,9 @@
             '--verbose',
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
         },
         'results_handler': 'layout tests',
         'swarming': {
@@ -1152,6 +1161,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1219,6 +1231,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -1239,6 +1254,9 @@
             '--verbose',
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
         },
         'results_handler': 'layout tests',
         'swarming': {
@@ -2043,7 +2061,6 @@
           '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=any',
-          '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--disable-software-compositing-fallback',
           '--additional-driver-flag=--disable-headless-mode',
@@ -2062,6 +2079,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
       },
     },
@@ -2076,7 +2096,6 @@
           '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan',
           '--additional-driver-flag=--use-gl=any',
-          '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--disable-software-compositing-fallback',
           '--additional-driver-flag=--use-vulkan=native',
@@ -2097,6 +2116,9 @@
             '--verbose',
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
         },
         'results_handler': 'layout tests',
       },
@@ -2319,7 +2341,6 @@
           '--use-vulkan=native',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
-          '--force-gpu-rasterization',
           '--disable-software-compositing-fallback',
           '--disable-vulkan-fallback-to-gl-for-testing',
           '--disable-headless-mode',
@@ -2351,7 +2372,6 @@
           '--use-vulkan=swiftshader',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
-          '--force-gpu-rasterization',
           '--disable-software-compositing-fallback',
           '--disable-vulkan-fallback-to-gl-for-testing',
           '--disable-headless-mode',
@@ -2575,7 +2595,7 @@
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -3146,6 +3166,9 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'isolate_name': 'webgpu_blink_web_tests',
+        'resultdb': {
+          'enable': True,
+        },
       },
     },
 
@@ -3182,6 +3205,9 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'isolate_name': 'webgpu_blink_web_tests',
+        'resultdb': {
+          'enable': True,
+        },
       },
     },
 
@@ -3435,6 +3461,9 @@
             '--verbose',
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
         },
         'results_handler': 'layout tests',
         'swarming': {
@@ -3934,6 +3963,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'resultdb': {
+          'enable': True,
+        },
         'results_handler': 'layout tests',
       },
       'vulkan_swiftshader_blink_web_tests': {
@@ -3944,7 +3976,6 @@
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan',
-          '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--use-vulkan=swiftshader',
           '--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing',
@@ -3961,6 +3992,9 @@
             '--verbose',
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
         },
         'results_handler': 'layout tests',
       },

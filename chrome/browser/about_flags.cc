@@ -4347,10 +4347,6 @@ const FeatureEntry kFeatureEntries[] = {
         // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
-    {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
-     flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kDismissPromos)},
-
     {"ntp-iframe-one-google-bar", flag_descriptions::kNtpIframeOneGoogleBarName,
      flag_descriptions::kNtpIframeOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kIframeOneGoogleBar)},
@@ -4363,11 +4359,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kRealbox)},
-
-    {"ntp-realbox-match-omnibox-theme",
-     flag_descriptions::kNtpRealboxMatchOmniboxThemeName,
-     flag_descriptions::kNtpRealboxMatchOmniboxThemeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kRealboxMatchOmniboxTheme)},
 
     {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
      flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
@@ -5132,11 +5123,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerName,
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
-
-    {"enable-cssom-view-scroll-coordinates",
-     flag_descriptions::kEnableCSSOMViewScrollCoordinatesName,
-     flag_descriptions::kEnableCSSOMViewScrollCoordinatesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kCSSOMViewScrollCoordinates)},
 
     {"enable-text-fragment-anchor",
      flag_descriptions::kEnableTextFragmentAnchorName,

@@ -546,9 +546,11 @@
   {
     "prefix": "dark-color-scheme",
     "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
-              "fast/forms/color-scheme"],
+              "fast/forms/color-scheme",
+              "virtual/eye-dropper"],
     "args": ["--force-dark-mode",
-             "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering"]
+             "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering",
+             "--enable-features=EyeDropper"]
   },
   {
     "prefix": "appcache-origin-trial",
@@ -579,11 +581,6 @@
     "prefix": "payment-request-mandatory-total",
     "bases": ["http/tests/payments/payment-request-app-store-billing-mandatory-total.html"],
     "args": ["--disable-blink-features=PaymentRequestTotalOptional"]
-  },
-  {
-    "prefix": "cache-storage-sequence",
-    "bases": ["external/wpt/service-workers"],
-    "args": ["--enable-features=CacheStorageSequence"]
   },
   {
     "prefix": "conditional-appcache-delay",

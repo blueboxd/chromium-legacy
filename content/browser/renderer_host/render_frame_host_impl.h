@@ -290,6 +290,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ui::AXTreeID GetAXTreeID() override;
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
+  GlobalFrameRoutingId GetGlobalFrameRoutingId() override;
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() override;
   RenderFrameHostImpl* GetMainFrame() override;
@@ -663,8 +664,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // a RenderWidgetHost and nor does any of its ancestors. That would
   // typically mean that the frame has been detached from the frame tree.
   virtual RenderWidgetHostImpl* GetRenderWidgetHost();
-
-  GlobalFrameRoutingId GetGlobalFrameRoutingId();
 
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback();
@@ -2865,12 +2864,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_focused_editable_element_;
 
   std::unique_ptr<PendingNavigation> pending_navigate_;
-
-  // A collection of non-network URLLoaderFactory implementations which are used
-  // to service any supported non-network subresource requests for the currently
-  // committed navigation.
-  ContentBrowserClient::NonNetworkURLLoaderFactoryDeprecatedMap
-      non_network_uniquely_owned_factories_;
 
   // Renderer-side states that blocks fast shutdown of the frame.
   bool has_before_unload_handler_ = false;

@@ -1787,7 +1787,6 @@ interface Document : Node
     method queryCommandValue
     method querySelector
     method querySelectorAll
-    method registerElement
     method releaseEvents
     method replaceChildren
     method requestStorageAccess
@@ -2091,7 +2090,6 @@ interface Element : Node
     method closest
     method computedStyleMap
     method constructor
-    method createShadowRoot
     method getAnimations
     method getAttribute
     method getAttributeNS
@@ -2100,7 +2098,6 @@ interface Element : Node
     method getAttributeNodeNS
     method getBoundingClientRect
     method getClientRects
-    method getDestinationInsertionPoints
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS
@@ -3585,7 +3582,6 @@ interface HTMLLinkElement : HTMLElement
     getter hreflang
     getter imageSizes
     getter imageSrcset
-    getter import
     getter importance
     getter integrity
     getter media
@@ -6490,47 +6486,6 @@ interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
     method constructor
-interface RTCQuicStream : EventTarget
-    attribute @@toStringTag
-    getter maxReadBufferedAmount
-    getter maxWriteBufferedAmount
-    getter onstatechange
-    getter readBufferedAmount
-    getter state
-    getter transport
-    getter writeBufferedAmount
-    method constructor
-    method readInto
-    method reset
-    method waitForReadable
-    method waitForWriteBufferedAmountBelow
-    method write
-    setter onstatechange
-interface RTCQuicStreamEvent : Event
-    attribute @@toStringTag
-    getter stream
-    method constructor
-interface RTCQuicTransport : EventTarget
-    attribute @@toStringTag
-    getter maxDatagramLength
-    getter onerror
-    getter onquicstream
-    getter onstatechange
-    getter state
-    getter transport
-    method connect
-    method constructor
-    method createStream
-    method getKey
-    method getStats
-    method listen
-    method readyToSendDatagram
-    method receiveDatagrams
-    method sendDatagram
-    method stop
-    setter onerror
-    setter onquicstream
-    setter onstatechange
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
@@ -8323,7 +8278,6 @@ interface Text : CharacterData
     getter assignedSlot
     getter wholeText
     method constructor
-    method getDestinationInsertionPoints
     method splitText
 interface TextDecoder
     attribute @@toStringTag

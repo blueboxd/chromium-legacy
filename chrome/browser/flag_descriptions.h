@@ -445,9 +445,6 @@ extern const char kEnableGpuServiceLoggingDescription[];
 extern const char kEnableImplicitRootScrollerName[];
 extern const char kEnableImplicitRootScrollerDescription[];
 
-extern const char kEnableCSSOMViewScrollCoordinatesName[];
-extern const char kEnableCSSOMViewScrollCoordinatesDescription[];
-
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 
@@ -1880,9 +1877,6 @@ extern const char kGlobalMediaControlsCastStartStopDescription[];
 extern const char kMuteNotificationsDuringScreenShareName[];
 extern const char kMuteNotificationsDuringScreenShareDescription[];
 
-extern const char kNtpDismissPromosName[];
-extern const char kNtpDismissPromosDescription[];
-
 extern const char kNtpIframeOneGoogleBarName[];
 extern const char kNtpIframeOneGoogleBarDescription[];
 
@@ -1891,9 +1885,6 @@ extern const char kNtpOneGoogleBarModalOverlaysDescription[];
 
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];
-
-extern const char kNtpRealboxMatchOmniboxThemeName[];
-extern const char kNtpRealboxMatchOmniboxThemeDescription[];
 
 extern const char kNtpRepeatableQueriesName[];
 extern const char kNtpRepeatableQueriesDescription[];

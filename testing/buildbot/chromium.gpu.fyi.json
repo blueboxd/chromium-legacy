@@ -7525,7 +7525,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode --force-online-connection-state-for-indicator",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode --force-online-connection-state-for-indicator",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -13855,7 +13855,6 @@
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
           "--disable-vulkan-fallback-to-gl-for-testing",
           "--disable-headless-mode",
@@ -14113,7 +14112,6 @@
           "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
           "--additional-driver-flag=--disable-headless-mode",
@@ -14133,6 +14131,9 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "skia_renderer_gl_blink_web_tests",
+        "resultdb": {
+          "enable": true
+        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14194,7 +14195,6 @@
           "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
           "--additional-driver-flag=--use-vulkan=native",
@@ -14217,6 +14217,9 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "vulkan_native_blink_web_tests",
+        "resultdb": {
+          "enable": true
+        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14286,7 +14289,6 @@
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
           "--disable-vulkan-fallback-to-gl-for-testing",
           "--disable-headless-mode",
@@ -14544,7 +14546,6 @@
           "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
           "--additional-driver-flag=--disable-headless-mode",
@@ -14564,6 +14565,9 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "skia_renderer_gl_blink_web_tests",
+        "resultdb": {
+          "enable": true
+        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14625,7 +14629,6 @@
           "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
           "--additional-driver-flag=--use-vulkan=native",
@@ -14648,6 +14651,9 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "vulkan_native_blink_web_tests",
+        "resultdb": {
+          "enable": true
+        },
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,

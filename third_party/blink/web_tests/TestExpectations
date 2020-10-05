@@ -979,6 +979,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-006
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-007.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-008.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-014.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-015.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-001.xht [ Pass ]
@@ -1367,6 +1368,29 @@ crbug.com/1053725 [ Win7 ] fast/forms/calendar-picker/date-picker-appearance-dis
 
 # ====== Form Controls Refresh failures until here ======
 
+
+# ===== These tests fail when Web Components v0 is removed =====
+
+crbug.com/1081941 web-components-v0-only/* [ Skip ]
+crbug.com/1081941 virtual/web-components-v0-disabled/* [ Skip ]
+crbug.com/1081941 http/tests/htmlimports/* [ Skip ]
+crbug.com/1081941 http/tests/custom/xhr-response-does-not-have-registry.html [ Skip ]
+crbug.com/1081941 http/tests/custom-elements/no-registry-test.html [ Skip ]
+crbug.com/1081941 http/tests/devtools/import-open-inspector.js [ Skip ]
+crbug.com/1081941 http/tests/devtools/elements/html-link-import.js [ Skip ]
+crbug.com/1081941 http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js [ Skip ]
+crbug.com/1081941 http/tests/devtools/network/network-imported-resource-content.js [ Skip ]
+crbug.com/1081941 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Skip ]
+crbug.com/1081941 http/tests/linkHeader/link-rel-import-css-rule-capital.html [ Skip ]
+crbug.com/1081941 http/tests/security/contentSecurityPolicy/nonces/import-enforce-allowed.php [ Skip ]
+crbug.com/1081941 http/tests/security/contentSecurityPolicy/nonces/import-enforce-blocked.php [ Skip ]
+crbug.com/1081941 http/tests/security/contentSecurityPolicy/nonces/import-multiple-allowed.php [ Skip ]
+crbug.com/1081941 http/tests/security/contentSecurityPolicy/nonces/import-multiple-blocked.php [ Skip ]
+crbug.com/1081941 http/tests/security/contentSecurityPolicy/nonces/import-reportonly-allowed.php [ Skip ]
+crbug.com/1081941 http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Skip ]
+crbug.com/1081941 http/tests/subresource_filter/resource-in-import-disallowed.html [ Skip ]
+
+# ===== Web Components v0 until here =====
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
@@ -2485,9 +2509,6 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 # WebRTC: Perfect Negotiation times out in Plan B. This is expected.
 crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 
-# This is a repro case for the referenced crash. Once fixed, we should expect to pass.
-crbug.com/webrtc/11485 external/wpt/webrtc/RTCRtpSender-encode-same-track-twice.https.html [ Pass Crash ]
-
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
 crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
@@ -2612,9 +2633,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/CSS2/text/text-indent-101.xht [ Failure ]
-crbug.com/626703 external/wpt/css/CSS2/text/text-indent-100.xht [ Failure ]
-crbug.com/626703 external/wpt/css/CSS2/text/text-indent-102.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-203.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-201.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-206.html [ Failure ]
@@ -3276,6 +3294,7 @@ crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-008.html [ Fail
 crbug.com/926685 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-014.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-015.html [ Failure ]
 crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
@@ -4370,6 +4389,10 @@ crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple
 #crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 crbug.com/892212 http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Failure Timeout ]
 
+# Disabling 3 tests temporarily in order to land a devtools-frontend change. Will re-enable soon.
+crbug.com/1135145 http/tests/devtools/elements/css-variables/color-swatch.js [ Failure Pass ]
+crbug.com/1135145 http/tests/devtools/elements/styles/url-color-swatch.js [ Failure Pass ]
+crbug.com/1135145 http/tests/devtools/elements/styles-1/color-swatch.js [ Failure Pass ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
@@ -5410,9 +5433,6 @@ crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.htm
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
 
-# Sheriff 2019-03-01
-crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
-
 # Also crbug.com/1044535
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure Timeout ]
 
@@ -5444,7 +5464,6 @@ crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass 
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure Timeout ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
-crbug.com/945665 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/945629 http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
 
@@ -6615,6 +6634,9 @@ crbug.com/1057060 virtual/compositor-threaded-percent-based-scrolling/fast/scrol
 crbug.com/1057060 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
 crbug.com/1057060 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
 crbug.com/1045599 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Failure Timeout ]
+
+# TODO(michaelludwig) - Remove after Skia roll and rebaseline
+crbug.com/1135225 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Failure ]
 
 # Sheriff 2020-09-29
 crbug.com/1133342 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/reporting-observer.html [ Pass Failure Timeout ]

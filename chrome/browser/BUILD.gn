@@ -76,7 +76,6 @@ if (is_win) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
-    "CLANG_PGO=$chrome_pgo_phase",
     "ENABLE_KALEIDOSCOPE=$enable_kaleidoscope",
     "USE_THIN_LTO=$use_thin_lto",
   ]
@@ -109,6 +108,7 @@ static_library("browser") {
     "accessibility/accessibility_ui.h",
     "accessibility/caption_util.cc",
     "accessibility/caption_util.h",
+    "account_manager_facade_factory.h",
     "after_startup_task_utils.cc",
     "after_startup_task_utils.h",
     "app_mode/app_mode_utils.cc",
@@ -595,6 +595,8 @@ static_library("browser") {
     "installable/installable_utils.h",
     "internal_auth.cc",
     "internal_auth.h",
+    "interstitials/chrome_settings_page_helper.cc",
+    "interstitials/chrome_settings_page_helper.h",
     "interstitials/enterprise_util.cc",
     "interstitials/enterprise_util.h",
     "intranet_redirect_detector.cc",
@@ -1879,6 +1881,7 @@ static_library("browser") {
     "//base/util/values:values_util",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//build/config/compiler:compiler_buildflags",
     "//cc",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -4377,6 +4380,9 @@ static_library("browser") {
     sources += [
       "feedback/show_feedback_page_lacros.cc",
       "first_run/first_run_internal_lacros.cc",
+      "lacros/account_manager_facade_factory_lacros.cc",
+      "lacros/account_manager_facade_lacros.cc",
+      "lacros/account_manager_facade_lacros.h",
       "lacros/lacros_chrome_service_delegate_impl.cc",
       "lacros/lacros_chrome_service_delegate_impl.h",
       "metrics/lacros_metrics_provider.cc",

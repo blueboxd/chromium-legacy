@@ -134,6 +134,7 @@
 <translation id="1453974140256777690">Yapışdırdığınız və ya əlavə etdiyiniz mətn təhlil üçün Google Cloud'a və ya üçüncü tərəflərə göndərilir. Məsələn, onlar həssas dataya görə skanlana bilər.</translation>
 <translation id="1455413310270022028">Pozan</translation>
 <translation id="1462245070427461050">JIS B9</translation>
+<translation id="1462951478840426066">Yüksək dəqiqliyə malik məzmun yarada bilmək üçün kompüterinizdəki şriftlərdən istifadə edin</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1467432559032391204">Sol</translation>
 <translation id="1472675084647422956">Daha çox göstərin</translation>
@@ -206,7 +207,6 @@
 <translation id="1717494416764505390">Poçt qutusu 3</translation>
 <translation id="1718029547804390981">Sənəd annotasiya üçün çox böyükdür</translation>
 <translation id="1721424275792716183">* Sahə tələb olunur</translation>
-<translation id="1724638245199909652">Lokal şrift girişi</translation>
 <translation id="1727741090716970331">Düzgün Kart Nömrəsi Əlavə edin</translation>
 <translation id="1728677426644403582">Veb səhifənin mənbəyinə baxırsınız</translation>
 <translation id="173080396488393970">Bu kart növü dəstəklənmir</translation>
@@ -221,6 +221,7 @@
 <translation id="17513872634828108">Panelləri açın</translation>
 <translation id="1752021286346845558">Poçt qutusu 8</translation>
 <translation id="1753706481035618306">Səhifə nömrəsi</translation>
+<translation id="1757773103848038814">Sabit Ölçülü Şrift</translation>
 <translation id="1763864636252898013">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun təhlükəsizlik sertifikatı cihazınızın əməliyyat sistemi tərəfindən doğrulanmayıb. Buna səbəb yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantınızın ələ keçirilməsi ola bilər.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Şəbəkə Diaqnostikasını işlətməyə çalışın<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Daxil olduğunuz server (<ph name="ORIGIN" />) ona yönləndirilən
@@ -468,6 +469,7 @@
 <translation id="2839501879576190149">İrəlidə saxta sayt</translation>
 <translation id="2850739647070081192">Dəvət edin (Zərf)</translation>
 <translation id="2856444702002559011">Hücumçular <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytından məlumat (məsələn, parol, mesaj və ya kredit kartları) oğurlamağa çalışa bilərlər. <ph name="BEGIN_LEARN_MORE_LINK" />Ətraflı məlumat<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2859806420264540918">Bu sayt inadçı və ya aldadıcı reklamlar göstərir.</translation>
 <translation id="2878197950673342043">Poster formasında qatlayın</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2880660355386638022">Pəncərənin yerləşdirilməsi</translation>
@@ -592,6 +594,7 @@
 <translation id="3395827396354264108">Götürmə üsulu</translation>
 <translation id="3399952811970034796">Çatdırılma Ünvanı</translation>
 <translation id="3402261774528610252">Bu saytı yükləmək üçün istifadə edilən bağlantı köhnələn və gələcəkdə söndürüləcək TLS 1.0 və ya TLS 1.1 versiyasından istifadə etdi. Söndürüldükdən sonra istifadəçilərin bu saytı yükləməsinin qarşısı alınacaq. Server TLS 1.2 və ya daha sonrakı versiyanı aktivləşdirməlidir.</translation>
+<translation id="3411120537985775570"><ph name="ORIGIN_NAME" /> mənbəyindən bu məkana əlavə etmək administratorunuz tərəfindən bloklanıb</translation>
 <translation id="3414952576877147120">Ölçü:</translation>
 <translation id="3417660076059365994">Yüklədiyiniz və ya əlavə etdiyiniz fayllar təhlil üçün Google Cloud'a və ya üçüncü tərəflərə göndərilir. Məsələn, onlar həssas data və ya zərərli proqrama görə skanlana bilər.</translation>
 <translation id="3422248202833853650">Yaddaşı boşaltmaq üçün digər proqramlardan çıxın.</translation>
@@ -629,6 +632,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> mikrofonunuzu istifadə etmək istəyir</translation>
 <translation id="3533328374079021623">Poçt qutusu 5</translation>
 <translation id="3539171420378717834">Bu kartın kopyasını bu cihazda saxlayın</translation>
+<translation id="3552297013052089404">Sans-serif şrifti</translation>
 <translation id="3558573058928565255">Gündüz vaxtı</translation>
 <translation id="3566021033012934673">Bağlantınız məxfi deyil</translation>
 <translation id="3567778190852720481">Müəssisə hesabı ilə qeydiyyatdan keçmək olmur (müəssisə hesabı uyğun deyil).</translation>
@@ -995,6 +999,7 @@
 <translation id="503069730517007720">Əsas "<ph name="SOFTWARE_NAME" />" sertifikatı tələb olunur, lakin quraşdırılmayıb. IT administratorunuz bu problemi həll etmək üçün "<ph name="SOFTWARE_NAME" />" konfiqurasiya təlimatlarına baxmalıdır. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Tərcümə haqqında</translation>
 <translation id="503498442187459473"><ph name="HOST" /> kameranızı və mikrofonunuzu istifadə etmək istəyir</translation>
+<translation id="5039762155821394373">Şrift Ölçüsü</translation>
 <translation id="5039804452771397117">İcazə verin</translation>
 <translation id="5040262127954254034">Məxfilik</translation>
 <translation id="5043480802608081735">Kopyalanmış Link</translation>
@@ -1092,6 +1097,7 @@
 <translation id="5386426401304769735">Bu saytın sertifikat zənciri SHA-1 istifadə edərək imzalanmış sertifikatdan ibarətdir.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Sağdan kənarını tikin</translation>
+<translation id="5398772614898833570">Reklamlar blok edildi</translation>
 <translation id="5400836586163650660">Boz</translation>
 <translation id="540969355065856584">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmir; güvənlik sertifikatı hazırda etibarlı deyil. Buna yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantının ələ keçirilməsi səbəb ola bilər.</translation>
 <translation id="541416427766103491">Yığıcı 4</translation>
@@ -1261,6 +1267,7 @@
 <translation id="6051221802930200923">Hazırda <ph name="SITE" /> saytına daxil olmaq mümkün deyil, çünki veb səhifə sertifikat bağlantısı istifadə edir. Şəbəkə xətaları və hücumları adətən müvəqqəti olur, beləliklə, səhifə yəqin ki daha sonra işləyəcək.</translation>
 <translation id="6052284303005792909">•</translation>
 <translation id="6053328359599022071">Evdə olduğunuz paylaşılsın?</translation>
+<translation id="6057359309778282021"><ph name="ORIGIN_NAME" /> mənbəyindən <ph name="VM_NAME" /> ilə paylaşma administratorunuz tərəfindən bloklanıb</translation>
 <translation id="6058977677006700226">Kartlardan bütün cihazlarda istifadə edilsin?</translation>
 <translation id="6059925163896151826">USB cihazları</translation>
 <translation id="6060009363608157444">Yanlış DnsOverHttps rejimi.</translation>
@@ -1310,6 +1317,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="6280223929691119688">Bu ünvana çatdırmaq mümkün deyil. Başqa ünvan seçin.</translation>
 <translation id="6282194474023008486">Poçt kodu</translation>
+<translation id="6289939620939689042">Səhifə Rəngi</translation>
 <translation id="6290238015253830360">Təklif edilən məqalələriniz burada görünür</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Google Assistent Chrome'da dayanmağa başlayır</translation>
@@ -1356,6 +1364,7 @@
 <translation id="6451458296329894277">Formanın yenidən təqdim edilməsini təsdiq edin</translation>
 <translation id="6457206614190510200">Yəhər tikişi vurun</translation>
 <translation id="6465306955648956876">Parolları İdarə edin...</translation>
+<translation id="6468485451923838994">Şriftlər</translation>
 <translation id="647261751007945333">Cihaz siyasəti</translation>
 <translation id="6476284679642588870">Ödəniş metodlarını idarə edin</translation>
 <translation id="6489534406876378309">Dəyişiklikləri yükləməyə başlayın</translation>
@@ -1393,6 +1402,7 @@
 <translation id="6645291930348198241">Kukilər və sayt datasına giriş.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Yoxdur}=1{1 saytdan (Google Hesabınızdan çıxmayacaqsınız)}other{ # saytdan (Google Hesabınızdan çıxmayacaqsınız)}}</translation>
 <translation id="6648459603387803038">Administrator brauzer quraşdırmasını uzaqdan dəyişə bilər. Bu cihazdakı fəaliyyət Chrome'dan kənarda da idarə edilə bilər.</translation>
+<translation id="6648524591329069940">Serif Şrifti</translation>
 <translation id="6652101503459149953">Windows Hello işlədin</translation>
 <translation id="6657585470893396449">Parol</translation>
 <translation id="666259744093848177">(x86_64 tərcümə edilib)</translation>
@@ -1465,6 +1475,7 @@
 <translation id="7004583254764674281">Kartları daha sürətli təsdiqləmək üçün Windows Hello istifadə edin</translation>
 <translation id="7006930604109697472">İstənilən halda göndərin</translation>
 <translation id="7012363358306927923">Çin UnionPay</translation>
+<translation id="7014741021609395734">Miqyas səviyyəsi</translation>
 <translation id="7016992613359344582">Bu ödənişlər birdəfəlik və ya təkrarlanan ola bilər. Onlar, eyni zamanda görünməyə bilər.</translation>
 <translation id="7029809446516969842">Parollar</translation>
 <translation id="7031646650991750659">Quraşdırdığınız Google Play tətbiqləri</translation>
@@ -1547,6 +1558,7 @@
 <translation id="7346048084945669753">Qoşulub:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Əmr sahəsi</translation>
+<translation id="7359588939039777303">Reklamlar blok edildi.</translation>
 <translation id="7372973238305370288">axtarış nəticəsi</translation>
 <translation id="7374733840632556089">Bu xətanın səbəbi cihazınızda siz və ya başqası tərəfindən quraşdırılmış sertifikatdır. Sertifikat şəbəkələrə nəzarət etmək və onları bloklamaq üçün istifadə olunur və Chrome ona etibar etmir. Məktəb və ya şirkət şəbəkəsi kimi bəzi hallarda qanuni nəzarətə icazə verilsə də, Chrome qarşısını ala bilməsəniz də, bunun baş verdiyini bilmənizi istəyir. Nəzarət vebə girişi olan istənilən brauzer və ya tətbiqdə baş verə bilər.</translation>
 <translation id="7375818412732305729">Fayl qoşulub</translation>
@@ -1866,6 +1878,7 @@
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8623885649813806493">Uyğun parol yoxdur. Yadda saxlanmış bütün parolları göstərin.</translation>
 <translation id="8625384913736129811">Bu Kartı Bu Cihazda yadda saxlayın</translation>
+<translation id="8657078576661269990"><ph name="ORIGIN_NAME" /> mənbəyindən <ph name="VM_NAME_1" /> və <ph name="VM_NAME_2" /> ilə paylaşma administratorunuz tərəfindən bloklanıb</translation>
 <translation id="8663226718884576429">Sifarişin Yekunu, <ph name="TOTAL_LABEL" />, Daha Çox Məlumat</translation>
 <translation id="867224526087042813">İmza</translation>
 <translation id="8676424191133491403">Gecikmə yoxdur</translation>
@@ -1878,6 +1891,7 @@
 <translation id="8699041776323235191">HID cihazı</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> domeninə olan bağlantınız şifrələnib.</translation>
 <translation id="8705331520020532516">Seriya Nömrəsi</translation>
+<translation id="8710842507289500830">Şrift üslubu</translation>
 <translation id="8718314106902482036">Ödəniş tamamlanmadı</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, təklif edilən axtarış</translation>
 <translation id="8719528812645237045">Yuxarıdan çoxsaylı deşik açın</translation>
@@ -1925,6 +1939,7 @@
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8913778647360618320">"Ödəniş metodlarını idarə edin" düyməsi, Chrome ayarlarında ödənişlərinizi və kredit kartı məlumatlarınızı idarə etmək üçün Enter düyməsinə basın</translation>
 <translation id="8918231688545606538">Bu səhifə şübhəlidir</translation>
+<translation id="8922013791253848639">Həmişə bu saytdakı reklamlara icazə verin</translation>
 <translation id="892588693504540538">Yuxarı sağdan deşik açın</translation>
 <translation id="8931333241327730545">Bu kartı Google Hesabınızda yadda saxlamaq istəyirsiniz?</translation>
 <translation id="8932102934695377596">Saatınız geridədir</translation>
@@ -1998,6 +2013,7 @@
 <translation id="9191834167571392248">Aşağı soldan deşik açın</translation>
 <translation id="9205078245616868884">Datanız sinxronizasiya parol sözü ilə şifrələnib. Sinxronizasiyanı başlamaq üçün onu daxil edin.</translation>
 <translation id="9207861905230894330">Məqalə əlavə etmək olmadı.</translation>
+<translation id="9213433120051936369">Görünüşü fərdiləşdirin</translation>
 <translation id="9215416866750762878">Tətbiq Chrome'un bu sayta təhlükəsiz şəkildə qoşulmasını dayandırır</translation>
 <translation id="9219103736887031265">Şəkillər</translation>
 <translation id="933712198907837967">Diners Club</translation>

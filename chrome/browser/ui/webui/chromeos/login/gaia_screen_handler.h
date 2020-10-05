@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/chromeos/login/login_client_cert_usage_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -37,7 +36,6 @@ class NSSTempCertsCacheChromeOS;
 namespace chromeos {
 
 class CookieWaiter;
-class Key;
 class SamlPasswordAttributes;
 class SigninScreenHandler;
 class UserContext;
@@ -110,9 +108,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
     // An interstitial page will be used before SAML redirection.
     GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
-
-    // Offline UI for Active Directory authentication.
-    GAIA_SCREEN_MODE_AD = 3,
   };
 
   enum FrameState {
@@ -226,11 +221,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                            const std::string& password,
                            bool using_saml);
 
-  void HandleCompleteAdAuthentication(const std::string& username,
-                                      const std::string& password);
-
-  void HandleCancelActiveDirectoryAuth();
-
   // Handles SAML/GAIA login flow metrics
   // is_third_party_idp == false means GAIA-based authentication
   void HandleUsingSAMLAPI(bool is_third_party_idp);
@@ -251,9 +241,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                        const std::string& typed_email,
                                        const std::string& gaia_id);
 
-  // Allows WebUI to control the login shelf's guest button visibility during
-  // OOBE.
-  void HandleShowGuestInOobe(bool show);
+  // Allows WebUI to control the login shelf's guest and apps buttons visibility
+  // during OOBE.
+  void HandleIsFirstSigninStep(bool is_first);
 
   // Called to notify whether the SAML sign-in is currently happening.
   void HandleSamlStateChanged(bool is_saml);
@@ -277,12 +267,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Kick off DNS cache flushing.
   void StartClearingDnsCache();
   void OnDnsCleared();
-
-  // Callback for AuthPolicyClient.
-  void DoAdAuth(const std::string& username,
-                const Key& key,
-                authpolicy::ErrorType error,
-                const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
   // Attempts login for test.
   void SubmitLoginFormForTest();
@@ -419,10 +403,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // True if the authentication extension is still loading.
   bool auth_extension_being_loaded_ = false;
-
-  // Helper to call AuthPolicyClient and cancel calls if needed. Used to
-  // authenticate users against Active Directory server.
-  std::unique_ptr<AuthPolicyHelper> authpolicy_login_helper_;
 
   // Makes untrusted authority certificates from device policy available for
   // client certificate discovery.

@@ -134,6 +134,7 @@
 <translation id="1453974140256777690">您貼上或附加的文字將會傳送給 Google Cloud 或第三方進行分析。例如，文字可能會被掃描，以查看當中是否含有敏感資料。</translation>
 <translation id="1455413310270022028">擦膠</translation>
 <translation id="1462245070427461050">JIS B9</translation>
+<translation id="1462951478840426066">使用電腦上的字型，以便製作高傳真度內容</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1472675084647422956">顯示更多</translation>
@@ -206,7 +207,6 @@
 <translation id="1717494416764505390">出紙槽 3</translation>
 <translation id="1718029547804390981">文件過大，無法加入註釋</translation>
 <translation id="1721424275792716183">* 為必填欄位</translation>
-<translation id="1724638245199909652">本機字型存取權</translation>
 <translation id="1727741090716970331">新增有效的信用卡號碼</translation>
 <translation id="1728677426644403582">您正在查看網頁的原始碼</translation>
 <translation id="173080396488393970">不支援此信用卡類型</translation>
@@ -221,6 +221,7 @@
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1752021286346845558">出紙槽 8</translation>
 <translation id="1753706481035618306">頁碼</translation>
+<translation id="1757773103848038814">等寬字型</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置的操作系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網絡診斷<ph name="END_LINK" />。</translation>
 <translation id="1772163372082567643">您的目標伺服器「<ph name="ORIGIN" />」已設定標題要求為收到的所有要求套用來源政策。不過，由於該標題格式錯誤，因此瀏覽器無法完成您向 <ph name="SITE" /> 提出的要求。網站網絡供應商可使用來源政策設定網站的安全性及其他屬性。</translation>
@@ -462,6 +463,7 @@
 <translation id="2839501879576190149">您將要瀏覽假網站</translation>
 <translation id="2850739647070081192">Invite (信封)</translation>
 <translation id="2856444702002559011">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 竊取您的資料 (例如密碼、訊息或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2859806420264540918">此網站顯示滋擾性或誤導廣告。</translation>
 <translation id="2878197950673342043">十字摺</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2880660355386638022">放置視窗</translation>
@@ -588,6 +590,7 @@
 <translation id="3395827396354264108">取貨方式</translation>
 <translation id="3399952811970034796">送貨地址</translation>
 <translation id="3402261774528610252">用於載入此網站的連線使用 TLS 1.0 或 TLS 1.1 版本現已被淘汰，並會於日後停用。停用後，使用者將無法載入此網站。伺服器應啟用 TLS 1.2 或以上版本。</translation>
+<translation id="3411120537985775570">管理員已禁止將內容由 <ph name="ORIGIN_NAME" /> 貼到此位置</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3417660076059365994">您上載或附加的檔案將會傳送給 Google Cloud 或第三方進行分析。例如，檔案可能會被掃描，以查看當中是否含有敏感資料或惡意軟件。</translation>
 <translation id="3422248202833853650">嘗試關閉其他程式以釋出記憶體。</translation>
@@ -625,6 +628,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> 要求使用麥克風</translation>
 <translation id="3533328374079021623">出紙槽 5</translation>
 <translation id="3539171420378717834">在此裝置上保存此卡片的副本</translation>
+<translation id="3552297013052089404">Sans-serif 字型</translation>
 <translation id="3558573058928565255">日間</translation>
 <translation id="3566021033012934673">您的連線不是私人連線</translation>
 <translation id="3567778190852720481">無法使用企業帳戶註冊 (企業賬戶不符合資格)。</translation>
@@ -988,6 +992,7 @@
 <translation id="503069730517007720">未安裝「<ph name="SOFTWARE_NAME" />」必要的「根憑證」。IT 管理員應查看「<ph name="SOFTWARE_NAME" />」的設定指示，才能修正此問題。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">關於 Google 翻譯</translation>
 <translation id="503498442187459473"><ph name="HOST" /> 要求使用相機和麥克風</translation>
+<translation id="5039762155821394373">字型大小</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">私隱權</translation>
 <translation id="5043480802608081735">您複製的連結</translation>
@@ -1085,6 +1090,7 @@
 <translation id="5386426401304769735">此網站的憑證鏈內包含使用 SHA-1 簽署的憑證。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">邊緣釘裝 (右側)</translation>
+<translation id="5398772614898833570">已封鎖廣告</translation>
 <translation id="5400836586163650660">灰色</translation>
 <translation id="540969355065856584">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證目前無效。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="541416427766103491">堆疊器 4</translation>
@@ -1254,6 +1260,7 @@
 <translation id="6051221802930200923">您目前無法瀏覽 <ph name="SITE" />，因為此網站使用憑證固定功能。網絡錯誤和攻擊行為通常是暫時性問題，所以此網頁可能稍後就能正常使用。</translation>
 <translation id="6052284303005792909">•</translation>
 <translation id="6053328359599022071">要分享您的狀態嗎？</translation>
+<translation id="6057359309778282021">管理員已禁止將 <ph name="ORIGIN_NAME" /> 的內容分享至 <ph name="VM_NAME" /></translation>
 <translation id="6058977677006700226">要在所有裝置上使用您的卡嗎？</translation>
 <translation id="6059925163896151826">USB 裝置</translation>
 <translation id="6060009363608157444">DnsOverHttps 模式無效。</translation>
@@ -1303,6 +1310,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="6280223929691119688">無法送貨至此地址，請選取其他地址。</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
+<translation id="6289939620939689042">頁面顏色</translation>
 <translation id="6290238015253830360">為您推薦的文章會在這裡顯示</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">正在停止 Chrome 的「Google 助理」</translation>
@@ -1349,6 +1357,7 @@
 <translation id="6451458296329894277">確認重新提交表格</translation>
 <translation id="6457206614190510200">騎馬釘</translation>
 <translation id="6465306955648956876">管理密碼…</translation>
+<translation id="6468485451923838994">字型</translation>
 <translation id="647261751007945333">裝置政策</translation>
 <translation id="6476284679642588870">管理付款方法</translation>
 <translation id="6489534406876378309">開始上載當機報告</translation>
@@ -1459,6 +1468,7 @@
 <translation id="7004583254764674281">使用 Windows Hello 可加快確認付款卡</translation>
 <translation id="7006930604109697472">仍要傳送</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
+<translation id="7014741021609395734">縮放比例</translation>
 <translation id="7016992613359344582">這些費用可能是一次性或會重複收取，而收費時亦可能難以察覺。</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031646650991750659">您已安裝的 Google Play 應用程式</translation>
@@ -1541,6 +1551,7 @@
 <translation id="7346048084945669753">是否已建立關聯：</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令列</translation>
+<translation id="7359588939039777303">已封鎖廣告。</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7374733840632556089">此問題由您或其他人在裝置上安裝的憑證而導致。由於憑證曾用作監控及網絡攔截，因此不獲 Chrome 信任。雖然有些監控理由合理 (例如學校或公司網絡)，且無法停止有關監控，但 Chrome 仍希望就此通知您。任何使用網絡的瀏覽器和應用程式都可能受到監控。</translation>
 <translation id="7375818412732305729">已附加檔案</translation>
@@ -1860,6 +1871,7 @@
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8623885649813806493">沒有相符的密碼。顯示所有已儲存的密碼。</translation>
 <translation id="8625384913736129811">將這張信用卡儲存至此裝置</translation>
+<translation id="8657078576661269990">管理員已禁止將 <ph name="ORIGIN_NAME" /> 的內容分享至 <ph name="VM_NAME_1" /> 和 <ph name="VM_NAME_2" /></translation>
 <translation id="8663226718884576429">訂單摘要、<ph name="TOTAL_LABEL" /> 及更多詳情</translation>
 <translation id="867224526087042813">簽名</translation>
 <translation id="8676424191133491403">不延遲</translation>
@@ -1872,6 +1884,7 @@
 <translation id="8699041776323235191">HID 裝置</translation>
 <translation id="8703575177326907206">您與 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8705331520020532516">序號</translation>
+<translation id="8710842507289500830">字型樣式</translation>
 <translation id="8718314106902482036">未完成付款程序</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />，<ph name="DESCRIPTION" />，搜尋建議</translation>
 <translation id="8719528812645237045">多孔 (頂端)</translation>
@@ -1919,6 +1932,7 @@
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8913778647360618320">管理付款方法按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度管理付款同信用卡資料</translation>
 <translation id="8918231688545606538">此網頁包含可疑的內容</translation>
+<translation id="8922013791253848639">一律允許在此網站中顯示廣告</translation>
 <translation id="892588693504540538">打孔 (右上方)</translation>
 <translation id="8931333241327730545">要將此信用卡儲存至您的 Google 帳戶嗎？</translation>
 <translation id="8932102934695377596">您時鐘的時間過慢</translation>
@@ -1992,6 +2006,7 @@
 <translation id="9191834167571392248">打孔 (左下方)</translation>
 <translation id="9205078245616868884">您已使用同步密碼短語加密資料，請輸入密碼短語開始同步資料。</translation>
 <translation id="9207861905230894330">無法新增文章。</translation>
+<translation id="9213433120051936369">自訂外觀</translation>
 <translation id="9215416866750762878">有應用程式令 Chrome 無法安全地連接至此網站</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="933712198907837967">Diners Club</translation>

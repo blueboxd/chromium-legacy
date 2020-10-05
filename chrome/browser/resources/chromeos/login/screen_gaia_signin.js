@@ -49,7 +49,6 @@ const AuthMode = {
   DEFAULT: 0,            // Default GAIA login flow.
   OFFLINE: 1,            // GAIA offline login.
   SAML_INTERSTITIAL: 2,  // Interstitial page before SAML redirection.
-  AD_AUTH: 3             // Offline Active Directory login flow.
 };
 
 /**
@@ -59,7 +58,6 @@ const AuthMode = {
 const DialogMode = {
   GAIA: 'online-gaia',
   OFFLINE_GAIA: 'offline-gaia',
-  OFFLINE_AD: 'ad',
   GAIA_LOADING: 'gaia-loading',
   LOADING: 'loading',
   PIN_DIALOG: 'pin',
@@ -77,7 +75,6 @@ Polymer({
     'doReload',
     'monitorOfflineIdle',
     'showAllowlistCheckFailedError',
-    'invalidateAd',
     'showPinDialog',
     'closePinDialog',
   ],
@@ -352,8 +349,8 @@ Polymer({
 
     const that = this;
     const $that = this.$;
-    [this.authenticator_, this.$['offline-gaia'], this.$['offline-ad-auth']]
-        .forEach(function(frame) {
+    [this.authenticator_, this.$['offline-gaia']].forEach(
+        function(frame) {
           // Ignore events from currently inactive frame.
           const frameFilter = function(callback) {
             return function(e) {
@@ -365,9 +362,6 @@ Polymer({
                   break;
                 case AuthMode.OFFLINE:
                   currentFrame = $that['offline-gaia'];
-                  break;
-                case AuthMode.AD_AUTH:
-                  currentFrame = $that['offline-ad-auth'];
                   break;
               }
               if (frame === currentFrame)
@@ -437,10 +431,6 @@ Polymer({
       chrome.send('launchHelpApp', [HELP_CANT_ACCESS_ACCOUNT]);
     });
 
-    this.$['offline-ad-auth'].addEventListener('cancel', function() {
-      this.cancel();
-    }.bind(this));
-
     this.initializeLoginScreen('GaiaSigninScreen', {
       resetAllowed: true,
     });
@@ -469,15 +459,14 @@ Polymer({
   },
 
   /**
-   * Updates whether the Guest button is allowed to be shown. (Note that the
-   * C++ side contains additional logic that decides whether the Guest button
-   * should be shown.)
+   * Updates whether the Guest and Apps button is allowed to be shown. (Note
+   * that the C++ side contains additional logic that decides whether the
+   * Guest button should be shown.)
    * @private
    */
-  updateGuestButtonVisibility_() {
-    let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
-    // TODO(rsorokin): Rename message string to reflect the meaning.
-    chrome.send('showGuestInOobe', [showGuestInOobe]);
+  updateButtonsVisibilityAtFirstSigingStep_() {
+    let isFristSigninStep = !this.isClosable_() && this.isAtTheBeginning_();
+    chrome.send('setIsFirstSigninStep', [isFristSigninStep]);
   },
 
   /**
@@ -555,7 +544,7 @@ Polymer({
       return;
     }
     chrome.send('updateOfflineLogin', [this.isOffline_()]);
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
   },
 
   /**
@@ -723,9 +712,8 @@ Polymer({
     this.navigationEnabled_ = true;
 
     this.lastBackMessageValue_ = false;
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
 
-    cr.ui.login.invokePolymerMethod(this.$['offline-ad-auth'], 'onBeforeShow');
     cr.ui.login.invokePolymerMethod(
         this.$['signin-frame-dialog'], 'onBeforeShow');
     cr.ui.login.invokePolymerMethod(this.$['offline-gaia'], 'onBeforeShow');
@@ -752,8 +740,6 @@ Polymer({
         return this.getSigninFrame_();
       case AuthMode.OFFLINE:
         return this.$['offline-gaia'];
-      case AuthMode.AD_AUTH:
-        return this.$['offline-ad-auth'];
       case AuthMode.SAML_INTERSTITIAL:
         return this.$['saml-interstitial'];
     }
@@ -831,16 +817,12 @@ Polymer({
         this.loadOffline_(params);
         break;
 
-      case AuthMode.AD_AUTH:
-        this.loadAdAuth_(params);
-        break;
-
       case AuthMode.SAML_INTERSTITIAL:
         this.samlInterstitialDomain_ = data.enterpriseDisplayDomain;
         this.loadingFrameContents_ = false;
         break;
     }
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
     chrome.send('authExtensionLoaded');
   },
 
@@ -933,7 +915,7 @@ Polymer({
         Oobe.getInstance().updateScreenSize(this);
       }
 
-      this.updateGuestButtonVisibility_();
+      this.updateButtonsVisibilityAtFirstSigingStep_();
     }
   },
 
@@ -1004,7 +986,7 @@ Polymer({
   onBackButton_(e) {
     this.getActiveFrame_().focus();
     this.lastBackMessageValue_ = !!e.detail;
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
   },
   /**
    * Invoked when the auth host emits 'setPrimaryActionEnabled'  event
@@ -1211,12 +1193,7 @@ Polymer({
    * @private
    */
   onAuthCompleted_(credentials) {
-    if (this.screenMode_ == AuthMode.AD_AUTH) {
-      this.email_ = credentials.username;
-      chrome.send(
-          'completeAdAuthentication',
-          [credentials.username, credentials.password]);
-    } else if (credentials.publicSAML) {
+    if (credentials.publicSAML) {
       this.email_ = credentials.email;
       chrome.send('launchSAMLPublicSession', [credentials.email]);
     } else if (credentials.useOffline) {
@@ -1241,7 +1218,7 @@ Polymer({
 
     this.clearVideoTimer_();
     this.authCompleted_ = true;
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
   },
 
   /**
@@ -1306,7 +1283,7 @@ Polymer({
     this.startLoadingTimer_();
     this.lastBackMessageValue_ = false;
     this.authCompleted_ = false;
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
   },
 
   /**
@@ -1340,9 +1317,6 @@ Polymer({
     if (this.isAllowlistErrorShown_ || this.authCompleted_) {
       return;
     }
-
-    if (this.screenMode_ == AuthMode.AD_AUTH)
-      chrome.send('cancelAdAuthentication');
 
     this.userActed('cancel');
   },
@@ -1387,21 +1361,6 @@ Polymer({
     this.onAuthReady_();
   },
 
-  /** @private */
-  loadAdAuth_(params) {
-    this.loadingFrameContents_ = true;
-    this.startLoadingTimer_();
-    const adAuthUI = this.getActiveFrame_();
-    adAuthUI.realm = params['realm'];
-
-    if ('emailDomain' in params)
-      adAuthUI.userRealm = '@' + params['emailDomain'];
-
-    adAuthUI.userName = params['email'];
-    adAuthUI.focus();
-    this.onAuthReady_();
-  },
-
   /**
    * Show/Hide error when user is not in allowlist. When UI is hidden GAIA is
    * reloaded.
@@ -1427,7 +1386,7 @@ Polymer({
     else
       Oobe.showSigninUI();
 
-    this.updateGuestButtonVisibility_();
+    this.updateButtonsVisibilityAtFirstSigingStep_();
   },
 
   /**
@@ -1443,20 +1402,6 @@ Polymer({
       this.primaryActionButtonLabel_ = null;
       this.secondaryActionButtonLabel_ = null;
     }
-  },
-
-  /**
-   * @param {string} username
-   * @param {ACTIVE_DIRECTORY_ERROR_STATE} errorState
-   */
-  invalidateAd(username, errorState) {
-    if (this.screenMode_ != AuthMode.AD_AUTH)
-      return;
-    const adAuthUI = this.getActiveFrame_();
-    adAuthUI.userName = username;
-    adAuthUI.errorState = errorState;
-    this.authCompleted_ = false;
-    this.loadingFrameContents_ = false;
   },
 
   /**
@@ -1584,9 +1529,6 @@ Polymer({
         break;
       case AuthMode.OFFLINE:
         this.step_ = DialogMode.OFFLINE_GAIA;
-        break;
-      case AuthMode.AD_AUTH:
-        this.step_ = DialogMode.OFFLINE_AD;
         break;
     }
   },

@@ -979,7 +979,6 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-006
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-007.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-008.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-014.html [ Pass ]
-virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-015.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-001.xht [ Pass ]
@@ -2623,6 +2622,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/html/semantics/embedded-content/media-elements/preserves-pitch.html [ Timeout ]
+crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-during-and-after-dispatch.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-backgrounds/border-image-slice-007.htm [ Failure ]
 crbug.com/626703 external/wpt/css/css-backgrounds/border-image-slice-005.htm [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/scroll-to-text-fragment/redirects.html [ Timeout ]
@@ -3275,7 +3276,6 @@ crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-008.html [ Fail
 crbug.com/926685 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-014.html [ Failure ]
-crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-015.html [ Failure ]
 crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
@@ -4369,11 +4369,6 @@ crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple
 
 #crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 crbug.com/892212 http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Failure Timeout ]
-
-# Disabling 3 tests temporarily in order to land a devtools-frontend change. Will re-enable soon.
-crbug.com/1135145 http/tests/devtools/elements/css-variables/color-swatch.js [ Failure Pass ]
-crbug.com/1135145 http/tests/devtools/elements/styles/url-color-swatch.js [ Failure Pass ]
-crbug.com/1135145 http/tests/devtools/elements/styles-1/color-swatch.js [ Failure Pass ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.

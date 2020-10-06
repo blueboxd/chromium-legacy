@@ -3077,6 +3077,11 @@ if (!is_android) {
           [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
     }
 
+    if (is_win || is_mac || (is_desktop_linux && !chromeos_is_browser_only)) {
+      sources +=
+          [ "../browser/ui/views/profiles/profile_picker_view_browsertest.cc" ]
+    }
+
     sources += metric_integration_sources
   }
 }
@@ -6641,6 +6646,8 @@ if (!is_fuchsia) {
       "../browser/sync/test/integration/autofill_helper.h",
       "../browser/sync/test/integration/configuration_refresher.cc",
       "../browser/sync/test/integration/configuration_refresher.h",
+      "../browser/sync/test/integration/device_info_helper.cc",
+      "../browser/sync/test/integration/device_info_helper.h",
       "../browser/sync/test/integration/fake_server_invalidation_sender.cc",
       "../browser/sync/test/integration/fake_server_invalidation_sender.h",
       "../browser/sync/test/integration/multi_client_status_change_checker.cc",

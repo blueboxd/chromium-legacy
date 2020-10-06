@@ -3400,6 +3400,21 @@
             ]
         }
     ],
+    "IOSWebContentDropInteraction": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AddWebContentDropInteraction"
+                    ]
+                }
+            ]
+        }
+    ],
     "Identifiability": [
         {
             "platforms": [
@@ -3475,30 +3490,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IncludeBetaForumMenuItem"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IncognitoDynamicQuota": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WideRange",
-                    "params": {
-                        "IncognitoQuotaRatioLowerBound": "0.1",
-                        "IncognitoQuotaRatioUpperBound": "0.2"
-                    },
-                    "enable_features": [
-                        "IncognitoDynamicQuota"
                     ]
                 }
             ]
@@ -4905,27 +4896,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OneCopyRasterBufferPlaybackNormalThreadPriority"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptOutZeroTimeoutTimersFromThrottling": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OptOutZeroTimeoutTimersFromThrottling"
                     ]
                 }
             ]
@@ -7186,25 +7156,6 @@
             ]
         }
     ],
-    "VideoSurfaceLayer": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows",
-                "chromeos",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseSurfaceLayerForVideo"
-                    ]
-                }
-            ]
-        }
-    ],
     "VideoToolboxVp9Decoding": [
         {
             "platforms": [
@@ -7285,6 +7236,26 @@
                         "UseSkiaForGLReadback",
                         "UseSkiaRenderer",
                         "VizForWebView"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VizGLFastSolidColorDraw": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "VizGLFastSolidColorDraw",
+                    "enable_features": [
+                        "FastSolidColorDraw"
                     ]
                 }
             ]

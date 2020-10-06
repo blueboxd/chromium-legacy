@@ -1173,6 +1173,9 @@ extern const char kSameSiteByDefaultCookiesDescription[];
 extern const char kSchemefulSameSiteName[];
 extern const char kSchemefulSameSiteDescription[];
 
+extern const char kScreenCaptureTestName[];
+extern const char kScreenCaptureTestDescription[];
+
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
@@ -1883,9 +1886,6 @@ extern const char kNtpIframeOneGoogleBarDescription[];
 extern const char kNtpOneGoogleBarModalOverlaysName[];
 extern const char kNtpOneGoogleBarModalOverlaysDescription[];
 
-extern const char kNtpRealboxName[];
-extern const char kNtpRealboxDescription[];
-
 extern const char kNtpRepeatableQueriesName[];
 extern const char kNtpRepeatableQueriesDescription[];
 
@@ -2494,6 +2494,9 @@ extern const char kOsSettingsPolymer3Description[];
 
 extern const char kPhoneHubName[];
 extern const char kPhoneHubDescription[];
+
+extern const char kPhoneHubUseBleName[];
+extern const char kPhoneHubUseBleDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

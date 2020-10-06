@@ -91,6 +91,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
@@ -6233,6 +6234,33 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
             security_interstitials::InsecureFormBlockingPage::kTypeForTesting);
 }
 
+// Checks insecure form warning works for forms that submit on a new tab.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
+                       TestDisplaysInsecureFormSubmissionWarningTargetBlank) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  std::string replacement_path = GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_displays_insecure_form_target_blank.html",
+      embedded_test_server()->host_port_pair());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver nav_observer(tab, 1);
+  nav_observer.StartWatchingNewWebContents();
+  ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
+  nav_observer.Wait();
+  tab = browser()->tab_strip_model()->GetActiveWebContents();
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          tab);
+  EXPECT_TRUE(helper->IsDisplayingInterstitial());
+  EXPECT_EQ(helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
+                ->GetTypeForTesting(),
+            security_interstitials::InsecureFormBlockingPage::kTypeForTesting);
+}
+
 // Check proceed works correctly on insecure form warning.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
                        ProceedThroughInsecureFormWarning) {
@@ -8265,6 +8293,76 @@ IN_PROC_BROWSER_TEST_F(SSLUIAutoReloadTest, AutoReloadDisabled) {
   const base::Optional<base::OneShotTimer>& timer =
       reloader->next_reload_timer_for_testing();
   EXPECT_EQ(base::nullopt, timer);
+}
+
+class SSLUITestWithEnhancedProtectionMessage : public SSLUITest {
+ public:
+  SSLUITestWithEnhancedProtectionMessage() {
+    feature_list_.InitAndEnableFeature(
+        safe_browsing::kEnhancedProtectionMessageInInterstitials);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
+                       VerifyEnhancedProtectionMessageShown) {
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
+  safe_browsing::SetSafeBrowsingState(
+      browser()->profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::STANDARD_PROTECTION);
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  WaitForInterstitial(contents);
+  ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
+  ExpectInterstitialElementHidden(contents, "extended-reporting-opt-in",
+                                  true /* expect_hidden */);
+  ExpectInterstitialElementHidden(contents, "enhanced-protection-message",
+                                  false /* expect_hidden */);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
+                       VerifyEnhancedProtectionMessageNotShownAlreadyInEp) {
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
+  safe_browsing::SetSafeBrowsingState(
+      browser()->profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  WaitForInterstitial(contents);
+  ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
+  ExpectInterstitialElementHidden(contents, "extended-reporting-opt-in",
+                                  true /* expect_hidden */);
+  ExpectInterstitialElementHidden(contents, "enhanced-protection-message",
+                                  true /* expect_hidden */);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
+                       VerifyEnhancedProtectionMessageNotShownManaged) {
+  policy::PolicyMap policies;
+  policies.Set(policy::key::kSafeBrowsingProtectionLevel,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::Value(/* standard protection */ 1), nullptr);
+  UpdateChromePolicy(policies);
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  WaitForInterstitial(contents);
+  ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
+  ExpectInterstitialElementHidden(contents, "enhanced-protection-message",
+                                  true /* expect_hidden */);
 }
 
 // TODO(jcampan): more tests to do below.

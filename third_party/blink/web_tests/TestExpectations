@@ -2633,6 +2633,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/CSS2/text/white-space-processing-049.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/text/white-space-processing-048.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-203.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-201.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-206.html [ Failure ]
@@ -3233,6 +3235,7 @@ crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inlin
 crbug.com/957457 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
 crbug.com/1034807 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
 crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
+crbug.com/1034807 [ Win ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
 
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
@@ -6641,6 +6644,10 @@ crbug.com/1135225 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass F
 # Sheriff 2020-09-29
 crbug.com/1133342 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/reporting-observer.html [ Pass Failure Timeout ]
 crbug.com/1083605 media/controls-styling-strict.html [ Pass Failure ]
+
+# Transform animation reftests
+crbug.com/1133901 virtual/threaded/external/wpt/css/css-transforms/animation/transform-interpolation-translate-em.html [ Failure ]
+crbug.com/1131252 virtual/threaded/external/wpt/css/css-transforms/animation/transform-interpolation-skew.html [ Failure ]
 
 # Sheriff 2020-09-30
 crbug.com/1133821 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Pass Failure ]

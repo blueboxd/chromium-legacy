@@ -11,6 +11,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "media/base/mac/color_space_util_mac.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,6 +73,34 @@ base::ScopedCFTypeRef<CVImageBufferRef> CreateCVImageBuffer(
   CVBufferSetAttachments(image_buffer.get(), fmt,
                          kCVAttachmentMode_ShouldNotPropagate);
   return image_buffer;
+}
+
+base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateFormatDescription(
+    CFStringRef primaries,
+    CFStringRef transfer,
+    CFStringRef matrix) {
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> extensions(
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
+
+  if (primaries) {
+    CFDictionarySetValue(
+        extensions, kCMFormatDescriptionExtension_ColorPrimaries, primaries);
+  }
+  if (transfer) {
+    CFDictionarySetValue(
+        extensions, kCMFormatDescriptionExtension_TransferFunction, transfer);
+  }
+  if (matrix) {
+    CFDictionarySetValue(extensions, kCMFormatDescriptionExtension_YCbCrMatrix,
+                         matrix);
+  }
+  base::ScopedCFTypeRef<CMFormatDescriptionRef> result;
+  CMFormatDescriptionCreate(nullptr, kCMMediaType_Video,
+                            kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
+                            extensions.get(), result.InitializeInto());
+  return result;
 }
 
 gfx::ColorSpace ToBT709_APPLE(gfx::ColorSpace cs) {
@@ -361,6 +390,28 @@ TEST(VTConfigUtil, GetImageBufferColorSpace_BT2020_HLG) {
     EXPECT_EQ(cs.ToGfxColorSpace(), image_buffer_cs);
   } else {
     EXPECT_EQ(gfx::ColorSpace::CreateREC709(), image_buffer_cs);
+  }
+}
+
+TEST(VTConfigUtil, FormatDescriptionInvalid) {
+  if (__builtin_available(macos 10.11, *)) {
+    auto format_descriptor =
+        CreateFormatDescription(CFSTR("Cows"), CFSTR("Go"), CFSTR("Moo"));
+    ASSERT_TRUE(format_descriptor);
+    auto cs = GetFormatDescriptionColorSpace(format_descriptor);
+    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), cs);
+  }
+}
+
+TEST(VTConfigUtil, FormatDescriptionBT709) {
+  if (__builtin_available(macos 10.11, *)) {
+    auto format_descriptor = CreateFormatDescription(
+        kCMFormatDescriptionColorPrimaries_ITU_R_709_2,
+        kCMFormatDescriptionTransferFunction_ITU_R_709_2,
+        kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2);
+    ASSERT_TRUE(format_descriptor);
+    auto cs = GetFormatDescriptionColorSpace(format_descriptor);
+    EXPECT_EQ(ToBT709_APPLE(gfx::ColorSpace::CreateREC709()), cs);
   }
 }
 

@@ -2037,6 +2037,14 @@ const char kSchemefulSameSiteDescription[] =
     "registrable domain but different schemes are considered cross-site. This "
     "change only applies to cookies with the 'SameSite' attribute.";
 
+const char kScreenCaptureTestName[] = "Screen capture test";
+const char kScreenCaptureTestDescription[] =
+    "Enables an improved screen capture experience which aims to increase "
+    "productivity by making screen capture discoverable, intuitive, and "
+    "powerful. When enabled, access a new screen capture entry point from "
+    "quick settings. Select the capture type and selection default from the "
+    "capture mode UI bar. Try out new screen recording functionality.";
+
 const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
@@ -3298,12 +3306,6 @@ const char kNtpOneGoogleBarModalOverlaysDescription[] =
     "Otherwise, a clip-path definition is used to clip away parts of the"
     "OneGoogleBar that do not have visible elements.";
 
-const char kNtpRealboxName[] = "Real search box in New Tab Page";
-const char kNtpRealboxDescription[] =
-    "Enables a search box in the middle of the NTP that will accept input "
-    "directly (i.e. not be a \"fake\" box). Search results will show below the "
-    "non-fake input (\"realbox\").";
-
 const char kNtpRepeatableQueriesName[] =
     "Repeatable queries on the New Tab Page";
 const char kNtpRepeatableQueriesDescription[] =
@@ -4293,6 +4295,11 @@ const char kPhoneHubName[] = "Enable Phone Hub";
 const char kPhoneHubDescription[] =
     "Provides a UI for users to view information about their Android phone"
     "and perform phone-side actions within Chrome OS.";
+
+const char kPhoneHubUseBleName[] = "Enable Phone Hub connection with BLE";
+const char kPhoneHubUseBleDescription[] =
+    "If enabled, Phone Hub will use the BLE as the main source of connection "
+    "between the Chrome OS device and the remote phone.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =

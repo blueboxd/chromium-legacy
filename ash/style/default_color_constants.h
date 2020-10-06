@@ -15,4 +15,14 @@
 // Colors for power button menu.
 constexpr SkColor kPowerButtonMenuFullscreenShieldColor = SK_ColorBLACK;
 
+// Login shelf button color constants
+constexpr SkColor kLoginShelfButtonLabelColor = gfx::kGoogleGrey100;
+constexpr SkColor kLoginShelfButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
+constexpr SkColor kLoginBackgroundBaseColor = SK_ColorBLACK;
+
+// Colors for shelf.
+constexpr SkColor kDefaultShelfInkDropColor = SK_ColorBLACK;
+constexpr float kDefaultShelfInkDropOpacity = 0.2f;
+constexpr SkColor kShelfButtonColor = SK_ColorWHITE;
+
 #endif  // ASH_STYLE_DEFAULT_COLOR_CONSTANTS_H_

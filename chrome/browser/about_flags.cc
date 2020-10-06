@@ -2707,6 +2707,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(display::features::kUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
+    {"screen-capture", flag_descriptions::kScreenCaptureTestName,
+     flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
     {"ash-limit-alt-tab-to-active-desk",
      flag_descriptions::kLimitAltTabToActiveDeskName,
      flag_descriptions::kLimitAltTabToActiveDeskDescription, kOsCrOS,
@@ -4356,10 +4359,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpOneGoogleBarModalOverlaysDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kOneGoogleBarModalOverlays)},
 
-    {"ntp-realbox", flag_descriptions::kNtpRealboxName,
-     flag_descriptions::kNtpRealboxDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kRealbox)},
-
     {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
      flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpRepeatableQueries)},
@@ -5360,6 +5359,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-phone-hub", flag_descriptions::kPhoneHubName,
      flag_descriptions::kPhoneHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
+
+    {"enable-phone-hub-use-ble", flag_descriptions::kPhoneHubUseBleName,
+     flag_descriptions::kPhoneHubUseBleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPhoneHubUseBle)},
 
     {"wifi-sync-android", flag_descriptions::kWifiSyncAndroidName,
      flag_descriptions::kWifiSyncAndroidDescription, kOsCrOS,

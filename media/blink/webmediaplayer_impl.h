@@ -748,7 +748,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Document::shutdown() is called before the frame detaches (and before the
   // frame is destroyed). RenderFrameImpl owns |delegate_| and is guaranteed
   // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
-  blink::WebMediaPlayerDelegate* const delegate_;
+  blink::WebMediaPlayerDelegate* delegate_;
   int delegate_id_ = 0;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -925,8 +925,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;
 
-  // Owns the weblayer and obtains/maintains SurfaceIds for
-  // kUseSurfaceLayerForVideo feature.
+  // Owns the weblayer and obtains/maintains SurfaceIds.
   std::unique_ptr<blink::WebSurfaceLayerBridge> bridge_;
 
   // The maximum video keyframe distance that allows triggering background

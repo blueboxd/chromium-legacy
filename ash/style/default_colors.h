@@ -24,6 +24,9 @@ SkColor DeprecatedGetControlsLayerColor(
     SkColor default_color);
 SkColor DeprecatedGetContentLayerColor(AshColorProvider::ContentLayerType type,
                                        SkColor default_color);
+SkColor DeprecatedGetLoginBackgroundBaseColor(SkColor default_color);
+SkColor DeprecatedGetShelfInkDropBaseColor(SkColor default_color);
+float DeprecatedGetShelfInkDropOpacity(float default_opacity);
 }  // namespace ash
 
 #endif  // ASH_STYLE_DEFAULT_COLORS_H_

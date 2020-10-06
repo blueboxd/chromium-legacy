@@ -41,4 +41,24 @@ SkColor DeprecatedGetContentLayerColor(AshColorProvider::ContentLayerType type,
   return AshColorProvider::Get()->GetContentLayerColor(type);
 }
 
+SkColor DeprecatedGetLoginBackgroundBaseColor(SkColor default_color) {
+  if (!features::IsDarkLightModeEnabled())
+    return default_color;
+  return AshColorProvider::Get()->GetLoginBackgroundBaseColor();
+}
+
+SkColor DeprecatedGetShelfInkDropBaseColor(SkColor default_color) {
+  if (!features::IsDarkLightModeEnabled())
+    return default_color;
+
+  return AshColorProvider::Get()->GetRippleAttributes().base_color;
+}
+
+float DeprecatedGetShelfInkDropOpacity(float default_opacity) {
+  if (!features::IsDarkLightModeEnabled())
+    return default_opacity;
+
+  return AshColorProvider::Get()->GetRippleAttributes().inkdrop_opacity;
+}
+
 }  // namespace ash

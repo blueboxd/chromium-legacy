@@ -3357,7 +3357,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
           'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
-          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Retina Release (AMD)': {
@@ -3369,7 +3368,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
           'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
-          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Retina Release (NVIDIA)': {
@@ -4292,7 +4290,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_win_angle_amd_gtests',
           'gpu_telemetry_tests': 'gpu_win_angle_amd_telemetry_tests',
-          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'Win7 FYI Debug (AMD)': {
@@ -4972,6 +4969,7 @@
         },
       },
       'linux-swangle-tot-angle-x64' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -4985,6 +4983,7 @@
         },
       },
       'linux-swangle-tot-angle-x86' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -4998,6 +4997,7 @@
         },
       },
       'linux-swangle-tot-swiftshader-x64' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -5011,6 +5011,7 @@
         },
       },
       'linux-swangle-tot-swiftshader-x86' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -5024,6 +5025,7 @@
         },
       },
       'linux-swangle-x64' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -5037,6 +5039,7 @@
         },
       },
       'linux-swangle-x86' : {
+        'os_type': 'linux',
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
@@ -5073,6 +5076,7 @@
         },
       },
       'win-swangle-tot-angle-x64' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',
@@ -5085,6 +5089,7 @@
         },
       },
       'win-swangle-tot-angle-x86' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',
@@ -5097,6 +5102,7 @@
         },
       },
       'win-swangle-tot-swiftshader-x64' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',
@@ -5109,6 +5115,7 @@
         },
       },
       'win-swangle-tot-swiftshader-x86' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',
@@ -5121,6 +5128,7 @@
         },
       },
       'win-swangle-x64' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',
@@ -5133,6 +5141,7 @@
         },
       },
       'win-swangle-x86' : {
+        'os_type': 'win',
         'mixins': [
           'gpu-swarming-pool',
           'no_gpu',

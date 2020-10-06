@@ -24,6 +24,7 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -96,12 +97,8 @@ void LayoutTextControl::ComputeLogicalHeight(
   HTMLElement* inner_editor = InnerEditorElement();
   DCHECK(inner_editor);
   if (LayoutBox* inner_editor_box = inner_editor->GetLayoutBox()) {
-    LayoutUnit non_content_height = inner_editor_box->BorderAndPaddingHeight() +
-                                    inner_editor_box->MarginHeight();
-    logical_height = ComputeControlLogicalHeight(
-        inner_editor_box->LineHeight(true, kHorizontalLine,
-                                     kPositionOfInteriorLineBoxes),
-        non_content_height);
+    logical_height = ComputeControlLogicalHeight(inner_editor_box->LineHeight(
+        true, kHorizontalLine, kPositionOfInteriorLineBoxes));
 
     // We are able to have a horizontal scrollbar if the overflow style is
     // scroll, or if its auto and there's no word wrap.
@@ -221,19 +218,6 @@ float LayoutTextControl::GetAvgCharWidth(const ComputedStyle& style) {
   TextRun text_run =
       ConstructTextRun(font, str, style, TextRun::kAllowTrailingExpansion);
   return font.Width(text_run);
-}
-
-MinMaxSizes LayoutTextControl::ComputeIntrinsicLogicalWidths() const {
-  NOT_DESTROYED();
-  MinMaxSizes sizes;
-  sizes += BorderAndPaddingLogicalWidth();
-
-  // Use average character width. Matches IE.
-  sizes.max_size += PreferredContentLogicalWidth(GetAvgCharWidth(StyleRef()));
-
-  if (!StyleRef().LogicalWidth().IsPercentOrCalc())
-    sizes.min_size = sizes.max_size;
-  return sizes;
 }
 
 void LayoutTextControl::AddOutlineRects(Vector<PhysicalRect>& rects,

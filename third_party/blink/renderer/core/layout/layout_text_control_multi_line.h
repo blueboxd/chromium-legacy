@@ -44,10 +44,7 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
-  LayoutUnit PreferredContentLogicalWidth(float char_width) const override;
-  LayoutUnit ComputeControlLogicalHeight(
-      LayoutUnit line_height,
-      LayoutUnit non_content_height) const override;
+  LayoutUnit ComputeControlLogicalHeight(LayoutUnit line_height) const override;
   // We override the two baseline functions because we want our baseline to be
   // the bottom of our margin box.
   LayoutUnit BaselinePosition(

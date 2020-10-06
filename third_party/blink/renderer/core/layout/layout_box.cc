@@ -45,10 +45,12 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -68,6 +70,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
@@ -123,13 +126,60 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   MinMaxSizes intrinsic_logical_widths;
   LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size;
   void* pointers[4];
-  Persistent<void*> rare_data;
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
+  Persistent<void*> rare_data;
 };
 
 ASSERT_SIZE(LayoutBox, SameSizeAsLayoutBox);
 
 namespace {
+
+LayoutUnit TextAreaIntrinsicInlineSize(const HTMLTextAreaElement& textarea,
+                                       const LayoutBox& box) {
+  // <textarea>'s intrinsic inilne-size always contains the scrollbar thickness
+  // regardless of actual existence of a scrollbar. If a scrollbar exists, its
+  // thickness is not added.  See NGBlockLayoutAlgorithm::ComputeMinMaxSizes()
+  // and LayoutBlock::ComputeIntrinsicLogicalWidths().
+  return LayoutUnit(ceilf(LayoutTextControl::GetAvgCharWidth(box.StyleRef()) *
+                          textarea.cols())) +
+         LayoutTextControl::ScrollbarThickness(box);
+}
+
+LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
+                                        const LayoutBox& box) {
+  int factor;
+  const bool includes_decoration = input.SizeShouldIncludeDecoration(factor);
+  if (factor <= 0)
+    factor = 20;
+
+  const float char_width = LayoutTextControl::GetAvgCharWidth(box.StyleRef());
+  LayoutUnit result = LayoutUnit::FromFloatCeil(char_width * factor);
+
+  float max_char_width = 0.f;
+  const Font& font = box.StyleRef().GetFont();
+  if (LayoutTextControl::HasValidAvgCharWidth(font))
+    max_char_width = roundf(font.PrimaryFont()->MaxCharWidth());
+
+  // For text inputs, IE adds some extra width.
+  if (max_char_width > 0.f)
+    result += max_char_width - char_width;
+
+  if (includes_decoration) {
+    const auto* spin_button =
+        To<HTMLElement>(input.UserAgentShadowRoot()->getElementById(
+            shadow_element_names::kIdSpinButton));
+    if (LayoutBox* spin_box =
+            spin_button ? spin_button->GetLayoutBox() : nullptr) {
+      result += spin_box->BorderAndPaddingLogicalWidth();
+      // Since the width of spin_box is not calculated yet,
+      // spin_layout_object->LogicalWidth() returns 0. Use the computed logical
+      // width instead.
+      result += spin_box->StyleRef().LogicalWidth().Value();
+    }
+  }
+
+  return result;
+}
 
 LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
                                                 const LayoutBox& box) {
@@ -725,13 +775,13 @@ void LayoutBox::LayoutSubtreeRoot() {
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     LayoutBlock* cb = ContainingBlock();
     while (NGBlockNode::CanUseNewLayout(*cb) && !cb->NeedsLayout()) {
+      // Create and set a new identical results.
       if (cb->measure_result_) {
         cb->measure_result_ =
             NGLayoutResult::CloneWithPostLayoutFragments(*cb->measure_result_);
       }
       for (scoped_refptr<const NGLayoutResult>& layout_result :
            cb->layout_results_) {
-        // Create and set a new identical result.
         layout_result =
             NGLayoutResult::CloneWithPostLayoutFragments(*layout_result);
       }
@@ -1086,6 +1136,8 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
   }
   auto* input = DynamicTo<HTMLInputElement>(element);
   if (UNLIKELY(input)) {
+    if (input->IsTextField())
+      return TextFieldIntrinsicInlineSize(*input, *this);
     const AtomicString& type = input->type();
     if (type == input_type_names::kFile)
       return FileUploadControlIntrinsicInlineSize(*input, *this);
@@ -1093,6 +1145,10 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
       return SliderIntrinsicInlineSize(*this);
     return kIndefiniteSize;
   }
+  auto* textarea = DynamicTo<HTMLTextAreaElement>(element);
+  if (UNLIKELY(textarea))
+    return TextAreaIntrinsicInlineSize(*textarea, *this);
+
   if (IsSliderContainer(element))
     return SliderIntrinsicInlineSize(*this);
   return kIndefiniteSize;
@@ -6704,7 +6760,81 @@ bool LayoutBox::HasTopOverflow() const {
 
 bool LayoutBox::HasLeftOverflow() const {
   NOT_DESTROYED();
-  return !StyleRef().IsLeftToRightDirection() && IsHorizontalWritingMode();
+  if (IsHorizontalWritingMode())
+    return !StyleRef().IsLeftToRightDirection();
+  return StyleRef().GetWritingMode() == WritingMode::kVerticalRl;
+}
+
+void LayoutBox::SetLayoutOverflowFromLayoutResults() {
+  NOT_DESTROYED();
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLayoutOverflowEnabled());
+  ClearSelfNeedsLayoutOverflowRecalc();
+  ClearChildNeedsLayoutOverflowRecalc();
+  ClearLayoutOverflow();
+
+  const WritingMode writing_mode = StyleRef().GetWritingMode();
+  base::Optional<PhysicalRect> layout_overflow;
+  LayoutUnit consumed_block_size;
+
+  // Iterate over all the fragments and unite their individual layout-overflow
+  // to determine the final layout-overflow.
+  for (const auto& layout_result : layout_results_) {
+    const auto& fragment =
+        To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
+
+    // In order to correctly unite the overflow, we need to shift an individual
+    // fragment's layout-overflow by previously consumed block-size so far.
+    PhysicalOffset offset_adjust;
+    switch (writing_mode) {
+      case WritingMode::kHorizontalTb:
+        offset_adjust = {LayoutUnit(), consumed_block_size};
+        break;
+      case WritingMode::kVerticalRl:
+      case WritingMode::kSidewaysRl:
+        offset_adjust = {-fragment.Size().width - consumed_block_size,
+                         LayoutUnit()};
+        break;
+      case WritingMode::kVerticalLr:
+      case WritingMode::kSidewaysLr:
+        offset_adjust = {consumed_block_size, LayoutUnit()};
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    PhysicalRect fragment_layout_overflow = fragment.LayoutOverflow();
+    fragment_layout_overflow.offset += offset_adjust;
+
+    // If we are the first fragment just set the layout-overflow.
+    if (!layout_overflow)
+      layout_overflow = fragment_layout_overflow;
+    else
+      layout_overflow->UniteEvenIfEmpty(fragment_layout_overflow);
+
+    if (const auto* break_token = fragment.BreakToken()) {
+      consumed_block_size =
+          To<NGBlockBreakToken>(break_token)->ConsumedBlockSize();
+    }
+  }
+
+  if (!layout_overflow)
+    return;
+
+  // layout-overflow is stored respecting flipped-blocks.
+  if (IsFlippedBlocksWritingMode(writing_mode)) {
+    layout_overflow->offset.left =
+        -layout_overflow->offset.left - layout_overflow->size.width;
+  }
+
+  if (layout_overflow->IsEmpty() ||
+      PhysicalPaddingBoxRect().Contains(*layout_overflow))
+    return;
+
+  DCHECK(!LayoutOverflowIsSet());
+  if (!overflow_)
+    overflow_ = std::make_unique<BoxOverflowModel>();
+  overflow_->layout_overflow.emplace(layout_overflow->ToLayoutRect());
 }
 
 DISABLE_CFI_PERF
@@ -6726,16 +6856,19 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
     // mode.  At this stage that is actually a simplification, since we can
     // treat vertical-lr/rl
     // as the same.
-    if (HasTopOverflow())
+    if (HasTopOverflow()) {
       overflow_rect.ShiftMaxYEdgeTo(
           std::min(overflow_rect.MaxY(), client_box.MaxY()));
-    else
+    } else {
       overflow_rect.ShiftYEdgeTo(std::max(overflow_rect.Y(), client_box.Y()));
-    if (HasLeftOverflow())
+    }
+    if (HasLeftOverflow() !=
+        IsFlippedBlocksWritingMode(StyleRef().GetWritingMode())) {
       overflow_rect.ShiftMaxXEdgeTo(
           std::min(overflow_rect.MaxX(), client_box.MaxX()));
-    else
+    } else {
       overflow_rect.ShiftXEdgeTo(std::max(overflow_rect.X(), client_box.X()));
+    }
 
     // Now re-test with the adjusted rectangle and see if it has become
     // unreachable or fully

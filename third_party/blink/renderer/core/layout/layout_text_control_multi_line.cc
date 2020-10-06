@@ -56,20 +56,10 @@ bool LayoutTextControlMultiLine::NodeAtPoint(
   return true;
 }
 
-LayoutUnit LayoutTextControlMultiLine::PreferredContentLogicalWidth(
-    float char_width) const {
-  NOT_DESTROYED();
-  int factor = To<HTMLTextAreaElement>(GetNode())->cols();
-  return static_cast<LayoutUnit>(ceilf(char_width * factor)) +
-         ScrollbarThickness(*this);
-}
-
 LayoutUnit LayoutTextControlMultiLine::ComputeControlLogicalHeight(
-    LayoutUnit line_height,
-    LayoutUnit non_content_height) const {
+    LayoutUnit line_height) const {
   NOT_DESTROYED();
-  return line_height * To<HTMLTextAreaElement>(GetNode())->rows() +
-         non_content_height;
+  return line_height * To<HTMLTextAreaElement>(GetNode())->rows();
 }
 
 LayoutUnit LayoutTextControlMultiLine::BaselinePosition(

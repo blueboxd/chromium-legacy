@@ -29883,6 +29883,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3699" label="ThirdPartyActivation"/>
   <int value="3700" label="ThirdPartyAccessAndActivation"/>
   <int value="3701" label="FullscreenAllowedByScreensChange"/>
+  <int value="3702" label="NewLayoutOverflowDifferentBlock"/>
+  <int value="3703" label="NewLayoutOverflowDifferentFlex"/>
+  <int value="3704" label="NewLayoutOverflowDifferentAndAlreadyScrollsBlock"/>
+  <int value="3705" label="NewLayoutOverflowDifferentAndAlreadyScrollsFlex"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -59731,6 +59735,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Go Incognito from Menu (Deprecated)">
     User opened the user menu, and selected Go Incognito.
   </int>
+</enum>
+
+<enum name="ProfileDestructionType">
+  <int value="0" label="Immediately"/>
+  <int value="1" label="Delayed"/>
+  <int value="2" label="Delayed and Crashed"/>
 </enum>
 
 <enum name="ProfileErrorType">

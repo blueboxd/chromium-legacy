@@ -371,6 +371,54 @@ var TelemetryExtensionUIWithProbeServiceErrorsBrowserTest =
   }
 }
 
+var TelemetryExtensionUIWithAdapterAddedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothAdapterAddedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithAdapterRemovedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothAdapterRemovedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithAdapterPropertyChangedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothAdapterPropertyChangedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithDeviceAddedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothDeviceAddedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithDeviceRemovedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothDeviceRemovedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithDevicePropertyChangedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitBluetoothDevicePropertyChangedEventPeriodically();');
+  }
+}
+
 var TelemetryExtensionUIWithLidClosedEventBrowserTest =
     class extends TelemetryExtensionUIBrowserTest {
   /** @override */
@@ -384,6 +432,38 @@ var TelemetryExtensionUIWithLidOpenedEventBrowserTest =
   /** @override */
   testGenPreamble() {
     GEN('EmitLidOpenedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithAcInsertedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitAcInsertedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithAcRemovedEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitAcRemovedEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithOsSuspendEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitOsSuspendEventPeriodically();');
+  }
+}
+
+var TelemetryExtensionUIWithOsResumeEventBrowserTest =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('EmitOsResumeEventPeriodically();');
   }
 }
 
@@ -439,12 +519,52 @@ const untrustedTests = [
     'TelemetryExtensionUIWithProbeServiceErrorsBrowserTest'
   ],
   [
+    'UntrustedBluetoothAdapterAddedEventListener',
+    'TelemetryExtensionUIWithAdapterAddedEventBrowserTest'
+  ],
+  [
+    'UntrustedBluetoothAdapterRemovedEventListener',
+    'TelemetryExtensionUIWithAdapterRemovedEventBrowserTest'
+  ],
+  [
+    'UntrustedBluetoothAdapterPropertyChangedEventListener',
+    'TelemetryExtensionUIWithAdapterPropertyChangedEventBrowserTest'
+  ],
+  [
+    'UntrustedBluetoothDeviceAddedEventListener',
+    'TelemetryExtensionUIWithDeviceAddedEventBrowserTest'
+  ],
+  [
+    'UntrustedBluetoothDeviceRemovedEventListener',
+    'TelemetryExtensionUIWithDeviceRemovedEventBrowserTest'
+  ],
+  [
+    'UntrustedBluetoothDevicePropertyChangedEventListener',
+    'TelemetryExtensionUIWithDevicePropertyChangedEventBrowserTest'
+  ],
+  [
     'UntrustedLidClosedEventListener',
     'TelemetryExtensionUIWithLidClosedEventBrowserTest'
   ],
   [
     'UntrustedLidOpenedEventListener',
     'TelemetryExtensionUIWithLidOpenedEventBrowserTest'
+  ],
+  [
+    'UntrustedAcInsertedEventListener',
+    'TelemetryExtensionUIWithAcInsertedEventBrowserTest'
+  ],
+  [
+    'UntrustedAcRemovedEventListener',
+    'TelemetryExtensionUIWithAcRemovedEventBrowserTest'
+  ],
+  [
+    'UntrustedOsSuspendEventListener',
+    'TelemetryExtensionUIWithOsSuspendEventBrowserTest'
+  ],
+  [
+    'UntrustedOsResumeEventListener',
+    'TelemetryExtensionUIWithOsResumeEventBrowserTest'
   ],
 ].forEach(test => registerUntrustedTest(...test));
 

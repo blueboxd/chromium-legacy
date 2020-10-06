@@ -1793,6 +1793,11 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
   if (result.IsHDR() && content_color_usage != gfx::ContentColorUsage::kHDR)
     return gfx::ColorSpace::CreateDisplayP3D65();
 
+  // The raster color space should contain sRGB to avoid artifacts during
+  // rasterization.
+  if (!result.Contains(srgb))
+    return srgb;
+
   return result;
 }
 
@@ -4242,8 +4247,9 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   const gfx::Size source_size = bitmap.GetSize();
   gfx::Size upload_size = bitmap.GetSize();
   bool scaled = false;
-  // UIResources are assumed to be rastered in SRGB.
-  const gfx::ColorSpace& color_space = gfx::ColorSpace::CreateSRGB();
+  // UIResources are assumed to be rastered in raster color space.
+  const gfx::ColorSpace& color_space =
+      GetRasterColorSpace(gfx::ContentColorUsage::kSRGB);
 
   if (source_size.width() > max_texture_size_ ||
       source_size.height() > max_texture_size_) {

@@ -910,9 +910,6 @@ extern const char kOmniboxRichAutocompletionPromisingDescription[];
 extern const char kOmniboxRichEntitiesInLauncherName[];
 extern const char kOmniboxRichEntitiesInLauncherDescription[];
 
-extern const char kOmniboxOnFocusSuggestionsName[];
-extern const char kOmniboxOnFocusSuggestionsDescription[];
-
 extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 
@@ -981,15 +978,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
-
-extern const char kOmniboxZeroSuggestionsOnNTPName[];
-extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
-
-extern const char kOmniboxZeroSuggestionsOnNTPRealboxName[];
-extern const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[];
-
-extern const char kOmniboxZeroSuggestionsOnSERPName[];
-extern const char kOmniboxZeroSuggestionsOnSERPDescription[];
 
 extern const char kOnTheFlyMhtmlHashComputationName[];
 extern const char kOnTheFlyMhtmlHashComputationDescription[];
@@ -1190,6 +1178,9 @@ extern const char kSendTabToSelfOmniboxSendingAnimationDescription[];
 
 extern const char kServiceWorkerOnUIName[];
 extern const char kServiceWorkerOnUIDescription[];
+
+extern const char kShareByDefaultInCCTName[];
+extern const char kShareByDefaultInCCTDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];

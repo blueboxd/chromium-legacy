@@ -1580,11 +1580,6 @@ const char kOmniboxRichEntitiesInLauncherName[] =
 const char kOmniboxRichEntitiesInLauncherDescription[] =
     "Enable rich entity formatting for Omnibox results in the launcher.";
 
-const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
-const char kOmniboxOnFocusSuggestionsDescription[] =
-    "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
-    "before the user has typed any input";
-
 const char kOmniboxOnFocusSuggestionsContextualWebName[] =
     "Omnibox on-focus suggestions for the contextual Web";
 const char kOmniboxOnFocusSuggestionsContextualWebDescription[] =
@@ -1704,22 +1699,6 @@ const char kOmniboxUISwapTitleAndUrlName[] = "Omnibox UI Swap Title and URL";
 const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
-
-const char kOmniboxZeroSuggestionsOnNTPName[] =
-    "Omnibox Zero Suggestions on New Tab Page";
-const char kOmniboxZeroSuggestionsOnNTPDescription[] =
-    "Offer suggestions when URL bar (omnibox) is focused.";
-
-const char kOmniboxZeroSuggestionsOnNTPRealboxName[] =
-    "Zero Suggestions in real search box on New Tab Page";
-const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[] =
-    "Offer suggestions when the real search box on New Tab Page is focused.";
-
-const char kOmniboxZeroSuggestionsOnSERPName[] =
-    "Omnibox Zero Suggestions on SERP / On-Focus Query Refinement";
-const char kOmniboxZeroSuggestionsOnSERPDescription[] =
-    "Offer query refinement suggestions when the URL bar (omnibox) is focused "
-    "on the default search provider's search results page (SERP).";
 
 const char kOnTheFlyMhtmlHashComputationName[] =
     "On-The-Fly MHTML Hash Computation";
@@ -2072,6 +2051,10 @@ const char kServiceWorkerOnUIName[] = "Service worker on UI thread";
 const char kServiceWorkerOnUIDescription[] =
     "Enables browser process logic related to service workers to run on the UI "
     "thread rather than the IO thread.";
+
+const char kShareByDefaultInCCTName[] = "Enable sharing by default in CCT.";
+const char kShareByDefaultInCCTDescription[] =
+    "Enables a sharing option by default in Chrome Custom Tabs.";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";

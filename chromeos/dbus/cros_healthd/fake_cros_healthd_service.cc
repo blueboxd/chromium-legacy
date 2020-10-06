@@ -283,9 +283,49 @@ void FakeCrosHealthdService::EmitAcInsertedEventForTesting() {
     observer->OnAcInserted();
 }
 
+void FakeCrosHealthdService::EmitAcRemovedEventForTesting() {
+  for (auto& observer : power_observers_)
+    observer->OnAcRemoved();
+}
+
+void FakeCrosHealthdService::EmitOsSuspendEventForTesting() {
+  for (auto& observer : power_observers_)
+    observer->OnOsSuspend();
+}
+
+void FakeCrosHealthdService::EmitOsResumeEventForTesting() {
+  for (auto& observer : power_observers_)
+    observer->OnOsResume();
+}
+
 void FakeCrosHealthdService::EmitAdapterAddedEventForTesting() {
   for (auto& observer : bluetooth_observers_)
     observer->OnAdapterAdded();
+}
+
+void FakeCrosHealthdService::EmitAdapterRemovedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnAdapterRemoved();
+}
+
+void FakeCrosHealthdService::EmitAdapterPropertyChangedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnAdapterPropertyChanged();
+}
+
+void FakeCrosHealthdService::EmitDeviceAddedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnDeviceAdded();
+}
+
+void FakeCrosHealthdService::EmitDeviceRemovedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnDeviceRemoved();
+}
+
+void FakeCrosHealthdService::EmitDevicePropertyChangedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnDevicePropertyChanged();
 }
 
 void FakeCrosHealthdService::EmitLidClosedEventForTesting() {

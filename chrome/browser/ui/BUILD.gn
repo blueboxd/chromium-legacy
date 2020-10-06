@@ -3287,6 +3287,8 @@ static_library("ui") {
 
   if (toolkit_views) {
     sources += [
+      "autofill/address_profiles/save_address_profile_bubble_controller.cc",
+      "autofill/address_profiles/save_address_profile_bubble_controller.h",
       "autofill/payments/local_card_migration_bubble.h",
       "autofill/payments/local_card_migration_bubble_controller_impl.cc",
       "autofill/payments/local_card_migration_bubble_controller_impl.h",
@@ -3356,6 +3358,8 @@ static_library("ui") {
       "views/apps/app_info_dialog/app_info_summary_panel.h",
       "views/apps/chrome_native_app_window_views.cc",
       "views/apps/chrome_native_app_window_views.h",
+      "views/autofill/address_profiles/save_address_profile_view.cc",
+      "views/autofill/address_profiles/save_address_profile_view.h",
       "views/autofill/autofill_bubble_handler_impl.cc",
       "views/autofill/autofill_bubble_handler_impl.h",
       "views/autofill/autofill_popup_base_view.cc",
@@ -3603,8 +3607,6 @@ static_library("ui") {
       "views/in_product_help/feature_promo_controller_views.h",
       "views/in_product_help/feature_promo_registry.cc",
       "views/in_product_help/feature_promo_registry.h",
-      "views/in_product_help/reopen_tab_promo_controller.cc",
-      "views/in_product_help/reopen_tab_promo_controller.h",
       "views/infobars/alternate_nav_infobar_view.cc",
       "views/infobars/alternate_nav_infobar_view.h",
       "views/infobars/confirm_infobar.cc",

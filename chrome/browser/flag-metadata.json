@@ -3547,21 +3547,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-zero-suggestions-on-ntp",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "omnibox-zero-suggestions-on-ntp-realbox",
-    "owners": [ "mahmadi" ],
-    "expiry_milestone": 86
-  },
-  {
-    "name": "omnibox-zero-suggestions-on-serp",
-    "owners": [ "tommycli", "pnoland" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
@@ -3655,7 +3640,7 @@
   {
     "name": "password-change-in-settings",
     "owners": [ "kolos" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 90
   },
   {
     "name": "password-change-support",
@@ -3670,7 +3655,7 @@
   {
     "name": "password-scripts-fetching",
     "owners": [ "kolos" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 90
   },
   {
     "name": "PasswordImport",
@@ -4136,6 +4121,11 @@
     "name": "share-button-in-top-toolbar",
     "owners": [ "jeffreycohen" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "share-by-default-in-cct",
+    "owners": [ "sophey" ],
+    "expiry_milestone": 90
   },
   {
     "name": "shared-clipboard-ui",

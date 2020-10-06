@@ -879,21 +879,70 @@ class SystemEventsProxy {
     this.messagePipe = messagePipe;
     this.iframeReady = iframeReady;
 
-    this.events = {
-      ON_LID_CLOSED: 'lid-closed',
-      ON_LID_OPENED: 'lid-opened',
+    const events = {
+      // Bluetooth events
+      BLUETOOTH_ADAPTER_ADDED: 'bluetooth-adapter-added',
+      BLUETOOTH_ADAPTER_REMOVED: 'bluetooth-adapter-removed',
+      BLUETOOTH_ADAPTER_PROPERTY_CHANGED: 'bluetooth-adapter-property-changed',
+      BLUETOOTH_DEVICE_ADDED: 'bluetooth-device-added',
+      BLUETOOTH_DEVICE_REMOVED: 'bluetooth-device-removed',
+      BLUETOOTH_DEVICE_PROPERTY_CHANGED: 'bluetooth-device-property-changed',
+
+      // Lid events
+      LID_CLOSED: 'lid-closed',
+      LID_OPENED: 'lid-opened',
+
+      // Power events
+      AC_INSERTED: 'ac-inserted',
+      AC_REMOVED: 'ac-removed',
+      OS_SUSPEND: 'os-suspend',
+      OS_RESUME: 'os-resume',
     };
+
+    this.bluetoothObserverCallbackRouter_ =
+        new chromeos.health.mojom.BluetoothObserverCallbackRouter();
+
+    this.bluetoothObserverCallbackRouter_.onAdapterAdded.addListener(
+        () => this.sendEvent(events.BLUETOOTH_ADAPTER_ADDED));
+    this.bluetoothObserverCallbackRouter_.onAdapterRemoved.addListener(
+        () => this.sendEvent(events.BLUETOOTH_ADAPTER_REMOVED));
+    this.bluetoothObserverCallbackRouter_.onAdapterPropertyChanged.addListener(
+        () => this.sendEvent(events.BLUETOOTH_ADAPTER_PROPERTY_CHANGED));
+    this.bluetoothObserverCallbackRouter_.onDeviceAdded.addListener(
+        () => this.sendEvent(events.BLUETOOTH_DEVICE_ADDED));
+    this.bluetoothObserverCallbackRouter_.onDeviceRemoved.addListener(
+        () => this.sendEvent(events.BLUETOOTH_DEVICE_REMOVED));
+    this.bluetoothObserverCallbackRouter_.onDevicePropertyChanged.addListener(
+        () => this.sendEvent(events.BLUETOOTH_DEVICE_PROPERTY_CHANGED));
+
+    getOrCreateSystemEventsService().addBluetoothObserver(
+        this.bluetoothObserverCallbackRouter_.$.bindNewPipeAndPassRemote());
 
     this.lidObserverCallbackRouter_ =
         new chromeos.health.mojom.LidObserverCallbackRouter();
 
     this.lidObserverCallbackRouter_.onLidClosed.addListener(
-        () => this.sendEvent(this.events.ON_LID_CLOSED));
+        () => this.sendEvent(events.LID_CLOSED));
     this.lidObserverCallbackRouter_.onLidOpened.addListener(
-        () => this.sendEvent(this.events.ON_LID_OPENED));
+        () => this.sendEvent(events.LID_OPENED));
 
     getOrCreateSystemEventsService().addLidObserver(
         this.lidObserverCallbackRouter_.$.bindNewPipeAndPassRemote());
+
+    this.powerObserverCallbackRouter_ =
+        new chromeos.health.mojom.PowerObserverCallbackRouter();
+
+    this.powerObserverCallbackRouter_.onAcInserted.addListener(
+        () => this.sendEvent(events.AC_INSERTED));
+    this.powerObserverCallbackRouter_.onAcRemoved.addListener(
+        () => this.sendEvent(events.AC_REMOVED));
+    this.powerObserverCallbackRouter_.onOsSuspend.addListener(
+        () => this.sendEvent(events.OS_SUSPEND));
+    this.powerObserverCallbackRouter_.onOsResume.addListener(
+        () => this.sendEvent(events.OS_RESUME));
+
+    getOrCreateSystemEventsService().addPowerObserver(
+        this.powerObserverCallbackRouter_.$.bindNewPipeAndPassRemote());
   }
 
   /**

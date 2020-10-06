@@ -296,7 +296,6 @@ android_library("chrome_java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android/features/keyboard_accessory:public_java",
-    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library:piet_resources",
     "//chrome/android/modules/cablev2_authenticator/public:java",
     "//chrome/android/modules/image_editor/provider:java",
     "//chrome/android/modules/image_editor/public:java",
@@ -717,6 +716,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
 
 java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
   sources = [
+    "//chrome/browser/android/vr/arcore_device/arcore_install_helper.h",
     "//chrome/browser/android/vr/vrcore_install_helper.h",
     "//chrome/browser/vr/text_edit_action.h",
     "//chrome/browser/vr/ui_test_input.h",
@@ -931,6 +931,7 @@ android_library("chrome_test_util_java") {
     "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
     "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/directactions/FakeDirectActionReporter.java",
+    "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestTestRule.java",
     "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
     "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
   ]
@@ -943,16 +944,21 @@ android_library("chrome_test_util_java") {
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/payments/content/android:java",
+    "//components/payments/mojom:mojom_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_media:android_media_resources",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
+    "//ui/android:ui_no_recycler_view_java",
   ]
 }
 
@@ -1994,8 +2000,6 @@ template("chrome_public_apk_or_module_tmpl") {
                            ])
     deps = _chrome_public_shared_deps
 
-    enforce_resource_overlays = true
-
     if (_is_bundle_module) {
       deps += [ ":chrome_bundle_module_pak_assets" ]
     } else {
@@ -2352,7 +2356,7 @@ template("chrome_test_apk_tmpl") {
                              "android_manifest_dep",
                              "data_deps",
                              "enable_lint",
-                             "enforce_resource_overlays",
+                             "enforce_resource_overlays_in_tests",
                              "shared_libraries",
                            ])
 
@@ -2469,13 +2473,16 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
   if (enable_chrome_android_internal) {
     data_deps += [ "//clank/build/bot/filters:chrome_public_test_apk_filters" ]
   }
+
+  # Required by //build/config/android/test/resource_overlay:javatests
+  enforce_resource_overlays_in_tests = true
+
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
     "//chrome/android/webapk/shell_apk:javatests_webapk",
     "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
   ]
-  enforce_resource_overlays = true
 }
 
 if (enable_vr) {

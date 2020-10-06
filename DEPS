@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e2c6940c36e4687cce431750b878c1dbe221c45d',
+  'skia_revision': '33b42e12ab711a094b5fa03a084f4f79fb92accf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'edd7ee8add17eb9bd4060ce0faecd22c9a847852',
+  'v8_revision': '090d2b615d7cb9ea9e32a4f99c939f67d9bbd936',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,15 +207,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f6e983b87ff4d856af26cf5a9cb6e6a1f8ddb9d9',
+  'angle_revision': '0faa4a3d2e56ba0965af3bd39f220752ecd7196d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'afe6ca45b6da79f52d02b76bce03fc72cc322920',
+  'swiftshader_revision': 'a3b213595b3600a2acb4f02b5363485fbef25f71',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'fca083c57b5f095e62bf2fc3121a429227a8487f',
+  'pdfium_revision': '3a384ed186dd92a2250da859659dbeb22321e630',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '532e564f622742fc93a7f91dd3556d711e778a7e',
+  'catapult_revision': '83c2cb1060772ddd0e096c49918785afb11148b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b910ce5dce08e64e0851e1dfb7c9831fdc6d6b45',
+  'devtools_frontend_revision': '15f1e5d585c59a10d053e8ef51fe49ec92760a1d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -801,7 +801,7 @@ deps = {
   },
 
   'src/third_party/barhopper': {
-      'url': 'https://chrome-internal.googlesource.com/chrome/deps/barhopper.git' + '@' + 'd5422b6ec462d016d7cc1be59a9485e5f82bcf9f',
+      'url': 'https://chrome-internal.googlesource.com/chrome/deps/barhopper.git' + '@' + 'ad3c4382875afdd0340f1549f8b9c93cbbc16e37',
       'condition': 'checkout_src_internal and checkout_chromeos',
   },
 
@@ -881,7 +881,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e6a8f4ed40bbe1622f7b3356655175cb69171ea0',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '972e0ab44119c8c30865e8328f85114a11224869',
       'condition': 'checkout_chromeos',
   },
 
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '1qgzKrGhI64IrU5cPuJx3Db7tTBuX0vsvN91vq06emIC'
+              'version': 'rm-oWpofMHDuUfi-LbP5AaoUMSZkdiYVAIAu8CSqCyEC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

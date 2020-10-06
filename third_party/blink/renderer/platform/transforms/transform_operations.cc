@@ -93,6 +93,16 @@ void TransformOperations::ApplyRemaining(const FloatSize& border_box_size,
   }
 }
 
+TransformOperation::BoxSizeDependency TransformOperations::BoxSizeDependencies(
+    wtf_size_t start) const {
+  TransformOperation::BoxSizeDependency deps = TransformOperation::kDependsNone;
+  for (wtf_size_t i = start; i < operations_.size(); i++) {
+    deps = TransformOperation::CombineDependencies(
+        deps, operations_[i]->BoxSizeDependencies());
+  }
+  return deps;
+}
+
 wtf_size_t TransformOperations::MatchingPrefixLength(
     const TransformOperations& other) const {
   wtf_size_t num_operations =
@@ -117,8 +127,8 @@ TransformOperations::BlendRemainingByUsingMatrixInterpolation(
     double progress) const {
   // Not safe to use a cached transform if any of the operations are size
   // dependent.
-  if (DependsOnBoxSize(matching_prefix_length) ||
-      from.DependsOnBoxSize(matching_prefix_length)) {
+  if (BoxSizeDependencies(matching_prefix_length) ||
+      from.BoxSizeDependencies(matching_prefix_length)) {
     return InterpolatedTransformOperation::Create(
         from, *this, matching_prefix_length, progress);
   }

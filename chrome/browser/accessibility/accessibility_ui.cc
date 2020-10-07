@@ -458,8 +458,7 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     // accessibility mode buttons are updated.
     AllowJavascript();
     std::unique_ptr<base::DictionaryValue> new_mode(BuildTargetDescriptor(rvh));
-    CallJavascriptFunction("accessibility.showOrRefreshTree",
-                           *(new_mode.get()));
+    FireWebUIListener("showOrRefreshTree", *(new_mode.get()));
   }
 }
 
@@ -534,7 +533,6 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   CHECK(IsValidJSValue(request_type_p));
   std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
-  request_type = "accessibility." + request_type;
 
   const std::string* allow_p = data->FindStringPath("filters.allow");
   CHECK(IsValidJSValue(allow_p));
@@ -554,7 +552,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRoutingIdField, routing_id);
     result->SetString(kErrorField, "Renderer no longer exists.");
-    CallJavascriptFunction(request_type, *(result.get()));
+    FireWebUIListener(request_type, *(result.get()));
     return;
   }
 
@@ -584,7 +582,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   std::string accessibility_contents =
       web_contents->DumpAccessibilityTree(internal, property_filters);
   result->SetString(kTreeField, accessibility_contents);
-  CallJavascriptFunction(request_type, *(result.get()));
+  FireWebUIListener(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::RequestNativeUITree(
@@ -597,7 +595,6 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   CHECK(IsValidJSValue(request_type_p));
   std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
-  request_type = "accessibility." + request_type;
 
   const std::string* allow_p = data->FindStringPath("filters.allow");
   CHECK(IsValidJSValue(allow_p));
@@ -633,7 +630,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
       result->SetKey(kTreeField,
                      base::Value(RecursiveDumpAXPlatformNodeAsString(
                          node, 0, property_filters)));
-      CallJavascriptFunction(request_type, *(result.get()));
+      FireWebUIListener(request_type, *(result.get()));
       return;
     }
   }
@@ -643,7 +640,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   result->SetInteger(kSessionIdField, session_id);
   result->SetString(kTypeField, kBrowser);
   result->SetString(kErrorField, "Browser no longer exists.");
-  CallJavascriptFunction(request_type, *(result.get()));
+  FireWebUIListener(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::Callback(const std::string& str) {
@@ -696,7 +693,7 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
     result->SetString(kEventLogsField, event_logs_str);
     event_logs_.clear();
 
-    CallJavascriptFunction("accessibility.startOrStopEvents", *(result.get()));
+    FireWebUIListener("startOrStopEvents", *(result.get()));
   }
 }
 

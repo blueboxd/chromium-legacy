@@ -3839,6 +3839,7 @@ test("unit_tests") {
       "../browser/win/jumplist_file_util_unittest.cc",
       "../browser/win/jumplist_update_util_unittest.cc",
       "../browser/win/taskbar_icon_finder_unittest.cc",
+      "../browser/win/uninstallation_via_os_settings_unittest.cc",
       "../common/chrome_constants_win_unittest.cc",
       "../common/conflicts/module_watcher_win_unittest.cc",
       "../common/conflicts/remote_module_watcher_win_unittest.cc",
@@ -5828,7 +5829,10 @@ test("unit_tests") {
     ]
 
     if (is_chrome_branded) {
-      sources += [ "../browser/google/google_update_win_unittest.cc" ]
+      sources += [
+        "../browser/google/google_update_policy_fetcher_win_util_unittest.cc",
+        "../browser/google/google_update_win_unittest.cc",
+      ]
     }
   }
   if (!is_android && !is_chromeos) {

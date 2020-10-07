@@ -61,14 +61,6 @@ function ImageRequestTask(id, cache, request, callback) {
   this.ifd_ = null;
 
   /**
-   * The color space of the fetched image. Only RAW images provide a
-   * color space at this time, being 'sRgb' or 'adobeRgb'.
-   * @type {?string}
-   * @private
-   */
-  this.colorSpace_ = null;
-
-  /**
    * Used to download remote images using http:// or https:// protocols.
    * @type {XMLHttpRequest}
    * @private
@@ -378,7 +370,6 @@ ImageRequestTask.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
             function(data) {
               this.request_.orientation =
                   ImageOrientation.fromExifOrientation(data.orientation);
-              this.colorSpace_ = data.colorSpace;
               this.ifd_ = data.ifd;
               this.contentType_ = data.mimeType;
               const blob = new Blob([data.thumbnail], {type: data.mimeType});
@@ -605,18 +596,14 @@ ImageRequestTask.prototype.sendImageData_ = function(width, height, data) {
  * @private
  */
 ImageRequestTask.prototype.onImageLoad_ = function() {
-  const imageColorSpace = this.colorSpace_ || 'sRgb';
-
   // Perform processing if the url is not a data url, or if there are some
   // operations requested.
   let imageChanged = false;
   if (!(this.request_.url.match(/^data/) ||
         this.request_.url.match(/^drivefs:/)) ||
       ImageLoaderUtil.shouldProcess(
-          this.image_.width, this.image_.height, this.request_) ||
-      (imageColorSpace !== 'sRgb')) {
+          this.image_.width, this.image_.height, this.request_)) {
     ImageLoaderUtil.resizeAndCrop(this.image_, this.canvas_, this.request_);
-    ImageLoaderUtil.convertColorSpace(this.canvas_, imageColorSpace);
     imageChanged = true;  // The image is now on the <canvas>.
   }
 

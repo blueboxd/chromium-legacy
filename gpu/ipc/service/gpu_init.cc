@@ -27,7 +27,6 @@
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
@@ -275,14 +274,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
-    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
-      watchdog_thread_ = GpuWatchdogThreadImplV2::Create(
-          gpu_preferences_.watchdog_starts_backgrounded);
-      watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
-    } else {
-      watchdog_thread_ = GpuWatchdogThreadImplV1::Create(
-          gpu_preferences_.watchdog_starts_backgrounded);
-    }
+    watchdog_thread_ = GpuWatchdogThread::Create(
+        gpu_preferences_.watchdog_starts_backgrounded);
+    watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
 
 #if defined(OS_WIN)
     // This is a workaround for an occasional deadlock between watchdog and
@@ -316,10 +310,17 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
+  std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing;
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::InitParams params;
     params.single_process = false;
     ui::OzonePlatform::InitializeForGPU(params);
+    // We need to get supported formats before sandboxing to avoid an known
+    // issue which breaks the camera preview. (b/166850715)
+    supported_buffer_formats_for_texturing =
+        ui::OzonePlatform::GetInstance()
+            ->GetSurfaceFactoryOzone()
+            ->GetSupportedFormatsForTexturing();
   }
 #endif
 
@@ -562,14 +563,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     watchdog_thread_ = nullptr;
     watchdog_init.SetGpuWatchdogPtr(nullptr);
   } else if (enable_watchdog && delayed_watchdog_enable) {
-    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
-      watchdog_thread_ = GpuWatchdogThreadImplV2::Create(
-          gpu_preferences_.watchdog_starts_backgrounded);
-      watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
-    } else {
-      watchdog_thread_ = GpuWatchdogThreadImplV1::Create(
-          gpu_preferences_.watchdog_starts_backgrounded);
-    }
+    watchdog_thread_ = GpuWatchdogThread::Create(
+        gpu_preferences_.watchdog_starts_backgrounded);
+    watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
   }
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
@@ -585,11 +581,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-    const std::vector<gfx::BufferFormat>
-        supported_buffer_formats_for_texturing =
-            ui::OzonePlatform::GetInstance()
-                ->GetSurfaceFactoryOzone()
-                ->GetSupportedFormatsForTexturing();
     gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
         std::move(supported_buffer_formats_for_texturing);
   }

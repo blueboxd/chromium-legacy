@@ -1579,6 +1579,14 @@ static_library("ui") {
         "//google_apis/drive",
       ]
     }
+
+    if (!is_official_build) {
+      sources += [
+        "webui/new_tab_page/foo/foo_handler.cc",
+        "webui/new_tab_page/foo/foo_handler.h",
+      ]
+      deps += [ "//chrome/browser/ui/webui/new_tab_page/foo:mojo_bindings" ]
+    }
   }
 
   if (enable_paint_preview) {
@@ -4525,6 +4533,8 @@ static_library("ui") {
     sources += [
       "views/frame/webui_tab_strip_container_view.cc",
       "views/frame/webui_tab_strip_container_view.h",
+      "views/frame/webui_tab_strip_field_trial.cc",
+      "views/frame/webui_tab_strip_field_trial.h",
       "views/toolbar/webui_tab_counter_button.cc",
       "views/toolbar/webui_tab_counter_button.h",
       "webui/tab_strip/chrome_content_browser_client_tab_strip_part.cc",

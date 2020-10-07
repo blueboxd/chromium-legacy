@@ -206,12 +206,6 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3045488863354895414">Buenas tardes,</translation>
 <translation id="3051128274746680507">Tu perfil de usuario supervisado se eliminará pronto. Inicia sesión para obtener más información.</translation>
 <translation id="3055162170959710888">Hoy has utilizado este dispositivo durante <ph name="USED_TIME" /></translation>
-<translation id="3076778413190775903">Bandeja de estado: hora <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="NETWORK" />,
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">mayús</translation>
 <translation id="3081696990447829002">Mostrar menú</translation>
 <translation id="3087734570205094154">Inferior</translation>
@@ -433,7 +427,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5314219114274263156">Grabación de pantalla realizada</translation>
-<translation id="5329548388331921293">Conectando…</translation>
+<translation id="5329548388331921293">Conectando...</translation>
 <translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
 <translation id="5352250171825660495">Tema oscuro está activado</translation>
 <translation id="5379115545237091094">Demasiados intentos</translation>

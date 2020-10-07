@@ -440,6 +440,17 @@ be describing additional metrics about the same event.
       was not prerendered.
     </summary>
   </metric>
+  <metric
+      name="SubFrame.PaintTiming.NavigationToExperimentalLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the experimental largest
+      content (text or image) within viewport, in the AMP subframe. See
+      http://bit.ly/largest_contentful_paint_explainer for more details. Differs
+      from the non-experimental version in that removed content is still
+      considered a valid candidate.
+    </summary>
+  </metric>
   <metric name="SubFrame.PaintTiming.NavigationToFirstContentfulPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
@@ -11439,6 +11450,19 @@ be describing additional metrics about the same event.
   <metric name="Outcome" enum="SMSReceiverOutcome">
     <summary>
       Records the result of a call to the SmsReceiver API.
+    </summary>
+  </metric>
+  <metric name="TimeSmsReceiveMs">
+    <summary>
+      Records the duration from when the API is called to when an SMS has been
+      successfully received.
+    </summary>
+  </metric>
+  <metric name="TimeSuccessMs">
+    <summary>
+      Records the duration from when the API is called to when the user presses
+      &quot;Allow&quot; to pass the incoming SMS to the site and proceed with
+      the SMS verification flow.
     </summary>
   </metric>
 </event>

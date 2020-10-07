@@ -206,12 +206,6 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3045488863354895414">Tere päevast!</translation>
 <translation id="3051128274746680507">Teie jälgitava kasutaja profiil eemaldatakse peagi. Lisateabe saamiseks logige sisse.</translation>
 <translation id="3055162170959710888">Kasutasite seda seadet täna <ph name="USED_TIME" /></translation>
-<translation id="3076778413190775903">Olekusalv, aeg <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="NETWORK" />,
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
 <translation id="3081696990447829002">Laienda menüü</translation>
 <translation id="3087734570205094154">Alaserv</translation>
@@ -660,7 +654,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7780159184141939021">Ekraanikuva pööramine</translation>
 <translation id="7796353162336583443">Puudutage riiulil elektronpliiatsi nuppu, et teha märkmeid, jäädvustada ekraanipilti, kasutada Google'i assistenti, laserkursorit või suurendusklaasi.</translation>
 <translation id="7798302898096527229">Tühistamiseks vajutage otsinguklahvi või tõstuklahvi.</translation>
-<translation id="781126011916719498">Kiire juurdepääs teie olulistele failidele. Faili kinnitamiseks paremklõpsake sellele või puudutage seda pikalt.</translation>
+<translation id="781126011916719498">Kiire juurdepääs teie olulistele failidele. Faili kinnitamiseks paremklõpsake sellel või puudutage seda pikalt.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ja <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tugev signaal</translation>
 <translation id="7837740436429729974">Aeg on läbi</translation>

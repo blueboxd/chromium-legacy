@@ -206,12 +206,6 @@
 <translation id="3045488863354895414">אחה"צ טובים,</translation>
 <translation id="3051128274746680507">פרופיל המשתמש בפיקוח שלך יוסר בקרוב. יש להיכנס לחשבון כדי לקבל מידע נוסף.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
-<translation id="3076778413190775903">מגש סטטוס, זמן <ph name="TIME" />,‏
-        <ph name="BATTERY" />
-        <ph name="NETWORK" />,‏
-        <ph name="NOTIFICATION" />,‏
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">הרחבת התפריט</translation>
 <translation id="3087734570205094154">תחתית</translation>
@@ -246,7 +240,7 @@
 <translation id="3364721542077212959">כלי סטיילוס</translation>
 <translation id="3368922792935385530">מחובר</translation>
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
-<translation id="3375634426936648815">מחוברת</translation>
+<translation id="3375634426936648815">מחובר</translation>
 <translation id="3386978599540877378">הזכוכית המגדלת במסך מלא</translation>
 <translation id="3400357268283240774">הגדרות נוספות</translation>
 <translation id="3410336247007142655">הגדרות של הצגת עיצוב כהה</translation>

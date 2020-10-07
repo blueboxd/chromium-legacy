@@ -20161,6 +20161,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SafeBrowsing.Settings.ShowedFromSecurityInterstitial">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    The Safe Browsing setting page is shown to the user. The user reaches the
+    page from the security interstitial.
+  </description>
+</action>
+
 <action name="SafeBrowsing.Settings.ShowedFromSurfaceExplorerPromoSlinger">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -20915,6 +20924,14 @@ should be able to be added at any place in this file.
   <owner>gambard@chromium.org</owner>
   <description>
     Reported when user opens the Default Browser Settings page. iOS only.
+  </description>
+</action>
+
+<action name="Settings.Sync">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <description>
+    Reported when user navigates to Google Sync Settings. iOS only.
   </description>
 </action>
 

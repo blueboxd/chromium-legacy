@@ -16381,6 +16381,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="44" label="User keyboard shortcut added"/>
   <int value="45" label="Keyboard shortcut removed"/>
   <int value="46" label="Keyboard shortcut modified"/>
+  <int value="47" label="Link to custom property in var() clicked"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -57143,7 +57144,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1519132417" label="PPB_FileSystem;1.0"/>
   <int value="1520420939" label="PPB_MouseCursor;1.0"/>
   <int value="1528832860" label="PPB_FileChooser(Dev);0.6"/>
-  <int value="1534600005" label="PPB_AudioEncoder;0.1"/>
+  <int value="1534600005" label="PPB_AudioEncoder;0.1(Removed)"/>
   <int value="1577776196" label="PPB_InputEvent_Private;0.1"/>
   <int value="1616589391" label="PPB_TCPServerSocket_Private;0.2"/>
   <int value="1641037564" label="PPB_VideoSource_Private;0.1"/>
@@ -72120,19 +72121,6 @@ Full version information for the fingerprint enum values:
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
   <int value="30" label="kModuleBlacklistCacheMD5Digest"/>
-</enum>
-
-<enum name="TranslateAssistContentResult">
-  <int value="0" label="The feature was disabled"/>
-  <int value="1" label="The tab was null"/>
-  <int value="2" label="The tab was an incognito tab"/>
-  <int value="3" label="The activity was in overview mode"/>
-  <int value="4" label="canTranslateTab() was false"/>
-  <int value="5" label="The original page language was missing"/>
-  <int value="6" label="The current page language was missing"/>
-  <int value="7" label="There was a JSONException"/>
-  <int value="8" label="The page was translatable"/>
-  <int value="9" label="The page has already been translated"/>
 </enum>
 
 <enum name="TranslateBubbleUiEvent">

@@ -46,6 +46,10 @@
 #include "ui/resources/grit/webui_resources.h"
 #include "url/url_util.h"
 
+#if !defined(OFFICIAL_BUILD)
+#include "chrome/browser/ui/webui/new_tab_page/foo/foo_handler.h"
+#endif
+
 using content::BrowserContext;
 using content::WebContents;
 
@@ -127,12 +131,15 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"hideShortcuts", IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_LABEL},
       {"hideShortcutsDesc", IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_DESC},
+      {"hideModules", IDS_NTP_CUSTOMIZE_HIDE_MODULES_LABEL},
+      {"hideModulesDesc", IDS_NTP_CUSTOMIZE_HIDE_MODULES_DESC},
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
       {"myShortcuts", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL},
       {"noBackground", IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL},
       {"refreshDaily", IDS_NTP_CUSTOM_BG_DAILY_REFRESH},
       {"shortcutsCurated", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC},
       {"shortcutsMenuItem", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
+      {"modulesMenuItem", IDS_NTP_CUSTOMIZE_MENU_MODULES_LABEL},
       {"shortcutsOption", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
       {"themesMenuItem", IDS_NTP_CUSTOMIZE_MENU_COLOR_LABEL},
@@ -242,6 +249,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddResourcePath(
       "modules/shopping_tasks/shopping_tasks.mojom-lite.js",
       IDR_NEW_TAB_PAGE_MODULES_SHOPPING_TASKS_SHOPPING_TASKS_MOJO_LITE_JS);
+#if !defined(OFFICIAL_BUILD)
+  source->AddResourcePath("foo.mojom-lite.js",
+                          IDR_NEW_TAB_PAGE_FOO_MOJO_LITE_JS);
+#endif
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("new_tab_page.js", IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_JS);
 #endif  // BUILDFLAG(OPTIMIZE_WEBUI)
@@ -364,6 +375,12 @@ void NewTabPageUI::BindInterface(
   shopping_tasks_handler_ = std::make_unique<ShoppingTasksHandler>(
       std::move(pending_receiver), profile_);
 }
+#if !defined(OFFICIAL_BUILD)
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<foo::mojom::FooHandler> pending_page_handler) {
+  foo_handler_ = std::make_unique<FooHandler>(std::move(pending_page_handler));
+}
+#endif
 
 void NewTabPageUI::CreatePageHandler(
     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,

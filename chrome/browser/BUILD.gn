@@ -3049,6 +3049,8 @@ static_library("browser") {
       "reputation/safety_tip_infobar_delegate.h",
       "safe_browsing/android/password_reuse_controller_android.cc",
       "safe_browsing/android/password_reuse_controller_android.h",
+      "safe_browsing/android/safe_browsing_settings_launcher_android.cc",
+      "safe_browsing/android/safe_browsing_settings_launcher_android.h",
       "search/contextual_search_policy_handler_android.cc",
       "search/contextual_search_policy_handler_android.h",
       "search_engines/template_url_service_factory_android.cc",
@@ -4385,6 +4387,8 @@ static_library("browser") {
       "lacros/account_manager_facade_factory_lacros.cc",
       "lacros/account_manager_facade_lacros.cc",
       "lacros/account_manager_facade_lacros.h",
+      "lacros/account_manager_util.cc",
+      "lacros/account_manager_util.h",
       "lacros/lacros_chrome_service_delegate_impl.cc",
       "lacros/lacros_chrome_service_delegate_impl.h",
       "metrics/lacros_metrics_provider.cc",
@@ -6127,6 +6131,10 @@ static_library("browser") {
 
   if (tpm_fallback) {
     defines += [ "TPM_FALLBACK" ]
+  }
+
+  if (!is_android && !is_official_build) {
+    deps += [ "//chrome/browser/ui/webui/new_tab_page/foo:mojo_bindings" ]
   }
 }
 

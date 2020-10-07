@@ -206,12 +206,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3045488863354895414">Boa tarde,</translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
 <translation id="3055162170959710888">Você usou este dispositivo por <ph name="USED_TIME" /> hoje</translation>
-<translation id="3076778413190775903">Bandeja de status, horário <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="NETWORK" />,
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expandir menu</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
@@ -804,7 +798,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Tela <ph name="DISPLAY_NAME" /> removida</translation>
 <translation id="9151726767154816831">Reinicie e execute um powerwash para atualizar</translation>
-<translation id="9166331175924255663">Alterne a alta visibilidade de Compartilhar por proximidade.</translation>
+<translation id="9166331175924255663">Alternar a alta visibilidade de Compartilhar por proximidade.</translation>
 <translation id="9168436347345867845">Mais tarde</translation>
 <translation id="9179259655489829027">Este recurso permite acessar rapidamente qualquer usuário conectado sem a necessidade de uma senha. Use esse recurso somente com contas em que você confia.</translation>
 <translation id="9183456764293710005">Lupa de tela cheia</translation>

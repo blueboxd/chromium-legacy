@@ -187,10 +187,6 @@ void ParsePathAndScale(const GURL& url,
   ParsePathAndImageSpec(url, path, scale_factor, nullptr);
 }
 
-void ParsePathAndFrame(const GURL& url, std::string* path, int* frame_index) {
-  ParsePathAndImageSpec(url, path, nullptr, frame_index);
-}
-
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              base::DictionaryValue* localized_strings) {
   localized_strings->SetString("fontfamily", GetFontFamily());
@@ -234,10 +230,12 @@ std::string GetFontFamily() {
 // into Ozone: crbug.com/320050
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!features::IsUsingOzonePlatform()) {
-    font_family = ui::ResourceBundle::GetSharedInstance()
-                      .GetFont(ui::ResourceBundle::BaseFont)
-                      .GetFontName() +
-                  ", " + font_family;
+    std::string font_name = ui::ResourceBundle::GetSharedInstance()
+                                .GetFont(ui::ResourceBundle::BaseFont)
+                                .GetFontName();
+    // Wrap |font_name| with quotes to ensure it will always be parsed correctly
+    // in CSS.
+    font_family = "\"" + font_name + "\", " + font_family;
   }
 #endif
 

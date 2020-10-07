@@ -706,6 +706,9 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
+extern const char kGuestOsExternalProtocolName[];
+extern const char kGuestOsExternalProtocolDescription[];
+
 extern const char kH264DecoderBufferIsCompleteFrameName[];
 extern const char kH264DecoderBufferIsCompleteFrameDescription[];
 
@@ -2154,6 +2157,9 @@ extern const char kCryptAuthV2EnrollmentDescription[];
 extern const char kDisableCameraFrameRotationAtSourceName[];
 extern const char kDisableCameraFrameRotationAtSourceDescription[];
 
+extern const char kForceSpectreVariant2MitigationName[];
+extern const char kForceSpectreVariant2MitigationDescription[];
+
 extern const char kDisableCancelAllTouchesName[];
 extern const char kDisableCancelAllTouchesDescription[];
 
@@ -2532,6 +2538,9 @@ extern const char kSmartDimNewMlAgentDescription[];
 
 extern const char kSmbfsFileSharesName[];
 extern const char kSmbfsFileSharesDescription[];
+
+extern const char kSpectreVariant2MitigationName[];
+extern const char kSpectreVariant2MitigationDescription[];
 
 extern const char kSplitSettingsSyncName[];
 extern const char kSplitSettingsSyncDescription[];

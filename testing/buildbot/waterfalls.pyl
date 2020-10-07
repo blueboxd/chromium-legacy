@@ -1193,7 +1193,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
-          'scripts': 'chromium_check_static_initializers_scripts',
         },
       },
       'linux-lacros-rel': {
@@ -5748,31 +5747,6 @@
           ],
         },
         'os_type': 'chromeos'
-      },
-    },
-  },
-  {
-    'project': 'chrome',
-    'bucket': 'ci',
-    'name': 'internal.soda',
-    'machines': {
-      'soda-linux': {
-        'additional_compile_targets': [
-          'browser_tests',
-          'unit_tests',
-        ],
-        'test_suites': {
-            'gtest_tests': 'soda_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Linux',
-              'pool': 'chrome.tests',
-            },
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-        },
       },
     },
   },

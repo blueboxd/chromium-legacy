@@ -1261,6 +1261,7 @@ component("base") {
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
     "//build:branding_buildflags",
+    "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
     "//third_party/modp_b64",
   ]
@@ -2060,18 +2061,23 @@ component("base") {
   if (is_posix && !is_apple) {
     sources += [
       "time/time_conversion_posix.cc",
-      "time/time_exploded_icu.cc",  # See note below.
       "time/time_exploded_posix.cc",
       "time/time_now_posix.cc",
     ]
 
-    # The ICU dependency is only needed on systems with a 32-bit time_t.
-    # However, that cannot be determined from build variables, like
-    # |current_cpu|, since some 32-bit systems have a 64-bit time_t (and vice
-    # versa). Thus, the dependency is taken here for all POSIX platforms and the
-    # compiler+linker should be able to easily detect when the ICU routines will
-    # not be called and delete them in the final linking.
-    deps += [ "//third_party/icu:icui18n" ]
+    # TODO(b/167763382) Find an alternate solution for Chromecast devices, since
+    # adding the icui18n dep significantly increases the binary size.
+    if (!is_chromecast) {
+      sources += [ "time/time_exploded_icu.cc" ]
+
+      # The ICU dependency is only needed on systems with a 32-bit time_t.
+      # However, that cannot be determined from build variables, like
+      # |current_cpu|, since some 32-bit systems have a 64-bit time_t (and vice
+      # versa). Thus, the dependency is taken here for all POSIX platforms and
+      # the compiler+linker should be able to easily detect when the ICU
+      # routines will not be called and delete them in the final linking.
+      deps += [ "//third_party/icu:icui18n" ]
+    }
   }
 
   if (is_posix && !is_apple && !is_nacl) {
@@ -2642,6 +2648,19 @@ if (is_fuchsia) {
       ":base",
       ":testfidl",
     ]
+  }
+
+  source_set("test_log_listener_safe") {
+    testonly = true
+    sources = [
+      "fuchsia/test_log_listener_safe.cc",
+      "fuchsia/test_log_listener_safe.h",
+    ]
+    deps = [
+      ":base",
+      "//testing/gtest",
+    ]
+    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger" ]
   }
 }
 
@@ -3309,6 +3328,7 @@ test("base_unittests") {
 
     deps += [
       ":test_interface_impl",
+      ":test_log_listener_safe",
       ":testfidl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",

@@ -281,7 +281,7 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 // Enables new ZIP archive handling in Files App.
 // https://crbug.com/912236
 const base::Feature kFilesZipMount{"FilesZipMount",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kFilesZipPack{"FilesZipPack",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",
@@ -323,6 +323,10 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 // Enable a D-Bus service for accessing gesture properties.
 const base::Feature kGesturePropertiesDBusService{
     "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable Guest OS external protocol handling.
+const base::Feature kGuestOsExternalProtocol{"GuestOsExternalProtocol",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables editing with handwriting gestures within the virtual keyboard.
 const base::Feature kHandwritingGestureEditing{

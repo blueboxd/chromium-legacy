@@ -39,36 +39,36 @@ LSSharedFileListItemRef GetLoginItemForApp() {
   ScopedCFTypeRef<LSSharedFileListRef> login_items(LSSharedFileListCreate(
       NULL, kLSSharedFileListSessionLoginItems, NULL));
 
-  if (!login_items.get()) {
-    DLOG(ERROR) << "Couldn't get a Login Items list.";
-    return NULL;
-  }
-
-  base::scoped_nsobject<NSArray> login_items_array(
-      CFToNSCast(LSSharedFileListCopySnapshot(login_items, NULL)));
-
-  NSURL* url = [NSURL fileURLWithPath:[base::mac::MainBundle() bundlePath]];
-
-  for(NSUInteger i = 0; i < [login_items_array count]; ++i) {
-    LSSharedFileListItemRef item =
-        reinterpret_cast<LSSharedFileListItemRef>(login_items_array[i]);
-    base::ScopedCFTypeRef<CFErrorRef> error;
-    CFURLRef item_url_ref =
-        LSSharedFileListItemCopyResolvedURL(item, 0, error.InitializeInto());
-
-    // This function previously used LSSharedFileListItemResolve(), which could
-    // return a NULL URL even when returning no error. This caused
-    // <https://crbug.com/760989>. It's not clear one way or the other whether
-    // LSSharedFileListItemCopyResolvedURL() shares this behavior, so this check
-    // remains in place.
-    if (!error && item_url_ref) {
-      ScopedCFTypeRef<CFURLRef> item_url(item_url_ref);
-      if (CFEqual(item_url, url)) {
-        CFRetain(item);
-        return item;
-      }
-    }
-  }
+//  if (!login_items.get()) {
+//    DLOG(ERROR) << "Couldn't get a Login Items list.";
+//    return NULL;
+//  }
+//
+//  base::scoped_nsobject<NSArray> login_items_array(
+//      CFToNSCast(LSSharedFileListCopySnapshot(login_items, NULL)));
+//
+//  NSURL* url = [NSURL fileURLWithPath:[base::mac::MainBundle() bundlePath]];
+//
+//  for(NSUInteger i = 0; i < [login_items_array count]; ++i) {
+//    LSSharedFileListItemRef item =
+//        reinterpret_cast<LSSharedFileListItemRef>(login_items_array[i]);
+//    base::ScopedCFTypeRef<CFErrorRef> error;
+//    CFURLRef item_url_ref =
+//        LSSharedFileListItemCopyResolvedURL(item, 0, error.InitializeInto());
+//
+//    // This function previously used LSSharedFileListItemResolve(), which could
+//    // return a NULL URL even when returning no error. This caused
+//    // <https://crbug.com/760989>. It's not clear one way or the other whether
+//    // LSSharedFileListItemCopyResolvedURL() shares this behavior, so this check
+//    // remains in place.
+//    if (!error && item_url_ref) {
+//      ScopedCFTypeRef<CFURLRef> item_url(item_url_ref);
+//      if (CFEqual(item_url, url)) {
+//        CFRetain(item);
+//        return item;
+//      }
+//    }
+//  }
 
   return NULL;
 }

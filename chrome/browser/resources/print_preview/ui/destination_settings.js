@@ -28,6 +28,9 @@ import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/p
 
 import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
+// <if expr="chromeos">
+import {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
+// </if>
 import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
 import {InvitationStore} from '../data/invitation_store.js';
@@ -173,6 +176,15 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    saveToDriveFlagEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('printSaveToDrive');
+      },
+      readOnly: true,
+    },
     // </if>
   },
 
@@ -224,9 +236,14 @@ Polymer({
 
   /** @private */
   updateDriveDestination_() {
-    const key = createDestinationKey(
+    let key = createDestinationKey(
         Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
         this.activeUser_);
+    // <if expr="chromeos">
+    if (this.saveToDriveFlagEnabled_) {
+      key = SAVE_TO_DRIVE_CROS_DESTINATION_KEY;
+    }
+    // </if>
     this.driveDestinationKey_ =
         this.destinationStore_.getDestinationByKey(key) ? key : '';
   },
@@ -302,6 +319,8 @@ Polymer({
   /**
    * @param {string} defaultPrinter The system default printer ID.
    * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
+   * @param {boolean} isDriveMounted Whether Google Drive is mounted. Only used
+        on Chrome OS.
    * @param {string} serializedDefaultDestinationRulesStr String with rules
    *     for selecting a default destination.
    * @param {?Array<string>} userAccounts The signed in user accounts.
@@ -310,8 +329,8 @@ Polymer({
    *     to always send requests to the Google Cloud Print server.
    */
   init(
-      defaultPrinter, pdfPrinterDisabled, serializedDefaultDestinationRulesStr,
-      userAccounts, syncAvailable) {
+      defaultPrinter, pdfPrinterDisabled, isDriveMounted,
+      serializedDefaultDestinationRulesStr, userAccounts, syncAvailable) {
     const cloudPrintInterface = CloudPrintInterfaceImpl.getInstance();
     if (cloudPrintInterface.isConfigured()) {
       this.cloudPrintDisabled_ = false;
@@ -326,7 +345,7 @@ Polymer({
     recentDestinations = recentDestinations.slice(
         0, this.getRecentDestinationsDisplayCount_(recentDestinations));
     this.destinationStore_.init(
-        this.pdfPrinterDisabled_, defaultPrinter,
+        this.pdfPrinterDisabled_, isDriveMounted, defaultPrinter,
         serializedDefaultDestinationRulesStr, recentDestinations);
   },
 
@@ -637,11 +656,6 @@ Polymer({
 
     this.destination.eulaUrl = e.detail;
     this.notifyPath('destination.eulaUrl');
-  },
-
-  /** @param {boolean} isDriveMounted */
-  setIsDriveMounted(isDriveMounted) {
-    this.$.destinationSelect.isDriveMounted = isDriveMounted;
   },
   // </if>
 });

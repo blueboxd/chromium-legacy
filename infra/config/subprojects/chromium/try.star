@@ -732,18 +732,6 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = "closure_compilation",
-    branch_selector = branches.STANDARD_RELEASES,
-    executable = "recipe:closure_compilation",
-    main_list_view = settings.main_list_view_name,
-    tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/third_party/closure_compiler/.+",
-        ],
-    ),
-)
-
-try_.chromium_linux_builder(
     name = "chromium_presubmit",
     branch_selector = branches.STANDARD_RELEASES,
     executable = "recipe:presubmit",
@@ -1302,9 +1290,9 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
-    caches = [xcode_cache.x12b5018i],
+    caches = [xcode_cache.x12b5025f],
     properties = {
-        "xcode_build_version": "12b5018i",
+        "xcode_build_version": "12b5025f",
     },
 )
 

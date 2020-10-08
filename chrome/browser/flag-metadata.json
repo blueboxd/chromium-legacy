@@ -799,6 +799,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "desktop-in-product-help-snooze",
+    "owners": [ "collinbaker", "kerenzhu", "chrome-desktop-ui@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "desktop-version-default",
     "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 87
@@ -1652,6 +1657,11 @@
     "name": "enable-hosted-app-quit-notification",
     "owners": [ "ccameron" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "enable-hostname-setting",
+    "owners": [ "jhawkins" ],
+    "expiry_milestone": 92
   },
   {
     "name": "enable-image-reader",
@@ -4473,7 +4483,7 @@
   {
     "name": "treat-unsafe-downloads-as-active-content",
     "owners": [ "jdeblasio", "cthomp" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 89
   },
   {
     "name": "trim-on-memory-pressure",

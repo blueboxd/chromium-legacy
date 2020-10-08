@@ -3909,6 +3909,11 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
+const char kEnableHostnameSettingName[] = "Enable setting the device hostname";
+const char kEnableHostnameSettingDescription[] =
+    "Enables the ability to set the Chrome OS hostname, the name of the device "
+    "that is exposed to the local network";
+
 const char kEnableGesturePropertiesDBusServiceName[] =
     "Enable gesture properties D-Bus service";
 const char kEnableGesturePropertiesDBusServiceDescription[] =
@@ -4479,6 +4484,12 @@ const char kZeroCopyVideoCaptureDescription[] =
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
+
+const char kDesktopInProductHelpSnoozeName[] =
+    "Allow snooze on supported in-product help promos";
+const char kDesktopInProductHelpSnoozeDescription[] =
+    "Snoozing an in-product help promo closes it and schedules it to be shown "
+    "later. When enabled, this functionality is allowed on supported promos.";
 
 const char kEnableMDRoundedCornersOnDialogsName[] =
     "MD corners on secondary UI";

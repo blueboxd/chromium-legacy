@@ -5306,6 +5306,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"diagnostics-app", flag_descriptions::kDiagnosticsAppName,
      flag_descriptions::kDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDiagnosticsApp)},
+
+    {"enable-hostname-setting", flag_descriptions::kEnableHostnameSettingName,
+     flag_descriptions::kEnableHostnameSettingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableHostnameSetting)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",
@@ -6583,6 +6587,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"privacy-advisor", flag_descriptions::kPrivacyAdvisorName,
      flag_descriptions::kPrivacyAdvisorDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrivacyAdvisor)},
+
+#if defined(TOOLKIT_VIEWS)
+    {"desktop-in-product-help-snooze",
+     flag_descriptions::kDesktopInProductHelpSnoozeName,
+     flag_descriptions::kDesktopInProductHelpSnoozeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(feature_engagement::kIPHDesktopSnoozeFeature)}
+#endif  // defined(TOOLKIT_VIEWS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -113,7 +113,6 @@ ci.console_view(
     branch_selector = branches.STANDARD_RELEASES,
     ordering = {
         None: [
-            "closure_compilation",
             "code_coverage",
             "cronet",
             "mac",
@@ -2184,15 +2183,6 @@ ci.fuzz_libfuzzer_builder(
 )
 
 ci.fyi_builder(
-    name = "Closure Compilation Linux",
-    console_view_entry = ci.console_view_entry(
-        category = "closure_compilation",
-    ),
-    executable = "recipe:closure_compilation",
-    notifies = ["Closure Compilation Linux"],
-)
-
-ci.fyi_builder(
     name = "Linux Viz",
     console_view_entry = ci.console_view_entry(
         category = "viz",
@@ -2845,9 +2835,9 @@ ci.fyi_ios_builder(
         category = "iOS|iOS14",
         short_name = "sdk14",
     ),
-    caches = [xcode_cache.x12b5018i],
+    caches = [xcode_cache.x12b5025f],
     properties = {
-        "xcode_build_version": "12b5018i",
+        "xcode_build_version": "12b5025f",
     },
 )
 

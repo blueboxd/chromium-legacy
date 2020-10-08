@@ -12210,6 +12210,9 @@ Called by update_net_error_codes.py.-->
   <int value="27" label="Share Image (DirectShare)"/>
   <int value="28" label="Search with Google Lens"/>
   <int value="29" label="Copy image"/>
+  <int value="30" label="Shop Similar Products"/>
+  <int value="31" label="Shop image with Google Lens"/>
+  <int value="32" label="Search Similar Products"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -30220,6 +30223,8 @@ Called by update_feature_policy_enum.py.-->
   <int value="21"
       label="kBlockedBecauseCorpNotSameOriginAfterDefaultedToSameOriginByCoep"/>
   <int value="22" label="kBlockedBecauseCorpNotSameSite"/>
+  <int value="23"
+      label="kBlockedBecauseBlockedByExtensionCrbug1128174Investigation"/>
 </enum>
 
 <enum name="FetchFontName">
@@ -35886,6 +35891,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="kPinnedFile"/>
   <int value="1" label="kScreenshot"/>
   <int value="2" label="kDownload"/>
+  <int value="3" label="kNearbyShare"/>
 </enum>
 
 <enum name="HoldingSpacePodAction">
@@ -42168,6 +42174,7 @@ from previous Chrome versions.
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
   <int value="-1368913664" label="TabSearch:disabled"/>
+  <int value="-1368734981" label="IPH_DesktopSnoozeFeature:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
@@ -42238,6 +42245,7 @@ from previous Chrome versions.
   <int value="-1309066678" label="ServiceWorkerOnUI:enabled"/>
   <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
   <int value="-1308184869" label="MediaFeedsBackgroundFetching:enabled"/>
+  <int value="-1308102778" label="IPH_DesktopSnoozeFeature:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
@@ -44374,6 +44382,7 @@ from previous Chrome versions.
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
+  <int value="889837286" label="EnableHostnameSetting:enabled"/>
   <int value="890322192" label="kMacCoreLocationImplementation:disabled"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
   <int value="898311758" label="ReaderMode:disabled"/>
@@ -45581,6 +45590,7 @@ from previous Chrome versions.
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
+  <int value="2114221139" label="EnableHostnameSetting:disabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
   <int value="2115848376" label="LacrosSupport:disabled"/>
@@ -73295,6 +73305,25 @@ Full version information for the fingerprint enum values:
   <int value="9" label="OtherSuccess"/>
   <int value="10" label="NonMainThreadFailure"/>
   <int value="11" label="NonMainThreadSuccess"/>
+</enum>
+
+<enum name="UserActivationTriggerEnum">
+  <summary>
+    The user activation trigger types as defined in
+    blink.mojom.UserActivationNotificationType.
+  </summary>
+  <int value="0" label="kNone"/>
+  <int value="1" label="kInteraction"/>
+  <int value="2" label="kDevTools"/>
+  <int value="3" label="kExtensionEvent"/>
+  <int value="4" label="kExtensionGuestView"/>
+  <int value="5" label="kExtensionMessaging"/>
+  <int value="6" label="kMedia"/>
+  <int value="7" label="kNativeFileSystem"/>
+  <int value="8" label="kPlugin"/>
+  <int value="9" label="kTest"/>
+  <int value="10" label="kWebScriptExec"/>
+  <int value="11" label="kVoiceSearch"/>
 </enum>
 
 <enum name="UserCertContentDisposition">

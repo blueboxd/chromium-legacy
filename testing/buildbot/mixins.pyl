@@ -251,16 +251,6 @@
       },
     },
   },
-  'emulator-8-cores': {
-    'swarming': {
-      'dimensions': {
-        'device_os': None,
-        'device_type': None,
-        'pool': 'chromium.tests.avd',
-        'machine_type': 'n1-standard-8',
-      },
-    },
-  },
   'flounder': {
     # Nexus 9
     'swarming': {
@@ -1000,17 +990,17 @@
     },
   },
   # latest Xcode 12 beta version.
-  'xcode_12b5018i': {
+  'xcode_12b5025f': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12b5018i'
+        '12b5025f'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_12b5018i',
+          'name': 'xcode_ios_12b5025f',
           'path': 'Xcode.app',
         },
       ],

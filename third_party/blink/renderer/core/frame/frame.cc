@@ -245,7 +245,7 @@ void Frame::DidChangeVisibilityState() {
     child_frames[i]->DidChangeVisibilityState();
 }
 
-void Frame::NotifyUserActivationInLocalTree(
+void Frame::NotifyUserActivationInFrameTree(
     mojom::blink::UserActivationNotificationType notification_type) {
   for (Frame* node = this; node; node = node->Tree().Parent()) {
     node->user_activation_state_.Activate(notification_type);
@@ -271,17 +271,22 @@ void Frame::NotifyUserActivationInLocalTree(
   }
 }
 
-bool Frame::ConsumeTransientUserActivationInLocalTree() {
+bool Frame::ConsumeTransientUserActivationInFrameTree() {
   bool was_active = user_activation_state_.IsActive();
-
   Frame& root = Tree().Top();
+
+  // To record UMA once per consumption, we arbitrarily picked the LocalFrame
+  // for root.
+  if (IsA<LocalFrame>(root))
+    root.user_activation_state_.RecordPreconsumptionUma();
+
   for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root))
     node->user_activation_state_.ConsumeIfActive();
 
   return was_active;
 }
 
-void Frame::ClearUserActivationInLocalTree() {
+void Frame::ClearUserActivationInFrameTree() {
   for (Frame* node = this; node; node = node->Tree().TraverseNext(this))
     node->user_activation_state_.Clear();
 }

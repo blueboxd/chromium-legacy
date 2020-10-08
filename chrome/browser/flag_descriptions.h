@@ -2256,6 +2256,9 @@ extern const char kEnableDiscoverAppDescription[];
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];
 
+extern const char kEnableHostnameSettingName[];
+extern const char kEnableHostnameSettingDescription[];
+
 extern const char kEnableGesturePropertiesDBusServiceName[];
 extern const char kEnableGesturePropertiesDBusServiceDescription[];
 
@@ -2604,6 +2607,9 @@ extern const char kZeroCopyVideoCaptureDescription[];
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
+
+extern const char kDesktopInProductHelpSnoozeName[];
+extern const char kDesktopInProductHelpSnoozeDescription[];
 
 extern const char kEnableMDRoundedCornersOnDialogsName[];
 extern const char kEnableMDRoundedCornersOnDialogsDescription[];

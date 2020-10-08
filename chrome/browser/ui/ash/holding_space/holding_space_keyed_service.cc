@@ -9,9 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
-#include "base/barrier_closure.h"
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -61,14 +59,6 @@ HoldingSpaceKeyedService::HoldingSpaceKeyedService(Profile* profile,
   // Mark when the holding space feature first became available. If this is not
   // the first time that holding space became available, this will no-op.
   holding_space_prefs::MarkTimeOfFirstAvailability(profile_->GetPrefs());
-
-  // Model restoration is a multi-step process, currently consisting of a
-  // restoration from persistence followed by a restoration of downloads. Once
-  // all steps have indicated completion, `OnModelFullyRestored()` is invoked.
-  on_model_partially_restored_callback_ = base::BarrierClosure(
-      /*number_of_steps_before_fully_restored=*/2,
-      base::BindOnce(&HoldingSpaceKeyedService::OnModelFullyRestored,
-                     base::Unretained(this)));
 
   // The associated profile may not be ready yet. If it is, we can immediately
   // proceed with profile dependent initialization.
@@ -183,6 +173,26 @@ void HoldingSpaceKeyedService::AddDownload(
                                        download_file)));
 }
 
+void HoldingSpaceKeyedService::AddNearbyShare(
+    const base::FilePath& nearby_share_path) {
+  const bool already_exists =
+      holding_space_model_.GetItem(HoldingSpaceItem::GetFileBackedItemId(
+          HoldingSpaceItem::Type::kNearbyShare, nearby_share_path));
+  if (already_exists)
+    return;
+
+  GURL file_system_url =
+      holding_space_util::ResolveFileSystemUrl(profile_, nearby_share_path);
+  if (file_system_url.is_empty())
+    return;
+
+  AddItem(HoldingSpaceItem::CreateFileBackedItem(
+      HoldingSpaceItem::Type::kNearbyShare, nearby_share_path, file_system_url,
+      holding_space_util::ResolveImage(&thumbnail_loader_,
+                                       HoldingSpaceItem::Type::kNearbyShare,
+                                       nearby_share_path)));
+}
+
 void HoldingSpaceKeyedService::AddItem(std::unique_ptr<HoldingSpaceItem> item) {
   holding_space_model_.AddItem(std::move(item));
 }
@@ -205,10 +215,7 @@ void HoldingSpaceKeyedService::OnProfileReady() {
       profile_, &holding_space_model_,
       /*item_downloaded_callback=*/
       base::BindRepeating(&HoldingSpaceKeyedService::AddDownload,
-                          weak_factory_.GetWeakPtr()),
-      /*downloads_restored_callback=*/
-      base::BindOnce(&HoldingSpaceKeyedService::OnDownloadsRestored,
-                     weak_factory_.GetWeakPtr())));
+                          weak_factory_.GetWeakPtr())));
 
   // The `HoldingSpaceFileSystemDelegate` monitors the file system for changes.
   delegates_.push_back(std::make_unique<HoldingSpaceFileSystemDelegate>(
@@ -243,19 +250,10 @@ void HoldingSpaceKeyedService::OnFileRemoved(const base::FilePath& file_path) {
       std::cref(file_path)));
 }
 
-void HoldingSpaceKeyedService::OnDownloadsRestored() {
-  for (auto& delegate : delegates_)
-    delegate->NotifyDownloadsRestored();
-  on_model_partially_restored_callback_.Run();
-}
-
 void HoldingSpaceKeyedService::OnPersistenceRestored() {
   for (auto& delegate : delegates_)
     delegate->NotifyPersistenceRestored();
-  on_model_partially_restored_callback_.Run();
-}
 
-void HoldingSpaceKeyedService::OnModelFullyRestored() {
   HoldingSpaceController::Get()->RegisterClientAndModelForUser(
       account_id_, &holding_space_client_, &holding_space_model_);
 }

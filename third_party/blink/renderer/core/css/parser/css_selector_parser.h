@@ -46,9 +46,12 @@ class CORE_EXPORT CSSSelectorParser {
   CSSSelectorList ConsumeComplexSelectorList(CSSParserTokenStream&,
                                              CSSParserObserver*);
   CSSSelectorList ConsumeCompoundSelectorList(CSSParserTokenRange&);
-  // Consumes a complex selector list if inside_compound_pseudo_ is false,
-  // otherwise consumes a compound selector list.
+  // Consumes a forgiving complex selector list if inside_compound_pseudo_ is
+  // false, otherwise consumes a forgiving compound selector list.
   CSSSelectorList ConsumeNestedSelectorList(CSSParserTokenRange&);
+  // https://drafts.csswg.org/selectors/#typedef-forgiving-selector-list
+  CSSSelectorList ConsumeForgivingComplexSelectorList(CSSParserTokenRange&);
+  CSSSelectorList ConsumeForgivingCompoundSelectorList(CSSParserTokenRange&);
 
   std::unique_ptr<CSSParserSelector> ConsumeComplexSelector(
       CSSParserTokenRange&);
@@ -103,6 +106,12 @@ class CORE_EXPORT CSSSelectorParser {
   // for example :host, inner :is()/:where() pseudo classes are also only
   // allowed to contain compound selectors.
   bool inside_compound_pseudo_ = false;
+  // When parsing a compound which includes a pseudo-element, the simple
+  // selectors permitted to follow that pseudo-element may be restricted.
+  // If this is the case, then restricting_pseudo_element_ will be set to the
+  // PseudoType of the pseudo-element causing the restriction.
+  CSSSelector::PseudoType restricting_pseudo_element_ =
+      CSSSelector::kPseudoUnknown;
 
   class DisallowPseudoElementsScope {
     STACK_ALLOCATED();

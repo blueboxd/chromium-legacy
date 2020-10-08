@@ -123,7 +123,7 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
     // last_committed_web_view_item_ as the origins mistmatch.
     int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
     DCHECK(index != -1 || 0 == GetItemCount());
-    if (index != -1 &&
+    if (index != -1 && restored_visible_item_ &&
         restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
       NavigationItemImpl* last_committed_item =
           GetNavigationItemImplAtIndex(static_cast<size_t>(index));
@@ -424,7 +424,8 @@ bool WKBasedNavigationManagerImpl::ShouldBlockUrlDuringRestore(
   // Abort restore.
   DiscardNonCommittedItems();
   last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
-  if (restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
+  if (restored_visible_item_ &&
+      restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
     NavigationItem* last_committed_item =
         GetLastCommittedItemInCurrentOrRestoredSession();
     last_committed_item->SetUserAgentType(
@@ -793,6 +794,13 @@ void WKBasedNavigationManagerImpl::RestoreItemsState(
         web_view_cache_.GetNavigationItemImplAtIndex(
             cache_index, true /* create_if_missing */);
     NavigationItem* restore_item = items_restored[index].get();
+
+    // |cached_item| appears to be nil sometimes, perhaps due to a mismatch in
+    // WKWebView's backForwardList.  Returning early here may break some restore
+    // state features, but should not put the user in a broken state.
+    if (!cached_item || !restore_item) {
+      continue;
+    }
 
     bool is_same_url = cached_item->GetURL() == restore_item->GetURL();
     if (wk_navigation_util::IsRestoreSessionUrl(cached_item->GetURL())) {

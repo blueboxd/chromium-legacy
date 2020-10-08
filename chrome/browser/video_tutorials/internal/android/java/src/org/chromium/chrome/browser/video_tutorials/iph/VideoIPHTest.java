@@ -17,7 +17,6 @@ import android.support.test.rule.ActivityTestRule;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
-import androidx.annotation.Nullable;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.filters.SmallTest;
 
@@ -30,16 +29,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.video_tutorials.FeatureType;
 import org.chromium.chrome.browser.video_tutorials.R;
 import org.chromium.chrome.browser.video_tutorials.Tutorial;
+import org.chromium.chrome.browser.video_tutorials.test.TestImageFetcher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivity;
-
-import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
  * Tests for {@link LanguagePickerCoordinator}.
@@ -97,30 +93,4 @@ public class VideoIPHTest {
                 "https://xyz.example.com/xyz.vtt", "https://xyz.example.com/xyz.mp4", 335);
     }
 
-    private static class TestImageFetcher extends ImageFetcher.ImageFetcherForTesting {
-        private final Bitmap mBitmapToFetch;
-
-        TestImageFetcher(@Nullable Bitmap bitmapToFetch) {
-            mBitmapToFetch = bitmapToFetch;
-        }
-
-        @Override
-        public void fetchGif(final ImageFetcher.Params params, Callback<BaseGifImage> callback) {}
-
-        @Override
-        public void fetchImage(ImageFetcher.Params params, Callback<Bitmap> callback) {
-            callback.onResult(mBitmapToFetch);
-        }
-
-        @Override
-        public void clear() {}
-
-        @Override
-        public @ImageFetcherConfig int getConfig() {
-            return ImageFetcherConfig.IN_MEMORY_ONLY;
-        }
-
-        @Override
-        public void destroy() {}
-    }
 }

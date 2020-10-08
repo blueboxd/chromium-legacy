@@ -57,7 +57,8 @@
                                   RecentTabsContextMenuDelegate,
                                   RecentTabsPresentationDelegate,
                                   TabGridMediatorDelegate,
-                                  TabPresentationDelegate> {
+                                  TabPresentationDelegate,
+                                  ThumbStripCoordinatorDelegate> {
   // Use an explicit ivar instead of synthesizing as the setter isn't using the
   // ivar.
   Browser* _incognitoBrowser;
@@ -148,6 +149,7 @@
 - (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion {
   // Recent tabs context menu may be presented on top of the tab grid.
   [self.baseViewController.remoteTabsViewController dismissModals];
+  [self.actionSheetCoordinator stop];
   // History may be presented on top of the tab grid.
   if (self.historyCoordinator) {
     [self.historyCoordinator stopWithCompletion:completion];
@@ -179,6 +181,12 @@
 
 - (void)showTabGrid {
   BOOL animated = !self.animationsDisabledForTesting;
+
+  if (IsThumbStripEnabled()) {
+    [self.thumbStripCoordinator.panHandler setState:ViewRevealState::Revealed
+                                           animated:animated];
+    return;
+  }
 
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
@@ -212,6 +220,22 @@
 
   // Record when the tab switcher is dismissed.
   base::RecordAction(base::UserMetricsAction("MobileTabGridExited"));
+
+  // If thumb strip is enabled, this will always be true except during initial
+  // setup before the BVC container has been created.
+  if (IsThumbStripEnabled() && self.bvcContainer) {
+    self.bvcContainer.currentBVC = viewController;
+    self.baseViewController.childViewControllerForStatusBarStyle =
+        viewController;
+    [self.baseViewController setNeedsStatusBarAppearanceUpdate];
+    [self.thumbStripCoordinator.panHandler setState:ViewRevealState::Hidden
+                                           animated:YES];
+    if (completion) {
+      completion();
+    }
+    [self.delegate tabGridDismissTransitionDidEnd:self];
+    return;
+  }
 
   // If another BVC is already being presented, swap this one into the
   // container.
@@ -348,6 +372,7 @@
     self.thumbStripCoordinator = [[ThumbStripCoordinator alloc]
         initWithBaseViewController:baseViewController
                            browser:self.browser];
+    self.thumbStripCoordinator.delegate = self;
     [self.thumbStripCoordinator start];
     self.thumbStripCoordinator.panHandler.layoutSwitcherProvider =
         baseViewController;
@@ -421,7 +446,9 @@
 - (void)showCloseAllConfirmationActionSheetWitTabGridMediator:
             (TabGridMediator*)tabGridMediator
                                                  numberOfTabs:
-                                                     (NSInteger)numberOfTabs {
+                                                     (NSInteger)numberOfTabs
+                                                       anchor:(UIBarButtonItem*)
+                                                                  buttonAnchor {
   if (tabGridMediator == self.regularTabsMediator) {
     base::RecordAction(base::UserMetricsAction(
         "MobileTabGridCloseAllRegularTabsConfirmationPresented"));
@@ -435,19 +462,9 @@
                          browser:self.browser
                            title:nil
                          message:nil
-                            rect:self.baseViewController.view.frame
-                            view:self.baseViewController.view];
+                   barButtonItem:buttonAnchor];
 
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(applicationDidEnterBackground:)
-                        name:UIApplicationDidEnterBackgroundNotification
-                      object:nil];
-
-  self.actionSheetCoordinator.popoverArrowDirection = 0;
-  self.actionSheetCoordinator.alertStyle =
-      IsIPadIdiom() ? UIAlertControllerStyleAlert
-                    : UIAlertControllerStyleActionSheet;
+  self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
 
   [self.actionSheetCoordinator
       addItemWithTitle:base::SysUTF16ToNSString(
@@ -494,12 +511,6 @@
   [self.delegate tabGrid:self
       shouldFinishWithBrowser:self.regularBrowser
                  focusOmnibox:NO];
-}
-
-#pragma mark - Notification callback
-
-- (void)applicationDidEnterBackground:(NSNotification*)notification {
-  [self.actionSheetCoordinator stop];
 }
 
 #pragma mark - HistoryPresentationDelegate
@@ -565,6 +576,13 @@
     (NSInteger)sectionIdentifier {
   return [self.baseViewController.remoteTabsViewController
       sessionForSectionIdentifier:sectionIdentifier];
+}
+
+#pragma mark - ThumbStripCoordinatorDelegate
+
+- (void)thumbStripDismissedForThumbStripCoordinator:
+    (ThumbStripCoordinator*)thumbStripCoordinator {
+  [self.delegate tabGridDismissTransitionDidEnd:self];
 }
 
 #pragma mark - Private methods

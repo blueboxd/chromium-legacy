@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.ChromeNextTabPolicySupplier;
+import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
@@ -136,7 +137,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
 import org.chromium.chrome.browser.tasks.JourneyManager;
@@ -917,6 +917,21 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
     }
 
+    private void setTrackColdStartupMetrics(boolean shouldTrackColdStartupMetrics) {
+        assert getActivityTabStartupMetricsTracker() != null;
+
+        if (shouldTrackColdStartupMetrics) {
+            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
+        } else {
+            getActivityTabStartupMetricsTracker().cancelTrackingStartupMetrics();
+        }
+
+        // Paint Preview should follow the same logic as startup UMA histograms as the feature
+        // should only run on cold startup of Chrome when the user is unable to interact before
+        // entering a tab.
+        PaintPreviewHelper.setShouldShowOnRestore(shouldTrackColdStartupMetrics);
+    }
+
     private void setInitialOverviewState() {
         boolean isOverviewVisible = mOverviewModeController.overviewVisible();
 
@@ -930,12 +945,18 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         getOnCreateTimestampMs());
             }
             mOverviewShownOnStart = true;
+            // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
+            // be the first thing shown after startup.
+            setTrackColdStartupMetrics(false);
             showOverview(StartSurfaceState.SHOWING_START);
             return;
         }
 
         if (getActivityTab() == null && !isOverviewVisible) {
             mOverviewShownOnStart = true;
+            // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
+            // be the first thing shown after startup.
+            setTrackColdStartupMetrics(false);
             showOverview(StartSurfaceState.SHOWING_START);
         }
 
@@ -1411,11 +1432,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // Decide whether to record startup UMA histograms. This is done  early in the main
         // Activity.onCreate() to avoid recording navigation delays when they require user input to
         // proceed. For example, FRE (First Run Experience) happens before the activity is created,
-        // and triggers initialization of the native library. At the moment it seems safe to assume
-        // that uninitialized native library is an indication of an application start that is
-        // followed by navigation immediately without user input.
+        // and triggers initialization of the native library.
+        //
+        // An uninitialized native library is an indication of an application start that is followed
+        // by navigation immediately without user input.
         if (!LibraryLoader.getInstance().isInitialized()) {
-            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
+            setTrackColdStartupMetrics(true);
         }
 
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
@@ -1495,9 +1517,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mInactivityTracker = new ChromeInactivityTracker(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
-        PaintPreviewHelper.initialize(
-                this, getTabModelSelector(), () -> getToolbarManager() == null ? null :
-                 getToolbarManager().getProgressBarCoordinator());
+        PaintPreviewHelper.initialize(this, getTabModelSelector(), shouldShowTabSwitcherOnStart(),
+                ()
+                        -> getToolbarManager() == null
+                        ? null
+                        : getToolbarManager().getProgressBarCoordinator());
     }
 
     @Override
@@ -1544,7 +1568,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mNextTabPolicySupplier = new ChromeNextTabPolicySupplier(mOverviewModeBehaviorSupplier);
         mTabModelSelectorImpl =
-                (TabModelSelectorImpl) TabWindowManager.getInstance().requestSelector(
+                (TabModelSelectorImpl) TabWindowManagerSingleton.getInstance().requestSelector(
                         this, this, mNextTabPolicySupplier, index);
         if (mTabModelSelectorImpl == null) {
             Toast.makeText(
@@ -2051,7 +2075,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         super.onSaveInstanceState(outState);
         CipherFactory.getInstance().saveToBundle(outState);
         outState.putBoolean("is_incognito_selected", getCurrentTabModel().isIncognito());
-        outState.putInt(WINDOW_INDEX, TabWindowManager.getInstance().getIndexForWindow(this));
+        outState.putInt(
+                WINDOW_INDEX, TabWindowManagerSingleton.getInstance().getIndexForWindow(this));
     }
 
     @Override

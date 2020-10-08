@@ -3884,7 +3884,7 @@
 
        If you choose to use:
          * <ph name="PROXY_MODE_ENUM_FIXED_SERVERS">fixed_servers</ph> = Fixed proxy servers. You can specify further options with <ph name="PROXY_SERVER_POLICY_NAME">ProxyServer</ph> and <ph name="PROXY_BYPASS_LIST_POLICY_NAME">ProxyBypassList</ph>. Only the HTTP proxy server with the highest priority is available for ARC-apps.
-         * <ph name="PROXY_MODE_ENUM_PAC_SCRIPT">pac_script</ph> =  A .pac proxy script. Use <ph name="PROXY_PAC_URL_POLICY_NAME">ProxyPacUrl</ph> to the URL to a proxy .pac file.
+         * <ph name="PROXY_MODE_ENUM_PAC_SCRIPT">pac_script</ph> =  A .pac proxy script. Use <ph name="PROXY_PAC_URL_POLICY_NAME">ProxyPacUrl</ph> to set the URL to a proxy .pac file.
 
       Leaving the policy unset lets users choose the proxy settings.
 
@@ -6883,11 +6883,9 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME">NativeMessagingBlocklist</ph>' policy instead.
 
-          Allows you to specify which native messaging hosts that should not be loaded.
+      Setting the policy specifies which native messaging hosts shouldn't be loaded. A deny list value of <ph name="WILDCARD_VALUE">*</ph> means all native messaging hosts are denied, unless they're explicitly allowed.
 
-          A blocklist value of '*' means all native messaging hosts are blocked unless they are explicitly listed in the allowlist.
-
-          If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will load all installed native messaging hosts.''',
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> loads all installed native messaging hosts.''',
       'label': '''Names of the forbidden native messaging hosts (or * for all)''',
     },
     {
@@ -6910,11 +6908,9 @@
       'id': 744,
       'caption': '''Configure native messaging blacklist''',
       'tags': [],
-      'desc': '''Allows you to specify which native messaging hosts that should not be loaded.
+      'desc': '''Setting the policy specifies which native messaging hosts shouldn't be loaded. A deny list value of <ph name="WILDCARD_VALUE">*</ph> means all native messaging hosts are denied, unless they're explicitly allowed.
 
-          A blocklist value of '*' means all native messaging hosts are blocked unless they are explicitly listed in the allowlist.
-
-          If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will load all installed native messaging hosts.''',
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> loads all installed native messaging hosts.''',
       'label': '''Names of the forbidden native messaging hosts (or * for all)''',
     },
     {
@@ -6940,11 +6936,9 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME">NativeMessagingAllowlist</ph>' policy instead.
 
-          Allows you to specify which native messaging hosts are not subject to the blocklist.
+      Setting the policy specifies which native messaging hosts aren't subject to the deny list. A deny list value of <ph name="WILDCARD_VALUE">*</ph> means all native messaging hosts are denied, unless they're explicitly allowed.
 
-          A blocklist value of * means all native messaging hosts are blocked and only native messaging hosts listed in the allowlist will be loaded.
-
-          By default, all native messaging hosts are allowed, but if all native messaging hosts have been blocked by policy, the allowlist can be used to override that policy.''',
+      All native messaging hosts are allowed by default. But, if all native messaging hosts are denied by policy, the admin can use the allow list to change that policy.''',
       'label': '''Names of the native messaging hosts to exempt from the blocklist''',
     },
     {
@@ -6967,11 +6961,9 @@
       'id': 745,
       'caption': '''Configure native messaging allowlist''',
       'tags': [],
-      'desc': '''Allows you to specify which native messaging hosts are not subject to the blocklist.
+      'desc': '''Setting the policy specifies which native messaging hosts aren't subject to the deny list. A deny list value of <ph name="WILDCARD_VALUE">*</ph> means all native messaging hosts are denied, unless they're explicitly allowed.
 
-          A blocklist value of * means all native messaging hosts are blocked and only native messaging hosts listed in the allowlist will be loaded.
-
-          By default, all native messaging hosts are allowed, but if all native messaging hosts have been blocked by policy, the allowlist can be used to override that policy.''',
+      All native messaging hosts are allowed by default. But, if all native messaging hosts are denied by policy, the admin can use the allow list to change that policy.''',
       'label': '''Names of the native messaging hosts to exempt from the blocklist''',
     },
     {
@@ -6988,13 +6980,9 @@
       'id': 253,
       'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions)''',
       'tags': [],
-      'desc': '''Enables user-level installation of Native Messaging hosts.
+      'desc': '''Setting the policy to Enabled or leaving it unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can use native messaging hosts installed at the user level.
 
-          If this setting is enabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows usage of Native Messaging hosts installed on user level.
-
-          If this setting is disabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will only use Native Messaging hosts installed on system level.
-
-          If this setting is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow usage of user-level Native Messaging hosts.''',
+      Setting the policy to Disabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can only use these hosts if installed at the system level.''',
     },
     {
       'name': 'Disable3DAPIs',
@@ -8093,15 +8081,17 @@
       'id': 415,
       'caption': '''Allowed Kerberos encryption types''',
       'tags': ['system-security'],
-      'desc': '''Sets encryption types that are allowed when requesting Kerberos tickets from an <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> server.
+      'desc': '''Setting the policy designates which encryption types are allowed when requesting Kerberos tickets from a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> server.
 
-      If the policy is set to 'All', both the AES encryption types 'aes256-cts-hmac-sha1-96' and 'aes128-cts-hmac-sha1-96' as well as the RC4 encryption type 'rc4-hmac' are allowed. AES encryption takes preference if the server supports both types. Note that RC4 is insecure and the server should be reconfigured if possible to support AES encryption.
+      Setting the policy to:
 
-      If the policy is set to 'Strong' or if it is unset, only the AES encryption types are allowed.
+      * All allows the AES encryption types aes256-cts-hmac-sha1-96 and aes128-cts-hmac-sha1-96, as well as the RC4 encryption type rc4-hmac. AES takes precedence if the server supports AES and RC4 encryption types.
 
-      If the policy is set to 'Legacy', only the RC4 encryption type is allowed. This option is insecure and should only be needed in very specific circumstances.
+      * Strong or leaving it unset allows only the AES types.
 
-      See also https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.''',
+      * Legacy allows only the RC4 type. RC4 is insecure. It should only be needed in very specific circumstances. If possible, reconfigure the server to support AES encryption.
+
+      Also see https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.''',
     },
     {
       'name': 'DeviceUserPolicyLoopbackProcessingMode',
@@ -8138,13 +8128,13 @@
       'id': 416,
       'caption': '''User policy loopback processing mode''',
       'tags': [],
-      'desc': '''Specifies whether and how user policy from computer GPO is processed.
+      'desc': '''Setting the policy specifies whether and how user policy from computer Group Policy Object (GPO) is processed.
 
-      If the policy is set to 'Default' or if it is unset, user policy is read only from user GPOs (computer GPOs are ignored).
+      * Default or leaving it unset has user policy read only from user GPOs. Computer GPOs are ignored.
 
-      If the policy is set to 'Merge', user policy in user GPOs is merged with user policy in computer GPOs (computer GPOs take preference).
+      * Merge will merge user policy in user GPOs with that of computer GPOs. Computer GPOs take precedence.
 
-      If the policy is set to 'Replace', user policy in user GPOs is replaced by user policy in computer GPOs (user GPOs are ignored).''',
+      * Replace will replace user policy in user GPOs with that of computer GPOs. User GPOs are ignored.''',
     },
     {
       'name': 'DeviceMachinePasswordChangeRate',
@@ -8161,15 +8151,13 @@
       'id': 425,
       'caption': '''Machine password change rate''',
       'tags': ['system-security'],
-      'desc': '''Specifies the rate (in days) at which a client changes their machine account password. The password is randomly generated by the client and not visible to the user.
+      'desc': '''Setting the policy specifies in days how often a client changes their machine account password. The password is randomly generated by the client and not visible to the user. Disabling this policy or setting a high number of days can negatively impact security, because it gives potential attackers more time to find and use the machine account password.
 
-      Just like user passwords, machine passwords should be changed regularly. Disabling this policy or setting a high number of days can have a negative impact on security since it gives potential attackers more time to find the machine account password and use it.
+      Leaving the policy unset means the machine account password is changed every 30 days.
 
-      If the policy is unset, the machine account password is changed every 30 days.
+      Setting the policy to 0 turns off machine account password change.
 
-      If the policy is set to 0, machine account password change is disabled.
-
-      Note that passwords might get older than the specified number of days if the client has been offline for a longer period of time.''',
+      Note: Passwords might get older than the specified number of days if the client has been offline for a longer period of time.''',
     },
     {
       'name': 'DeviceGpoCacheLifetime',
@@ -8186,11 +8174,13 @@
       'id': 508,
       'caption': '''GPO cache lifetime''',
       'tags': [],
-      'desc': '''Specifies the lifetime (in hours) of the Group Policy Object (GPO) cache. Instead of re-downloading GPOs on every policy fetch, the system may reuse cached GPOs as long as their version does not change. This policy specifies the maximum duration for which cached GPOs may be reused before they are re-downloaded. Rebooting and logging out clears the cache.
+      'desc': '''Setting the policy specifies in hours the Group Policy Object (GPO) cache lifetime—the maximum duration GPOs can be reused before they're redownloaded. Instead of redownloading them on every policy fetch, the system reuses cached GPOs as long as their version doesn't change.
 
-      If the policy is unset, cached GPOs may be reused for up to 25 hours.
+      Setting the policy to 0 turns GPO caching off. Doing this increases server load, because GPOs are redownloaded on every policy fetch, even if they didn't change.
 
-      If the policy is set to 0, GPO caching is turned off. Note that this increases server load since GPOs are re-downloaded on every policy fetch, even if they did not change.''',
+      Leaving the policy unset means cached GPOs can be reused for up to 25 hours.
+
+      Note: Restarting and signing out clears the cache.''',
     },
     {
       'name': 'DeviceAuthDataCacheLifetime',
@@ -8207,13 +8197,13 @@
       'id': 509,
       'caption': '''Authentication data cache lifetime''',
       'tags': ['admin-sharing'],
-      'desc': '''Specifies the lifetime (in hours) of the authentication data cache. The cache is used to speed up sign-in. It contains general data (workgroup name etc.) about affiliated realms, i.e. realms trusted by the machine realm. No user-specific data and no data for unaffiliated realms is cached. Rebooting the device clears the cache.
+      'desc': '''Setting the policy specifies in hours the authentication data cache lifetime. The cache has data about realms trusted by the machine realm (affiliated realms). So, authentication data caching helps speed up sign-in. User-specific data and data for unaffiliated realms isn't cached.
 
-      If the policy is unset, cached authentication data may be reused for up to 73 hours.
+      Setting the policy to 0 turns authentication data caching off. Realm-specific data is fetched on every sign-in, so turning off authentication data caching can significantly slow down user sign-in.
 
-      If the policy is set to 0, authentication data caching is turned off. This can significantly slow down sign-in of affiliated users since realm-specific data has to be fetched on every sign-in.
+      Leaving the policy unset means cached authentication data can be reused for up to 73 hours.
 
-      Note that realm data is cached even for ephemeral users. The cache should be turned off if tracing the realm of ephemeral users should be prevented.''',
+      Note: Restarting the device clears the cache. Even ephemeral users' realm data is cached. Turn off the cache to prevent the tracing of an ephemeral user's realm.''',
     },
     {
       'name': 'CloudPrintSubmitEnabled',
@@ -18556,11 +18546,7 @@
       'supported_on': ['chrome_os:70-'],
       'caption': '''Contorls Network File Shares for ChromeOS availability''',
       'example_value': True,
-      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> is allowed for a user.
-
-      When this policy is not configured or set to True, users will be able to use Network File Shares.
-
-      When this policy is set to False, users will be unable to use Network File Shares.''',
+      'desc': '''Setting the policy to Enabled lets users use Network File Shares for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph>. Setting the policy to Disabled means users can't use this feature.''',
     },
     {
       'name': 'WebRtcEventLogCollectionAllowed',
@@ -18641,10 +18627,9 @@
       'caption': '''Controls Network File Share discovery via <ph name="NETBIOS_NAME">NetBIOS</ph>''',
       'example_value': True,
       'default_for_enterprise_users': False,
-      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> should use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> to discover shares on the network.
-      When this policy is set to True, share discovery will use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> protocol to discover shares on the network.
-      When this policy is set to False, share discovery will not use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> protocol to discover shares.
-      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
+      'desc': '''Setting the policy to Enabled means share discovery (the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph>) uses the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> to discover shares on the network. Setting the policy to Disabled means share discovery won't use this protocol to discover shares.
+
+      Leaving the policy unset means the behavior defaults to off for managed users and on for other users.''',
     },
     {
       'name': 'WebAppInstallForceList',
@@ -18955,12 +18940,9 @@
       'caption': '''Controls enabling NTLM as an authentication protocol for SMB mounts''',
       'example_value': True,
       'default_for_enterprise_users': False,
-      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> will use NTLM for authentication.
+      'desc': '''Setting the policy to Enabled means the Network File Shares feature for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> uses NTLM for authentication to SMB shares if necessary. Setting the policy to Disabled turns off NTLM authentication to SMB shares.
 
-      When this policy is set to True, NTLM will be used for authentication to SMB shares if necessary.
-      When this policy is set to False, NTLM authentication to SMB shares will be disabled.
-
-      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
+      Leaving the policy unset means the behavior defaults to off for managed users and on for other users.''',
     },
     {
       'name': 'NetworkFileSharesPreconfiguredShares',
@@ -18997,9 +18979,15 @@
       'id': 490,
       'caption': '''List of preconfigured network file shares.''',
       'tags': [],
-      'desc': '''Specifies a list of preconfigued network file shares.
+      'desc': '''Setting the policy specifies a list of preset network file shares. Each item is an object with 2 properties: <ph name="SHARE_URL_FIELD_NAME">share_url</ph> and <ph name="MODE_FIELD_NAME">mode</ph>.
 
-      Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be either "drop_down" or "pre_mount". "drop_down" mode indicates that "share_url" will be added to the share discovery drop down. "pre_mount" mode indicates that "share_url" will be mounted.''',
+      The share URL should be <ph name="SHARE_URL_FIELD_NAME">share_url</ph>.
+
+      For <ph name="MODE_FIELD_NAME">mode</ph>, it should be <ph name="MODE_ENUM_DROP_DOWN">drop_down</ph> or <ph name="MODE_ENUM_PRE_MOUNT">pre_mount</ph>:
+
+      * <ph name="MODE_ENUM_DROP_DOWN">drop_down</ph> indicates that <ph name="SHARE_URL_FIELD_NAME">share_url</ph> will be added to the share discovery list.
+
+      * <ph name="MODE_ENUM_PRE_MOUNT">pre_mount</ph> indicates that <ph name="SHARE_URL_FIELD_NAME">share_url</ph> will be mounted.''',
     },
     {
       'name': 'ScreenBrightnessPercent',

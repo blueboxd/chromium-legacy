@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7868692b9df06325e0ee280024ed75f2eb5de95f',
+  'skia_revision': 'e1589a1e19da3a5784ea1054367d93db95060183',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6dfd855a10fb74660ad4723c7bc7307cbaa5219d',
+  'angle_revision': '887b1346d5af89d3f280b82d0e4c8cc38226f06d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'ff30c3d43096074f975553013c9a67825eea31c9',
+  'pdfium_revision': 'daef088d069f8d49d8ba668f475dd21ca0e5c087',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd24d3c2bc1d754048da9df67e9077ab34b55b44b',
+  'devtools_frontend_revision': '2a472f6edd473460bd3c9d63b0c8987ff8ee906c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -357,7 +357,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'fc5c5ab60b22e9d04fe4e2ab3594cd0205fd15a3',
+  'tint_revision': '1a63c49b4e864560e27003017b9c5ec0c7894efe',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'bVq5WeFaN1ryKyMlzkHvtEULXy1aXEreEiRSLpCwLY8C'
+              'version': 'RNSAUIvn_BWmBr4SB5i72xcyB2UnxeNLGuj62DykzpgC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

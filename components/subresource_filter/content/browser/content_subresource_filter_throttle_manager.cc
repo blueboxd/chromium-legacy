@@ -24,6 +24,7 @@
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +48,9 @@ void ContentSubresourceFilterThrottleManager::CreateForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<SubresourceFilterClient> client,
     VerifiedRulesetDealer::Handle* dealer_handle) {
+  if (!base::FeatureList::IsEnabled(kSafeBrowsingSubresourceFilter))
+    return;
+
   if (FromWebContents(web_contents))
     return;
 
@@ -398,6 +402,12 @@ ContentSubresourceFilterThrottleManager::LoadPolicyForLastCommittedNavigation(
   if (it != navigation_load_policies_.end())
     return it->second;
   return base::nullopt;
+}
+
+// static
+void ContentSubresourceFilterThrottleManager::LogAction(
+    SubresourceFilterAction action) {
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.Actions2", action);
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>

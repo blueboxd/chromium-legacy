@@ -6,6 +6,7 @@
 #define DEVICE_VR_ANDROID_WEB_XR_PRESENTATION_STATE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -94,7 +95,7 @@ struct WebXrFrame {
   WebXrFrame();
   ~WebXrFrame();
 
-  bool IsValid();
+  bool IsValid() const;
   void Recycle();
 
   // If true, this frame cannot change state until unlocked. Used to mark
@@ -115,6 +116,8 @@ struct WebXrFrame {
   bool recycle_once_unlocked = false;
 
   std::unique_ptr<gl::GLFence> gvr_handoff_fence;
+
+  std::unique_ptr<gl::GLFence> render_completion_fence;
 
   // End of elements that need to be reset on Recycle
 
@@ -180,14 +183,18 @@ class WebXrPresentationState {
   void TryDeferredProcessing();
 
   bool HaveAnimatingFrame() const { return animating_frame_; }
-  WebXrFrame* GetAnimatingFrame();
+  WebXrFrame* GetAnimatingFrame() const;
   bool HaveProcessingFrame() const { return processing_frame_; }
-  WebXrFrame* GetProcessingFrame();
+  WebXrFrame* GetProcessingFrame() const;
   bool HaveRenderingFrame() const { return rendering_frame_; }
-  WebXrFrame* GetRenderingFrame();
+  WebXrFrame* GetRenderingFrame() const;
 
   bool mailbox_bridge_ready() { return mailbox_bridge_ready_; }
   void NotifyMailboxBridgeReady() { mailbox_bridge_ready_ = true; }
+
+  // The index of the expected next animating frame, intended for logging
+  // purposes only. Does not consume or modify the index value.
+  FrameIndexType PeekNextFrameIndex() const { return next_frame_index_; }
 
   // Extracts the shared buffers from all frames, resetting said frames to an
   // invalid state.
@@ -208,6 +215,8 @@ class WebXrPresentationState {
   // frame. Invalid states include mailbox_bridge_ready_ being false, or an
   // already existing processing frame that's not done yet.
   bool CanProcessFrame() const;
+  std::string DebugState() const;
+
   std::unique_ptr<WebXrFrame> frames_storage_[kWebXrFrameCount];
 
   // Index of the next animating WebXR frame.

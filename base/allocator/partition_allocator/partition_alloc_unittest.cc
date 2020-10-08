@@ -154,7 +154,8 @@ class PartitionAllocTest : public testing::Test {
   ~PartitionAllocTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list.InitWithFeatures({kPartitionAllocGigaCage}, {});
+    scoped_feature_list.InitWithFeatures({features::kPartitionAllocGigaCage},
+                                         {});
     PartitionAllocGlobalInit(HandleOOM);
     allocator.init({PartitionOptions::Alignment::kRegular});
     aligned_allocator.init({PartitionOptions::Alignment::kAlignedAlloc});
@@ -2583,7 +2584,7 @@ TEST_F(PartitionAllocTest, GetAllocatedSize) {
   for (size_t size = 1; size <= kMinDirectMappedDownsize; size += delta) {
     void* ptr = allocator.root()->Alloc(size, "");
     EXPECT_TRUE(ptr);
-    size_t usable_size = PartitionRoot<ThreadSafe>::GetAllocatedSize(ptr);
+    size_t usable_size = PartitionRoot<ThreadSafe>::GetUsableSize(ptr);
     EXPECT_LE(size, usable_size);
     memset(ptr, 0xDE, usable_size);
     // Should not crash when free the ptr.

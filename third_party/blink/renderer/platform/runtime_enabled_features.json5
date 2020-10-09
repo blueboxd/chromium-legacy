@@ -713,7 +713,7 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
@@ -963,11 +963,6 @@
       // other hooks in blink.
       name: "IsolatedCodeCache",
       status: "stable",
-    },
-    {
-      // If enabled, CSP checks use the isolated world CSP when in an isolated
-      // world. See crbug.com/896041.
-      name: "IsolatedWorldCSP"
     },
     {
       name: "KeyboardFocusableScrollers",

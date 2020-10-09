@@ -3379,6 +3379,11 @@ const char kPasswordsWeaknessCheckName[] = "Passwords weakness check";
 const char kPasswordsWeaknessCheckDescription[] =
     "Enables checking passwords for weakness in Password Check";
 
+const char kSCTAuditingName[] = "SCT auditing";
+const char kSCTAuditingDescription[] =
+    "Enables SCT auditing for users who have opted in to Safe Browsing "
+    "Extended Reporting.";
+
 const char kTabFreezeName[] = "Tab Freeze";
 const char kTabFreezeDescription[] =
     "Enables freezing eligible tabs when they have been backgrounded for 5 "
@@ -4117,6 +4122,10 @@ const char kFilesTransferDetailsName[] = "Enable Files Transfer Details.";
 const char kFilesTransferDetailsDescription[] =
     "Enable transfer details like remaining time in the progress center panel.";
 
+const char kFilesTrashName[] = "Enable Files Trash.";
+const char kFilesTrashDescription[] =
+    "Enable trash for My files volume in Files App.";
+
 const char kFilesZipMountName[] = "New ZIP mounting in Files App";
 const char kFilesZipMountDescription[] =
     "Enable new ZIP archive mounting system in File Manager.";
@@ -4230,7 +4239,7 @@ const char kInteractiveWindowCycleListDescription[] =
     "Adds mouse behavior, three-finger touchpad swipe, left/right "
     "arrow navigation, and space/enter confirmation to Alt-Tab.";
 
-const char kLacrosSupportName[] = "LaCrOS support";
+const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
     "Support for the experimental lacros-chrome browser.";
 

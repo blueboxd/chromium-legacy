@@ -1,0 +1,24 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos || chromeos_is_browser_only,
+       "Non-Chrome-OS or Lacros builds must not depend on //chromeos")
+
+# C++ headers and sources that can be used by both ash and lacros builds.
+component("base") {
+  defines = [ "IS_CHROMEOS_UI_BASE_IMPL" ]
+
+  sources = [
+    "chromeos_ui_constants.h",
+    "tablet_state.cc",
+    "tablet_state.h",
+  ]
+
+  output_name = "chromeos_ui_base"
+
+  deps = [
+    "//base",
+    "//skia",
+  ]
+}

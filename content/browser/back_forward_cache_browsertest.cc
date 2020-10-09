@@ -3441,6 +3441,55 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+// Same test as above, but with eviction happening before URL loader starts a
+// response.
+// Flaky on most platforms (see crbug.com/1136683)
+#if defined(OS_MAC)
+#define MAYBE_ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse \
+  DISABLED_ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse
+#else
+#define MAYBE_ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse \
+  ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse
+#endif
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    MAYBE_ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to page A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to page B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_NE(rfh_a, rfh_b);
+
+  // 3) Start navigation to page A, and cause the document to be evicted during
+  // the navigation immediately before navigation makes any meaningful progress.
+  web_contents()->GetController().GoBack();
+  EvictByJavaScript(rfh_a);
+
+  // rfh_a should have been deleted, and page A navigated to normally.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  delete_observer_rfh_a.WaitUntilDeleted();
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  EXPECT_NE(rfh_a2, rfh_b);
+  EXPECT_EQ(rfh_a2->GetLastCommittedURL(), url_a);
+
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kJavaScriptExecution},
+      FROM_HERE);
+}
+
 // Similar to ReissuesNavigationIfEvictedDuringNavigation, except that
 // BackForwardCache::Flush is the source of the eviction.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -5115,7 +5164,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebPreferences) {
 
   blink::web_pref::WebPreferences prefs =
       web_contents()->GetOrCreateWebPreferences();
-  prefs.preferred_color_scheme = blink::PreferredColorScheme::kDark;
+  prefs.preferred_color_scheme = blink::mojom::PreferredColorScheme::kDark;
   web_contents()->SetWebPreferences(prefs);
 
   // 3) Set WebPreferences to prefer dark color scheme.

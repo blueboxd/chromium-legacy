@@ -1929,6 +1929,9 @@ extern const char kOmniboxRefinedFocusStateDescription[];
 extern const char kPasswordsWeaknessCheckName[];
 extern const char kPasswordsWeaknessCheckDescription[];
 
+extern const char kSCTAuditingName[];
+extern const char kSCTAuditingDescription[];
+
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];
 
@@ -2385,6 +2388,9 @@ extern const char kFilesSWADescription[];
 
 extern const char kFilesTransferDetailsName[];
 extern const char kFilesTransferDetailsDescription[];
+
+extern const char kFilesTrashName[];
+extern const char kFilesTrashDescription[];
 
 extern const char kFilesZipMountName[];
 extern const char kFilesZipMountDescription[];

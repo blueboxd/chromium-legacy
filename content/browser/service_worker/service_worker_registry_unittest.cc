@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_registry.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -95,6 +96,19 @@ class ServiceWorkerRegistryTest : public testing::Test {
     InitializeTestHelper();
   }
 
+  std::vector<url::Origin> GetRegisteredOrigins() {
+    std::vector<url::Origin> result;
+    base::RunLoop loop;
+    registry()->GetRemoteStorageControl()->GetRegisteredOrigins(
+        base::BindLambdaForTesting(
+            [&](const std::vector<url::Origin>& origins) {
+              result = origins;
+              loop.Quit();
+            }));
+    loop.Run();
+    return result;
+  }
+
   blink::ServiceWorkerStatusCode FindRegistrationForClientUrl(
       const GURL& document_url,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
@@ -162,6 +176,55 @@ class ServiceWorkerRegistryTest : public testing::Test {
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
+
+TEST_F(ServiceWorkerRegistryTest, RegisteredOriginCount) {
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(GetRegisteredOrigins().empty());
+    histogram_tester.ExpectUniqueSample("ServiceWorker.RegisteredOriginCount",
+                                        0, 1);
+  }
+
+  std::pair<GURL, GURL> scope_and_script_pairs[] = {
+      {GURL("https://www.example.com/scope/"),
+       GURL("https://www.example.com/script.js")},
+      {GURL("https://www.example.com/scope/foo"),
+       GURL("https://www.example.com/script.js")},
+      {GURL("https://www.test.com/scope/foobar"),
+       GURL("https://www.test.com/script.js")},
+      {GURL("https://example.com/scope/"),
+       GURL("https://example.com/script.js")},
+  };
+  std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
+  int64_t dummy_resource_id = 1;
+  for (const auto& pair : scope_and_script_pairs) {
+    registrations.emplace_back(CreateServiceWorkerRegistrationAndVersion(
+        context(), pair.first, pair.second, dummy_resource_id));
+    ++dummy_resource_id;
+  }
+
+  // Store all registrations.
+  for (const auto& registration : registrations) {
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+              StoreRegistration(registration, registration->waiting_version()));
+  }
+
+  SimulateRestart();
+
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(3UL, GetRegisteredOrigins().size());
+    histogram_tester.ExpectUniqueSample("ServiceWorker.RegisteredOriginCount",
+                                        3, 1);
+  }
+
+  // Re-initializing shouldn't re-record the histogram.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(3UL, GetRegisteredOrigins().size());
+    histogram_tester.ExpectTotalCount("ServiceWorker.RegisteredOriginCount", 0);
+  }
+}
 
 TEST_F(ServiceWorkerRegistryTest, FindRegistration_LongestScopeMatch) {
   const GURL kDocumentUrl("http://www.example.com/scope/foo");
@@ -294,6 +357,88 @@ TEST_F(ServiceWorkerRegistryTest, EnabledNavigationPreloadState) {
       found_registration->active_version()->navigation_preload_state();
   EXPECT_TRUE(state.enabled);
   EXPECT_EQ(state.header, kHeaderValue);
+}
+
+// Tests storing the script response time for DevTools.
+TEST_F(ServiceWorkerRegistryTest, ScriptResponseTime) {
+  // Make a registration.
+  const GURL kScope("https://example.com/scope");
+  const GURL kScript("https://example.com/script.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
+  ServiceWorkerVersion* version = registration->waiting_version();
+
+  // Give it a main script response info.
+  network::mojom::URLResponseHead response_head;
+  response_head.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+  response_head.response_time = base::Time::FromJsTime(19940123);
+  version->SetMainScriptResponse(
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+          response_head));
+  EXPECT_TRUE(version->main_script_response_);
+  EXPECT_EQ(response_head.response_time,
+            version->script_response_time_for_devtools_);
+  EXPECT_EQ(response_head.response_time,
+            version->GetInfo().script_response_time);
+
+  // Store the registration.
+  EXPECT_EQ(StoreRegistration(registration, version),
+            blink::ServiceWorkerStatusCode::kOk);
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  SimulateRestart();
+
+  // Read the registration. The main script's response time should be gettable.
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            FindRegistrationForClientUrl(kScope, &found_registration));
+  ASSERT_TRUE(found_registration);
+  auto* waiting_version = found_registration->waiting_version();
+  ASSERT_TRUE(waiting_version);
+  EXPECT_FALSE(waiting_version->main_script_response_);
+  EXPECT_EQ(response_head.response_time,
+            waiting_version->script_response_time_for_devtools_);
+  EXPECT_EQ(response_head.response_time,
+            waiting_version->GetInfo().script_response_time);
+}
+
+// Tests loading a registration with a disabled navigation preload
+// state.
+TEST_F(ServiceWorkerRegistryTest, DisabledNavigationPreloadState) {
+  const GURL kScope("https://valid.example.com/scope");
+  const GURL kScript("https://valid.example.com/script.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
+  ServiceWorkerVersion* version = registration->waiting_version();
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration->SetActiveVersion(version);
+  registration->EnableNavigationPreload(false);
+
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, version));
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  SimulateRestart();
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            FindRegistrationForClientUrl(kScope, &found_registration));
+  const blink::mojom::NavigationPreloadState& registration_state =
+      found_registration->navigation_preload_state();
+  EXPECT_FALSE(registration_state.enabled);
+  EXPECT_EQ("true", registration_state.header);
+  ASSERT_TRUE(found_registration->active_version());
+  const blink::mojom::NavigationPreloadState& state =
+      found_registration->active_version()->navigation_preload_state();
+  EXPECT_FALSE(state.enabled);
+  EXPECT_EQ("true", state.header);
 }
 
 // Tests that storage policy changes are observed.

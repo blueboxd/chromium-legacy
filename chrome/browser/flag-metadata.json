@@ -2546,6 +2546,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "files-trash",
+    "owners": [ "joelhockey", "noel", "simmonsjosh" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "files-unified-media-view",
     "owners": [ "fukino", "weifangsun" ],
     "expiry_milestone": 87
@@ -4104,6 +4109,11 @@
     "name": "scrollable-tabstrip",
     "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "sct-auditing",
+    "owners": [ "cthomp", "estark", "jdeblasio" ],
+    "expiry_milestone": 92
   },
   {
     "name": "send-uma-cellular",

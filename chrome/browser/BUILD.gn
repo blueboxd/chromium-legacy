@@ -1750,10 +1750,6 @@ static_library("browser") {
     "sync/sync_startup_tracker.h",
     "sync/user_event_service_factory.cc",
     "sync/user_event_service_factory.h",
-    "tab/state/tab_state_db.cc",
-    "tab/state/tab_state_db.h",
-    "tab/state/tab_state_db_factory.cc",
-    "tab/state/tab_state_db_factory.h",
     "tab_contents/navigation_metrics_recorder.cc",
     "tab_contents/navigation_metrics_recorder.h",
     "tab_contents/tab_util.cc",
@@ -1872,7 +1868,6 @@ static_library("browser") {
     ":permissions_proto",
     ":resource_prefetch_predictor_proto",
     ":status_proto",
-    ":tab_state_db_content_proto",
     ":unexpire_flags",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -1904,6 +1899,7 @@ static_library("browser") {
     "//chrome/browser/notifications",
     "//chrome/browser/notifications/scheduler:factory",
     "//chrome/browser/notifications/scheduler/public",
+    "//chrome/browser/persisted_state_db:persisted_state_db",
     "//chrome/browser/policy:path_parser",
     "//chrome/browser/privacy_budget",
     "//chrome/browser/profiling_host",
@@ -4473,8 +4469,6 @@ static_library("browser") {
       "net/net_error_diagnostics_dialog_win.cc",
       "net/service_providers_win.cc",
       "net/service_providers_win.h",
-      "notifications/win/notification_image_retainer.cc",
-      "notifications/win/notification_image_retainer.h",
       "notifications/win/notification_template_builder.cc",
       "notifications/win/notification_template_builder.h",
       "obsolete_system/obsolete_system_win.cc",
@@ -4502,6 +4496,8 @@ static_library("browser") {
       "themes/theme_helper_win.cc",
       "themes/theme_helper_win.h",
       "upgrade_detector/get_installed_version_win.cc",
+      "webshare/win/share_operation.cc",
+      "webshare/win/share_operation.h",
       "webshare/win/show_share_ui_for_window_operation.cc",
       "webshare/win/show_share_ui_for_window_operation.h",
       "win/app_icon.cc",
@@ -4867,6 +4863,8 @@ static_library("browser") {
   if (is_win || is_mac) {
     # Sources(generally "desktop OS importers") used only on Mac & Windows.
     sources += [
+      "notifications/notification_image_retainer.cc",
+      "notifications/notification_image_retainer.h",
       "recovery/recovery_install_global_error.cc",
       "recovery/recovery_install_global_error.h",
       "recovery/recovery_install_global_error_factory.cc",
@@ -6195,10 +6193,6 @@ source_set("theme_properties") {
 
 proto_library("availability_protos") {
   sources = [ "availability/proto/availability_prober_cache_entry.proto" ]
-}
-
-proto_library("tab_state_db_content_proto") {
-  sources = [ "tab/state/tab_state_db_content.proto" ]
 }
 
 proto_library("resource_prefetch_predictor_proto") {

@@ -4147,11 +4147,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
-    {"omnibox-disable-instant-extended-limit",
-     flag_descriptions::kOmniboxDisableInstantExtendedLimitName,
-     flag_descriptions::kOmniboxDisableInstantExtendedLimitDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxDisableInstantExtendedLimit)},
-
 #if defined(OS_CHROMEOS)
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
@@ -6622,6 +6617,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSCTAuditingVariations,
                                     "SCTAuditingVariations")},
 #endif  // !defined(OS_ANDROID)
+
+    {"kaleidoscope-ntp-module", flag_descriptions::kKaleidoscopeModuleName,
+     flag_descriptions::kKaleidoscopeModuleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kKaleidoscopeModule)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

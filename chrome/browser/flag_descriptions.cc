@@ -1307,6 +1307,11 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
+const char kKaleidoscopeModuleName[] = "Enforce Kaleidoscope NTP module";
+const char kKaleidoscopeModuleDescription[] =
+    "Enable the Kaleidoscope NTP module to display Kaleidoscope content on the "
+    " New Tab Page.";
+
 const char kLauncherSettingsSearchName[] = "Launcher settings search";
 const char kLauncherSettingsSearchDescription[] =
     "Enable search results for OS settings in the launcher.";
@@ -1490,12 +1495,6 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "In the event that the omnibox provides suggestions on-focus, the URL of "
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
-
-const char kOmniboxDisableInstantExtendedLimitName[] =
-    "Disable the 'instant extended' limit on search suggestions";
-const char kOmniboxDisableInstantExtendedLimitDescription[] =
-    "Effectively doubles the max number of Google-provided search suggestions "
-    "on Android by disabling the 'Instant Extended' check.";
 
 const char kOmniboxExperimentalSuggestScoringName[] =
     "Omnibox Experimental Suggest Scoring";

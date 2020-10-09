@@ -31,7 +31,7 @@ defaults = args.defaults(
     refs = None,
 )
 
-def declare_bucket(milestone_vars, *, branch_selector = branches.MAIN_ONLY):
+def declare_bucket(milestone_vars, *, branch_selector = branches.MAIN):
     if not branches.matches(branch_selector):
         return
 
@@ -69,7 +69,6 @@ def declare_bucket(milestone_vars, *, branch_selector = branches.MAIN_ONLY):
         ci.overview_console_view(
             name = name,
             branch_selector = branch_selector,
-            header = "//chromium-header.textpb",
             repo = "https://chromium.googlesource.com/chromium/src",
             refs = [milestone_vars.ref],
             title = title,
@@ -103,7 +102,6 @@ def set_defaults(milestone_vars, **kwargs):
         cpu = builders.cpu.X86_64,
         executable = "recipe:chromium",
         execution_timeout = 3 * time.hour,
-        header = "//chromium-header.textpb",
         os = builders.os.LINUX_DEFAULT,
         pool = "luci.chromium.ci",
         project_trigger_overrides = {"chromium": settings.project} if not settings.is_master else None,
@@ -318,7 +316,7 @@ def ordering(*, short_names = None, categories = None):
         categories = categories or [],
     )
 
-def console_view(*, name, branch_selector = branches.MAIN_ONLY, ordering = None, **kwargs):
+def console_view(*, name, branch_selector = branches.MAIN, ordering = None, **kwargs):
     """Create a console view, optionally providing an entry ordering.
 
     Args:
@@ -365,7 +363,7 @@ def console_view(*, name, branch_selector = branches.MAIN_ONLY, ordering = None,
         ordering = ordering or {},
     )
 
-def overview_console_view(*, name, top_level_ordering, branch_selector = branches.MAIN_ONLY, **kwargs):
+def overview_console_view(*, name, top_level_ordering, branch_selector = branches.MAIN, **kwargs):
     """Create an overview console view.
 
     An overview console view is a console view that contains a subset of
@@ -418,7 +416,7 @@ def console_view_entry(*, category = None, short_name = None):
 def ci_builder(
         *,
         name,
-        branch_selector = branches.MAIN_ONLY,
+        branch_selector = branches.MAIN,
         add_to_console_view = args.DEFAULT,
         console_view = args.DEFAULT,
         main_console_view = args.DEFAULT,

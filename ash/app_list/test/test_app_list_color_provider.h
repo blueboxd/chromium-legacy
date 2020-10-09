@@ -30,10 +30,10 @@ class TestAppListColorProvider : public AppListColorProvider {
   SkColor GetPageSwitcherButtonColor() const override;
   SkColor GetPageSwitcherInkDropBaseColor() const override;
   SkColor GetPageSwitcherInkDropHighlightColor() const override;
-  SkColor GetSearchBoxIconColor() const override;
+  SkColor GetSearchBoxIconColor(SkColor default_color) const override;
   SkColor GetSearchBoxCardBackgroundColor() const override;
-  SkColor GetFolderBackgroundColor() const override;
-  SkColor GetFolderTitleTextColor() const override;
+  SkColor GetFolderBackgroundColor(SkColor default_color) const override;
+  SkColor GetFolderTitleTextColor(SkColor default_color) const override;
   SkColor GetFolderHintTextColor() const override;
   SkColor GetFolderNameBackgroundColor(bool active) const override;
   SkColor GetFolderNameBorderColor(bool active) const override;

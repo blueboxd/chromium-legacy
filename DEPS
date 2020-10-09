@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'aa8c4617869e54cc6015b1b2d7a7bf5f512689b8',
+  'skia_revision': '7563a4878789969380c82677b79e681cfc5e6837',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '11158c2135ffeac501f250473e41f39f02144359',
+  'v8_revision': 'e4ed803f4c09ff72bb1eaadf59ec31facf507368',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fc8f5e0ae349ca97069fc370bbc4a45a4d96f86e',
+  'angle_revision': 'b2ff69f856d98312bbfe14f80d084b7d8795281f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '51b03d58fb17b09120c886d5df36fb191d12fa8e',
+  'swiftshader_revision': '0aca3ca9427d1d2aa8d8e706de62360c61af3598',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e611beb1834069d510f53a5f436b31e9241b9993',
+  'catapult_revision': 'e9879d106b95b2c9f0b0fd6efe8f1e5186f64ada',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '78768c9a86bfa1e795e36ec4e13955421688559a',
+  'devtools_frontend_revision': '5a23b943626939e5bcc6c1dfddbbebd2c531e151',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -881,7 +881,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8ce5f5261ab7a2434295dee3f744e155c2abc9b2',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '84bd221ed748e1d0a3155c8a9a210d4802f94678',
       'condition': 'checkout_chromeos',
   },
 
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c251d370b65ed2b50c02e89c8d8852026c2fda24',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '109c355900d140e616c7ddc66c57e626678133ca',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1332,7 +1332,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'lqz1nnbJiv6AkXiCEbZ8QbFCNIqL__If5b9sY15RbfUC'
+              'version': 'sc_IY63udetl6YG0-ExCPBOGDcD1JagmZiWBkq2mBl0C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1351,7 +1351,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '7c2e104ffbe4383a9d2933428d4bc104ff16cdb2',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'a84f9718f35f62ae2a7a32abb016a1fa9862346a',
 
   'src/third_party/r8': {
       'packages': [
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'eacbd972ab7e85e9d61851ced57aba1eb194de3d',
+    Var('webrtc_git') + '/src.git' + '@' + 'ff7913204ce23f6888d206d16250a1429d0736db',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1544,7 +1544,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'wIHfWG-DQOw0ISbpkWZrm2f2GoKa3H1Z4I2w8MxhlVIC',
+          'version': 'rp50J-ChpY5Dyvjwl71mK28FOzgevSspS8YE1qxgkrAC',
         },
       ],
       'dep_type': 'cipd',
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@557d8bce351a190d26177d07a80935e1b01e127f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@99db0de96759bae0298c1f5e81498e48b7f219f5',
     'condition': 'checkout_src_internal',
   },
 
@@ -1566,7 +1566,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'ccPNzyZsy8IYqEUjkXTCupUsZ6yj49ysyBQKh1jDG28C',
+        'version': 'P-2JwDZls8V1LNOlmHoxgPlVs68icpTYuJyIwCQQ-okC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'BzVQGnSCwNeprjjkFkqzj_GZUxAVI1K5DBja9inASBwC',
+        'version': 'TGyqQ0i-VwfJWUWkmWGzsrQ0c-MmVg_nP2-LKMWnCQYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4632,7 +4632,7 @@ hooks = [
   # Download Telemetry's benchmark binary dependencies via conditionals
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies and checkout_linux',
+    'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',

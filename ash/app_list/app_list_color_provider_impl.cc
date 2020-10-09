@@ -100,24 +100,28 @@ SkColor AppListColorProviderImpl::GetPageSwitcherInkDropHighlightColor() const {
                      ripple_attributes.highlight_opacity * 255);
 }
 
-SkColor AppListColorProviderImpl::GetSearchBoxIconColor() const {
-  return ash_color_provider_->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
+SkColor AppListColorProviderImpl::GetSearchBoxIconColor(
+    SkColor default_color) const {
+  return DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kButtonIconColor, default_color);
 }
 
-SkColor AppListColorProviderImpl::GetFolderBackgroundColor() const {
-  return ash_color_provider_->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent80);
+SkColor AppListColorProviderImpl::GetFolderBackgroundColor(
+    SkColor default_color) const {
+  return DeprecatedGetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80, default_color);
 }
 
-SkColor AppListColorProviderImpl::GetFolderTitleTextColor() const {
-  return ash_color_provider_->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorPrimary);
+SkColor AppListColorProviderImpl::GetFolderTitleTextColor(
+    SkColor default_color) const {
+  return DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary, default_color);
 }
 
 SkColor AppListColorProviderImpl::GetFolderHintTextColor() const {
-  return ash_color_provider_->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorSecondary);
+  return DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorSecondary,
+      gfx::kGoogleGrey600);
 }
 
 SkColor AppListColorProviderImpl::GetFolderNameBackgroundColor(

@@ -33,6 +33,17 @@
     }, "SanitizerAPI creator with config ignore unknown values.");
 
     test(t => {
+      let options = {allowElements: ["div"]};
+
+      let s = new Sanitizer(options);
+      assert_true(s instanceof Sanitizer);
+      assert_equals(s.sanitizeToString("<div>balabala</div><test>test</test>"), "<div>balabala</div>test");
+
+      options.allowElements.push("test");
+      assert_equals(s.sanitizeToString("<div>balabala</div><test>test</test>"), "<div>balabala</div>test");
+    }, "SanitizerAPI config allowElements is not editable.");
+
+    test(t => {
       let options = {dropElements: ["div"]};
 
       let s = new Sanitizer(options);
@@ -44,24 +55,42 @@
     }, "SanitizerAPI config dropElements is not editable.");
 
     test(t => {
-      let options = {dropAttributes: ["onclick"]};
+      let options = {allowAttributes: ["id"]};
 
       let s = new Sanitizer(options);
       assert_true(s instanceof Sanitizer);
-      assert_equals(s.sanitizeToString("<button id='btn' onclick='submit()'>balabala</button>"), "<button id=\"btn\">balabala</button>");
+      assert_equals(s.sanitizeToString("<button id='btn' style='color: black'>balabala</button>"), "<button id=\"btn\">balabala</button>");
 
-      options.dropAttributes.push("id");
-      assert_equals(s.sanitizeToString("<button id='btn' onclick='submit()'>balabala</button>"), "<button id=\"btn\">balabala</button>");
+      options.allowAttributes.push("style");
+      assert_equals(s.sanitizeToString("<button id='btn' style='color: black'>balabala</button>"), "<button id=\"btn\">balabala</button>");
+    }, "SanitizerAPI config allowAttributes is not editable.");
+
+    test(t => {
+      let options = {dropAttributes: ["id"]};
+
+      let s = new Sanitizer(options);
+      assert_true(s instanceof Sanitizer);
+      assert_equals(s.sanitizeToString("<button id='btn' style='color: black'>balabala</button>"), "<button style=\"color: black\">balabala</button>");
+
+      options.dropAttributes.push("style");
+      assert_equals(s.sanitizeToString("<button id='btn' style='color: black'>balabala</button>"), "<button style=\"color: black\">balabala</button>");
     }, "SanitizerAPI config dropAttributes is not editable.");
 
-    const config_names = ["dropElements", "dropAttributes"];
+    const config_names = ["dropElements", "allowElements", "dropAttributes", "allowAttributes"];
     config_names.forEach(cname => {
       let options = {};
       options[cname] = [];
       test(t => {
         let s = new Sanitizer(options);
         assert_true(s instanceof Sanitizer)
-        assert_equals(s.sanitizeToString("<div>balabala<i>test</i></div>"), "<div>balabala<i>test</i></div>");
+
+        if (cname == "allowElements") {
+          assert_equals(s.sanitizeToString("<div id='div'>balabala<i>test</i></div>"), "balabalatest");
+        } else if (cname == "allowAttributes") {
+          assert_equals(s.sanitizeToString("<div id='div'>balabala<i>test</i></div>"), "<div>balabala<i>test</i></div>");
+        } else {
+          assert_equals(s.sanitizeToString("<div id='div'>balabala<i>test</i></div>"), "<div id=\"div\">balabala<i>test</i></div>");
+        }
       }, "SanitizerAPI creator with config " + JSON.stringify(options) + ".");
 
       options = {};

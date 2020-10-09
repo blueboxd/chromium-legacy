@@ -764,6 +764,9 @@ extern const char kJavascriptHarmonyDescription[];
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
 
+extern const char kKaleidoscopeModuleName[];
+extern const char kKaleidoscopeModuleDescription[];
+
 extern const char kLauncherSettingsSearchName[];
 extern const char kLauncherSettingsSearchDescription[];
 
@@ -866,9 +869,6 @@ extern const char kOmniboxCompactSuggestionsDescription[];
 
 extern const char kOmniboxDeferredKeyboardPopupName[];
 extern const char kOmniboxDeferredKeyboardPopupDescription[];
-
-extern const char kOmniboxDisableInstantExtendedLimitName[];
-extern const char kOmniboxDisableInstantExtendedLimitDescription[];
 
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];

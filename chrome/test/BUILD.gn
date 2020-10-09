@@ -334,6 +334,7 @@ static_library("test_support") {
       "//components/crash/core/app",
       "//third_party/wtl",
     ]
+    libs = [ "runtimeobject.lib" ]
   }
 
   if (is_chromeos) {
@@ -2694,7 +2695,6 @@ if (!is_android) {
         "../browser/ui/ash/launcher/chrome_launcher_controller_test_util.h",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.h",
-        "../browser/ui/ash/network/networking_config_chromeos_browsertest.cc",
         "../browser/ui/ash/screen_orientation_delegate_chromeos_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_client_browsertest.cc",
@@ -3497,7 +3497,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/third_party_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/translate_page_load_metrics_observer_unittest.cc",
-    "../browser/paint_preview/services/paint_preview_demo_service_unittest.cc",
     "../browser/paint_preview/services/paint_preview_tab_service_unittest.cc",
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/password_manager/password_store_x_unittest.cc",
@@ -3523,6 +3522,8 @@ test("unit_tests") {
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
     "../browser/permissions/permission_context_base_feature_policy_unittest.cc",
+    "../browser/persisted_state_db/persisted_state_db_factory_unittest.cc",
+    "../browser/persisted_state_db/persisted_state_db_unittest.cc",
     "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
     "../browser/policy/boolean_disabling_policy_handler_unittest.cc",
     "../browser/policy/chrome_browser_policy_connector_unittest.cc",
@@ -3609,8 +3610,6 @@ test("unit_tests") {
     "../browser/resources_util_unittest.cc",
     "../browser/subresource_redirect/https_image_compression_bypass_decider_unittest.cc",
     "../browser/subresource_redirect/https_image_compression_infobar_decider_unittest.cc",
-    "../browser/tab/state/tab_state_db_factory_unittest.cc",
-    "../browser/tab/state/tab_state_db_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
@@ -4079,6 +4078,7 @@ test("unit_tests") {
     "//chrome/browser/media/router:unittests",
     "//chrome/browser/notifications:unit_tests",
     "//chrome/browser/payments:unittests",
+    "//chrome/browser/persisted_state_db:persisted_state_db",
     "//chrome/browser/privacy_budget:unit_tests",
     "//chrome/browser/updates/announcement_notification:unit_tests",
     "//chrome/browser/video_tutorials:unit_tests",
@@ -4546,6 +4546,7 @@ test("unit_tests") {
       "../browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_scheduler_impl_unittest.cc",
+      "../browser/ui/thumbnails/thumbnail_stats_tracker_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
       "../browser/ui/toolbar/location_bar_model_unittest.cc",
@@ -5786,6 +5787,10 @@ test("unit_tests") {
       data_deps += [ "//chrome:packed_resources" ]
     }
   }
+  if (is_win || is_mac) {
+    sources +=
+        [ "../browser/notifications/notification_image_retainer_unittest.cc" ]
+  }
   if (is_win || is_mac || is_chromeos) {
     sources += [ "../browser/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
   }
@@ -5795,11 +5800,11 @@ test("unit_tests") {
   }
   if (is_win) {
     sources += [
-      "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
       "../browser/ui/views/uninstall_view_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_interop_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_unittest.cc",
+      "../browser/webshare/win/share_operation_unittest.cc",
       "../browser/webshare/win/show_share_ui_for_window_operation_unittest.cc",
     ]
     deps += [

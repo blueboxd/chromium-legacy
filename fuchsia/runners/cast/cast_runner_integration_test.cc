@@ -43,7 +43,6 @@
 #include "fuchsia/runners/cast/cast_runner_switches.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
-#include "mojo/core/embedder/embedder.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -256,8 +255,6 @@ class CastRunnerIntegrationTest : public testing::Test {
   CastRunnerIntegrationTest& operator=(const CastRunnerIntegrationTest&) =
       delete;
 
-  void SetUp() override { mojo::core::Init(); }
-
   void TearDown() override {
     if (component_controller_)
       ShutdownComponent();
@@ -352,7 +349,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     provider.set_name("testdata");
     base::FilePath pkg_path;
     CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
-    provider.set_directory(base::fuchsia::OpenDirectory(
+    provider.set_directory(base::OpenDirectoryHandle(
         pkg_path.AppendASCII("fuchsia/runners/cast/testdata")));
     std::vector<fuchsia::web::ContentDirectoryProvider> providers;
     providers.emplace_back(std::move(provider));
@@ -408,8 +405,7 @@ class CastRunnerIntegrationTest : public testing::Test {
         std::make_unique<sys::ServiceDirectory>(std::move(svc_directory));
 
     // Place the ServiceDirectory in the |flat_namespace|.
-    startup_info.flat_namespace.paths.emplace_back(
-        base::fuchsia::kServiceDirectoryPath);
+    startup_info.flat_namespace.paths.emplace_back(base::kServiceDirectoryPath);
     startup_info.flat_namespace.directories.emplace_back(
         directory.TakeChannel());
 

@@ -22236,6 +22236,7 @@ Called by update_document_policy_enum.py.-->
   <int value="789" label="DeviceFamilyLinkAccountsAllowed"/>
   <int value="790" label="EduCoexistenceToSVersion"/>
   <int value="791" label="BrowsingDataLifetime"/>
+  <int value="792" label="IntranetRedirectBehavior"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25040,6 +25041,8 @@ Called by update_extension_histograms.py.-->
   <int value="1517" label="FILEMANAGERPRIVATEINTERNAL_GETPDFTHUMBNAIL"/>
   <int value="1518" label="AUTOTESTPRIVATE_REMOVEALLNOTIFICATIONS"/>
   <int value="1519" label="VIRTUALKEYBOARDPRIVATE_OPENSUGGESTIONSETTINGS"/>
+  <int value="1520" label="ACCESSIBILITY_PRIVATE_ENABLEPOINTSCAN"/>
+  <int value="1521" label="AUTOTESTPRIVATE_ACTIVATEADJACENTDESKSTOTARGETINDEX"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29600,9 +29603,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3399" label="MediaRecorder_MimeType"/>
   <int value="3400" label="MediaRecorder_VideoBitsPerSecond"/>
   <int value="3401" label="MediaRecorder_AudioBitsPerSecond"/>
-  <int value="3402" label="BluetoothRemoteGATTCharacteristic_Uuid"/>
-  <int value="3403" label="BluetoothRemoteGATTDescriptor_Uuid"/>
-  <int value="3404" label="BluetoothRemoteGATTService_Uuid"/>
+  <int value="3402" label="OBSOLETE_BluetoothRemoteGATTCharacteristic_Uuid"/>
+  <int value="3403" label="OBSOLETE_BluetoothRemoteGATTDescriptor_Uuid"/>
+  <int value="3404" label="OBSOLETE_BluetoothRemoteGATTService_Uuid"/>
   <int value="3405" label="GPUAdapter_Name"/>
   <int value="3406" label="WindowScreenInternal"/>
   <int value="3407" label="WindowScreenPrimary"/>
@@ -30169,6 +30172,7 @@ Called by update_feature_policy_enum.py.-->
              without receiving a new consistency token"/>
   <int value="6"
       label="Upload attempt was aborted because the account is now signed-out"/>
+  <int value="7" label="Could not upload because does not meet conditions"/>
 </enum>
 
 <enum name="FeedUserActionType">
@@ -43689,6 +43693,7 @@ from previous Chrome versions.
   <int value="125934378" label="enable-password-link"/>
   <int value="127789400" label="PrivacyElevatedAndroid:enabled"/>
   <int value="128086566" label="D3D11VideoDecoder:enabled"/>
+  <int value="128323385" label="WebUIOmniboxPopup:enabled"/>
   <int value="129458360" label="LiteVideo:disabled"/>
   <int value="131881947" label="D3DVsync:enabled"/>
   <int value="132560299"
@@ -44046,6 +44051,7 @@ from previous Chrome versions.
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
   <int value="513728926" label="OsSettingsPolymer3:enabled"/>
+  <int value="514406112" label="WebUIOmniboxPopup:disabled"/>
   <int value="514569020" label="RemoteCopyImageNotification:enabled"/>
   <int value="516603570" label="QuickAnswersRichUi:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
@@ -65085,6 +65091,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="EXTENDED_REPORTING_IS_ENABLED"/>
   <int value="10" label="REPORT_PHISHING_ERROR"/>
   <int value="11" label="SHOW_WHITEPAPER"/>
+  <int value="12" label="SHOW_ENHANCED_PROTECTION"/>
+  <int value="13" label="OPEN_ENHANCED_PROTECTION"/>
 </enum>
 
 <enum name="SecurityLevel">

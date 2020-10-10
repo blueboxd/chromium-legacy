@@ -136,22 +136,25 @@ class CaptureModeTest : public AshTestBase {
   }
 
   // Select a region by pressing and dragging the mouse.
-  void SelectRegion(const gfx::Rect& region) {
+  void SelectRegion(const gfx::Rect& region, bool release_mouse = true) {
     auto* controller = CaptureModeController::Get();
     ASSERT_TRUE(controller->IsActive());
     ASSERT_EQ(CaptureModeSource::kRegion, controller->source());
     auto* event_generator = GetEventGenerator();
     event_generator->set_current_screen_location(region.origin());
-    event_generator->DragMouseTo(region.bottom_right());
+    event_generator->PressLeftButton();
+    event_generator->MoveMouseTo(region.bottom_right());
+    if (release_mouse)
+      event_generator->ReleaseLeftButton();
     EXPECT_EQ(region, controller->user_capture_region());
   }
 
   aura::Window* GetDimensionsLabelWindow() const {
     auto* controller = CaptureModeController::Get();
     DCHECK(controller->IsActive());
-    return controller->capture_mode_session()
-        ->dimensions_label_widget()
-        ->GetNativeWindow();
+    auto* widget =
+        controller->capture_mode_session()->dimensions_label_widget();
+    return widget ? widget->GetNativeWindow() : nullptr;
   }
 
   void WaitForCountDownToFinish() {
@@ -480,40 +483,95 @@ TEST_F(CaptureModeTest, DimensionsLabelLocation) {
   // Start Capture Mode in a region in image mode.
   StartImageRegionCapture();
 
+  // Press down and don't move the mouse. Label shouldn't display for empty
+  // capture regions.
+  auto* generator = GetEventGenerator();
+  generator->set_current_screen_location(gfx::Point(0, 0));
+  generator->PressLeftButton();
+  auto* controller = CaptureModeController::Get();
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_TRUE(controller->user_capture_region().IsEmpty());
+  EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
+  generator->ReleaseLeftButton();
+
   // Press down and drag to select a large region. Verify that the dimensions
   // label is centered and that the label is below the capture region.
   gfx::Rect capture_region{100, 100, 600, 200};
-  SelectRegion(capture_region);
-
-  aura::Window* dimensions_label_window = GetDimensionsLabelWindow();
+  SelectRegion(capture_region, /*release_mouse=*/false);
   EXPECT_EQ(capture_region.CenterPoint().x(),
-            dimensions_label_window->bounds().CenterPoint().x());
+            GetDimensionsLabelWindow()->bounds().CenterPoint().x());
   EXPECT_EQ(capture_region.bottom() +
                 CaptureModeSession::kSizeLabelYDistanceFromRegionDp,
-            dimensions_label_window->bounds().y());
+            GetDimensionsLabelWindow()->bounds().y());
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
 
   // Create a new capture region close to the left side of the screen such that
   // if the label was centered it would extend out of the screen.
   // The x value of the label should be the left edge of the screen (0).
   capture_region.SetRect(2, 100, 2, 100);
-  SelectRegion(capture_region);
-  EXPECT_EQ(0, dimensions_label_window->bounds().x());
+  SelectRegion(capture_region, /*release_mouse=*/false);
+  EXPECT_EQ(0, GetDimensionsLabelWindow()->bounds().x());
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
 
   // Create a new capture region close to the right side of the screen such that
   // if the label was centered it would extend out of the screen.
   // The right (x + width) of the label should be the right edge of the screen
   // (800).
   capture_region.SetRect(796, 100, 2, 100);
-  SelectRegion(capture_region);
-  EXPECT_EQ(800, dimensions_label_window->bounds().right());
+  SelectRegion(capture_region, /*release_mouse=*/false);
+  EXPECT_EQ(800, GetDimensionsLabelWindow()->bounds().right());
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
 
   // Create a new capture region close to the bottom side of the screen.
   // The label should now appear inside the capture region, just above the
   // bottom edge. It should be above the bottom of the screen as well.
   capture_region.SetRect(100, 700, 600, 790);
-  SelectRegion(capture_region);
+  SelectRegion(capture_region, /*release_mouse=*/false);
   EXPECT_EQ(800 - CaptureModeSession::kSizeLabelYDistanceFromRegionDp,
-            dimensions_label_window->bounds().bottom());
+            GetDimensionsLabelWindow()->bounds().bottom());
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
+}
+
+TEST_F(CaptureModeTest, CaptureRegionCaptureButtonLocation) {
+  UpdateDisplay("800x800");
+
+  auto* controller = StartImageRegionCapture();
+
+  // Select a large region. Verify that the capture button widget is centered.
+  SelectRegion(gfx::Rect(100, 100, 600, 600));
+
+  views::Widget* capture_button_widget =
+      controller->capture_mode_session()->capture_label_widget_for_testing();
+  ASSERT_TRUE(capture_button_widget);
+  aura::Window* capture_button_window =
+      capture_button_widget->GetNativeWindow();
+  EXPECT_EQ(gfx::Point(400, 400),
+            capture_button_window->bounds().CenterPoint());
+
+  // Drag the bottom corner so that the region is too small to fit the capture
+  // button. Verify that the button is aligned horizontally and placed below the
+  // region.
+  auto* event_generator = GetEventGenerator();
+  event_generator->DragMouseTo(gfx::Point(120, 120));
+  EXPECT_EQ(gfx::Rect(100, 100, 20, 20), controller->user_capture_region());
+  EXPECT_EQ(110, capture_button_window->bounds().CenterPoint().x());
+  const int distance_from_region =
+      CaptureModeSession::kCaptureButtonDistanceFromRegionDp;
+  EXPECT_EQ(120 + distance_from_region, capture_button_window->bounds().y());
+
+  // Click inside the region to drag the entire region to the bottom of the
+  // screen. Verify that the button is aligned horizontally and placed above the
+  // region.
+  event_generator->set_current_screen_location(gfx::Point(110, 110));
+  event_generator->DragMouseTo(gfx::Point(110, 790));
+  EXPECT_EQ(gfx::Rect(100, 780, 20, 20), controller->user_capture_region());
+  EXPECT_EQ(110, capture_button_window->bounds().CenterPoint().x());
+  EXPECT_EQ(780 - distance_from_region,
+            capture_button_window->bounds().bottom());
 }
 
 TEST_F(CaptureModeTest, WindowCapture) {

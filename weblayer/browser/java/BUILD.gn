@@ -51,7 +51,6 @@ generate_product_config_srcjar("weblayer_product_config") {
 
 java_cpp_template("resource_id_javagen") {
   sources = [ "ResourceId.template" ]
-  package_path = "org/chromium/weblayer_private/resources"
   inputs = [
     "//components/resources/android/blocked_content_resource_id.h",
     "//components/resources/android/page_info_resource_id.h",
@@ -341,6 +340,7 @@ generate_jni("jni") {
 android_library("interfaces_java") {
   sources = [
     "org/chromium/weblayer_private/interfaces/APICallException.java",
+    "org/chromium/weblayer_private/interfaces/ActionModeItemType.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
     "org/chromium/weblayer_private/interfaces/CookieChangeCause.java",

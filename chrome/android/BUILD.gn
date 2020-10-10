@@ -266,7 +266,6 @@ android_library("app_hooks_java") {
 }
 
 java_cpp_template("vr_build_config") {
-  package_path = "org/chromium/chrome/browser/vr"
   sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrBuildConfig.template" ]
   if (enable_vr) {
     defines = [ "ENABLE_VR" ]
@@ -419,6 +418,7 @@ android_library("chrome_java") {
     "//components/media_router/browser/android:java",
     "//components/messages/android:factory_java",
     "//components/messages/android:java",
+    "//components/messages/android:manager_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
     "//components/module_installer/android:module_interface_java",
@@ -600,7 +600,6 @@ android_library("chrome_java") {
 java_cpp_template("chrome_strict_mode_switch") {
   sources =
       [ "java/src/org/chromium/chrome/browser/ChromeStrictModeSwitch.template" ]
-  package_path = "org/chromium/chrome/browser"
 
   # Strict mode detection is disabled for canary channel in order to catch bugs
   # related to strict mode detection being turned off early (before beta
@@ -745,7 +744,6 @@ proto_java_library("usage_stats_proto_java") {
 
 java_cpp_template("resource_id_javagen") {
   sources = [ "java/ResourceId.template" ]
-  package_path = "org/chromium/chrome/browser/resources"
   inputs = [
     "../browser/android/resource_id.h",
     "//components/resources/android/blocked_content_resource_id.h",

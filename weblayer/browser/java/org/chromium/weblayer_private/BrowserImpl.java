@@ -240,8 +240,10 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     @Override
     public TabImpl createTab() {
-        TabImpl tab = new TabImpl(mProfile, mWindowAndroid);
-        addTab(tab);
+        TabImpl tab = new TabImpl(this, mProfile, mWindowAndroid);
+        // This needs |alwaysAdd| set to true as the Tab is created with the Browser already set to
+        // this.
+        addTab(tab, /* alwaysAdd */ true);
         return tab;
     }
 
@@ -291,14 +293,17 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     @Override
     public void addTab(ITab iTab) {
         StrictModeWorkaround.apply();
-        TabImpl tab = (TabImpl) iTab;
-        if (tab.getBrowser() == this) return;
+        addTab((TabImpl) iTab, /* alwaysAdd */ false);
+    }
+
+    private void addTab(TabImpl tab, boolean alwaysAdd) {
+        if (!alwaysAdd && tab.getBrowser() == this) return;
         BrowserImplJni.get().addTab(mNativeBrowser, tab.getNativeTab());
     }
 
     @CalledByNative
     private void createJavaTabForNativeTab(long nativeTab) {
-        new TabImpl(mProfile, mWindowAndroid, nativeTab);
+        new TabImpl(this, mProfile, mWindowAndroid, nativeTab);
     }
 
     private void checkPreferences() {
@@ -365,36 +370,23 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     }
 
     @CalledByNative
-    private void onTabAdded(TabImpl tab) {
+    private void onTabAdded(TabImpl tab) throws RemoteException {
         tab.attachToBrowser(this);
-        try {
-            if (mClient != null) mClient.onTabAdded(tab);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+        if (mClient != null) mClient.onTabAdded(tab);
     }
 
     @CalledByNative
-    private void onActiveTabChanged(TabImpl tab) {
+    private void onActiveTabChanged(TabImpl tab) throws RemoteException {
         if (mViewController != null) mViewController.setActiveTab(tab);
-        if (mInDestroy) return;
-        try {
-            if (mClient != null) {
-                mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
-            }
-        } catch (RemoteException e) {
-            throw new APICallException(e);
+        if (!mInDestroy && mClient != null) {
+            mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
         }
     }
 
     @CalledByNative
-    private void onTabRemoved(TabImpl tab) {
+    private void onTabRemoved(TabImpl tab) throws RemoteException {
         if (mInDestroy) return;
-        try {
-            if (mClient != null) mClient.onTabRemoved(tab.getId());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+        if (mClient != null) mClient.onTabRemoved(tab.getId());
         // This doesn't reset state on TabImpl as |browser| is either about to be
         // destroyed, or switching to a different fragment.
     }

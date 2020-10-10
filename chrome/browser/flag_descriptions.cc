@@ -1684,6 +1684,11 @@ const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
 
+const char kOmniboxWebUIOmniboxPopupName[] = "WebUI Omnibox Popup";
+const char kOmniboxWebUIOmniboxPopupDescription[] =
+    "If enabled, uses WebUI to render the omnibox suggestions popup, similar "
+    "to how the NTP \"realbox\" is implemented.";
+
 const char kOnTheFlyMhtmlHashComputationName[] =
     "On-The-Fly MHTML Hash Computation";
 const char kOnTheFlyMhtmlHashComputationDescription[] =
@@ -3596,10 +3601,6 @@ const char kArcNativeBridge64BitSupportExperimentDescription[] =
 const char kArcUsbHostName[] = "Enable ARC USB host integration";
 const char kArcUsbHostDescription[] =
     "Allow Android apps to use USB host feature on ChromeOS devices.";
-
-const char kArcUsbStorageUIName[] = "Enable ARC USB Storage UI";
-const char kArcUsbStorageUIDescription[] =
-    "Enable experimental UI for controlling ARC access to USB storage devices.";
 
 const char kAshEnablePipRoundedCornersName[] =
     "Enable Picture-in-Picture rounded corners.";

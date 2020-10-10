@@ -48,6 +48,10 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   // The vertical distance from the size label to the custom capture region.
   static constexpr int kSizeLabelYDistanceFromRegionDp = 8;
 
+  // The vertical distance of the capture button from the capture region, if the
+  // capture button does not fit inside the capture region.
+  static constexpr int kCaptureButtonDistanceFromRegionDp = 24;
+
   aura::Window* current_root() const { return current_root_; }
   CaptureModeBarView* capture_mode_bar_view() const {
     return capture_mode_bar_view_;
@@ -82,6 +86,10 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  views::Widget* capture_label_widget_for_testing() const {
+    return capture_label_widget_.get();
+  }
+
  private:
   // Gets the bounds of current window selected for |kWindow| capture source.
   gfx::Rect GetSelectedWindowBounds() const;
@@ -106,18 +114,16 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   void OnLocatedEventDragged(const gfx::Point& location_in_root);
   void OnLocatedEventReleased(const gfx::Point& location_in_root);
 
-  // Updates the capture region and the capture region widgets.
-  void UpdateCaptureRegion(const gfx::Rect& new_capture_region);
+  // Updates the capture region and the capture region widgets depending on the
+  // value of |is_resizing|.
+  void UpdateCaptureRegion(const gfx::Rect& new_capture_region,
+                           bool is_resizing);
 
-  // Updates the widgets that are used to display text/icons while selecting a
-  // capture region. They are not visible during fullscreen or window capture,
-  // and some are only visible during certain phases of region capture. This
-  // will create or destroy the widgets as needed.
-  void UpdateCaptureRegionWidgets();
-
-  // Creates |dimensions_label_widget_| if it does not exist and then set its
-  // content view to the size label view.
-  void MaybeCreateAndUpdateDimensionsLabelWidget();
+  // Updates the dimensions label widget shown during a region capture session.
+  // If not |is_resizing|, not a region capture session or the capture region is
+  // empty, clear existing |dimensions_label_widget_|. Otherwise, create and
+  // update the dimensions label.
+  void UpdateDimensionsLabelWidget(bool is_resizing);
 
   // Updates the bounds of |dimensions_label_widget_| relative to the current
   // capture region. Both |dimensions_label_widget_| and its content view must
@@ -134,8 +140,12 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   // Updates the capture label widget.
   void UpdateCaptureLabelWidget();
   void UpdateCaptureLabelWidgetBounds();
-  // Returns true if the capture label should handle the event.
-  bool ShouldCaptureLabelHandleEvent(const gfx::Point& location_in_root);
+
+  // Returns true if the capture label should handle the event. |event_target|
+  // is the window which is receiving the event. The capture label should handle
+  // the event if its associated window is |event_target| and its capture button
+  // child is visible.
+  bool ShouldCaptureLabelHandleEvent(aura::Window* event_target);
 
   CaptureModeController* const controller_;
 

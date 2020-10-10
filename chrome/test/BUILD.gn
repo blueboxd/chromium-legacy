@@ -334,7 +334,6 @@ static_library("test_support") {
       "//components/crash/core/app",
       "//third_party/wtl",
     ]
-    libs = [ "runtimeobject.lib" ]
   }
 
   if (is_chromeos) {
@@ -1610,6 +1609,7 @@ if (!is_android) {
     if (enable_soda) {
       sources +=
           [ "../browser/speech/speech_recognition_service_browsertest.cc" ]
+      data_deps += [ "//third_party/soda:soda_resources" ]
     }
 
     if (use_ozone) {
@@ -4546,7 +4546,6 @@ test("unit_tests") {
       "../browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_scheduler_impl_unittest.cc",
-      "../browser/ui/thumbnails/thumbnail_stats_tracker_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
       "../browser/ui/toolbar/location_bar_model_unittest.cc",
@@ -4670,8 +4669,6 @@ test("unit_tests") {
       "//chrome/browser/promo_browser_command:mojo_bindings",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
-      "//chrome/services/sharing/public/cpp",
-      "//chrome/services/sharing/public/cpp:unit_tests",
       "//chrome/services/speech:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
       "//components/enterprise",
@@ -4694,6 +4691,12 @@ test("unit_tests") {
     }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]
+    }
+    if (is_chromeos) {
+      deps += [
+        "//chrome/services/sharing/public/cpp",
+        "//chrome/services/sharing/public/cpp:unit_tests",
+      ]
     }
   }
 
@@ -4735,7 +4738,6 @@ test("unit_tests") {
       "../browser/sharing/shared_clipboard/shared_clipboard_utils_unittest.cc",
       "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
       "../browser/sharing/sms/sms_remote_fetcher_unittest.cc",
-      "../browser/sharing/webrtc/ice_config_fetcher_unittest.cc",
       "../browser/ui/autofill/address_profiles/save_address_profile_bubble_controller_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
@@ -4863,6 +4865,7 @@ test("unit_tests") {
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/notifications/web_page_notifier_controller_unittest.cc",
       "../browser/policy/printing_restrictions_policy_handler_unittest.cc",
+      "../browser/sharing/webrtc/ice_config_fetcher_unittest.cc",
       "../browser/speech/tts_chromeos_unittest.cc",
       "../browser/speech/tts_controller_delegate_impl_unittest.cc",
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
@@ -5804,7 +5807,6 @@ test("unit_tests") {
       "../browser/ui/views/uninstall_view_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_interop_unittest.cc",
       "../browser/webshare/win/fake_data_transfer_manager_unittest.cc",
-      "../browser/webshare/win/share_operation_unittest.cc",
       "../browser/webshare/win/show_share_ui_for_window_operation_unittest.cc",
     ]
     deps += [

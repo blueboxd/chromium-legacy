@@ -211,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'cca740fc48dfffbe24a5ee0bfe23ed1ec2b21580',
+  'swiftshader_revision': 'e72c6099f9465df73f888a92071b70c924d74b0d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1c25198384e7ecfebbd3ac84203d3b1d46a0e228',
+  'dawn_revision': '6c3da3dc5b875a9500770644e0966c9f731dae7f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4895a5b005434a164d794dca3c31c3569e576208',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@967de7f5e36b1329fda332144186efe06550379b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'cT9lCWDvv6veb3QkbQk0BRcglTeLjCZ2W35O2YG3ez0C',
+        'version': 'O6EAs9PlBe64a_zFWVQLK6xAWYLwB63WcFSEb9iMRLEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

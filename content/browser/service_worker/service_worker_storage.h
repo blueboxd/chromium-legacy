@@ -42,13 +42,14 @@ class ServiceWorkerStorageControlImplTest;
 
 namespace service_worker_storage_unittest {
 class ServiceWorkerStorageTest;
+class ServiceWorkerStorageDiskTest;
 class ServiceWorkerResourceStorageTest;
 class ServiceWorkerResourceStorageDiskTest;
 FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart);
-FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver);
-FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
+FORWARD_DECLARE_TEST(ServiceWorkerStorageDiskTest, DeleteAndStartOver);
+FORWARD_DECLARE_TEST(ServiceWorkerStorageDiskTest,
                      DeleteAndStartOver_UnrelatedFileExists);
-FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
+FORWARD_DECLARE_TEST(ServiceWorkerStorageDiskTest,
                      DeleteAndStartOver_OpenedFileExists);
 FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 }  // namespace service_worker_storage_unittest
@@ -91,6 +92,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       OriginState origin_state,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
+  using ResourceIdsCallback =
+      base::OnceCallback<void(ServiceWorkerDatabase::Status status,
+                              const std::vector<int64_t>& resource_ids)>;
 
   using DatabaseStatusCallback =
       base::OnceCallback<void(ServiceWorkerDatabase::Status status)>;
@@ -287,6 +291,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   void SetPurgingCompleteCallbackForTest(base::OnceClosure callback);
 
+  void GetPurgingResourceIdsForTest(ResourceIdsCallback callback);
+  void GetPurgeableResourceIdsForTest(ResourceIdsCallback callback);
+  void GetUncommittedResourceIdsForTest(ResourceIdsCallback callback);
+
  private:
   friend class ServiceWorkerStorageControlImplTest;
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
@@ -296,13 +304,13 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
       CleanupOnRestart);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
       DeleteAndStartOver);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
       DeleteAndStartOver_UnrelatedFileExists);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
+      service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
       DeleteAndStartOver_OpenedFileExists);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerStorageTest,
@@ -493,6 +501,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   static void DeleteAllDataForOriginsFromDB(ServiceWorkerDatabase* database,
                                             const std::set<GURL>& origins);
   static void PerformStorageCleanupInDB(ServiceWorkerDatabase* database);
+  static void GetPurgeableResourceIdsFromDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      ServiceWorkerStorage::ResourceIdsCallback callback);
+  static void GetUncommittedResourceIdsFromDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      ServiceWorkerStorage::ResourceIdsCallback callback);
 
   // Posted by the underlying cache implementation after it finishes making
   // disk changes upon its destruction.

@@ -107,6 +107,8 @@ struct CodecProfileLevel {
 
 std::string MEDIA_EXPORT GetCodecName(VideoCodec codec);
 std::string MEDIA_EXPORT GetProfileName(VideoCodecProfile profile);
+std::string MEDIA_EXPORT BuildH264MimeSuffix(VideoCodecProfile profile,
+                                             uint8_t level);
 
 // ParseNewStyleVp9CodecID handles parsing of new style vp9 codec IDs per
 // proposed VP Codec ISO Media File Format Binding specification:
@@ -153,6 +155,9 @@ MEDIA_EXPORT void ParseCodec(const std::string& codec_id,
                              uint8_t& level,
                              VideoColorSpace& color_space);
 MEDIA_EXPORT VideoCodec StringToVideoCodec(const std::string& codec_id);
+
+MEDIA_EXPORT VideoCodec
+VideoCodecProfileToVideoCodec(VideoCodecProfile profile);
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 // Translate legacy avc1 codec ids (like avc1.66.30 or avc1.77.31) into a new

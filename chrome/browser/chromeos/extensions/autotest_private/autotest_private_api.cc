@@ -113,7 +113,6 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -3639,7 +3638,7 @@ AutotestPrivateGetAppWindowListFunction::Run() {
       auto* frame_header = ash::FrameHeader::Get(widget);
       window_info.caption_height = frame_header->GetHeaderHeight();
 
-      const ash::CaptionButtonModel* button_model =
+      const chromeos::CaptionButtonModel* button_model =
           frame_header->GetCaptionButtonModel();
       int caption_button_enabled_status = 0;
       int caption_button_visible_status = 0;

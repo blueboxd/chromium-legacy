@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2531de9926d17e469b857e05bbd1ae5530e97a04',
+  'skia_revision': '4aa4c6014d56740088a26c966da5cfb02beb6dc1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '66b5d4eb49aa71f65c2f0799a718833f6f34622c',
+  'v8_revision': 'ba88e59badac97e4cfa840200aabbe8ceabcbf2e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '46d4522b161bf1af3b214d823940da7f8b08ee52',
+  'angle_revision': '336202d7d6014fd61f430d4ac92d756b33d32ae3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '936ef0a5f21e5622e003257d665f049804d07516',
+  'dawn_revision': 'a7b0fdc90fead0d47e3b83169b38fdd1ea22a539',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -881,7 +881,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '84bd221ed748e1d0a3155c8a9a210d4802f94678',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '4fe1d403a22dfa80541234f4553a2d432772d81f',
       'condition': 'checkout_chromeos',
   },
 
@@ -952,7 +952,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'a9449e612bc251b4271bbe1e3a0d12e9809bf74c',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '2067d1a93e6edc17f2a6b7e3e5138a9bbcd35ef9',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f4f1d8a352ca1908943aea2ad8c54b39b4879080',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1254,7 +1254,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '109c355900d140e616c7ddc66c57e626678133ca',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a4b8d27d96b763f6aaccef6610a1f723471f4d5d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '1da46abbddb6802fd039853ab5454289658558ce',
+    Var('webrtc_git') + '/src.git' + '@' + '1e73818c7ac82de17e09f426201a51675f57d8aa',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ac0366e76f369a0078d6c024db9576501536e94e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7169154270888f2cedc78e808d02dff9a9c05a2b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'O6EAs9PlBe64a_zFWVQLK6xAWYLwB63WcFSEb9iMRLEC',
+        'version': 'tdIYOywbT-7Ua5VwVKvfLfPLbfSGfLAQ2PzHie1qBhsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -308,14 +308,9 @@ const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
                                  AppListItem* item,
-                                 AppListViewDelegate* delegate)
-    : AppListItemView(apps_grid_view, item, delegate, item->IsInFolder()) {}
-
-AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
-                                 AppListItem* item,
                                  AppListViewDelegate* delegate,
                                  bool is_in_folder)
-    : Button(apps_grid_view),
+    : Button(),
       is_folder_(item->GetItemType() == AppListFolderItem::kItemType),
       item_weak_(item),
       delegate_(delegate),

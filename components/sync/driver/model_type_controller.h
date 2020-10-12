@@ -41,20 +41,19 @@ class ModelTypeController : public DataTypeController {
 
   // Steals the activation response, only used for Nigori.
   // TODO(crbug.com/967677): Once all datatypes are in USS, we should redesign
-  // or remove RegisterWithBackend, and expose the activation response via
+  // or remove ActivateDataType, and expose the activation response via
   // LoadModels(), which is more natural in USS.
   std::unique_ptr<DataTypeActivationResponse> ActivateManuallyForNigori();
 
   // DataTypeController implementation.
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  RegisterWithBackendResult RegisterWithBackend(
+  ActivateDataTypeResult ActivateDataType(
       ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
   State state() const override;
   void GetAllNodes(AllNodesCallback callback) override;
-  void GetStatusCounters(StatusCountersCallback callback) override;
   void RecordMemoryUsageAndCountsHistograms() override;
 
   ModelTypeControllerDelegate* GetDelegateForTesting(SyncMode sync_mode);

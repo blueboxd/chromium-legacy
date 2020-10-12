@@ -2165,6 +2165,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to Home screen.">
         Added to Home screen
       </message>
+      <message name="IDS_IPH_PWA_INSTALL_AVAILABLE_TEXT" desc="The in-product-help message for PWAs that can be installed to the device.">
+        Install this app
+      </message>
 
       <!-- Page info popup -->
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display in the page info bubble when viewing and offline page.">
@@ -3948,6 +3951,11 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
               hardware used for authentication and this feature is about using a mobile
               phone in place of one.">
         Phone as a Security Key Support
+      </message>
+
+      <message name="IDS_CABLEV2_ACTIVITY_TITLE"
+        desc="The label of the Activity for using your phone as a security key. A 'security key' in this context is generally a small USB device that is used for logging into websites. This feature allows Chrome on an Android phone to act as a security key. A user may see it in Android permissions prompts (see screenshot).">
+         Google <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> as a Security Key
       </message>
 
       <!-- QR Code -->

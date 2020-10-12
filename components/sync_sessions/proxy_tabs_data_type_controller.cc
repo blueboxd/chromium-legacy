@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/values.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/model_type_configurer.h"
 
@@ -29,8 +30,8 @@ void ProxyTabsDataTypeController::LoadModels(
   model_load_callback.Run(type(), syncer::SyncError());
 }
 
-syncer::DataTypeController::RegisterWithBackendResult
-ProxyTabsDataTypeController::RegisterWithBackend(
+syncer::DataTypeController::ActivateDataTypeResult
+ProxyTabsDataTypeController::ActivateDataType(
     syncer::ModelTypeConfigurer* configurer) {
   DCHECK(configurer);
   DCHECK_EQ(MODEL_LOADED, state_);
@@ -70,12 +71,6 @@ void ProxyTabsDataTypeController::DeactivateDataType(
 
 void ProxyTabsDataTypeController::GetAllNodes(AllNodesCallback callback) {
   std::move(callback).Run(type(), std::make_unique<base::ListValue>());
-}
-
-void ProxyTabsDataTypeController::GetStatusCounters(
-    StatusCountersCallback callback) {
-  syncer::StatusCounters counters;
-  std::move(callback).Run(type(), counters);
 }
 
 void ProxyTabsDataTypeController::RecordMemoryUsageAndCountsHistograms() {}

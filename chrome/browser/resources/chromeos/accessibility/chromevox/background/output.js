@@ -1372,7 +1372,10 @@ Output = class {
 
     if (!prevRange && range.start.node.root) {
       prevRange = cursors.Range.fromNode(range.start.node.root);
+    } else if (!prevRange) {
+      return;
     }
+
     let cursor = cursors.Cursor.fromNode(range.start.node);
     let prevNode = prevRange.start.node;
 
@@ -2474,7 +2477,8 @@ Output.RULES = {
     },
     checkBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
-          $name $role $checked $description $state $restriction`
+          $name $role $if($checkedStateDescription, $checkedStateDescription, $checked)
+          $description $state $restriction`
     },
     client: {speak: `$name`},
     comboBoxMenuButton: {

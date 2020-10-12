@@ -626,22 +626,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldStopAfterReceivingRemoteUpdates) {
 }
 
 TEST_F(BookmarkModelTypeProcessorTest,
-       ShouldReportNoCountersWhenModelIsNotLoaded) {
-  SimulateOnSyncStarting();
-  ASSERT_THAT(processor()->GetTrackerForTest(), IsNull());
-  syncer::StatusCounters status_counters;
-  // Assign an arbitrary non-zero number to the |num_entries| to be able to
-  // check that actually a 0 has been written to it later.
-  status_counters.num_entries = 1000;
-  processor()->GetStatusCountersForDebugging(
-      base::BindLambdaForTesting([&](syncer::ModelType model_type,
-                                     const syncer::StatusCounters& counters) {
-        status_counters = counters;
-      }));
-  EXPECT_EQ(0u, status_counters.num_entries);
-}
-
-TEST_F(BookmarkModelTypeProcessorTest,
        ShouldNotCommitEntitiesWithoutLoadedFavicons) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
@@ -700,7 +684,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_EQ(0u, bookmark_client()->GetTasksCount());
   EXPECT_CALL(callback, Run(_));
-  processor()->GetLocalChanges(/*max_entities=*/10, callback.Get());
+  processor()->GetLocalChanges(/*max_entries=*/10, callback.Get());
   EXPECT_TRUE(callback_result.empty());
   EXPECT_TRUE(node->is_favicon_loading());
 
@@ -708,7 +692,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
                                            GURL(kIconUrl));
   ASSERT_TRUE(node->is_favicon_loaded());
   EXPECT_CALL(callback, Run(_));
-  processor()->GetLocalChanges(/*max_entities=*/10, callback.Get());
+  processor()->GetLocalChanges(/*max_entries=*/10, callback.Get());
   EXPECT_FALSE(callback_result.empty());
 }
 

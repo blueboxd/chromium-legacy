@@ -193,7 +193,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2942350706960889382">Fastgjort lupvindue</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
-<translation id="2961963223658824723">Der opstod en fejl. Prøv igen om et par sekunder.</translation>
+<translation id="2961963223658824723">Noget gik galt. Prøv igen om et par sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Installer apps, udvidelser og temaer</translation>
 <translation id="2977598380246111477">Næste tal</translation>
@@ -443,7 +443,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> opretter forbindelse.</translation>
 <translation id="553675580533261935">Afslutter session</translation>
 <translation id="5537725057119320332">Cast</translation>
-<translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="554893713779400387">Slå diktering til/fra</translation>
 <translation id="556042886152191864">Knap</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>

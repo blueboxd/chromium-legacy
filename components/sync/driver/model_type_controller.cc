@@ -120,8 +120,8 @@ void ModelTypeController::LoadModels(
                               base::AsWeakPtr(this)));
 }
 
-DataTypeController::RegisterWithBackendResult
-ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
+DataTypeController::ActivateDataTypeResult
+ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   DCHECK(activation_response_);
@@ -212,11 +212,6 @@ DataTypeController::State ModelTypeController::state() const {
 void ModelTypeController::GetAllNodes(AllNodesCallback callback) {
   DCHECK(delegate_);
   delegate_->GetAllNodesForDebugging(std::move(callback));
-}
-
-void ModelTypeController::GetStatusCounters(StatusCountersCallback callback) {
-  DCHECK(delegate_);
-  delegate_->GetStatusCountersForDebugging(std::move(callback));
 }
 
 void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {

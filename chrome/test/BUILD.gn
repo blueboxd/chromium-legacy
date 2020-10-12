@@ -2087,7 +2087,6 @@ if (!is_android) {
           "../browser/extensions/api/force_installed_affiliated_extension_apitest.cc",
           "../browser/extensions/api/force_installed_affiliated_extension_apitest.h",
           "../browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc",
-          "../browser/extensions/api/networking_config_chromeos_apitest_chromeos.cc",
           "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
           "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
           "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
@@ -2480,6 +2479,7 @@ if (!is_android) {
         "../browser/chromeos/login/screens/app_downloading_screen_browsertest.cc",
         "../browser/chromeos/login/screens/assistant_optin_flow_screen_browsertest.cc",
         "../browser/chromeos/login/screens/discover_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/edu_coexistence_login_browsertest.cc",
         "../browser/chromeos/login/screens/family_link_notice_browsertest.cc",
         "../browser/chromeos/login/screens/fingerprint_setup_browsertest.cc",
         "../browser/chromeos/login/screens/gesture_navigation_screen_browsertest.cc",
@@ -3107,7 +3107,7 @@ if (!is_android) {
           [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
     }
 
-    if (is_win || is_mac || (is_desktop_linux && !chromeos_is_browser_only)) {
+    if (is_win || is_mac || (is_linux && !chromeos_is_browser_only)) {
       sources +=
           [ "../browser/ui/views/profiles/profile_picker_view_browsertest.cc" ]
     }
@@ -6799,6 +6799,8 @@ if (!is_fuchsia) {
       "../browser/sync/test/integration/device_info_helper.h",
       "../browser/sync/test/integration/fake_server_invalidation_sender.cc",
       "../browser/sync/test/integration/fake_server_invalidation_sender.h",
+      "../browser/sync/test/integration/fake_server_sync_invalidation_sender.cc",
+      "../browser/sync/test/integration/fake_server_sync_invalidation_sender.h",
       "../browser/sync/test/integration/multi_client_status_change_checker.cc",
       "../browser/sync/test/integration/multi_client_status_change_checker.h",
       "../browser/sync/test/integration/profile_sync_service_harness.cc",

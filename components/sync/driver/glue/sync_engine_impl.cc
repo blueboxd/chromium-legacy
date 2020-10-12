@@ -11,6 +11,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -42,7 +44,10 @@ SyncEngineImpl::SyncEngineImpl(
     SyncInvalidationsService* sync_invalidations_service,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
     const base::FilePath& sync_data_folder)
-    : name_(name),
+    : sync_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      name_(name),
       sync_prefs_(sync_prefs),
       invalidator_(invalidator),
       sync_invalidations_service_(sync_invalidations_service),
@@ -61,11 +66,9 @@ SyncEngineImpl::~SyncEngineImpl() {
 }
 
 void SyncEngineImpl::Initialize(InitParams params) {
-  DCHECK(params.sync_task_runner);
   DCHECK(params.host);
   DCHECK(params.registrar);
 
-  sync_task_runner_ = params.sync_task_runner;
   host_ = params.host;
   registrar_ = params.registrar.get();
 
@@ -284,23 +287,6 @@ void SyncEngineImpl::DisableProtocolEventForwarding() {
                      backend_));
 }
 
-void SyncEngineImpl::EnableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(IsInitialized());
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::EnableDirectoryTypeDebugInfoForwarding,
-                     backend_));
-}
-
-void SyncEngineImpl::DisableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(IsInitialized());
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SyncEngineBackend::DisableDirectoryTypeDebugInfoForwarding,
-          backend_));
-}
-
 void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet enabled_types,
     const ModelTypeSet succeeded_configuration_types,
@@ -405,27 +391,6 @@ void SyncEngineImpl::HandleProtocolEventOnFrontendLoop(
     std::unique_ptr<ProtocolEvent> event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_->OnProtocolEvent(*event);
-}
-
-void SyncEngineImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
-    ModelType type,
-    const CommitCounters& counters) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_->OnDirectoryTypeCommitCounterUpdated(type, counters);
-}
-
-void SyncEngineImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
-    ModelType type,
-    const UpdateCounters& counters) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_->OnDirectoryTypeUpdateCounterUpdated(type, counters);
-}
-
-void SyncEngineImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
-    ModelType type,
-    const StatusCounters& counters) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_->OnDatatypeStatusCounterUpdated(type, counters);
 }
 
 void SyncEngineImpl::UpdateInvalidationVersions(

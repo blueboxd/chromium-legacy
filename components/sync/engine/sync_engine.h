@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
@@ -51,7 +50,6 @@ class SyncEngine : public ModelTypeConfigurer {
     InitParams(InitParams&& other);
     ~InitParams();
 
-    scoped_refptr<base::SequencedTaskRunner> sync_task_runner;
     SyncEngineHost* host = nullptr;
     std::unique_ptr<SyncBackendRegistrar> registrar;
     std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
@@ -168,14 +166,6 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Disables protocol event forwarding.
   virtual void DisableProtocolEventForwarding() = 0;
-
-  // Enables the sending of directory type debug counters.  Also, for every
-  // time it is called, it makes an explicit request that updates to an update
-  // for all counters be emitted.
-  virtual void EnableDirectoryTypeDebugInfoForwarding() = 0;
-
-  // Disables the sending of directory type debug counters.
-  virtual void DisableDirectoryTypeDebugInfoForwarding() = 0;
 
   // Notify the syncer that the cookie jar has changed.
   // See SyncManager::OnCookieJarChanged.

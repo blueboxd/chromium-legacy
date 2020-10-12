@@ -196,6 +196,8 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
+crbug.com/1137143 http/tests/inspector-protocol/runtime/remote-object-id-cross-process.js [ Pass Failure ]
+
 # Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
@@ -317,9 +319,6 @@ wpt_internal/webgpu/* [ Skip ]
 
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-inner.html [ Failure ]
 
-# Fails due to lack of support for image orientation in tiling shaders.
-crbug.com/1066634 external/wpt/css/css-images/image-orientation/image-orientation-background-properties.html [ Failure ]
-
 # Requires support of the image-resolution CSS property
 crbug.com/1086473 external/wpt/css/css-images/image-resolution/* [ Skip ]
 
@@ -343,6 +342,7 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orienta
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-none.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-aspect-ratio.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-position.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-background-properties.html [ Failure ]
 
 # Ref results are wrong on the background and list case, not sure on border result
 crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
@@ -1282,6 +1282,42 @@ crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-m
 
 crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Failure ]
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
+
+# color() function not implemented
+crbug.com/1068610 external/wpt/css/css-color/predefined-008.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-010.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-015.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-005.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-014.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-002.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-016.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-011.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-013.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-012.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-007.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-007.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-011.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-014.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-004.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-006.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-002.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-012.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-017.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-009.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-013.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-016.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-001.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-006.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-004.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-008.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-017.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-005.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-015.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/predefined-003.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-009.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-010.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/predefined-003.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2401,7 +2437,6 @@ crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 crbug.com/1108711 external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
-crbug.com/1110393 external/wpt/css/css-pseudo/active-selection-021.html [ Failure ]
 crbug.com/1110399 external/wpt/css/css-pseudo/active-selection-031.html [ Failure ]
 crbug.com/1110401 external/wpt/css/css-pseudo/active-selection-045.html [ Failure ]
 crbug.com/1024156 external/wpt/css/css-pseudo/active-selection-027.html [ Failure ]
@@ -2571,40 +2606,6 @@ crbug.com/626703 external/wpt/css/css-images/image-orientation/image-orientation
 crbug.com/626703 external/wpt/css/css-images/image-orientation/image-orientation-none-cross-origin-canvas.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/crossOrigin.sub.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-color/predefined-008.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-010.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-015.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-005.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-014.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-002.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-016.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-013.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-012.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-007.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-014.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-004.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-017.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-009.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-016.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-004.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-008.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-017.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-005.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-015.html [ Failure ]
-crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/predefined-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-009.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-010.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-color/predefined-003.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/html/semantics/embedded-content/media-elements/preserves-pitch.html [ Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-during-and-after-dispatch.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-backgrounds/border-image-slice-007.htm [ Failure ]

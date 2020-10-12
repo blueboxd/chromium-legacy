@@ -43,10 +43,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
 
   // Returned from RegisterWithBackend.
   enum RegisterWithBackendResult {
-    // Used when RegisterWithBackend is called on an already-registered type.
-    // TODO(crbug.com/647505): Get rid of this entry entirely if possible.
-    REGISTRATION_IGNORED,
-    // Indicates that the initial download for this type is already complete.
+    // Indicates that the initial download for this type is already complete, or
+    // wasn't needed in the first place (e.g. for proxy types).
     TYPE_ALREADY_DOWNLOADED,
     // Indicates that the initial download for this type still needs to be done.
     TYPE_NOT_YET_DOWNLOADED,
@@ -130,6 +128,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Collects StatusCounters for this datatype and passes them to |callback|.
   // Used to display entity counts in chrome://sync-internals. Can be called
   // only if state() != NOT_RUNNING.
+  // TODO(crbug.com/1102849): Remove, not used anymore.
   virtual void GetStatusCounters(StatusCountersCallback callback) = 0;
 
   // Records entities count and estimated memory usage of the type into

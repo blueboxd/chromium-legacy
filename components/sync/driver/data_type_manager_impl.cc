@@ -206,10 +206,11 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
       // time.
       DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
       switch (dtc->RegisterWithBackend(configurer_)) {
-        case DataTypeController::REGISTRATION_IGNORED:
-          break;
         case DataTypeController::TYPE_ALREADY_DOWNLOADED:
-          downloaded_types_.Put(type);
+          // Proxy types (as opposed to protocol types) don't actually have any
+          // data, so keep proxy types out of |downloaded_types_|.
+          if (!IsProxyType(type))
+            downloaded_types_.Put(type);
           break;
         case DataTypeController::TYPE_NOT_YET_DOWNLOADED:
           downloaded_types_.Remove(type);
@@ -723,9 +724,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
   }
 }
 
-void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
-    ModelType type,
-    const DataTypeAssociationStats& association_stats) {
+void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(ModelType type) {
   DCHECK(!association_types_queue_.empty());
 
   if (!debug_info_listener_.IsInitialized())
@@ -734,7 +733,6 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
   AssociationTypesInfo& info = association_types_queue_.front();
   configuration_stats_.push_back(DataTypeConfigurationStats());
   configuration_stats_.back().model_type = type;
-  configuration_stats_.back().association_stats = association_stats;
   if (info.types.Has(type)) {
     // Times in |info| only apply to non-slow types.
     configuration_stats_.back().download_wait_time =

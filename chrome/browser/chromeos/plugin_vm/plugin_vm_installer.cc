@@ -112,14 +112,13 @@ bool PluginVmInstaller::IsProcessing() {
   return state_ != State::kIdle;
 }
 
-void PluginVmInstaller::Start() {
+base::Optional<PluginVmInstaller::FailureReason> PluginVmInstaller::Start() {
   if (IsProcessing()) {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
                << " another PluginVm image is currently being processed "
                << "in state " << GetStateName(state_) << ", "
                << GetInstallingStateName(installing_state_);
-    InstallFailed(FailureReason::OPERATION_IN_PROGRESS);
-    return;
+    return FailureReason::OPERATION_IN_PROGRESS;
   }
 
   // Defensive check preventing any download attempts when PluginVm is
@@ -128,18 +127,26 @@ void PluginVmInstaller::Start() {
   if (!PluginVmFeatures::Get()->IsAllowed(profile_)) {
     LOG(ERROR) << "Download of PluginVm image cannot be started because "
                << "the user is not allowed to run PluginVm";
-    InstallFailed(FailureReason::NOT_ALLOWED);
-    return;
+    return FailureReason::NOT_ALLOWED;
   }
 
-  if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    InstallFailed(FailureReason::OFFLINE);
-    return;
-  }
+  if (content::GetNetworkConnectionTracker()->IsOffline())
+    return FailureReason::OFFLINE;
 
+  // Request wake lock when state_ goes to kInstalling, and cancel it when state
+  // goes back to kIdle.
+  GetWakeLock()->RequestWakeLock();
+  state_ = State::kInstalling;
   setup_start_tick_ = base::TimeTicks::Now();
   progress_ = 0;
-  CheckLicense();
+
+  // Perform the first step asynchronously to ensure OnError() isn't called
+  // before Start() returns.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PluginVmInstaller::CheckLicense,
+                                weak_ptr_factory_.GetWeakPtr()));
+
+  return base::nullopt;
 }
 
 void PluginVmInstaller::Cancel() {
@@ -173,10 +180,6 @@ void PluginVmInstaller::Cancel() {
 }
 
 void PluginVmInstaller::CheckLicense() {
-  // Request wake lock when state_ goes to kInstalling, and cancel it when state
-  // goes back to kIdle.
-  GetWakeLock()->RequestWakeLock();
-  state_ = State::kInstalling;
   UpdateInstallingState(InstallingState::kCheckingLicense);
 
   // If the server has provided a license key, responsibility of validating is
@@ -324,11 +327,11 @@ void PluginVmInstaller::CancelDownload() {
   if (using_drive_download_service_) {
     DCHECK(drive_download_service_);
     drive_download_service_->CancelDownload();
-    CancelFinished();
   } else {
-    // OnDownloadCancelled() is called after the download is cancelled.
     download_service_->CancelDownload(current_download_guid_);
+    current_download_guid_.clear();
   }
+  CancelFinished();
 }
 
 void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
@@ -415,20 +418,6 @@ void PluginVmInstaller::OnDownloadCompleted(
 
   RecordPluginVmImageDownloadedSizeHistogram(info.bytes_downloaded);
   StartImport();
-}
-
-void PluginVmInstaller::OnDownloadCancelled() {
-  DCHECK_EQ(state_, State::kCancelling);
-  DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
-
-  RemoveTemporaryImageIfExists();
-  current_download_guid_.clear();
-  if (using_drive_download_service_) {
-    drive_download_service_->ResetState();
-    using_drive_download_service_ = false;
-  }
-
-  CancelFinished();
 }
 
 void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
@@ -771,7 +760,7 @@ void PluginVmInstaller::SetDownloadedImageForTesting(
   downloaded_image_for_testing_ = downloaded_image;
 }
 
-std::string PluginVmInstaller::GetCurrentDownloadGuidForTesting() {
+std::string PluginVmInstaller::GetCurrentDownloadGuid() {
   return current_download_guid_;
 }
 

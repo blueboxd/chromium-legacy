@@ -2444,15 +2444,14 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   std::string autoplay_policy = media::GetEffectiveAutoplayPolicy(command_line);
   if (autoplay_policy == switches::autoplay::kNoUserGestureRequiredPolicy) {
     prefs.autoplay_policy =
-        blink::web_pref::AutoplayPolicy::kNoUserGestureRequired;
+        blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
   } else if (autoplay_policy ==
              switches::autoplay::kUserGestureRequiredPolicy) {
-    prefs.autoplay_policy =
-        blink::web_pref::AutoplayPolicy::kUserGestureRequired;
+    prefs.autoplay_policy = blink::mojom::AutoplayPolicy::kUserGestureRequired;
   } else if (autoplay_policy ==
              switches::autoplay::kDocumentUserActivationRequiredPolicy) {
     prefs.autoplay_policy =
-        blink::web_pref::AutoplayPolicy::kDocumentUserActivationRequired;
+        blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
   } else {
     NOTREACHED();
   }
@@ -8558,6 +8557,12 @@ void WebContentsImpl::MediaBufferUnderflow(const MediaPlayerId& id) {
   observers_.ForEachObserver([&](WebContentsObserver* observer) {
     observer->MediaBufferUnderflow(id);
   });
+}
+
+void WebContentsImpl::MediaPlayerSeek(const MediaPlayerId& id) {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::MediaPlayerSeek");
+  observers_.ForEachObserver(
+      [&](WebContentsObserver* observer) { observer->MediaPlayerSeek(id); });
 }
 
 void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {

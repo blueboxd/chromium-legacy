@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4aa4c6014d56740088a26c966da5cfb02beb6dc1',
+  'skia_revision': 'a587865e05377c75b6af9ba24214f0e690bc29dc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ba88e59badac97e4cfa840200aabbe8ceabcbf2e',
+  'v8_revision': '7bb48090258056285eefddebf26d55a22121fe5a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '336202d7d6014fd61f430d4ac92d756b33d32ae3',
+  'angle_revision': '4c6b4794913987ecd978d9f34f44b1e64b2c2f61',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '30127e006a5b6fba602a0a8f19dccf4d4b195316',
+  'devtools_frontend_revision': '9103d0e4fc9be4c9c1224e61880ed06fb7c7eb0e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'a7b0fdc90fead0d47e3b83169b38fdd1ea22a539',
+  'dawn_revision': '51af1b428f5f075091c421b282d489d526be4292',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '60e12c40278b99251d2fa07a0d61a462bf811bd4',
+  'quiche_revision': '5a4f761238065c30c92e90e2f0be13edf54f564f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -342,7 +342,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '1d32f88ab33e04b74f4e978bf30f0184d3a96011',
+  'libavif_revision': '0265cd7a10d1425cf42908458a0807e919195914',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -1486,7 +1486,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '1e73818c7ac82de17e09f426201a51675f57d8aa',
+    Var('webrtc_git') + '/src.git' + '@' + '3e0a5fc2097e6867909d68d3b0c3e8f89e4864b2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1558,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7169154270888f2cedc78e808d02dff9a9c05a2b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d21d9e8681bc4dbb1d14e7003660cda92f627253',
     'condition': 'checkout_src_internal',
   },
 
@@ -4884,6 +4884,7 @@ hooks = [
     ],
   },
   # Download AFDO profiles for Chrome OS for each architecture.
+  # TODO(crbug/1135245): silvermont, airmont, broadwell to be replaced by atom and bigcore
   {
     'name': 'Fetch Chrome OS AFDO profiles (silvermont)',
     'pattern': '.',
@@ -4917,6 +4918,30 @@ hooks = [
                 '--newest_state=src/chromeos/profiles/broadwell.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/broadwell.afdo.local.txt',
                 '--output_name=src/chromeos/profiles/broadwell.afdo.prof',
+                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
+    ],
+  },
+  {
+    'name': 'Fetch Chrome OS AFDO profiles (from Intel Atom cores)',
+    'pattern': '.',
+    'condition': 'checkout_chromeos or checkout_simplechrome',
+    'action': [ 'vpython',
+		'src/tools/download_optimization_profile.py',
+                '--newest_state=src/chromeos/profiles/atom.afdo.newest.txt',
+                '--local_state=src/chromeos/profiles/atom.afdo.local.txt',
+                '--output_name=src/chromeos/profiles/atom.afdo.prof',
+                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
+    ],
+  },
+  {
+    'name': 'Fetch Chrome OS AFDO profiles (from Intel big cores)',
+    'pattern': '.',
+    'condition': 'checkout_chromeos or checkout_simplechrome',
+    'action': [ 'vpython',
+                'src/tools/download_optimization_profile.py',
+                '--newest_state=src/chromeos/profiles/bigcore.afdo.newest.txt',
+                '--local_state=src/chromeos/profiles/bigcore.afdo.local.txt',
+                '--output_name=src/chromeos/profiles/bigcore.afdo.prof',
                 '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
     ],
   },

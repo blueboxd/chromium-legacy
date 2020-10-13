@@ -2067,6 +2067,10 @@ crbug.com/932343 external/wpt/css/css-pseudo/selection-text-shadow-016.html [ Fa
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
+# Temporarily disabled to land a devtools-frontend change.
+crbug.com/1127827 http/tests/devtools/tracing/timeline-js/timeline-js-callstacks.js [ Pass Failure ]
+crbug.com/1127827 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
+
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
@@ -5878,6 +5882,13 @@ crbug.com/1043675 [ Win ] svg/custom/svg-root-with-opacity.html [ Failure ]
 # Required to land DevTools change
 crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
 crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Pass Failure ]
+
+# Temporarily disabled to land DevTools change
+crbug.com/1136848 http/tests/devtools/sources/formatter-css.js [ Pass Failure ]
+crbug.com/1136848 http/tests/devtools/sources/formatter-js.js [ Pass Failure ]
+crbug.com/1136848 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
+crbug.com/1136848 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
+crbug.com/1136848 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
 
 crbug.com/989665 [ Mac ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 crbug.com/989665 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]

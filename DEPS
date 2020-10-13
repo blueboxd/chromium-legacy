@@ -41,7 +41,6 @@ gclient_gn_args = [
   'checkout_google_benchmark',
   'checkout_ios_webkit',
   'checkout_nacl',
-  'checkout_oculus_sdk',
   'checkout_openxr',
   'cros_boards',
   'cros_boards_with_qemu_images',
@@ -114,9 +113,6 @@ vars = {
 
   # Fetch clang-tidy into the same bin/ directory as our clang binary.
   'checkout_clang_tidy': False,
-
-  # By default do not check out the Oculus SDK. Only available for Googlers.
-  'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
 
   # By default checkout the OpenXR loader library only on Windows. The OpenXR
   # backend for VR in Chromium is currently only supported for Windows, but
@@ -195,11 +191,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a587865e05377c75b6af9ba24214f0e690bc29dc',
+  'skia_revision': '387fd62a1280a819b531108f12cd00db2b28517f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7bb48090258056285eefddebf26d55a22121fe5a',
+  'v8_revision': 'ba88e59badac97e4cfa840200aabbe8ceabcbf2e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +203,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4c6b4794913987ecd978d9f34f44b1e64b2c2f61',
+  'angle_revision': 'df6b7298bb4129bf267fcb4d267ae84676bfd798',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -215,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'aa7048b18b2f4713ac2d2158e48c14601a58025c',
+  'pdfium_revision': '538433c720648f67cf6eb2f3ba108ffd97df9eb3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -258,7 +254,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'cd2eebd327e35c839149f7a4d888b046d628df12',
+  'catapult_revision': 'b9b0de8c80ca05f1bcd0472556727cb09f68f38b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +262,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9103d0e4fc9be4c9c1224e61880ed06fb7c7eb0e',
+  'devtools_frontend_revision': '8900cd2cdaec0cdd58a05bba5e66c6b2263f440e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -318,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '51af1b428f5f075091c421b282d489d526be4292',
+  'dawn_revision': 'd1bca09f4ab36bdc8d413bf2642460b0721267f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -346,7 +342,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': '8482024f9c944ff0ef778f74308876dbfa00d4ac',
+  'nearby_revision': 'e9dd5d32f0f7a81b50ba8a5f327edf2ac738f956',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -901,7 +897,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b073999c6f90103a36a923e63ae8cf7a5c9c6c8c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'aa45aa62c3c62a3eefc011ea3d6f038ec7bd58fd',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1486,7 +1482,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3e0a5fc2097e6867909d68d3b0c3e8f89e4864b2',
+    Var('webrtc_git') + '/src.git' + '@' + '1479f79a53045c87073bf550ab6537da269e9370',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1558,7 +1554,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d21d9e8681bc4dbb1d14e7003660cda92f627253',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@df42b9a729b5a541dc4744d289fa1c4ec6e16379',
     'condition': 'checkout_src_internal',
   },
 
@@ -4830,20 +4826,6 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'python',
                 'src/third_party/arcore-android-sdk/test-apks/update.py',
-    ],
-  },
-  # Download Oculus SDK if appropriate.
-  {
-    'name': 'libovr',
-    'pattern': '.',
-    'condition': 'checkout_oculus_sdk',
-    'action': ['python',
-               'src/third_party/depot_tools/download_from_google_storage.py',
-               '--bucket', 'chrome-oculus-sdk',
-               '--recursive',
-               '--num_threads=10',
-               '--directory',
-               'src/third_party/libovr/src',
     ],
   },
   # Download common ink resources for chromeos.

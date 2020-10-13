@@ -350,10 +350,6 @@ IN_PROC_BROWSER_TEST_F(LiteVideoBrowserTest, StopsThrottlingOnPlaybackSeek) {
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::LiteVideo::kBlocklistReasonName,
       static_cast<int>(lite_video::LiteVideoBlocklistReason::kUnknown));
-  ukm_recorder.ExpectEntryMetric(
-      entry, ukm::builders::LiteVideo::kThrottlingResultName,
-      static_cast<int>(
-          lite_video::LiteVideoThrottleResult::kThrottledWithoutStop));
 }
 
 class LiteVideoAndLiteModeDisabledBrowserTest : public LiteVideoBrowserTest {

@@ -1229,7 +1229,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-ope
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form-dynamic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/cramped-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure ]
@@ -5883,13 +5882,6 @@ crbug.com/1043675 [ Win ] svg/custom/svg-root-with-opacity.html [ Failure ]
 crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
 crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Pass Failure ]
 
-# Temporarily disabled to land DevTools change
-crbug.com/1136848 http/tests/devtools/sources/formatter-css.js [ Pass Failure ]
-crbug.com/1136848 http/tests/devtools/sources/formatter-js.js [ Pass Failure ]
-crbug.com/1136848 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
-crbug.com/1136848 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
-crbug.com/1136848 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
-
 crbug.com/989665 [ Mac ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 crbug.com/989665 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
 crbug.com/989665 [ Win ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
@@ -6539,3 +6531,6 @@ crbug.com/1134237 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_
 # Sheriff 2020-10-09
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]
 crbug.com/1136726 [ Linux ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
+
+# Sheriff 2020-10-13
+crbug.com/1137716 [ Mac10.12 ] fast/events/mouse-cursor-image-set.html [ Pass Failure ]

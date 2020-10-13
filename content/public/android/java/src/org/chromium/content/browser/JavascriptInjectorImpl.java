@@ -96,7 +96,7 @@ public class JavascriptInjectorImpl implements JavascriptInjector, UserData {
 
         assert mUseMojo != null;
         if (mUseMojo) {
-            mInjector.addInterface(object, name);
+            mInjector.addInterface(object, name, requiredAnnotation);
         } else if (mNativePtr != 0) {
             mInjectedObjects.put(name, new Pair<Object, Class>(object, requiredAnnotation));
             JavascriptInjectorImplJni.get().addInterface(
@@ -106,10 +106,15 @@ public class JavascriptInjectorImpl implements JavascriptInjector, UserData {
 
     @Override
     public void removeInterface(String name) {
-        mInjectedObjects.remove(name);
-        if (mNativePtr != 0) {
-            JavascriptInjectorImplJni.get().removeInterface(
-                    mNativePtr, JavascriptInjectorImpl.this, name);
+        assert mUseMojo != null;
+        if (mUseMojo) {
+            mInjector.removeInterface(name);
+        } else {
+            mInjectedObjects.remove(name);
+            if (mNativePtr != 0) {
+                JavascriptInjectorImplJni.get().removeInterface(
+                        mNativePtr, JavascriptInjectorImpl.this, name);
+            }
         }
     }
 

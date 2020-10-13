@@ -5718,9 +5718,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="EnterOrExitCardifiedState" separator=".">
-  <suffix name="EnterOrExitOverview"
+  <suffix name="EnterCardifiedState"
       label="Triggered by entering cardified state in the app list"/>
-  <suffix name="EnterOrExitOverview"
+  <suffix name="ExitCardifiedState"
       label="Triggered by exiting cardified state in the app list"/>
   <affected-histogram
       name="Apps.AppList.CardifiedStateAnimation.AnimationSmoothness"/>
@@ -6320,7 +6320,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       name="ContentSuggestions.Feed.VisualElement.Viewed.TimeSinceElementFetched"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="FeedIsSynthetic" separator="." ordering="suffix">
+<histogram_suffixes name="FeedIsSynthetic" separator=".">
   <suffix name="NotSynthetic"
       label="Continuations that require making remote requests to fetch more
              articles."/>
@@ -16140,7 +16140,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithEsc"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithIgnore"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.LeaveSite"/>
-  <affected-histogram name="Security.SafetyTips.OpenTime.NoActionTaken"/>
+  <affected-histogram name="Security.SafetyTips.OpenTime.NoAction"/>
   <affected-histogram name="Security.SafetyTips.PageInfo.Action"/>
   <affected-histogram name="Security.SiteEngagement"/>
   <affected-histogram name="Security.SiteEngagementDelta"/>

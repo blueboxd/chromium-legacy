@@ -31,11 +31,12 @@ public final class RemoteObjectInjector extends WebContentsObserver {
      */
     private static class RemoteObjectGatewayHelper {
         public RemoteObjectGateway.Proxy gateway;
-        public RemoteObjectHostImpl host;
+        public RemoteObjectRegistry registry;
+
         public RemoteObjectGatewayHelper(
-                RemoteObjectGateway.Proxy newGateway, RemoteObjectHostImpl newHost) {
+                RemoteObjectGateway.Proxy newGateway, RemoteObjectRegistry newRegistry) {
             gateway = newGateway;
-            host = newHost;
+            registry = newRegistry;
         }
     }
 
@@ -68,18 +69,38 @@ public final class RemoteObjectInjector extends WebContentsObserver {
         }
     }
 
-    public void addInterface(Object object, String name) {
+    public void addInterface(
+            Object object, String name, Class<? extends Annotation> requiredAnnotation) {
         WebContents webContents = mWebContents.get();
         if (webContents == null) return;
 
-        // TODO(crbug.com/1105935): find a way to make requiredAnnotation available to
-        // mRemoteObjectHost when JavascriptInjectorImpl calls addInterface().
-        Class<? extends Annotation> requiredAnnotation = null;
+        Pair<Object, Class<? extends Annotation>> value = mInjectedObjects.get(name);
+
+        // Nothing to do if the named object already exists.
+        if (value != null && value.first == object) return;
+
+        if (value != null) {
+            // Remove existing name for replacement.
+            removeInterface(name);
+        }
+
         mInjectedObjects.put(name, new Pair<>(object, requiredAnnotation));
 
         // TODO(crbug.com/1105935): the objects need to be injected into all frames, not just the
         // main one.
         addInterfaceForFrame(webContents.getMainFrame(), name, object, requiredAnnotation);
+    }
+
+    public void removeInterface(String name) {
+        WebContents webContents = mWebContents.get();
+        if (webContents == null) return;
+
+        Pair<Object, Class<? extends Annotation>> value = mInjectedObjects.remove(name);
+        if (value == null) return;
+
+        // TODO(crbug.com/1105935): the objects need to be removed from all frames, not just the
+        // main one.
+        removeInterfaceForFrame(webContents.getMainFrame(), name, value.first);
     }
 
     public void setAllowInspection(boolean allow) {
@@ -88,13 +109,21 @@ public final class RemoteObjectInjector extends WebContentsObserver {
 
     private void addInterfaceForFrame(RenderFrameHost frameHost, String name, Object object,
             Class<? extends Annotation> requiredAnnotation) {
-        RemoteObjectGatewayHelper helper =
-                getRemoteObjectGatewayHelperForFrame(frameHost, requiredAnnotation);
-        helper.gateway.addNamedObject(name, helper.host.getRegistry().getObjectId(object));
+        RemoteObjectGatewayHelper helper = getRemoteObjectGatewayHelperForFrame(frameHost);
+        helper.gateway.addNamedObject(
+                name, helper.registry.getObjectId(object, requiredAnnotation));
+    }
+
+    private void removeInterfaceForFrame(RenderFrameHost frameHost, String name, Object object) {
+        RemoteObjectGatewayHelper helper = mRemoteObjectGatewayHelpers.get(frameHost);
+        if (helper == null) return;
+
+        helper.gateway.removeNamedObject(name);
+        helper.registry.unrefObjectByObject(object);
     }
 
     private RemoteObjectGatewayHelper getRemoteObjectGatewayHelperForFrame(
-            RenderFrameHost frameHost, Class<? extends Annotation> requiredAnnotation) {
+            RenderFrameHost frameHost) {
         // Only create one instance of RemoteObjectHostImpl per frame and store it in a map so it is
         // reused in future calls.
         if (!mRemoteObjectGatewayHelpers.containsKey(frameHost)) {
@@ -102,7 +131,7 @@ public final class RemoteObjectInjector extends WebContentsObserver {
 
             // Construct a RemoteObjectHost implementation.
             RemoteObjectHostImpl host = new RemoteObjectHostImpl(
-                    requiredAnnotation, new RemoteObjectAuditorImpl(), registry, mAllowInspection);
+                    new RemoteObjectAuditorImpl(), registry, mAllowInspection);
 
             RemoteObjectGatewayFactory factory = frameHost.getRemoteInterfaces().getInterface(
                     RemoteObjectGatewayFactory.MANAGER);
@@ -111,7 +140,7 @@ public final class RemoteObjectInjector extends WebContentsObserver {
                     RemoteObjectGateway.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
             factory.createRemoteObjectGateway(host, result.second);
             mRemoteObjectGatewayHelpers.put(
-                    frameHost, new RemoteObjectGatewayHelper(result.first, host));
+                    frameHost, new RemoteObjectGatewayHelper(result.first, registry));
         }
 
         return mRemoteObjectGatewayHelpers.get(frameHost);

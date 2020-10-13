@@ -1168,6 +1168,7 @@ if (!is_android) {
       "../browser/pdf/pdf_extension_test_util.cc",
       "../browser/pdf/pdf_extension_test_util.h",
       "../browser/performance_manager/background_tab_loading_policy_browsertest.cc",
+      "../browser/performance_manager/frame_node_impl_browsertest.cc",
       "../browser/performance_manager/graph/page_node_impl_browsertest.cc",
       "../browser/performance_manager/mechanisms/page_discarder_browsertest.cc",
       "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
@@ -4841,12 +4842,8 @@ test("unit_tests") {
       "../browser/nearby_sharing/instantmessaging/receive_messages_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/send_message_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/stream_parser_unittest.cc",
-      "../browser/nearby_sharing/mock_nearby_connections.cc",
-      "../browser/nearby_sharing/mock_nearby_connections.h",
       "../browser/nearby_sharing/mock_nearby_process_manager.cc",
       "../browser/nearby_sharing/mock_nearby_process_manager.h",
-      "../browser/nearby_sharing/mock_nearby_sharing_decoder.cc",
-      "../browser/nearby_sharing/mock_nearby_sharing_decoder.h",
       "../browser/nearby_sharing/mock_nearby_sharing_service.cc",
       "../browser/nearby_sharing/mock_nearby_sharing_service.h",
       "../browser/nearby_sharing/nearby_confirmation_manager_unittest.cc",
@@ -4981,6 +4978,7 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/platform_v2:unit_tests",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/machine_learning/public/cpp:test_support",
+      "//chromeos/services/nearby/public/cpp:test_support",
       "//components/arc:arc_test_support",
     ]
   }

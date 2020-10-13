@@ -103,6 +103,14 @@ vars = {
   # privately accessible.
   'checkout_telemetry_dependencies': False,
 
+  # Bots that don't consume render test goldens can skip downloading
+  # them.
+  'skip_render_test_goldens_download': False,
+
+  # Bots that don't consume WPR archives can skip downloading
+  # them.
+  'skip_wpr_archives_download': False,
+
   # Fetch the prebuilt binaries for llvm-cov and llvm-profdata. Needed to
   # process the raw profiles produced by instrumented targets (built with
   # the gn arg 'use_clang_coverage').
@@ -191,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c89a7ee628db457b3b3f2ea32c60c76f8d66ce65',
+  'skia_revision': '01b93eabe25b8ce680ea7a8c7fb188fc6fe88d78',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -203,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '06b956fe45251c41938db7f90a24747fae1a9733',
+  'angle_revision': 'bc2dd313cf94ead827ba01d2e47e10e284047408',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -262,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '62054633ee577e440c254a23880044a2df15c20e',
+  'devtools_frontend_revision': '0ca259e2863978c26df28bc49a92748e47e810f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'd1bca09f4ab36bdc8d413bf2642460b0721267f5',
+  'dawn_revision': 'ccaef8525710f27db60adcc7e9778c2caac1bada',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -338,7 +346,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '0265cd7a10d1425cf42908458a0807e919195914',
+  'libavif_revision': 'e67f9369d50e00c59b504abf52655b3c0f304430',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -877,7 +885,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '4fe1d403a22dfa80541234f4553a2d432772d81f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7c9f31beb6db418aa5f7067eca9051691d67efd5',
       'condition': 'checkout_chromeos',
   },
 
@@ -1482,7 +1490,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '33bd4fbe1e5b0ddf350409431ee5d9bb4e2a8132',
+    Var('webrtc_git') + '/src.git' + '@' + '46129e98d33a4d97c7d24252b1e67e83844112fa',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1554,7 +1562,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8567edac4fdfa5b428c14b9ed51e767ae60a4abe',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@81325a08e0591488d85740840c8ace2d70a3fdfe',
     'condition': 'checkout_src_internal',
   },
 
@@ -1562,7 +1570,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'IzAbSag8-IGOAkL2GSMql94a4unzsZtFfkhskHgLSCkC',
+        'version': 'T-N5zwsSNhguTsU3uUhXyI74IImSdHGJ-z8uc9QLdUsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1573,7 +1581,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'tdIYOywbT-7Ua5VwVKvfLfPLbfSGfLAQ2PzHie1qBhsC',
+        'version': 'fMicjS5JtS2sakj0BWcnD-WvPzJtgucl2EnBXFOBEnQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4628,7 +4636,7 @@ hooks = [
   # Download Telemetry's benchmark binary dependencies via conditionals
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android',
+    'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
@@ -4639,7 +4647,7 @@ hooks = [
   },
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies and checkout_win',
+    'condition': 'checkout_telemetry_dependencies and checkout_win and not skip_wpr_archives_download',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
@@ -4650,7 +4658,7 @@ hooks = [
   },
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies and checkout_mac',
+    'condition': 'checkout_telemetry_dependencies and checkout_mac and not skip_wpr_archives_download',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
@@ -4661,7 +4669,7 @@ hooks = [
   },
   {
     'name': 'checkout_telemetry_benchmark_deps',
-    'condition': 'checkout_telemetry_dependencies and checkout_android',
+    'condition': 'checkout_telemetry_dependencies and checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
     'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
@@ -4722,7 +4730,7 @@ hooks = [
   {
     'name': 'Fetch Android RenderTest goldens',
     'pattern': '.',
-    'condition': 'checkout_android',
+    'condition': 'checkout_android and not skip_render_test_goldens_download',
     'action': [ 'python',
                 'src/chrome/test/data/android/manage_render_test_goldens.py',
                 'download',
@@ -4908,7 +4916,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
     'action': [ 'vpython',
-		'src/tools/download_optimization_profile.py',
+  'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/atom.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/atom.afdo.local.txt',
                 '--output_name=src/chromeos/profiles/atom.afdo.prof',

@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chrome/browser/metrics/enrollment_status.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
@@ -154,18 +155,14 @@ std::string GetPrimaryAccountTypeString() {
 
 std::string GetEnrollmentStatusString() {
   switch (ChromeOSMetricsProvider::GetEnrollmentStatus()) {
-    case ChromeOSMetricsProvider::NON_MANAGED:
+    case EnrollmentStatus::kNonManaged:
       return "Not managed";
-    case ChromeOSMetricsProvider::MANAGED:
+    case EnrollmentStatus::kManaged:
       return "Managed";
-    case ChromeOSMetricsProvider::UNUSED:
-    case ChromeOSMetricsProvider::ERROR_GETTING_ENROLLMENT_STATUS:
-    case ChromeOSMetricsProvider::ENROLLMENT_STATUS_MAX:
+    case EnrollmentStatus::kUnused:
+    case EnrollmentStatus::kErrorGettingStatus:
       return "Error retrieving status";
   }
-  // For compilers that don't recognize all cases handled above.
-  NOTREACHED();
-  return std::string();
 }
 
 std::string GetDisplayInfoString(
@@ -393,35 +390,15 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   if (!profile || !ProfileSyncServiceFactory::HasSyncService(profile))
     return;
 
-  syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> sync_logs(
-      syncer::sync_ui_util::ConstructAboutInformation(service,
-                                                      chrome::GetChannel()));
-
-  // Remove identity section.
-  base::ListValue* details = NULL;
-  sync_logs->GetList(syncer::sync_ui_util::kDetailsKey, &details);
-  if (!details)
-    return;
-  for (auto it = details->begin(); it != details->end(); ++it) {
-    base::DictionaryValue* dict = NULL;
-    if (it->GetAsDictionary(&dict)) {
-      std::string title;
-      dict->GetString("title", &title);
-      if (title == syncer::sync_ui_util::kIdentityTitle) {
-        details->Erase(it, NULL);
-        break;
-      }
-    }
-  }
-
-  // Add sync logs to logs.
-  std::string sync_logs_string;
-  JSONStringValueSerializer serializer(&sync_logs_string);
-  serializer.Serialize(*sync_logs.get());
-
-  response->emplace(kSyncDataKey, sync_logs_string);
+  // Add sync logs to |response|.
+  std::unique_ptr<base::DictionaryValue> sync_logs =
+      syncer::sync_ui_util::ConstructAboutInformation(
+          syncer::sync_ui_util::IncludeSensitiveData(false),
+          ProfileSyncServiceFactory::GetForProfile(profile),
+          chrome::GetChannel());
+  std::string serialized_sync_logs;
+  JSONStringValueSerializer(&serialized_sync_logs).Serialize(*sync_logs);
+  response->emplace(kSyncDataKey, serialized_sync_logs);
 }
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(

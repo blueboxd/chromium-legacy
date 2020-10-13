@@ -33,6 +33,10 @@ class SettingsUserActionTrackerTest : public testing::Test {
   void SetUp() override {
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kBluetooth,
                                        mojom::Setting::kBluetoothOnOff);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kDevice,
+                                       mojom::Setting::kKeyboardFunctionKeys);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kDevice,
+                                       mojom::Setting::kTouchpadSpeed);
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kPeople,
                                        mojom::Setting::kAddAccount);
   }
@@ -84,6 +88,54 @@ TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedInt) {
           fake_sections_.GetSection(mojom::Section::kPeople));
   EXPECT_TRUE(people_section->logged_metrics().back() ==
               mojom::Setting::kAddAccount);
+}
+
+TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedBoolPref) {
+  // Record that the keyboard function keys setting was toggled off. This
+  // setting is controlled by a pref and uses the pref-to-setting-metric
+  // converter flow.
+  tracker_.RecordSettingChangeWithDetails(
+      mojom::Setting::kKeyboardFunctionKeys,
+      mojom::SettingChangeValue::NewBoolValue(false));
+
+  // The umbrella metric for which setting was changed should be updated. Note
+  // that kKeyboardFunctionKeys has enum value of 411.
+  histogram_tester_.ExpectTotalCount("ChromeOS.Settings.SettingChanged",
+                                     /*count=*/1);
+  histogram_tester_.ExpectBucketCount("ChromeOS.Settings.SettingChanged",
+                                      /*sample=*/411,
+                                      /*count=*/1);
+
+  // The LogMetric fn in the Device section should have been called.
+  const FakeOsSettingsSection* device_section =
+      static_cast<const FakeOsSettingsSection*>(
+          fake_sections_.GetSection(mojom::Section::kDevice));
+  EXPECT_TRUE(device_section->logged_metrics().back() ==
+              mojom::Setting::kKeyboardFunctionKeys);
+}
+
+TEST_F(SettingsUserActionTrackerTest, TestRecordSettingChangedIntPref) {
+  // Record that the touchpad speed slider was changed by the user. This
+  // setting is controlled by a pref and uses the pref-to-setting-metric
+  // converter flow.
+  tracker_.RecordSettingChangeWithDetails(
+      mojom::Setting::kTouchpadSpeed,
+      mojom::SettingChangeValue::NewIntValue(4));
+
+  // The umbrella metric for which setting was changed should be updated. Note
+  // that kTouchpadSpeed has enum value of 405.
+  histogram_tester_.ExpectTotalCount("ChromeOS.Settings.SettingChanged",
+                                     /*count=*/1);
+  histogram_tester_.ExpectBucketCount("ChromeOS.Settings.SettingChanged",
+                                      /*sample=*/405,
+                                      /*count=*/1);
+
+  // The LogMetric fn in the Device section should have been called.
+  const FakeOsSettingsSection* device_section =
+      static_cast<const FakeOsSettingsSection*>(
+          fake_sections_.GetSection(mojom::Section::kDevice));
+  EXPECT_TRUE(device_section->logged_metrics().back() ==
+              mojom::Setting::kTouchpadSpeed);
 }
 
 }  // namespace settings.

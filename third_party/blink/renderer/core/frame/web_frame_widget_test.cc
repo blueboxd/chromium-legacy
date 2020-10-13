@@ -6,8 +6,11 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
+#include "cc/layers/solid_color_layer.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -100,6 +103,60 @@ TEST_F(WebFrameWidgetSimTest, FrameSinkIdHitTestAPI) {
           gfx::PointF(150.27, 150.25), &point);
   EXPECT_EQ(main_frame_sink_id, frame_sink_id);
   EXPECT_EQ(gfx::PointF(150.27, 150.25), point);
+}
+
+#if defined(OS_ANDROID)
+TEST_F(WebFrameWidgetSimTest, ForceSendMetadataOnInput) {
+  cc::LayerTreeHost* layer_tree_host =
+      WebView().MainFrameViewWidget()->LayerTreeHost();
+  // We should not have any force send metadata requests at start.
+  EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());
+  // ShowVirtualKeyboard will trigger a text input state update.
+  WebView().MainFrameViewWidget()->ShowVirtualKeyboard();
+  // We should now have a force send metadata request.
+  EXPECT_TRUE(layer_tree_host->TakeForceSendMetadataRequest());
+}
+#endif  // defined(OS_ANDROID)
+
+// A test that forces a RemoteMainFrame to be created and the LocalFrameRoot
+// to be a WebFrameWidgetImpl.
+class WebFrameWidgetImplSimTest : public SimTest {
+ public:
+  void SetUp() override {
+    SimTest::SetUp();
+    InitializeRemote();
+    CHECK(static_cast<WebFrameWidgetBase*>(LocalFrameRoot().FrameWidget())
+              ->ForSubframe());
+  }
+
+  WebFrameWidgetImpl* LocalFrameRootWidget() {
+    return static_cast<WebFrameWidgetImpl*>(LocalFrameRoot().FrameWidget());
+  }
+};
+
+// Tests that the value of VisualProperties::is_pinch_gesture_active is
+// propagated to the LayerTreeHost when properties are synced for child local
+// roots.
+TEST_F(WebFrameWidgetImplSimTest,
+       ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
+  cc::LayerTreeHost* layer_tree_host = LocalFrameRootWidget()->LayerTreeHost();
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
+  blink::VisualProperties visual_properties;
+
+  // Sync visual properties on a child widget.
+  visual_properties.is_pinch_gesture_active = true;
+  LocalFrameRootWidget()->ApplyVisualProperties(visual_properties);
+  // We expect the |is_pinch_gesture_active| value to propagate to the
+  // LayerTreeHost for sub-frames. Since GesturePinch events are handled
+  // directly in the main-frame's layer tree (and only there), information about
+  // whether or not we're in a pinch gesture must be communicated separately to
+  // sub-frame layer trees, via OnUpdateVisualProperties. This information
+  // is required to allow sub-frame compositors to throttle rastering while
+  // pinch gestures are active.
+  EXPECT_TRUE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
+  visual_properties.is_pinch_gesture_active = false;
+  LocalFrameRootWidget()->ApplyVisualProperties(visual_properties);
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 
 const char EVENT_LISTENER_RESULT_HISTOGRAM[] = "Event.PassiveListeners";
@@ -376,6 +433,134 @@ TEST_F(WebViewFrameWidgetSimTest, SendElasticOverscrollForTouchscreen) {
       .Times(testing::AnyNumber());
 
   SendInputEvent(scroll, base::DoNothing());
+}
+
+class NotifySwapTimesWebFrameWidgetTest : public SimTest {
+ public:
+  void SetUp() override {
+    SimTest::SetUp();
+
+    WebView().StopDeferringMainFrameUpdate();
+    FrameWidgetBase()->UpdateCompositorViewportRect(gfx::Rect(200, 100));
+
+    auto root_layer = cc::SolidColorLayer::Create();
+    root_layer->SetBounds(gfx::Size(200, 100));
+    root_layer->SetBackgroundColor(SK_ColorGREEN);
+    FrameWidgetBase()->LayerTreeHost()->SetRootLayer(root_layer);
+
+    auto color_layer = cc::SolidColorLayer::Create();
+    color_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->AddChild(color_layer);
+    color_layer->SetBackgroundColor(SK_ColorRED);
+  }
+
+  WebViewFrameWidget* FrameWidgetBase() {
+    return static_cast<WebViewFrameWidget*>(MainFrame().FrameWidget());
+  }
+
+  // |swap_to_presentation| determines how long after swap should presentation
+  // happen. This can be negative, positive, or zero. If zero, an invalid (null)
+  // presentation time is used.
+  void CompositeAndWaitForPresentation(base::TimeDelta swap_to_presentation) {
+    base::RunLoop swap_run_loop;
+    base::RunLoop presentation_run_loop;
+
+    // Register callbacks for swap time and presentation time.
+    base::TimeTicks swap_time;
+    MainFrame().FrameWidget()->NotifySwapAndPresentationTime(
+        base::BindOnce(
+            [](base::OnceClosure swap_quit_closure, base::TimeTicks* swap_time,
+               blink::WebSwapResult result, base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              *swap_time = timestamp;
+              std::move(swap_quit_closure).Run();
+            },
+            swap_run_loop.QuitClosure(), &swap_time),
+        base::BindOnce(
+            [](base::OnceClosure presentation_quit_closure,
+               blink::WebSwapResult result, base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              std::move(presentation_quit_closure).Run();
+            },
+            presentation_run_loop.QuitClosure()));
+
+    // Composite and wait for the swap to complete.
+    Compositor().BeginFrame(/*time_delta_in_seconds=*/0.016, /*raster=*/true);
+    swap_run_loop.Run();
+
+    // Present and wait for it to complete.
+    viz::FrameTimingDetails timing_details;
+    if (!swap_to_presentation.is_zero()) {
+      timing_details.presentation_feedback = gfx::PresentationFeedback(
+          /*presentation_time=*/swap_time + swap_to_presentation,
+          base::TimeDelta::FromMilliseconds(16), 0);
+    }
+    auto* last_frame_sink = WebWidgetClient().LastCreatedFrameSink();
+    last_frame_sink->NotifyDidPresentCompositorFrame(1, timing_details);
+    presentation_run_loop.Run();
+  }
+};
+
+TEST_F(NotifySwapTimesWebFrameWidgetTest, PresentationTimestampValid) {
+  base::HistogramTester histograms;
+
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(2));
+
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(true, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+TEST_F(NotifySwapTimesWebFrameWidgetTest, PresentationTimestampInvalid) {
+  base::HistogramTester histograms;
+
+  CompositeAndWaitForPresentation(base::TimeDelta());
+
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(false, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::IsEmpty());
+}
+
+TEST_F(NotifySwapTimesWebFrameWidgetTest,
+       PresentationTimestampEarlierThanSwaptime) {
+  base::HistogramTester histograms;
+
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(-2));
+
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(false, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::IsEmpty());
+}
+
+// Tests that the value of VisualProperties::is_pinch_gesture_active is
+// not propagated to the LayerTreeHost when properties are synced for main
+// frame.
+TEST_F(WebFrameWidgetSimTest, ActivePinchGestureUpdatesLayerTreeHost) {
+  auto* layer_tree_host = WebView().MainFrameViewWidget()->LayerTreeHost();
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
+  blink::VisualProperties visual_properties;
+
+  // Sync visual properties on a mainframe RenderWidget.
+  visual_properties.is_pinch_gesture_active = true;
+  WebView().MainFrameViewWidget()->ApplyVisualProperties(visual_properties);
+  // We do not expect the |is_pinch_gesture_active| value to propagate to the
+  // LayerTreeHost for the main-frame. Since GesturePinch events are handled
+  // directly by the layer tree for the main frame, it already knows whether or
+  // not a pinch gesture is active, and so we shouldn't propagate this
+  // information to the layer tree for a main-frame's widget.
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 
 }  // namespace blink

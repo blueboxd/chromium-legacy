@@ -22028,13 +22028,11 @@ Called by update_document_policy_enum.py.-->
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
-  <int value="583" label="SendFilesForMalwareCheck"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
   <int value="585" label="UnsafeEventsReportingEnabled"/>
   <int value="586" label="BlockLargeFileTransfer"/>
   <int value="587" label="DelayDeliveryUntilVerdict"/>
   <int value="588" label="AllowPasswordProtectedFiles"/>
-  <int value="589" label="CheckContentCompliance"/>
   <int value="590" label="URLsToCheckComplianceOfDownloadedContent"/>
   <int value="591" label="URLsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
@@ -29751,7 +29749,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3541" label="V8WheelEvent_DeltaMode_AttributeGetter"/>
   <int value="3542" label="V8Touch_Force_AttributeGetter"/>
   <int value="3543" label="WebGLRenderingContextMakeXRCompatible"/>
-  <int value="3544" label="IdentifiabilityStudyReserved3544"/>
+  <int value="3544"
+      label="V8WebGLCompressedTextureASTC_GetSupportedProfiles_Method"/>
   <int value="3545" label="IdentifiabilityStudyReserved3545"/>
   <int value="3546"
       label="V8BeforeInstallPromptEvent_Platforms_AttributeGetter"/>
@@ -29776,10 +29775,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3565" label="IdentifiabilityStudyReserved3565"/>
   <int value="3566" label="V8BaseAudioContext_SampleRate_AttributeGetter"/>
   <int value="3567" label="WindowScreenId"/>
-  <int value="3568" label="IdentifiabilityStudyReserved3568"/>
-  <int value="3569" label="IdentifiabilityStudyReserved3569"/>
-  <int value="3570" label="IdentifiabilityStudyReserved3570"/>
-  <int value="3571" label="IdentifiabilityStudyReserved3571"/>
+  <int value="3568" label="WebGLRenderingContextGetParameter"/>
+  <int value="3569" label="WebGLRenderingContextGetRenderbufferParameter"/>
+  <int value="3570" label="WebGLRenderingContextGetShaderPrecisionFormat"/>
+  <int value="3571" label="WebGL2RenderingContextGetInternalFormatParameter"/>
   <int value="3572" label="IdentifiabilityStudyReserved3572"/>
   <int value="3573" label="IdentifiabilityStudyReserved3573"/>
   <int value="3574" label="IdentifiabilityStudyReserved3574"/>
@@ -44065,6 +44064,7 @@ from previous Chrome versions.
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="518419320" label="RemoteCopyProgressNotification:disabled"/>
+  <int value="519140642" label="SendWebUIJavaScriptErrorReports:enabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
   <int value="529235584" label="PhoneHub:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
@@ -44539,7 +44539,6 @@ from previous Chrome versions.
   <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1017364362" label="VrIconInDaydreamHome:enabled"/>
-  <int value="1018165268" label="InterestFeedFeedback:enabled"/>
   <int value="1018797564" label="EnableAppListSearchAutocomplete:disabled"/>
   <int value="1018998019" label="memlog"/>
   <int value="1019623058" label="ash-enable-shelf-model-synchronization"/>
@@ -45212,7 +45211,6 @@ from previous Chrome versions.
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
-  <int value="1689275095" label="InterestFeedFeedback:disabled"/>
   <int value="1690248203" label="HelpAppV2:enabled"/>
   <int value="1690837904" label="save-previous-document-resources"/>
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
@@ -45379,6 +45377,7 @@ from previous Chrome versions.
   <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
   <int value="1854646491" label="DetailedLanguageSettings:disabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
+  <int value="1857000695" label="SendWebUIJavaScriptErrorReports:disabled"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
   <int value="1858919054" label="SplitSettingsSync:disabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>
@@ -47127,6 +47126,7 @@ Called by update_use_counter_css.py.-->
   <int value="675" label="line-gap-override"/>
   <int value="676" label="math-shift"/>
   <int value="677" label="math-depth"/>
+  <int value="678" label="advance-proportional-override"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -71690,6 +71690,15 @@ would be helpful to identify which type is being sent.
   </int>
 </enum>
 
+<enum name="TouchpadSensitivity">
+  <int value="0" label="NONE"/>
+  <int value="1" label="Slowest"/>
+  <int value="2" label="Slow"/>
+  <int value="3" label="Medium"/>
+  <int value="4" label="Fast"/>
+  <int value="5" label="Fastest"/>
+</enum>
+
 <enum name="TouchTargetAndDispatchResultType">
   <int value="0"
       label="Non-root-scroller, non-scrollable document, not handled"/>
@@ -75316,6 +75325,7 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Minimal UI"/>
   <int value="3" label="Standalone"/>
   <int value="4" label="Fullscreen"/>
+  <int value="5" label="WindowControlsOverlay"/>
 </enum>
 
 <enum name="WebAppInstallResultCode">

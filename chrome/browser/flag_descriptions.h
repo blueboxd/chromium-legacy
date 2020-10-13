@@ -1637,9 +1637,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 extern const char kInterestFeedV2Name[];
 extern const char kInterestFeedV2Description[];
 
-extern const char kInterestFeedFeedbackName[];
-extern const char kInterestFeedFeedbackDescription[];
-
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
 
@@ -2756,6 +2753,11 @@ extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
+
+#if !defined(OS_WIN) && !defined(OS_FUCHSIA)
+extern const char kSendWebUIJavaScriptErrorReportsName[];
+extern const char kSendWebUIJavaScriptErrorReportsDescription[];
+#endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 extern const char kWebrtcPipeWireCapturerName[];

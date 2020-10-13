@@ -279,6 +279,8 @@ component("ash") {
     "capture_mode/capture_mode_type_view.cc",
     "capture_mode/capture_mode_type_view.h",
     "capture_mode/capture_mode_types.h",
+    "capture_mode/capture_mode_util.cc",
+    "capture_mode/capture_mode_util.h",
     "capture_mode/capture_window_observer.cc",
     "capture_mode/capture_window_observer.h",
     "capture_mode/stop_recording_button_tray.cc",
@@ -449,6 +451,7 @@ component("ash") {
     "frame/wide_frame_view.cc",
     "frame_throttler/frame_throttling_controller.cc",
     "frame_throttler/frame_throttling_controller.h",
+    "frame_throttler/frame_throttling_observer.h",
     "high_contrast/high_contrast_controller.cc",
     "high_contrast/high_contrast_controller.h",
     "highlighter/highlighter_controller.cc",
@@ -1324,8 +1327,6 @@ component("ash") {
     "system/unified/ime_mode_view.h",
     "system/unified/managed_device_tray_item_view.cc",
     "system/unified/managed_device_tray_item_view.h",
-    "system/unified/media_controls_chip_view.cc",
-    "system/unified/media_controls_chip_view.h",
     "system/unified/notification_counter_view.cc",
     "system/unified/notification_counter_view.h",
     "system/unified/notification_hidden_view.cc",
@@ -1725,6 +1726,7 @@ component("ash") {
     "//chromeos/components/quick_answers",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/ui/base",
+    "//chromeos/ui/frame",
     "//services/viz/public/mojom",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
@@ -2325,6 +2327,7 @@ test("ash_unittests") {
     "//chromeos:test_support",
     "//chromeos/strings:strings_grit",
     "//chromeos/ui/base",
+    "//chromeos/ui/frame",
     "//chromeos/ui/vector_icons",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.

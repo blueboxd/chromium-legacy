@@ -772,6 +772,25 @@
             ]
         }
     ],
+    "AutofillEnableStickyBubbleAndUpdatedLogging": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableFixedPaymentsBubbleLogging",
+                        "AutofillEnableStickyPaymentsBubble"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -1650,6 +1669,24 @@
                     },
                     "enable_features": [
                         "ClientSideDetectionModel"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ClientSideDetectionModelOnAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithModel55",
+                    "params": {
+                        "ModelNum": "55"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModelOnAndroid"
                     ]
                 }
             ]
@@ -3713,21 +3750,6 @@
             ]
         }
     ],
-    "InterestFeedFeedback": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InterestFeedFeedback"
-                    ]
-                }
-            ]
-        }
-    ],
     "InterestFeedV2": [
         {
             "platforms": [
@@ -4974,6 +4996,21 @@
                     "enable_features": [
                         "OptimizationHints",
                         "OptimizationHintsFetching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimizedRealtimeThreadingMac": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OptimizedRealtimeThreadingMac"
                     ]
                 }
             ]
@@ -6727,6 +6764,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "TabRanker"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabSearch": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabSearch",
+                        "TabSearchFixedEntrypoint"
                     ]
                 }
             ]

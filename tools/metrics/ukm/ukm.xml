@@ -2027,6 +2027,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
+    <obsolete>
+      Merged into CompositingCommit in http://crrev.com/815947 in M88.
+    </obsolete>
     <summary>
       The time spent in ScrollingCoordinator, between navigation and First
       Contentful Paint, in microseconds.
@@ -2058,6 +2061,21 @@ be describing additional metrics about the same event.
     <summary>
       The time spent waiting for the compositor thread to begin processing a
       commit, between navigation and First Contentful Paint, in microseconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="Blink.PaintTiming" singular="True">
+  <owner>npm@chromium.org</owner>
+  <owner>sullivan@chromium.org</owner>
+  <summary>
+    Paint timing metrics recorded in Blink, usually used as debugging metrics
+    for PaintTiming metrics in the PageLoad event.
+  </summary>
+  <metric name="LCPDebugging.HasViewportImage" enum="Boolean">
+    <summary>
+      Records whether a page has an image whose size equals the full viewport.
+      Recorded when the LCP algorithm has stopped.
     </summary>
   </metric>
 </event>
@@ -2804,6 +2822,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
+    <obsolete>
+      Merged into CompositingCommit in http://crrev.com/815947 in M88.
+    </obsolete>
     <summary>
       The time taken for scrolling coordinator for the main frame in
       microseconds during the sampled frame.
@@ -2864,6 +2885,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ScrollingCoordinatorPercentage">
+    <obsolete>
+      Merged into CompositingCommitPercentage in http://crrev.com/815947 in M88.
+    </obsolete>
     <summary>
       The percentage of the main frame time used in scrolling coordinator. An
       int in the range [0,100].

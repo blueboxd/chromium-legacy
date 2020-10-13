@@ -2834,10 +2834,6 @@ const char kInterestFeedV2Description[] =
     "Show content suggestions on the New Tab Page and Start Surface using the "
     "new Feed Component.";
 
-const char kInterestFeedFeedbackDescription[] =
-    "Allow the user to provide feedback from a feed card.";
-const char kInterestFeedFeedbackName[] = "Interest Feed Feedback";
-
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
@@ -4709,6 +4705,15 @@ const char kAutofillCreditCardUploadDescription[] =
     "to all Chrome devices.";
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
+
+#if !defined(OS_WIN) && !defined(OS_FUCHSIA)
+const char kSendWebUIJavaScriptErrorReportsName[] =
+    "Send WebUI JavaScript Error Reports";
+const char kSendWebUIJavaScriptErrorReportsDescription[] =
+    "If enabled, and if the user has consented to sending metrics to Google, "
+    "then when the JavaScript has an error on a WebUI page, an error report "
+    "will be sent to Google.";
+#endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";

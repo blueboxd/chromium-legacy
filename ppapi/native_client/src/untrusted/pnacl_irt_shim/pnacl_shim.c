@@ -3067,8 +3067,6 @@ static void Pnacl_M15_PPB_FileRefPrivate_GetAbsolutePath(struct PP_Var* _struct_
 
 /* Not generating wrapper methods for PPB_Flash_FontFile_0_2 */
 
-/* Not generating wrapper methods for PPB_FlashFullscreen_1_0 */
-
 /* Begin wrapper methods for PPB_HostResolver_Private_0_1 */
 
 static PP_Resource Pnacl_M19_PPB_HostResolver_Private_Create(PP_Instance instance) {
@@ -3758,12 +3756,6 @@ static void Pnacl_M19_PPB_X509Certificate_Private_GetField(struct PP_Var* _struc
 /* End wrapper methods for PPB_X509Certificate_Private_0_1 */
 
 /* Not generating wrapper methods for PPP_Find_Private_0_3 */
-
-/* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_0 */
-
-/* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_2 */
-
-/* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_3 */
 
 /* Begin wrapper methods for PPP_Instance_Private_0_1 */
 
@@ -4611,8 +4603,6 @@ static const struct PPB_FileRefPrivate_0_1 Pnacl_Wrappers_PPB_FileRefPrivate_0_1
 
 /* Not generating wrapper interface for PPB_Flash_FontFile_0_2 */
 
-/* Not generating wrapper interface for PPB_FlashFullscreen_1_0 */
-
 static const struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_HostResolver_Private_Create,
     .IsHostResolver = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_HostResolver_Private_IsHostResolver,
@@ -4789,12 +4779,6 @@ static const struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certi
 };
 
 /* Not generating wrapper interface for PPP_Find_Private_0_3 */
-
-/* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_0 */
-
-/* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_2 */
-
-/* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_3 */
 
 static const struct PPP_Instance_Private_0_1 Pnacl_Wrappers_PPP_Instance_Private_0_1 = {
     .GetInstanceObject = &Pnacl_M18_PPP_Instance_Private_GetInstanceObject

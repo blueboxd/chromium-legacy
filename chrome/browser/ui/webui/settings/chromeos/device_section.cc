@@ -10,6 +10,7 @@
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -716,6 +717,17 @@ void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kPowerStrings);
 }
 
+// Mirrors enum of the same name in enums.xml.
+enum class TouchpadSensitivity {
+  kNONE = 0,
+  kSlowest = 1,
+  kSlow = 2,
+  kMedium = 3,
+  kFast = 4,
+  kFastest = 5,
+  kMaxValue = kFastest,
+};
+
 }  // namespace
 
 DeviceSection::DeviceSection(Profile* profile,
@@ -842,8 +854,21 @@ std::string DeviceSection::GetSectionPath() const {
 
 bool DeviceSection::LogMetric(mojom::Setting setting,
                               base::Value& value) const {
-  // Unimplemented.
-  return false;
+  switch (setting) {
+    case mojom::Setting::kTouchpadSpeed:
+      base::UmaHistogramEnumeration(
+          "ChromeOS.Settings.Device.TouchpadSpeedValue",
+          static_cast<TouchpadSensitivity>(value.GetInt()));
+      return true;
+
+    case mojom::Setting::kKeyboardFunctionKeys:
+      base::UmaHistogramBoolean("ChromeOS.Settings.Device.KeyboardFunctionKeys",
+                                value.GetBool());
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {

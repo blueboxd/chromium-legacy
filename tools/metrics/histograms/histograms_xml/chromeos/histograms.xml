@@ -57,7 +57,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.IntentPickerAction"
-    enum="ArcIntentHandlerAction" expires_after="2021-02-07">
+    enum="ArcIntentHandlerAction" expires_after="2021-04-11">
   <owner>elijahtaylor@google.com</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>shihuis@google.com</owner>
@@ -401,7 +401,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MemoryPressureLevel" enum="MemoryPressureLevel"
-    expires_after="2021-02-07">
+    expires_after="2021-04-11">
   <owner>xdai@chromium.org</owner>
   <summary>
     The memory pressure level in Chrome OS, which is recorded periodically (once
@@ -492,7 +492,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Provider" enum="ChromeOSSamlProvider"
-    expires_after="2021-02-07">
+    expires_after="2021-04-11">
   <owner>mslus@chromium.org</owner>
   <owner>mohammedabdon@chromium.org</owner>
   <summary>Records SAML provider when SAML login flow is used.</summary>
@@ -545,6 +545,29 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The amount of time between when the settings window becomes blurred and when
     the user focuses it again.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Settings.Device.KeyboardFunctionKeys"
+    enum="BooleanToggled" expires_after="2021-09-30">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <owner>cros-customization@google.com</owner>
+  <summary>
+    Records when a user changes the kKeyboardFunctionKeys setting on the Device
+    page.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Settings.Device.TouchpadSpeedValue"
+    enum="TouchpadSensitivity" expires_after="2021-09-30">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <owner>cros-customization@google.com</owner>
+  <summary>
+    Records when users change the Touchpad Speed on the Device page. The value
+    saved is equal to the sensitivity value set on the slider, which ranges from
+    1 to 5.
   </summary>
 </histogram>
 
@@ -903,7 +926,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.FeaturePodCountOnOpen" units="count"
-    expires_after="2021-02-07">
+    expires_after="2021-04-11">
   <owner>tengs@chromium.org</owner>
   <owner>amehfooz@chromium.org</owner>
   <summary>
@@ -1034,7 +1057,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.USB.DeviceAttached"
-    enum="ChromeOSUsbEventTiming" expires_after="2021-02-07">
+    enum="ChromeOSUsbEventTiming" expires_after="2021-04-11">
   <owner>allenwebb@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>

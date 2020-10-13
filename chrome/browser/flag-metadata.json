@@ -2909,11 +2909,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "interest-feed-feedback",
-    "owners": [ "petewil", "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "interest-feed-v2",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 95
@@ -4054,7 +4049,7 @@
   {
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 88
   },
   {
     "name": "same-site-by-default-cookies",
@@ -4109,6 +4104,11 @@
     "name": "send-uma-cellular",
     "owners": [ "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "send-webui-javascript-error-reports",
+    "owners": ["iby", "cros-telemetry@google.com"],
+    "expiry_milestone": 93
   },
   {
     "name": "separate-pointing-stick-settings",

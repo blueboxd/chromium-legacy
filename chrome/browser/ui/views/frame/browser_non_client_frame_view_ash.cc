@@ -7,10 +7,8 @@
 #include <algorithm>
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/user_metrics.h"
@@ -40,6 +38,7 @@
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -95,7 +94,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ash::TabletMode::Get()->RemoveObserver(this);
+  chromeos::TabletState::Get()->RemoveObserver(this);
 
   ImmersiveModeController* immersive_controller =
       browser_view()->immersive_mode_controller();
@@ -104,7 +103,8 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
-  caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame());
+  caption_button_container_ =
+      new chromeos::FrameCaptionButtonContainerView(frame());
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
@@ -133,7 +133,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (browser->profile()->IsOffTheRecord())
     window->SetProperty(ash::kBlockedForAssistantSnapshotKey, true);
 
-  ash::TabletMode::Get()->AddObserver(this);
+  chromeos::TabletState::Get()->AddObserver(this);
 
   if (frame()->ShouldDrawFrameHeader())
     frame_header_ = CreateFrameHeader();
@@ -414,12 +414,19 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
                                      : BrowserFrameActiveState::kInactive);
 }
 
-void BrowserNonClientFrameViewAsh::OnTabletModeStarted() {
-  OnTabletModeToggled(true);
-}
-
-void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
-  OnTabletModeToggled(false);
+void BrowserNonClientFrameViewAsh::OnTabletStateChanged(
+    chromeos::TabletState::State state) {
+  switch (state) {
+    case chromeos::TabletState::State::kInTabletMode:
+      OnTabletModeToggled(true);
+      return;
+    case chromeos::TabletState::State::kInClamshellMode:
+      OnTabletModeToggled(false);
+      return;
+    case chromeos::TabletState::State::kEnteringTabletMode:
+    case chromeos::TabletState::State::kExitingTabletMode:
+      break;
+  }
 }
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
@@ -558,7 +565,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtonsWhenNotInOverview()
     const {
   return UsePackagedAppHeaderStyle(browser_view()->browser()) ||
-         !ash::TabletMode::Get()->InTabletMode();
+         !chromeos::TabletState::Get()->InTabletMode();
 }
 
 int BrowserNonClientFrameViewAsh::GetToolbarLeftInset() const {

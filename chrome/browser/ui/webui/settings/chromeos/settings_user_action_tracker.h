@@ -42,6 +42,10 @@ class SettingsUserActionTracker : public mojom::UserActionRecorder {
                            TestRecordSettingChangedBool);
   FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
                            TestRecordSettingChangedInt);
+  FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
+                           TestRecordSettingChangedBoolPref);
+  FRIEND_TEST_ALL_PREFIXES(SettingsUserActionTrackerTest,
+                           TestRecordSettingChangedIntPref);
 
   // mojom::UserActionRecorder:
   void RecordPageFocus() override;

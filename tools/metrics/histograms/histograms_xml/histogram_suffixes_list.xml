@@ -13893,7 +13893,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="PhoneHubFeature" separator=".">
-  <suffix name="NotificationBadge" label="Notification badge sub-feature."/>
+  <suffix name="NotificationBadge" label="Notification badge sub-feature.">
+    <obsolete>
+      Removed in M88, as the feature will not be included in the M89 launch.
+    </obsolete>
+  </suffix>
   <suffix name="Notifications" label="Notifications sub-feature."/>
   <suffix name="TaskContinuation" label="Task continuation sub-feature."/>
   <suffix name="TopLevelFeature" label="Top level Phone Hub feature."/>
@@ -16135,12 +16139,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Security.PageInfo.TimeOpen.Action"/>
   <affected-histogram name="Security.PageInfo.TimeOpen.NoAction"/>
   <affected-histogram name="Security.SafetyTips.Interaction"/>
+  <affected-histogram name="Security.SafetyTips.OpenTime.CloseTab"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.Dismiss"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithClose"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithEsc"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.DismissWithIgnore"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.LeaveSite"/>
   <affected-histogram name="Security.SafetyTips.OpenTime.NoAction"/>
+  <affected-histogram name="Security.SafetyTips.OpenTime.StartNewNavigation"/>
+  <affected-histogram name="Security.SafetyTips.OpenTime.SwitchTab"/>
   <affected-histogram name="Security.SafetyTips.PageInfo.Action"/>
   <affected-histogram name="Security.SiteEngagement"/>
   <affected-histogram name="Security.SiteEngagementDelta"/>

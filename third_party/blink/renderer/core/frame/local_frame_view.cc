@@ -3027,8 +3027,13 @@ const cc::Layer* LocalFrameView::RootCcLayer() const {
 
 void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
-  if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
+  if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled()) {
+    if (paint_artifact_compositor_) {
+      paint_artifact_compositor_->WillBeRemovedFromFrame();
+      paint_artifact_compositor_ = nullptr;
+    }
     return;
+  }
 
   Page* page = GetFrame().GetPage();
   if (!page)
@@ -4855,6 +4860,20 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
       run_benchmark(PaintBenchmarkMode::kForceRasterInvalidationAndConvert);
   result.paint_artifact_compositor_update_time_ms =
       run_benchmark(PaintBenchmarkMode::kForcePaintArtifactCompositorUpdate);
+
+  result.painter_memory_usage = 0;
+  if (paint_controller_) {
+    result.painter_memory_usage +=
+        paint_controller_->ApproximateUnsharedMemoryUsage();
+  }
+  if (paint_artifact_compositor_) {
+    result.painter_memory_usage +=
+        paint_artifact_compositor_->ApproximateUnsharedMemoryUsage();
+  }
+  if (auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer()) {
+    result.painter_memory_usage +=
+        root->ApproximateUnsharedMemoryUsageRecursive();
+  }
 }
 
 }  // namespace blink

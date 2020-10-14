@@ -51,19 +51,12 @@ void CommitQueueProxy::NudgeForCommit() {
 
 }  // namespace
 
-ModelTypeRegistry::ModelTypeRegistry(
-    const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-    NudgeHandler* nudge_handler,
-    CancelationSignal* cancelation_signal,
-    KeystoreKeysHandler* keystore_keys_handler)
+ModelTypeRegistry::ModelTypeRegistry(NudgeHandler* nudge_handler,
+                                     CancelationSignal* cancelation_signal,
+                                     KeystoreKeysHandler* keystore_keys_handler)
     : nudge_handler_(nudge_handler),
       cancelation_signal_(cancelation_signal),
-      keystore_keys_handler_(keystore_keys_handler) {
-  for (size_t i = 0u; i < workers.size(); ++i) {
-    workers_map_.insert(
-        std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));
-  }
-}
+      keystore_keys_handler_(keystore_keys_handler) {}
 
 ModelTypeRegistry::~ModelTypeRegistry() = default;
 
@@ -83,22 +76,13 @@ void ModelTypeRegistry::ConnectDataType(
   if (encrypted_types_.Has(type))
     cryptographer_copy = cryptographer_->Clone();
 
-  DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
-  if (emitter == nullptr) {
-    auto new_emitter = std::make_unique<DataTypeDebugInfoEmitter>(type);
-    emitter = new_emitter.get();
-    data_type_debug_info_emitter_map_.insert(
-        std::make_pair(type, std::move(new_emitter)));
-  }
-
   bool initial_sync_done =
       activation_response->model_type_state.initial_sync_done();
   auto worker = std::make_unique<ModelTypeWorker>(
       type, activation_response->model_type_state,
       /*trigger_initial_sync=*/!initial_sync_done,
       std::move(cryptographer_copy), passphrase_type_, nudge_handler_,
-      std::move(activation_response->type_processor), emitter,
-      cancelation_signal_);
+      std::move(activation_response->type_processor), cancelation_signal_);
 
   // Save a raw pointer and add the worker to our structures.
   ModelTypeWorker* worker_ptr = worker.get();

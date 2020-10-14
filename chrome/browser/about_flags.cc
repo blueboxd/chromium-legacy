@@ -3230,7 +3230,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDesktopPWAsMigrationUserDisplayModeCleanUp)},
     {"enable-desktop-pwas-run-on-os-login",
      flag_descriptions::kDesktopPWAsRunOnOsLoginName,
-     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsDesktop,
+     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
@@ -4914,6 +4914,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kProfilesUIRevamp)},
 #endif
+
+    {"destroy-profile-on-browser-close",
+     flag_descriptions::kDestroyProfileOnBrowserCloseName,
+     flag_descriptions::kDestroyProfileOnBrowserCloseDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kDestroyProfileOnBrowserClose)},
 
 #if defined(OS_CHROMEOS)
     {"enable-usbguard", flag_descriptions::kUsbguardName,

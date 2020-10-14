@@ -6486,6 +6486,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="231" label="RFH_CSP_ATTRIBUTE"/>
   <int value="232" label="RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED"/>
   <int value="233" label="RWH_CLOSE_PORTAL"/>
+  <int value="234" label="MSDH_INVALID_STREAM_TYPE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -29715,7 +29716,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3504" label="WindowScreenTouchSupport"/>
   <int value="3505" label="IdentifiabilityStudyReserved3505"/>
   <int value="3506" label="IdentifiabilityStudyReserved3506"/>
-  <int value="3507" label="IdentifiabilityStudyReserved3507"/>
+  <int value="3507"
+      label="V8PushManager_SupportedContentEncodings_AttributeGetter"/>
   <int value="3508" label="IdentifiabilityStudyReserved3508"/>
   <int value="3509" label="IdentifiabilityStudyReserved3509"/>
   <int value="3510" label="IdentifiabilityStudyReserved3510"/>
@@ -38527,6 +38529,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Bookmarks Entry"/>
   <int value="5" label="Most Visited Tile"/>
   <int value="6" label="Recent Tabs Entry"/>
+  <int value="7" label="Shared Highlight"/>
 </enum>
 
 <enum name="IOSAppState">
@@ -42627,6 +42630,7 @@ from previous Chrome versions.
   <int value="-980889204" label="SharingRenameDevices:enabled"/>
   <int value="-980317085" label="EnablePasswordsAccountStorage:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
+  <int value="-980054107" label="DestroyProfileOnBrowserClose:enabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
@@ -43551,6 +43555,7 @@ from previous Chrome versions.
   <int value="-29507521" label="ContextualNudges:disabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-27213807" label="GlobalMediaControls:enabled"/>
+  <int value="-24570936" label="DestroyProfileOnBrowserClose:disabled"/>
   <int value="-24217468" label="QuickAnswersTextAnnotator:enabled"/>
   <int value="-23804418"
       label="NTPArticleSuggestionsExpandableHeader:disabled"/>
@@ -47144,6 +47149,7 @@ Called by update_use_counter_css.py.-->
   <int value="676" label="math-shift"/>
   <int value="677" label="math-depth"/>
   <int value="678" label="advance-proportional-override"/>
+  <int value="679" label="overflow-clip-margin"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -54284,7 +54290,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="208" label="Nearby Share: On/Off"/>
   <int value="209" label="Phone Hub: On/Off"/>
   <int value="210" label="Phone Hub Notifications: On/Off"/>
-  <int value="211" label="Phone Hub Notification Badge: On/Off"/>
+  <int value="211" label="Phone Hub Notification Badge: On/Off (Deprecated)"/>
   <int value="212" label="Phone Hub Task Continuation: On/Off"/>
   <int value="213" label="Wifi Sync: On/Off"/>
   <int value="300" label="Add Account"/>
@@ -63712,6 +63718,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="User dismissed the Safety Tip with the ignore button"/>
   <int value="6" label="User opened help center"/>
   <int value="7" label="No Safety Tip was shown"/>
+  <int value="8" label="User closed the tab"/>
+  <int value="9" label="User switched to a different tab"/>
+  <int value="10" label="User navigated away"/>
 </enum>
 
 <enum name="SafetyTipStatus">

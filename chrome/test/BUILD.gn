@@ -3682,6 +3682,7 @@ test("unit_tests") {
     "../browser/subresource_filter/subresource_filter_abusive_unittest.cc",
     "../browser/subresource_filter/subresource_filter_configuration_unittest.cc",
     "../browser/subresource_filter/subresource_filter_content_settings_manager_unittest.cc",
+    "../browser/subresource_filter/subresource_filter_history_observer_unittest.cc",
     "../browser/subresource_filter/subresource_filter_test_harness.cc",
     "../browser/subresource_filter/subresource_filter_test_harness.h",
     "../browser/subresource_filter/subresource_filter_unittest.cc",
@@ -5571,10 +5572,6 @@ test("unit_tests") {
       "../common/safe_browsing/download_type_util_unittest.cc",
       "../common/safe_browsing/ipc_protobuf_message_test_messages.h",
       "../common/safe_browsing/ipc_protobuf_message_unittest.cc",
-      "../renderer/safe_browsing/murmurhash3_util_unittest.cc",
-      "../renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc",
-      "../renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc",
-      "../renderer/safe_browsing/scorer_unittest.cc",
     ]
     if (is_mac) {
       sources += [

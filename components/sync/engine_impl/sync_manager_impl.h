@@ -86,7 +86,6 @@ class SyncManagerImpl
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
@@ -187,7 +186,7 @@ class SyncManagerImpl
   bool observing_network_connectivity_changes_;
 
   // Map used to store the notification info to be displayed in
-  // about:sync page.
+  // chrome://sync-internals page.
   NotificationInfoMap notification_info_map_;
 
   // These are for interacting with chrome://sync-internals.

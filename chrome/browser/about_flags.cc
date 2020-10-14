@@ -4043,10 +4043,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
 
-    {"enable-service-worker-on-ui", flag_descriptions::kServiceWorkerOnUIName,
-     flag_descriptions::kServiceWorkerOnUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kServiceWorkerOnUI)},
-
 #if defined(OS_CHROMEOS)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
      flag_descriptions::kSchedulerConfigurationDescription, kOsCrOS,
@@ -4930,6 +4926,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableArcUnifiedAudioFocusName,
      flag_descriptions::kEnableArcUnifiedAudioFocusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUnifiedAudioFocusFeature)},
+    {"enable-kerberos-settings-section",
+     flag_descriptions::kKerberosSettingsSectionName,
+     flag_descriptions::kKerberosSettingsSectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kKerberosSettingsSection)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

@@ -972,6 +972,9 @@ Unknown properties are collapsed to zero. -->
     Promo is not shown due to sign-in being disallowed either by an enterprise
     policy or by |Allow Chrome sign-in| toggle.
   </int>
+  <int value="8" label="SignedInWithAddedAccount">
+    User has added an account and signed in with this account.
+  </int>
 </enum>
 
 <enum name="AccountManagerAccountAdditionSource">
@@ -29915,6 +29918,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3703" label="NewLayoutOverflowDifferentFlex"/>
   <int value="3704" label="NewLayoutOverflowDifferentAndAlreadyScrollsBlock"/>
   <int value="3705" label="NewLayoutOverflowDifferentAndAlreadyScrollsFlex"/>
+  <int value="3706" label="UnicodeBidiPlainText"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35518,6 +35522,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
   <int value="14" label="A survey is already in progress"/>
   <int value="15" label="Last instance of any survey too recent"/>
+  <int value="16" label="HaTS Service rejected request to load survey"/>
 </enum>
 
 <enum name="HardwareVerifierQualificationStatus">
@@ -43180,6 +43185,7 @@ from previous Chrome versions.
   <int value="-397959190" label="ClipboardHistory:enabled"/>
   <int value="-397392156" label="FtpProtocol:disabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
+  <int value="-396568607" label="KerberosSettingsSection:enabled"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
   <int value="-396046249" label="PhotoPickerVideoSupport:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
@@ -44806,6 +44812,7 @@ from previous Chrome versions.
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:disabled"/>
   <int value="1266886673" label="delay-reload-stop-button-change"/>
   <int value="1268470658" label="disable-android-password-link"/>
+  <int value="1268678442" label="KerberosSettingsSection:disabled"/>
   <int value="1269642282" label="ChromeShareQRCode:enabled"/>
   <int value="1269940659" label="EnumerateAudioDevices:enabled"/>
   <int value="1269952439" label="AndroidAIAFetching:disabled"/>
@@ -59549,15 +59556,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="Profile">
   <int value="0" label="Guest Profile"/>
-  <int value="1" label="Profile 1"/>
-  <int value="2" label="Profile 2"/>
-  <int value="3" label="Profile 3"/>
-  <int value="4" label="Profile 4"/>
-  <int value="5" label="Profile 5"/>
-  <int value="6" label="Profile 6"/>
-  <int value="7" label="Profile 7"/>
-  <int value="8" label="Profile 8"/>
-  <int value="9" label="Profile 9"/>
+  <int value="1" label="Profile 01"/>
+  <int value="2" label="Profile 02"/>
+  <int value="3" label="Profile 03"/>
+  <int value="4" label="Profile 04"/>
+  <int value="5" label="Profile 05"/>
+  <int value="6" label="Profile 06"/>
+  <int value="7" label="Profile 07"/>
+  <int value="8" label="Profile 08"/>
+  <int value="9" label="Profile 09"/>
   <int value="10" label="Profile 10"/>
   <int value="11" label="Profile 11"/>
   <int value="12" label="Profile 12"/>
@@ -59648,7 +59655,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="97" label="Profile 97"/>
   <int value="98" label="Profile 98"/>
   <int value="99" label="Profile 99"/>
-  <int value="100" label="Profile 100"/>
+  <int value="100" label="Profile 99+"/>
 </enum>
 
 <enum name="ProfileAddNewUser">
@@ -63312,6 +63319,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="RevokeTokenAction">
+  <obsolete>
+    Removed in M88.
+  </obsolete>
   <int value="0" label="None"/>
   <int value="1" label="Invalidate token for primary account"/>
   <int value="2" label="Revoke token for secondary accounts"/>

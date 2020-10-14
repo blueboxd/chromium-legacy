@@ -143,8 +143,7 @@ bool OpenXrApiWrapper::HasInstance() const {
 }
 
 bool OpenXrApiWrapper::HasSystem() const {
-  return system_ != kInvalidSystem && view_configs_.size() == kNumViews &&
-         HasBlendMode();
+  return system_ != kInvalidSystem && view_configs_.size() == kNumViews;
 }
 
 bool OpenXrApiWrapper::HasBlendMode() const {
@@ -202,8 +201,6 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
       instance_, system, kSupportedViewConfiguration, view_count, &view_count,
       view_configs.data()));
 
-  RETURN_IF_XR_FAILED(PickEnvironmentBlendMode(system));
-
   // Only assign the member variables on success. If any of the above XR calls
   // fail, the vector cleans up view_configs if necessary. system does not need
   // to be cleaned up because it is not allocated.
@@ -213,32 +210,48 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   return XR_SUCCESS;
 }
 
-XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
-  const std::array<XrEnvironmentBlendMode, 2> kSupportedBlendMode = {
-      XR_ENVIRONMENT_BLEND_MODE_ADDITIVE,
-      XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
+device::mojom::XREnvironmentBlendMode OpenXrApiWrapper::GetMojoBlendMode(
+    XrEnvironmentBlendMode xr_blend_mode) {
+  switch (xr_blend_mode) {
+    case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
+      return device::mojom::XREnvironmentBlendMode::kOpaque;
+    case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE:
+      return device::mojom::XREnvironmentBlendMode::kAdditive;
+    case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND:
+      return device::mojom::XREnvironmentBlendMode::kAlphaBlend;
+    case XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM:
+      NOTREACHED();
   };
+  return device::mojom::XREnvironmentBlendMode::kOpaque;
+}
+
+device::mojom::XREnvironmentBlendMode
+OpenXrApiWrapper::PickEnvironmentBlendModeForSession(
+    device::mojom::XRSessionMode session_mode) {
   DCHECK(HasInstance());
+  std::vector<XrEnvironmentBlendMode> supported_blend_modes =
+      GetSupportedBlendModes(instance_, system_);
 
-  uint32_t blend_mode_count;
-  RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
-      instance_, system, kSupportedViewConfiguration, 0, &blend_mode_count,
-      nullptr));
+  DCHECK(supported_blend_modes.size() > 0);
 
-  std::vector<XrEnvironmentBlendMode> blend_modes(blend_mode_count);
-  RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
-      instance_, system, kSupportedViewConfiguration, blend_mode_count,
-      &blend_mode_count, blend_modes.data()));
+  blend_mode_ = supported_blend_modes[0];
 
-  auto* blend_mode_it =
-      std::find_first_of(kSupportedBlendMode.begin(), kSupportedBlendMode.end(),
-                         blend_modes.begin(), blend_modes.end());
-  if (blend_mode_it == kSupportedBlendMode.end()) {
-    return XR_ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED;
+  switch (session_mode) {
+    case device::mojom::XRSessionMode::kImmersiveVr:
+      if (base::Contains(supported_blend_modes,
+                         XR_ENVIRONMENT_BLEND_MODE_OPAQUE))
+        blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+      break;
+    case device::mojom::XRSessionMode::kImmersiveAr:
+      if (base::Contains(supported_blend_modes,
+                         XR_ENVIRONMENT_BLEND_MODE_ADDITIVE))
+        blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
+      break;
+    case device::mojom::XRSessionMode::kInline:
+      NOTREACHED();
   }
 
-  blend_mode_ = *blend_mode_it;
-  return XR_SUCCESS;
+  return GetMojoBlendMode(blend_mode_);
 }
 
 bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
@@ -258,7 +271,8 @@ bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
 // objects that may have been created before the failure.
 XrResult OpenXrApiWrapper::InitSession(
     const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-    std::unique_ptr<OpenXRInputHelper>* input_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper,
+    const OpenXrExtensionHelper& extension_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
 
@@ -273,14 +287,13 @@ XrResult OpenXrApiWrapper::InitSession(
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
   UpdateStageBounds();
 
-  OpenXrExtensionHelper extension_helper;
-  if (extension_helper.ExtensionSupported(
+  if (extension_helper.ExtensionEnumeration()->ExtensionSupported(
           XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME)) {
     RETURN_IF_XR_FAILED(
         CreateSpace(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, &unbounded_space_));
   }
 
-  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper));
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper, extension_helper));
 
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,
@@ -382,12 +395,13 @@ XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
 }
 
 XrResult OpenXrApiWrapper::CreateGamepadHelper(
-    std::unique_ptr<OpenXRInputHelper>* input_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper,
+    const OpenXrExtensionHelper& extension_helper) {
   DCHECK(HasSession());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
 
-  return OpenXRInputHelper::CreateOpenXRInputHelper(instance_, session_,
-                                                    local_space_, input_helper);
+  return OpenXRInputHelper::CreateOpenXRInputHelper(
+      instance_, extension_helper, session_, local_space_, input_helper);
 }
 
 XrResult OpenXrApiWrapper::BeginSession() {
@@ -607,13 +621,20 @@ void OpenXrApiWrapper::GetHeadFromEyes(XrView* left, XrView* right) const {
   *right = head_from_eye_views_[1];
 }
 
-XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
+XrResult OpenXrApiWrapper::GetLuid(
+    LUID* luid,
+    const OpenXrExtensionHelper& extension_helper) const {
   DCHECK(IsInitialized());
+
+  if (extension_helper.ExtensionMethods().xrGetD3D11GraphicsRequirementsKHR ==
+      nullptr)
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 
   XrGraphicsRequirementsD3D11KHR graphics_requirements = {
       XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR};
-  RETURN_IF_XR_FAILED(xrGetD3D11GraphicsRequirementsKHR(
-      instance_, system_, &graphics_requirements));
+  RETURN_IF_XR_FAILED(
+      extension_helper.ExtensionMethods().xrGetD3D11GraphicsRequirementsKHR(
+          instance_, system_, &graphics_requirements));
 
   luid->LowPart = graphics_requirements.adapterLuid.LowPart;
   luid->HighPart = graphics_requirements.adapterLuid.HighPart;

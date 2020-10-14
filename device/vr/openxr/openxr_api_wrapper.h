@@ -47,7 +47,8 @@ class OpenXrApiWrapper {
   bool UpdateAndGetSessionEnded();
 
   XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-                       std::unique_ptr<OpenXRInputHelper>* input_helper);
+                       std::unique_ptr<OpenXRInputHelper>* input_helper,
+                       const OpenXrExtensionHelper& extension_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
@@ -60,7 +61,8 @@ class OpenXrApiWrapper {
 
   gfx::Size GetViewSize() const;
   XrTime GetPredictedDisplayTime() const;
-  XrResult GetLuid(LUID* luid) const;
+  XrResult GetLuid(LUID* luid,
+                   const OpenXrExtensionHelper& extension_helper) const;
   bool GetStageParameters(XrExtent2Df* stage_bounds,
                           gfx::Transform* local_from_stage);
   void RegisterInteractionProfileChangeCallback(
@@ -70,6 +72,9 @@ class OpenXrApiWrapper {
       const base::RepeatingCallback<void(mojom::XRVisibilityState)>&
           visibility_changed_callback);
 
+  device::mojom::XREnvironmentBlendMode PickEnvironmentBlendModeForSession(
+      device::mojom::XRSessionMode session_mode);
+
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
  private:
@@ -78,7 +83,7 @@ class OpenXrApiWrapper {
   void Uninitialize();
 
   XrResult InitializeSystem();
-  XrResult PickEnvironmentBlendMode(XrSystemId system);
+  XrResult InitializeEnvironmentBlendMode(XrSystemId system);
   XrResult ProcessEvents();
   void EnsureEventPolling();
 
@@ -86,8 +91,8 @@ class OpenXrApiWrapper {
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
-  XrResult CreateGamepadHelper(
-      std::unique_ptr<OpenXRInputHelper>* input_helper);
+  XrResult CreateGamepadHelper(std::unique_ptr<OpenXRInputHelper>* input_helper,
+                               const OpenXrExtensionHelper& extension_helper);
 
   XrResult BeginSession();
   XrResult UpdateProjectionLayers();
@@ -104,6 +109,9 @@ class OpenXrApiWrapper {
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
   XrResult UpdateStageBounds();
+
+  device::mojom::XREnvironmentBlendMode GetMojoBlendMode(
+      XrEnvironmentBlendMode xr_blend_mode);
 
   // The session is running only after xrBeginSession and before xrEndSession.
   // It is not considered running after creation but before xrBeginSession.

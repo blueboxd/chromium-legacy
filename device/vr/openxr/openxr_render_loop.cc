@@ -17,9 +17,11 @@ namespace device {
 OpenXrRenderLoop::OpenXrRenderLoop(
     base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
         on_display_info_changed,
-    XrInstance instance)
+    XrInstance instance,
+    const OpenXrExtensionHelper& extension_helper)
     : XRCompositorCommon(),
       instance_(instance),
+      extension_helper_(extension_helper),
       on_display_info_changed_(std::move(on_display_info_changed)) {
   DCHECK(instance_ != XR_NULL_HANDLE);
 }
@@ -91,11 +93,11 @@ bool OpenXrRenderLoop::StartRuntime() {
 
   texture_helper_.SetUseBGRA(true);
   LUID luid;
-  if (XR_FAILED(openxr->GetLuid(&luid)) ||
+  if (XR_FAILED(openxr->GetLuid(&luid, extension_helper_)) ||
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
-      XR_FAILED(
-          openxr->InitSession(texture_helper_.GetDevice(), &input_helper_))) {
+      XR_FAILED(openxr->InitSession(texture_helper_.GetDevice(), &input_helper_,
+                                    extension_helper_))) {
     texture_helper_.Reset();
     return false;
   }
@@ -123,6 +125,16 @@ void OpenXrRenderLoop::StopRuntime() {
   openxr_ = nullptr;
   current_display_info_ = nullptr;
   texture_helper_.Reset();
+}
+
+device::mojom::XREnvironmentBlendMode OpenXrRenderLoop::GetEnvironmentBlendMode(
+    device::mojom::XRSessionMode session_mode) {
+  return openxr_->PickEnvironmentBlendModeForSession(session_mode);
+}
+
+device::mojom::XRInteractionMode OpenXrRenderLoop::GetInteractionMode(
+    device::mojom::XRSessionMode session_mode) {
+  return device::mojom::XRInteractionMode::kWorldSpace;
 }
 
 void OpenXrRenderLoop::OnSessionStart() {

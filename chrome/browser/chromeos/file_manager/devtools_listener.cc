@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
 #include "base/json/json_reader.h"
@@ -17,22 +18,26 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
 #include "url/url_util.h"
 
 namespace file_manager {
 
 namespace {
 
-base::span<const uint8_t> StringToSpan(const std::string& str) {
-  return base::as_bytes(base::make_span(str));
+base::span<const uint8_t> StringToSpan(const std::string& s) {
+  return base::as_bytes(base::make_span(s));
 }
 
-std::string EncodedURL(const std::string& url) {
-  url::RawCanonOutputT<char> canonical_url;
-  url::EncodeURIComponent(url.c_str(), url.size(), &canonical_url);
-  return std::string(canonical_url.data(), canonical_url.length());
+base::StringPiece SpanToStringPiece(const base::span<const uint8_t>& s) {
+  return {reinterpret_cast<const char*>(s.data()), s.size()};
+}
+
+std::string EncodeURIComponent(const std::string& component) {
+  url::RawCanonOutputT<char> encoded;
+  url::EncodeURIComponent(component.c_str(), component.size(), &encoded);
+  return std::string(encoded.data(), encoded.length());
 }
 
 }  // namespace
@@ -151,7 +156,7 @@ void DevToolsListener::StopAndStoreJSCoverage(content::DevToolsAgentHost* host,
   }
 
   const std::string url = host->GetURL().spec();
-  CHECK(result->SetString("encodedHostURL", EncodedURL(url)));
+  CHECK(result->SetString("encodedHostURL", EncodeURIComponent(url)));
   CHECK(result->SetString("hostTitle", host->GetTitle()));
   CHECK(result->SetString("hostType", host->GetType()));
   CHECK(result->SetString("hostTest", test));
@@ -213,14 +218,14 @@ void DevToolsListener::StoreScripts(content::DevToolsAgentHost* host,
 
     base::DictionaryValue* script = nullptr;
     CHECK(script_[i]->GetDictionary("params", &script));
-    CHECK(script->SetString("encodedURL", EncodedURL(url)));
+    CHECK(script->SetString("encodedURL", EncodeURIComponent(url)));
     CHECK(script->SetString("hash", hash));
     CHECK(script->SetString("text", text));
     CHECK(script->SetString("url", url));
 
     base::FilePath path = store.AppendASCII(hash.append(".js.json"));
     CHECK(base::JSONWriter::Write(*script, &text));
-    if (!base::PathExists(path))  // Deduplication
+    if (!base::PathExists(path))  // script de-duplication
       base::WriteFile(path, text.data(), text.size());
   }
 }
@@ -236,23 +241,20 @@ void DevToolsListener::AwaitMessageResponse(int id) {
 
 void DevToolsListener::DispatchProtocolMessage(
     content::DevToolsAgentHost* host,
-    base::span<const uint8_t> span_message) {
+    base::span<const uint8_t> message) {
   if (!navigated_)
     return;
 
-  std::string message(reinterpret_cast<const char*>(span_message.data()),
-                      span_message.size());
-
-  std::unique_ptr<base::DictionaryValue> response =
-      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(message));
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(SpanToStringPiece(message)));
   CHECK(response);
 
   std::string* method = response->FindStringPath("method");
   if (method) {
-    if (*method == "Debugger.scriptParsed")
-      script_.push_back(std::move(response));
-    else if (*method == "Runtime.executionContextsCreated")
+    if (*method == "Runtime.executionContextsCreated")
       script_.clear();
+    else if (*method == "Debugger.scriptParsed")
+      script_.push_back(std::move(response));
     return;
   }
 

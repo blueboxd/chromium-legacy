@@ -22221,6 +22221,7 @@ Called by update_document_policy_enum.py.-->
   <int value="791" label="BrowsingDataLifetime"/>
   <int value="792" label="IntranetRedirectBehavior"/>
   <int value="793" label="LacrosAllowed"/>
+  <int value="794" label="DeviceArcDataSnapshotHours"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38091,6 +38092,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2"
       label="Backfilled the install date by looking up a value in
              PackageManager"/>
+</enum>
+
+<enum name="InstalledVersionPollType">
+  <int value="0" label="Process startup"/>
+  <int value="1" label="InstalledVersionMonitor notification"/>
+  <int value="2" label="Periodic poll"/>
 </enum>
 
 <enum name="InstallStatus">

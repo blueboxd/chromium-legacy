@@ -24,6 +24,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
@@ -408,11 +409,6 @@ ClientView* BubbleDialogDelegate::CreateClientView(Widget* widget) {
     client_view_->layer()->SetIsFastRoundedCorner(true);
   }
 
-  if (fixed_width_) {
-    // TODO(pbos): Make sure this reacts to or NOTREACHED()s changes to margins.
-    client_view_->set_fixed_width(fixed_width_ - margins().width());
-  }
-
   return client_view_;
 }
 
@@ -531,12 +527,6 @@ void BubbleDialogDelegate::SetHighlightedButton(Button* highlighted_button) {
   highlighted_button_tracker_.SetView(highlighted_button);
   if (visible)
     UpdateHighlightedButton(true);
-}
-
-void BubbleDialogDelegate::SetFixedWidth(int width) {
-  // SetFixedWidth should be called before |client_view_| is created.
-  DCHECK(!client_view_);
-  fixed_width_ = width;
 }
 
 void BubbleDialogDelegate::SetArrow(BubbleBorder::Arrow arrow) {

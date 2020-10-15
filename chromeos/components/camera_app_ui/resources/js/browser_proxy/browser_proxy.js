@@ -93,6 +93,11 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
+  localStorageClear() {
+    return promisify(chrome.storage.local.clear.bind(chrome.storage.local))();
+  }
+
+  /** @override */
   async getBoard() {
     const values = await promisify(chrome.chromeosInfoPrivate.get)(['board']);
     return values['board'];
@@ -146,16 +151,6 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  addOnMessageExternalListener(listener) {
-    chrome.runtime.onMessageExternal.addListener(listener);
-  }
-
-  /** @override */
-  addOnConnectExternalListener(listener) {
-    chrome.runtime.onConnectExternal.addListener(listener);
-  }
-
-  /** @override */
   addDummyHistoryIfNotAvailable() {
     // Since GA will use history.length to generate hash but it is not available
     // in platform apps, set it to 1 manually.
@@ -171,12 +166,6 @@ class ChromeAppBrowserProxy {
   getBackgroundOps() {
     assert(window['backgroundOps'] !== undefined);
     return window['backgroundOps'];
-  }
-
-  /** @override */
-  isFullscreenOrMaximized() {
-    return chrome.app.window.current().outerBounds.width >= screen.width ||
-        chrome.app.window.current().outerBounds.height >= screen.height;
   }
 
   /** @override */
@@ -226,26 +215,6 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  showWindow() {
-    chrome.app.window.current().show();
-  }
-
-  /** @override */
-  hideWindow() {
-    chrome.app.window.current().hide();
-  }
-
-  /** @override */
-  isMinimized() {
-    return chrome.app.window.current().isMinimized();
-  }
-
-  /** @override */
-  addOnMinimizedListener(listener) {
-    chrome.app.window.current().onMinimized.addListener(listener);
-  }
-
-  /** @override */
   openFeedback() {
     const data = {
       'categoryTag': 'chromeos-camera-app',
@@ -261,6 +230,18 @@ class ChromeAppBrowserProxy {
     };
     const id = 'gfdkimpbcpahaombhbimeihdjnejgicl';  // Feedback extension id.
     chrome.runtime.sendMessage(id, data);
+  }
+
+  /** @override */
+  setupUnloadListener(listener) {
+    // Platform app should use chrome.app.window.AppWindow onClosed event
+    // listener in background page instead of window unload event listener.
+  }
+
+  /** @override */
+  async setLaunchingFromWindowCreationStartTime(callback) {
+    // For platform app, the start time of window creation is recorded by
+    // background page so we don't need to trigger it here.
   }
 }
 

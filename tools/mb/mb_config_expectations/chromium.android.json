@@ -96,6 +96,22 @@
       "use_goma": true
     }
   },
+  "android-10-arm64-rel": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "strip_debug_info": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "arm64",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_goma": true
+    }
+  },
   "android-arm64-proguard-rel": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
@@ -156,7 +172,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-arm-rel": {
@@ -183,7 +200,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-arm64-dbg": {
@@ -207,7 +225,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-arm64-rel": {
@@ -233,7 +252,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-asan-arm-rel": {
@@ -261,7 +281,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-marshmallow-arm64-perf-rel": {
@@ -287,7 +308,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-x86-dbg": {
@@ -311,7 +333,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-cronet-x86-rel": {
@@ -337,7 +360,8 @@
       "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_thin_lto": false
     }
   },
   "android-incremental-dbg": {
@@ -365,6 +389,71 @@
       "use_goma": true
     }
   },
+  "android-marshmallow-arm64-rel": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "enable_resource_allowlist_generation": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "arm64",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_goma": true,
+      "use_static_angle": true
+    }
+  },
+  "android-marshmallow-x86-rel": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "enable_resource_allowlist_generation": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "x86",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_goma": true
+    }
+  },
+  "android-marshmallow-x86-rel-non-cq": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "enable_resource_allowlist_generation": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "x86",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_goma": true
+    }
+  },
+  "android-nougat-arm64-rel": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "strip_debug_info": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "arm64",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_goma": true
+    }
+  },
   "android-pie-arm64-rel": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
@@ -376,6 +465,22 @@
       "system_webview_package_name": "com.google.android.webview",
       "target_cpu": "arm64",
       "target_os": "android",
+      "use_goma": true
+    }
+  },
+  "android-pie-x86-rel": {
+    "gn_args": {
+      "disable_android_lint": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "strip_debug_info": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview",
+      "target_cpu": "x86",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
       "use_goma": true
     }
   }

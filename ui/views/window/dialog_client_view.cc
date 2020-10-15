@@ -20,6 +20,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
@@ -99,8 +100,17 @@ void DialogClientView::SetButtonRowInsets(const gfx::Insets& insets) {
 // DialogClientView, View overrides:
 
 gfx::Size DialogClientView::CalculatePreferredSize() const {
-  gfx::Size contents_size = ClientView::CalculatePreferredSize();
   const gfx::Insets& content_margins = GetDialogDelegate()->margins();
+
+  gfx::Size contents_size;
+  const int fixed_width = GetDialogDelegate()->fixed_width();
+  if (fixed_width) {
+    const int content_width = fixed_width - content_margins.width();
+    contents_size = gfx::Size(content_width,
+                              ClientView::GetHeightForWidth(content_width));
+  } else {
+    contents_size = ClientView::CalculatePreferredSize();
+  }
   contents_size.Enlarge(content_margins.width(), content_margins.height());
   return GetBoundingSizeForVerticalStack(
       contents_size, button_row_container_->GetPreferredSize());

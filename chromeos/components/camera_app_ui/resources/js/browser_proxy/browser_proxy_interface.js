@@ -49,6 +49,12 @@ export class BrowserProxy {
   async localStorageRemove(items) {}
 
   /**
+   * @return {!Promise}
+   * @abstract
+   */
+  async localStorageClear() {}
+
+  /**
    * @return {!Promise<string>}
    * @abstract
    */
@@ -101,19 +107,6 @@ export class BrowserProxy {
   getTextDirection() {}
 
   /**
-   * @param {function(*, !MessageSender, function(string)): (boolean|undefined)}
-   *     listener
-   * @abstract
-   */
-  addOnMessageExternalListener(listener) {}
-
-  /**
-   * @param {function(!Port)} listener
-   * @abstract
-   */
-  addOnConnectExternalListener(listener) {}
-
-  /**
    * @abstract
    */
   addDummyHistoryIfNotAvailable() {}
@@ -131,12 +124,6 @@ export class BrowserProxy {
   getBackgroundOps() {}
 
   /**
-   * @return {boolean}
-   * @abstract
-   */
-  isFullscreenOrMaximized() {}
-
-  /**
    * @return {!Promise}
    * @abstract
    */
@@ -145,27 +132,18 @@ export class BrowserProxy {
   /**
    * @abstract
    */
-  showWindow() {}
-
-  /**
-   * @abstract
-   */
-  hideWindow() {}
-
-  /**
-   * @return {boolean}
-   * @abstract
-   */
-  isMinimized() {}
+  openFeedback() {}
 
   /**
    * @param {function(): void} listener
    * @abstract
    */
-  addOnMinimizedListener(listener) {}
+  setupUnloadListener(listener) {}
 
   /**
+   * @param {function(): !Promise} callback
+   * @return {!Promise}
    * @abstract
    */
-  openFeedback() {}
+  async setLaunchingFromWindowCreationStartTime(callback) {}
 }

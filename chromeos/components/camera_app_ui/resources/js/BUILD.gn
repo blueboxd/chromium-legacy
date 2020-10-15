@@ -22,6 +22,7 @@ js_type_check("closure_compile") {
 
 js_library("compile_resources") {
   sources = [
+    "app_window.js",
     "async_job_queue.js",
     "background.js",
     "background_ops.js",
@@ -60,6 +61,7 @@ js_library("compile_resources") {
     "perf.js",
     "sound.js",
     "state.js",
+    "test_bridge.js",
     "toast.js",
     "tooltip.js",
     "type.js",
@@ -83,6 +85,9 @@ js_library("compile_resources") {
     "views/view.js",
     "views/warning.js",
     "waitable_event.js",
+    "window_controller/mojo_window_controller.js",
+    "window_controller/window_controller.js",
+    "window_controller/window_controller_interface.js",
   ]
   deps = [
     "//chromeos/components/camera_app_ui:mojo_bindings_js_library_for_compile",

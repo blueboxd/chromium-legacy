@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -43,12 +44,15 @@ gfx::Size ClientView::CalculatePreferredSize() const {
   if (!contents_view_)
     return gfx::Size();
 
-  if (fixed_width_) {
-    return gfx::Size(fixed_width_,
-                     contents_view_->GetHeightForWidth(fixed_width_));
-  }
-
   return contents_view_->GetPreferredSize();
+}
+
+int ClientView::GetHeightForWidth(int width) const {
+  // |contents_view_| is allowed to be NULL up until the point where this view
+  // is attached to a Container.
+  if (!contents_view_)
+    return 0;
+  return contents_view_->GetHeightForWidth(width);
 }
 
 gfx::Size ClientView::GetMaximumSize() const {

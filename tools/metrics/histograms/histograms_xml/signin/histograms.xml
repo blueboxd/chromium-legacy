@@ -162,7 +162,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthenticatedLaunchUserEvent"
-    enum="AuthenticatedLaunchUserEvent" expires_after="M88">
+    enum="AuthenticatedLaunchUserEvent" expires_after="M95">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1017,7 +1017,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncFirstSetupCompleteSource"
-    enum="SyncFirstSetupCompleteSource" expires_after="M87">
+    enum="SyncFirstSetupCompleteSource" expires_after="M89">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>Tracks where FirstSetupComplete bit is set from.</summary>

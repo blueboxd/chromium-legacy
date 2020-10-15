@@ -371,6 +371,11 @@ const char kClientStorageAccessContextAuditingName[] =
 const char kClientStorageAccessContextAuditingDescription[] =
     "Record the first-party contexts in which client-side storage was accessed";
 
+const char kDarkLightTestName[] = "Dark/light mode of system UI";
+const char kDarkLightTestDescription[] =
+    "Enables the dark/light mode of system UI, which includes shelf, launcher, "
+    "system tray etc.";
+
 const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
 const char kDecodeJpeg420ImagesToYUVDescription[] =
     "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."
@@ -2086,13 +2091,6 @@ const char kSharingDeviceExpirationName[] =
 const char kSharingDeviceExpirationDescription[] =
     "Configures how long after a device was last active that it is eligible "
     "for use in sharing features.";
-
-const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
-const char kShelfHotseatDescription[] =
-    "Shows a modular design for the shelf where the apps are shown separately "
-    "in a 'hotseat' interface when in tablet mode, and where various pieces "
-    "are separate and behave independently. Also reduces the size of the"
-    "shelf and its app when in laptop mode.";
 
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
@@ -3988,11 +3986,6 @@ const char kEnablePalmSuppressionName[] =
     "Enable Palm Suppression with Stylus.";
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
-
-const char kEnableParentalControlsSettingsName[] =
-    "Enable Parental controls settings";
-const char kEnableParentalControlsSettingsDescription[] =
-    "Enable Parental Control options in settings.";
 
 const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =

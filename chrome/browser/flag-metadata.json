@@ -742,6 +742,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "dark-light-mode",
+    "owners": [ "minch", "tclaiborne" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "lazzzis@google.com", "twellington" ],
     "expiry_milestone": 92
@@ -1917,13 +1922,6 @@
     // This flag is used by dev teams on Android to disable this feature, since
     // it can badly break pages under test.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-parental-controls-settings",
-    "owners": [ "danan", "michaelpg" ],
-    // This flag is used to enable parental controls options in ChromeOS
-    // settings.
-    "expiry_milestone": 79
   },
   {
     "name": "enable-persistent-downloads",
@@ -4198,11 +4196,6 @@
     "name": "shelf-hide-buttons-in-tablet",
     "owners": [ "tbarzic", "//ash/shelf/OWNERS" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "shelf-hotseat",
-    "owners": [ "manucornet", "mmourgos", "newcomer" ],
-    "expiry_milestone": 82
   },
   {
     "name": "shelf-hover-previews",

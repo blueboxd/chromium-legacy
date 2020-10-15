@@ -975,6 +975,15 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="SignedInWithAddedAccount">
     User has added an account and signed in with this account.
   </int>
+  <int value="9" label="DismissedScrim">
+    User has dismissed the promo by tapping on the scrim above the bottom sheet.
+  </int>
+  <int value="10" label="DismissedSwipeDown">
+    User has dismissed the promo by swiping down the bottom sheet.
+  </int>
+  <int value="11" label="DismissedOther">
+    User has dismissed the promo by other means.
+  </int>
 </enum>
 
 <enum name="AccountManagerAccountAdditionSource">
@@ -40689,6 +40698,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Available context exhausted"/>
   <int value="4" label="Context word limit reached"/>
   <int value="5" label="Empty selection"/>
+  <int value="6" label="Tab hidden"/>
+  <int value="7" label="Omnibox navigation"/>
+  <int value="8" label="Tab crash"/>
 </enum>
 
 <enum name="LinkMonitorFailureType">
@@ -42503,6 +42515,7 @@ from previous Chrome versions.
   <int value="-1121931029" label="DownloadsForeground:enabled"/>
   <int value="-1119700637" label="ui-disable-partial-swap"/>
   <int value="-1118921985" label="ForceEnableSystemAec:enabled"/>
+  <int value="-1117894706" label="DarkLightMode:enabled"/>
   <int value="-1117104514" label="smbfs-file-shares"/>
   <int value="-1116278039" label="ShelfAppScaling:disabled"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
@@ -43522,6 +43535,7 @@ from previous Chrome versions.
   <int value="-69427025" label="OfflinePagesPrefetchingUI:enabled"/>
   <int value="-68877684" label="BackgroundVideoTrackOptimization:enabled"/>
   <int value="-68619312" label="PassiveDocumentWheelEventListeners:disabled"/>
+  <int value="-68613812" label="DarkLightMode:disabled"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-67616014" label="PDFAnnotations:enabled"/>
   <int value="-67297229" label="OfflinePagesDescriptivePendingStatus:disabled"/>

@@ -27,6 +27,7 @@ group("chrome_camera_app") {
     ":chrome_camera_app_js_views",
     ":chrome_camera_app_js_views_camera",
     ":chrome_camera_app_js_views_camera_mode",
+    ":chrome_camera_app_js_window_controller",
     ":chrome_camera_app_mojo_generated",
     ":chrome_camera_app_sounds",
     ":chrome_camera_app_views",
@@ -96,6 +97,7 @@ copy("chrome_camera_app_images") {
 
 copy("chrome_camera_app_js") {
   sources = [
+    "js/app_window.js",
     "js/async_job_queue.js",
     "js/background.js",
     "js/background_ops.js",
@@ -111,6 +113,7 @@ copy("chrome_camera_app_js") {
     "js/perf.js",
     "js/sound.js",
     "js/state.js",
+    "js/test_bridge.js",
     "js/toast.js",
     "js/tooltip.js",
     "js/type.js",
@@ -217,6 +220,16 @@ copy("chrome_camera_app_js_views_camera_mode") {
   ]
 
   outputs = [ "$out_camera_app_dir/js/views/camera/mode/{{source_file_part}}" ]
+}
+
+copy("chrome_camera_app_js_window_controller") {
+  sources = [
+    "js/window_controller/mojo_window_controller.js",
+    "js/window_controller/window_controller.js",
+    "js/window_controller/window_controller_interface.js",
+  ]
+
+  outputs = [ "$out_camera_app_dir/js/window_controller/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_sounds") {

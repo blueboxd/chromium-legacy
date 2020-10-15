@@ -224,6 +224,9 @@ extern const char kClientStorageAccessContextAuditingDescription[];
 extern const char kConditionalTabStripAndroidName[];
 extern const char kConditionalTabStripAndroidDescription[];
 
+extern const char kDarkLightTestName[];
+extern const char kDarkLightTestDescription[];
+
 extern const char kDecodeJpeg420ImagesToYUVName[];
 extern const char kDecodeJpeg420ImagesToYUVDescription[];
 
@@ -1203,9 +1206,6 @@ extern const char kSharingSendViaSyncDescription[];
 
 extern const char kSharingDeviceExpirationName[];
 extern const char kSharingDeviceExpirationDescription[];
-
-extern const char kShelfHotseatName[];
-extern const char kShelfHotseatDescription[];
 
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];

@@ -2239,12 +2239,13 @@
                     "params": {
                         "availability": ">0",
                         "event_many_tabs_opened": "name:sixth_tab_opened;comparator:>0;window:1;storage:365",
-                        "event_trigger": "name:tab_groups_new_group_iph_triggered;comparator:<1;window:365;storage:365",
+                        "event_trigger": "name:tab_groups_new_group_iph_triggered;comparator:any;window:365;storage:365",
                         "event_used": "name:tab_group_created;comparator:==0;window:365;storage:365",
                         "session_rate": "<3"
                     },
                     "enable_features": [
                         "EnableNewBadgeOnMenuItems",
+                        "IPH_DesktopSnoozeFeature",
                         "IPH_DesktopTabGroupsNewGroup"
                     ]
                 }
@@ -5224,6 +5225,24 @@
             ]
         }
     ],
+    "PasswordEditingInSettings": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordEditingInSettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordScriptsFetching": [
         {
             "platforms": [
@@ -5704,32 +5723,58 @@
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
                         "experiment_tag": "",
                         "image_prefetch_mode": "top",
-                        "most_visited_max_rows_normal_screen": "1",
-                        "most_visited_max_rows_small_screen": "1"
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "2",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
                     },
                     "enable_features": [
                         "QueryTiles",
                         "QueryTilesInOmnibox"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesLocalOrdering"
+                    ]
+                },
+                {
+                    "name": "EnabledStitchAndLocalOrdering",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "2",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInOmnibox",
+                        "QueryTilesLocalOrdering"
                     ],
                     "disable_features": [
                         "QueryTilesEnableQueryEditing"
                     ]
                 },
                 {
-                    "name": "EnabledStitchWithNoSearchParam",
+                    "name": "EnabledStitchAndTrending",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
-                        "experiment_tag": "disableSearchParams : true",
+                        "experiment_tag": "enableTrending : true",
                         "image_prefetch_mode": "top",
-                        "most_visited_max_rows_normal_screen": "1",
-                        "most_visited_max_rows_small_screen": "1"
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "2",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
                     },
                     "enable_features": [
                         "QueryTiles",
                         "QueryTilesInOmnibox"
                     ],
                     "disable_features": [
-                        "QueryTilesEnableQueryEditing"
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesLocalOrdering"
                     ]
                 },
                 {
@@ -5738,15 +5783,18 @@
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
                         "experiment_tag": "maxLevels : 1",
                         "image_prefetch_mode": "top",
-                        "most_visited_max_rows_normal_screen": "1",
-                        "most_visited_max_rows_small_screen": "1"
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "2",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
                     },
                     "enable_features": [
                         "QueryTiles",
                         "QueryTilesInOmnibox"
                     ],
                     "disable_features": [
-                        "QueryTilesEnableQueryEditing"
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesLocalOrdering"
                     ]
                 },
                 {
@@ -5755,13 +5803,18 @@
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
                         "experiment_tag": "maxLevels : 1",
                         "image_prefetch_mode": "top",
-                        "most_visited_max_rows_normal_screen": "1",
-                        "most_visited_max_rows_small_screen": "1"
+                        "is_unmetered_network_required": "false",
+                        "most_visited_max_rows_normal_screen": "2",
+                        "most_visited_max_rows_small_screen": "1",
+                        "small_screen_height_threshold_dp": "700"
                     },
                     "enable_features": [
                         "QueryTiles",
                         "QueryTilesEnableQueryEditing",
                         "QueryTilesInOmnibox"
+                    ],
+                    "disable_features": [
+                        "QueryTilesLocalOrdering"
                     ]
                 }
             ]

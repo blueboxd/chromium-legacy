@@ -55,7 +55,8 @@ class SyncEngineImpl : public SyncEngine,
                  invalidation::InvalidationService* invalidator,
                  SyncInvalidationsService* sync_invalidations_service,
                  const base::WeakPtr<SyncPrefs>& sync_prefs,
-                 const base::FilePath& sync_data_folder);
+                 const base::FilePath& sync_data_folder,
+                 scoped_refptr<base::SequencedTaskRunner> sync_task_runner);
   ~SyncEngineImpl() override;
 
   // SyncEngine implementation.
@@ -79,7 +80,6 @@ class SyncEngineImpl : public SyncEngine,
   void DeactivateDataType(ModelType type) override;
   void ActivateProxyDataType(ModelType type) override;
   void DeactivateProxyDataType(ModelType type) override;
-  void EnableEncryptEverything() override;
   const Status& GetDetailedStatus() const override;
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;

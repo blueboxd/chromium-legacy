@@ -19,6 +19,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 namespace {
@@ -152,7 +153,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
   set_close_on_deactivate(model_->close_on_deactivate(GetPassKey()));
 
-  SetFixedWidth(LayoutProvider::Get()->GetDistanceMetric(
+  set_fixed_width(LayoutProvider::Get()->GetDistanceMetric(
       anchor_view ? views::DISTANCE_BUBBLE_PREFERRED_WIDTH
                   : views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 

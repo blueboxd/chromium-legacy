@@ -14,7 +14,6 @@ import '/strings.m.js';
 // eslint-disable-next-line no-unused-vars
 import {BackgroundOps} from '../background_ops.js';
 import {assert} from '../chrome_util.js';
-import {NotImplementedError} from '../error.js';
 import {Intent} from '../intent.js';
 import {getMaybeLazyDirectory} from '../models/lazy_directory_entry.js';
 import {NativeDirectoryEntry} from '../models/native_file_system_entry.js';
@@ -102,6 +101,11 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
+  async localStorageClear() {
+    window.localStorage.clear();
+  }
+
+  /** @override */
   async getBoard() {
     return window.loadTimeData.getString('board_name');
   }
@@ -128,7 +132,8 @@ class WebUIBrowserProxy {
 
   /** @override */
   openInspector(type) {
-    throw new NotImplementedError();
+    // SWA can open the inspector by the hot-keys and there is no need to
+    // implement it.
   }
 
   /** @override */
@@ -139,16 +144,6 @@ class WebUIBrowserProxy {
   /** @override */
   getTextDirection() {
     return window.loadTimeData.getString('textdirection');
-  }
-
-  /** @override */
-  addOnMessageExternalListener(listener) {
-    throw new NotImplementedError();
-  }
-
-  /** @override */
-  addOnConnectExternalListener(listener) {
-    throw new NotImplementedError();
   }
 
   /** @override */
@@ -170,6 +165,7 @@ class WebUIBrowserProxy {
     const intent = url.includes('intent') ? Intent.create(new URL(url)) : null;
     return /** @type {!BackgroundOps} */ ({
       bindForegroundOps: (ops) => {},
+      bindAppWindow: (appWindow) => {},
       getIntent: () => intent,
       getPerfLogger: () => perfLogger,
       getTestingErrorCallback: () => null,
@@ -179,41 +175,24 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
-  isFullscreenOrMaximized() {
-    // TODO(crbug.com/980846): Implement the fullscreen monitor.
-    return false;
-  }
-
-  /** @override */
   fitWindow() {
     // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
-  }
-
-  /** @override */
-  showWindow() {
-    // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
-  }
-
-  /** @override */
-  hideWindow() {
-    // TODO(crbug.com/980846): Remove the method once we migrate to SWA.
-  }
-
-  /** @override */
-  isMinimized() {
-    // TODO(crbug.com/980846): Implement the minimization monitor.
-    return false;
-  }
-
-  /** @override */
-  addOnMinimizedListener(listener) {
-    // TODO(crbug.com/980846): Implement the minimization monitor.
   }
 
   /** @override */
   openFeedback() {
     ChromeHelper.getInstance().openFeedbackDialog(
         this.getI18nMessage('feedback_description_placeholder'));
+  }
+
+  /** @override */
+  setupUnloadListener(listener) {
+    window.addEventListener('unload', listener);
+  }
+
+  /** @override */
+  async setLaunchingFromWindowCreationStartTime(callback) {
+    await callback();
   }
 }
 

@@ -2695,6 +2695,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(display::features::kUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
+    {"dark-light-mode", flag_descriptions::kDarkLightTestName,
+     flag_descriptions::kDarkLightTestDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
     {"screen-capture", flag_descriptions::kScreenCaptureTestName,
      flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
@@ -2799,9 +2802,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-app-scaling", flag_descriptions::kShelfAppScalingName,
      flag_descriptions::kShelfAppScalingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShelfAppScaling)},
-    {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
-     flag_descriptions::kShelfHotseatDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
@@ -5594,13 +5594,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"font-access", flag_descriptions::kFontAccessAPIName,
      flag_descriptions::kFontAccessAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
-
-#if defined(OS_CHROMEOS)
-    {"enable-parental-controls-settings",
-     flag_descriptions::kEnableParentalControlsSettingsName,
-     flag_descriptions::kEnableParentalControlsSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kParentalControlsSettings)},
-#endif  // defined(OS_CHROMEOS)
 
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,

@@ -478,11 +478,6 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
 
 // RenderWidgetOwnerDelegate -----------------------------------------
 
-void RenderViewImpl::SetActiveForWidget(bool active) {
-  if (GetWebView())
-    GetWebView()->SetIsActive(active);
-}
-
 bool RenderViewImpl::SupportsMultipleWindowsForWidget() {
   return webview_->GetWebPreferences().supports_multiple_windows;
 }
@@ -538,11 +533,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
       active_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
     GetContentClient()->SetActiveURL(
         active_url, main_frame->Top()->GetSecurityOrigin().ToString().Utf8());
-  }
-
-  for (auto& observer : observers_) {
-    if (observer.OnMessageReceived(message))
-      return true;
   }
 
   bool handled = true;
@@ -899,10 +889,6 @@ bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
 
-const std::string& RenderViewImpl::GetAcceptLanguages() {
-  return renderer_preferences_.accept_languages;
-}
-
 blink::WebString RenderViewImpl::AcceptLanguages() {
   return WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
@@ -940,10 +926,6 @@ void RenderViewImpl::SetBlinkPreferences(
 
 blink::WebView* RenderViewImpl::GetWebView() {
   return webview_;
-}
-
-bool RenderViewImpl::GetContentStateImmediately() {
-  return send_content_state_immediately_;
 }
 
 void RenderViewImpl::OnSetRendererPrefs(
@@ -997,11 +979,6 @@ void RenderViewImpl::OnSetRendererPrefs(
 void RenderViewImpl::OnMoveOrResizeStarted() {
   if (GetWebView())
     GetWebView()->CancelPagePopup();
-}
-
-void RenderViewImpl::SetPageFrozen(bool frozen) {
-  if (GetWebView())
-    GetWebView()->SetPageFrozen(frozen);
 }
 
 #if defined(OS_ANDROID)

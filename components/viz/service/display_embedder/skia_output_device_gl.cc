@@ -460,11 +460,8 @@ scoped_refptr<gl::GLImage> SkiaOutputDeviceGL::GetGLImageForMailbox(
   // clients are using SharedImageInterface to create textures.
   // For example, the legacy mailbox still uses GL textures (no overlay)
   // and is still used.
-  if (!mailbox.IsSharedImage()) {
-    auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
-    if (!texture_base)
-      return nullptr;
-
+  auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
+  if (texture_base) {
     DCHECK_EQ(texture_base->GetType(), gpu::TextureBase::Type::kPassthrough);
     std::tie(it, std::ignore) = overlays_.try_emplace(
         mailbox,

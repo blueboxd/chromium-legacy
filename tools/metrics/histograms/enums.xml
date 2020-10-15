@@ -14176,26 +14176,6 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="3" label="Failed VM Started"/>
 </enum>
 
-<enum name="CrostiniFailureClasses">
-  <int value="0" label="Concierge"/>
-  <int value="1" label="Cicerone"/>
-  <int value="2" label="Seneschal"/>
-  <int value="3" label="Chunneld"/>
-  <int value="4" label="VM hypervisor"/>
-  <int value="5" label="In-VM syslog daemon"/>
-  <int value="6" label="VM ssh daemon"/>
-  <int value="7" label="LXCFS daemon"/>
-  <int value="8" label="Tremplin"/>
-  <int value="9" label="Ndproxyd"/>
-  <int value="10" label="Mcastd"/>
-  <int value="11" label="Lxd"/>
-  <int value="12" label="Garcon"/>
-  <int value="13" label="Sommelier wayland proxy"/>
-  <int value="14" label="Sommelier X11 proxy"/>
-  <int value="15" label="Cros-Sftp"/>
-  <int value="16" label="Cros-Notificationd"/>
-</enum>
-
 <enum name="CrostiniImportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
@@ -35422,6 +35402,26 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Broadcast"/>
 </enum>
 
+<enum name="GuestOsFailureClasses">
+  <int value="0" label="Concierge"/>
+  <int value="1" label="Cicerone"/>
+  <int value="2" label="Seneschal"/>
+  <int value="3" label="Chunneld"/>
+  <int value="4" label="VM hypervisor"/>
+  <int value="5" label="In-VM syslog daemon"/>
+  <int value="6" label="VM ssh daemon"/>
+  <int value="7" label="LXCFS daemon"/>
+  <int value="8" label="Tremplin"/>
+  <int value="9" label="Ndproxyd"/>
+  <int value="10" label="Mcastd"/>
+  <int value="11" label="Lxd"/>
+  <int value="12" label="Garcon"/>
+  <int value="13" label="Sommelier wayland proxy"/>
+  <int value="14" label="Sommelier X11 proxy"/>
+  <int value="15" label="Cros-Sftp"/>
+  <int value="16" label="Cros-Notificationd"/>
+</enum>
+
 <enum name="GwpAsanCrashAnalysisResult">
   <int value="0" label="The crash is not caused by GWP-ASan"/>
   <int value="1" label="The crash is caused by GWP-ASan"/>
@@ -43836,6 +43836,7 @@ from previous Chrome versions.
       label="InterestFeedV2ClickAndViewActionsConditionalUpload:disabled"/>
   <int value="288755982"
       label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
+  <int value="289465857" label="ClipboardHistorySimpleRender:disabled"/>
   <int value="291389947" label="PercentBasedScrolling:disabled"/>
   <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
   <int value="291866104" label="WebAuthenticationPhoneSupport:enabled"/>
@@ -44883,6 +44884,7 @@ from previous Chrome versions.
   <int value="1325459977" label="HandwritingGestureEditing:disabled"/>
   <int value="1327883321"
       label="OmniboxHistoryQuickProviderAllowMidwordContinuations:enabled"/>
+  <int value="1327928774" label="ClipboardHistorySimpleRender:enabled"/>
   <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>
   <int value="1331098784" label="ReducedReferrerGranularity:enabled"/>
   <int value="1331513360" label="SafetyCheckAndroid:disabled"/>

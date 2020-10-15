@@ -7,11 +7,13 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
 import './color_mode_select.js';
+import './file_type_select.js';
 import './resolution_select.js';
 import './scanner_select.js';
 import './source_select.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {getScanService} from './mojo_interface_provider.js';
 import {ScannerArr} from './scanning_app_types.js';
 import {tokenToString} from './scanning_app_util.js';
@@ -24,6 +26,8 @@ Polymer({
   is: 'scanning-app',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   /** @private {?chromeos.scanning.mojom.ScanServiceInterface} */
   scanService_: null,
@@ -52,6 +56,9 @@ Polymer({
 
     /** @type {?string} */
     selectedSource: String,
+
+    /** @type {chromeos.scanning.mojom.FileType|undefined} */
+    selectedFileType: chromeos.scanning.mojom.FileType,
 
     /** @type {chromeos.scanning.mojom.ColorMode|undefined} */
     selectedColorMode: chromeos.scanning.mojom.ColorMode,
@@ -113,6 +120,9 @@ Polymer({
     this.selectedColorMode = this.capabilities_.colorModes[0];
     this.selectedResolution = this.capabilities_.resolutions[0];
 
+    // PDF is the default file type.
+    this.selectedFileType = chromeos.scanning.mojom.FileType.kPdf;
+
     this.scanButtonDisabled_ = false;
   },
 
@@ -161,6 +171,7 @@ Polymer({
   /** @private */
   onScanClick_() {
     if (!this.selectedScannerId || !this.selectedSource ||
+        this.selectedFileType === undefined ||
         this.selectedColorMode === undefined ||
         this.selectedResolution === undefined) {
       // TODO(jschettler): Replace status text with finalized i18n strings.
@@ -172,8 +183,8 @@ Polymer({
     this.settingsDisabled_ = true;
     this.scanButtonDisabled_ = true;
 
-    // TODO(jschettler): Set file type using the selected value when the
-    // corresponding dropdown is added.
+    // TODO(jschettler): Use the selected file type when ScanService supports
+    // it.
     const settings = {
       'sourceName': this.selectedSource,
       'fileType': chromeos.scanning.mojom.FileType.kPng,

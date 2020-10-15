@@ -30,41 +30,56 @@ class MockEvent {
     return status_;
   }
 
-  bool Started() const { return event_id_.has_value(); }
+  bool Started() const { return started_; }
 
   void EnqueueTo(ServiceWorkerEventQueue* event_queue) {
+    event_id_ = event_queue->NextEventId();
     event_queue->EnqueueNormal(
-        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        *event_id_, WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         base::nullopt);
   }
 
   void EnqueuePendingTo(ServiceWorkerEventQueue* event_queue) {
+    event_id_ = event_queue->NextEventId();
     event_queue->EnqueuePending(
-        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        *event_id_, WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         base::nullopt);
   }
 
   void EnqueueWithCustomTimeoutTo(ServiceWorkerEventQueue* event_queue,
                                   base::TimeDelta custom_timeout) {
+    event_id_ = event_queue->NextEventId();
     event_queue->EnqueueNormal(
-        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        *event_id_, WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         custom_timeout);
   }
 
   void EnqueueOfflineTo(ServiceWorkerEventQueue* event_queue) {
+    event_id_ = event_queue->NextEventId();
     event_queue->EnqueueOffline(
-        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        *event_id_, WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         base::nullopt);
+  }
+
+  void EnqueueOfflineWithCustomTimeoutTo(ServiceWorkerEventQueue* event_queue,
+                                         base::TimeDelta custom_timeout) {
+    event_id_ = event_queue->NextEventId();
+    event_queue->EnqueueOffline(
+        *event_id_, WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
+        custom_timeout);
   }
 
   void EnqueuePendingDispatchingEventTo(ServiceWorkerEventQueue* event_queue,
                                         String tag,
                                         Vector<String>* out_tags) {
+    event_id_ = event_queue->NextEventId();
     event_queue->EnqueuePending(
+        *event_id_,
         WTF::Bind(
             [](ServiceWorkerEventQueue* event_queue, MockEvent* event,
                String tag, Vector<String>* out_tags, int /* event id */) {
@@ -84,7 +99,8 @@ class MockEvent {
  private:
   void Start(int event_id) {
     EXPECT_FALSE(Started());
-    event_id_ = event_id;
+    EXPECT_EQ(event_id_, event_id);
+    started_ = true;
   }
 
   void Abort(int event_id, mojom::blink::ServiceWorkerEventStatus status) {
@@ -95,6 +111,7 @@ class MockEvent {
 
   base::Optional<int> event_id_;
   base::Optional<mojom::blink::ServiceWorkerEventStatus> status_;
+  bool started_ = false;
   base::WeakPtrFactory<MockEvent> weak_factory_{this};
 };
 
@@ -351,11 +368,37 @@ TEST_F(ServiceWorkerEventQueueTest, PushPendingTask) {
   pending_event.EnqueuePendingTo(&event_queue);
   EXPECT_FALSE(pending_event.Started());
 
-  // Start a new event. PushTask() should run the pending tasks.
+  // Start a new event. EnqueueEvent() should run the pending tasks.
   MockEvent event;
   event.EnqueueTo(&event_queue);
   EXPECT_FALSE(event_queue.did_idle_timeout());
   EXPECT_TRUE(pending_event.Started());
+  EXPECT_TRUE(event.Started());
+}
+
+TEST_F(ServiceWorkerEventQueueTest, PushPendingTaskWithOfflineEvent) {
+  ServiceWorkerEventQueue event_queue(base::DoNothing(), base::DoNothing(),
+                                      task_runner(),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds));
+  EXPECT_TRUE(event_queue.did_idle_timeout());
+
+  MockEvent pending_event;
+  pending_event.EnqueuePendingTo(&event_queue);
+  EXPECT_FALSE(pending_event.Started());
+
+  // Start a new event. EnqueueEvent() should run the pending tasks.
+  MockEvent offline_event;
+  offline_event.EnqueueOfflineTo(&event_queue);
+  EXPECT_FALSE(event_queue.did_idle_timeout());
+  EXPECT_TRUE(pending_event.Started());
+  EXPECT_FALSE(offline_event.Started());
+
+  // EndEvent() should start the offline tasks.
+  event_queue.EndEvent(pending_event.event_id());
+  EXPECT_TRUE(offline_event.Started());
 }
 
 // Test that pending tasks are run when StartEvent() is called while there the
@@ -375,7 +418,7 @@ TEST_F(ServiceWorkerEventQueueTest, RunPendingTasksWithZeroIdleTimerDelay) {
   event2.EnqueuePendingDispatchingEventTo(&event_queue, "2", &handled_tasks);
   EXPECT_TRUE(handled_tasks.IsEmpty());
 
-  // Start a new event. PushTask() should run the pending tasks.
+  // Start a new event. EnqueueEvent() should run the pending tasks.
   MockEvent event;
   event.EnqueueTo(&event_queue);
   EXPECT_FALSE(event_queue.did_idle_timeout());
@@ -474,7 +517,7 @@ TEST_F(ServiceWorkerEventQueueTest, SetIdleTimerDelayToZero) {
   }
 }
 
-TEST_F(ServiceWorkerEventQueueTest, EnqueuOffline) {
+TEST_F(ServiceWorkerEventQueueTest, EnqueueOffline) {
   ServiceWorkerEventQueue event_queue(base::DoNothing(), base::DoNothing(),
                                       task_runner(),
                                       task_runner()->GetMockTickClock());
@@ -517,50 +560,67 @@ TEST_F(ServiceWorkerEventQueueTest, EnqueuOffline) {
 
   MockEvent event_5;
   event_5.EnqueueTo(&event_queue);
-  // |event_queue| should not start a normal |event_5| because an offline event
-  // is already enqueued.
+  // |event_queue| starts a normal |event_5| because the type of |event_5| is
+  // the same as the events currently running.
   //
   // State:
-  // - inflight_events: {1 (normal), 2 (normal)}
-  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  // - inflight_events: {1 (normal), 2 (normal), 5 (normal)}
+  // - queue: [3 (offline), 4 (offline)]
   EXPECT_FALSE(event_3.Started());
   EXPECT_FALSE(event_4.Started());
-  EXPECT_FALSE(event_5.Started());
+  EXPECT_TRUE(event_5.Started());
 
   event_queue.EndEvent(event_1.event_id());
-  // |event_1| is finished, but there ia still an inflight event, |event_2|.
+  // |event_1| is finished, but there are still inflight events, |event_2| and
+  // |event_5|. Events in the queue are not processed.
+  //
+  // State:
+  // - inflight_events: {2 (normal), 5 (normal)}
+  // - queue: [3 (offline), 4 (offline)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+  EXPECT_TRUE(event_5.Started());
+
+  event_queue.EndEvent(event_2.event_id());
+  // |event_2| is finished, but there is still an inflight event, |event_5|.
   // Events in the queue are not processed.
   //
   // State:
-  // - inflight_events: {2 (normal)}
-  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  // - inflight_events: {5 (normal)}
+  // - queue: [3 (offline), 4 (offline)]
   EXPECT_FALSE(event_3.Started());
   EXPECT_FALSE(event_4.Started());
-  EXPECT_FALSE(event_5.Started());
+  EXPECT_TRUE(event_5.Started());
 
-  event_queue.EndEvent(event_2.event_id());
+  event_queue.EndEvent(event_5.event_id());
   // All inflight events are finished. |event_queue| starts processing
-  // events in the queue. As a result, |event_3| and |event_4| are started, but
-  // |event_5| are not.
+  // events in the queue. As a result, |event_3| and |event_4| are started.
   //
   // State:
   // - inflight_events: {3 (offline), 4 (offline)}
-  // - queue: [5 (normal)]
+  // - queue: []
   EXPECT_TRUE(event_3.Started());
   EXPECT_TRUE(event_4.Started());
-  EXPECT_FALSE(event_5.Started());
+
+  MockEvent event_6;
+  event_6.EnqueueTo(&event_queue);
+  // If an inflight offline event exists, a normal event in the queue is not
+  // processed.
+  //
+  // State:
+  // - inflight_events: {3 (offline), 4 (offline)}
+  // - queue: [6 (normal)]
+  EXPECT_FALSE(event_6.Started());
 
   event_queue.EndEvent(event_3.event_id());
-  // State:
-  // - inflight_events: {4 (offline)}
-  // - queue: [5 (normal)]
-  EXPECT_FALSE(event_5.Started());
-
   event_queue.EndEvent(event_4.event_id());
+  // All inflight offline events are finished. |event_queue| starts processing
+  // events in the queue. As a result, |event_6| is started.
+  //
   // State:
-  // - inflight_events: {5 (normal)}
+  // - inflight_events: {6 (normal)}
   // - queue: []
-  EXPECT_TRUE(event_5.Started());
+  EXPECT_TRUE(event_6.Started());
 }
 
 TEST_F(ServiceWorkerEventQueueTest, IdleTimerWithOfflineEvents) {
@@ -607,6 +667,73 @@ TEST_F(ServiceWorkerEventQueueTest, IdleTimerWithOfflineEvents) {
   task_runner()->FastForwardBy(kIdleInterval);
   // |idle_callback| should be fired.
   EXPECT_TRUE(is_idle);
+}
+
+// Inflight or queued events must be aborted when event queue is destructed.
+TEST_F(ServiceWorkerEventQueueTest, AbortNotStartedEventOnDestruction) {
+  MockEvent event1, event2;
+  {
+    ServiceWorkerEventQueue event_queue(base::DoNothing(), base::DoNothing(),
+                                        task_runner(),
+                                        task_runner()->GetMockTickClock());
+    event_queue.Start();
+
+    event1.EnqueueTo(&event_queue);
+    event2.EnqueueOfflineTo(&event_queue);
+
+    // State:
+    // - inflight_events: {1 (normal)}
+    // - queue: [2 (offline)]
+    EXPECT_TRUE(event1.Started());
+    EXPECT_FALSE(event2.Started());
+
+    EXPECT_FALSE(event1.status().has_value());
+    EXPECT_FALSE(event2.status().has_value());
+  }
+
+  EXPECT_TRUE(event1.status().has_value());
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::ABORTED,
+            event1.status().value());
+  EXPECT_TRUE(event2.status().has_value());
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::ABORTED,
+            event2.status().value());
+  EXPECT_FALSE(event2.Started());
+}
+
+// Timer for timeout of each event starts when the event is queued.
+TEST_F(ServiceWorkerEventQueueTest, TimeoutNotStartedEvent) {
+  ServiceWorkerEventQueue event_queue(base::DoNothing(), base::DoNothing(),
+                                      task_runner(),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+
+  MockEvent event1, event2;
+  event1.EnqueueWithCustomTimeoutTo(&event_queue,
+                                    ServiceWorkerEventQueue::kUpdateInterval -
+                                        base::TimeDelta::FromSeconds(1));
+  event2.EnqueueOfflineWithCustomTimeoutTo(
+      &event_queue, ServiceWorkerEventQueue::kUpdateInterval -
+                        base::TimeDelta::FromSeconds(1));
+
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: [2 (offline)]
+  EXPECT_TRUE(event1.Started());
+  EXPECT_FALSE(event2.Started());
+
+  task_runner()->FastForwardBy(ServiceWorkerEventQueue::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+
+  EXPECT_TRUE(event1.status().has_value());
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::TIMEOUT,
+            event1.status().value());
+  EXPECT_TRUE(event2.status().has_value());
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::TIMEOUT,
+            event2.status().value());
+  EXPECT_FALSE(event_queue.HasEvent(event1.event_id()));
+  EXPECT_FALSE(event_queue.HasEventInQueue(event1.event_id()));
+  EXPECT_FALSE(event_queue.HasEvent(event2.event_id()));
+  EXPECT_FALSE(event_queue.HasEventInQueue(event2.event_id()));
 }
 
 }  // namespace blink

@@ -1304,6 +1304,21 @@
             ]
         }
     ],
+    "ButterForPayments": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableAccountWalletStorage"
+                    ]
+                }
+            ]
+        }
+    ],
     "CSSMatchedPropertiesCacheDependencies": [
         {
             "platforms": [
@@ -6060,6 +6075,21 @@
             ]
         }
     ],
+    "SafeBrowsingDelayedWarnings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingDelayedWarnings"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingEnhancedProtectionAndroid": [
         {
             "platforms": [
@@ -6230,27 +6260,6 @@
             ]
         }
     ],
-    "SameSiteCookieMessages": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledLaunch",
-                    "enable_features": [
-                        "CookieDeprecationMessages"
-                    ]
-                }
-            ]
-        }
-    ],
     "SaveEditedPDFForm": [
         {
             "platforms": [
@@ -6263,6 +6272,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SaveEditedPDFForm"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SchemefulSameSiteAllOS": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SchemefulSameSite"
                     ]
                 }
             ]

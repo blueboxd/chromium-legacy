@@ -38,6 +38,7 @@ gclient_gn_args = [
   'checkout_android',
   'checkout_android_prebuilts_build_tools',
   'checkout_android_native_support',
+  'checkout_fuchsia_for_arm64_host',
   'checkout_google_benchmark',
   'checkout_ios_webkit',
   'checkout_nacl',
@@ -199,11 +200,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '34ddcb84f3c277bdbed6e01f29d84cf2dd27719c',
+  'skia_revision': 'a0f5452c6e2373678f2caac934bd311dacff0836',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'cc40f8a7ae361efa2c1d3602a4a2f0ca464fa2cb',
+  'v8_revision': '28cb2dd6633ecb818598c6babfb5f82fcfe7843c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -211,11 +212,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4c9f892f0d42c41e1cf5cef7a593ecf694dc9cb4',
+  'angle_revision': 'a2ef814426ee780c50e89f40c22daca0486ca9dd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b82c2d3bf1e19c85289416e6d3fddecbabb65db9',
+  'swiftshader_revision': '52c1a859d9ebd3adb49e70d1c7a5ac287388445e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -262,7 +263,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'fb3d4294864abacff588cd22db67be508e4ebb76',
+  'catapult_revision': 'b7c1c3f1140ba42e6367f25c6f3950678be55c56',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -270,7 +271,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '49681b5985560a59a45954a813b36303ecb477d3',
+  'devtools_frontend_revision': '9a5e8ce8b8733d889ef5a8c6b4483492b804e915',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -361,7 +362,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '5afb002aa4237c133ed192f3f12bc9af4d0af9a5',
+  'tint_revision': 'ff267ca60e144afa928d4a2c204e0045e3f5f7d5',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -925,7 +926,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'e61dd757a8c09139c03ffa2ef285d5678909370a',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '6d9096c9e3f7f5d4e6528104ed77987ec9327315',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -1244,7 +1245,7 @@ deps = {
     Var('chromium_git') + '/openscreen' + '@' + 'a3f46f23c52688cc3c0de927b7fb8a86ff9e8dff',
 
   'src/third_party/openxr/src': {
-    'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'e3a4e41d61544d8e2eba73f00da99b6818ec472b',
+    'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
     'condition': 'checkout_openxr',
   },
 
@@ -1258,7 +1259,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0581509dc2dd4d6d38b34e05059becddcfc693ef',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7411aeba4d3b11872828b8b15ac9bfddd63f4e6c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1336,7 +1337,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'fXB8-psP9LjGgvBfws13Jq6cj76raUn9-okihlMjbYAC'
+              'version': 'ZGsmd0k3ijPxG9j-pwQg-yGF3zXYYOUD1L40GuIoAjEC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1490,7 +1491,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '0c83e15c6b614d44f7bd545d518d02c681dedd65',
+    Var('webrtc_git') + '/src.git' + '@' + '40217a30c5c69ee6b0a2078520b0c26479b8d925',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1562,7 +1563,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@08cdb1c17f2e7ed0646fad3759f6907d35b9dedb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@df97f4c2861e3577c51ad1531aba6cb5e10e969e',
     'condition': 'checkout_src_internal',
   },
 

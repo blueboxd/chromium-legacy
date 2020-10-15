@@ -70544,6 +70544,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SyncEventCode">
+  <obsolete>
+    Removed 2020-10.
+  </obsolete>
   <summary>
     Sync UI events. The codes are listed in profile_syncer_service.h with more
     details.
@@ -73450,6 +73453,10 @@ Full version information for the fingerprint enum values:
   <int value="9" label="kTest"/>
   <int value="10" label="kWebScriptExec"/>
   <int value="11" label="kVoiceSearch"/>
+  <int value="12" label="kExtensionMessagingBothPrivileged"/>
+  <int value="13" label="kExtensionMessagingSenderPrivileged"/>
+  <int value="14" label="kExtensionMessagingReceiverPrivileged"/>
+  <int value="15" label="kExtensionMessagingNeitherPrivileged"/>
 </enum>
 
 <enum name="UserCertContentDisposition">

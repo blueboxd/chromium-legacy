@@ -158,6 +158,7 @@ gfx::ImageSkia ExtractSubsetForArcImage(const gfx::ImageSkia& image_skia) {
   gfx::ImageSkia subset_image;
   for (const auto& rep : image_skia.image_reps()) {
     if (IsConsistentPixelSize(rep, image_skia)) {
+      subset_image.AddRepresentation(rep);
       continue;
     }
 
@@ -953,7 +954,7 @@ void IconLoadingPipeline::OnReadWebAppIcon(
       ++it;
     }
 
-    if (it == icon_bitmaps.end()) {
+    if (it == icon_bitmaps.end() || it->second.empty()) {
       MaybeApplyEffectsAndComplete(gfx::ImageSkia());
       return;
     }

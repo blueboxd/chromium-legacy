@@ -373,10 +373,10 @@ class SyncService : public KeyedService {
 
   // Gets the synced user’s noised birth year and gender, see doc of
   // metrics::DemographicMetricsProvider in
-  // components/metrics/demographic_metrics_provider.h for more details. Returns
-  // an error status with an empty value when the user's birth year or gender
-  // cannot be provided. You need to provide an accurate |now| time that
-  // represents the current time.
+  // components/metrics/demographics/demographic_metrics_provider.h for more
+  // details. Returns an error status with an empty value when the user's birth
+  // year or gender cannot be provided. You need to provide an accurate |now|
+  // time that represents the current time.
   virtual UserDemographicsResult GetUserNoisedBirthYearAndGender(
       base::Time now) = 0;
 
@@ -419,7 +419,7 @@ class SyncService : public KeyedService {
   // the type's status, and <status> is one of "error", "warning" or "ok"
   // depending on the type's current status.
   //
-  // This function is used by about_sync_util.cc to help populate the
+  // This function is used by sync_internals_util.cc to help populate the
   // chrome://sync-internals page.  It returns a ListValue rather than a
   // DictionaryValue in part to make it easier to iterate over its elements when
   // constructing that page.

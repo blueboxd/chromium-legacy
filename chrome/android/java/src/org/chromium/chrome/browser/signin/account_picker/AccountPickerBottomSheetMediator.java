@@ -20,6 +20,7 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -43,13 +44,14 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     private @Nullable String mDefaultAccountName;
     private @Nullable String mAddedAccountName;
 
-    AccountPickerBottomSheetMediator(Context context, AccountPickerDelegate accountPickerDelegate) {
+    AccountPickerBottomSheetMediator(Context context, AccountPickerDelegate accountPickerDelegate,
+            Runnable dismissBottomSheetRunnable) {
         mAccountPickerDelegate = accountPickerDelegate;
         mProfileDataCache = new ProfileDataCache(
                 context, context.getResources().getDimensionPixelSize(R.dimen.user_picture_size));
 
-        mModel = AccountPickerBottomSheetProperties.createModel(
-                this::onSelectedAccountClicked, this::onContinueAsClicked);
+        mModel = AccountPickerBottomSheetProperties.createModel(this::onSelectedAccountClicked,
+                this::onContinueAsClicked, dismissBottomSheetRunnable);
         mProfileDataCache.addObserver(mProfileDataSourceObserver);
 
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
@@ -229,15 +231,24 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
             protected void onPostExecute(String accountGaiaId) {
                 CoreAccountInfo coreAccountInfo = new CoreAccountInfo(
                         new CoreAccountId(accountGaiaId), mSelectedAccountName, accountGaiaId);
-                mAccountPickerDelegate.signIn(coreAccountInfo, error -> {
-                    @ViewState
-                    int newViewState = error.getState() == State.INVALID_GAIA_CREDENTIALS
-                            ? ViewState.SIGNIN_AUTH_ERROR
-                            : ViewState.SIGNIN_GENERAL_ERROR;
-                    mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, newViewState);
-                });
+                mAccountPickerDelegate.signIn(
+                        coreAccountInfo, AccountPickerBottomSheetMediator.this::onSigninFailed);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void onSigninFailed(GoogleServiceAuthError error) {
+        final @AccountConsistencyPromoAction int promoAction;
+        final @ViewState int newViewState;
+        if (error.getState() == State.INVALID_GAIA_CREDENTIALS) {
+            promoAction = AccountConsistencyPromoAction.AUTH_ERROR_SHOWN;
+            newViewState = ViewState.SIGNIN_AUTH_ERROR;
+        } else {
+            promoAction = AccountConsistencyPromoAction.GENERIC_ERROR_SHOWN;
+            newViewState = ViewState.SIGNIN_GENERAL_ERROR;
+        }
+        AccountPickerDelegate.recordAccountConsistencyPromoAction(promoAction);
+        mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, newViewState);
     }
 
     private void updateCredentials() {

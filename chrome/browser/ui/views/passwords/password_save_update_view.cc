@@ -157,9 +157,9 @@ std::vector<base::string16> ToValues(
 }
 
 std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
-    views::ButtonListener* listener,
+    views::Button::PressedCallback callback,
     bool are_passwords_revealed) {
-  auto button = std::make_unique<views::ToggleImageButton>(listener);
+  auto button = std::make_unique<views::ToggleImageButton>(std::move(callback));
   button->SetFocusForPlatform();
   button->SetInstallFocusRingOnFocus(true);
   button->SetRequestFocusOnPress(true);
@@ -274,16 +274,15 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
     // The credential to be saved doesn't contain password but just the identity
     // provider (e.g. "Sign in with Google"). Thus, the layout is different.
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    std::pair<base::string16, base::string16> titles =
-        GetCredentialLabelsForAccountChooser(password_form);
-    CredentialsItemView* credential_view = new CredentialsItemView(
-        this, titles.first, titles.second, &password_form,
-        content::BrowserContext::GetDefaultStoragePartition(
-            controller_.GetProfile())
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get());
-    credential_view->SetEnabled(false);
-    AddChildView(credential_view);
+    const auto titles = GetCredentialLabelsForAccountChooser(password_form);
+    AddChildView(std::make_unique<CredentialsItemView>(
+                     views::Button::PressedCallback(), titles.first,
+                     titles.second, &password_form,
+                     content::BrowserContext::GetDefaultStoragePartition(
+                         controller_.GetProfile())
+                         ->GetURLLoaderFactoryForBrowserProcess()
+                         .get()))
+        ->SetEnabled(false);
   } else {
     std::unique_ptr<views::EditableCombobox> username_dropdown =
         CreateUsernameEditableCombobox(password_form);
@@ -295,7 +294,11 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
         &PasswordSaveUpdateView::OnContentChanged, base::Unretained(this)));
 
     std::unique_ptr<views::ToggleImageButton> password_view_button =
-        CreatePasswordViewButton(this, are_passwords_revealed_);
+        CreatePasswordViewButton(
+            base::BindRepeating(
+                &PasswordSaveUpdateView::TogglePasswordVisibility,
+                base::Unretained(this)),
+            are_passwords_revealed_);
 
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -338,12 +341,6 @@ bool PasswordSaveUpdateView::Accept() {
     return false;  // Keep open.
   }
   return true;
-}
-
-void PasswordSaveUpdateView::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  DCHECK(sender == password_view_button_);
-  TogglePasswordVisibility();
 }
 
 gfx::Size PasswordSaveUpdateView::CalculatePreferredSize() const {

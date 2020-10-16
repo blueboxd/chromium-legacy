@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -46,9 +45,6 @@
 #include "ui/views/style/typography.h"
 
 namespace {
-
-constexpr int kDeleteButtonTag = 1;
-constexpr int kUndoButtonTag = 2;
 
 // Column set identifiers for displaying or undoing removal of credentials.
 // All of them allocate space differently.
@@ -136,101 +132,11 @@ void StartRow(views::GridLayout* layout,
   layout->StartRow(views::GridLayout::kFixedSize, type_id);
 }
 
-std::unique_ptr<views::ImageButton> CreateDeleteButton(
-    views::ButtonListener* listener,
-    const base::string16& username) {
-  std::unique_ptr<views::ImageButton> button(
-      views::CreateVectorImageButtonWithNativeTheme(listener, kTrashCanIcon));
-  button->SetFocusForPlatform();
-  button->SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_DELETE, username));
-  button->set_tag(kDeleteButtonTag);
-  return button;
-}
-
-std::unique_ptr<views::LabelButton> CreateUndoButton(
-    views::ButtonListener* listener,
-    const base::string16& username) {
-  auto undo_button = std::make_unique<views::MdTextButton>(
-      listener, l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
-  undo_button->set_tag(kUndoButtonTag);
-  undo_button->SetFocusForPlatform();
-  undo_button->SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_UNDO_TOOLTIP, username));
-  return undo_button;
-}
-
-std::unique_ptr<views::View> CreateManageButton(
-    views::ButtonListener* listener) {
-  return std::make_unique<views::MdTextButton>(
-      listener,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
-}
-
 }  // namespace
-
-std::unique_ptr<views::Label> CreateUsernameLabel(
-    const autofill::PasswordForm& form) {
-  auto label = std::make_unique<views::Label>(
-      GetDisplayUsername(form), views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
-}
-
-std::unique_ptr<views::ImageView> CreateStoreIndicator(
-    const autofill::PasswordForm& form) {
-  if (form.in_store != autofill::PasswordForm::Store::kAccountStore)
-    return nullptr;
-  auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetImage(gfx::CreateVectorIcon(
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      kGoogleGLogoIcon,
-#else
-      vector_icons::kSyncIcon,
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      gfx::kFaviconSize, gfx::kPlaceholderColor));
-  image_view->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MANAGE_PASSWORDS_ACCOUNT_STORE_ICON_DESCRIPTION));
-  return image_view;
-}
-
-std::unique_ptr<views::Separator> CreateSeparator() {
-  auto separator = std::make_unique<views::Separator>();
-  separator->SetFocusBehavior(
-      LocationBarBubbleDelegateView::FocusBehavior::NEVER);
-  separator->SetPreferredHeight(views::style::GetLineHeight(
-      views::style::CONTEXT_MENU, views::style::STYLE_SECONDARY));
-  separator->SetCanProcessEventsWithinSubtree(false);
-  return separator;
-}
-
-std::unique_ptr<views::Label> CreatePasswordLabel(
-    const autofill::PasswordForm& form,
-    int federation_message_id,
-    bool are_passwords_revealed) {
-  base::string16 text =
-      form.federation_origin.opaque()
-          ? form.password_value
-          : l10n_util::GetStringFUTF16(federation_message_id,
-                                       GetDisplayFederation(form));
-  int text_style = form.federation_origin.opaque()
-                       ? STYLE_SECONDARY_MONOSPACED
-                       : views::style::STYLE_SECONDARY;
-  auto label = std::make_unique<views::Label>(
-      text, views::style::CONTEXT_DIALOG_BODY_TEXT, text_style);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  if (form.federation_origin.opaque() && !are_passwords_revealed)
-    label->SetObscured(true);
-  if (!form.federation_origin.opaque())
-    label->SetElideBehavior(gfx::ELIDE_HEAD);
-
-  return label;
-}
 
 // An entry for each credential. Relays delete/undo actions associated with
 // this password row to parent dialog.
-class PasswordItemsView::PasswordRow : public views::ButtonListener {
+class PasswordItemsView::PasswordRow {
  public:
   PasswordRow(PasswordItemsView* parent,
               const autofill::PasswordForm* password_form);
@@ -243,8 +149,8 @@ class PasswordItemsView::PasswordRow : public views::ButtonListener {
   void AddPasswordRow(views::GridLayout* layout,
                       PasswordItemsViewColumnSetType type_id);
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void DeleteButtonPressed();
+  void UndoButtonPressed();
 
   PasswordItemsView* const parent_;
   const autofill::PasswordForm* const password_form_;
@@ -261,69 +167,92 @@ PasswordItemsView::PasswordRow::PasswordRow(
 void PasswordItemsView::PasswordRow::AddToLayout(
     views::GridLayout* layout,
     PasswordItemsViewColumnSetType type_id) {
-  if (deleted_) {
+  if (deleted_)
     AddUndoRow(layout);
-  } else {
+  else
     AddPasswordRow(layout, type_id);
-  }
 }
 
 void PasswordItemsView::PasswordRow::AddUndoRow(views::GridLayout* layout) {
-  std::unique_ptr<views::Label> text = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED),
-      views::style::CONTEXT_DIALOG_BODY_TEXT);
-  text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  std::unique_ptr<views::LabelButton> undo_button =
-      CreateUndoButton(this, GetDisplayUsername(*password_form_));
-
   StartRow(layout, UNDO_COLUMN_SET);
-  layout->AddView(std::move(text));
-  layout->AddView(std::move(undo_button));
+  layout
+      ->AddView(std::make_unique<views::Label>(
+          l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED),
+          views::style::CONTEXT_DIALOG_BODY_TEXT))
+      ->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto* undo_button = layout->AddView(std::make_unique<views::MdTextButton>(
+      base::BindRepeating(&PasswordRow::UndoButtonPressed,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)));
+  undo_button->SetFocusForPlatform();
+  undo_button->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_MANAGE_PASSWORDS_UNDO_TOOLTIP, GetDisplayUsername(*password_form_)));
 }
 
 void PasswordItemsView::PasswordRow::AddPasswordRow(
     views::GridLayout* layout,
     PasswordItemsViewColumnSetType type_id) {
-  std::unique_ptr<views::Label> username_label =
-      CreateUsernameLabel(*password_form_);
-  std::unique_ptr<views::Label> password_label =
-      CreatePasswordLabel(*password_form_, IDS_PASSWORDS_VIA_FEDERATION, false);
-  std::unique_ptr<views::ImageButton> delete_button =
-      CreateDeleteButton(this, GetDisplayUsername(*password_form_));
   StartRow(layout, type_id);
 
-  // Use a globe fallback until the actual favicon is loaded.
   if (parent_->favicon_.IsEmpty()) {
+    // Use a globe fallback until the actual favicon is loaded.
     layout->AddView(std::make_unique<views::ColorTrackingIconView>(
         kGlobeIcon, gfx::kFaviconSize));
   } else {
-    auto favicon_view = std::make_unique<views::ImageView>();
-    favicon_view->SetImage(parent_->favicon_.AsImageSkia());
-    layout->AddView(std::move(favicon_view));
+    layout->AddView(std::make_unique<views::ImageView>())
+        ->SetImage(parent_->favicon_.AsImageSkia());
   }
 
-  layout->AddView(std::move(username_label));
-  layout->AddView(std::move(password_label));
+  layout->AddView(CreateUsernameLabel(*password_form_));
+  layout->AddView(CreatePasswordLabel(*password_form_));
+
   if (type_id == MULTI_STORE_PASSWORD_COLUMN_SET) {
-    if (std::unique_ptr<views::ImageView> store_icon =
-            CreateStoreIndicator(*password_form_)) {
-      layout->AddView(std::move(store_icon));
+    if (password_form_->in_store ==
+        autofill::PasswordForm::Store::kAccountStore) {
+      auto* image_view = layout->AddView(std::make_unique<views::ImageView>());
+      image_view->SetImage(gfx::CreateVectorIcon(
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          kGoogleGLogoIcon,
+#else
+          vector_icons::kSyncIcon,
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          gfx::kFaviconSize, gfx::kPlaceholderColor));
+      image_view->SetAccessibleName(l10n_util::GetStringUTF16(
+          IDS_MANAGE_PASSWORDS_ACCOUNT_STORE_ICON_DESCRIPTION));
     } else {
       layout->SkipColumns(1);
     }
-    layout->AddView(CreateSeparator());
+
+    auto* separator = layout->AddView(std::make_unique<views::Separator>());
+    separator->SetFocusBehavior(
+        LocationBarBubbleDelegateView::FocusBehavior::NEVER);
+    separator->SetPreferredHeight(views::style::GetLineHeight(
+        views::style::CONTEXT_MENU, views::style::STYLE_SECONDARY));
+    separator->SetCanProcessEventsWithinSubtree(false);
   }
-  layout->AddView(std::move(delete_button));
+
+  auto* delete_button =
+      layout->AddView(views::CreateVectorImageButtonWithNativeTheme(
+          base::BindRepeating(&PasswordRow::DeleteButtonPressed,
+                              base::Unretained(this)),
+          kTrashCanIcon));
+  delete_button->SetFocusForPlatform();
+  delete_button->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_MANAGE_PASSWORDS_DELETE, GetDisplayUsername(*password_form_)));
 }
 
-void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,
-                                                   const ui::Event& event) {
-  DCHECK(sender->tag() == kDeleteButtonTag || sender->tag() == kUndoButtonTag);
-  deleted_ = sender->tag() == kDeleteButtonTag;
+void PasswordItemsView::PasswordRow::DeleteButtonPressed() {
+  deleted_ = true;
   parent_->NotifyPasswordFormAction(
       *password_form_,
-      deleted_ ? PasswordBubbleControllerBase::PasswordAction::kRemovePassword
-               : PasswordBubbleControllerBase::PasswordAction::kAddPassword);
+      PasswordBubbleControllerBase::PasswordAction::kRemovePassword);
+}
+
+void PasswordItemsView::PasswordRow::UndoButtonPressed() {
+  deleted_ = false;
+  parent_->NotifyPasswordFormAction(
+      *password_form_,
+      PasswordBubbleControllerBase::PasswordAction::kAddPassword);
 }
 
 PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
@@ -333,7 +262,16 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                              /*easily_dismissable=*/true),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   SetButtons(ui::DIALOG_BUTTON_OK);
-  SetExtraView(CreateManageButton(this));
+  SetExtraView(std::make_unique<views::MdTextButton>(
+      base::BindRepeating(
+          [](PasswordItemsView* items) {
+            items->controller_.OnManageClicked(
+                password_manager::ManagePasswordsReferrer::
+                    kManagePasswordsBubble);
+            items->CloseBubble();
+          },
+          base::Unretained(this)),
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON)));
 
   if (controller_.local_credentials().empty()) {
     // A LayoutManager is required for GetHeightForWidth() even without
@@ -412,13 +350,6 @@ gfx::Size PasswordItemsView::CalculatePreferredSize() const {
                         views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-void PasswordItemsView::ButtonPressed(views::Button* sender,
-                                      const ui::Event& event) {
-  controller_.OnManageClicked(
-      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
-  CloseBubble();
 }
 
 void PasswordItemsView::OnFaviconReady(const gfx::Image& favicon) {

@@ -162,6 +162,12 @@ vars = {
   # Download prebuilt ash-chrome to test lacros build.
   'checkout_prebuilt_ash_chrome': False,
 
+  # By default, download the fuchsia sdk from the fuchsia GCS bucket.
+  'fuchsia_sdk_bucket': 'fuchsia',
+
+  # By default, download the fuchsia images from the fuchsia GCS bucket.
+  'fuchsia_images_bucket': 'fuchsia',
+
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_boards': Str(''),
@@ -204,7 +210,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '30ebd6d70cdc97867a206776a43233faa3e76684',
+  'v8_revision': 'f3b5599f3d1002a512135925a9b7c6f86f509803',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -220,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '055495dfbb246495879fef8540f4447fb9ccb6cb',
+  'pdfium_revision': '606ab984cad86ca1f2fe9f039a70d18d2949fba4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -271,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '469c2d2093b4b199ecf421975d08778be72229f8',
+  'devtools_frontend_revision': 'd8da6adce186a280ce4f69772793b6cf02b50c4b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -307,7 +313,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '5c64374dd6cbfff1294ec78cdae1bc9de870a07d',
+  'spv_tools_revision': 'dd534e877e725c9bb6f751c427442456a05384e4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -327,7 +333,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '7df418b6dc0ad8fe543e00e2c34c274b70bf771c',
+  'quiche_revision': 'ed30357616a74eb59b1f99d7bfad9a28f699a6b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -906,7 +912,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '39d870e1f07f8908701d160b5445782cdd3f1541',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4761cf50d032aa5d1e0c51f47d20fa43380c01fd',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1491,7 +1497,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd3ef499418a8081ec90c04ec670c079d5f3dcc98',
+    Var('webrtc_git') + '/src.git' + '@' + '711de82cd1ce75d9e7c0a1230fa080a5eaf6b07d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -4953,6 +4959,7 @@ hooks = [
     'action': [
       'python',
       'src/build/fuchsia/update_sdk.py',
+      '--default-bucket={fuchsia_sdk_bucket}',
     ],
   },
 
@@ -4964,6 +4971,7 @@ hooks = [
       'python',
       'src/build/fuchsia/update_images.py',
       '--boot-images={checkout_fuchsia_boot_images}',
+      '--default-bucket={fuchsia_images_bucket}',
     ],
   },
 

@@ -452,6 +452,31 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.ERROR,
     },
     {
+      id: 'signin-fatal-error',
+      kind: ScreenKind.ERROR,
+      states: [
+        {
+          id: 'SCRAPED_PASSWORD_VERIFICATION_FAILURE',
+          data: {
+            errorState: 1,
+          },
+        },
+        {
+          id: 'INSECURE_CONTENT_BLOCKED',
+          data: {
+            errorState: 2,
+            url: 'http://example.url/',
+          },
+        },
+        {
+          id: 'MISSING_GAIA_INFO',
+          data: {
+            errorState: 3,
+          },
+        },
+      ]
+    },
+    {
       id: 'reset',
       kind: ScreenKind.OTHER,
       states: [
@@ -650,6 +675,7 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'encryption-migration',
       kind: ScreenKind.OTHER,
+      handledSteps: 'ready,migrating,not-enough-space',
       states: [
         {
           id: 'ready',
@@ -675,23 +701,12 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
-          id: 'migration-failed',
-          trigger: (screen) => {
-            screen.setUIState(3);
-          },
-        },
-        {
           id: 'not-enough-space',
           trigger: (screen) => {
             screen.setUIState(4);
-            screen.setAvailableSpaceInString('1 GB');
-            screen.setNecessarySpaceInString('2 GB');
-          },
-        },
-        {
-          id: 'migrating-minimal',
-          trigger: (screen) => {
-            screen.setUIState(5);
+            screen.setSpaceInfoInString(
+                '1 GB' /* availableSpaceSize */,
+                '2 GB' /* necessarySpaceSize */);
           },
         },
       ],
@@ -898,6 +913,20 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'marketing-opt-in',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'WithOptionToSubscribe',
+          trigger: (screen) => {
+            screen.setOptInVisibility(true);
+          },
+        },
+        {
+          id: 'NoOptionToSubscribe',
+          trigger: (screen) => {
+            screen.setOptInVisibility(false);
+          },
+        },
+      ],
     },
   ];
 

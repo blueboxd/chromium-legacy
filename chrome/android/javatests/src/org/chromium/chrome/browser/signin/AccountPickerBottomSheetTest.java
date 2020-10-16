@@ -144,8 +144,11 @@ public class AccountPickerBottomSheetTest {
     @Test
     @MediumTest
     public void testCollapsedSheetWithAccount() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram = new HistogramDelta(
+                "Signin.AccountConsistencyPromoAction", AccountConsistencyPromoAction.SHOWN);
         buildAndShowCollapsedBottomSheet();
         checkCollapsedAccountList(PROFILE_DATA1);
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
     }
 
     @Test
@@ -164,6 +167,7 @@ public class AccountPickerBottomSheetTest {
 
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -201,12 +205,30 @@ public class AccountPickerBottomSheetTest {
     @Test
     @MediumTest
     public void testDismissCollapsedSheet() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.DISMISSED_BACK);
         buildAndShowCollapsedBottomSheet();
         onView(withText(PROFILE_DATA1.getAccountName())).check(matches(isDisplayed()));
         BottomSheetController controller = getBottomSheetController();
         Assert.assertTrue(controller.isSheetOpen());
         Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
         onView(isRoot()).perform(pressBack());
+        Assert.assertFalse(controller.isSheetOpen());
+        verify(mAccountPickerDelegateMock).onDismiss();
+        Assert.assertEquals(0, mFakeProfileDataSource.getNumberOfObservers());
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
+    }
+
+    @Test
+    @MediumTest
+    public void testDismissCollapsedSheetWithDismissButton() {
+        buildAndShowCollapsedBottomSheet();
+        onView(withText(PROFILE_DATA1.getAccountName())).check(matches(isDisplayed()));
+        BottomSheetController controller = getBottomSheetController();
+        Assert.assertTrue(controller.isSheetOpen());
+        Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
+        onView(withId(R.id.account_picker_dismiss_button)).perform(click());
         Assert.assertFalse(controller.isSheetOpen());
         verify(mAccountPickerDelegateMock).onDismiss();
         Assert.assertEquals(0, mFakeProfileDataSource.getNumberOfObservers());
@@ -337,6 +359,32 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
+    public void testSigninWithAddedAccount() {
+        MetricsUtils.HistogramDelta addAccountHistogram = new HistogramDelta(
+                "Signin.AccountConsistencyPromoAction", AccountConsistencyPromoAction.ADD_ACCOUNT);
+        MetricsUtils.HistogramDelta signedInWithAddedAccountHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.SIGNED_IN_WITH_ADDED_ACCOUNT);
+        MetricsUtils.HistogramDelta signedInWithNonDefaultAccountHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.SIGNED_IN_WITH_NON_DEFAULT_ACCOUNT);
+        buildAndShowExpandedBottomSheet();
+        onView(withText(R.string.signin_add_account_to_device)).perform(click());
+        verify(mAccountPickerDelegateMock).addAccount(callbackArgumentCaptor.capture());
+        ProfileDataSource.ProfileData profileDataAdded = new ProfileDataSource.ProfileData(
+                /* accountName= */ "test.account3@gmail.com", /* avatar= */ null,
+                /* fullName= */ null, /* givenName= */ null);
+        Callback<String> callback = callbackArgumentCaptor.getValue();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> callback.onResult(profileDataAdded.getAccountName()));
+        clickContinueButtonAndCheckSignInInProgressSheet();
+        Assert.assertEquals(1, addAccountHistogram.getDelta());
+        Assert.assertEquals(1, signedInWithAddedAccountHistogram.getDelta());
+        Assert.assertEquals(0, signedInWithNonDefaultAccountHistogram.getDelta());
+    }
+
+    @Test
+    @MediumTest
     public void testSignInGeneralError() {
         // Throws a connection error during the sign-in action
         doAnswer(invocation -> {
@@ -360,6 +408,7 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -387,6 +436,7 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -442,6 +492,8 @@ public class AccountPickerBottomSheetTest {
     @Test
     @MediumTest
     public void testAddAccountOnExpandedSheet() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram = new HistogramDelta(
+                "Signin.AccountConsistencyPromoAction", AccountConsistencyPromoAction.ADD_ACCOUNT);
         buildAndShowExpandedBottomSheet();
         onView(withText(R.string.signin_add_account_to_device)).perform(click());
         verify(mAccountPickerDelegateMock).addAccount(callbackArgumentCaptor.capture());
@@ -452,6 +504,7 @@ public class AccountPickerBottomSheetTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> callback.onResult(profileDataAdded.getAccountName()));
         checkCollapsedAccountList(profileDataAdded);
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
     }
 
     @Test
@@ -502,14 +555,17 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_bottom_sheet_title))
                 .check(matches(isDisplayed()))
                 .check(matches(withText(R.string.incognito_interstitial_title)));
-        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
-                .check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
         onView(withId(R.id.incognito_interstitial_bottom_sheet_view)).check(matches(isDisplayed()));
         onView(withId(R.id.incognito_interstitial_message)).check(matches(isDisplayed()));
         onView(withId(R.id.incognito_interstitial_learn_more)).check(matches(isDisplayed()));
         onView(withId(R.id.incognito_interstitial_continue_button)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
     private void clickContinueButtonAndWaitForErrorSheet() {
@@ -552,6 +608,7 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
     private void checkZeroAccountBottomSheet() {
@@ -587,6 +644,7 @@ public class AccountPickerBottomSheetTest {
                         profileData.getGivenName() != null ? profileData.getGivenName()
                                                            : profileData.getAccountName());
         onView(withText(continueAsText)).check(matches(isDisplayed()));
+        onView(withId(R.id.account_picker_dismiss_button)).check(matches(isDisplayed()));
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
     }
 

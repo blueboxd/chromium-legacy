@@ -77,32 +77,57 @@ NSImage* NewTagImage() {
     badge_size.height += views::MenuConfig::kNewBadgeInternalPaddingTopMac;
 
     // 3. Craft the image.
+    if (@available(macOS 10.8, *)) {
+      return [[NSImage
+           imageWithSize:badge_size
+                 flipped:NO
+          drawingHandler:^(NSRect dest_rect) {
+            NSRect badge_frame = NSInsetRect(
+                dest_rect, views::MenuConfig::kNewBadgeHorizontalMargin, 0);
+            NSBezierPath* rounded_badge_rect = [NSBezierPath
+                bezierPathWithRoundedRect:badge_frame
+                                  xRadius:views::MenuConfig::kNewBadgeCornerRadius
+                                  yRadius:views::MenuConfig::
+                                              kNewBadgeCornerRadius];
+            NSColor* badge_color = skia::SkColorToSRGBNSColor(
+                ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+                    ui::NativeTheme::kColorId_ProminentButtonColor));
+            [badge_color set];
+            [rounded_badge_rect fill];
 
-    return [[NSImage
-         imageWithSize:badge_size
-               flipped:NO
-        drawingHandler:^(NSRect dest_rect) {
-          NSRect badge_frame = NSInsetRect(
-              dest_rect, views::MenuConfig::kNewBadgeHorizontalMargin, 0);
-          NSBezierPath* rounded_badge_rect = [NSBezierPath
-              bezierPathWithRoundedRect:badge_frame
-                                xRadius:views::MenuConfig::kNewBadgeCornerRadius
-                                yRadius:views::MenuConfig::
-                                            kNewBadgeCornerRadius];
-          NSColor* badge_color = skia::SkColorToSRGBNSColor(
-              ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-                  ui::NativeTheme::kColorId_ProminentButtonColor));
-          [badge_color set];
-          [rounded_badge_rect fill];
+            NSPoint badge_text_location = NSMakePoint(
+                NSMinX(badge_frame) + views::MenuConfig::kNewBadgeInternalPadding,
+                NSMinY(badge_frame) +
+                    views::MenuConfig::kNewBadgeInternalPaddingTopMac);
+            [badge_attr_string drawAtPoint:badge_text_location];
 
-          NSPoint badge_text_location = NSMakePoint(
-              NSMinX(badge_frame) + views::MenuConfig::kNewBadgeInternalPadding,
-              NSMinY(badge_frame) +
-                  views::MenuConfig::kNewBadgeInternalPaddingTopMac);
-          [badge_attr_string drawAtPoint:badge_text_location];
+            return YES;
+          }] retain];
+    } else {
+      NSImage *badge_image = [[NSImage alloc] initWithSize:badge_size];
+      NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
+      [badge_image lockFocus];
+      NSRect badge_frame = NSInsetRect(
+          dest_rect, views::MenuConfig::kNewBadgeHorizontalMargin, 0);
+      NSBezierPath* rounded_badge_rect = [NSBezierPath
+          bezierPathWithRoundedRect:badge_frame
+                            xRadius:views::MenuConfig::kNewBadgeCornerRadius
+                            yRadius:views::MenuConfig::
+                                        kNewBadgeCornerRadius];
+      NSColor* badge_color = skia::SkColorToSRGBNSColor(
+          ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+              ui::NativeTheme::kColorId_ProminentButtonColor));
+      [badge_color set];
+      [rounded_badge_rect fill];
 
-          return YES;
-        }] retain];
+      NSPoint badge_text_location = NSMakePoint(
+          NSMinX(badge_frame) + views::MenuConfig::kNewBadgeInternalPadding,
+          NSMinY(badge_frame) +
+              views::MenuConfig::kNewBadgeInternalPaddingTopMac);
+      [badge_attr_string drawAtPoint:badge_text_location];
+      [badge_image unlockFocus];
+      return [badge_image retain];
+    }
   }();
 
   return new_tag;

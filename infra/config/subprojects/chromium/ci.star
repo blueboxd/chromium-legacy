@@ -394,7 +394,9 @@ ci.builder(
             "tools/android/avd/proto/creation/generic_android23.textpb",
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
+            "tools/android/avd/proto/creation/generic_android30.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
         ],
     },
     schedule = "0 7 * * 0 *",
@@ -2300,7 +2302,6 @@ ci.fyi_builder(
     builderless = False,
     cores = None,
     goma_jobs = goma.jobs.J300,
-    use_java_coverage = True,
 )
 
 ci.fyi_builder(
@@ -2312,7 +2313,6 @@ ci.fyi_builder(
     builderless = False,
     cores = None,
     goma_jobs = goma.jobs.J300,
-    use_java_coverage = True,
 )
 
 ci.fyi_builder(
@@ -2585,7 +2585,6 @@ ci.fyi_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2597,7 +2596,6 @@ ci.fyi_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2609,7 +2607,6 @@ ci.fyi_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2779,7 +2776,6 @@ ci.fyi_windows_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2791,7 +2787,6 @@ ci.fyi_windows_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -2803,7 +2798,6 @@ ci.fyi_windows_builder(
     ),
     builderless = False,
     cores = None,
-    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -4328,6 +4322,9 @@ ci.thin_tester(
         category = "mac",
         short_name = "a64",
     ),
+    # TODO(gbeaty) Once we have sufficient test capacity to not need to
+    # serialize tests, use the default execution_timout
+    execution_timeout = 6 * time.hour,
     tree_closing = False,
     triggered_by = [builder_name("mac-arm64-rel")],
 )

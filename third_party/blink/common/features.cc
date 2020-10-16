@@ -185,6 +185,14 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables waiting for codec support status notification from GPU factory in RTC
+// codec factories.
+const base::Feature kRTCGpuCodecSupportWaiter{"kRTCGpuCodecSupportWaiter",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kRTCGpuCodecSupportWaiterTimeoutParam{
+    &kRTCGpuCodecSupportWaiter, "timeout_ms", 3000};
+
 // Prevents workers from sending IsolateInBackgroundNotification to V8
 // and thus instructs V8 to favor performance over memory on workers.
 const base::Feature kV8OptimizeWorkersForPerformance{
@@ -520,6 +528,10 @@ const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
 // Enables Dawn-accelerated 2D canvas.
 const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables small accelerated canvases for webview (crbug.com/1004304)
+const base::Feature kWebviewAccelerateSmallCanvases{
+    "WebviewAccelerateSmallCanvases", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCSSReducedFontLoadingLayoutInvalidations{
     "CSSReducedFontLoadingLayoutInvalidations",

@@ -1237,8 +1237,8 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   if (ShouldApplyRoundedCorner(quad)) {
     // Transform by the window and projection matrix to go from target to
     // device space, which should always be a scale+translate.
-    SkRRect corner_bounds =
-        SkRRect(quad->shared_quad_state->rounded_corner_bounds);
+    SkRRect corner_bounds = SkRRect(
+        quad->shared_quad_state->mask_filter_info.rounded_corner_bounds());
     SkMatrix to_device;
     gfx::TransformToFlattenedSkMatrix(target_to_device, &to_device);
 
@@ -2591,13 +2591,10 @@ void SkiaRenderer::PrepareRenderPassOverlay(CALayerOverlay* overlay) {
   overlay->rpdq = nullptr;
   gfx::Transform target_to_device =
       current_frame()->window_matrix * current_frame()->projection_matrix;
-  // Use nullptr scissor, so we can always render the whole render pass in an
-  // overlay backing.
-  // TODO(penghuang): reusing overlay backing from previous frame to avoid
-  // reproducing the overlay backing if the render pass content quad properties
-  // and content are not changed.
+  const gfx::Rect* scissor = is_scissor_enabled_ ? &scissor_rect_ : nullptr;
+
   DrawQuadParams params = CalculateDrawQuadParams(
-      target_to_device, /*scissor=*/nullptr, quad, /*draw_region=*/nullptr);
+      target_to_device, scissor, quad, /*draw_region=*/nullptr);
   DrawRPDQParams rpdq_params = CalculateRPDQParams(quad, &params);
 
   // |filter_bounds| is the content space bounds that includes any filtered

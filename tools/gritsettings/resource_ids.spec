@@ -188,8 +188,8 @@
   "chrome/browser/resources/tab_search/tab_search_resources.grd": {
     "includes": [1880],
   },
-  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [1900],
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
     "includes": [1920],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/welcome/welcome_resources.grd": {
@@ -264,6 +264,13 @@
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [2220],
+  },
+  "chrome/browser/resources/webui_js_exception/webui_js_exception_resources.grd": {
+    "includes": [2230],
+    "structures": [2231],
+  },
+  "chrome/browser/resources/webui_js_exception/webui_js_exception_resources_vulcanized.grd": {
+    "includes": [2232],
   },
   "components/sync/driver/resources.grd": {
     "includes": [2240],

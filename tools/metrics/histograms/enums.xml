@@ -22231,6 +22231,9 @@ Called by update_document_policy_enum.py.-->
   <int value="792" label="IntranetRedirectBehavior"/>
   <int value="793" label="LacrosAllowed"/>
   <int value="794" label="DeviceArcDataSnapshotHours"/>
+  <int value="795" label="PhoneHubAllowed"/>
+  <int value="796" label="PhoneHubNotificationsAllowed"/>
+  <int value="797" label="PhoneHubTaskContinuationAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34138,6 +34141,11 @@ Called by update_feature_policy_enum.py.-->
   <int value="1" label="Gesture navigation forward"/>
 </enum>
 
+<enum name="GestureNavigationType">
+  <int value="0" label="OS system Gesture navigation"/>
+  <int value="1" label="Chrome custom Gesture navigation"/>
+</enum>
+
 <enum name="GesturePredictionResult">
   <int value="0" label="Gesture occured and was predicted"/>
   <int value="1" label="Gesture occured but was not predicted"/>
@@ -38974,6 +38982,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Fully managed"/>
 </enum>
 
+<enum name="IsolatedPrerenderISPFilteringStatus">
+  <int value="0" label="No probing"/>
+  <int value="1" label="DNS probing success"/>
+  <int value="2" label="DNS probing failure"/>
+  <int value="3" label="TLS probing success"/>
+  <int value="4" label="TLS probing failure"/>
+</enum>
+
+<enum name="IsolatedPrerenderPrefetchResourceType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Mainframe"/>
+  <int value="2" label="Subresource"/>
+</enum>
+
 <enum name="IsolatedPrerenderPrefetchStatus">
   <int value="0" label="Prefetch Used, No Probe">
     The interceptor used a prefetch.
@@ -39073,6 +39095,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     The url was prefetched and eligible for NoStatePrerender but wasn't started
     and the origin probe failed and the prefetch was not used.
   </int>
+  <int value="25" label="Subresource throttled"/>
 </enum>
 
 <enum name="IsPinnedToTaskbarResult">
@@ -43449,6 +43472,7 @@ from previous Chrome versions.
   <int value="-152677714" label="AsmJsToWebAssembly:enabled"/>
   <int value="-152632720" label="RuntimeHostPermissions:enabled"/>
   <int value="-152439608" label="download-later-debug-on-wifi"/>
+  <int value="-150077791" label="FontAccessChooser:disabled"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-146315671" label="PrivacyAdvisor:enabled"/>
@@ -43694,6 +43718,7 @@ from previous Chrome versions.
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
   <int value="87886288" label="DiagnosticsApp:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
+  <int value="89758831" label="FontAccessChooser:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
   <int value="90551098" label="UseWallpaperStagingUrl:enabled"/>
@@ -57461,6 +57486,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Mapped-File Already Exists"/>
   <int value="5" label="No Spare File"/>
   <int value="6" label="Could Not Create Upload Directory"/>
+</enum>
+
+<enum name="PersistentNotificationDisplayResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Registration is not active"/>
+  <int value="2" label="Permission not granted"/>
+  <int value="3" label="Silent with vibrate option"/>
+  <int value="4" label="Renotify without tag option"/>
+  <int value="5" label="Failed to serialize data option"/>
+  <int value="6" label="Button action with placeholder option"/>
+  <int value="7" label="Show trigger delay too far ahead in future"/>
+  <int value="8" label="Too much data in user defined option"/>
+  <int value="9" label="Internal error"/>
+  <int value="10" label="Permission denied"/>
 </enum>
 
 <enum name="PhoneCollectionState">

@@ -4462,7 +4462,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EphemeralTab.BottomSheet.CloseReason"
-    enum="BottomSheet.StateChangeReason" expires_after="M88">
+    enum="BottomSheet.StateChangeReason" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -4472,7 +4472,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EphemeralTab.CloseReason"
-    enum="OverlayPanel.StateChangeReason" expires_after="M88">
+    enum="OverlayPanel.StateChangeReason" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -4481,7 +4481,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="EphemeralTab.Ctr" enum="BooleanOpened" expires_after="M88">
+<histogram name="EphemeralTab.Ctr" enum="BooleanOpened" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -4490,7 +4490,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="EphemeralTab.CtrPeek" enum="BooleanOpened" expires_after="M88">
+<histogram name="EphemeralTab.CtrPeek" enum="BooleanOpened" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -4499,7 +4499,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="EphemeralTab.DurationOpened" units="ms" expires_after="M88">
+<histogram name="EphemeralTab.DurationOpened" units="ms" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -4508,7 +4508,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="EphemeralTab.DurationPeeked" units="ms" expires_after="M88">
+<histogram name="EphemeralTab.DurationPeeked" units="ms" expires_after="M92">
   <owner>donnd@chromium.org</owner>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
@@ -5443,7 +5443,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GestureNavigation.Activated" enum="GestureNavigationDirection"
-    expires_after="2021-03-28">
+    expires_after="2021-12-28">
   <owner>jinsukkim@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <summary>
@@ -5455,7 +5455,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GestureNavigation.Cancelled" enum="GestureNavigationDirection"
-    expires_after="2021-03-28">
+    expires_after="2021-12-28">
   <owner>jinsukkim@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <summary>
@@ -5466,7 +5466,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GestureNavigation.Completed" enum="GestureNavigationDirection"
-    expires_after="2021-03-28">
+    expires_after="2021-12-28">
   <owner>jinsukkim@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <summary>
@@ -5476,7 +5476,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GestureNavigation.Reversed" enum="GestureNavigationDirection"
-    expires_after="2021-03-28">
+    expires_after="2021-12-28">
   <owner>jinsukkim@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <summary>
@@ -5526,6 +5526,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Overscroll gesture was made to trigger navigation bottom sheet to expanded
     state where the whole list of history items are presented.
+  </summary>
+</histogram>
+
+<histogram name="GestureNavigation.Type" enum="GestureNavigationType"
+    expires_after="2021-12-28">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <summary>
+    Gesture navigation type. It can be either Chrome's own gesture UI that
+    supports back and forward navigation or OS-provided default system gesture
+    navigation that supports only back action on both left and right edge. This
+    is recorded on Chrome startup at the feature component initialization.
   </summary>
 </histogram>
 
@@ -16123,7 +16135,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRSessionTime" units="ms" expires_after="2021-01-10">
+<histogram name="VRSessionTime" units="ms" expires_after="2021-05-10">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>
@@ -16132,7 +16144,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRSessionVideoCount" units="units" expires_after="2020-11-08">
+<histogram name="VRSessionVideoCount" units="units" expires_after="2021-05-10">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>
@@ -16141,7 +16153,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRSessionVideoTime" units="ms" expires_after="2020-11-08">
+<histogram name="VRSessionVideoTime" units="ms" expires_after="2021-05-10">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>
@@ -16151,7 +16163,7 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="VRViewerType" enum="VRViewerType" expires_after="2021-03-15">
+<histogram name="VRViewerType" enum="VRViewerType" expires_after="2021-05-10">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>The type of headset being used for VR.</summary>

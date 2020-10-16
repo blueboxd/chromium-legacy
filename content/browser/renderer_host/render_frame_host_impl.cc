@@ -1558,8 +1558,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   NavigationRequest* navigation_request = nullptr;
 
   return CreateNetworkServiceDefaultFactoryAndObserve(
-      CreateURLLoaderFactoryParamsForMainWorld(
-          navigation_request, "RFHI::CreateNetworkServiceDefaultFactory"),
+      CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
       base::UkmSourceId::FromInt64(GetPageUkmSourceId()),
       std::move(default_factory_receiver));
 }
@@ -3795,8 +3794,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         CreateURLLoaderFactoryParamsForMainWorld(
-            latest_nav_request_still_committing,
-            "RFHI::UpdateSubresourceLoaderFactories"),
+            latest_nav_request_still_committing),
         base::UkmSourceId::FromInt64(
             latest_nav_request_still_committing
                 ? latest_nav_request_still_committing->GetNextPageUkmSourceId()
@@ -6247,8 +6245,7 @@ void RenderFrameHostImpl::CommitNavigation(
       // appropriate NetworkContext.
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              CreateURLLoaderFactoryParamsForMainWorld(
-                  navigation_request, "RFHI::CommitNavigation"),
+              CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
               next_page_ukm_source_id,
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
@@ -6364,81 +6361,56 @@ void RenderFrameHostImpl::CommitNavigation(
       // TODO(crbug.com/1125106): A same document navigation can not be done
       // with a provisional frame, and yet it is happening inside a provisional
       // frame somehow.
-      using base::debug::AllocateCrashKeyString;
-      using base::debug::CrashKeySize;
-      using base::debug::CrashKeyString;
-      using base::debug::ScopedCrashKeyString;
+      RenderFrameHostImpl* current = frame_tree_node()->current_frame_host();
+      std::string from_url;
+      std::string from_site_info;
+      std::string from_process_lock;
+      int64_t from_item_seq_number = -2;
+      int64_t from_document_seq_number = -2;
+      std::string to_url;
+      std::string to_site_info;
+      std::string to_process_lock;
+      int64_t to_item_seq_number;
+      int64_t to_document_seq_number;
+      if (current) {
+        SiteInstanceImpl* current_site = current->GetSiteInstance();
 
-      static CrashKeyString* const to_url_key = AllocateCrashKeyString(
-          "SpecSameDocNav-to-url", CrashKeySize::Size256);
-      static CrashKeyString* const is_speculative_key = AllocateCrashKeyString(
-          "SpecSameDocNav-is-speculative", CrashKeySize::Size32);
-      static CrashKeyString* const dest_rfh_last_committed_url_key =
-          AllocateCrashKeyString("SpecSameDocNav-dest-rfh-last-committed-url",
-                                 CrashKeySize::Size256);
-      static CrashKeyString* const browser_initiated_key =
-          AllocateCrashKeyString("SpecSameDocNav-is-browser-initiated",
-                                 CrashKeySize::Size32);
-      static CrashKeyString* const to_item_sequence_number_key =
-          AllocateCrashKeyString("SpecSameDocNav-to-item-sequence-number",
-                                 CrashKeySize::Size32);
-      static CrashKeyString* const to_document_sequence_number_key =
-          AllocateCrashKeyString("SpecSameDocNav-to-document-sequence-number",
-                                 CrashKeySize::Size32);
-      static CrashKeyString* const from_url_key = AllocateCrashKeyString(
-          "SpecSameDocNav-from-url", CrashKeySize::Size256);
-      static CrashKeyString* from_item_sequence_number_key =
-          AllocateCrashKeyString("SpecSameDocNav-from-item-sequence-number",
-                                 CrashKeySize::Size32);
-      static CrashKeyString* from_document_sequence_number_key =
-          AllocateCrashKeyString("SpecSameDocNav-from-document-sequence-number",
-                                 CrashKeySize::Size32);
+        from_url = current->GetLastCommittedURL().possibly_invalid_spec();
+        from_site_info = current_site->GetSiteInfo().GetDebugString();
+        from_process_lock = current_site->GetProcessLock().ToString();
+        delegate_->GetFrameSequenceNumbersForDebugging(
+            current, from_item_seq_number, from_document_seq_number);
+      }
+      to_url = navigation_request->GetURL().possibly_invalid_spec();
+      to_site_info = GetSiteInstance()->GetSiteInfo().GetDebugString();
+      to_process_lock = GetSiteInstance()->GetProcessLock().ToString();
+      to_item_seq_number = navigation_request->ItemSequenceNumberForDebugging();
+      to_document_seq_number =
+          navigation_request->DocumentSequenceNumberForDebugging();
 
-      ScopedCrashKeyString to_url_scoper(
-          to_url_key, common_params->url.possibly_invalid_spec());
-
-      const bool is_speculative =
+      bool is_speculative =
           frame_tree_node()->render_manager()->speculative_frame_host() == this;
-      ScopedCrashKeyString is_speculative_scoper(
-          is_speculative_key, is_speculative ? "true" : "false");
+      SCOPED_CRASH_KEY_BOOL(SpecSameDocNav, is_speculative, is_speculative);
+      SCOPED_CRASH_KEY_BOOL(SpecSameDocNav, browser_initiated,
+                            navigation_request->browser_initiated());
 
-      ScopedCrashKeyString dest_rfh_last_committed_url_scoper(
-          dest_rfh_last_committed_url_key,
-          GetLastCommittedURL().possibly_invalid_spec());
-
-      const bool browser_initiated = navigation_request->browser_initiated();
-      ScopedCrashKeyString browser_initiated_scoper(
-          browser_initiated_key, browser_initiated ? "true" : "false");
-
-      const std::string& to_item_sequence_number_string = base::NumberToString(
-          navigation_request->ItemSequenceNumberForDebugging());
-      ScopedCrashKeyString to_item_sequence_number_scoper(
-          to_item_sequence_number_key, to_item_sequence_number_string);
-
-      const std::string& to_document_sequence_number_string =
-          base::NumberToString(
-              navigation_request->DocumentSequenceNumberForDebugging());
-      ScopedCrashKeyString to_document_sequence_number_scoper(
-          to_document_sequence_number_key, to_document_sequence_number_string);
-
-      ScopedCrashKeyString from_url_reset(
-          from_url_key, last_committed_url_.possibly_invalid_spec());
-
-      int64_t from_item_sequence_number = -1;
-      int64_t from_document_sequence_number = -1;
-      delegate_->GetFrameSequenceNumbersForDebugging(
-          this, from_item_sequence_number, from_document_sequence_number);
-
-      const std::string& from_item_sequence_number_string =
-          base::NumberToString(from_item_sequence_number);
-      ScopedCrashKeyString from_item_sequence_number_scoper(
-          from_item_sequence_number_key, from_item_sequence_number_string);
-
-      const std::string& from_document_sequence_number_string =
-          base::NumberToString(from_document_sequence_number);
-      ScopedCrashKeyString from_document_sequence_number_scoper(
-          from_document_sequence_number_key,
-          from_document_sequence_number_string);
+      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, from_item_sequence_number,
+                              from_item_seq_number);
+      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, to_item_sequence_number,
+                              to_item_seq_number);
+      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, from_document_sequence_number,
+                              from_document_seq_number);
+      SCOPED_CRASH_KEY_NUMBER(SpecSameDocNav, to_document_sequence_number,
+                              to_document_seq_number);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_url, from_url);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_url, to_url);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_site_info,
+                                 from_site_info);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_site_info, to_site_info);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, from_process_lock,
+                                 from_process_lock);
+      SCOPED_CRASH_KEY_STRING256(SpecSameDocNav, to_process_lock,
+                                 to_process_lock);
 
       base::debug::DumpWithoutCrashing();
     }
@@ -6609,8 +6581,7 @@ void RenderFrameHostImpl::FailedNavigation(
       subresource_loader_factories;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      CreateURLLoaderFactoryParamsForMainWorld(navigation_request,
-                                               "RFHI::FailedNavigation"),
+      CreateURLLoaderFactoryParamsForMainWorld(navigation_request),
       base::kInvalidUkmSourceId,
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
@@ -7283,8 +7254,7 @@ void RenderFrameHostImpl::
 
 network::mojom::URLLoaderFactoryParamsPtr
 RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
-    NavigationRequest* navigation_request,
-    base::StringPiece debug_tag) {
+    NavigationRequest* navigation_request) {
   url::Origin main_world_origin;
   network::mojom::ClientSecurityStatePtr client_security_state;
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -7298,7 +7268,7 @@ RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
   return URLLoaderFactoryParamsHelper::CreateForFrame(
       this, main_world_origin, std::move(client_security_state),
       std::move(coep_reporter_remote), GetProcess(),
-      trust_token_redemption_policy, debug_tag);
+      trust_token_redemption_policy);
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -7320,7 +7290,6 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryParamsPtr monitoring_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     monitoring_factory_params->process_id = GetProcess()->GetID();
-    monitoring_factory_params->debug_tag = "RFHI - monitoring_factory_params";
 
     // This factory should never be used to issue actual requests (i.e. it
     // should only be used to monitor for Network Service crashes).  Below is an

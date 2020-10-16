@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/nearby/nearby_process_manager_impl.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/nearby/nearby_connections_dependencies_provider.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
@@ -12,6 +13,39 @@
 
 namespace chromeos {
 namespace nearby {
+namespace {
+
+NearbyProcessManagerImpl::Factory* g_test_factory = nullptr;
+
+void OnSharingShutDownComplete(
+    mojo::Remote<sharing::mojom::Sharing> sharing,
+    mojo::SharedRemote<location::nearby::connections::mojom::NearbyConnections>
+        connections,
+    mojo::SharedRemote<sharing::mojom::NearbySharingDecoder> decoder) {
+  NS_LOG(INFO) << "Asynchronous process shutdown complete.";
+  // Note: Let the parameters go out of scope, which will disconnect them.
+}
+
+}  // namespace
+
+// static
+std::unique_ptr<NearbyProcessManager> NearbyProcessManagerImpl::Factory::Create(
+    NearbyConnectionsDependenciesProvider*
+        nearby_connections_dependencies_provider) {
+  if (g_test_factory) {
+    return g_test_factory->BuildInstance(
+        nearby_connections_dependencies_provider);
+  }
+
+  return base::WrapUnique(new NearbyProcessManagerImpl(
+      nearby_connections_dependencies_provider,
+      base::BindRepeating(&sharing::LaunchSharing)));
+}
+
+// static
+void NearbyProcessManagerImpl::Factory::SetFactoryForTesting(Factory* factory) {
+  g_test_factory = factory;
+}
 
 NearbyProcessManagerImpl::NearbyReferenceImpl::NearbyReferenceImpl(
     const mojo::SharedRemote<
@@ -45,9 +79,12 @@ NearbyProcessManagerImpl::NearbyReferenceImpl::GetNearbySharingDecoder() const {
 
 NearbyProcessManagerImpl::NearbyProcessManagerImpl(
     NearbyConnectionsDependenciesProvider*
-        nearby_connections_dependencies_provider)
+        nearby_connections_dependencies_provider,
+    const base::RepeatingCallback<
+        mojo::PendingRemote<sharing::mojom::Sharing>()>& sharing_binder)
     : nearby_connections_dependencies_provider_(
-          nearby_connections_dependencies_provider) {}
+          nearby_connections_dependencies_provider),
+      sharing_binder_(sharing_binder) {}
 
 NearbyProcessManagerImpl::~NearbyProcessManagerImpl() = default;
 
@@ -83,9 +120,9 @@ void NearbyProcessManagerImpl::Shutdown() {
     return;
 
   // Shut down process first, then notify existing clients of the shutdown via
-  // OnSharingDisconnected().
+  // OnActiveSharingDisconnected().
   ShutDownProcess();
-  OnSharingDisconnected();
+  OnActiveSharingDisconnected();
 }
 
 bool NearbyProcessManagerImpl::AttemptToBindToUtilityProcess() {
@@ -100,56 +137,34 @@ bool NearbyProcessManagerImpl::AttemptToBindToUtilityProcess() {
   NS_LOG(INFO) << "Starting up Nearby utility process.";
 
   // Bind to the Sharing interface, which launches the process.
-  sharing_.Bind(sharing::LaunchSharing());
+  sharing_.Bind(sharing_binder_.Run());
   sharing_.set_disconnect_handler(
-      base::BindOnce(&NearbyProcessManagerImpl::OnSharingDisconnected,
+      base::BindOnce(&NearbyProcessManagerImpl::OnActiveSharingDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Initialize a reference to NearbyConnections; bound on the calling sequence,
   // so null is passed during the Bind() call.
-  // TODO(khorimoto): Change this code to pass a PendingReceiver instead of
-  // receiving a PendingRemote.
   mojo::PendingRemote<location::nearby::connections::mojom::NearbyConnections>
       connections;
   mojo::PendingReceiver<location::nearby::connections::mojom::NearbyConnections>
       connections_receiver = connections.InitWithNewPipeAndPassReceiver();
   connections_.Bind(std::move(connections), /*bind_task_runner=*/nullptr);
-  sharing_->CreateNearbyConnections(
-      std::move(deps),
-      base::BindOnce(&NearbyProcessManagerImpl::OnNearbyConnections,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(connections_receiver)));
 
   // Initialize a reference to NearbySharingDecoder; bound on the calling
   // sequence, so null is passed during the Bind() call.
-  // TODO(khorimoto): Change this code to pass a PendingReceiver instead of
-  // receiving a PendingRemote.
   mojo::PendingRemote<sharing::mojom::NearbySharingDecoder> decoder;
   mojo::PendingReceiver<sharing::mojom::NearbySharingDecoder> decoder_receiver =
       decoder.InitWithNewPipeAndPassReceiver();
   decoder_.Bind(std::move(decoder), /*bind_task_runner=*/nullptr);
-  sharing_->CreateNearbySharingDecoder(base::BindOnce(
-      &NearbyProcessManagerImpl::OnNearbySharingDecoder,
-      weak_ptr_factory_.GetWeakPtr(), std::move(decoder_receiver)));
+
+  // Pass these references to Connect() to start up the process.
+  sharing_->Connect(std::move(deps), std::move(connections_receiver),
+                    std::move(decoder_receiver));
 
   return true;
 }
 
-void NearbyProcessManagerImpl::OnNearbyConnections(
-    mojo::PendingReceiver<
-        location::nearby::connections::mojom::NearbyConnections> receiver,
-    mojo::PendingRemote<location::nearby::connections::mojom::NearbyConnections>
-        connections) {
-  mojo::FusePipes(std::move(receiver), std::move(connections));
-}
-
-void NearbyProcessManagerImpl::OnNearbySharingDecoder(
-    mojo::PendingReceiver<sharing::mojom::NearbySharingDecoder> receiver,
-    mojo::PendingRemote<sharing::mojom::NearbySharingDecoder> decoder) {
-  mojo::FusePipes(std::move(receiver), std::move(decoder));
-}
-
-void NearbyProcessManagerImpl::OnSharingDisconnected() {
+void NearbyProcessManagerImpl::OnActiveSharingDisconnected() {
   NS_LOG(INFO) << "Nearby utility process has shut down.";
   sharing_.reset();
 
@@ -190,10 +205,19 @@ void NearbyProcessManagerImpl::ShutDownProcess() {
   // CreateNearbySharingDecoder() calls do not return.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // TODO(khorimoto): Use asynchronous shutdown flow.
-  sharing_.reset();
-  connections_.reset();
-  decoder_.reset();
+  // Overwrite the existing disconnect handler so that no new handler is run
+  // when the disconnection succeeds.
+  sharing_.set_disconnect_handler(base::DoNothing());
+
+  sharing::mojom::Sharing* sharing = sharing_.get();
+
+  // Start the asynchronous shutdown flow, and pass ownership of the existing
+  // Remote and SharedRemotes to the callback. These instance fields will stay
+  // alive until ShutDown() is complete, at which time they will go out of scope
+  // and become disconnected in OnSharingShutDownComplete().
+  sharing->ShutDown(base::BindOnce(&OnSharingShutDownComplete,
+                                   std::move(sharing_), std::move(connections_),
+                                   std::move(decoder_)));
 }
 
 }  // namespace nearby

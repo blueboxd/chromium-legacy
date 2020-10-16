@@ -216,12 +216,8 @@ base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
                           : l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
 }
 
-std::unique_ptr<views::Button>
-ShippingAddressEditorViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      EditorViewController::CreatePrimaryButton());
-  button->SetID(static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  return button;
+int ShippingAddressEditorViewController::GetPrimaryButtonId() {
+  return static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON);
 }
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -591,7 +587,7 @@ void ShippingAddressEditorViewController::OnComboboxModelChanged(
   if (combobox->GetID() != GetInputFieldViewId(autofill::ADDRESS_HOME_STATE))
     return;
   autofill::RegionComboboxModel* model =
-      static_cast<autofill::RegionComboboxModel*>(combobox->model());
+      static_cast<autofill::RegionComboboxModel*>(combobox->GetModel());
   if (model->IsPendingRegionDataLoad())
     return;
   if (model->failed_to_load_data()) {

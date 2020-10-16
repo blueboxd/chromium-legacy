@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillProfileClient
                   const std::string& userhash) override;
   void AddEntry(const std::string& profile_path,
                 const std::string& entry_path,
-                const base::DictionaryValue& properties) override;
+                const base::Value& properties) override;
   bool AddService(const std::string& profile_path,
                   const std::string& service_path) override;
   bool UpdateService(const std::string& profile_path,
@@ -58,9 +58,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillProfileClient
   void GetProfilePathsContainingService(
       const std::string& service_path,
       std::vector<std::string>* profiles) override;
-  bool GetService(const std::string& service_path,
-                  std::string* profile_path,
-                  base::DictionaryValue* properties) override;
+  base::Value GetService(const std::string& service_path,
+                         std::string* profile_path) override;
   bool HasService(const std::string& service_path) override;
   void ClearProfiles() override;
   void SetSimulateDeleteResult(FakeShillSimulatedResult delete_result) override;

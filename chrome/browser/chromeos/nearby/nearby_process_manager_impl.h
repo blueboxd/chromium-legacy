@@ -26,16 +26,27 @@ class NearbyConnectionsDependenciesProvider;
 // process to start up. Once the last remaining client deletes its reference,
 // this class invokes the asynchronous shutdown flow, then disconnects the
 // Mojo connection, which results in the process getting killed.
-// TODO(khorimoto): Add the asynchronous shutdown flow; currently, the process
-// is killed as soon as the last client releases its reference.
 class NearbyProcessManagerImpl : public NearbyProcessManager {
  public:
-  explicit NearbyProcessManagerImpl(
-      NearbyConnectionsDependenciesProvider*
-          nearby_connections_dependencies_provider);
+  class Factory {
+   public:
+    static std::unique_ptr<NearbyProcessManager> Create(
+        NearbyConnectionsDependenciesProvider*
+            nearby_connections_dependencies_provider);
+    static void SetFactoryForTesting(Factory* factory);
+    virtual ~Factory() = default;
+
+   private:
+    virtual std::unique_ptr<NearbyProcessManager> BuildInstance(
+        NearbyConnectionsDependenciesProvider*
+            nearby_connections_dependencies_provider) = 0;
+  };
+
   ~NearbyProcessManagerImpl() override;
 
  private:
+  friend class NearbyProcessManagerImplTest;
+
   class NearbyReferenceImpl
       : public NearbyProcessManager::NearbyProcessReference {
    public:
@@ -61,6 +72,12 @@ class NearbyProcessManagerImpl : public NearbyProcessManager {
     base::OnceClosure destructor_callback_;
   };
 
+  NearbyProcessManagerImpl(
+      NearbyConnectionsDependenciesProvider*
+          nearby_connections_dependencies_provider,
+      const base::RepeatingCallback<
+          mojo::PendingRemote<sharing::mojom::Sharing>()>& sharing_binder);
+
   // NearbyProcessManagerImpl:
   std::unique_ptr<NearbyProcessReference> GetNearbyProcessReference(
       base::OnceClosure on_process_stopped_callback) override;
@@ -71,21 +88,14 @@ class NearbyProcessManagerImpl : public NearbyProcessManager {
   // Returns whether the process was successfully bound.
   bool AttemptToBindToUtilityProcess();
 
-  void OnNearbyConnections(
-      mojo::PendingReceiver<
-          location::nearby::connections::mojom::NearbyConnections> receiver,
-      mojo::PendingRemote<
-          location::nearby::connections::mojom::NearbyConnections> connections);
-  void OnNearbySharingDecoder(
-      mojo::PendingReceiver<sharing::mojom::NearbySharingDecoder> receiver,
-      mojo::PendingRemote<sharing::mojom::NearbySharingDecoder> decoder);
-
-  void OnSharingDisconnected();
+  void OnActiveSharingDisconnected();
   void OnReferenceDeleted(const base::UnguessableToken& reference_id);
   void ShutDownProcess();
 
   NearbyConnectionsDependenciesProvider*
       nearby_connections_dependencies_provider_;
+  base::RepeatingCallback<mojo::PendingRemote<sharing::mojom::Sharing>()>
+      sharing_binder_;
 
   // Connection to the Nearby Connections utility process. If bound, the
   // process is active and running.

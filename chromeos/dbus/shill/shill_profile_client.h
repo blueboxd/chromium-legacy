@@ -14,10 +14,6 @@
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace dbus {
 class Bus;
 class ObjectPath;
@@ -43,13 +39,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillProfileClient {
     virtual void AddProfile(const std::string& profile_path,
                             const std::string& userhash) = 0;
 
-    // Adds an entry to the profile only. |entry_path| corresponds to a
-    // 'service_path' and a corresponding entry will be added to
-    // ShillManagerClient ServiceCompleteList. No checking or updating of
-    // ShillServiceClient is performed.
+    // Adds an entry to the profile specified by |profile_path|. |properties|
+    // must be a dictionary Value of service properties. |entry_path|
+    // represents a service path and a corresponding entry will be added to the
+    // Manager's kServiceCompleteList property. This will not update the
+    // kServicesProperty (which represents 'visible' services).
     virtual void AddEntry(const std::string& profile_path,
                           const std::string& entry_path,
-                          const base::DictionaryValue& properties) = 0;
+                          const base::Value& properties) = 0;
 
     // Adds a service to the profile, copying properties from the
     // ShillServiceClient entry matching |service_path|. Returns false if no
@@ -73,12 +70,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillProfileClient {
         const std::string& service_path,
         std::vector<std::string>* profiles) = 0;
 
-    // Sets |properties| to the entry for |service_path|, sets |profile_path|
-    // to the path of the profile with the entry, and returns true if the
-    // service exists in any profile.
-    virtual bool GetService(const std::string& service_path,
-                            std::string* profile_path,
-                            base::DictionaryValue* properties) = 0;
+    // Returns the entry for |service_path| if it exists in any profile and sets
+    // |profile_path| to the path of the profile the service was found in.
+    // Profiles are searched starting with the most recently added profile.
+    // If the service does not exist in any profile, an empty Value is returned.
+    virtual base::Value GetService(const std::string& service_path,
+                                   std::string* profile_path) = 0;
 
     // Returns true iff an entry sepcified via |service_path| exists in
     // any profile.

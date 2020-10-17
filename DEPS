@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'da09d08f0f7e362749f51e0e9dd26b3c3106c5e7',
+  'angle_revision': '07ea804e620132517b6af0ef92fe85ea737d0c27',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a1431476fe330b4697194273cc87ba22b0501acf',
+  'devtools_frontend_revision': 'b055d47b4a3a91dc67e13f5be947299278e29496',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1248,7 +1248,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'bd45d582f51ec82302e8f39f4c6fe588a670dfc1',
+    Var('chromium_git') + '/openscreen' + '@' + 'b92a3f35eee8275f5e8bbe97a44072e984f26de4',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'tytdjLRUyb_SMJiWqNv0OAYX0kPp2TMapGU9AZPFWFkC'
+              'version': 'kj9nh6CkrdEq-ctobPV7CtPMwpdU4VrQx_JgZCmejxQC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6f664f1bc8405c56449248865c3b4ce039b2d056',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@751e1417f9020f718644eb30621a550d32b8ad65',
     'condition': 'checkout_src_internal',
   },
 
@@ -1577,7 +1577,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'rrmrHRTSDAizvCLGZJ2cK4G6dB81VsAGljn1FJVQwlAC',
+        'version': '2fb_lrpyVxv--jJsrDCqZ4sDRiHpCgnk80oOIdv3q-YC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1588,7 +1588,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '9Q3G72W_FP-DamN_GtRTUZe7jm4X8tsVnaUJ3Gp3fuMC',
+        'version': 'vBjX1UUxt2Xw11p044tIxezzzvpljMVlif9zIUpKokcC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

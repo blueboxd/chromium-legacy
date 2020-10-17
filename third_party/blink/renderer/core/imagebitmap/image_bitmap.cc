@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -892,6 +893,7 @@ scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
   DCHECK(!IsNeutered());
   is_neutered_ = true;
   image_->Transfer();
+  UpdateImageBitmapMemoryUsage();
   return std::move(image_);
 }
 
@@ -902,7 +904,7 @@ void ImageBitmap::UpdateImageBitmapMemoryUsage() {
 
   int32_t new_memory_usage = 0;
 
-  if (image_) {
+  if (!is_neutered_ && image_) {
     base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;
     memory_usage_checked *= image_->width();
     memory_usage_checked *= image_->height();
@@ -966,7 +968,8 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   DCHECK(!IsMainThread());
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(dst_rect.Width(), dst_rect.Height());
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &props);
   sk_sp<SkImage> skia_image;
   if (surface) {
     paint_record->Playback(surface->getCanvas());
@@ -1052,6 +1055,7 @@ void ImageBitmap::close() {
     return;
   image_ = nullptr;
   is_neutered_ = true;
+  UpdateImageBitmapMemoryUsage();
 }
 
 // static

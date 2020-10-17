@@ -759,6 +759,9 @@ extern const char kImpulseScrollAnimationsDescription[];
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
+extern const char kInsertKeyToggleModeName[];
+extern const char kInsertKeyToggleModeDescription[];
+
 extern const char kInstalledAppsInCbdName[];
 extern const char kInstalledAppsInCbdDescription[];
 
@@ -1622,9 +1625,6 @@ extern const char kFillingPasswordsFromAnyOriginDescription[];
 
 extern const char kGamesHubName[];
 extern const char kGamesHubDescription[];
-
-extern const char kHomepageLocationName[];
-extern const char kHomepageLocationDescription[];
 
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];

@@ -1644,11 +1644,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-home-page-location-policy",
-    "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-horizontal-tab-switcher",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 77
@@ -2887,6 +2882,14 @@
     "name": "infobar-ui-reboot-only-ios13",
     "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "insert-key-toggle-mode",
+    "owners": [ "snianu", "ericlaw" ],
+    // This flag is temporary as we want to eventually remove the support for
+    // Overwrite mode when insert key is pressed. Currently it is disabled
+    // by-default.
+    "expiry_milestone": 91
   },
   {
     "name": "installable-ink-drop",

@@ -5989,10 +5989,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
-    {"enable-home-page-location-policy",
-     flag_descriptions::kHomepageLocationName,
-     flag_descriptions::kHomepageLocationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kHomepageLocation)},
     {"homepage-settings-ui-conversion",
      flag_descriptions::kHomepageSettingsUIConversionName,
      flag_descriptions::kHomepageSettingsUIConversionDescription, kOsAndroid,
@@ -6660,6 +6656,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"kaleidoscope-ntp-module", flag_descriptions::kKaleidoscopeModuleName,
      flag_descriptions::kKaleidoscopeModuleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kKaleidoscopeModule)},
+
+    {"insert-key-toggle-mode", flag_descriptions::kInsertKeyToggleModeName,
+     flag_descriptions::kInsertKeyToggleModeDescription,
+     kOsWin | kOsLinux | kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kInsertKeyToggleMode)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

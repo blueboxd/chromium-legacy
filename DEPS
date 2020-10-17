@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fd0b15801ff8e4960f0822bfb517b03812f8eb4c',
+  'skia_revision': 'be8004d2fb6c8575d7da7c580811639654a9d255',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b0723ad5a4612732df247bf98099f4e61fc32681',
+  'v8_revision': '64886a69d6b708762428e6c8753b9401ae1fe85d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -218,11 +218,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '119d867c232d0abd85c9b7e37bced413466653fa',
+  'angle_revision': '37c400146e59f718b516eb58e16fa53c8a88bf21',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a23231ea7d9174adf545b803a57835e1a2ff8ed0',
+  'swiftshader_revision': 'df17a76102dfabb3f1bd6e51449cece9f77b45e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '19ef525ade8ec2124cc7a230e52d9059ea31487b',
+  'devtools_frontend_revision': '0a749cf45c8c1d1d1e1e2657f1cce356d470977e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2a8ada79514632d2b9a60bd570cc3fcbf02b18e8',
+  'dawn_revision': '875091308b04ba87e29c929ed707f27889c660ea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1497,7 +1497,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '9cee07983fc9914fd06733c25f4efeae9681f031',
+    Var('webrtc_git') + '/src.git' + '@' + 'fba124a4834642404935e743c882848238fbdaf3',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1535,7 +1535,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'sEWxSos77EKQLWziVoCV6Sa52qijVB0fz9uN1EGoUd0C',
+          'version': 'VmHdV6-yVqwj-ADGTGWTpbP4nIDpDzLHKgQq-B7KKCQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1545,7 +1545,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '6eX8c167sU_avc61blSZpNkSEa5HwWNYfWCk-88QTNsC',
+          'version': 'tNDNsPkF0Z-epC61GUCYNBjIMrq1IwzBctk8W1ySG2YC',
         },
       ],
       'dep_type': 'cipd',
@@ -1555,7 +1555,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'rp50J-ChpY5Dyvjwl71mK28FOzgevSspS8YE1qxgkrAC',
+          'version': 'aaumPfBnl9wmnaRNjWDmktxWKk7iB7h3VYDlC8nRGXIC',
         },
       ],
       'dep_type': 'cipd',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@71478928d7c28b0b60d6b0892ed64b1c82039a12',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3c12c8877aee62c94d7ff7837ad99b0c1b22e73d',
     'condition': 'checkout_src_internal',
   },
 

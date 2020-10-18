@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '9047954c17086f9e645c3be163a2ff1735453dd2',
+  'angle_revision': '5b7c5b3493260e44463a01f3be381bf83628ed4a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '5d73338a50dcee6d9f6a4e92afcf41e281715779',
+  'catapult_revision': '89eeef5150cb1c571c9c2f43d18ea0f3eb3f57c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -912,7 +912,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4761cf50d032aa5d1e0c51f47d20fa43380c01fd',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '958dc6267f2d30e2185147a07a7e31f69050112e',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d474002ab20d4466b9cea9ff2b4e6caf17ee17ba',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c66973fd885fd678808705d44e95a05ad3b2dcf9',
     'condition': 'checkout_src_internal',
   },
 
@@ -1588,7 +1588,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'vBjX1UUxt2Xw11p044tIxezzzvpljMVlif9zIUpKokcC',
+        'version': 'wHmgVwhdw29vHqkyUXbbeSCuBeOGOHCSL0B8dd3273MC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

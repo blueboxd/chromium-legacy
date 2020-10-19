@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5b7c5b3493260e44463a01f3be381bf83628ed4a',
+  'angle_revision': '2be35682cd679a4bd955d513c31c8781d0fd8f6e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1497,7 +1497,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '37d41eea047799ccca2f09c941870c26ee3ffc0a',
+    Var('webrtc_git') + '/src.git' + '@' + '1f7eab68c0ce267b935f9ea3544d3105d7fd19dc',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c66973fd885fd678808705d44e95a05ad3b2dcf9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4394032b4d4b2578493ae8f9e621f6cb9459d35c',
     'condition': 'checkout_src_internal',
   },
 

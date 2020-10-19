@@ -18,13 +18,13 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
+#include "components/sync/engine_impl/cancelation_signal.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
@@ -57,12 +57,17 @@ namespace syncer {
 class MockSyncer : public Syncer {
  public:
   MockSyncer();
-  MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet, NudgeTracker*, SyncCycle*));
-  MOCK_METHOD3(ConfigureSyncShare,
-               bool(const ModelTypeSet&,
-                    sync_pb::SyncEnums::GetUpdatesOrigin,
-                    SyncCycle*));
-  MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));
+  MOCK_METHOD(bool,
+              NormalSyncShare,
+              (ModelTypeSet, NudgeTracker*, SyncCycle*),
+              (override));
+  MOCK_METHOD(bool,
+              ConfigureSyncShare,
+              (const ModelTypeSet&,
+               sync_pb::SyncEnums::GetUpdatesOrigin,
+               SyncCycle*),
+              (override));
+  MOCK_METHOD(bool, PollSyncShare, (ModelTypeSet, SyncCycle*), (override));
 };
 
 std::unique_ptr<DataTypeActivationResponse> MakeFakeActivationResponse(
@@ -119,8 +124,7 @@ class SyncSchedulerImplTest : public testing::Test {
         : BackoffDelayProvider(
               TimeDelta::FromSeconds(kInitialBackoffRetrySeconds),
               TimeDelta::FromSeconds(kInitialBackoffImmediateRetrySeconds)) {}
-
-    MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
+    MOCK_METHOD(TimeDelta, GetDelay, (const TimeDelta&), (override));
   };
 
   void SetUp() override {

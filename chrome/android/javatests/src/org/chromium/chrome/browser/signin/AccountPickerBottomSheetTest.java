@@ -223,6 +223,9 @@ public class AccountPickerBottomSheetTest {
     @Test
     @MediumTest
     public void testDismissCollapsedSheetWithDismissButton() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.DISMISSED_BUTTON);
         buildAndShowCollapsedBottomSheet();
         onView(withText(PROFILE_DATA1.getAccountName())).check(matches(isDisplayed()));
         BottomSheetController controller = getBottomSheetController();
@@ -232,6 +235,7 @@ public class AccountPickerBottomSheetTest {
         Assert.assertFalse(controller.isSheetOpen());
         verify(mAccountPickerDelegateMock).onDismiss();
         Assert.assertEquals(0, mFakeProfileDataSource.getNumberOfObservers());
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
     }
 
     @Test
@@ -386,6 +390,9 @@ public class AccountPickerBottomSheetTest {
     @Test
     @MediumTest
     public void testSignInGeneralError() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.GENERIC_ERROR_SHOWN);
         // Throws a connection error during the sign-in action
         doAnswer(invocation -> {
             Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
@@ -409,11 +416,15 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
     }
 
     @Test
     @MediumTest
     public void testSignInAuthError() {
+        MetricsUtils.HistogramDelta accountConsistencyHistogram =
+                new HistogramDelta("Signin.AccountConsistencyPromoAction",
+                        AccountConsistencyPromoAction.AUTH_ERROR_SHOWN);
         CoreAccountInfo coreAccountInfo =
                 mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
         // Throws an auth error during the sign-in action
@@ -437,6 +448,7 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_dismiss_button)).check(matches(not(isDisplayed())));
+        Assert.assertEquals(1, accountConsistencyHistogram.getDelta());
     }
 
     @Test

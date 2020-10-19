@@ -29777,7 +29777,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3543" label="WebGLRenderingContextMakeXRCompatible"/>
   <int value="3544"
       label="V8WebGLCompressedTextureASTC_GetSupportedProfiles_Method"/>
-  <int value="3545" label="IdentifiabilityStudyReserved3545"/>
+  <int value="3545" label="HTMLCanvasGetContext"/>
   <int value="3546"
       label="V8BeforeInstallPromptEvent_Platforms_AttributeGetter"/>
   <int value="3547" label="IdentifiabilityStudyReserved3547"/>
@@ -42930,6 +42930,7 @@ from previous Chrome versions.
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
   <int value="-766805224" label="MirroringService:enabled"/>
+  <int value="-764463072" label="WebViewMixedContentAutoupgrades:disabled"/>
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
@@ -42976,6 +42977,7 @@ from previous Chrome versions.
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
+  <int value="-721685663" label="WebViewMixedContentAutoupgrades:enabled"/>
   <int value="-721245076" label="DesktopPWAsStayInWindow:disabled"/>
   <int value="-719819631" label="TranslateUI:disabled"/>
   <int value="-719698123" label="LegacyTLSWarnings:enabled"/>
@@ -44148,6 +44150,7 @@ from previous Chrome versions.
   <int value="482429100"
       label="OmniboxClobberIsZeroSuggestEntrypoint:disabled"/>
   <int value="483155358" label="GlobalMediaControlsForChromeOS:disabled"/>
+  <int value="484596410" label="EnterpriseRealtimeExtensionRequest:disabled"/>
   <int value="485957747" label="finch-seed-ignore-pending-download"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
@@ -45577,6 +45580,7 @@ from previous Chrome versions.
   <int value="1926524951" label="SystemWebApps:disabled"/>
   <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
+  <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
   <int value="1929603041" label="HideShelfControlsInTabletMode:disabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
@@ -77015,6 +77019,12 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Same-origin redirect"/>
   <int value="1" label="Same-domain (but cross-origin) redirect"/>
   <int value="2" label="Cross-domain redirect"/>
+</enum>
+
+<enum name="WebViewMixedContentMode">
+  <int value="0" label="Always allow"/>
+  <int value="1" label="Never allow"/>
+  <int value="2" label="Compatibility Mode"/>
 </enum>
 
 <enum name="WebViewOpenWebScreenPortion">

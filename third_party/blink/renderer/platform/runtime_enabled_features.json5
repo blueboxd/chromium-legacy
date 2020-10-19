@@ -570,11 +570,11 @@
     },
     {
       name: "CSSPseudoIs",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPseudoWhere",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Perform partial layout invalidation on web font loading.
@@ -1534,6 +1534,10 @@
     {
       name: "PreferNonCompositedScrolling",
       settable_from_internals: true,
+    },
+    {
+      name: "PrefersContrast",
+      depends_on: ["ForcedColors"],
     },
     {
       name: 'PrefersReducedData',

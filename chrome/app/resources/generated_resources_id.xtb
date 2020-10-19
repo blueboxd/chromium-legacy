@@ -2576,7 +2576,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3949981384795585075">{NUM_APPS,plural, =1{Aplikasi ini mungkin berbahaya}other{Aplikasi ini mungkin berbahaya}}</translation>
 <translation id="3950820424414687140">Login</translation>
 <translation id="3953834000574892725">Akun saya</translation>
-<translation id="3954354850384043518">Sedang berlangsung</translation>
+<translation id="3954354850384043518">Dalam proses</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
 <translation id="3954953195017194676">Anda tidak memiliki log aktivitas WebRTC yang direkam baru-baru ini.</translation>
 <translation id="3955163004258753966">Error saat memulai upgrade</translation>
@@ -4562,7 +4562,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6345878117466430440">Tandai telah dibaca</translation>
 <translation id="6349101878882523185">Instal <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sinkronisasi tidak berjalan. Coba keluar dan masuk lagi.</translation>
-<translation id="6351063337294363751">Anda dapat menghapus data penjelajahan dari menu ini</translation>
 <translation id="6354918092619878358">Kurva eliptis SECG secp256r1 (alias ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Jaga perangkat tetap menyala</translation>
 <translation id="63566973648609420">Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi. Frasa sandi tidak dikirim ke atau disimpan oleh Google. Jika lupa frasa sandi atau ingin mengubah setelan ini, Anda perlu <ph name="BEGIN_LINK" />menyetel ulang sinkronisasi<ph name="END_LINK" />.</translation>

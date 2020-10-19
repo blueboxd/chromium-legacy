@@ -75,6 +75,7 @@
 <translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="2885378588091291677">Oppgavebehandling</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
+<translation id="2926676257163822632">Svake passord er enkle å gjette. La Chrome <ph name="BEGIN_LINK" />opprette og huske sterke passord for deg<ph name="END_LINK" />.</translation>
 <translation id="2929907241665500097">Chrome ble ikke oppdatert. Noe gikk galt. <ph name="BEGIN_LINK" />Løs problemer med Chrome-oppdateringer og mislykkede oppdateringer.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – nettverkspålogging – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome er i bakgrunnsmodus.</translation>
@@ -164,7 +165,6 @@
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
-<translation id="5633355459292055250">Spør når jeg åpner Chrome</translation>
 <translation id="5657226924540934362">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
     innstillingene for Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>

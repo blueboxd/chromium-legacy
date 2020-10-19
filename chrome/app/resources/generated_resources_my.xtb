@@ -474,7 +474,7 @@
 <translation id="1530838837447122178">မောက်စ်နှင့် တာ့ချ်ပဲဒ်ကိရိယာဆက်တင်များကို ဖွင့်ပါ</translation>
 <translation id="1531004739673299060">အပလီကေးရှင်းဝင်းဒိုး</translation>
 <translation id="1531275250079031713">'Wi-Fi အသစ်ထည့်ရန်' အကွက်ကို ပြရန်</translation>
-<translation id="1535228823998016251">ကျယ်သော</translation>
+<translation id="1535228823998016251">ကျယ်</translation>
 <translation id="1536754031901697553">ချိတ်ဆက်မှု ဖြုတ်နေသည်...</translation>
 <translation id="1537254971476575106">မျက်နှာပြင်အပြည့် မှန်ဘီလူး</translation>
 <translation id="15373452373711364">ကြီးမားသည့် မောက်စ်ညွှန်ပြကိရိယာ</translation>
@@ -4562,7 +4562,6 @@
 <translation id="6345878117466430440">ဖတ်ပြီးဟု မှတ်သားရန်</translation>
 <translation id="6349101878882523185"><ph name="APP_NAME" /> ထည့်သွင်းရန်</translation>
 <translation id="6349170655202535379">စင့်ခ်လုပ်၍ မရပါ။ ထွက်ပြီး ပြန်လည်၍ လက်မှတ်ထိုးဝင်ပါ။</translation>
-<translation id="6351063337294363751">သင်၏ ဖွင့်ကြည့်ထားသည့် မှတ်တမ်းဒေတာတို့ကို ဤမီနူးမှနေ၍ ရှင်းပစ်နိုင်ပါသည်</translation>
 <translation id="6354918092619878358">SECG elliptic curve secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">ကိရိယာကို ဆက်ဖွင့်ထားပါ</translation>
 <translation id="63566973648609420">သင့်စကားဝှက်ရှိသူသာ သင်အသွင်ဝှက်ထားသည့် ဒေတာများကို ဖတ်နိုင်မည် ဖြစ်သည်။ စကားဝှက်ကို Google သို့ပို့ခြင်း သို့မဟုတ် သိမ်းဆည်းထားခြင်း မရှိပါ။ သင့်စကားဝှက်ကို မေ့သွားလျှင် သို့မဟုတ် ဤဆက်တင်ကို ပြောင်းလဲလိုလျှင် <ph name="BEGIN_LINK" />စင့်ခ်လုပ်ခြင်းကို ပြန်လည်သတ်မှတ်ပေးရန်<ph name="END_LINK" /> လိုအပ်ပါသည်။</translation>
@@ -4973,7 +4972,7 @@
 <translation id="6865313869410766144">ဒေတာမှ အလိုလျောက် ဖြည့်စွက်</translation>
 <translation id="6865598234501509159">စာမျက်နှာသည် <ph name="LANGUAGE" /> ဘာသာဖြင့် မဟုတ်ပါ</translation>
 <translation id="6865708901122695652">WebRTC ဖြစ်စဉ်မှတ်တမ်းများ (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
-<translation id="686609795364435700">တိုးသော</translation>
+<translation id="686609795364435700">တိုး</translation>
 <translation id="686664946474413495">အရောင်အပူချိန်</translation>
 <translation id="6868934826811377550">အသေးစိတ်များ ကြည့်ရန်</translation>
 <translation id="6871644448911473373">OCSP တုံ့ပြန်သူ: <ph name="LOCATION" /></translation>
@@ -5715,7 +5714,7 @@
 <translation id="7750228210027921155">တစ်ခုပေါ်တစ်ခုထပ်၍ ဖွင့်ရန်</translation>
 <translation id="7751260505918304024">အားလုံးပြပါ</translation>
 <translation id="7753735457098489144">သိုလှောင်ခန်း နေရာ မရှိသဖြင့် ထည့်သွင်း၍မရပါ။ နေရာလွတ်ပြုလုပ်ရန် စက်သိုလှောင်ခန်းမှ ဖိုင်များကို ဖျက်ပါ။</translation>
-<translation id="7754347746598978109">Javascript သုံးရန် ခွင့်ပြုမထားပါ</translation>
+<translation id="7754347746598978109">JavaScript သုံးရန် ခွင့်ပြုမထားပါ</translation>
 <translation id="7754704193130578113">ဒေါင်းလုဒ်မလုပ်မီ ဖိုင်တိုင်းကို မည်သည့်နေရာတွင် သိမ်းမည်ကို မေးပါ</translation>
 <translation id="7755287808199759310">သင့်မိဘသည် ၎င်းကို သင့်အတွက် ဖွင့်ပေးနိုင်ပါသည်</translation>
 <translation id="7757592200364144203">စက်အမည်ကို ပြောင်းရန်</translation>

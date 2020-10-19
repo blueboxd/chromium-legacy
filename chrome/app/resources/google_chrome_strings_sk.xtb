@@ -77,6 +77,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
 <translation id="2885378588091291677">Správca úloh</translation>
 <translation id="2888126860611144412">O prehliadači Chrome</translation>
+<translation id="2926676257163822632">Slabé heslá sa dajú ľahko uhádnuť. Povoľte Chromu, <ph name="BEGIN_LINK" />aby vám vytváral silné heslá a pamätal si ich<ph name="END_LINK" />.</translation>
 <translation id="2929907241665500097">Chrome sa neaktualizoval. Vyskytol sa problém. <ph name="BEGIN_LINK" />Vyriešiť problémy so sťahovaním aktualizácií Chromu a neúspešnými aktualizáciami<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – prihlásenie do siete – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
@@ -170,7 +171,6 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5633355459292055250">Opýtať sa pri otvorení Chromu</translation>
 <translation id="5657226924540934362">Ak nevidíte určité nastavenie na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia operačného systému Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Správca vás žiada o nové spustenie Chromu, aby sa použila táto aktualizácia}=1{Správca vás žiada o nové spustenie Chromu, aby sa použila táto aktualizácia. Vaše okno inkognito sa neotvorí.}few{Správca vás žiada o nové spustenie Chromu, aby sa použila táto aktualizácia. Vaše # okná inkognito sa neotvoria.}many{Správca vás žiada o nové spustenie Chromu, aby sa použila táto aktualizácia. Your # Incognito windows won't reopen.}other{Správca vás žiada o nové spustenie Chromu, aby sa použila táto aktualizácia. Vašich # okien inkognito sa neotvorí.}}</translation>

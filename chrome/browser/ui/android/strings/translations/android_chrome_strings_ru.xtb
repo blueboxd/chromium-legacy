@@ -381,7 +381,6 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3848957262889631524">Google <ph name="APP_NAME" /> как электронный ключ</translation>
 <translation id="3856096718352044181">Убедитесь, что это действительный поставщик услуг, или повторите попытку позже.</translation>
 <translation id="3861633093716975811">Популярные видео</translation>
 <translation id="3892148308691398805">Копировать текст</translation>
@@ -480,7 +479,7 @@
 <translation id="4605958867780575332">Удалено: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Открыть <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Использовать пароль</translation>
-<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 раскрытый пароль}one{# раскрытый пароль}few{# раскрытых пароля}many{# раскрытых паролей}other{# раскрытого пароля}}</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 раскрытый пароль.}one{# раскрытый пароль.}few{# раскрытых пароля.}many{# раскрытых паролей.}other{# раскрытого пароля.}}</translation>
 <translation id="4650364565596261010">По умолчанию</translation>
 <translation id="465657074423018424">Функция "Безопасный просмотр" защищает вас от вводящих в заблуждение сайтов. После ее отключения будьте особенно осторожны, посещая сайты, прежде всего когда вводите пароли.</translation>
 <translation id="4662373422909645029">Название не должно содержать цифры.</translation>

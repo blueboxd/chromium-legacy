@@ -145,7 +145,7 @@ virtual/composite-after-paint/paint/frames/* [ Pass ]
 virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
-# --- BEGIN OOP-R Canvas tests --- 
+# --- BEGIN OOP-R Canvas tests ---
 crbug.com/1081534 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video-shadow.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clearRect-first.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-clearRect-with-clip.html [ Failure ]
@@ -824,8 +824,8 @@ crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/470421 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
-crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-021.tentative.html [ Failure ]
-crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.tentative.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-021.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-022.html [ Failure ]
 
 # Untriaged flex failures
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-wmvert-001.xhtml [ Failure ]
@@ -5667,6 +5667,7 @@ crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-
 
 # Skipping because of unimplemented behaviour
 crbug.com/965495 external/wpt/feature-policy/experimental-features/focus-without-user-activation-enabled-tentative.sub.html [ Skip ]
+crbug.com/965495 external/wpt/permissions-policy/experimental-features/focus-without-user-activation-enabled-tentative.sub.html [ Skip ]
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
@@ -5831,6 +5832,7 @@ crbug.com/1044545 [ Release ] http/tests/devtools/service-workers/service-worker
 crbug.com/1044561 [ Release ] http/tests/devtools/elements/styles/show-all-properties.js [ Pass Timeout ]
 crbug.com/1044562 [ Release Win ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
 crbug.com/1044562 [ Release Mac ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
+crbug.com/1044563 [ Release ] http/tests/devtools/background-services/background-services-panel.js [ Pass Timeout ]
 crbug.com/1044805 [ Release ] http/tests/devtools/elements/styles-2/inject-stylesheet.js [ Pass Timeout ]
 crbug.com/1044822 [ Release ] http/tests/devtools/cache-storage/cache-entry-deletion.js [ Pass Timeout ]
 #crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
@@ -6118,9 +6120,6 @@ crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-re
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
 
-crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
-crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Pass Failure ]
-
 # Fails when test moved to use full compositor pipe.
 crbug.com/1085832 [ Fuchsia ] images/size-failure.html [ Timeout ]
 
@@ -6196,6 +6195,7 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-content-bo
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box.html [ Failure ]
 
 crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Timeout ]
+crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/permissions-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Timeout ]
 
 # Sheriff 2020-06-16
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
@@ -6303,10 +6303,6 @@ crbug.com/1107944 [ Mac ] http/tests/devtools/tracing/timeline-paint/timeline-pa
 # Temporarily disable tests to allow a fix in devtools frontend
 crbug.com/1011811 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
 
-# Temporarily disable tests to allow updating devtools frontend
-crbug.com/1138492 http/tests/devtools/background-services/background-services-panel.js [ Pass Failure Timeout ]
-crbug.com/1138492 http/tests/devtools/background-services/background-service-grid.js [ Pass Failure Timeout ]
-
 crbug.com/1092794 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html [ Pass Failure ]
 
 # Sheriff 2020-07-30
@@ -6354,6 +6350,7 @@ crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]
 
 # Sheriff 2020-0-21
 crbug.com/1120330 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
+crbug.com/1120330 virtual/threaded/external/wpt/permissions-policy/experimental-features/vertical-scroll-disabled-scrollbar-tentative.html [ Pass Failure ]
 
 # Sheriff 2020-08-26
 crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
@@ -6422,10 +6419,6 @@ crbug.com/1042877 external/wpt/mixed-content/imageset.https.sub.html [ Failure ]
 crbug.com/1042877 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/img-tag.https.html [ Failure ]
 crbug.com/1042877 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/img-tag.https.html [ Failure ]
 crbug.com/1042877 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/img-tag.https.html [ Failure ]
-crbug.com/1042877 virtual/omt-worker-fetch/external/wpt/fetch/cross-origin-resource-policy/scheme-restriction.https.window.html [ Failure ]
-crbug.com/1042877 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/img-tag.https.html [ Failure ]
-crbug.com/1042877 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/img-tag.https.html [ Failure ]
-crbug.com/1042877 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/img-tag.https.html [ Failure ]
 crbug.com/1042877 http/tests/security/mixedContent/insecure-css-image-with-reload.html [ Failure ]
 crbug.com/1042877 http/tests/security/mixedContent/insecure-image-in-iframe.html [ Failure ]
 crbug.com/1042877 http/tests/security/mixedContent/insecure-image-in-main-frame-allowed.html [ Failure ]
@@ -6454,11 +6447,7 @@ crbug.com/1134237 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_
 crbug.com/1136687 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass Failure ]
 crbug.com/1136726 [ Linux ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
 
-# Sheriff 2020-10-13
-crbug.com/1137716 [ Mac10.12 ] fast/events/mouse-cursor-image-set.html [ Pass Failure ]
-
 # Sheriff 2020-10-14
-crbug.com/1138589 [ Mac10.15 ] fast/events/mouse-cursor-image-set-svg.html [ Failure ]
 crbug.com/1138591 [ Mac10.15 ] http/tests/dom/raf-throttling-out-of-view-cross-origin-page.html [ Failure ]
 
 # WebRTC: Payload demuxing times out in Plan B. This is expected.
@@ -6471,3 +6460,14 @@ crbug.com/1011811 http/tests/devtools/indexeddb/database-version-number.js [ Ski
 # DevTools roll
 crbug.com/1011811 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
 crbug.com/1011811 http/tests/devtools/persistence/persistence-do-not-overwrite-css.js [ Skip ]
+
+# Sheriff 2020-10-19
+crbug.com/1139950 [ Linux ] virtual/text-antialias/hyphens/hyphens-auto.html [ Failure ]
+
+# Rename document.featurePolicy to document.permissionsPolicy
+crbug.com/1123116 external/wpt/permissions-policy/payment-supported-by-permissions-policy.tentative.html [ Failure ]
+crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-all.https.sub.html [ Failure ]
+crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-self.https.sub.html [ Failure ]
+crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-some-override.https.sub.html [ Failure ]
+crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-some.https.sub.html [ Failure ]
+crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-disallowed-for-all.https.sub.html [ Failure ]

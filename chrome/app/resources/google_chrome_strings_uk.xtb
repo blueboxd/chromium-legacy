@@ -75,6 +75,7 @@
 <translation id="2871893339301912279">Ви ввійшли в Chrome.</translation>
 <translation id="2885378588091291677">Диспетчер завдань</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
+<translation id="2926676257163822632">Ненадійні паролі можна легко вгадати. Тому радимо <ph name="BEGIN_LINK" />створювати й зберігати безпечні паролі<ph name="END_LINK" /> в Chrome.</translation>
 <translation id="2929907241665500097">Не вдалось оновити веб-переглядач Chrome. <ph name="BEGIN_LINK" />Вирішіть проблеми з оновленням Chrome.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Вхід у мережу – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome у фоновому режимі.</translation>
@@ -164,7 +165,6 @@
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5633355459292055250">Запитувати, коли я відкриваю Chrome</translation>
 <translation id="5657226924540934362">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
       налаштуваннях ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>

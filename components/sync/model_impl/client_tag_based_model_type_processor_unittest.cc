@@ -25,8 +25,8 @@
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_type_activation_request.h"
-#include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
+#include "components/sync/test/model/fake_model_type_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::AutofillWalletSpecifics;
@@ -2729,6 +2729,44 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldResetOnInvalidDataTypeId) {
   EXPECT_EQ(0U, ProcessorEntityCount());
   histogram_tester.ExpectUniqueSample("Sync.PersistedModelTypeIdMismatch",
                                       ModelTypeForHistograms::kPreferences, 1);
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResetForDuplicateClientTagHash) {
+  base::HistogramTester histogram_tester;
+
+  const syncer::ClientTagHash kClientTagHash =
+      ClientTagHash::FromUnhashed(AUTOFILL, "tag");
+  sync_pb::EntityMetadata entity_metadata1;
+  entity_metadata1.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata1.set_creation_time(0);
+  sync_pb::EntityMetadata entity_metadata2;
+  entity_metadata2.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata2.set_creation_time(0);
+  sync_pb::EntityMetadata entity_metadata3;
+  entity_metadata3.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata3.set_creation_time(0);
+
+  db()->PutMetadata(kKey1, std::move(entity_metadata1));
+  db()->PutMetadata(kKey2, std::move(entity_metadata2));
+  db()->PutMetadata(kKey3, std::move(entity_metadata3));
+
+  InitializeToReadyState();
+
+  // With a client tag hash duplicate, metadata should have been cleared.
+  EXPECT_EQ(0U, db()->metadata_count());
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  EXPECT_FALSE(type_processor()->IsTrackingMetadata());
+  // Initial update.
+  worker()->UpdateFromServer();
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
+
+  // There were three entities with the same client-tag-hash which indicates
+  // that two of them were metadata oprhans.
+  histogram_tester.ExpectBucketCount(
+      "Sync.ModelTypeOrphanMetadata.ModelReadyToSync",
+      /*bucket=*/ModelTypeHistogramValue(GetModelType()),
+      /*count=*/2);
 }
 
 }  // namespace syncer

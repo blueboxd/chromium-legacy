@@ -47,7 +47,6 @@
 <translation id="2774556997178638058"><ph name="BEGIN_LINK" />Administratoren din<ph name="END_LINK" /> har slått av Chromium-funksjonen for skanning etter skadelig programvare</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>
-<translation id="2853765747879685679">Spør når jeg åpner Chromium</translation>
 <translation id="2885378588091291677">Oppgavebehandling</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
@@ -184,6 +183,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6863361426438995919">Google Pay (kopiert til Chromium)</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6964305034639999644">Åpne linken i et inko&amp;gnitovindu i Chromium</translation>
+<translation id="6978145336957848883">Svake passord er enkle å gjette. La Chromium <ph name="BEGIN_LINK" />opprette og huske sterke passord for deg<ph name="END_LINK" />.</translation>
 <translation id="6990124437352146030">Chromium trenger tilgang til mikrofonen din for dette nettstedet</translation>
 <translation id="701244094609242530">Chromium kan ikke sjekke utvidelsene dine. Prøv igjen senere.</translation>
 <translation id="7028347026395185822">{NUM_HOURS,plural, =1{Chromium fant ingen kjent skadelig programvare på datamaskinen. Sist sjekket for en time siden.}other{Chromium fant ingen kjent skadelig programvare på datamaskinen. Sist sjekket for {NUM_HOURS} timer siden.}}</translation>

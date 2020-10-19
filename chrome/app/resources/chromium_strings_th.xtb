@@ -47,7 +47,6 @@
 <translation id="2774556997178638058"><ph name="BEGIN_LINK" />ผู้ดูแลระบบ<ph name="END_LINK" />ปิดใช้การตรวจหาซอฟต์แวร์ที่เป็นอันตรายของ Chromium</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
 <translation id="2847479871509788944">นำออกจาก Chromium...</translation>
-<translation id="2853765747879685679">ถามเมื่อฉันเปิด Chromium</translation>
 <translation id="2885378588091291677">ตัวจัดการงาน</translation>
 <translation id="2910007522516064972">เกี่ยวกับ &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium อัปเดตแล้ว</translation>
@@ -184,6 +183,7 @@
 <translation id="6863361426438995919">Google Pay (คัดลอกไปยัง Chromium)</translation>
 <translation id="6893813176749746474">Chromium ได้รับการอัปเดตแล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="6964305034639999644">เปิดลิงก์ในหน้าต่างที่ไม่ระบุตัวตนของ Chromium</translation>
+<translation id="6978145336957848883">รหัสผ่านที่ไม่รัดกุมนั้นคาดเดาได้ง่าย ให้ Chromium <ph name="BEGIN_LINK" />สร้างและจดจำรหัสผ่านที่รัดกุมให้คุณ<ph name="END_LINK" /></translation>
 <translation id="6990124437352146030">Chromium ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับเว็บไซต์นี้</translation>
 <translation id="701244094609242530">Chromium ตรวจสอบส่วนขยายของคุณไม่ได้ โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="7028347026395185822">{NUM_HOURS,plural, =1{Chromium ไม่พบซอฟต์แวร์ที่เป็นอันตรายในคอมพิวเตอร์ของคุณ ตรวจสอบล่าสุดเมื่อ 1 ชั่วโมงที่ผ่านมา}other{Chromium ไม่พบซอฟต์แวร์ที่เป็นอันตรายในคอมพิวเตอร์ของคุณ ตรวจสอบล่าสุดเมื่อ {NUM_HOURS} ชั่วโมงที่ผ่านมา}}</translation>

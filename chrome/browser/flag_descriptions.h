@@ -1898,6 +1898,9 @@ extern const char kNtpWebUIDescription[];
 extern const char kNtpModulesName[];
 extern const char kNtpModulesDescription[];
 
+extern const char kNtpRecipeTasksModuleName[];
+extern const char kNtpRecipeTasksModuleDescription[];
+
 extern const char kNtpShoppingTasksModuleName[];
 extern const char kNtpShoppingTasksModuleDescription[];
 
@@ -2052,9 +2055,6 @@ extern const char kVideoToolboxVp9DecodingDescription[];
 
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
-
-extern const char kAggregatedMlAppRankingName[];
-extern const char kAggregatedMlAppRankingDescription[];
 
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
@@ -2219,9 +2219,6 @@ extern const char kEnableAppReinstallZeroStateDescription[];
 
 extern const char kEnableArcUnifiedAudioFocusName[];
 extern const char kEnableArcUnifiedAudioFocusDescription[];
-
-extern const char kEnableAmbientModeName[];
-extern const char kEnableAmbientModeDescription[];
 
 extern const char kEnableAssistantAppSupportName[];
 extern const char kEnableAssistantAppSupportDescription[];

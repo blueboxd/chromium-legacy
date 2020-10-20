@@ -2676,7 +2676,7 @@
   {
     "name": "forced-colors",
     "owners": [ "weblayout@microsoft.com" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 90
   },
   {
     "name": "form-controls-dark-mode",
@@ -3265,6 +3265,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "ntp-recipe-tasks-module",
+    "owners": [ "aee", "mahmadi", "tiborg" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "ntp-repeatable-queries",
     "owners": [ "aee", "mahmadi", "ramyan", "tiborg" ],
     "expiry_milestone": 89
@@ -3362,7 +3367,7 @@
   {
     "name": "omnibox-adaptive-suggestions-count",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-assistant-voice-search",
@@ -3387,7 +3392,7 @@
   {
     "name": "omnibox-compact-suggestions",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 87
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-deferred-keyboard-popup",

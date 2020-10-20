@@ -2331,8 +2331,6 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
 constexpr char kAssistantBetterOnboardingInternalName[] =
     "enable-assistant-better-onboarding";
 constexpr char kAssistantTimersV2InternalName[] = "enable-assistant-timers-v2";
-
-constexpr char kAmbientModeInternalName[] = "enable-ambient-mode";
 #endif  // OS_CHROMEOS
 
 #if !defined(OS_WIN) && !defined(OS_FUCHSIA)
@@ -4360,6 +4358,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpModulesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kModules)},
 
+    {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
+     flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule)},
+
     {"ntp-shopping-tasks-module",
      flag_descriptions::kNtpShoppingTasksModuleName,
      flag_descriptions::kNtpShoppingTasksModuleDescription, kOsDesktop,
@@ -5839,12 +5841,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-suggested-files", flag_descriptions::kEnableSuggestedFilesName,
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
-
-    {"aggregated-ml-app-ranking",
-     flag_descriptions::kAggregatedMlAppRankingName,
-     flag_descriptions::kAggregatedMlAppRankingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAggregatedMlAppRanking)},
-
 #endif  // defined(OS_CHROMEOS)
 
     {"passwords-account-storage",
@@ -6129,12 +6125,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDoubleBufferCompositingName,
      flag_descriptions::kDoubleBufferCompositingDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDoubleBufferCompositing)},
-
-#if defined(OS_CHROMEOS)
-    {kAmbientModeInternalName, flag_descriptions::kEnableAmbientModeName,
-     flag_descriptions::kEnableAmbientModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAmbientModeFeature)},
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
     {"password-change-in-settings",
@@ -6742,14 +6732,6 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kAssistantBetterOnboardingInternalName, entry.internal_name) ||
       !strcmp(kAssistantTimersV2InternalName, entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
-  }
-
-  // enable-ambient-mode is only available for Unknown/Canary/Dev channels.
-  if (!strcmp(kAmbientModeInternalName, entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
   }
 
   // enable-bloom is only available for Unknown/Canary/Dev channels.

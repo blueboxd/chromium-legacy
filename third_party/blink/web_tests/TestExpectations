@@ -5281,7 +5281,6 @@ crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Fai
 # Sheriff 2019-03-28
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass Crash ]
 crbug.com/946714 [ Release ] http/tests/devtools/elements/styles-4/styles-live-locations-leak.js [ Pass Timeout ]
-crbug.com/946699 [ Release ] http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout ]
 crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
 crbug.com/946712 [ Release ] http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
 crbug.com/848799 [ Win7 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
@@ -5671,15 +5670,16 @@ crbug.com/965495 external/wpt/permissions-policy/experimental-features/focus-wit
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
-crbug.com/1029567 [ Debug ] virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile.js [ Pass Failure ]
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout Failure ]
-crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
-crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
+crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Timeout Failure ]
+crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Timeout Failure ]
+crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Timeout Failure ]
+crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Timeout Failure ]
 
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
 crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure Pass ]
@@ -5714,7 +5714,8 @@ crbug.com/1038091 virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html 
 crbug.com/1038139 [ Win ] virtual/gpu-rasterization/images/2-comp.html [ Pass Failure ]
 
 # Sheriff 2019-12-30
-crbug.com/1038354 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Failure ]
+crbug.com/1038354 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling-vertical.html [ Pass Failure ]
+crbug.com/1038354 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling-horizontal.html [ Pass Failure ]
 
 # Sheriff 2020-01-02
 crbug.com/1038656 [ Mac ] http/tests/devtools/coverage/coverage-view-unused.js [ Pass Failure ]
@@ -6471,3 +6472,5 @@ crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-polic
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-some-override.https.sub.html [ Failure ]
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-allowed-for-some.https.sub.html [ Failure ]
 crbug.com/1123116 external/wpt/permissions-policy/permissions-policy-frame-policy-disallowed-for-all.https.sub.html [ Failure ]
+crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
+crbug.com/1140329 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]

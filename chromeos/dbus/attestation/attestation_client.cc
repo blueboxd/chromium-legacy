@@ -9,6 +9,7 @@
 #include <google/protobuf/message_lite.h>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -258,14 +259,14 @@ class AttestationClientImpl : public AttestationClient {
   }
 
   // Parses the response proto message from |response| and calls |callback| with
-  // the decoded message. Calls |callback| with an
-  // |STATUS_UNEXPECTED_DEVICE_ERROR| message on error, including timeout.
+  // the decoded message. Calls |callback| with an |STATUS_DBUS_ERROR| message
+  // on error, including timeout.
   template <typename ReplyType>
   void HandleResponse(base::OnceCallback<void(const ReplyType&)> callback,
                       dbus::Response* response) {
     ReplyType reply_proto;
     if (!ParseProto(response, &reply_proto))
-      reply_proto.set_status(attestation::STATUS_UNEXPECTED_DEVICE_ERROR);
+      reply_proto.set_status(attestation::STATUS_DBUS_ERROR);
     std::move(callback).Run(reply_proto);
   }
 
@@ -309,6 +310,20 @@ void AttestationClient::Shutdown() {
 // static
 AttestationClient* AttestationClient::Get() {
   return g_instance;
+}
+
+// static
+bool AttestationClient::IsAttestationPrepared(
+    const ::attestation::GetEnrollmentPreparationsReply& reply) {
+  if (reply.status() != ::attestation::STATUS_SUCCESS) {
+    return false;
+  }
+  for (const auto& preparation : reply.enrollment_preparations()) {
+    if (preparation.second) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace chromeos

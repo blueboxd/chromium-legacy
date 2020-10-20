@@ -1394,6 +1394,9 @@ void NavigationRequest::BeginNavigation() {
     // it immediately.
     EnterChildTraceEvent("ResponseStarted", this);
 
+    is_loaded_from_mhtml_archive_ = IsForMhtmlSubframe();
+    ComputeSandboxFlagsToCommit();
+
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
@@ -1550,6 +1553,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   SetState(NOT_STARTED);
   is_navigation_started_ = false;
   processing_navigation_throttle_ = false;
+  sandbox_flags_to_commit_.reset();
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -1980,6 +1984,8 @@ NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
 
 void NavigationRequest::DetermineOriginIsolationEndResult(
     OptInIsolationCheckResult check_result) {
+  DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
+
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const url::Origin origin = url::Origin::Create(common_params_->url);
   const IsolationContext& isolation_context =
@@ -2015,7 +2021,7 @@ void NavigationRequest::DetermineOriginIsolationEndResult(
   // This needs to be computed separately from origin.opaque() because, per
   // https://crbug.com/1041376, we don't have a notion of the true origin yet.
   const bool is_opaque_origin_because_sandbox =
-      (ComputeSandboxFlagsToCommit() &
+      (sandbox_flags_to_commit_.value() &
        network::mojom::WebSandboxFlags::kOrigin) ==
       network::mojom::WebSandboxFlags::kOrigin;
 
@@ -2107,6 +2113,13 @@ void NavigationRequest::OnResponseStarted(
   ssl_info_ = response_head_->ssl_info;
   auth_challenge_info_ = response_head_->auth_challenge_info;
 
+  bool is_mhtml_archive = response_head_->mime_type == "multipart/related" ||
+                          response_head_->mime_type == "message/rfc822";
+
+  is_loaded_from_mhtml_archive_ = is_mhtml_archive || IsForMhtmlSubframe();
+
+  ComputeSandboxFlagsToCommit();
+
   // The navigation may have encountered an origin policy or Origin-Isolation
   // header that requests isolation for the url's origin. Before we pick the
   // renderer, make sure we update the origin-isolation opt-ins appropriately.
@@ -2179,6 +2192,18 @@ void NavigationRequest::OnResponseStarted(
                    url::Origin::Create(common_params_->url))) {
       commit_params_->was_activated = mojom::WasActivatedOption::kYes;
     }
+  }
+
+  // MHTML document can't be framed into non-MHTML document (and vice versa).
+  // The full page must load from the MHTML archive or none of it.
+  if (is_mhtml_archive && !IsInMainFrame()) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
+        false /* skip_throttles */, base::nullopt /* error_page_contnet */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
   }
 
   // TODO(clamy): When we are able to compute the origin of a response in the
@@ -3059,7 +3084,9 @@ void NavigationRequest::CommitErrorPage(
     }
   }
 
-  sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
+  is_loaded_from_mhtml_archive_ = false;
+  sandbox_flags_to_commit_.reset();
+  ComputeSandboxFlagsToCommit();
   ReadyToCommitNavigation(true);
   render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
@@ -3105,12 +3132,9 @@ void NavigationRequest::CommitNavigation() {
          (was_redirected_ && common_params_->url.IsAboutBlank()));
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
+  DCHECK(sandbox_flags_to_commit_);
 
   AddOldPageInfoToCommitParamsIfNeeded();
-
-  is_loaded_from_mhtml_archive_ = GetMimeType() == "multipart/related" ||
-                                  GetMimeType() == "message/rfc822" ||
-                                  IsForMhtmlSubframe();
 
   if (IsServedFromBackForwardCache()) {
     // Navigations served from the back-forward cache must be a history
@@ -3181,7 +3205,6 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
-  sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
   coop_status_.UpdateReporterStoragePartition(
       render_frame_host_->GetProcess()->GetStoragePartition());
@@ -3880,8 +3903,9 @@ bool NavigationRequest::IsDeferredForTesting() {
   return throttle_runner_->GetDeferringThrottle() != nullptr;
 }
 
-bool NavigationRequest::IsLoadedFromMhtmlArchive() const {
-  DCHECK_LE(READY_TO_COMMIT, state_);
+bool NavigationRequest::IsLoadedFromMhtmlArchive() {
+  DCHECK(state_ >= WILL_PROCESS_RESPONSE ||
+         state_ == WILL_START_REQUEST && !NeedsUrlLoader());
   return is_loaded_from_mhtml_archive_;
 }
 
@@ -5004,27 +5028,24 @@ NavigationRequest::TakeCookieObservers() {
   return cookie_observers_.TakeReceivers();
 }
 
-network::mojom::WebSandboxFlags
-NavigationRequest::ComputeSandboxFlagsToCommit() {
+void NavigationRequest::ComputeSandboxFlagsToCommit() {
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());
   DCHECK(!IsErrorPage());
+  DCHECK(!sandbox_flags_to_commit_);
 
-  network::mojom::WebSandboxFlags out =
-      commit_params_->frame_policy.sandbox_flags;
+  sandbox_flags_to_commit_ = commit_params_->frame_policy.sandbox_flags;
 
   // The response can also restrict the policy further.
   if (response_head_) {
     for (const auto& csp :
          response_head_->parsed_headers->content_security_policy) {
-      out |= csp->sandbox;
+      *sandbox_flags_to_commit_ |= csp->sandbox;
     }
   }
 
   // TODO(arthursonzogni): Add the MHTML sandbox flags here. This should
   // replicate DocumentLoader::CalculateSandboxFlags.
-
-  return out;
 }
 
 void NavigationRequest::CheckStateTransition(NavigationState state) const {

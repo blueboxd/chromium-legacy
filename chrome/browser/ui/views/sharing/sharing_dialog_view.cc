@@ -173,28 +173,19 @@ SharingDialogType SharingDialogView::GetDialogType() const {
   return data_.type;
 }
 
-void SharingDialogView::ButtonPressed(views::Button* sender,
-                                      const ui::Event& event) {
-  DCHECK(data_.device_callback);
-  DCHECK(data_.app_callback);
-  if (!sender || sender->tag() < 0)
-    return;
-  size_t index{sender->tag()};
+void SharingDialogView::DeviceButtonPressed(size_t index) {
+  DCHECK_LT(index, data_.devices.size());
+  LogSharingSelectedIndex(data_.prefix, kSharingUiDialog, index);
+  std::move(data_.device_callback).Run(*data_.devices[index]);
+  CloseBubble();
+}
 
-  if (index < data_.devices.size()) {
-    LogSharingSelectedDeviceIndex(data_.prefix, kSharingUiDialog, index);
-    std::move(data_.device_callback).Run(*data_.devices[index]);
-    CloseBubble();
-    return;
-  }
-
-  index -= data_.devices.size();
-
-  if (index < data_.apps.size()) {
-    LogSharingSelectedAppIndex(data_.prefix, kSharingUiDialog, index);
-    std::move(data_.app_callback).Run(data_.apps[index]);
-    CloseBubble();
-  }
+void SharingDialogView::AppButtonPressed(size_t index) {
+  DCHECK_LT(index, data_.apps.size());
+  LogSharingSelectedIndex(data_.prefix, kSharingUiDialog, index,
+                          SharingIndexType::kApp);
+  std::move(data_.app_callback).Run(data_.apps[index]);
+  CloseBubble();
 }
 
 // static
@@ -251,7 +242,6 @@ void SharingDialogView::Init() {
 
 void SharingDialogView::InitListView() {
   constexpr int kPrimaryIconSize = 20;
-  int tag = 0;
   const gfx::Insets device_border =
       gfx::Insets(kSharingDialogSpacing, kSharingDialogSpacing * 2,
                   kSharingDialogSpacing, 0);
@@ -264,6 +254,7 @@ void SharingDialogView::InitListView() {
 
   // Devices:
   LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
+  size_t index = 0;
   for (const auto& device : data_.devices) {
     auto icon = std::make_unique<views::ColorTrackingIconView>(
         device->device_type() == sync_pb::SyncEnums::TYPE_TABLET
@@ -271,18 +262,19 @@ void SharingDialogView::InitListView() {
             : kHardwareSmartphoneIcon,
         kPrimaryIconSize);
 
-    auto dialog_button = std::make_unique<HoverButton>(
-        this, std::move(icon), base::UTF8ToUTF16(device->client_name()),
-        GetLastUpdatedTimeInDays(device->last_updated_timestamp()));
+    auto* dialog_button =
+        button_list->AddChildView(std::make_unique<HoverButton>(
+            base::BindRepeating(&SharingDialogView::DeviceButtonPressed,
+                                base::Unretained(this), index++),
+            std::move(icon), base::UTF8ToUTF16(device->client_name()),
+            GetLastUpdatedTimeInDays(device->last_updated_timestamp())));
     dialog_button->SetEnabled(true);
-    dialog_button->set_tag(tag++);
     dialog_button->SetBorder(views::CreateEmptyBorder(device_border));
-    dialog_buttons_.push_back(
-        button_list->AddChildView(std::move(dialog_button)));
   }
 
   // Apps:
   LogSharingAppsToShow(data_.prefix, kSharingUiDialog, data_.apps.size());
+  index = 0;
   for (const auto& app : data_.apps) {
     std::unique_ptr<views::ImageView> icon;
     if (app.vector_icon) {
@@ -293,32 +285,34 @@ void SharingDialogView::InitListView() {
       icon->SetImage(app.image.AsImageSkia());
     }
 
-    auto dialog_button =
-        std::make_unique<HoverButton>(this, std::move(icon), app.name,
-                                      /* subtitle= */ base::string16());
+    auto* dialog_button =
+        button_list->AddChildView(std::make_unique<HoverButton>(
+            base::BindRepeating(&SharingDialogView::AppButtonPressed,
+                                base::Unretained(this), index++),
+            std::move(icon), app.name,
+            /* subtitle= */ base::string16()));
     dialog_button->SetEnabled(true);
-    dialog_button->set_tag(tag++);
     dialog_button->SetBorder(views::CreateEmptyBorder(app_border));
-    dialog_buttons_.push_back(
-        button_list->AddChildView(std::move(dialog_button)));
   }
 
   // Allow up to 5 buttons in the list and let the rest scroll.
   constexpr size_t kMaxDialogButtons = 5;
-  if (dialog_buttons_.size() > kMaxDialogButtons) {
+  if (button_list->children().size() > kMaxDialogButtons) {
     const int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
         views::DISTANCE_BUBBLE_PREFERRED_WIDTH);
 
     int max_list_height = 0;
-    for (size_t i = 0; i < kMaxDialogButtons; ++i)
-      max_list_height += dialog_buttons_[i]->GetHeightForWidth(bubble_width);
+    for (size_t i = 0; i < kMaxDialogButtons; ++i) {
+      max_list_height +=
+          button_list->children()[i]->GetHeightForWidth(bubble_width);
+    }
     DCHECK_GT(max_list_height, 0);
 
     auto* scroll_view = AddChildView(std::make_unique<views::ScrollView>());
     scroll_view->ClipHeightTo(0, max_list_height);
-    scroll_view->SetContents(std::move(button_list));
+    button_list_ = scroll_view->SetContents(std::move(button_list));
   } else {
-    AddChildView(std::move(button_list));
+    button_list_ = AddChildView(std::move(button_list));
   }
 }
 

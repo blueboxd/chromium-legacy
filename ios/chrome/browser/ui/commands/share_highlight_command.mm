@@ -16,11 +16,15 @@
 
 - (instancetype)initWithURL:(const GURL&)URL
                       title:(NSString*)title
-               selectedText:(NSString*)selectedText {
+               selectedText:(NSString*)selectedText
+                 sourceView:(UIView*)sourceView
+                 sourceRect:(CGRect)sourceRect {
   if (self = [super init]) {
     _URL = URL;
     _title = [title copy];
     _selectedText = [selectedText copy];
+    _sourceView = sourceView;
+    _sourceRect = sourceRect;
   }
   return self;
 }

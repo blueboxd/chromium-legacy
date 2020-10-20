@@ -826,7 +826,8 @@
                     "enable_features": [
                         "AutofillKeyboardAccessory",
                         "AutofillManualFallbackAndroid",
-                        "IPH_KeyboardAccessoryAddressFilling"
+                        "IPH_KeyboardAccessoryAddressFilling",
+                        "RecoverFromNeverSaveAndroid"
                     ]
                 }
             ]
@@ -1873,6 +1874,24 @@
                     "name": "ConversionMeasurement",
                     "enable_features": [
                         "ConversionMeasurement"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CopyLinkToTextDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CopyLinkToText"
                     ]
                 }
             ]
@@ -3181,22 +3200,6 @@
                     ],
                     "disable_features": [
                         "HappinessTrackingSurveysForDesktopSettings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HardwareMediaKeyHandling": [
-        {
-            "platforms": [
-                "windows",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "HardwareMediaKeyHandling"
                     ]
                 }
             ]
@@ -4709,13 +4712,19 @@
                 {
                     "name": "DesktopExperiments",
                     "params": {
+                        "EntitySuggestionsReduceLatencyDecoderWakeup": "true",
                         "MaxZeroSuggestMatches": "10",
+                        "OmniboxDynamicMaxAutocompleteIncreasedLimit": "10",
+                        "OmniboxDynamicMaxAutocompleteUrlCutoff": "2",
                         "OmniboxLocalZeroSuggestAgeThreshold": "7",
                         "OmniboxMaxURLMatches": "7",
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
+                        "OmniboxBubbleUrlSuggestions",
                         "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxDynamicMaxAutocomplete",
+                        "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxLocalZeroSuggestFrecencyRanking",
                         "OmniboxMaxURLMatches",
@@ -5898,6 +5907,9 @@
                     },
                     "enable_features": [
                         "RenderDocument"
+                    ],
+                    "disable_features": [
+                        "SkipEarlyCommitPendingForCrashedFrame"
                     ]
                 }
             ]
@@ -7750,6 +7762,25 @@
             ]
         }
     ],
+    "WebRTC-Bwe-ProbingBehavior": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "max_probe_delay:10ms,abort_delayed_probes:true"
+                }
+            ]
+        }
+    ],
     "WebRTC-CongestionWindow": [
         {
             "platforms": [
@@ -7783,21 +7814,6 @@
             "experiments": [
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "WebRTC-ProbingScreenshareBwe": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "1.0,2875,80,40,-60,3"
                 }
             ]
         }

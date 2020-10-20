@@ -179,7 +179,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
-    enum="BackgroundTaskId" expires_after="2021-01-31">
+    enum="BackgroundTaskId" expires_after="2021-04-18">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has loaded native.</summary>
@@ -397,7 +397,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DarkTheme.DarkSearchRequested" enum="Boolean"
-    expires_after="2020-12-01">
+    expires_after="2021-06-01">
   <owner>wylieb@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
@@ -843,7 +843,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.InstallingStatus"
-    enum="FeatureModuleInstallingStatus" expires_after="2021-01-31">
+    enum="FeatureModuleInstallingStatus" expires_after="2021-04-18">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 

@@ -167,7 +167,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.ConfigureFailed" enum="SyncModelTypes"
-    expires_after="2021-03-27">
+    expires_after="2020-10-16">
+  <obsolete>
+    Removed 10/2020 (and not recorded for some time before that).
+  </obsolete>
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>Count of model association failures for each type.</summary>
@@ -264,7 +267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.CryptographerPendingKeys"
-    enum="SyncCryptographerPendingKeysState" expires_after="2021-02-14">
+    enum="SyncCryptographerPendingKeysState" expires_after="2021-04-18">
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -600,7 +603,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.PassphraseType" enum="SyncPassphraseType"
-    expires_after="2021-02-14">
+    expires_after="2021-04-18">
   <owner>treib@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>The active sync passphrase type at sync startup.</summary>

@@ -87,6 +87,7 @@ source_set("chromeos") {
     "//chrome/browser/image_decoder",
     "//chrome/browser/nearby_sharing/logging",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
+    "//chrome/browser/resources:settings_resources_grit",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
@@ -2800,6 +2801,8 @@ source_set("chromeos") {
     "web_applications/help_app_web_app_info.h",
     "web_applications/media_web_app_info.cc",
     "web_applications/media_web_app_info.h",
+    "web_applications/os_settings_web_app_info.cc",
+    "web_applications/os_settings_web_app_info.h",
     "web_applications/print_management_web_app_info.cc",
     "web_applications/print_management_web_app_info.h",
     "web_applications/scanning_system_web_app_info.cc",
@@ -3780,7 +3783,10 @@ source_set("unit_tests") {
     # broken.
     "../../common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc",
     "../../common/extensions/api/file_system_provider/file_system_provider_handler_unittest.cc",
-    "../ui/views/frame/immersive_mode_controller_ash_unittest.cc",
+
+    # TODO(crbug.com/1113900): Consider making this test available on lacros
+    # builds as well.
+    "../ui/views/frame/immersive_mode_controller_chromeos_unittest.cc",
     "../ui/views/select_file_dialog_extension_unittest.cc",
     "../ui/webui/chromeos/login/l10n_util_test_util.cc",
     "../ui/webui/chromeos/login/l10n_util_test_util.h",

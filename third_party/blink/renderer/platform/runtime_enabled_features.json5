@@ -345,6 +345,9 @@
       status: {"Android": "stable"},
     },
     {
+      name: "CompositeRelativeKeyframes",
+    },
+    {
       name: "CompositeSVG",
       status: "experimental",
     },
@@ -425,7 +428,7 @@
     },
     {
       name: "CSSAspectRatioProperty",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSCalcAsInt",
@@ -607,6 +610,12 @@
     {
       name: "CSSSystemColorComputeToSelf",
       status: "experimental",
+    },
+    {
+      // Support for ::target-text pseudo element as specified in
+      // https://drafts.csswg.org/css-pseudo/#selectordef-target-text
+      name: "CSSTargetTextPseudoElement",
+      status: "test",
     },
     // Support for @property rules.
     {

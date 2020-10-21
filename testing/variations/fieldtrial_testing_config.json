@@ -1708,6 +1708,24 @@
             ]
         }
     ],
+    "ClientStorageAccessContextAuditing": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClientStorageAccessContextAuditing"
+                    ]
+                }
+            ]
+        }
+    ],
     "CodeCacheDeletionWithoutFilter": [
         {
             "platforms": [
@@ -7961,6 +7979,22 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebRtcLibvpxEncodeNV12": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebRtcLibvpxEncodeNV12"
                     ]
                 }
             ]

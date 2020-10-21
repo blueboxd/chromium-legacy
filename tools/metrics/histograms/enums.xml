@@ -16466,6 +16466,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="34" label="movableTabs"/>
   <int value="35" label="keyboardShortcutEditor"/>
   <int value="36" label="cssFlexboxFeatures"/>
+  <int value="37" label="showWebVitalsInPerformancePanel"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -25078,6 +25079,8 @@ Called by update_extension_histograms.py.-->
   <int value="1521" label="AUTOTESTPRIVATE_ACTIVATEADJACENTDESKSTOTARGETINDEX"/>
   <int value="1522" label="DECLARATIVENETREQUEST_GETAVAILABLESTATICRULECOUNT"/>
   <int value="1523" label="CHROMEOSINFOPRIVATE_ISTABLETMODEENABLED"/>
+  <int value="1524"
+      label="FILEMANAGERPRIVATEINTERNAL_GETARCDOCUMENTSPROVIDERTHUMBNAIL"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -31544,9 +31547,13 @@ Called by update_feature_policy_enum.py.-->
   <summary>Actions which happen on the screen.</summary>
   <int value="0" label="Setup done button clicked"/>
   <int value="1" label="Skipped button clicked"/>
-  <int value="2" label="Do it later button clicked"/>
+  <int value="2" label="Do it later button clicked">
+    Obsolete, the button is removed.
+  </int>
   <int value="3" label="Add another finger button clicked"/>
-  <int value="4" label="Show sensor location button clicked"/>
+  <int value="4" label="Show sensor location button clicked">
+    Obsolete, the button in removed.
+  </int>
 </enum>
 
 <enum name="FingerprintUpdaterReason">

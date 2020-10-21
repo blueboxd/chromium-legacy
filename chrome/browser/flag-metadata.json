@@ -2424,6 +2424,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enhanced_clipboard_nudge_session_reset",
+    "owners":["mmourgos@chromium.org", "newcomer@chromium.org"],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enhanced_clipboard_simple_render",
     "owners":["newcomer@chromium.org", "gzadina@google.com"],
     "expiry_milestone": 90
@@ -3035,6 +3040,21 @@
     "expiry_milestone": -1
   },
   {
+    "name": "location-change-string",
+    "owners": [ "thegreenfrog", "bling-team" ],
+    "expiry_milestone": 91
+  },
+  {
+    "name": "location-first-run-modal",
+    "owners": [ "thegreenfrog", "bling-team" ],
+    "expiry_milestone": 91
+  },
+  {
+    "name": "location-remove-first-run",
+    "owners": [ "thegreenfrog", "bling-team" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "lock-screen-media-controls",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -3268,6 +3288,11 @@
     "name": "ntp-one-google-bar-modal-overlays",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "ntp-recipe-tasks-module",
+    "owners": [ "aee", "mahmadi", "tiborg" ],
+    "expiry_milestone": 90
   },
   {
     "name": "ntp-repeatable-queries",

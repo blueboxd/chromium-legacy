@@ -225,12 +225,9 @@
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [2020],
   },
-    "chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
     "includes": [2030],
-    "structures": [2050],
-  },
-  "chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources_vulcanized.grd": {
-    "includes": [2070],
   },
   "chrome/browser/resources/gaia_auth_host/gaia_auth_host_resources.grd": {
     "includes": [2080],
@@ -259,12 +256,9 @@
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [2220],
   },
-  "chrome/browser/resources/webui_js_exception/webui_js_exception_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_js_exception/webui_js_exception_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
     "includes": [2230],
-    "structures": [2231],
-  },
-  "chrome/browser/resources/webui_js_exception/webui_js_exception_resources_vulcanized.grd": {
-    "includes": [2232],
   },
   "components/sync/driver/resources.grd": {
     "includes": [2240],

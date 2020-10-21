@@ -19,17 +19,15 @@ class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
                                      public BrowserListObserver {
  public:
   explicit BookmarkBubbleSignInDelegate(Browser* browser);
-
- private:
   ~BookmarkBubbleSignInDelegate() override;
 
   // BubbleSyncPromoDelegate:
-  void OnEnableSync(const AccountInfo& account,
-                    bool is_default_promo_account) override;
+  void OnEnableSync(const AccountInfo& account) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
+ private:
   // Makes sure |browser_| points to a valid browser.
   void EnsureBrowser();
 

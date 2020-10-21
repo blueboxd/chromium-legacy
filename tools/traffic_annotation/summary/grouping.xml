@@ -321,6 +321,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="omnibox_documentsuggest"/>
       <traffic_annotation unique_id="omnibox_zerosuggest"/>
       <traffic_annotation unique_id="one_google_bar_service"/>
+      <traffic_annotation unique_id="search_prefetch_service"/>
     </sender>
   </group>
   <group name="Updates, Recovery, and Crash Reports">
@@ -391,6 +392,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="search_suggest_service"/>
       <traffic_annotation unique_id="remote_suggestions_provider"/>
       <traffic_annotation unique_id="promo_service"/>
+      <traffic_annotation unique_id="recipe_tasks_service"/>
       <traffic_annotation unique_id="shopping_tasks_service"/>
     </sender>
     <sender name="Speech Recognition">

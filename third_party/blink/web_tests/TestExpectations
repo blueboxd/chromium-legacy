@@ -396,10 +396,6 @@ crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientatio
 crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
 crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientation-background-image.html [ Failure ]
 
-# Cross origin failures
-crbug.com/1110330 external/wpt/css/css-images/image-orientation/image-orientation-none-cross-origin.html [ Failure ]
-crbug.com/1110330 external/wpt/css/css-images/image-orientation/image-orientation-none-cross-origin-canvas.html [ Failure ]
-
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.html [ Failure ]
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
 
@@ -1195,7 +1191,6 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.h
 ### Textarea NG
 crbug.com/1140307 accessibility/inline-text-textarea.html [ Failure ]
 crbug.com/1137666 editing/caret/caret-direction-auto.html [ Failure ]
-crbug.com/1138820 fast/forms/text/input-appearance-scroll-size-mocked.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -1635,7 +1630,6 @@ crbug.com/676270 external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failu
 crbug.com/1024331 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
 crbug.com/1024331 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-002.html [ Failure ]
 crbug.com/1140728 external/wpt/css/css-text/hyphens/hyphens-span-002.html [ Failure ]
-crbug.com/870219 virtual/text-antialias/hyphens/hyphens-auto-mock.html [ Failure ]
 crbug.com/1139693 virtual/text-antialias/hyphens/midword-break-priority.html [ Failure ]
 
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
@@ -4224,10 +4218,6 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
 
 crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
-
-# Disabled to land DevTools changes https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2436646
-crbug.com/1133060 http/tests/devtools/console/console-revoke-error.js [ Pass Failure ]
-crbug.com/1133060 http/tests/devtools/console/console-revoke-error-in-worker.js [ Pass Failure ]
 
 crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-track-inband.html [ Skip ]
 

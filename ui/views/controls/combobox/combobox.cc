@@ -68,7 +68,8 @@ gfx::ImageSkia GetImageSkiaFromImageModel(const ui::ImageModel* model,
 // The transparent button which holds a button state but is not rendered.
 class TransparentButton : public Button {
  public:
-  explicit TransparentButton(ButtonListener* listener) : Button(listener) {
+  explicit TransparentButton(PressedCallback callback)
+      : Button(std::move(callback)) {
     SetFocusBehavior(FocusBehavior::NEVER);
     button_controller()->set_notify_action(
         ButtonController::NotifyAction::kOnPress);
@@ -243,7 +244,9 @@ Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model,
 Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
     : text_context_(text_context),
       text_style_(text_style),
-      arrow_button_(new TransparentButton(this)) {
+      arrow_button_(new TransparentButton(
+          base::BindRepeating(&Combobox::ArrowButtonPressed,
+                              base::Unretained(this)))) {
   SetModel(model);
 #if defined(OS_APPLE)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -551,16 +554,6 @@ bool Combobox::HandleAccessibleAction(const ui::AXActionData& action_data) {
   return View::HandleAccessibleAction(action_data);
 }
 
-void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (!GetEnabled())
-    return;
-
-  // TODO(hajimehoshi): Fix the problem that the arrow button blinks when
-  // cliking this while the dropdown menu is opened.
-  if ((base::TimeTicks::Now() - closed_time_) > kMinimumTimeBetweenButtonClicks)
-    ShowDropDownMenu(ui::GetMenuSourceTypeForEvent(event));
-}
-
 void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
   DCHECK_EQ(model_, model);
 
@@ -575,6 +568,14 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
   content_size_ = GetContentSize();
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+const base::RepeatingClosure& Combobox::GetCallback() const {
+  return callback_;
+}
+
+const std::unique_ptr<ui::ComboboxModel>& Combobox::GetOwnedModel() const {
+  return owned_model_;
 }
 
 void Combobox::UpdateBorder() {
@@ -638,6 +639,16 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   AdjustBoundsForRTLUI(&arrow_bounds);
 
   PaintComboboxArrow(text_color, arrow_bounds, canvas);
+}
+
+void Combobox::ArrowButtonPressed(const ui::Event& event) {
+  if (!GetEnabled())
+    return;
+
+  // TODO(hajimehoshi): Fix the problem that the arrow button blinks when
+  // cliking this while the dropdown menu is opened.
+  if ((base::TimeTicks::Now() - closed_time_) > kMinimumTimeBetweenButtonClicks)
+    ShowDropDownMenu(ui::GetMenuSourceTypeForEvent(event));
 }
 
 void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
@@ -717,6 +728,9 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 BEGIN_METADATA(Combobox, View)
+ADD_PROPERTY_METADATA(base::RepeatingClosure, Callback)
+ADD_PROPERTY_METADATA(std::unique_ptr<ui::ComboboxModel>, OwnedModel)
+ADD_PROPERTY_METADATA(ui::ComboboxModel*, Model)
 ADD_PROPERTY_METADATA(int, SelectedIndex)
 ADD_PROPERTY_METADATA(bool, Invalid)
 ADD_PROPERTY_METADATA(bool, SizeToLargestLabel)

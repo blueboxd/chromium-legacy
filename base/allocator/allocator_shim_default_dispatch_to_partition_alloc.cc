@@ -6,13 +6,10 @@
 #include "base/allocator/allocator_shim_internals.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/bits.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-
-#if defined(OS_POSIX)
-#include <malloc.h>
-#endif
 
 namespace {
 
@@ -82,7 +79,8 @@ base::ThreadSafePartitionRoot& Allocator() {
 
   auto* new_root = new (g_allocator_buffer) base::ThreadSafePartitionRoot(
       {base::PartitionOptions::Alignment::kRegular,
-       base::PartitionOptions::ThreadCache::kEnabled});
+       base::PartitionOptions::ThreadCache::kEnabled,
+       base::PartitionOptions::PCScan::kDisabledByDefault});
   g_root_.store(new_root, std::memory_order_release);
 
   // Semantically equivalent to base::Lock::Release().
@@ -112,8 +110,10 @@ void* PartitionCalloc(const AllocatorDispatch*,
 base::ThreadSafePartitionRoot* AlignedAllocator() {
   // Since the general-purpose allocator uses the thread cache, this one cannot.
   static base::NoDestructor<base::ThreadSafePartitionRoot> aligned_allocator(
-      base::PartitionOptions{base::PartitionOptions::Alignment::kAlignedAlloc,
-                             base::PartitionOptions::ThreadCache::kDisabled});
+      base::PartitionOptions{
+          base::PartitionOptions::Alignment::kAlignedAlloc,
+          base::PartitionOptions::ThreadCache::kDisabled,
+          base::PartitionOptions::PCScan::kDisabledByDefault});
   return aligned_allocator.get();
 }
 
@@ -188,27 +188,22 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
   return base::ThreadSafePartitionRoot::GetUsableSize(address);
 }
 
-class PartitionStatsDumperImpl : public base::PartitionStatsDumper {
- public:
-  PartitionStatsDumperImpl() = default;
-
-  void PartitionDumpTotals(
-      const char* partition_name,
-      const base::PartitionMemoryStats* memory_stats) override {
-    stats_ = *memory_stats;
-  }
-
-  void PartitionsDumpBucketStats(
-      const char* partition_name,
-      const base::PartitionBucketMemoryStats*) override {}
-
-  const base::PartitionMemoryStats& stats() const { return stats_; }
-
- private:
-  base::PartitionMemoryStats stats_;
-};
-
 }  // namespace
+
+namespace base {
+namespace allocator {
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+void EnablePCScanIfNeeded() {
+  if (!features::IsPartitionAllocPCScanEnabled())
+    return;
+  Allocator().EnablePCScan();
+  AlignedAllocator()->EnablePCScan();
+}
+#endif
+
+}  // namespace allocator
+}  // namespace base
 
 constexpr AllocatorDispatch AllocatorDispatch::default_dispatch = {
     &PartitionMalloc,          /* alloc_function */
@@ -244,30 +239,10 @@ SHIM_ALWAYS_EXPORT int mallopt(int cmd, int value) __THROW {
 
 #endif  // !defined(OS_APPLE)
 
-#if defined(OS_POSIX)
+#ifdef HAVE_STRUCT_MALLINFO
 SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
-  PartitionStatsDumperImpl allocator_dumper;
-  Allocator().DumpStats("malloc", true, &allocator_dumper);
-
-  PartitionStatsDumperImpl aligned_allocator_dumper;
-  AlignedAllocator()->DumpStats("posix_memalign", true,
-                                &aligned_allocator_dumper);
-
-  struct mallinfo info = {0};
-  info.arena = 0;  // Memory *not* allocated with mmap().
-
-  // Memory allocated with mmap(), aka virtual size.
-  info.hblks = allocator_dumper.stats().total_mmapped_bytes +
-               aligned_allocator_dumper.stats().total_mmapped_bytes;
-  // Resident bytes.
-  info.hblkhd = allocator_dumper.stats().total_resident_bytes +
-                aligned_allocator_dumper.stats().total_resident_bytes;
-  // Allocated bytes.
-  info.uordblks = allocator_dumper.stats().total_active_bytes +
-                  aligned_allocator_dumper.stats().total_active_bytes;
-
-  return info;
+  return {};
 }
-#endif  // defined(OS_POSIX)
+#endif
 
 }  // extern "C"

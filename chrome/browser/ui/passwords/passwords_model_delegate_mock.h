@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class PasswordsModelDelegateMock
@@ -89,10 +90,7 @@ class PasswordsModelDelegateMock
               NavigateToPasswordCheckup,
               (password_manager::PasswordCheckReferrer),
               (override));
-  MOCK_METHOD(void,
-              EnableSync,
-              (const AccountInfo& account, bool is_default_promo_account),
-              (override));
+  MOCK_METHOD(void, EnableSync, (const AccountInfo& account), (override));
   MOCK_METHOD(void, OnDialogHidden, (), (override));
   MOCK_METHOD(bool, AuthenticateUser, (), (override));
   MOCK_METHOD(void,

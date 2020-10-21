@@ -75,6 +75,13 @@
     },
   },
   'angle_perftests': {
+    'modifications': {
+     'Android FYI 64 Perf (Pixel 2)': { # crbug.com/1140626
+       'swarming': {
+         'shards': 4,
+       },
+     },
+    },
     'remove_from': [
       'Android FYI Release (Nexus 5)',  # crbug.com/915429
       'Android FYI Release (Nexus 6)',  # anglebug.com/2433
@@ -855,6 +862,32 @@
         },
       }
     }
+  },
+  'chrome_sizes': {
+    'modifications': {
+      'win-chrome': {
+        'swarming': {
+          # TODO(crbug.com/1124829): Remove this exception once pool
+          # chrome.tests is migrated to 1909.
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-15063',
+            },
+          ],
+        },
+      },
+      'win64-chrome': {
+        'swarming': {
+          # TODO(crbug.com/1124829): Remove this exception once pool
+          # chrome.tests is migrated to 1909.
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-15063',
+            },
+          ],
+        },
+      },
+    },
   },
   'chromedriver_py_tests': {
     'remove_from': [
@@ -2772,7 +2805,32 @@
     'modifications': {
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # crbug.com/870673
-      }
+      },
+      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
+      # cache affinity works.
+      'chromeos-amd64-generic-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'x86',
+              'pool': 'chromium.tests',
+            }
+          ],
+          'optional_dimensions': {
+            '60': [
+              {
+                'caches': 'cros_vm',
+              }
+            ],
+          },
+          'named_caches': [
+            {
+              'name': 'cros_vm',
+              'path': 'magic_cros_vm_cache',
+            },
+          ],
+        },
+      },
     },
     'remove_from': [
       # crbug.com/936540

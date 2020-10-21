@@ -183,7 +183,13 @@ WebFrameWidgetBase::WebFrameWidgetBase(
                  ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
 }
 
-WebFrameWidgetBase::~WebFrameWidgetBase() = default;
+WebFrameWidgetBase::~WebFrameWidgetBase() {
+  // Ensure that Close is called and we aren't releasing |widget_base_| in the
+  // destructor.
+  // TODO(crbug.com/1139104): This CHECK can be changed to a DCHECK once
+  // the issue is solved.
+  CHECK(!widget_base_);
+}
 
 void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
@@ -1144,7 +1150,8 @@ void WebFrameWidgetBase::SetHandlingInputEvent(bool handling) {
 void WebFrameWidgetBase::ProcessInputEventSynchronouslyForTesting(
     const WebCoalescedInputEvent& event,
     HandledEventCallback callback) {
-  widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
+  widget_base_->input_handler().HandleInputEvent(event, nullptr,
+                                                 std::move(callback));
 }
 
 void WebFrameWidgetBase::UpdateTextInputState() {

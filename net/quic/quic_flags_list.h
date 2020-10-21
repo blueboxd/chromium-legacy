@@ -140,10 +140,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
           false)
 
-// If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
-// length-prefixed connection IDs.
-QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 
@@ -152,13 +148,18 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 // and starts a new one.
 QUIC_FLAG(double, FLAGS_quic_ack_aggregation_bandwidth_threshold, 1.0)
 
-// If set to non-zero, the maximum number of consecutive pings that can be sent
-// with aggressive initial retransmittable on wire timeout if there is no new
-// data received. After which, the timeout will be exponentially back off until
+// Maximum number of consecutive pings that can be sent with the aggressive
+// initial retransmittable on the wire timeout if there is no new stream data
+// received. After this limit, the timeout will be doubled each ping until it
 // exceeds the default ping timeout.
 QUIC_FLAG(int32_t,
           FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count,
-          0)
+          5)
+
+// Maximum number of pings that can be sent with the retransmittable on the wire
+// timeout, over the lifetime of a connection. After this limit, the timeout
+// will be the default ping timeout.
+QUIC_FLAG(int32_t, FLAGS_quic_max_retransmittable_on_wire_ping_count, 1000)
 
 // The maximum congestion window in packets.
 QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)
@@ -467,7 +468,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_key_update_supported, false)
 
 // If true, address is validated by successfully processing a HANDSHAKE or 1-RTT
 // packet.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_address_validation, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_address_validation, true)
 
 // If true, QuicStream will explicitly specify which RST_STREAM, STOP_SENDING
 // frame to send.

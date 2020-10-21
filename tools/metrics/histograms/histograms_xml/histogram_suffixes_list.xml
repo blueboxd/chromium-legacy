@@ -9293,7 +9293,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="The activity is ready to be drawn, although likely empty."/>
   <suffix name="FirstFragmentInflated"
       label="The first fragment is ready to be drawn, the first meaningful
-             paint."/>
+             paint. This version is buggy as it records the timestamp this
+             event happens since the system was booted, which is not extended
+             to measure. (http://crbug.com/1138660)">
+    <obsolete>
+      Deprecated and replaced with FirstFragmentInflatedV2 as of 10/2020.
+    </obsolete>
+  </suffix>
+  <suffix name="FirstFragmentInflatedV2"
+      label="The first fragment is ready to be drawn, the first meaningful
+             paint. Version V2 fixed an issue that previous data was not
+             recording the time duration from FRE launched."/>
   <suffix name="FreCompleted" label="Entire FRE is completed."/>
   <suffix name="TosAccepted" label="ToS is accepted."/>
   <suffix name="TriggerLayoutInflation"
@@ -11898,6 +11908,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Network" label=""/>
   <suffix name="Network-selection" label=""/>
   <suffix name="Packaged-license" label=""/>
+  <suffix name="Parental-handoff" label=""/>
   <suffix name="Recommend-apps" label=""/>
   <suffix name="Reset" label=""/>
   <suffix name="Supervision-transition" label=""/>
@@ -11952,6 +11963,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Oauth-enrollment.Completed" label=""/>
   <suffix name="Packaged-license.DontEnroll" label=""/>
   <suffix name="Packaged-license.Enroll" label=""/>
+  <suffix name="Parental-Handoff.Done" label=""/>
   <suffix name="Recommend-apps.Selected" label=""/>
   <suffix name="Recommend-apps.Skipped" label=""/>
   <suffix name="Reset.Cancel" label=""/>

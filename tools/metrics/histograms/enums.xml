@@ -43073,7 +43073,6 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-631614101" label="CameraSystemWebApp:enabled"/>
-  <int value="-630946893" label="TabSearchFixedEntrypoint:enabled"/>
   <int value="-629041881" label="MuteNotificationsDuringScreenShare:disabled"/>
   <int value="-626329144" label="SyncSupportTrustedVaultPassphrase:enabled"/>
   <int value="-626211146" label="DesktopMinimalUI:disabled"/>
@@ -43481,6 +43480,7 @@ from previous Chrome versions.
   <int value="-208587977" label="OmniboxMaterialDesignWeatherIcons:enabled"/>
   <int value="-208435024" label="EnableUsernameCorrection:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
+  <int value="-205975637" label="WebUIDarkMode:enabled"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
@@ -44554,7 +44554,6 @@ from previous Chrome versions.
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
-  <int value="880677998" label="TabSearchFixedEntrypoint:disabled"/>
   <int value="883190338" label="PrintWithReducedRasterization:disabled"/>
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="885004540" label="ArcEnableApplicationZoomFeature:enabled"/>
@@ -45078,6 +45077,7 @@ from previous Chrome versions.
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1394896630" label="PrinterStatusDialog:enabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
+  <int value="1398049903" label="WebUIDarkMode:disabled"/>
   <int value="1398148960" label="LanguageSettingsUpdate:disabled"/>
   <int value="1398333721" label="ForceEnableDevicesPage:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
@@ -54397,6 +54397,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="Wi-Fi: Metered Network"/>
   <int value="25" label="Cellular: Metered Network"/>
   <int value="26" label="Cellular: Add Network"/>
+  <int value="27" label="Cellular: Remove Network eSIM Profile"/>
+  <int value="28" label="Cellular: Rename Network eSIM Profile"/>
   <int value="100" label="Bluetooth: On/Off"/>
   <int value="101" label="Bluetooth: Connect To Device"/>
   <int value="102" label="Bluetooth: Disconnect From Device"/>
@@ -61067,6 +61069,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="166" label="HTTP_GOAWAY_INVALID_STREAM_ID"/>
   <int value="167" label="HTTP_GOAWAY_ID_LARGER_THAN_PREVIOUS"/>
   <int value="168" label="SILENT_IDLE_TIMEOUT"/>
+  <int value="169" label="QUIC_HTTP_RECEIVE_SPDY_SETTING"/>
+  <int value="170" label="QUIC_MISSING_WRITE_KEYS"/>
+  <int value="171" label="QUIC_HTTP_RECEIVE_SPDY_FRAME"/>
+  <int value="172" label="QUIC_KEY_UPDATE_ERROR"/>
+  <int value="173" label="QUIC_AEAD_LIMIT_REACHED"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">

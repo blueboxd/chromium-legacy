@@ -6894,8 +6894,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "TabSearch",
-                        "TabSearchFixedEntrypoint"
+                        "TabSearch"
                     ]
                 }
             ]
@@ -7832,6 +7831,24 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-VP8-Postproc-Config": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-8,30,60"
                 }
             ]
         }

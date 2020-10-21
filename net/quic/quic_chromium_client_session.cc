@@ -73,12 +73,6 @@ const size_t kWaitTimeForNewNetworkSecs = 10;
 
 const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
 
-// Default value for maximum number of consecutive pings that can be sent
-// with aggressive initial retransmittable on wire timeout if there is no new
-// data received. After which, the timeout will be exponentially back off until
-// exceeds the default ping timeout.
-const int kDefaultMaxAggressiveRetransmittableOnWirePingCount = 200;
-
 // Maximum RTT time for this session when set initial timeout for probing
 // network.
 const int kDefaultRTTMilliSecs = 300;
@@ -133,6 +127,10 @@ void RecordConnectionCloseErrorCodeImpl(const std::string& histogram,
                                error);
     }
   }
+}
+
+void LogMigrateToSocketStatus(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.MigrateToSocketSuccess", success);
 }
 
 void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
@@ -865,6 +863,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       max_allowed_push_id_(max_allowed_push_id),
       attempted_zero_rtt_(false),
       num_pings_sent_(0),
+      num_migrations_(0),
       push_promise_index_(std::move(push_promise_index)) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
@@ -905,13 +904,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   if (!retransmittable_on_wire_timeout.IsZero()) {
     connection->set_initial_retransmittable_on_wire_timeout(
         retransmittable_on_wire_timeout);
-    if (GetQuicFlag(
-            FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count) ==
-        0) {
-      // Set a default value for this flag if no custom value is provided.
-      SetQuicFlag(FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count,
-                  kDefaultMaxAggressiveRetransmittableOnWirePingCount);
-    }
   }
 }
 
@@ -1875,6 +1867,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
     UMA_HISTOGRAM_LONG_TIMES_100(
         "Net.QuicSession.ConnectionDuration",
         tick_clock_->NowTicks() - connect_timing_.connect_end);
+    UMA_HISTOGRAM_COUNTS_100("Net.QuicSession.NumMigrations", num_migrations_);
   } else {
     if (error == quic::QUIC_PUBLIC_RESET) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
@@ -2178,10 +2171,13 @@ void QuicChromiumClientSession::OnProbeSucceeded(
   // be acquired by connection and used as default on success.
   if (!MigrateToSocket(std::move(socket), std::move(reader),
                        std::move(writer))) {
+    LogMigrateToSocketStatus(false);
     net_log_.AddEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE_AFTER_PROBING);
     return;
   }
+
+  LogMigrateToSocketStatus(true);
 
   // Notify the connection that migration succeeds after probing.
   if (connection()->IsPathDegrading())
@@ -2190,6 +2186,7 @@ void QuicChromiumClientSession::OnProbeSucceeded(
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
       "migrate_to_network", network);
+  num_migrations_++;
   HistogramAndLogMigrationSuccess(connection_id());
   if (network == default_network_) {
     DVLOG(1) << "Client successfully migrated to default network: "
@@ -2496,6 +2493,12 @@ void QuicChromiumClientSession::OnForwardProgressMadeAfterPathDegrading() {
   NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
   for (auto& observer : connectivity_observer_list_)
     observer.OnSessionResumedPostPathDegrading(this, current_network);
+}
+
+void QuicChromiumClientSession::OnKeyUpdate(quic::KeyUpdateReason reason) {
+  net_log_.AddEventWithStringParams(NetLogEventType::QUIC_SESSION_KEY_UPDATE,
+                                    "reason",
+                                    quic::KeyUpdateReasonString(reason));
 }
 
 void QuicChromiumClientSession::OnProofValid(

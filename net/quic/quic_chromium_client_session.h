@@ -567,6 +567,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                         bool is_connectivity_probe) override;
   void OnPathDegrading() override;
   void OnForwardProgressMadeAfterPathDegrading() override;
+  void OnKeyUpdate(quic::KeyUpdateReason reason) override;
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;
@@ -929,6 +930,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool attempted_zero_rtt_;
 
   size_t num_pings_sent_;
+
+  size_t num_migrations_;
 
   std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index_;
 

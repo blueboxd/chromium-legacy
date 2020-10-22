@@ -9,7 +9,9 @@ let volumeManager;
 function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData = {
-    data: {},
+    data: {
+      'FILES_TRASH_ENABLED': true,
+    },
     getBoolean: function(key) {
       return window.loadTimeData.data[key];
     },
@@ -24,7 +26,7 @@ function setUp() {
  * we correctly either permanently delete, or move to trash.
  *
  * @suppress {accessControls} Access private functions
- * permanentlyDeleteFileOrDirectory_() and trashLocalFileOrDirectory_().
+ * permanentlyDeleteFileOrDirectory_() and trashFileOrDirectory_().
  */
 function checkRemoveFileOrDirectory(
     filesTrashEnabled, rootType, path, deletePermanently,
@@ -35,21 +37,21 @@ function checkRemoveFileOrDirectory(
   const f = MockFileEntry.create(volumeInfo.fileSystem, path);
 
   const trash = new Trash();
-  // Detect whether permanentlyDelete..., or trashLocal... is called.
+  // Detect whether permanentlyDelete..., or trash... is called.
   let permanentlyDeleteCalled = false;
-  let trashLocalCalled = false;
+  let trashCalled = false;
   trash.permanentlyDeleteFileOrDirectory_ = () => {
     permanentlyDeleteCalled = true;
     return Promise.resolve();
   };
-  trash.trashLocalFileOrDirectory_ = (volumeManager, entry) => {
-    trashLocalCalled = true;
+  trash.trashFileOrDirectory_ = (volumeManager, entry) => {
+    trashCalled = true;
     return Promise.resolve();
   };
 
   trash.removeFileOrDirectory(volumeManager, f, deletePermanently);
   assertEquals(expectPermanentlyDelete, permanentlyDeleteCalled);
-  assertEquals(!expectPermanentlyDelete, trashLocalCalled);
+  assertEquals(!expectPermanentlyDelete, trashCalled);
 }
 
 /**
@@ -104,12 +106,11 @@ async function testPermanentlyDeleteFileOrDirectory(done) {
 }
 
 /**
- * Test trashLocalFileOrDirectory_().
- *
- * @suppress {accessControls} Access trashLocalFileOrDirectory_().
+ * Test trash in MyFiles.
  */
-async function testTrashLocalFileOrDirectory(done) {
+async function testMyFilesTrash(done) {
   const trash = new Trash();
+  const deletePermanently = false;
   const downloads = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
   const fs = downloads.fileSystem;
@@ -123,7 +124,7 @@ async function testTrashLocalFileOrDirectory(done) {
   // /.Trash/info.
   assertEquals(5, Object.keys(fs.entries).length);
   assertTrue(!!fs.entries['/dir/file1']);
-  await trash.trashLocalFileOrDirectory_(volumeManager, file1);
+  await trash.removeFileOrDirectory(volumeManager, file1, deletePermanently);
   assertFalse(!!fs.entries['/dir/file1']);
   assertTrue(fs.entries['/.Trash/files'].isDirectory);
   assertTrue(fs.entries['/.Trash/info'].isDirectory);
@@ -137,7 +138,7 @@ async function testTrashLocalFileOrDirectory(done) {
 
   // Trashed dir should also move children files into /.Trash/files.
   assertTrue(!!fs.entries['/dir']);
-  await trash.trashLocalFileOrDirectory_(volumeManager, dir);
+  await trash.removeFileOrDirectory(volumeManager, dir, deletePermanently);
   assertFalse(!!fs.entries['/dir']);
   assertFalse(!!fs.entries['/dir/file2']);
   assertFalse(!!fs.entries['/dir/file3']);
@@ -159,10 +160,117 @@ async function testTrashLocalFileOrDirectory(done) {
 }
 
 /**
+ * Test that Downloads has its own /Downloads/.Trash since it is a separate
+ * mount on a device and we don't want move to trash to be a copy operation.
+ *
+ * @suppress {accessControls} Access shouldMoveToTrash_().
+ */
+async function testDownloadsHasOwnTrash(done) {
+  const trash = new Trash();
+  const deletePermanently = false;
+  const downloads = volumeManager.getCurrentProfileVolumeInfo(
+      VolumeManagerCommon.VolumeType.DOWNLOADS);
+  const fs = downloads.fileSystem;
+  const file1 = MockFileEntry.create(fs, '/file1', null, new Blob(['f1']));
+  const dir2 = MockDirectoryEntry.create(fs, '/Downloads');
+  const file2 =
+      MockFileEntry.create(fs, '/Downloads/file2', null, new Blob(['f1']));
+  assertEquals(4, Object.keys(fs.entries).length);
+
+  // Move /file1 to trash.
+  await trash.removeFileOrDirectory(volumeManager, file1, deletePermanently);
+  assertTrue(fs.entries['/.Trash'].isDirectory);
+  assertTrue(fs.entries['/.Trash/files'].isDirectory);
+  assertTrue(fs.entries['/.Trash/info'].isDirectory);
+  assertTrue(fs.entries['/.Trash/files/file1'].isFile);
+  assertTrue(fs.entries['/.Trash/info/file1.trashinfo'].isFile);
+  assertEquals(8, Object.keys(fs.entries).length);
+
+  // Move /files2 (in Downloads to trash.
+  await trash.removeFileOrDirectory(volumeManager, file2, deletePermanently);
+  assertTrue(fs.entries['/Downloads/.Trash'].isDirectory);
+  assertTrue(fs.entries['/Downloads/.Trash/files'].isDirectory);
+  assertTrue(fs.entries['/Downloads/.Trash/info'].isDirectory);
+  assertTrue(fs.entries['/Downloads/.Trash/files/file2'].isFile);
+  assertTrue(fs.entries['/Downloads/.Trash/info/file2.trashinfo'].isFile);
+  assertEquals(12, Object.keys(fs.entries).length);
+
+  // Delete /Downloads/.Trash/files/file2.
+  const file2Trashed = fs.entries['/Downloads/.Trash/files/file2'];
+  assertFalse(!!trash.shouldMoveToTrash_(volumeManager, file2Trashed));
+  await trash.removeFileOrDirectory(
+      volumeManager, file2Trashed, deletePermanently);
+  assertEquals(11, Object.keys(fs.entries).length);
+
+  // Delete /Downloads/.Trash.
+  const downloadsTrash = fs.entries['/Downloads/.Trash'];
+  assertFalse(!!trash.shouldMoveToTrash_(volumeManager, downloadsTrash));
+  await trash.removeFileOrDirectory(
+      volumeManager, downloadsTrash, deletePermanently);
+  assertEquals(7, Object.keys(fs.entries).length);
+
+  done();
+}
+
+/**
+ * Test crostini trash in .local/share/Trash.
+ *
+ * @suppress {accessControls} Access shouldMoveToTrash_().
+ */
+async function testCrostiniTrash(done) {
+  const trash = new Trash();
+  const deletePermanently = false;
+  const crostini = volumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.CROSTINI, 'crostini', 'Linux files', '',
+      '/home/testuser');
+  const fs = crostini.fileSystem;
+  const file1 = MockFileEntry.create(fs, '/file1', null, new Blob(['f1']));
+  const file2 = MockFileEntry.create(fs, '/file2', null, new Blob(['f1']));
+  assertEquals(3, Object.keys(fs.entries).length);
+
+  // Move /file1 to trash.
+  const file1TrashItem = await trash.removeFileOrDirectory(
+      volumeManager, file1, deletePermanently);
+  assertFalse(!!fs.entries['/file1']);
+  assertTrue(fs.entries['/.local/share/Trash'].isDirectory);
+  assertTrue(fs.entries['/.local/share/Trash/files'].isDirectory);
+  assertTrue(fs.entries['/.local/share/Trash/info'].isDirectory);
+  assertTrue(fs.entries['/.local/share/Trash/files/file1'].isFile);
+  assertTrue(fs.entries['/.local/share/Trash/info/file1.trashinfo'].isFile);
+  const text = await fs.entries['/.local/share/Trash/info/file1.trashinfo']
+                   .content.text();
+  assertTrue(
+      text.startsWith('[Trash Info]\nPath=/home/testuser/file1\nDeletionDate='),
+      `${text} must have Path=/home/test/user/file1`);
+  assertEquals(9, Object.keys(fs.entries).length);
+
+  // Restore /file1
+  await trash.restore(volumeManager, assert(file1TrashItem));
+  assertEquals(8, Object.keys(fs.entries).length);
+  assertTrue(!!fs.entries['/file1']);
+
+  // Move /file2 to trash, then delete /.local/share/Trash/files/file2.
+  await trash.removeFileOrDirectory(volumeManager, file2, deletePermanently);
+  const file2Trashed = fs.entries['/.local/share/Trash/files/file2'];
+  assertFalse(!!trash.shouldMoveToTrash_(volumeManager, file2Trashed));
+  await trash.removeFileOrDirectory(
+      volumeManager, file2Trashed, deletePermanently);
+  assertEquals(8, Object.keys(fs.entries).length);
+
+  // Delete /.local/share/Trash.
+  const crostiniTrash = fs.entries['/.local/share/Trash'];
+  assertFalse(!!trash.shouldMoveToTrash_(volumeManager, crostiniTrash));
+  await trash.removeFileOrDirectory(
+      volumeManager, crostiniTrash, deletePermanently);
+  assertEquals(4, Object.keys(fs.entries).length);
+
+  done();
+}
+
+/**
  * Test restore().
  */
 async function testRestore(done) {
-  window.loadTimeData.data['FILES_TRASH_ENABLED'] = true;
   const trash = new Trash();
   const deletePermanently = false;
   const downloads = volumeManager.getCurrentProfileVolumeInfo(
@@ -204,6 +312,71 @@ async function testRestore(done) {
   assertEquals('f2v2', text);
   text = await fs.entries['/dir/file2 (1)'].content.text();
   assertEquals('f2', text);
+
+  done();
+}
+
+/**
+ * Test removeOldEntries_().
+ *
+ * @suppress {accessControls} Access removeOldItems_().
+ */
+async function testRemoveOldItems_(done) {
+  const trash = new Trash();
+  const deletePermanently = false;
+  const downloads = volumeManager.getCurrentProfileVolumeInfo(
+      VolumeManagerCommon.VolumeType.DOWNLOADS);
+  const fs = downloads.fileSystem;
+
+  const dir = MockDirectoryEntry.create(fs, '/dir');
+  const file1 = MockFileEntry.create(fs, '/dir/file1', null, new Blob(['f1']));
+  const file2 = MockFileEntry.create(fs, '/dir/file2', null, new Blob(['f2']));
+  const file3 = MockFileEntry.create(fs, '/dir/file3', null, new Blob(['f3']));
+  const file4 = MockFileEntry.create(fs, '/dir/file4', null, new Blob(['f4']));
+  const file5 = MockFileEntry.create(fs, '/dir/file5', null, new Blob(['f5']));
+
+  // Move files to trash.
+  for (const f of [file1, file2, file3, file4, file5]) {
+    await trash.removeFileOrDirectory(volumeManager, f, deletePermanently);
+  }
+  assertEquals(15, Object.keys(fs.entries).length);
+  const now = Date.now();
+
+  // Directories inside info should be deleted.
+  MockDirectoryEntry.create(fs, '/.Trash/info/baddir.trashinfo');
+  // Files that do not end with .trashinfo should be deleted.
+  MockFileEntry.create(fs, '/.Trash/info/f', null, new Blob(['f']));
+  // Files without a matching file in .Trash/files are left.
+  delete fs.entries['/.Trash/files/file1'];
+  // Files with no DeletionDate should be deleted.
+  fs.entries['/.Trash/info/file2.trashinfo'].content =
+      new Blob(['no-deletion-date']);
+  // Files with DeletionDate which cannot be parsed should be deleted.
+  fs.entries['/.Trash/info/file3.trashinfo'].content =
+      new Blob(['DeletionDate=abc']);
+  // Files with no matching trashinfo should be deleted.
+  delete fs.entries['/.Trash/info/file4.trashinfo'];
+
+  const trashDirs =
+      new TrashDirs(fs.entries['/.Trash/files'], fs.entries['/.Trash/info']);
+  await trash.removeOldItems_(trashDirs, now);
+  assertTrue(!!fs.entries['/']);
+  assertTrue(!!fs.entries['/.Trash']);
+  assertTrue(!!fs.entries['/.Trash/files']);
+  assertTrue(!!fs.entries['/.Trash/files/file5']);
+  assertTrue(!!fs.entries['/.Trash/info']);
+  assertTrue(!!fs.entries['/.Trash/info/file1.trashinfo']);
+  assertTrue(!!fs.entries['/.Trash/info/file5.trashinfo']);
+  assertTrue(!!fs.entries['/dir']);
+  assertEquals(8, Object.keys(fs.entries).length);
+
+  // Items older than 30d should be deleted.
+  await trash.removeOldItems_(trashDirs, now + (29 * 24 * 60 * 60 * 1000));
+  assertEquals(8, Object.keys(fs.entries).length);
+  await trash.removeOldItems_(trashDirs, now + (31 * 24 * 60 * 60 * 1000));
+  assertFalse(!!fs.entries['/.Trash/info/file5.trashinfo']);
+  assertFalse(!!fs.entries['/.Trash/files/file5']);
+  assertEquals(5, Object.keys(fs.entries).length);
 
   done();
 }

@@ -580,10 +580,10 @@ void ScriptExecutor::SetStepProgressBarConfiguration(
 }
 
 void ScriptExecutor::GetFieldValue(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&, const std::string&)>
         callback) {
-  delegate_->GetWebController()->GetFieldValue(selector, std::move(callback));
+  delegate_->GetWebController()->GetFieldValue(element, std::move(callback));
 }
 
 void ScriptExecutor::GetStringAttribute(
@@ -970,13 +970,6 @@ void ScriptExecutor::OnProcessedAction(
       current_action_data_.navigation_info;
 
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
-    if (delegate_->HasNavigationError()) {
-      // Overwrite the original error, as the root cause is most likely a
-      // navigation error.
-      processed_action.mutable_status_details()->set_original_status(
-          processed_action.status());
-      processed_action.set_status(ProcessedActionStatusProto::NAVIGATION_ERROR);
-    }
     VLOG(1) << "Action failed: " << processed_action.status();
     // Remove unexecuted actions, this will cause the |ProcessNextActions| call
     // to immediately ask for new actions.

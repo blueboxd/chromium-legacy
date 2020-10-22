@@ -22,18 +22,44 @@ class TrashDirs {
 }
 
 /**
+ * Configuration for where Trash is stored in a volume.
+ */
+class TrashConfig {
+  /**
+   * @param {VolumeManagerCommon.RootType} rootType
+   * @param {string} topDir Top directory of volume. Must end with a slash to
+   *     make comparisons simpler.
+   * @param {string} trashDir Trash directory. Must end with a slash to make
+   *     comparisons simpler.
+   * @param {boolean=} prefixPathWithRemoteMount Optional, if true, 'Path=' in
+   *     *.trashinfo is prefixed with the volume.remoteMountPath. For crostini,
+   *     this is the user's homedir (/home/<username>).
+   */
+  constructor(rootType, topDir, trashDir, prefixPathWithRemoteMount = false) {
+    this.rootType = rootType;
+    this.topDir = topDir;
+    this.trashDir = trashDir;
+    this.prefixPathWithRemoteMount = prefixPathWithRemoteMount;
+    this.pathPrefix = '';
+  }
+}
+
+/**
  * Result from calling Trash.removeFileOrDirectory().
  */
 class TrashItem {
   /**
-   * @param {string} name
-   * @param {!Entry} filesEntry
-   * @param {!FileEntry} infoEntry
+   * @param {string} name Name of the file deleted.
+   * @param {!Entry} filesEntry Trash files entry.
+   * @param {!FileEntry} infoEntry Trash info entry.
+   * @param {string=} pathPrefix Optional prefix for 'Path=' in *.trashinfo. For
+   *     crostini, this is the user's homedir (/home/<username>).
    */
-  constructor(name, filesEntry, infoEntry) {
+  constructor(name, filesEntry, infoEntry, pathPrefix = '') {
     this.name = name;
     this.filesEntry = filesEntry;
     this.infoEntry = infoEntry;
+    this.pathPrefix = pathPrefix;
   }
 }
 
@@ -43,32 +69,40 @@ class TrashItem {
 class Trash {
   constructor() {
     /**
-     * Store /.Trash/files and /.Trash/info to avoid repeated lookup
-     * @private {?TrashDirs}
+     * Store TrashDirs to avoid repeated lookup.
+     * @private {!Object<string, !TrashDirs>}
+     * @const
      */
-    this.trashDirs_;
+    this.trashDirs_ = {};
   }
 
   /**
-   * Only move to trash if feature is on, and entry is in MyFiles, but not
-   * already in /.Trash.
+   * Only move to trash if feature is on, and entry is in one of the supported
+   * volumes, but not already in the trash.
    *
    * @param {!VolumeManager} volumeManager
    * @param {!Entry} entry The entry to remove.
-   * @return {boolean} True if item should be moved to trash, else false if item
-   *     should be permanently deleted.
+   * @return {?TrashConfig} Valid TrashConfig if item should be moved to trash,
+   *     else null if item should be permanently deleted.
    * @private
    */
   shouldMoveToTrash_(volumeManager, entry) {
-    if (loadTimeData.getBoolean('FILES_TRASH_ENABLED')) {
-      const info = volumeManager.getLocationInfo(entry);
-      const entryInTrash =
-          entry.fullPath === '/.Trash' || entry.fullPath.startsWith('/.Trash/');
-      return !!info &&
-          info.rootType === VolumeManagerCommon.RootType.DOWNLOADS &&
-          !entryInTrash;
+    const info = volumeManager.getLocationInfo(entry);
+    if (!loadTimeData.getBoolean('FILES_TRASH_ENABLED') || !info) {
+      return null;
     }
-    return false;
+    const fullPathSlash = entry.fullPath + '/';
+    for (const config of Trash.CONFIG) {
+      const entryInVolume = fullPathSlash.startsWith(config.topDir);
+      if (config.rootType === info.rootType && entryInVolume) {
+        if (config.prefixPathWithRemoteMount) {
+          config.pathPrefix = info.volumeInfo.remoteMountPath;
+        }
+        const entryInTrash = fullPathSlash.startsWith(config.trashDir);
+        return entryInTrash ? null : config;
+      }
+    }
+    return null;
   }
 
   /**
@@ -83,11 +117,13 @@ class Trash {
    *     is removed, rejects with DOMError.
    */
   removeFileOrDirectory(volumeManager, entry, permanentlyDelete) {
-    if (!permanentlyDelete && this.shouldMoveToTrash_(volumeManager, entry)) {
-      return this.trashLocalFileOrDirectory_(volumeManager, entry);
-    } else {
-      return this.permanentlyDeleteFileOrDirectory_(entry);
+    if (!permanentlyDelete) {
+      const config = this.shouldMoveToTrash_(volumeManager, entry);
+      if (config) {
+        return this.trashFileOrDirectory_(entry, config);
+      }
     }
+    return this.permanentlyDeleteFileOrDirectory_(entry);
   }
 
   /**
@@ -108,30 +144,34 @@ class Trash {
   }
 
   /**
-   * Get /.Trash/files and /.Trash/info directories.
+   * Get trash files and info directories.
    *
-   * @param {!VolumeManager} volumeManager
+   * @param {!Entry} entry The entry to remove.
+   * @param {!TrashConfig} config
    * @return {!Promise<!TrashDirs>} Promise which resolves with trash dirs.
    * @private
    */
-  getTrashDirs_(volumeManager) {
-    if (this.trashDirs_) {
-      return Promise.resolve(this.trashDirs_);
+  async getTrashDirs_(entry, config) {
+    const key = `${config.rootType}-${config.topDir}`;
+    let trashDirs = this.trashDirs_[key];
+    if (trashDirs) {
+      return trashDirs;
     }
 
-    const downloads = volumeManager.getCurrentProfileVolumeInfo(
-        VolumeManagerCommon.VolumeType.DOWNLOADS);
-    const root = downloads.fileSystem.root;
-    return new Promise((resolve, reject) => {
-      root.getDirectory('.Trash', {create: true}, (trashRoot) => {
-        trashRoot.getDirectory('files', {create: true}, (trashFiles) => {
-          trashRoot.getDirectory('info', {create: true}, trashInfo => {
-            this.trashDirs_ = new TrashDirs(trashFiles, trashInfo);
-            resolve(this.trashDirs_);
-          }, reject);
-        }, reject);
-      }, reject);
-    });
+    let trashRoot = entry.filesystem.root;
+    const parts = config.trashDir.split('/');
+    for (const part of parts) {
+      if (part) {
+        trashRoot = await this.getDirectory_(trashRoot, part);
+      }
+    }
+    const trashFiles = await this.getDirectory_(trashRoot, 'files');
+    const trashInfo = await this.getDirectory_(trashRoot, 'info');
+    trashDirs = new TrashDirs(trashFiles, trashInfo);
+    // Check and remove old items max once per session.
+    this.removeOldItems_(trashDirs, Date.now());
+    this.trashDirs_[key] = trashDirs;
+    return trashDirs;
   }
 
   /**
@@ -165,6 +205,21 @@ class Trash {
   }
 
   /**
+   * Promise wrapper for FileSystemDirectoryEntry.getDirectory().
+   *
+   * @param {!DirectoryEntry} dirEntry current directory.
+   * @param {string} path name of directory within dirEntry.
+   * @return {!Promise<!DirectoryEntry>} Promise which resolves with
+   *     <dirEntry>/<path>.
+   * @private
+   */
+  getDirectory_(dirEntry, path) {
+    return new Promise((resolve, reject) => {
+      dirEntry.getDirectory(path, {create: true}, resolve, reject);
+    });
+  }
+
+  /**
    * Promise wrapper for FileSystemEntry.moveTo().
    *
    * @param {!T} srcEntry source entry to move.
@@ -181,27 +236,25 @@ class Trash {
   }
 
   /**
-   * Move a file or a directory in the local DOWNLOADS volume to
-   * the trash.
+   * Move a file or a directory to the trash.
    *
-   * @param {!VolumeManager} volumeManager
    * @param {!Entry} entry The entry to remove.
+   * @param {!TrashConfig} config trash config for entry.
    * @return {!Promise<!TrashItem>}
    * @private
    */
-  async trashLocalFileOrDirectory_(volumeManager, entry) {
-    const trashDirs = await this.getTrashDirs_(volumeManager);
+  async trashFileOrDirectory_(entry, config) {
+    const trashDirs = await this.getTrashDirs_(entry, config);
     const name =
         await fileOperationUtil.deduplicatePath(trashDirs.files, entry.name);
 
     // Write trashinfo first, then only move file if info write succeeds.
     // If any step fails, the file will be unchanged, and any partial trashinfo
     // file created will be cleaned up when we remove old items.
-    // TODO(crbug.com/953310): Remove old items.
-    const infoEntry =
-        await this.writeTrashInfoFile_(trashDirs.info, name, entry.fullPath);
+    const infoEntry = await this.writeTrashInfoFile_(
+        trashDirs.info, name, config.pathPrefix + entry.fullPath);
     const filesEntry = await this.moveTo_(entry, trashDirs.files, name);
-    return new TrashItem(entry.name, filesEntry, infoEntry);
+    return new TrashItem(entry.name, filesEntry, infoEntry, config.pathPrefix);
   }
 
   /**
@@ -216,33 +269,154 @@ class Trash {
     const file = await new Promise(
         (resolve, reject) => trashItem.infoEntry.file(resolve, reject));
     const text = await file.text();
-    const found = text.match(/^Path=\/(.*)/m);
+    const found = text.match(/^Path=(.*)/m);
     if (!found) {
       throw new DOMException(`No Path found to restore in ${
           trashItem.infoEntry.fullPath}, text=${text}`);
     }
     const path = found[1];
-    const parts = path.split('/');
+    if (!path.startsWith(trashItem.pathPrefix)) {
+      throw new DOMException(`Path does not match expected prefix in ${
+          trashItem.infoEntry.fullPath}, prefix=${trashItem.pathPrefix}, text=${
+          text}`);
+    }
+    const pathNoLeadingSlash = path.substring(trashItem.pathPrefix.length + 1);
+    const parts = pathNoLeadingSlash.split('/');
 
     // Move to last directory in path, making sure dirs are created if needed.
     let dir = trashItem.filesEntry.filesystem.root;
-    const cd = (directory, path) => {
-      return new Promise((resolve, reject) => {
-        directory.getDirectory(path, {create: true}, resolve, reject);
-      });
-    };
     for (let i = 0; i < parts.length - 1; i++) {
-      dir = await cd(dir, parts[i]);
+      dir = await this.getDirectory_(dir, parts[i]);
     }
 
     // Restore filesEntry first, then remove its trash infoEntry.
     // If any step fails, then either we still have the file in trash with a
     // valid trashinfo, or file is restored and trashinfo will be cleaned up
     // when we remove old items.
-    // TODO(crbug.com/953310): Remove old items.
     const name =
         await fileOperationUtil.deduplicatePath(dir, parts[parts.length - 1]);
     await this.moveTo_(trashItem.filesEntry, dir, name);
     await this.permanentlyDeleteFileOrDirectory_(trashItem.infoEntry);
   }
+
+  /**
+   * Remove any items from trash older than 30d.
+   * @param {!TrashDirs} trashDirs
+   * @param {number} now Current time in milliseconds from epoch.
+   */
+  async removeOldItems_(trashDirs, now) {
+    const ls = (reader) => {
+      return new Promise((resolve, reject) => {
+        reader.readEntries(results => resolve(results), error => reject(error));
+      });
+    };
+    const rm = (entry, log, desc) => {
+      if (entry) {
+        log(`Deleting ${entry.toURL()}: ${desc}`);
+        return this.permanentlyDeleteFileOrDirectory_(entry).catch(
+            e => console.error(`Error deleting ${entry.toURL()}: ${desc}`, e));
+      }
+    };
+
+    // Get all entries in trash/files. Read files first before info in case
+    // trash or restore operations happen during this.
+    const filesEntries = {};
+    const filesReader = trashDirs.files.createReader();
+    try {
+      while (true) {
+        const entries = await ls(filesReader);
+        if (!entries.length) {
+          break;
+        }
+        entries.forEach(entry => filesEntries[entry.name] = entry);
+      }
+    } catch (e) {
+      console.error('Error reading old files entries', e);
+      return;
+    }
+
+    // Check entries in trash/info and delete items older than 30d.
+    const infoReader = trashDirs.info.createReader();
+    try {
+      while (true) {
+        const entries = await ls(infoReader);
+        if (!entries.length) {
+          break;
+        }
+        for (const entry of entries) {
+          if (!entry.isFile) {
+            rm(entry, console.error, 'Unexpected trash info directory');
+            continue;
+          }
+
+          if (!entry.name.endsWith('.trashinfo')) {
+            rm(entry, console.error, 'Unexpected trash info file');
+            continue;
+          }
+
+          const name = entry.name.substring(0, entry.name.length - 10);
+          const filesEntry = filesEntries[name];
+          delete filesEntries[name];
+
+          const file = await new Promise(
+              (resolve, reject) => entry.file(resolve, reject));
+          const text = await file.text();
+          const found = text.match(/^DeletionDate=(.*)/m);
+          if (!found) {
+            rm(entry, console.error, 'Could not find DeletionDate in ' + text);
+            rm(filesEntry, console.error, 'Invalid matching trashinfo');
+            continue;
+          }
+
+          const d = Date.parse(found[1]);
+          if (!d) {
+            rm(entry, console.error, 'Could not parse DeletionDate in ' + text);
+            rm(filesEntry, console.error, 'Invalid matching trashinfo');
+            continue;
+          }
+
+          const ago30d = now - Trash.AUTO_DELETE_INTERVAL_MS;
+          const ago30dStr = new Date(ago30d).toISOString();
+          if (d < ago30d) {
+            const msg = `Older than ${ago30dStr}, DeletionDate=${found[1]}`;
+            rm(entry, console.log, msg);
+            rm(filesEntry, console.log, msg);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error reading old info entries', e);
+      return;
+    }
+
+    // Any entries left in filesEntries have no matching *.trashinfo file.
+    for (const entry of Object.values(filesEntries)) {
+      rm(entry, console.error, 'No matching *.trashinfo file');
+    }
+  }
 }
+
+/**
+ * Interval (ms) until items in trash are permanently deleted. 30 days.
+ * @const
+ */
+Trash.AUTO_DELETE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * Volumes supported for Trash, and location of Trash dir. Items will be
+ * searched in order.
+ *
+ * @type {!Array<!TrashConfig>}
+ */
+Trash.CONFIG = [
+  // MyFiles/Downloads is a separate volume on a physical device, and doing a
+  // move from MyFiles/Downloads/<path> to MyFiles/.Trash actually does a
+  // copy across volumes, so we have a dedicated MyFiles/Downloads/.Trash.
+  new TrashConfig(
+      VolumeManagerCommon.RootType.DOWNLOADS, '/Downloads/',
+      '/Downloads/.Trash/'),
+  new TrashConfig(VolumeManagerCommon.RootType.DOWNLOADS, '/', '/.Trash/'),
+  new TrashConfig(
+      VolumeManagerCommon.RootType.CROSTINI, '/', '/.local/share/Trash/',
+      /*prefixPathWithRemoteMount=*/ true),
+];

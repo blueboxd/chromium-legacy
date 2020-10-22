@@ -873,6 +873,7 @@ class MockReportingService : public net::ReportingService {
   ~MockReportingService() override = default;
 
   void QueueReport(const GURL& url,
+                   const net::NetworkIsolationKey& network_isolation_key,
                    const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
@@ -882,6 +883,7 @@ class MockReportingService : public net::ReportingService {
   }
 
   void ProcessHeader(const GURL& url,
+                     const net::NetworkIsolationKey& network_isolation_key,
                      const std::string& header_value) override {
     NOTREACHED();
   }

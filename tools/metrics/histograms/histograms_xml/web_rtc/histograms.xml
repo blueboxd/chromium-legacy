@@ -344,6 +344,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ActiveRender" enum="Boolean"
     expires_after="2020-12-01">
+  <obsolete>
+    No longer in use. Removed on 2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -354,7 +357,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.BufferDelay" units="Blocks"
-    expires_after="2020-12-01">
+    expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -365,7 +368,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.CaptureSaturation" enum="Boolean"
-    expires_after="2020-12-01">
+    expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -377,7 +380,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.Clockdrift" enum="ClockdriftLevel"
-    expires_after="2021-01-31">
+    expires_after="2021-10-19">
   <owner>gustaf@chromium.org</owner>
   <owner>peah@chromium.org</owner>
   <summary>
@@ -387,7 +390,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.DelayChanges"
-    enum="WebRTCEventFrequency" expires_after="2021-04-04">
+    enum="WebRTCEventFrequency" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -399,7 +402,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.EchoPathDelay" units="Blocks"
-    expires_after="2021-04-18">
+    expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -411,7 +414,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.Erl" units="dB (shifted)"
-    expires_after="2020-12-01">
+    expires_after="2021-10-19">
   <owner>gustaf@chromium.org</owner>
   <owner>peah@chromium.org</owner>
   <summary>
@@ -423,6 +426,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ErlBand0" units="dB (shifted)"
     expires_after="2020-12-01">
+  <obsolete>
+    No longer in use, EchoCanceller.Erl considered sufficient. Removed on
+    2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -433,6 +440,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ErlBand1" units="dB (shifted)"
     expires_after="2020-12-01">
+  <obsolete>
+    No longer in use, EchoCanceller.Erl considered sufficient. Removed on
+    2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -442,7 +453,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.Erle" units="dB"
-    expires_after="2020-12-01">
+    expires_after="2021-10-19">
   <owner>gustaf@chromium.org</owner>
   <owner>peah@chromium.org</owner>
   <summary>
@@ -454,6 +465,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ErleBand0" units="dB (shifted)"
     expires_after="2020-12-01">
+  <obsolete>
+    No longer in use, EchoCanceller.Erle considered sufficient. Removed on
+    2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -464,6 +479,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ErleBand1" units="dB (shifted)"
     expires_after="2020-12-01">
+  <obsolete>
+    No longer in use, EchoCanceller.Erle considered sufficient. Removed on
+    2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -473,7 +492,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.FilterDelay" units="Blocks"
-    expires_after="2020-12-01">
+    expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -487,7 +506,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MaxCaptureJitter"
-    units="frames (10 ms)" expires_after="2020-12-01">
+    units="frames (10 ms)" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <summary>
@@ -497,7 +516,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MaxRenderJitter"
-    units="frames (10 ms)" expires_after="2020-12-01">
+    units="frames (10 ms)" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <summary>
@@ -507,7 +526,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MaxSkewShiftCount"
-    units="events/minute" expires_after="2020-12-01">
+    units="events/minute" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -524,7 +543,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MinCaptureJitter"
-    units="frames (10 ms)" expires_after="2020-12-01">
+    units="frames (10 ms)" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <summary>
@@ -534,7 +553,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MinRenderJitter"
-    units="frames (10 ms)" expires_after="2020-12-01">
+    units="frames (10 ms)" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <summary>
@@ -545,6 +564,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebRTC.Audio.EchoCanceller.ModelBasedAecFeasible"
     enum="Boolean" expires_after="2020-12-01">
+  <obsolete>
+    No longer reported. Removed on 2020-10-19.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -556,7 +578,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.ReliableDelayEstimates"
-    enum="WebRTCAecDelayEstimateReliability" expires_after="2020-12-01">
+    enum="WebRTCAecDelayEstimateReliability" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -568,7 +590,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.RenderOverruns"
-    enum="WebRTCEventFrequency" expires_after="2021-04-04">
+    enum="WebRTCEventFrequency" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -579,7 +601,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.RenderUnderruns"
-    enum="WebRTCEventFrequency" expires_after="2021-04-04">
+    enum="WebRTCEventFrequency" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -590,7 +612,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.UsableLinearEstimate"
-    enum="Boolean" expires_after="2020-12-01">
+    enum="Boolean" expires_after="2021-10-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>

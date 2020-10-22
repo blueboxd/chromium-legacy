@@ -3660,12 +3660,6 @@ const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
     "audio quality and may fix audio stutter.";
 
-const char kBluetoothNextHandsfreeProfileName[] =
-    "Enable next version of Bluetooth Handsfree profile";
-const char kBluetoothNextHandsfreeProfileDescription[] =
-    "Enable next version of Bluetooth Handsfree profile 1.7 which includes "
-    "WBS(wideband speech) feature";
-
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
@@ -3897,6 +3891,12 @@ const char kEnhancedClipboardDescription[] =
     "switching. After copying to the clipboard, press search + v to show the "
     "history. Selecting something from the menu will result in a paste to the "
     "active window.";
+
+extern const char kEnhancedClipboardNudgeSessionResetName[] =
+    "Enable resetting enhanced clipboard nudge data";
+extern const char kEnhancedClipboardNudgeSessionResetDescription[] =
+    "When enabled, this will reset the clipboard nudge shown data on every new "
+    "user session, allowing the nudge to be shown again.";
 
 const char kEnhancedClipboardSimpleRenderName[] =
     "Only renders html in the Enhanced Clipboard if there are img or table "

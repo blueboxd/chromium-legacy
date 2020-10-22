@@ -144,11 +144,6 @@ const base::Feature kBluetoothFixA2dpPacketSize{
 const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, browser will notify Chrome OS audio server to register HFP 1.7
-// to BlueZ, which includes wideband speech feature.
-const base::Feature kBluetoothNextHandsfreeProfile{
-    "BluetoothNextHandsfreeProfile", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable or disables running the Camera App as a System Web App.
 const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -326,6 +321,11 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 // v.
 const base::Feature kClipboardHistory{"ClipboardHistory",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the clipboard nudge shown prefs will be reset at the start of
+// each new user session.
+const base::Feature kClipboardHistoryNudgeSessionReset{
+    "ClipboardHistoryNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables rendering html in Clipboard History only if an img or table tag is
 // present.
@@ -728,6 +728,10 @@ bool IsMinimumChromeVersionEnabled() {
 bool IsClipboardHistoryEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistory) ||
          base::FeatureList::IsEnabled(kClipboardHistorySimpleRender);
+}
+
+bool IsClipboardHistoryNudgeSessionResetEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
 }
 
 bool IsClipboardHistorySimpleRenderEnabled() {

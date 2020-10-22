@@ -52,6 +52,7 @@ class ReportingServiceImpl : public ReportingService {
   }
 
   void QueueReport(const GURL& url,
+                   const NetworkIsolationKey& network_isolation_key,
                    const std::string& user_agent,
                    const std::string& group,
                    const std::string& type,
@@ -72,8 +73,6 @@ class ReportingServiceImpl : public ReportingService {
 
     // base::Unretained is safe because the callback is stored in
     // |task_backlog_| which will not outlive |this|.
-    // TODO(chlily): Get NetworkIsolationKey from caller.
-    NetworkIsolationKey network_isolation_key = NetworkIsolationKey::Todo();
     DoOrBacklogTask(base::BindOnce(
         &ReportingServiceImpl::DoQueueReport, base::Unretained(this),
         network_isolation_key, std::move(sanitized_url), user_agent, group,
@@ -81,6 +80,7 @@ class ReportingServiceImpl : public ReportingService {
   }
 
   void ProcessHeader(const GURL& url,
+                     const NetworkIsolationKey& network_isolation_key,
                      const std::string& header_string) override {
     if (header_string.size() > kMaxJsonSize)
       return;
@@ -92,10 +92,9 @@ class ReportingServiceImpl : public ReportingService {
       return;
 
     DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
-    // TODO(chlily): Get the proper NetworkIsolationKey from the caller.
     DoOrBacklogTask(base::BindOnce(
         &ReportingServiceImpl::DoProcessHeader, base::Unretained(this),
-        NetworkIsolationKey::Todo(), url, std::move(header_value)));
+        network_isolation_key, url, std::move(header_value)));
   }
 
   void RemoveBrowsingData(uint64_t data_type_mask,

@@ -1289,7 +1289,7 @@
   },
   {
     "name": "enable-command-line-on-non-rooted-devices",
-    "owners": [ "chrome-android-app" ],
+    "owners": [ "clank-app-team@google.com" ],
     // This flag is used for debugging on Android; it causes Android Chromium
     // builds to read command-line arguments from a writable location on disk.
     "expiry_milestone": -1
@@ -2424,11 +2424,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enhanced_clipboard_nudge_session_reset",
-    "owners":["mmourgos@chromium.org", "newcomer@chromium.org"],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enhanced_clipboard_simple_render",
     "owners":["newcomer@chromium.org", "gzadina@google.com"],
     "expiry_milestone": 90
@@ -2849,12 +2844,12 @@
   },
   {
     "name": "homepage-promo-card",
-    "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
+    "owners": [ "wenyufu", "clank-app-team@google.com" ],
     "expiry_milestone": 90
   },
   {
     "name": "homepage-settings-ui-conversion",
-    "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
+    "owners": [ "wenyufu", "clank-app-team@google.com" ],
     "expiry_milestone": 86
   },
   {
@@ -4730,6 +4725,11 @@
   {
     "name": "video-tutorials",
     "owners": [ "shaktisahu", "hesen" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "video-tutorials-instant-fetch",
+    "owners": [ "shaktisahu"],
     "expiry_milestone": 90
   },
   {

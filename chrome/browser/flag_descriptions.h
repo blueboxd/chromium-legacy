@@ -1828,6 +1828,8 @@ extern const char kUpdateNotificationServiceImmediateShowOptionDescription[];
 
 extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];
+extern const char kVideoTutorialsInstantFetchName[];
+extern const char kVideoTutorialsInstantFetchDescription[];
 
 extern const char kPrefetchNotificationSchedulingIntegrationName[];
 extern const char kPrefetchNotificationSchedulingIntegrationDescription[];
@@ -2253,9 +2255,6 @@ extern const char kDragToSnapInClamshellModeDescription[];
 
 extern const char kEnhancedClipboardName[];
 extern const char kEnhancedClipboardDescription[];
-
-extern const char kEnhancedClipboardNudgeSessionResetName[];
-extern const char kEnhancedClipboardNudgeSessionResetDescription[];
 
 extern const char kEnhancedClipboardSimpleRenderName[];
 extern const char kEnhancedClipboardSimpleRenderDescription[];

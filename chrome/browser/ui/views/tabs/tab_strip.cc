@@ -558,18 +558,19 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     return tab_strip_->GetActiveTabWidth();
   }
 
-  int GetTabAreaWidth() const override { return tab_strip_->GetTabAreaWidth(); }
-
   int GetTabDragAreaWidth() const override {
     // There are two cases here (with tab scrolling enabled):
     // 1) If the tab strip is not wider than the tab strip region (and thus
     // not scrollable), returning the available width for tabs rather than the
     // actual width for tabs allows tabs to be dragged past the current bounds
     // of the tabstrip, anywhere along the tab strip region.
+    // N.B. The available width for tabs in this case needs to ignore tab
+    // closing mode.
     // 2) If the tabstrip is wider than the tab strip region (and thus is
     // scrollable), returning the tab area width allows tabs to be dragged
     // anywhere within the tabstrip, not just in the leftmost region of it.
-    return std::max(tab_strip_->CalculateAvailableWidthForTabs(),
+    return std::max(tab_strip_->GetAvailableWidthForTabStrip() -
+                        tab_strip_->GetRightSideReservedWidth(),
                     tab_strip_->GetTabAreaWidth());
   }
 
@@ -780,7 +781,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     // Immediately hide the new tab button if the last tab is being dragged.
     const Tab* last_visible_tab = tab_strip_->GetLastVisibleTab();
     if (last_visible_tab && last_visible_tab->dragging())
-      SetNewTabButtonVisible(true);
+      SetNewTabButtonVisible(false);
 
     std::vector<gfx::Rect> bounds = CalculateBoundsForDraggedViews(views);
     DCHECK_EQ(views.size(), bounds.size());

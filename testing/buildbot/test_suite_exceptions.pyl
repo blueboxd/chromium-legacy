@@ -74,14 +74,6 @@
       },
     },
   },
-  'angle_perftests': {
-    'remove_from': [
-      'Android FYI Release (Nexus 5)',  # crbug.com/915429
-      'Android FYI Release (Nexus 6)',  # anglebug.com/2433
-      'Android FYI Release (Nexus 6P)', # anglebug.com/4909
-      'Linux FYI GPU TSAN Release',  # crbug.com/950542
-    ],
-  },
   'blink_platform_unittests': {
     'modifications': {
       # TODO(crbug.com/1108121): Remove this filter
@@ -1224,33 +1216,6 @@
     ],
   },
   'disk_usage_tast_test': {
-    'modifications': {
-      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
-      # cache affinity works.
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'pool': 'chromium.tests',
-            }
-          ],
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'cros_vm',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'cros_vm',
-              'path': 'magic_cros_vm_cache',
-            },
-          ],
-        },
-      },
-    },
     # TODO(crbug.com/1077659): Add the test back after it's fixed.
     'remove_from': [
       'chromeos-kevin-rel',
@@ -2526,6 +2491,14 @@
       'Linux FYI Debug (NVIDIA)',
     ],
   },
+  'standalone_angle_perftests': {
+    'remove_from': [
+      'Android FYI Release (Nexus 5)',  # crbug.com/915429
+      'Android FYI Release (Nexus 6)',  # anglebug.com/2433
+      'Android FYI Release (Nexus 6P)', # anglebug.com/4909
+      'Linux FYI GPU TSAN Release',  # crbug.com/950542
+    ],
+  },
   'standalone_angle_unittests': {
     'remove_from': [
       # On Android, these are already run on the main waterfall.
@@ -2791,31 +2764,6 @@
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # crbug.com/870673
       },
-      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
-      # cache affinity works.
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'pool': 'chromium.tests',
-            }
-          ],
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'cros_vm',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'cros_vm',
-              'path': 'magic_cros_vm_cache',
-            },
-          ],
-        },
-      },
     },
     'remove_from': [
       # crbug.com/936540
@@ -2916,33 +2864,6 @@
     },
   },
   'url_unittests': {
-    'modifications': {
-      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
-      # cache affinity works.
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'pool': 'chromium.tests',
-            }
-          ],
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'cros_vm',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'cros_vm',
-              'path': 'magic_cros_vm_cache',
-            },
-          ],
-        },
-      },
-    },
     'remove_from': [
       # crbug.com/1054240
       'Fuchsia ARM64',
@@ -3094,30 +3015,9 @@
           'shards': 6,
         },
       },
-      # TODO(crbug.com/1132206): Apply this to all of the bot's tests if the
-      # cache affinity works.
       'chromeos-amd64-generic-rel': {
         'swarming': {
           'shards': 12,
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'pool': 'chromium.tests',
-            }
-          ],
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'cros_vm',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'cros_vm',
-              'path': 'magic_cros_vm_cache',
-            },
-          ],
         },
       },
     },

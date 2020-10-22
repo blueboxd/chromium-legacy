@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '553115ec991cc3dde98f949a5af504f71b9e9bea',
+  'devtools_frontend_revision': 'c51c18a5866ce2959e05abd0adaeec4c1d51a938',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '45b6de9149c16885603fab408c9a243c0a78c2b5',
+  'dawn_revision': '22505a5afe1f75b402a00a27d49e313fbd6e2181',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '4f79c84050287dab127ba5410e770889ed11cb05',
+  'tint_revision': '0ce070474164e564898312608c147d4a9c6b361d',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1265,7 +1265,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9606cffa66d00945b91a729d98c39fb4af259074',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c4af5cd3397ddef15ef32e09847715c1ead0118a',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'exAX_yeKLNYEK0NGmhD6PCExVZm6XY2aCPioGGLAHlYC'
+              'version': 'dfMpR8E7Ie1gS4Mf_DWloGOmZIegnZWNA0kcMr7jPlkC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1545,7 +1545,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '6JFI1DhhYVfuJu5O5hIqAMI3vsd1fGoBEjuuyfrv5GAC',
+          'version': 'uchtgU5o7fKP3pU3wO7xE_MCNW7vkUEfaG4V2ehVOv4C',
         },
       ],
       'dep_type': 'cipd',

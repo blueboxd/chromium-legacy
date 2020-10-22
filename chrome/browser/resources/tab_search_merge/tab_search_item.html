@@ -1,0 +1,89 @@
+<style>
+  :host(:focus) {
+    outline-color: rgba(var(--mwb-background-color), 0.24);
+  }
+
+  :host(:hover, .selected) .button-container cr-icon-button {
+    --cr-icon-button-fill-color: var(--google-grey-refresh-700);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host(:hover, .selected) .button-container cr-icon-button {
+      --cr-icon-button-fill-color: var(--google-grey-refresh-300);
+    }
+  }
+
+  .button-container cr-icon-button {
+    --cr-icon-button-fill-color: transparent;
+    border-radius: 50%;
+  }
+
+  .button-container cr-icon-button:hover {
+    background-color: rgba(var(--google-grey-900-rgb), 0.1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .button-container cr-icon-button:hover {
+      background-color: rgba(var(--white-rgb), 0.1);
+    }
+  }
+
+  .button-container cr-icon-button:focus {
+    border: 2px solid rgba(var(--google-blue-600-rgb), 0.4);
+  }
+
+  .favicon {
+    background-repeat: no-repeat;
+    background-size: var(--mwb-icon-size);
+    flex-shrink: 0;
+    height: var(--mwb-icon-size);
+    margin-inline-end: var(--mwb-list-item-horizontal-margin);
+    width: var(--mwb-icon-size);
+  }
+
+  .text-container {
+    flex-grow: 1;
+    overflow: hidden;
+  }
+
+  #primaryText,
+  #secondaryText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  #primaryText {
+    color: var(--cr-primary-text-color);
+    font-size: var(--mwb-primary-text-font-size);
+    margin-bottom: 3px;
+  }
+
+  #secondaryText {
+    color: var(--cr-secondary-text-color);
+    font-size: var(--mwb-secondary-text-font-size);
+  }
+
+  cr-icon-button {
+    --cr-icon-button-margin-end: calc(var(--mwb-icon-size) / 4);
+    --cr-icon-button-margin-start: calc(var(--mwb-icon-size) / 4);
+    --cr-icon-button-size: var(--mwb-icon-size);
+  }
+
+  .search-highlight-hit {
+    font-weight: bold;
+  }
+</style>
+
+<div class="favicon" style="background-image:[[faviconUrl_(data.tab)]]"></div>
+<div class="text-container">
+  <div id="primaryText" title="[[data.tab.title]]"></div>
+  <div id="secondaryText"></div>
+</div>
+<div class="button-container">
+  <cr-icon-button id="closeButton" aria-label="[[ariaLabel_(data.tab.title)]]"
+      iron-icon="mwb16:close" noink on-click="onItemClose_"
+      title="$i18n{closeTab}">
+  </cr-icon-button>
+</div>

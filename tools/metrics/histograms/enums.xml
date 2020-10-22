@@ -18949,6 +18949,11 @@ Called by update_document_policy_enum.py.-->
   <int value="2" label="ERROR_OPTION"/>
 </enum>
 
+<enum name="DownloadLocationSuggestionEvent">
+  <int value="0" label="LOCATION_SUGGESTION_SHOWN"/>
+  <int value="1" label="NOT_ENOUGH_SPACE_SHOWN"/>
+</enum>
+
 <enum name="DownloadMimeTypeResult">
   <int value="0" label="Other">MIME type other than those listed below.</int>
   <int value="1" label="PK pass">application/vnd.apple.pkpass MIME type.</int>
@@ -29954,6 +29959,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3705" label="NewLayoutOverflowDifferentAndAlreadyScrollsFlex"/>
   <int value="3706" label="UnicodeBidiPlainText"/>
   <int value="3707" label="ColorSchemeDarkSupportedOnRoot"/>
+  <int value="3708" label="WebBluetoothGetAvailability"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43601,6 +43607,7 @@ from previous Chrome versions.
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-94335249" label="UseAAudioDriver:enabled"/>
+  <int value="-93619449" label="video-tutorials-instant-fetch"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
   <int value="-91767554" label="enable-de-jelly"/>
   <int value="-91370149" label="UseSerialBusEnumerator:enabled"/>
@@ -72854,7 +72861,7 @@ Full version information for the fingerprint enum values:
 
 <enum name="UnderlayDamageRect">
   <int value="0" label="Zero Damage Rect"/>
-  <int value="1" label="Non-Occluding Damage Only"/>
+  <int value="1" label="Non-Occluding Damage Only (deprecated)"/>
   <int value="2" label="Occluding Damage Only"/>
   <int value="3" label="Occluding and Non-Occluding Damages"/>
 </enum>

@@ -1906,8 +1906,15 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 
   accessibility_reset_count_++;
   if (accessibility_reset_count_ > max_accessibility_resets_) {
+    // This will both create an "Aw Snap..." and generate a second crash report
+    // in addition to the DumpWithoutCrashing() for the first reset.
     render_accessibility_->FatalError();
   } else {
+    // Crash keys set in BrowserAccessibilityManager::Unserialize().
+    if (accessibility_reset_count_ == 1) {
+      // Only send crash report first time -- don't skew crash stats too much.
+      base::debug::DumpWithoutCrashing();
+    }
     AccessibilityReset();
   }
 }
@@ -5271,15 +5278,18 @@ void RenderFrameHostImpl::AdoptPortal(const blink::PortalToken& portal_token,
       proxy_host->GetFrameToken(), portal->GetDevToolsFrameToken());
 }
 
-void RenderFrameHostImpl::CreateNewWidget(
+void RenderFrameHostImpl::CreateNewPopupWidget(
+    mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
+        blink_popup_widget_host,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
-    CreateNewWidgetCallback callback) {
+    CreateNewPopupWidgetCallback callback) {
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
   std::move(callback).Run(widget_route_id);
-  delegate_->CreateNewWidget(agent_scheduling_group_, widget_route_id,
-                             std::move(blink_widget_host),
-                             std::move(blink_widget));
+  delegate_->CreateNewPopupWidget(agent_scheduling_group_, widget_route_id,
+                                  std::move(blink_popup_widget_host),
+                                  std::move(blink_widget_host),
+                                  std::move(blink_widget));
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(

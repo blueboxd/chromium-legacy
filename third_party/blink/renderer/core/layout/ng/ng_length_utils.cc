@@ -25,12 +25,14 @@ enum class EBlockAlignment { kStart, kCenter, kEnd };
 
 inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
                                       const ComputedStyle& container_style) {
-  bool start_auto = style.MarginStartUsing(container_style).IsAuto();
-  bool end_auto = style.MarginEndUsing(container_style).IsAuto();
-  if (start_auto || end_auto) {
-    if (start_auto)
-      return end_auto ? EBlockAlignment::kCenter : EBlockAlignment::kEnd;
-    return EBlockAlignment::kStart;
+  if (style.MayHaveMargin()) {
+    bool start_auto = style.MarginStartUsing(container_style).IsAuto();
+    bool end_auto = style.MarginEndUsing(container_style).IsAuto();
+    if (start_auto || end_auto) {
+      if (start_auto)
+        return end_auto ? EBlockAlignment::kCenter : EBlockAlignment::kEnd;
+      return EBlockAlignment::kStart;
+    }
   }
 
   // If none of the inline margins are auto, look for -webkit- text-align
@@ -189,7 +191,8 @@ LayoutUnit ResolveBlockLengthInternal(
       // TODO(crbug.com/285744): FF/Edge don't do this. Determine if there
       // would be compat issues for matching their behavior.
       if (style.BoxSizing() == EBoxSizing::kBorderBox ||
-          (length.IsPercentOrCalc() &&
+          (!RuntimeEnabledFeatures::TableCellNewPercentsEnabled() &&
+           length.IsPercentOrCalc() &&
            constraint_space.TableCellChildLayoutMode() ==
                NGTableCellChildLayoutMode::kLayout)) {
         value = std::max(border_padding.BlockSum(), value);
@@ -577,8 +580,8 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
   if (logical_height.IsPercentOrCalc() &&
       constraint_space.TableCellChildLayoutMode() ==
           NGTableCellChildLayoutMode::kMeasureRestricted &&
-      (style.OverflowY() == EOverflow::kAuto ||
-       style.OverflowY() == EOverflow::kScroll))
+      (style.OverflowBlockDirection() == EOverflow::kAuto ||
+       style.OverflowBlockDirection() == EOverflow::kScroll))
     return min_max.min_size;
 
   // TODO(cbiesinger): Audit callers of ResolveMainBlockLength to see whether

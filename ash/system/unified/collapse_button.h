@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_UNIFIED_COLLAPSE_BUTTON_H_
 
 #include "ash/system/unified/custom_shape_button.h"
-#include "base/bind.h"
 
 namespace ash {
 
@@ -29,13 +28,7 @@ class CollapseButton : public CustomShapeButton {
   const char* GetClassName() const override;
 
  private:
-  void OnEnabledChanged();
-
   double expanded_amount_ = 1.0;
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
-      AddEnabledChangedCallback(
-          base::BindRepeating(&CollapseButton::OnEnabledChanged,
-                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(CollapseButton);
 };

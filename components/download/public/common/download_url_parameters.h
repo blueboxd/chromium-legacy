@@ -81,13 +81,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
-  // The RenderView routing ID must correspond to the RenderView of the
-  // RenderFrame, both of which share the same RenderProcess. This may be a
-  // different RenderView than the WebContents' main RenderView.
   DownloadUrlParameters(
       const GURL& url,
       int render_process_host_id,
-      int render_view_host_routing_id,
       int render_frame_host_routing_id,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -276,15 +272,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // These will be -1 if the request is not associated with a frame. See
   // the constructors for more.
   int render_process_host_id() const { return render_process_host_id_; }
-  int render_view_host_routing_id() const {
-    return render_view_host_routing_id_;
-  }
   int render_frame_host_routing_id() const {
     return render_frame_host_routing_id_;
   }
-
-  void set_frame_tree_node_id(int id) { frame_tree_node_id_ = id; }
-  int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   const RequestHeadersType& request_headers() const { return request_headers_; }
   const base::FilePath& file_path() const { return save_info_.file_path; }
@@ -338,9 +328,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   base::Optional<url::Origin> initiator_;
   std::string referrer_encoding_;
   int render_process_host_id_;
-  int render_view_host_routing_id_;
   int render_frame_host_routing_id_;
-  int frame_tree_node_id_;
   DownloadSaveInfo save_info_;
   GURL url_;
   bool do_not_prompt_for_login_;

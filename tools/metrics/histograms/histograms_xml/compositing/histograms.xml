@@ -101,8 +101,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Compositing.ColorGamut" enum="ColorGamut"
+    expires_after="2021-03-31">
+  <owner>cblume@chromium.org</owner>
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Every time a frame is presented, record the generalized color gamut of that
+    frame.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.CompositorFrameSinkSupport.ShouldSendBeginFrame"
     enum="SendBeginFrameResult" expires_after="2020-10-04">
+  <obsolete>
+    Expired Oct 2020
+  </obsolete>
   <owner>kylechar@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>

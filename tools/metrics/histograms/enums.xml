@@ -3101,6 +3101,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppSeedRequestState">
+  <obsolete>
+    Removed from code October 2020.
+  </obsolete>
   <int value="0" label="Unknown seed state"/>
   <int value="1" label="Current seed fresh"/>
   <int value="2" label="New seed requested from the service"/>
@@ -10990,6 +10993,12 @@ histogram as enum -->
   <int value="0" label="No Advantage"/>
   <int value="1" label="Header packets Only"/>
   <int value="30" label="More Than 30"/>
+</enum>
+
+<enum name="ColorGamut">
+  <int value="0" label="sRGB"/>
+  <int value="1" label="Wide Color Gamut"/>
+  <int value="2" label="HDR"/>
 </enum>
 
 <enum name="ColorSpaceExtractedRawDataResult">
@@ -43912,6 +43921,7 @@ from previous Chrome versions.
   <int value="209792775" label="TabGroupsAndroid:enabled"/>
   <int value="212489101" label="AutofillAssistantChromeEntry:enabled"/>
   <int value="215328738" label="ImprovedGeoLanguageData:disabled"/>
+  <int value="215528151" label="NearbySharingWebRtc:enabled"/>
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
@@ -43994,6 +44004,7 @@ from previous Chrome versions.
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
+  <int value="303325901" label="NearbySharingWebRtc:disabled"/>
   <int value="304588364" label="TextureLayerSkipWaitForActivation:enabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="305356014" label="WebViewMeasureScreenCoverage:disabled"/>
@@ -61096,6 +61107,28 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="171" label="QUIC_HTTP_RECEIVE_SPDY_FRAME"/>
   <int value="172" label="QUIC_KEY_UPDATE_ERROR"/>
   <int value="173" label="QUIC_AEAD_LIMIT_REACHED"/>
+  <int value="174" label="QUIC_QPACK_ENCODER_STREAM_INTEGER_TOO_LARGE"/>
+  <int value="175" label="QUIC_QPACK_ENCODER_STREAM_STRING_LITERAL_TOO_LONG"/>
+  <int value="176" label="QUIC_QPACK_ENCODER_STREAM_HUFFMAN_ENCODING_ERROR"/>
+  <int value="177" label="QUIC_QPACK_ENCODER_STREAM_INVALID_STATIC_ENTRY"/>
+  <int value="178" label="QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_STATIC"/>
+  <int value="179"
+      label="QUIC_QPACK_ENCODER_STREAM_INSERTION_INVALID_RELATIVE_INDEX"/>
+  <int value="180"
+      label="QUIC_QPACK_ENCODER_STREAM_INSERTION_DYNAMIC_ENTRY_NOT_FOUND"/>
+  <int value="181" label="QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_DYNAMIC"/>
+  <int value="182" label="QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_LITERAL"/>
+  <int value="183"
+      label="QUIC_QPACK_ENCODER_STREAM_DUPLICATE_INVALID_RELATIVE_INDEX"/>
+  <int value="184"
+      label="QUIC_QPACK_ENCODER_STREAM_DUPLICATE_DYNAMIC_ENTRY_NOT_FOUND"/>
+  <int value="185"
+      label="QUIC_QPACK_ENCODER_STREAM_SET_DYNAMIC_TABLE_CAPACITY"/>
+  <int value="186" label="QUIC_QPACK_DECODER_STREAM_INTEGER_TOO_LARGE"/>
+  <int value="187" label="QUIC_QPACK_DECODER_STREAM_INVALID_ZERO_INCREMENT"/>
+  <int value="188" label="QUIC_QPACK_DECODER_STREAM_INCREMENT_OVERFLOW"/>
+  <int value="189" label="QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT"/>
+  <int value="190" label="QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">
@@ -65338,6 +65371,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SendBeginFrameResult">
+  <obsolete>
+    Expired Oct 2020
+  </obsolete>
   <int value="0" label="Sent for frame timing"/>
   <int value="1" label="Stopped by client request"/>
   <int value="2" label="Stopped for unresponsive client"/>

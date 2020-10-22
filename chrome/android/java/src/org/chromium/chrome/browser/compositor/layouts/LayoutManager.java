@@ -287,11 +287,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         assert contentContainer != null;
         mContentContainer = contentContainer;
 
-        mAnimationHandler = new CompositorAnimationHandler(this);
+        mAnimationHandler = new CompositorAnimationHandler(this::requestUpdate);
 
         mOverlayPanelManager = new OverlayPanelManager();
 
-        mFrameRequestSupplier = new CompositorModelChangeProcessor.FrameRequestSupplier(this);
+        mFrameRequestSupplier =
+                new CompositorModelChangeProcessor.FrameRequestSupplier(this::requestUpdate);
 
         mLayoutStateProviderOneshotSupplier.set(this);
     }
@@ -444,9 +445,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             if (layout.isStartingToHide()) {
                 layout.doneHiding();
             } else if (layout.isStartingToShow()) {
-                // TODO(crbug.com/1108496): Call layout.doneShowing() here after all Layout have
-                //  been consolidated into the new Layout System to avoid Layout tests become flaky,
-                //  especially the StartSurfaceLayoutTest.
+                layout.doneShowing();
             }
         }
 

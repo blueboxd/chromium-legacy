@@ -2779,6 +2779,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexImage3D(GLenum target,
 error::Error GLES2DecoderPassthroughImpl::DoTexParameterf(GLenum target,
                                                           GLenum pname,
                                                           GLfloat param) {
+  // Don't allow clients to modify the resource initialization state.
+  if (pname == GL_RESOURCE_INITIALIZED_ANGLE) {
+    InsertError(GL_INVALID_ENUM, "Invalid enum.");
+    return error::kNoError;
+  }
+
   api()->glTexParameterfFn(target, pname, param);
   return error::kNoError;
 }
@@ -2787,6 +2793,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexParameterfv(
     GLenum target,
     GLenum pname,
     const volatile GLfloat* params) {
+  // Don't allow clients to modify the resource initialization state.
+  if (pname == GL_RESOURCE_INITIALIZED_ANGLE) {
+    InsertError(GL_INVALID_ENUM, "Invalid enum.");
+    return error::kNoError;
+  }
+
   std::array<GLfloat, 1> params_copy{{params[0]}};
   api()->glTexParameterfvRobustANGLEFn(target, pname,
                                        static_cast<GLsizei>(params_copy.size()),
@@ -2797,6 +2809,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexParameterfv(
 error::Error GLES2DecoderPassthroughImpl::DoTexParameteri(GLenum target,
                                                           GLenum pname,
                                                           GLint param) {
+  // Don't allow clients to modify the resource initialization state.
+  if (pname == GL_RESOURCE_INITIALIZED_ANGLE) {
+    InsertError(GL_INVALID_ENUM, "Invalid enum.");
+    return error::kNoError;
+  }
+
   api()->glTexParameteriFn(target, pname, param);
   return error::kNoError;
 }
@@ -2805,6 +2823,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexParameteriv(
     GLenum target,
     GLenum pname,
     const volatile GLint* params) {
+  // Don't allow clients to modify the resource initialization state.
+  if (pname == GL_RESOURCE_INITIALIZED_ANGLE) {
+    InsertError(GL_INVALID_ENUM, "Invalid enum.");
+    return error::kNoError;
+  }
+
   std::array<GLint, 1> params_copy{{params[0]}};
   api()->glTexParameterivRobustANGLEFn(target, pname,
                                        static_cast<GLsizei>(params_copy.size()),
@@ -4911,7 +4935,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
-    GLuint n,
+    GLsizei n,
     const volatile GLuint* textures) {
   // Validate that count is non-negative before allocating a vector
   if (n < 0) {
@@ -4921,7 +4945,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
 
   std::vector<gl::GLSurface::CALayerInUseQuery> queries;
   queries.reserve(n);
-  for (GLuint i = 0; i < n; ++i) {
+  for (GLsizei i = 0; i < n; ++i) {
     gl::GLImage* image = nullptr;
     GLuint texture_id = textures[i];
     if (texture_id) {

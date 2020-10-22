@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-// Disable all tests in this file on Mac for flake (crbug.com/1079249)
-#if !defined(OS_MAC)
 
 #include <string>
 #include <tuple>
@@ -349,14 +347,6 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     response->set_content_type("text/html;charset=utf-8");
     response->set_content(test_url_content_);
     return std::move(response);
-  }
-
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  content::RenderViewHost* GetRenderViewHost() {
-    return GetWebContents()->GetRenderViewHost();
   }
 
   void CreateTestProfile() {
@@ -912,13 +902,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
 }
 
 // Test that autofill works when the website prefills the form.
-// TODO(crbug.com/1141208): Disabled due to flakiness on MAC
-#if defined(OS_MAC)
-#define MAYBE_PrefillFormAndFill DISABLED_PrefillFormAndFill
-#else
-#define MAYBE_PrefillFormAndFill PrefillFormAndFill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_PrefillFormAndFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
   const char kPrefillScript[] =
       "<script>"
       "document.getElementById('firstname').value = 'Seb';"
@@ -930,12 +914,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_PrefillFormAndFill) {
       "document.getElementById('phone').value = '15142223344';"
       "</script>";
 
+  CreateTestProfile();
+
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kPrefillScript}));
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
-
-  CreateTestProfile();
 
   // We need to delete the prefilled value and then trigger the autofill.
   FocusFirstNameField();
@@ -3518,5 +3502,3 @@ INSTANTIATE_TEST_SUITE_P(All,
                          AutofillRestrictUnownedFieldsTest,
                          testing::Bool());
 }  // namespace autofill
-
-#endif  // !defined(OS_MAC)

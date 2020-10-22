@@ -32,6 +32,7 @@ void PatternProvider::SetPatterns(PatternProvider::Map patterns,
       (overwrite_equal_version && pattern_version_ == version)) {
     patterns_ = patterns;
     pattern_version_ = version;
+    EnrichPatternsWithEnVersion();
   }
 }
 
@@ -43,9 +44,26 @@ const std::vector<MatchingPattern> PatternProvider::GetMatchPatterns(
   // TODO(crbug.com/1134496): Remove feature check once launched.
   if (base::FeatureList::IsEnabled(
           features::kAutofillUsePageLanguageToSelectFieldParsingPatterns)) {
-    return patterns_[pattern_name][page_language];
-  } else {
+    auto outer_it = patterns_.find(pattern_name);
+    if (outer_it != patterns_.end()) {
+      const std::map<std::string, std::vector<MatchingPattern>>&
+          lang_to_pattern = outer_it->second;
+      auto inner_it = lang_to_pattern.find(page_language);
+      if (inner_it != lang_to_pattern.end()) {
+        const std::vector<MatchingPattern>& patterns = inner_it->second;
+        if (!patterns.empty()) {
+          return patterns;
+        }
+      }
+    }
     return GetAllPatternsBaseOnType(pattern_name);
+  } else if (
+      base::FeatureList::IsEnabled(
+          features::
+              kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
+    return GetAllPatternsBaseOnType(pattern_name);
+  } else {
+    return {};
   }
 }
 
@@ -76,6 +94,31 @@ void PatternProvider::SetPatternProviderForTesting(
 // static.
 void PatternProvider::ResetPatternProvider() {
   g_pattern_provider = nullptr;
+}
+
+void PatternProvider::EnrichPatternsWithEnVersion() {
+  for (auto& p : patterns_) {
+    std::map<std::string, std::vector<MatchingPattern>>& lg_to_patterns =
+        p.second;
+
+    auto it = lg_to_patterns.find("en");
+    if (it == lg_to_patterns.end())
+      continue;
+    std::vector<MatchingPattern> en_patterns = it->second;
+
+    for (MatchingPattern& en_pattern : en_patterns) {
+      en_pattern.match_field_attributes = MATCH_NAME;
+    }
+
+    for (auto& q : lg_to_patterns) {
+      const std::string& page_language = q.first;
+      std::vector<MatchingPattern>& patterns = q.second;
+
+      if (page_language != "en") {
+        patterns.insert(patterns.end(), en_patterns.begin(), en_patterns.end());
+      }
+    }
+  }
 }
 
 const std::vector<MatchingPattern> PatternProvider::GetAllPatternsBaseOnType(

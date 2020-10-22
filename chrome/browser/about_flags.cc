@@ -1659,7 +1659,8 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
     {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
-    {"enable_launch_polish", "true"}};
+    {"enable_launch_polish", "true"},
+    {"enable_launch_bug_fix", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
@@ -5092,12 +5093,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "SharingDeviceExpiration")},
 
 #if defined(OS_CHROMEOS)
-    {"discover-app", flag_descriptions::kEnableDiscoverAppName,
-     flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDiscoverApp)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"ash-enable-pip-rounded-corners",
      flag_descriptions::kAshEnablePipRoundedCornersName,
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
@@ -6245,6 +6240,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"nearby-sharing", flag_descriptions::kNearbySharingName,
      flag_descriptions::kNearbySharingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNearbySharing)},
+    {"nearby-sharing-webrtc", flag_descriptions::kNearbySharingWebRtcName,
+     flag_descriptions::kNearbySharingWebRtcDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNearbySharingWebRtc)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

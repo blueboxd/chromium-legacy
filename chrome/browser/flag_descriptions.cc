@@ -1410,6 +1410,10 @@ const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
 
+const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
+const char kNearbySharingWebRtcDescription[] =
+    "Enables use of WebRTC in Nearby Share.";
+
 const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
 const char kNewCanvas2DAPIDescription[] =
     "Enables in-progress features for the canvas 2D API. See "
@@ -3664,7 +3668,7 @@ const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
 
-#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 const char kChromeOSDirectVideoDecoderName[] = "ChromeOS Direct Video Decoder";
 const char kChromeOSDirectVideoDecoderDescription[] =
     "Enables the hardware-accelerated ChromeOS direct media::VideoDecoder "
@@ -3673,7 +3677,7 @@ const char kChromeOSDirectVideoDecoderDescription[] =
     "which is added for platforms where said direct VideoDecoder does not work "
     "or is not well tested (see the disable_cros_video_decoder USE flag in "
     "Chrome OS)";
-#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 const char kCdmFactoryDaemonName[] = "CDM Factory Daemon";
 const char kCdmFactoryDaemonDescription[] =
@@ -3915,10 +3919,6 @@ const char kEnableCrOSActionRecorderDescription[] =
     "When enabled, each app launching, file opening, setting change, and url "
     "visiting will be logged locally into an encrypted file. Should not be "
     "enabled. Be aware that hash option only provides a thin layer of privacy.";
-
-const char kEnableDiscoverAppName[] = "Enable Discover App";
-const char kEnableDiscoverAppDescription[] =
-    "Enable Discover App icon in launcher.";
 
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";

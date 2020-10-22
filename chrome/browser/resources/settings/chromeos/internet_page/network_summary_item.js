@@ -291,6 +291,22 @@ Polymer({
   },
 
   /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {string}
+   * @private
+   */
+  getToggleA11yDescribedBy_(deviceState) {
+    // Use network state text to describe toggle for uninitialized tether
+    // device. This announces details about enabling bluetooth.
+    if (this.enableToggleIsVisible_(deviceState) &&
+        deviceState.type === mojom.NetworkType.kTether &&
+        deviceState.deviceState == mojom.DeviceStateType.kUninitialized) {
+      return 'networkState';
+    }
+    return '';
+  },
+
+  /**
    * @return {boolean} True if VPNs are disabled by policy and the current
    *     device is VPN.
    * @private
@@ -355,7 +371,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDetailsIsVisible_(activeNetworkState, deviceState, networkStateList) {
+  shouldShowDetails_(activeNetworkState, deviceState, networkStateList) {
     if (!!deviceState && deviceState.type == mojom.NetworkType.kVPN) {
       return this.anyVpnExists_(deviceState, networkStateList);
     }
@@ -415,7 +431,7 @@ Polymer({
     } else if (this.shouldShowSubpage_(
                    this.deviceState, this.networkStateList)) {
       this.fire('show-networks', this.deviceState.type);
-    } else if (this.showDetailsIsVisible_(
+    } else if (this.shouldShowDetails_(
                    this.activeNetworkState, this.deviceState,
                    this.networkStateList)) {
       if (this.activeNetworkState.guid) {
@@ -447,7 +463,23 @@ Polymer({
     // Item is actionable if tapping should show either networks subpage or the
     // network details page.
     return this.shouldShowSubpage_(this.deviceState, this.networkStateList) ||
-        this.showDetailsIsVisible_(
+        this.shouldShowDetails_(
+            activeNetworkState, deviceState, networkStateList);
+  },
+
+  /**
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
+   * @return {boolean}
+   * @private
+   */
+  showArrowButton_(activeNetworkState, deviceState, networkStateList) {
+    if (!this.deviceIsEnabled_(deviceState)) {
+      return false;
+    }
+    return this.shouldShowSubpage_(deviceState, networkStateList) ||
+        this.shouldShowDetails_(
             activeNetworkState, deviceState, networkStateList);
   },
 

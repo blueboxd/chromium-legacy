@@ -2352,21 +2352,6 @@
             ]
         }
     ],
-    "DirectCompositionUseNV12DecodeSwapChain": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DirectCompositionUseNV12DecodeSwapChain"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisableForceDeferInChildFrames": [
         {
             "platforms": [
@@ -7826,24 +7811,6 @@
             "experiments": [
                 {
                     "name": "QueueSize:800,MinBitrate:30000"
-                }
-            ]
-        }
-    ],
-    "WebRTC-Pacer-BlockAudio": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled"
                 }
             ]
         }

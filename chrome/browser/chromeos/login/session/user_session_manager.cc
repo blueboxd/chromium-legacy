@@ -60,7 +60,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
-#include "chrome/browser/chromeos/login/screens/discover_screen.h"
+#include "chrome/browser/chromeos/login/screens/pin_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -1151,8 +1151,8 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
       profile_path,
-      base::Bind(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
-                 user_context_, is_demo_session),
+      base::BindRepeating(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
+                          user_context_, is_demo_session),
       base::string16(), std::string());
 }
 
@@ -1266,7 +1266,7 @@ void UserSessionManager::InitProfilePreferences(
                        user_context.GetPublicSessionInputMethod());
 
     if (user_manager->GetPrimaryUser() == user &&
-        !DiscoverScreen::ShouldSkip() &&
+        !PinSetupScreen::ShouldSkip() &&
         !user_manager->IsUserNonCryptohomeDataEphemeral(user->GetAccountId())) {
       chromeos::DiscoverManager::Get()
           ->GetModule<chromeos::DiscoverModulePinSetup>()

@@ -78,6 +78,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/prerender/prerender_processor.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
@@ -3495,6 +3496,12 @@ void RenderFrameHostImpl::UpdateTargetURL(
   std::move(callback).Run();
 }
 
+void RenderFrameHostImpl::RequestClose() {
+  // If the renderer is telling us to close, it has already run the unload
+  // events, and we can take the fast path.
+  render_view_host_->ClosePageIgnoringUnloadEvents();
+}
+
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
   delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
@@ -3533,7 +3540,6 @@ void RenderFrameHostImpl::DownloadURL(
   std::unique_ptr<download::DownloadUrlParameters> parameters(
       new download::DownloadUrlParameters(blink_parameters->url,
                                           GetProcess()->GetID(),
-                                          GetRenderViewHost()->GetRoutingID(),
                                           GetRoutingID(), traffic_annotation));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(
@@ -7591,6 +7597,13 @@ void RenderFrameHostImpl::BindScreenEnumerationReceiver(
   if (!screen_enumeration_impl_)
     screen_enumeration_impl_ = std::make_unique<ScreenEnumerationImpl>(this);
   screen_enumeration_impl_->Bind(std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindPrerenderProcessor(
+    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> pending_receiver) {
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  prerender_processor_receivers_.Add(
+      std::make_unique<PrerenderProcessor>(*this), std::move(pending_receiver));
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(

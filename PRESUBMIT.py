@@ -372,18 +372,14 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/web_applications/',
   '^chrome/browser/win/',
   '^chrome/services/',
-  '^chrome/test/',
+  '^chrome/test/chromedriver/server/http_handler.cc',
   '^chrome/tools/',
-  '^chromecast/media/',
   '^chromeos/attestation/',
   '^chromeos/components/',
-  '^components/arc/',
   '^components/cast_channel/',
   '^components/component_updater/',
   '^components/content_settings/',
   '^components/drive/',
-  '^components/nacl/',
-  '^components/navigation_interception/',
   '^components/ownership/',
   '^components/policy/',
   '^components/search_engines/',
@@ -411,7 +407,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^net/url_request/',
   '^ppapi/proxy/',
   '^services/',
-  '^third_party/blink/',
   '^tools/clang/base_bind_rewriters/',  # Intentional.
   '^tools/gdb/gdb_chrome.py',  # Intentional.
 ))
@@ -3640,11 +3635,17 @@ class PydepsChecker(object):
 
   def _ComputeNormalizedPydepsEntries(self, pydeps_path):
     """Returns an interable of paths within the .pydep, relativized to //."""
-    os_path = self._input_api.os_path
-    pydeps_dir = os_path.dirname(pydeps_path)
-    entries = (l.rstrip() for l in self._LoadFile(pydeps_path).splitlines()
-               if not l.startswith('*'))
-    return (os_path.normpath(os_path.join(pydeps_dir, e)) for e in entries)
+    pydeps_data = self._LoadFile(pydeps_path)
+    uses_gn_paths = '--gn-paths' in pydeps_data
+    entries = (l for l in pydeps_data.splitlines() if not l.startswith('#'))
+    if uses_gn_paths:
+      # Paths look like: //foo/bar/baz
+      return (e[2:] for e in entries)
+    else:
+      # Paths look like: path/relative/to/file.pydeps
+      os_path = self._input_api.os_path
+      pydeps_dir = os_path.dirname(pydeps_path)
+      return (os_path.normpath(os_path.join(pydeps_dir, e)) for e in entries)
 
   def _CreateFilesToPydepsMap(self):
     """Returns a map of local_path -> list_of_pydeps."""
@@ -3684,6 +3685,8 @@ class PydepsChecker(object):
     old_pydeps_data = self._LoadFile(pydeps_path).splitlines()
     if old_pydeps_data:
       cmd = old_pydeps_data[1][1:].strip()
+      if '--output' not in cmd:
+        cmd += ' --output ' + pydeps_path
       old_contents = old_pydeps_data[2:]
     else:
       # A default cmd that should work in most cases (as long as pydeps filename

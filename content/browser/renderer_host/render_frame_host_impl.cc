@@ -2287,16 +2287,26 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
   if (IsPendingDeletion())
     return;
 
+  // In case of BackForwardCache, page is evicted directly from the cache and
+  // deleted immediately, without waiting for unload handlers.
+  bool wait_for_unload_handlers =
+      has_unload_handlers() && !IsInBackForwardCache();
+
   if (render_frame_created_) {
     Send(new UnfreezableFrameMsg_Delete(routing_id_, intent));
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
       DCHECK_NE(lifecycle_state(), LifecycleState::kSpeculative);
-      // If this subframe has unload handlers (and isn't speculative), ensure
-      // that they have a chance to execute by delaying process cleanup. This
-      // will prevent the process from shutting down immediately in the case
-      // where this is the last active frame in the process.
-      // See https://crbug.com/852204.
+      // Documents from the page in the BackForwardCache don't run their unload
+      // handlers, even if they have one. As a result, this should never delay
+      // process shutdown.
+      DCHECK_NE(lifecycle_state(), LifecycleState::kInBackForwardCache);
+
+      // If this document has unload handlers (and isn't speculative or in the
+      // back-forward cache), ensure that they have a chance to execute by
+      // delaying process cleanup. This will prevent the process from shutting
+      // down immediately in the case where this is the last active frame in the
+      // process. See https://crbug.com/852204.
       if (has_unload_handlers()) {
         RenderProcessHostImpl* process =
             static_cast<RenderProcessHostImpl*>(GetProcess());
@@ -2310,7 +2320,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     }
   }
 
-  LifecycleState lifecycle_state = has_unload_handlers()
+  LifecycleState lifecycle_state = wait_for_unload_handlers
                                        ? LifecycleState::kRunningUnloadHandlers
                                        : LifecycleState::kReadyToBeDeleted;
   SetLifecycleState(lifecycle_state);
@@ -5884,10 +5894,13 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
       local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
+        // In case of BackForwardCache, page is evicted directly from the cache
+        // and deleted immediately, without waiting for unload handlers.
+        bool wait_for_unload_handlers =
+            child->has_unload_handlers() && !child->IsInBackForwardCache();
         LifecycleState child_lifecycle_state =
-            child->has_unload_handlers()
-                ? LifecycleState::kRunningUnloadHandlers
-                : LifecycleState::kReadyToBeDeleted;
+            wait_for_unload_handlers ? LifecycleState::kRunningUnloadHandlers
+                                     : LifecycleState::kReadyToBeDeleted;
         child->SetLifecycleState(child_lifecycle_state);
       }
 
@@ -7600,8 +7613,10 @@ void RenderFrameHostImpl::BindScreenEnumerationReceiver(
 }
 
 void RenderFrameHostImpl::BindPrerenderProcessor(
+    RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::PrerenderProcessor> pending_receiver) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK_EQ(render_frame_host, this);
   prerender_processor_receivers_.Add(
       std::make_unique<PrerenderProcessor>(*this), std::move(pending_receiver));
 }
@@ -8439,12 +8454,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
   DCHECK_EQ(ui::PageTransitionIsMainFrame(params->transition), !GetParent());
-
-  // Check that the committing navigation token matches the navigation request.
-  if (navigation_request &&
-      navigation_request->commit_params().navigation_token !=
-          params->navigation_token) {
-    navigation_request.reset();
+  if (navigation_request) {
+    DCHECK_EQ(navigation_request->commit_params().navigation_token,
+              params->navigation_token);
   }
 
   if (!navigation_request) {
@@ -8484,7 +8496,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (navigation_request &&
       navigation_request->common_params().url != params->url &&
       is_same_document_navigation) {
-    same_document_navigation_request_ = std::move(navigation_request);
+    // It's possible for the committed URL to differ from the one saved in
+    // NavigationRequest when the navigation is blocked or we passed an empty
+    // URL before (see crbug.com/963396). In this case, we should recreate the
+    // NavigationRequest with CreateNavigationRequestForCommit() further down.
+    navigation_request.reset();
   }
 
   // Set is loading to true now if it has not been set yet. This happens for
@@ -9655,9 +9671,6 @@ void RenderFrameHostImpl::OnCookiesAccessed(
 }
 
 void RenderFrameHostImpl::CheckSandboxFlags() {
-  if (is_mhtml_document_)
-    return;
-
   if (!active_sandbox_flags_control_)
     return;
 

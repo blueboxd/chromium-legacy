@@ -39,8 +39,6 @@ component("color_utils") {
 component("geometry_skia") {
   sources = [
     "geometry_skia_export.h",
-    "mask_filter_info.cc",
-    "mask_filter_info.h",
     "rrect_f.cc",
     "rrect_f.h",
     "rrect_f_builder.cc",
@@ -87,6 +85,8 @@ component("gfx") {
     "font_util.h",
     "gdi_util.cc",
     "gdi_util.h",
+    "gpu_extra_info.cc",
+    "gpu_extra_info.h",
     "half_float.cc",
     "half_float.h",
     "icon_util.cc",

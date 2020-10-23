@@ -35,9 +35,10 @@ public class TranslateBridge {
 
     /**
      * Returns true iff the current tab can be manually translated.
+     * Logging should only be performed when this method is called to show the translate menu item.
      */
-    public static boolean canManuallyTranslate(Tab tab) {
-        return TranslateBridgeJni.get().canManuallyTranslate(tab.getWebContents());
+    public static boolean canManuallyTranslate(Tab tab, boolean menuLogging) {
+        return TranslateBridgeJni.get().canManuallyTranslate(tab.getWebContents(), menuLogging);
     }
 
     /**
@@ -55,6 +56,22 @@ public class TranslateBridge {
      */
     public static void setPredefinedTargetLanguage(Tab tab, String targetLanguage) {
         TranslateBridgeJni.get().setPredefinedTargetLanguage(tab.getWebContents(), targetLanguage);
+    }
+
+    /**
+     * @return The original language code of the given tab. Empty string if no language was detected
+     *         yet.
+     */
+    public static String getOriginalLanguage(Tab tab) {
+        return TranslateBridgeJni.get().getOriginalLanguage(tab.getWebContents());
+    }
+
+    /**
+     * @return The current language code of the given tab. Empty string if no language was detected
+     *         yet.
+     */
+    public static String getCurrentLanguage(Tab tab) {
+        return TranslateBridgeJni.get().getCurrentLanguage(tab.getWebContents());
     }
 
     /**
@@ -201,9 +218,11 @@ public class TranslateBridge {
     interface Natives {
         void manualTranslateWhenReady(WebContents webContents);
         void translateToLanguage(WebContents webContents, String targetLanguageCode);
-        boolean canManuallyTranslate(WebContents webContents);
+        boolean canManuallyTranslate(WebContents webContents, boolean menuLogging);
         boolean shouldShowManualTranslateIPH(WebContents webContents);
         void setPredefinedTargetLanguage(WebContents webContents, String targetLanguage);
+        String getOriginalLanguage(WebContents webContents);
+        String getCurrentLanguage(WebContents webContents);
         String getTargetLanguage();
         boolean isBlockedLanguage(String language);
         void getModelLanguages(LinkedHashSet<String> set);

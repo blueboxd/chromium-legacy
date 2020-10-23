@@ -1,0 +1,431 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {TabSearchAppElement} from 'chrome://tab-search/app.js';
+import {TabSearchApiProxy, TabSearchApiProxyImpl} from 'chrome://tab-search/tab_search_api_proxy.js';
+import {TabSearchItem} from 'chrome://tab-search/tab_search_item.js';
+import {TabSearchSearchField} from 'chrome://tab-search/tab_search_search_field.js';
+
+import {assertEquals, assertFalse, assertGT, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
+
+import {generateSampleDataFromSiteNames, sampleData, sampleSiteNames} from './tab_search_test_data.js';
+import {assertTabItemAndNeighborsInViewBounds, assertTabItemInViewBounds, disableScrollIntoViewAnimations} from './tab_search_test_helper.js';
+import {TestTabSearchApiProxy} from './test_tab_search_api_proxy.js';
+
+suite('TabSearchAppTest', () => {
+  /** @type {!TabSearchAppElement} */
+  let tabSearchApp;
+  /** @type {!TestTabSearchApiProxy} */
+  let testProxy;
+
+  disableScrollIntoViewAnimations(TabSearchItem);
+
+  /**
+   * @param {!NodeList<!Element>} rows
+   * @param {!Array<number>} ids
+   */
+  function verifyTabIds(rows, ids) {
+    assertEquals(ids.length, rows.length);
+    rows.forEach((row, index) => {
+      assertEquals(ids[index].toString(), row.getAttribute('id'));
+    });
+  }
+
+  /**
+   * @return {!NodeList<!Element>}
+   */
+  function queryRows() {
+    return tabSearchApp.shadowRoot.querySelectorAll('tab-search-item');
+  }
+
+  /**
+   * @param {tabSearch.mojom.ProfileTabs} sampleData
+   * @param {Object=} loadTimeOverridenData
+   */
+  async function setupTest(sampleData, loadTimeOverridenData) {
+    testProxy = new TestTabSearchApiProxy();
+    testProxy.setProfileTabs(sampleData);
+    TabSearchApiProxyImpl.instance_ = testProxy;
+
+    if (loadTimeOverridenData) {
+      loadTimeData.overrideValues(loadTimeOverridenData);
+    }
+
+    tabSearchApp = /** @type {!TabSearchAppElement} */
+        (document.createElement('tab-search-app'));
+
+    document.body.innerHTML = '';
+    document.body.appendChild(tabSearchApp);
+    await flushTasks();
+  }
+
+  test('return all tabs', async () => {
+    await setupTest(sampleData());
+    verifyTabIds(queryRows(), [1, 5, 6, 2, 3, 4]);
+  });
+
+  test('Default tab selection when data is present', async () => {
+    await setupTest(sampleData());
+    assertNotEquals(-1, tabSearchApp.getSelectedIndex(),
+        'No default selection in the presence of data');
+  });
+
+  test('Search text changes tab items', async () => {
+    await setupTest(sampleData());
+    const searchField = /** @type {!TabSearchSearchField} */
+      (tabSearchApp.shadowRoot.querySelector("#searchField"));
+    searchField.setValue('bing');
+    await flushTasks();
+    verifyTabIds(queryRows(), [2]);
+    assertEquals(0, tabSearchApp.getSelectedIndex());
+  });
+
+  test('No tab selected when there are no search matches', async () => {
+    await setupTest(sampleData());
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    searchField.setValue('Twitter');
+    await flushTasks();
+    assertEquals(0, queryRows().length);
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+  });
+
+  test('Click on tab item triggers actions', async () => {
+    const tabData = {
+      index: 0,
+      tabId: 1,
+      title: 'Google',
+      url: 'https://www.google.com',
+    };
+    await setupTest({windows: [{active: true, tabs: [tabData]}]});
+
+    const tabSearchItem = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('tab-search-item'));
+    tabSearchItem.click();
+    const [tabInfo] = await testProxy.whenCalled('switchToTab');
+    assertEquals(tabData.tabId, tabInfo.tabId);
+
+    const tabSearchItemCloseButton = /** @type {!HTMLElement} */ (
+        tabSearchItem.shadowRoot.querySelector('cr-icon-button'));
+    tabSearchItemCloseButton.click();
+    const tabId = await testProxy.whenCalled('closeTab');
+    assertEquals(tabData.tabId, tabId);
+  });
+
+  test('Keyboard navigation on an empty list', async () => {
+    await setupTest({windows: [{active: true, tabs: []}]});
+
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector("#searchField"));
+
+    keyDownOn(searchField, 0, [], 'ArrowUp');
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'ArrowDown');
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'Home');
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'End');
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+  });
+
+  test('Keyboard navigation abides by item list range boundaries', async () => {
+    const testData = sampleData();
+    await setupTest(testData);
+
+    const numTabs =
+        testData.windows.reduce((total, w) => total + w.tabs.length, 0);
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector("#searchField"));
+
+    keyDownOn(searchField, 0, [], 'ArrowUp');
+    assertEquals(numTabs - 1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'ArrowDown');
+    assertEquals(0, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'ArrowDown');
+    assertEquals(1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'ArrowUp');
+    assertEquals(0, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'End');
+    assertEquals(numTabs - 1, tabSearchApp.getSelectedIndex());
+
+    keyDownOn(searchField, 0, [], 'Home');
+    assertEquals(0, tabSearchApp.getSelectedIndex());
+  });
+
+  test('Key with modifiers should not affect selected item', async () => {
+    await setupTest(sampleData());
+
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+
+    for (const key of ['ArrowUp', 'ArrowDown', 'Home', 'End']) {
+      keyDownOn(searchField, 0, ['shift'], key);
+      assertEquals(0, tabSearchApp.getSelectedIndex());
+    }
+  });
+
+  test('refresh on tabs changed', async () => {
+    await setupTest(sampleData());
+    verifyTabIds(queryRows(), [1, 5, 6, 2, 3, 4]);
+    testProxy.setProfileTabs({windows: []});
+    testProxy.getCallbackRouterRemote().tabsChanged();
+    await flushTasks();
+    verifyTabIds(queryRows(), []);
+    assertEquals(-1, tabSearchApp.getSelectedIndex());
+  });
+
+  test('On tabs changed, tab item selection preserved or updated', async () => {
+    const testData = sampleData();
+    await setupTest(testData);
+
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    keyDownOn(searchField, 0, [], 'ArrowDown');
+    assertEquals(1, tabSearchApp.getSelectedIndex());
+
+    testProxy.setProfileTabs({windows: [testData.windows[0]]});
+    testProxy.getCallbackRouterRemote().tabsChanged();
+    await flushTasks();
+    assertEquals(1, tabSearchApp.getSelectedIndex());
+
+    testProxy.setProfileTabs(
+        {windows: [{active: true, tabs: [testData.windows[0].tabs[0]]}]});
+    testProxy.getCallbackRouterRemote().tabsChanged();
+    await flushTasks();
+    assertEquals(0, tabSearchApp.getSelectedIndex());
+  });
+
+  test('refresh on tab updated', async () => {
+    await setupTest(sampleData());
+    verifyTabIds(queryRows(), [1, 5, 6, 2, 3, 4]);
+    let tabSearchItem = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('tab-search-item[id="1"]'));
+    assertEquals('Google', tabSearchItem.data.tab.title);
+    assertEquals('https://www.google.com', tabSearchItem.data.tab.url);
+    const updatedTab = /** @type {!tabSearch.mojom.Tab} */ ({
+      index: 0,
+      tabId: 1,
+      title: 'Example',
+      url: 'https://example.com',
+      lastActiveTimeTicks: { internalValue: 1 },
+    });
+    testProxy.getCallbackRouterRemote().tabUpdated(updatedTab);
+    await flushTasks();
+    // tabIds are not changed after tab updated.
+    verifyTabIds(queryRows(), [1, 5, 6, 2, 3, 4]);
+    tabSearchItem = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('tab-search-item[id="1"]'));
+    assertEquals(updatedTab.title, tabSearchItem.data.tab.title);
+    assertEquals(updatedTab.url, tabSearchItem.data.tab.url);
+    assertEquals('example.com', tabSearchItem.data.hostname);
+  });
+
+  test('Verify initial tab render time is logged correctly', async () => {
+    // |metricNames| tracks thow many times recordTime() has been called for
+    // a metric.
+    const metricNames = {};
+    chrome.metricsPrivate.recordTime = (...args) => {
+      if ( args[0] in metricNames ) {
+        metricNames[args[0]] += 1;
+      } else {
+        metricNames[args[0]] = 1;
+      }
+    };
+
+    await setupTest(sampleData());
+    await waitAfterNextRender(tabSearchApp);
+
+    // Make sure that tab data has been recieved.
+    verifyTabIds(queryRows(), [ 1, 5, 6, 2, 3, 4 ]);
+
+    // Ensure that |chrome.metricsPrivate.recordTime()| has been called
+    // once for InitialTabsRenderTime after initial tab data has been
+    // recieved.
+    assertEquals(1, metricNames['Tabs.TabSearch.WebUI.InitialTabsRenderTime']);
+
+    // Force a change to filtered tab data that would result in a
+    // re-render.
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    searchField.setValue('bing');
+    await flushTasks();
+    await waitAfterNextRender(tabSearchApp);
+    verifyTabIds(queryRows(), [ 2 ]);
+
+    // |chrome.metricsPrivate.recordTime()| should still have only been
+    // called once for InitialTabsRenderTime.
+    assertEquals(1, metricNames['Tabs.TabSearch.WebUI.InitialTabsRenderTime']);
+  });
+
+  test('Verify tab switch is logged correctly', async () => {
+    await setupTest(sampleData());
+    // Make sure that tab data has been recieved.
+    verifyTabIds(queryRows(), [ 1, 5, 6, 2, 3, 4 ]);
+
+    // Click the first element with tabId 1.
+    let tabSearchItem = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('tab-search-item[id="1"]'));
+    tabSearchItem.click();
+
+    // Assert switchToTab() was called appropriately for an unfiltered tab list.
+    await testProxy.whenCalled('switchToTab')
+        .then(([ tabInfo, withSearch ]) => {
+          assertEquals(1, tabInfo.tabId);
+          assertFalse(withSearch);
+        });
+
+    // Force a change to filtered tab data that would result in a
+    // re-render.
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    searchField.setValue('bing');
+    await flushTasks();
+    verifyTabIds(queryRows(), [ 2 ]);
+
+    testProxy.reset();
+    // Click the only remaining element with tabId 2.
+    tabSearchItem = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('tab-search-item[id="2"]'));
+    tabSearchItem.click();
+
+    // Assert switchToTab() was called appropriately for a tab list fitlered by
+    // the search query.
+    await testProxy.whenCalled('switchToTab')
+        .then(([ tabInfo, withSearch ]) => {
+          assertEquals(2, tabInfo.tabId);
+          assertTrue(withSearch);
+        });
+  });
+
+  test('Verify showUI() is called correctly', async () => {
+    assertEquals(0, testProxy.getCallCount('showUI'));
+
+    await setupTest(sampleData());
+    await waitAfterNextRender(tabSearchApp);
+
+    // Make sure that tab data has been received.
+    verifyTabIds(queryRows(), [ 1, 5, 6, 2, 3, 4 ]);
+
+    // Ensure that showUI() has been called once after initial data has been
+    // rendered.
+    assertEquals(1, testProxy.getCallCount('showUI'));
+
+    // Force a change to filtered tab data that would result in a
+    // re-render.
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    searchField.setValue('bing');
+    await flushTasks();
+    await waitAfterNextRender(tabSearchApp);
+    verifyTabIds(queryRows(), [ 2 ]);
+
+    // |showUI()| should still have only been called once.
+    assertEquals(1, testProxy.getCallCount('showUI'));
+  });
+
+  test('Submit feeedback footer disabled by default', async () => {
+    await setupTest(sampleData());
+    assertTrue(
+        tabSearchApp.shadowRoot.querySelector('#feedback-footer') === null);
+  });
+
+  test('Click on Sumit Feedback footer triggers action', async () => {
+    await setupTest(sampleData(), {'submitFeedbackEnabled': true});
+
+    const feedbackButton = /** @type {!HTMLButtonElement} */
+        (tabSearchApp.shadowRoot.querySelector('#feedback-footer'));
+    feedbackButton.click();
+    await testProxy.whenCalled('showFeedbackPage');
+  });
+
+  test('Sort by most recent active tabs', async () => {
+    const tabs = [
+    {
+      index: 0,
+      tabId: 1,
+      title: 'Google',
+      url: 'https://www.google.com',
+      lastActiveTimeTicks: { internalValue: 2 },
+    },
+    {
+      index: 1,
+      tabId: 2,
+      title: 'Bing',
+      url: 'https://www.bing.com',
+      lastActiveTimeTicks: { internalValue: 4 },
+    },
+    {
+      index: 2,
+      tabId: 3,
+      title: 'Yahoo',
+      url: 'https://www.yahoo.com',
+      lastActiveTimeTicks: { internalValue: 3 },
+    }];
+
+    await setupTest({windows: [{active: true, tabs}]});
+    verifyTabIds(queryRows(), [2, 3, 1]);
+  });
+
+  test('Escape key triggers close UI API', async () => {
+    await setupTest(sampleData(), {'submitFeedbackEnabled': true});
+
+    const elements = [
+      tabSearchApp.shadowRoot.querySelector('#searchField'),
+      tabSearchApp.shadowRoot.querySelector('#tabs'),
+      tabSearchApp.shadowRoot.querySelector('tab-search-item'),
+      tabSearchApp.shadowRoot.querySelector('#feedback-footer'),
+    ];
+
+    for (const element of elements) {
+      keyDownOn(element, 0, [], 'Escape');
+    }
+
+    assertEquals(4, testProxy.getCallCount('closeUI'));
+  });
+
+  test('Scrollbar updates show previous and following list items', async () => {
+    await setupTest(generateSampleDataFromSiteNames(sampleSiteNames()));
+
+    const tabsDiv = /** @type {!HTMLElement} */
+        (tabSearchApp.shadowRoot.querySelector('#tabs'));
+    // Assert that the tabs are in a overflowing state.
+    assertGT(tabsDiv.scrollHeight, tabsDiv.clientHeight);
+
+    const tabItems = /** @type {!NodeList<!HTMLElement>}*/ (queryRows());
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+
+    for (let i = 0; i < tabItems.length; i++) {
+      keyDownOn(searchField, 0, [], 'ArrowDown');
+      const selectedIndex = ((i + 1) % tabItems.length);
+
+      assertEquals(selectedIndex, tabSearchApp.getSelectedIndex());
+      assertTabItemAndNeighborsInViewBounds(tabsDiv, tabItems, selectedIndex);
+    }
+
+    keyDownOn(searchField, 0, [], 'End');
+    assertTabItemInViewBounds(tabsDiv, tabItems[tabItems.length - 1]);
+
+    for (let i = tabItems.length - 1; i >= 0; i--) {
+      keyDownOn(searchField, 0, [], 'ArrowUp');
+      const selectedIndex = (i - 1 + tabItems.length) % tabItems.length;
+
+      assertEquals(selectedIndex, tabSearchApp.getSelectedIndex());
+      assertTabItemAndNeighborsInViewBounds(tabsDiv, tabItems, selectedIndex);
+    }
+
+    keyDownOn(searchField, 0, [], 'Home');
+    assertTabItemInViewBounds(tabsDiv, tabItems[0]);
+  });
+});

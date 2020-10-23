@@ -1269,6 +1269,16 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Insecure non-ad request"/>
 </enum>
 
+<enum name="AdsInterventionStatus">
+  <int value="0" label="Expired"/>
+  <int value="1" label="Would Block"/>
+  <int value="2" label="Blocking"/>
+</enum>
+
+<enum name="AdsViolations">
+  <int value="0" label="kMobileAdDensityByHeightAbove30"/>
+</enum>
+
 <enum name="AdUserActivationStatus">
   <int value="0" label="No activation"/>
   <int value="1" label="Received activation"/>
@@ -48570,6 +48580,17 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Adjust Selection Reset"/>
 </enum>
 
+<enum name="MenuTranslationUnavailableReason">
+  <int value="0" label="The kTranslate feature is disabled"/>
+  <int value="1" label="The network is offline"/>
+  <int value="2" label="API keys for translate are unavailable"/>
+  <int value="3" label="Translate not supported on MHTML pages"/>
+  <int value="4" label="URL is of a type not considered translatable"/>
+  <int value="5" label="Could not identify the target language"/>
+  <int value="6" label="Translate is not allowed by policy"/>
+  <int value="7" label="Could not identify the source language"/>
+</enum>
+
 <enum name="MessageLoopProblems">
   <int value="0" label="Message Post"/>
   <int value="1" label="Completion Post"/>
@@ -61291,6 +61312,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="13668" label="kUnitConversionResult"/>
 </enum>
 
+<enum name="QuicKeyUpdateReason">
+  <int value="0" label="kInvalid"/>
+  <int value="1" label="kRemote"/>
+  <int value="2" label="kLocalForTests"/>
+  <int value="3" label="kLocalForInteropRunner"/>
+  <int value="4" label="kLocalAeadConfidentialityLimit"/>
+  <int value="5" label="kLocalKeyUpdateLimitOverride"/>
+</enum>
+
 <enum name="QuickofficeErrorTypes">
   <int value="0" label="doc uncaught js exception"/>
   <int value="1" label="docx uncaught js exception"/>
@@ -64088,6 +64118,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="kExtensionNotWhitelistedError"/>
   <int value="16" label="kChallengeBadBase64Error"/>
   <int value="17" label="kDeviceWebBasedAttestationNotOobeError"/>
+  <int value="18" label="kGetPublicKeyFailedError"/>
+  <int value="19" label="kMarkCorporateKeyFailedError"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">
@@ -71322,6 +71354,7 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Navigation Started"/>
   <int value="6" label="Tab Destroyed"/>
   <int value="7" label="Tab Hidden"/>
+  <int value="8" label="Offline Available"/>
 </enum>
 
 <enum name="TabDiscardingEvents">
@@ -72539,6 +72572,19 @@ Full version information for the fingerprint enum values:
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
   <int value="30" label="kModuleBlacklistCacheMD5Digest"/>
+</enum>
+
+<enum name="TranslateAssistContentResult">
+  <int value="0" label="The feature was disabled"/>
+  <int value="1" label="The tab was null"/>
+  <int value="2" label="The tab was an incognito tab"/>
+  <int value="3" label="The activity was in overview mode"/>
+  <int value="4" label="canTranslateTab() was false"/>
+  <int value="5" label="The original page language was missing"/>
+  <int value="6" label="The current page language was missing"/>
+  <int value="7" label="There was a JSONException"/>
+  <int value="8" label="The page was translatable"/>
+  <int value="9" label="The page has already been translated"/>
 </enum>
 
 <enum name="TranslateBubbleUiEvent">

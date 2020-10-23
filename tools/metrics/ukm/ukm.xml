@@ -372,6 +372,30 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AdsIntervention.LastIntervention" singular="True">
+  <owner>yaoxia@google.com</owner>
+  <owner>chrome-ads-core@google.com</owner>
+  <summary>
+    Recorded after computing the subresource filter activation for a page at
+    process response time during navigation. This is only recorded when there
+    has previously been an ads intervention triggered on the page within the
+    site data's lifetime (currently 7 days). Clearing site data will reset
+    intervention information.
+  </summary>
+  <metric name="InterventionStatus" enum="AdsInterventionStatus">
+    <summary>
+      Records the status of the ads intervention, whether the intervention lead
+      to subresource filter activation, measured during page load.
+    </summary>
+  </metric>
+  <metric name="InterventionType" enum="AdsViolations">
+    <summary>
+      Records the last measured intervention recorded for the page, measured
+      during page load.
+    </summary>
+  </metric>
+</event>
+
 <event name="AmpPageLoad" singular="True">
   <owner>sullivan@chromium.org</owner>
   <metric name="MainFrameAmpPageLoad">
@@ -10255,6 +10279,13 @@ be describing additional metrics about the same event.
       is capped at 100. See IsUserInteractionInputType in web_contents_impl for
       what an interaction is. Currently it is a mouse, scroll begin, touch
       start, or raw key down event.
+    </summary>
+  </metric>
+  <metric name="RedirectCount">
+    <summary>
+      The number of redirects taken by the pop-up's initial navigation. This
+      does not include javascript navigations initiated by the opening document
+      for the pop-up.
     </summary>
   </metric>
   <metric name="SafeBrowsingStatus" enum="PopupSafeBrowsingStatus">

@@ -370,7 +370,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/browser/ui/',
   '^chrome/browser/web_applications/',
   '^chrome/browser/win/',
-  '^chrome/services/',
   '^chrome/test/chromedriver/server/http_handler.cc',
   '^chrome/tools/',
   '^chromeos/attestation/',
@@ -5197,6 +5196,12 @@ def CheckTranslationExpectations(input_api, output_api,
         'translation_expectations.pyl')
   if not grd_files:
     grd_files = git_helper.list_grds_in_repository(repo_root)
+
+  # Ignore bogus grd files used only for testing
+  # ui/webui/resoucres/tools/generate_grd.py.
+  ignore_path = input_api.os_path.join(
+      'ui', 'webui', 'resources', 'tools', 'tests')
+  grd_files = filter(lambda p: ignore_path not in p, grd_files)
 
   try:
     translation_helper.get_translatable_grds(repo_root, grd_files,

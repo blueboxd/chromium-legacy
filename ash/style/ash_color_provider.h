@@ -120,13 +120,9 @@ class ASH_EXPORT AshColorProvider : public SessionObserver {
     // Color for radio button.
     kRadioColorActive,
     kRadioColorInactive,
-  };
 
-  // Types of ash styled buttons.
-  enum class ButtonType {
-    kPillButtonWithIcon,
-    kCloseButtonWithSmallBase,
-    kIconButtonSmallOrMedium,
+    // Color for current active desk's border.
+    kCurrentDeskColor,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and
@@ -181,21 +177,20 @@ class ASH_EXPORT AshColorProvider : public SessionObserver {
   // |is_themed_|).
   SkColor GetBackgroundColor() const;
 
-  // Helpers to style buttons based on the desired |type| and theme. Depending
-  // on the type may style text, icon and background colors for both enabled and
-  // disabled states. May overwrite an prior styles on |button|.
+  // Helpers to style different types of buttons. Depending on the type may
+  // style text, icon and background colors for both enabled and disabled
+  // states. May overwrite an prior styles on |button|.
   void DecoratePillButton(views::LabelButton* button,
-                          ButtonType type,
-                          const gfx::VectorIcon& icon);
+                          const gfx::VectorIcon* icon);
   void DecorateCloseButton(views::ImageButton* button,
-                           ButtonType type,
                            int button_size,
                            const gfx::VectorIcon& icon);
   void DecorateIconButton(views::ImageButton* button,
-                          ButtonType type,
                           const gfx::VectorIcon& icon,
                           bool toggled,
                           int icon_size);
+  void DecorateFloatingIconButton(views::ImageButton* button,
+                                  const gfx::VectorIcon& icon);
 
   void AddObserver(ColorModeObserver* observer);
   void RemoveObserver(ColorModeObserver* observer);

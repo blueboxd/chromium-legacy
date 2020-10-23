@@ -1830,9 +1830,6 @@ const FeatureEntry::FeatureParam kContextMenuShopImageWithGoogleLens[] = {
     {"lensShopVariation", "ShopImageWithGoogleLens"}};
 const FeatureEntry::FeatureParam kContextMenuSearchSimilarProducts[] = {
     {"lensShopVariation", "SearchSimilarProducts"}};
-const FeatureEntry::FeatureParam
-    kContextMenuShopImageWithGoogleLensShoppyImage[] = {
-        {"lensShopVariation", "ShopImageWithGoogleLensShoppyImage"}};
 
 const FeatureEntry::FeatureVariation
     kContextMenuShopWithGoogleLensShopVariations[] = {
@@ -1841,10 +1838,7 @@ const FeatureEntry::FeatureVariation
         {"ShopImageWithGoogleLens", kContextMenuShopImageWithGoogleLens,
          base::size(kContextMenuShopImageWithGoogleLens), nullptr},
         {"SearchSimilarProducts", kContextMenuSearchSimilarProducts,
-         base::size(kContextMenuSearchSimilarProducts), nullptr},
-        {"ShopImageWithGoogleLensShoppyImage",
-         kContextMenuShopImageWithGoogleLensShoppyImage,
-         base::size(kContextMenuShopImageWithGoogleLensShoppyImage), nullptr}};
+         base::size(kContextMenuSearchSimilarProducts), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -3386,6 +3380,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTiles)},
+    {"query-tiles-ntp", flag_descriptions::kQueryTilesNTPName,
+     flag_descriptions::kQueryTilesNTPDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInNTP)},
     {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
      flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInOmnibox)},
@@ -6687,6 +6684,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kConnectivityDiagnosticsWebUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kConnectivityDiagnosticsWebUi)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"enable-autofill-account-indicator-footer",
+     flag_descriptions::kEnableAutofillInfoBarAccountIndicationFooterName,
+     flag_descriptions::
+         kEnableAutofillInfoBarAccountIndicationFooterDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableInfoBarAccountIndicationFooter)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

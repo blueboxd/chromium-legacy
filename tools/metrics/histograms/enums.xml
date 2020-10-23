@@ -3270,7 +3270,7 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="Error before showing picker"/>
   <int value="11" label="Invalid"/>
   <int value="12" label="External device pressed"/>
-  <int value="13" label="Mac native app pressed"/>
+  <int value="13" label="Mac OS app pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -3281,7 +3281,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Chrome"/>
   <int value="2" label="Progressive web app"/>
   <int value="3" label="External device"/>
-  <int value="4" label="Mac native app"/>
+  <int value="4" label="Mac OS app"/>
 </enum>
 
 <enum name="ArcIntentHelperOpenType">
@@ -12173,9 +12173,8 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Search by Image Unavailable"/>
   <int value="5" label="OS Below Android O"/>
   <int value="6" label="Invalid Package"/>
-  <int value="7" label="Image Format Not Support"/>
-  <int value="8" label="Lens Shop Supported"/>
-  <int value="9" label="Lens Search And Shop Supported"/>
+  <int value="7" label="Lens Shop Supported"/>
+  <int value="8" label="Lens Search And Shop Supported"/>
 </enum>
 
 <enum name="ContextMenuOption">
@@ -41954,6 +41953,7 @@ from previous Chrome versions.
   <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1748485814" label="SuggestedContentToggle:disabled"/>
+  <int value="-1747383699" label="QueryTilesInNTP:disabled"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
   <int value="-1746708491" label="RemoteCopyPersistentNotification:disabled"/>
   <int value="-1746255521" label="NewOverviewUi:enabled"/>
@@ -44107,6 +44107,8 @@ from previous Chrome versions.
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="375934458" label="PortalsCrossOrigin:enabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
+  <int value="378948081"
+      label="AutofillEnableInfoBarAccountIndicationFooter:disabled"/>
   <int value="378994579" label="Previews:enabled"/>
   <int value="379190682" label="ReorderBookmarks:enabled"/>
   <int value="379326303" label="enable-add-to-shelf"/>
@@ -44417,6 +44419,8 @@ from previous Chrome versions.
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
   <int value="691020108" label="NTPCondensedTileLayout:disabled"/>
   <int value="693012666" label="QuickUnlockPin:disabled"/>
+  <int value="693545401"
+      label="AutofillEnableInfoBarAccountIndicationFooter:enabled"/>
   <int value="694985670" label="OmniboxUIExperimentNarrowDropdown:disabled"/>
   <int value="695385040" label="enable-external-drive-rename"/>
   <int value="696261973" label="GaiaActionButtons:enabled"/>
@@ -45157,6 +45161,7 @@ from previous Chrome versions.
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
+  <int value="1428221397" label="QueryTilesInNTP:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>

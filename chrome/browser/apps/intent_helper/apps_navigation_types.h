@@ -41,8 +41,8 @@ enum class PreferredPlatform {
   // Either there was an error or there is no preferred app at all.
   NONE,
 
-  // The preferred app is Chrome.
-  NATIVE_CHROME,
+  // The preferred app is Chrome browser.
+  CHROME_BROWSER,
 
   // The preferred app is an ARC app.
   ARC,
@@ -73,7 +73,7 @@ enum class PickerEntryType {
   kArc,
   kWeb,
   kDevice,
-  kMacNative,
+  kMacOs,
 };
 
 // Represents the data required to display an app in a picker to the user.
@@ -94,7 +94,7 @@ struct IntentPickerAppInfo {
   gfx::Image icon;
 
   // The string used to launch this app. Represents an Android package name when
-  // |type| is kArc, and when |type| is kMacNative, it is the file path of the
+  // |type| is kArc, and when |type| is kMacOs, it is the file path of the
   // native app to use.
   std::string launch_name;
 

@@ -342,6 +342,9 @@ extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[];
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
+extern const char kEnableAutofillInfoBarAccountIndicationFooterName[];
+extern const char kEnableAutofillInfoBarAccountIndicationFooterDescription[];
+
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
 
@@ -1733,6 +1736,8 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
 extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
+extern const char kQueryTilesNTPName[];
+extern const char kQueryTilesNTPDescription[];
 extern const char kQueryTilesOmniboxName[];
 extern const char kQueryTilesOmniboxDescription[];
 extern const char kQueryTilesSingleTierName[];

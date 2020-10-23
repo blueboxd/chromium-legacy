@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_pump_type.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,6 +80,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
   EXPECT_EQ(left.enable_dawn_backend_validation,
             right.enable_dawn_backend_validation);
+  EXPECT_EQ(left.disable_dawn_robustness, right.disable_dawn_robustness);
   EXPECT_EQ(left.enable_gpu_blocked_time_metric,
             right.enable_gpu_blocked_time_metric);
   EXPECT_EQ(left.enable_perf_data_collection,
@@ -88,7 +90,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
 #endif
   EXPECT_EQ(left.enable_native_gpu_memory_buffers,
             right.enable_native_gpu_memory_buffers);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   EXPECT_EQ(left.platform_disallows_chromeos_direct_video_decoder,
             right.platform_disallows_chromeos_direct_video_decoder);
 #endif
@@ -184,7 +186,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
                                base::MessagePumpType::UI)
 #endif
     GPU_PREFERENCES_FIELD(enable_native_gpu_memory_buffers, true);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     GPU_PREFERENCES_FIELD(platform_disallows_chromeos_direct_video_decoder,
                           true);
 #endif
@@ -278,7 +280,7 @@ TEST(GpuPreferencesTest, DISABLED_DecodePreferences) {
   PRINT_INT(message_pump_type);
 #endif
   PRINT_BOOL(enable_native_gpu_memory_buffers);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   PRINT_BOOL(platform_disallows_chromeos_direct_video_decoder);
 #endif
   printf("}\n");

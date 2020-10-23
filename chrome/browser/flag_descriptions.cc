@@ -553,6 +553,12 @@ const char kEnableAutofillCreditCardAuthenticationDescription[] =
     "authenticator (if available) to verify card ownership when retrieving "
     "credit cards from Google Payments.";
 
+const char kEnableAutofillInfoBarAccountIndicationFooterName[] =
+    "Display InfoBar footer with account indication information";
+const char kEnableAutofillInfoBarAccountIndicationFooterDescription[] =
+    "When enabled, a footer indicating user's e-mail address will appear at "
+    "the bottom of corresponding InfoBar.";
+
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
     "Enable Google Pay branding on CVC prompt on Android";
 const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[] =
@@ -3001,6 +3007,8 @@ const char kProcessSharingWithStrictSiteInstancesDescription[] =
 
 const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
+const char kQueryTilesNTPName[] = "Show query tiles in NTP";
+const char kQueryTilesNTPDescription[] = "Shows query tiles in NTP";
 const char kQueryTilesOmniboxName[] = "Show query tiles in omnibox";
 const char kQueryTilesOmniboxDescription[] = "Shows query tiles in omnibox";
 const char kQueryTilesSingleTierName[] = "Show only one level of query tiles";

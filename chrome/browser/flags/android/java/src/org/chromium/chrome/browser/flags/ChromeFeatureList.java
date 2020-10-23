@@ -201,6 +201,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnableCardNicknameManagement";
     public static final String AUTOFILL_ENABLE_GOOGLE_ISSUED_CARD =
             "AutofillEnableGoogleIssuedCard";
+    public static final String AUTOFILL_ENABLE_INFO_BAR_ACCOUNT_INDICATION_FOOTER =
+            "AutofillEnableInfoBarAccountIndicationFooter";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_DEFAULT_BROWSER_PROMO = "AndroidDefaultBrowserPromo";
     public static final String ANDROID_MANAGED_BY_MENU_ITEM = "AndroidManagedByMenuItem";
@@ -366,6 +368,7 @@ public abstract class ChromeFeatureList {
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
     public static final String QUERY_TILES_GEO_FILTER = "QueryTilesGeoFilter";
     public static final String QUERY_TILES = "QueryTiles";
+    public static final String QUERY_TILES_IN_NTP = "QueryTilesInNTP";
     public static final String QUERY_TILES_IN_OMNIBOX = "QueryTilesInOmnibox";
     public static final String QUERY_TILES_ENABLE_QUERY_EDITING = "QueryTilesEnableQueryEditing";
     public static final String QUERY_TILES_LOCAL_ORDERING = "QueryTilesLocalOrdering";

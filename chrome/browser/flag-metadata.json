@@ -547,6 +547,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "connectivity-diagnostics-webui",
+    "owners": [ "tbegin", "stevenjb" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "content-settings-redesign",
     "owners": [
       "tchudakov",
@@ -4299,6 +4304,11 @@
     "expiry_milestone": -1
   },
   {
+    "name" : "side-panel",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "pbos" ],
+    "expiry_milestone" : 92
+  },
+  {
     "name": "silent-debugger-extension-api",
     "owners": [ "//extensions/OWNERS" ],
     "expiry_milestone": 77
@@ -4681,8 +4691,8 @@
   },
   {
     "name": "use-search-click-for-right-click",
-    "owners": [ "khorimoto", "zentaro" ],
-    "expiry_milestone": 85
+    "owners": [ "zentaro", "cros-peripherals@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "use-serial-bus-enumerator",

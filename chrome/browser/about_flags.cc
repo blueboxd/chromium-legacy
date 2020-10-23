@@ -4308,6 +4308,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
 
+    {"side-panel", flag_descriptions::kSidePanelName,
+     flag_descriptions::kSidePanelDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanel)},
+
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
@@ -6676,6 +6680,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInsertKeyToggleModeDescription,
      kOsWin | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(blink::features::kInsertKeyToggleMode)},
+
+#if defined(OS_CHROMEOS)
+    {"connectivity-diagnostics-webui",
+     flag_descriptions::kConnectivityDiagnosticsWebUiName,
+     flag_descriptions::kConnectivityDiagnosticsWebUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kConnectivityDiagnosticsWebUi)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

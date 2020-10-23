@@ -52,11 +52,16 @@ class StubInputChannel : public mojom::InputChannel {
     std::move(callback).Run({});
   }
   void OnFocus() final {}
+  void OnBlur() final {}
   void ProcessKeypressForRulebased(
       ime::mojom::PhysicalKeyEventPtr event,
       ProcessKeypressForRulebasedCallback callback) final {}
   void OnKeyEvent(ime::mojom::PhysicalKeyEventPtr event,
                   OnKeyEventCallback callback) final {}
+  void OnSurroundingTextChanged(
+      const std::string& text,
+      uint32_t offset,
+      ime::mojom::SelectionRangePtr selection_range) final {}
   void ResetForRulebased() final {}
   void GetRulebasedKeypressCountForTesting(
       GetRulebasedKeypressCountForTestingCallback callback) final {}
@@ -105,6 +110,22 @@ TEST_F(DecoderEngineTest, OnFocusSendsMessageToSharedLib) {
   client.FlushForTesting();
 }
 
+TEST_F(DecoderEngineTest, OnBlurSendsMessageToSharedLib) {
+  DecoderEngine engine(/*platform=*/nullptr);
+  StubInputChannel stub_channel;
+  mojo::Receiver<mojom::InputChannel> receiver(&stub_channel);
+  mojo::Remote<mojom::InputChannel> client;
+  ASSERT_TRUE(engine.BindRequest(kImeSpec, client.BindNewPipeAndPassReceiver(),
+                                 receiver.BindNewPipeAndPassRemote(), {}));
+  ime::Wrapper expected_proto;
+  *expected_proto.mutable_public_message() = OnBlurToProto(/*seq_id=*/0);
+
+  EXPECT_CALL(mock_main_entry_, Process).With(EqualsProto(expected_proto));
+
+  client->OnBlur();
+  client.FlushForTesting();
+}
+
 TEST_F(DecoderEngineTest, OnKeyEventRepliesWithCallback) {
   DecoderEngine engine(/*platform=*/nullptr);
   StubInputChannel stub_channel;
@@ -139,6 +160,24 @@ TEST_F(DecoderEngineTest, OnKeyEventRepliesWithCallback) {
   client.FlushForTesting();
 
   EXPECT_TRUE(consumed_by_test);
+}
+
+TEST_F(DecoderEngineTest, OnSurroundingTextChangedSendsMessageToSharedLib) {
+  DecoderEngine engine(/*platform=*/nullptr);
+  StubInputChannel stub_channel;
+  mojo::Receiver<mojom::InputChannel> receiver(&stub_channel);
+  mojo::Remote<mojom::InputChannel> client;
+  ASSERT_TRUE(engine.BindRequest(kImeSpec, client.BindNewPipeAndPassReceiver(),
+                                 receiver.BindNewPipeAndPassRemote(), {}));
+  const auto selection = mojom::SelectionRange::New(/*anchor=*/3, /*focus=*/2);
+  ime::Wrapper expected_proto;
+  *expected_proto.mutable_public_message() = OnSurroundingTextChangedToProto(
+      /*seq_id=*/0, "hello", /*offset=*/1, selection->Clone());
+
+  EXPECT_CALL(mock_main_entry_, Process).With(EqualsProto(expected_proto));
+
+  client->OnSurroundingTextChanged("hello", /*offset=*/1, selection->Clone());
+  client.FlushForTesting();
 }
 
 }  // namespace ime

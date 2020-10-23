@@ -206,7 +206,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f15a598ab0834c91491078232255f79967a8ed24',
+  'skia_revision': '53281c712159aeb933d23c148a8ad6f67c9cea01',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '8f7c80347dc6b5c380e19ca446ed5a439ce919e3',
+  'tint_revision': '88d705dc85ff8baa8970fe4b9d2ae6bff5d38a63',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1248,7 +1248,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'd975e29d1e934b21ebfc9dd4fbaebecab167f986',
+    Var('chromium_git') + '/openscreen' + '@' + '83e50af3e0bd628e7307e67e0ae1c6a611b8d7bb',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1265,7 +1265,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '2e5b59565826cd1cd72ff1bcea723f963b93da95',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6b3c8d667a5fdf3ab55fb3827309e2caf001d3fa',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '8TepIsw1joPrIGrYg1zmGaVCeuhKFRqdQ8Iy7ItcVqkC'
+              'version': 'qUVP_lovvTAIvdwUUdt2FBZQjKisQycbEzp2A67oxskC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3065fbe8b1b64e010d872ad97bac5f3ea4212e8b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c97292f87f01ae10d1fa2059239d5ab6313ad55c',
     'condition': 'checkout_src_internal',
   },
 

@@ -4631,6 +4631,21 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="NotShown, invalid legal message"/>
 </enum>
 
+<enum name="AutofillCreditCardOfferSelection">
+  <int value="0" label="Selected card without offer"/>
+  <int value="1" label="Selected card with offer"/>
+</enum>
+
+<enum name="AutofillCreditCardOfferSubmission">
+  <int value="0" label="Submitted card without offer"/>
+  <int value="1" label="Submitted card with offer"/>
+</enum>
+
+<enum name="AutofillCreditCardOfferSuggestion">
+  <int value="0" label="No cards with offer suggested"/>
+  <int value="1" label="Card with offer suggested"/>
+</enum>
+
 <enum name="AutofillCreditCardPreflightCallEvent">
   <int value="0" label="Preflight returned first"/>
   <int value="1" label="Card chosen first"/>
@@ -43143,6 +43158,7 @@ from previous Chrome versions.
   <int value="-588669613"
       label="OmniboxClobberIsZeroSuggestEntrypoint:enabled"/>
   <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
+  <int value="-581236612" label="ConnectivityDiagnosticsWebUi:disabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
@@ -44050,6 +44066,7 @@ from previous Chrome versions.
   <int value="345611669"
       label="OmniboxLocalZeroSuggestFrecencyRanking:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
+  <int value="346430505" label="SidePanel:enabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
   <int value="348449023"
@@ -44700,6 +44717,7 @@ from previous Chrome versions.
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1008677979"
       label="AutofillUseImprovedLabelDisambiguation:disabled"/>
+  <int value="1009976778" label="SidePanel:disabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
   <int value="1014740148" label="FilesCameraFolder:enabled"/>
   <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
@@ -44828,6 +44846,7 @@ from previous Chrome versions.
   <int value="1127427821" label="OmniboxEntitySuggestions:disabled"/>
   <int value="1129542111" label="CastAllowAllIPs:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
+  <int value="1132521402" label="ConnectivityDiagnosticsWebUi:enabled"/>
   <int value="1133207726" label="MediaInspectorLogging:enabled"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
   <int value="1135728116" label="PluginVmShowCameraPermissions:enabled"/>
@@ -57632,11 +57651,40 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Phone Collected, WebOTP Used, OTC Used"/>
 </enum>
 
+<enum name="PhoneHubFeatureStatus">
+  <int value="0" label="Not eligible for feature"/>
+  <int value="1" label="Eligible phone but not set up"/>
+  <int value="2" label="Phone selected and pending setup"/>
+  <int value="3" label="Disabled"/>
+  <int value="4" label="Unavalable Bluetooth off"/>
+  <int value="5" label="Unavalable Bluetooth disconnected"/>
+  <int value="6" label="Enabled and connecting"/>
+  <int value="7" label="Enabled and connected"/>
+</enum>
+
 <enum name="PhoneHubInterstitialScreenEvent">
   <int value="0" label="Screen Shown"/>
   <int value="1" label="Learn More Clicked"/>
   <int value="2" label="Dismiss Clicked"/>
   <int value="3" label="Confirm Clicked"/>
+</enum>
+
+<enum name="PhoneHubMessageType">
+  <int value="0" label="Provide CrOS State"/>
+  <int value="1" label="Phone status snapshot"/>
+  <int value="2" label="Phone status update"/>
+  <int value="3" label="Update notification mode request"/>
+  <int value="4" label="Update notification mode response"/>
+  <int value="5" label="Ring device request"/>
+  <int value="6" label="Ring device response"/>
+  <int value="7" label="Update battery mode request"/>
+  <int value="8" label="Update battery mode response"/>
+  <int value="9" label="Dismiss notification request"/>
+  <int value="10" label="Dismiss notification response"/>
+  <int value="11" label="Notification inline reply request"/>
+  <int value="12" label="Notification inline reply response"/>
+  <int value="13" label="Show notification access setup request"/>
+  <int value="14" label="Show notification access setup response"/>
 </enum>
 
 <enum name="PhoneNumberRegexVariantResult">
@@ -74754,6 +74802,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Completed"/>
   <int value="2" label="Paused"/>
   <int value="3" label="Resumed"/>
+  <int value="4" label="Watched"/>
 </enum>
 
 <enum name="ViewFileType">

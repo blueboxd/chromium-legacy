@@ -145,6 +145,14 @@ void DecoderEngine::OnFocus() {
                  base::DoNothing());
 }
 
+void DecoderEngine::OnBlur() {
+  const uint64_t seq_id = current_seq_id_;
+  ++current_seq_id_;
+
+  ProcessMessage(WrapAndSerializeMessage(OnBlurToProto(seq_id)),
+                 base::DoNothing());
+}
+
 void DecoderEngine::OnKeyEvent(mojom::PhysicalKeyEventPtr event,
                                OnKeyEventCallback callback) {
   const uint64_t seq_id = current_seq_id_;
@@ -154,6 +162,18 @@ void DecoderEngine::OnKeyEvent(mojom::PhysicalKeyEventPtr event,
   ProcessMessage(
       WrapAndSerializeMessage(OnKeyEventToProto(seq_id, std::move(event))),
       base::DoNothing());
+}
+
+void DecoderEngine::OnSurroundingTextChanged(
+    const std::string& text,
+    uint32_t offset,
+    mojom::SelectionRangePtr selection_range) {
+  const uint64_t seq_id = current_seq_id_;
+  ++current_seq_id_;
+
+  ProcessMessage(WrapAndSerializeMessage(OnSurroundingTextChangedToProto(
+                     seq_id, text, offset, std::move(selection_range))),
+                 base::DoNothing());
 }
 
 void DecoderEngine::ProcessMessage(const std::vector<uint8_t>& message,

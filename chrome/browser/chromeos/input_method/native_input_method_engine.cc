@@ -187,6 +187,11 @@ void NativeInputMethodEngine::ImeObserver::OnBlur(int context_id) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
 
+  if (active_engine_id_ && ShouldUseFstMojoEngine(*active_engine_id_) &&
+      remote_to_engine_.is_bound()) {
+    remote_to_engine_->OnBlur();
+  }
+
   base_observer_->OnBlur(context_id);
 }
 
@@ -252,6 +257,13 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos,
                                                    anchor_pos);
+  }
+  if (ShouldUseFstMojoEngine(engine_id) && remote_to_engine_.is_bound()) {
+    auto selection = ime::mojom::SelectionRange::New();
+    selection->anchor = anchor_pos;
+    selection->focus = cursor_pos;
+    remote_to_engine_->OnSurroundingTextChanged(
+        base::UTF16ToUTF8(text), offset_pos, std::move(selection));
   }
   base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
                                            anchor_pos, offset_pos);

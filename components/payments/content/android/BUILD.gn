@@ -17,6 +17,8 @@ static_library("android") {
     "error_message_util.cc",
     "jni_payment_app.cc",
     "jni_payment_app.h",
+    "journey_logger_android.cc",
+    "journey_logger_android.h",
     "origin_security_checker_android.cc",
     "payment_feature_list.cc",
     "payment_feature_list.h",
@@ -41,6 +43,7 @@ static_library("android") {
     "//components/payments/content:utils",
     "//components/payments/content/utility",
     "//components/payments/core",
+    "//components/ukm/content:content",
     "//content/public/browser",
     "//net",
     "//url:gurl_android",
@@ -64,7 +67,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/PaymentRequestSpec.java",
     "java/src/org/chromium/components/payments/PaymentRequestUpdateEventListener.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
-    "java/src/org/chromium/components/payments/SslValidityChecker.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
   ]
 }
@@ -132,7 +134,6 @@ android_library("all_java") {
     "java/src/org/chromium/components/payments/PaymentUIsObserver.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
     "java/src/org/chromium/components/payments/SkipToGPayHelper.java",
-    "java/src/org/chromium/components/payments/SslValidityChecker.java",
     "java/src/org/chromium/components/payments/SupportedDelegations.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
     "java/src/org/chromium/components/payments/WebAppManifestSection.java",

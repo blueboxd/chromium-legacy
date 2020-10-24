@@ -9028,6 +9028,14 @@ Called by update_bad_message_reasons.py.-->
   <int value="11" label="Aborted because there was no surface"/>
 </enum>
 
+<enum name="CanvasRenderingAPI">
+  <int value="0" label="2d"/>
+  <int value="1" label="webgl"/>
+  <int value="2" label="webgl2"/>
+  <int value="3" label="bitmaprenderer"/>
+  <int value="4" label="webgpu"/>
+</enum>
+
 <enum name="CanvasResourceProviderType">
   <int value="0" label="Texture"/>
   <int value="1" label="Bitmap"/>
@@ -23524,6 +23532,7 @@ Called by update_extension_histograms.py.-->
   <int value="461" label="WINDOWS_ON_BOUNDS_CHANGED"/>
   <int value="462" label="WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER"/>
   <int value="463" label="PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED"/>
+  <int value="464" label="ACCESSIBILITY_PRIVATE_ON_MAGNIFIER_BOUNDS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -72728,6 +72737,13 @@ Full version information for the fingerprint enum values:
   <int value="4" label="CLD disagrees with Content-Language"/>
   <int value="5" label="CLD can be trusted"/>
   <int value="6" label="CLD can complement a sub code"/>
+</enum>
+
+<enum name="TranslateRankerDecision">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Not queried"/>
+  <int value="2" label="Show UI"/>
+  <int value="3" label="Don't show UI"/>
 </enum>
 
 <enum name="TranslateScheme">

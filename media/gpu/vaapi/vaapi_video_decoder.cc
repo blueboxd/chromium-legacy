@@ -143,16 +143,11 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  // TODO(jkardatzke): Implement protected media handling.
-  NOTREACHED();
-#else
   if (cdm_context || config.is_encrypted()) {
     VLOGF(1) << "Vaapi decoder does not support encrypted stream";
     std::move(init_cb).Run(StatusCode::kEncryptedContentUnsupported);
     return;
   }
-#endif
 
   // We expect the decoder to have released all output buffers (by the client
   // triggering a flush or reset), even if the
@@ -506,11 +501,7 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
     vaapi_wrapper_ = std::move(new_vaapi_wrapper);
   }
 
-  if (vaapi_wrapper_->CreateContext(pic_size)) {
-    VLOGF(1) << "Failed creating context";
-    SetState(State::kError);
-    return;
-  }
+  vaapi_wrapper_->CreateContext(pic_size);
 
   // If we reset during resolution change, then there is no decode tasks. In
   // this case we do nothing and wait for next input. Otherwise, continue

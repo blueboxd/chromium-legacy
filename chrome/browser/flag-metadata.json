@@ -2013,11 +2013,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-quick-answers-rich-ui",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-quick-answers-text-annotator",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 90
@@ -2910,7 +2905,7 @@
   },
   {
     "name": "insert-key-toggle-mode",
-    "owners": [ "snianu", "ericlaw" ],
+    "owners": [ "snianu@microsoft.com", "ericlaw@microsoft.com" ],
     // This flag is temporary as we want to eventually remove the support for
     // Overwrite mode when insert key is pressed. Currently it is disabled
     // by-default.

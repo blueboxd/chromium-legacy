@@ -273,8 +273,10 @@ void TetherControllerImpl::OnGetDeviceStateList(
     break;
   }
 
-  if (!is_tether_device_scanning)
+  if (!is_tether_device_scanning) {
+    NotifyAttemptConnectionScanFailed();
     SetConnectDisconnectStatus(ConnectDisconnectStatus::kIdle);
+  }
 }
 
 void TetherControllerImpl::FetchVisibleTetherNetwork() {
@@ -342,7 +344,11 @@ void TetherControllerImpl::UpdateStatus() {
 
   if (status_ == status)
     return;
+
+  PA_LOG(INFO) << "TetherController status update: " << status_ << " => "
+               << status;
   status_ = status;
+
   NotifyStatusChanged();
 }
 

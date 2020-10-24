@@ -93,7 +93,7 @@ ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
 
 void HidGetDevicesFunction::OnEnumerationComplete(
     std::unique_ptr<base::ListValue> devices) {
-  Respond(OneArgument(std::move(devices)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(devices))));
 }
 
 HidGetUserSelectedDevicesFunction::HidGetUserSelectedDevicesFunction() {
@@ -259,10 +259,8 @@ void HidReceiveFunction::OnFinished(
     const base::Optional<std::vector<uint8_t>>& buffer) {
   if (success) {
     DCHECK(buffer);
-    Respond(TwoArguments(
-        std::make_unique<base::Value>(report_id),
-        base::Value::CreateWithCopiedBuffer(
-            reinterpret_cast<const char*>(buffer->data()), buffer->size())));
+    Respond(TwoArguments(std::make_unique<base::Value>(report_id),
+                         base::Value::ToUniquePtrValue(base::Value(*buffer))));
   } else {
     Respond(Error(kErrorTransfer));
   }
@@ -324,8 +322,7 @@ void HidReceiveFeatureReportFunction::OnFinished(
     const base::Optional<std::vector<uint8_t>>& buffer) {
   if (success) {
     DCHECK(buffer);
-    Respond(OneArgument(base::Value::CreateWithCopiedBuffer(
-        reinterpret_cast<const char*>(buffer->data()), buffer->size())));
+    Respond(OneArgument(base::Value(*buffer)));
   } else {
     Respond(Error(kErrorTransfer));
   }

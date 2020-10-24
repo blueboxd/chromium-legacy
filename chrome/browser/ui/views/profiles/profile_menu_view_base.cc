@@ -523,7 +523,7 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   DCHECK(anchor_button);
   anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
-  EnableUpDownKeyboardAccelerators();
+  GetFocusManager()->set_arrow_key_traversal_enabled(true);
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
 }
 
@@ -732,7 +732,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
                               base::Unretained(this), std::move(action)),
           icon, text, SK_ColorTRANSPARENT,
           /*show_border=*/true));
-  button->EnableCanvasFlippingForRTLUI(false);
+  button->SetFlipCanvasOnPaintForRTLUI(false);
 }
 
 void ProfileMenuViewBase::AddFeatureButton(const base::string16& text,

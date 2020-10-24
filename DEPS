@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4504e3a3591fdc5477db8c9d5c4ebe4f022d23ca',
+  'devtools_frontend_revision': 'c8bddc21c20e168911cd595a3fbdcc27c2bb84a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8901df8ffe29b3bf2ef3269edfd3a0e25fdf4b82',
+  'dawn_revision': '8180c71a3552a44a91e7d5eaed8a5eecdc758bb7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'mRoHdvGt78irSA_uDuA46kZhlF5KCw3jn0RuhKJgx1sC'
+              'version': 'iXmNY1l49dt9OzXxwvv1Mbfdzar9zXTMK0Izj7jGEuoC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1497,7 +1497,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3d25935127400418ef6b5970f0edec5db01d2ba6',
+    Var('webrtc_git') + '/src.git' + '@' + '3065e6ef3016a906d1db82e1d4322cbd53d43247',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2942ff0e4f55c2955fd5784279708b70eb851a89',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@09f6730e716a3b020824734e84165c4bb68813ad',
     'condition': 'checkout_src_internal',
   },
 

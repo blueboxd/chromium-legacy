@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 
 namespace IPC {
 class Listener;
@@ -58,6 +59,10 @@ class CONTENT_EXPORT AgentSchedulingGroup
   // This is virtual only for unit tests.
   virtual mojom::RouteProvider* GetRemoteRouteProvider();
 
+  blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler() {
+    return *agent_group_scheduler_;
+  }
+
  private:
   // `MaybeAssociatedReceiver` and `MaybeAssociatedRemote` are temporary helper
   // classes that allow us to switch between using associated and non-associated
@@ -72,10 +77,12 @@ class CONTENT_EXPORT AgentSchedulingGroup
    public:
     MaybeAssociatedReceiver(
         AgentSchedulingGroup& impl,
-        mojo::PendingReceiver<mojom::AgentSchedulingGroup> receiver);
+        mojo::PendingReceiver<mojom::AgentSchedulingGroup> receiver,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     MaybeAssociatedReceiver(
         AgentSchedulingGroup& impl,
-        mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver);
+        mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~MaybeAssociatedReceiver();
 
    private:
@@ -87,10 +94,12 @@ class CONTENT_EXPORT AgentSchedulingGroup
   class MaybeAssociatedRemote {
    public:
     explicit MaybeAssociatedRemote(
-        mojo::PendingRemote<mojom::AgentSchedulingGroupHost> host_remote);
+        mojo::PendingRemote<mojom::AgentSchedulingGroupHost> host_remote,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     explicit MaybeAssociatedRemote(
         mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost>
-            host_remote);
+            host_remote,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~MaybeAssociatedRemote();
     mojom::AgentSchedulingGroupHost* get();
 
@@ -127,6 +136,10 @@ class CONTENT_EXPORT AgentSchedulingGroup
       const std::string& name,
       mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
           receiver) override;
+
+  // A dedicated scheduler for this AgentSchedulingGroup.
+  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
+      agent_group_scheduler_;
 
   RenderThread& render_thread_;
 

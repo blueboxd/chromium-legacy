@@ -30005,6 +30005,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3706" label="UnicodeBidiPlainText"/>
   <int value="3707" label="ColorSchemeDarkSupportedOnRoot"/>
   <int value="3708" label="WebBluetoothGetAvailability"/>
+  <int value="3709" label="DigitalGoodsListPurchases"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -65704,7 +65705,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ServiceWorkerInstalledScriptsManager.FinishedReason">
   <int value="0" label="NOT_FINISHED"/>
   <int value="1" label="SUCCESS"/>
-  <int value="2" label="NO_HTTP_INFO_ERROR"/>
+  <int value="2" label="NO_RESPONSE_HEAD_ERROR"/>
   <int value="3" label="CREATE_DATA_PIPE_ERROR"/>
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="RESPONSE_READER_ERROR"/>

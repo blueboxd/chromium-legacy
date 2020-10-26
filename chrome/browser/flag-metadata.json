@@ -467,6 +467,12 @@
     "expiry_milestone": 91
   },
   {
+    "name": "chrome-cleanup-scan-completed-notification",
+    "owners": ["rainhard", "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 92
+  },
+  {
     "name": "chrome-share-highlights-android",
     "owners": [ "gayane" ],
     "expiry_milestone": 88
@@ -4513,6 +4519,11 @@
     "name": "toolbar-container",
     "owners": [ "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "toolbar-iph-android",
+    "owners": [ "skym", "wenyufu" ],
+    "expiry_milestone": 91
   },
   {
     "name": "top-chrome-touch-ui",

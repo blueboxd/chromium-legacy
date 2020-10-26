@@ -1826,6 +1826,7 @@
       'supported_on': ['chrome.*:14-16', 'chrome_os:14-16'],
       'features': {
         'dynamic_refresh': True,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       # Mark this 'removed' when https://crbug.com/100216 is resolved.
       'deprecated': True,
@@ -1849,13 +1850,14 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'deprecated': True,
       'example_value': 'my-awesome-domain.com',
       'id': 316,
       'caption': '''Configure the required domain name for remote access clients''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use RemoteAccessHostClientDomainList instead.''',
+      'desc': '''This policy is deprecated. Please use <ph name="REMOTE_ACCESS_HOST_CLIENT_DOMAIN_LIST_POLICY_NAME">RemoteAccessHostClientDomainList</ph> instead.''',
     },
     {
       'name': 'RemoteAccessHostClientDomainList',
@@ -1869,6 +1871,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
       'id': 369,
@@ -1880,9 +1883,9 @@
 
           If this setting is disabled, not set, or set to an empty list, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain to connect to the host; for anytime remote access, only the host owner can connect.
 
-          This setting will override RemoteAccessHostClientDomain, if present.
+          This setting will override <ph name="REMOTE_ACCESS_HOST_CLIENT_DOMAIN_POLICY_NAME">RemoteAccessHostClientDomain</ph>, if present.
 
-          See also RemoteAccessHostDomainList.''',
+          See also <ph name="REMOTE_ACCESS_HOST_DOMAIN_LIST_POLICY_NAME">RemoteAccessHostDomainList</ph>.''',
     },
     {
       'name': 'RemoteAccessHostFirewallTraversal',
@@ -1893,6 +1896,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'example_value': False,
       'id': 95,
@@ -1915,13 +1919,14 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'deprecated': True,
       'example_value': 'my-awesome-domain.com',
       'id': 154,
       'caption': '''Configure the required domain name for remote access hosts''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use RemoteAccessHostDomainList instead.''',
+      'desc': '''This policy is deprecated. Please use <ph name="REMOTE_ACCESS_HOST_DOMAIN_LIST_POLICY_NAME">RemoteAccessHostDomainList</ph> instead.''',
     },
     {
       'name': 'RemoteAccessHostDomainList',
@@ -1935,6 +1940,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
       'id': 368,
@@ -1946,9 +1952,9 @@
 
           If this setting is disabled, not set, or set to an empty list, then hosts can be shared using any account.
 
-          This setting will override RemoteAccessHostDomain, if present.
+          This setting will override <ph name="REMOTE_ACCESS_HOST_DOMAIN_POLICY_NAME">RemoteAccessHostDomain</ph>, if present.
 
-          See also RemoteAccessHostClientDomainList.''',
+          See also <ph name="REMOTE_ACCESS_HOST_CLIENT_DOMAIN_LIST_POLICY_NAME">RemoteAccessHostClientDomainList</ph>.''',
     },
     {
       'name': 'RemoteAccessHostRequireTwoFactor',
@@ -1959,6 +1965,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       # Mark this 'removed' when https://crbug.com/100216 is resolved.
       'deprecated': True,
@@ -1981,6 +1988,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'deprecated': True,
       'example_value': 'chromoting-host',
@@ -2006,6 +2014,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': False,
       'id': 157,
@@ -2026,6 +2035,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': False,
       'id': 234,
@@ -2043,7 +2053,9 @@
       'supported_on': ['chrome.*:35-'],
       'features': {
         'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': True,
       'id': 257,
@@ -2051,7 +2063,9 @@
       'tags': [],
       'desc': '''If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
-          If this setting is disabled or not configured, gnubby authentication requests will not be proxied.''',
+          Note that this feature requires additional components which are not available outside of the Google network environment in order to work properly.
+
+          If this setting is disabled, gnubby authentication requests will not be proxied.''',
     },
     {
       'name': 'RemoteAccessHostAllowRelayedConnection',
@@ -2062,6 +2076,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'example_value': False,
       'id': 263,
@@ -2084,6 +2099,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'example_value': '12400-12409',
       'id': 264,
@@ -2102,6 +2118,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': False,
       'id': 285,
@@ -2119,7 +2136,9 @@
       'supported_on': ['chrome.*:28-'],
       'features': {
         'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': 'https://example.com/issue',
       'id': 286,
@@ -2137,7 +2156,9 @@
       'supported_on': ['chrome.*:28-'],
       'features': {
         'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': 'https://example.com/validate',
       'id': 287,
@@ -2155,7 +2176,9 @@
       'supported_on': ['chrome.*:28-'],
       'features': {
         'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': 'Example Certificate Authority',
       'id': 288,
@@ -2174,6 +2197,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support outside of Chrome OS.
       },
       'deprecated': True,
       'example_value': '{ "RemoteAccessHostMatchUsername": true }',
@@ -2193,6 +2217,7 @@
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': True,
       'id': 344,
@@ -2211,6 +2236,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'platform_only': True,  # No cloud-policy support.
       },
       'example_value': False,
       'id': 534,
@@ -5818,9 +5844,9 @@
       'id': 486,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set a list of URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs. Each list item must have a "devices" and "urls" field for the policy to be valid. Each item in the "devices" field can have a "vendor_id" and "product_id" field. Omitting the "vendor_id" field will create a policy matching any device. Omitting the "product_id" field will create a policy matching any device with the given vendor ID. A policy which has a "product_id" field without a "vendor_id" vield is invalid.
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs. Each item in the list requires both <ph name="DEVICES_FIELD_NAME">devices</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the policy to be valid. Each item in the <ph name="DEVICES_FIELD_NAME">devices</ph> field can have a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field. Omitting the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field will create a policy matching any device. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field will create a policy matching any device with the given vendor ID. A policy which has a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field without a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> vield is invalid.
 
-      The USB permission model uses the requesting URL and the embedding URL (of the top-level frame site) to permit the requesting URL to access the USB device. The requesting URL might differ from the embedding URL when the requesting site loads in an iframe. So, the "urls" field can contain up to 2 strings delimited by a comma to specify these URLs. If you only specify one, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs in "urls" must be valid URLs, or the policy is ignored.
+      The USB permission model uses the requesting and embedding URLs to grant the requesting URL permission to access the USB device. The requesting URL can be different than the embedding URL when the requesting site is loaded in an iframe. So, the <ph name="URLS_FIELD_NAME">urls</ph> field can have up to 2 URL strings delimited by a comma to specify the requesting and embedding URL, respectively. If only one URL is specified, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs must be valid, otherwise the policy is ignored.
 
       Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
 
@@ -5866,9 +5892,9 @@
       'id': 603,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs on the login screen.''',
       'tags': ['website-sharing'],
-      'desc': '''Setting the policy lets you list the URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs on the login screen. Each item in the list requires both "devices" and "urls" fields for the policy to be valid. Each item in the "devices" field can have a "vendor_id" and "product_id" field. Omitting the "vendor_id" field will create a policy matching any device. Omitting the "product_id" field will create a policy matching any device with the given vendor ID. A policy which has a "product_id" field without a "vendor_id" vield is invalid.
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs on the login screen. Each item in the list requires both <ph name="DEVICES_FIELD_NAME">devices</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the policy to be valid. Each item in the <ph name="DEVICES_FIELD_NAME">devices</ph> field can have a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field. Omitting the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field will create a policy matching any device. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field will create a policy matching any device with the given vendor ID. A policy which has a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field without a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> vield is invalid.
 
-      The USB permission model uses the requesting and embedding URLs to grant the requesting URL permission to access the USB device. The requesting URL can be different than the embedding URL when the requesting site is loaded in an iframe. So, the urls field can have up to 2 URL strings delimited by a comma to specify the requesting and embedding URL, respectively. If only one URL is specified, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs must be valid, otherwise the policy is ignored.
+      The USB permission model uses the requesting and embedding URLs to grant the requesting URL permission to access the USB device. The requesting URL can be different than the embedding URL when the requesting site is loaded in an iframe. So, the <ph name="URLS_FIELD_NAME">urls</ph> field can have up to 2 URL strings delimited by a comma to specify the requesting and embedding URL, respectively. If only one URL is specified, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs must be valid, otherwise the policy is ignored.
 
       Leaving the policy unset puts the global default value in use for all sites (no automatic access).''',
     },
@@ -20910,29 +20936,6 @@
       Setting the policy to Disabled turns media controls on the lock screen off.'''
     },
     {
-      'name': 'UnsafeEventsReportingEnabled',
-      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
-      'type': 'main',
-      'schema': {
-        'type': 'boolean',
-      },
-      'example_value': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-        'cloud_only': True,
-      },
-      'id': 585,
-      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
-      'future': True,
-      'caption': '''Allows Chrome to report unsafe events to Google''',
-      'tags': [],
-      'desc': '''When this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reports unsafe events such as password reuse, malware downloads, interstitials, sensitive data protection rule violations etc. to Google for analysis.  Some unsafe events such as sensitive data protection rule violations depend on other policies that enable such checks.
-
-      If this policy is set to disabled or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not report unsafe events.
-      '''
-    },
-    {
       'name': 'BlockLargeFileTransfer',
       'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
       'type': 'int-enum',
@@ -24488,7 +24491,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 589],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 589],
   'deleted_atomic_policy_group_ids': [19],
   'highest_id_currently_used': 800,
   'highest_atomic_group_id_currently_used': 40

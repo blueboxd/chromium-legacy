@@ -617,7 +617,13 @@ TEST_P(ProfileManagerGuestTest, GetLastUsedProfileAllowedByPolicy) {
 
   Profile* profile = profile_manager->GetLastUsedProfileAllowedByPolicy();
   ASSERT_TRUE(profile);
-  EXPECT_TRUE(profile->IsOffTheRecord());
+  if (IsEphemeral()) {
+    EXPECT_TRUE(profile->IsEphemeralGuestProfile());
+    EXPECT_FALSE(profile->IsOffTheRecord());
+  } else {
+    EXPECT_TRUE(profile->IsGuestSession());
+    EXPECT_TRUE(profile->IsOffTheRecord());
+  }
 }
 
 #if defined(OS_CHROMEOS)
@@ -649,9 +655,6 @@ TEST_P(ProfileManagerGuestTest, GetGuestProfilePath) {
   expected_path = expected_path.Append(kExpectedGuestProfileName);
 #endif
   EXPECT_EQ(expected_path, guest_path);
-
-  // TODO(https://crbug.com/1125474): Add browser test to ensure two ephemeral
-  // Guest profile do not share the path.
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

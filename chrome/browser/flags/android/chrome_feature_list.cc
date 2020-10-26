@@ -98,6 +98,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebAuth,
     &features::kWebNfc,
     &feature_engagement::kIPHHomepagePromoCardFeature,
+    &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
     &feed::kInterestFeedContentSuggestions,
     &feed::kInterestFeedV2,
@@ -206,6 +207,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabbedAppOverflowMenuThreeButtonActionbar,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
+    &kToolbarIphAndroid,
     &kTrustedWebActivityLocationDelegation,
     &kTrustedWebActivityNewDisclosure,
     &kTrustedWebActivityPostMessage,
@@ -606,6 +608,9 @@ const base::Feature kTestDefaultDisabled{"TestDefaultDisabled",
 
 const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kToolbarIphAndroid{"ToolbarIphAndroid",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityLocationDelegation{
     "TrustedWebActivityLocationDelegation", base::FEATURE_ENABLED_BY_DEFAULT};

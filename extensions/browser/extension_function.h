@@ -367,13 +367,10 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   ResponseValue NoArguments();
   // Success, a single argument |arg| to pass to caller.
   ResponseValue OneArgument(base::Value arg);
-  // Deprecated form of OneArgument() above.
-  ResponseValue OneArgument(std::unique_ptr<base::Value> arg);
   // Success, two arguments |arg1| and |arg2| to pass to caller.
   // Note that use of this function may imply you
   // should be using the generated Result struct and ArgumentList.
-  ResponseValue TwoArguments(std::unique_ptr<base::Value> arg1,
-                             std::unique_ptr<base::Value> arg2);
+  ResponseValue TwoArguments(base::Value arg1, base::Value arg2);
   // Success, a list of arguments |results| to pass to caller.
   // - a std::unique_ptr<> for convenience, since callers usually get this from
   //   the result of a Create(...) call on the generated Results struct. For

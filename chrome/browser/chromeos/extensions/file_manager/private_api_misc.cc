@@ -231,7 +231,8 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.arc_removable_media_access_enabled =
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
 
-  return RespondNow(OneArgument(result.ToValue()));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
 }
 
 ExtensionFunction::ResponseAction
@@ -813,8 +814,9 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
     entry->SetBoolean("fileIsDirectory", true);
     entries->Append(std::move(entry));
   }
-  return RespondNow(TwoArguments(
-      std::move(entries), std::make_unique<base::Value>(first_for_session)));
+  return RespondNow(
+      TwoArguments(base::Value::FromUniquePtrValue(std::move(entries)),
+                   base::Value(first_for_session)));
 }
 
 ExtensionFunction::ResponseAction
@@ -1084,8 +1086,9 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
             entry_definition_list) {
   DCHECK(entry_definition_list);
 
-  Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
-      *entry_definition_list)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      file_manager::util::ConvertEntryDefinitionListToListValue(
+          *entry_definition_list))));
 }
 
 ExtensionFunction::ResponseAction

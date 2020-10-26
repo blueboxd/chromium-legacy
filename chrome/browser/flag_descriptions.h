@@ -1814,6 +1814,9 @@ extern const char kStartSurfaceAndroidDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
+extern const char kToolbarIphAndroidName[];
+extern const char kToolbarIphAndroidDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -1975,6 +1978,9 @@ extern const char kTabFreezeDescription[];
 
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
+
+extern const char kChromeCleanupScanCompletedNotificationName[];
+extern const char kChromeCleanupScanCompletedNotificationDescription[];
 
 extern const char kCloudPrintXpsName[];
 extern const char kCloudPrintXpsDescription[];

@@ -22104,7 +22104,6 @@ Called by update_document_policy_enum.py.-->
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
-  <int value="585" label="UnsafeEventsReportingEnabled"/>
   <int value="586" label="BlockLargeFileTransfer"/>
   <int value="587" label="DelayDeliveryUntilVerdict"/>
   <int value="588" label="AllowPasswordProtectedFiles"/>
@@ -30006,6 +30005,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3707" label="ColorSchemeDarkSupportedOnRoot"/>
   <int value="3708" label="WebBluetoothGetAvailability"/>
   <int value="3709" label="DigitalGoodsListPurchases"/>
+  <int value="3710" label="CompositedSVG"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42379,6 +42379,8 @@ from previous Chrome versions.
   <int value="-1374048865" label="CpuAffinityRestrictToLittleCores:enabled"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
+  <int value="-1373048294"
+      label="ChromeCleanupScanCompletedNotification:enabled"/>
   <int value="-1372926635" label="AndroidManagedByMenuItem:disabled"/>
   <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
@@ -44408,6 +44410,7 @@ from previous Chrome versions.
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
+  <int value="662001716" label="ToolbarIphAndroid:disabled"/>
   <int value="662331859" label="ConversionMeasurement:enabled"/>
   <int value="662935193" label="MultiPaste:enabled"/>
   <int value="663027937" label="NewTabPageCustomLinks:enabled"/>
@@ -44838,6 +44841,8 @@ from previous Chrome versions.
   <int value="1101421005" label="DownloadLater:disabled"/>
   <int value="1102780374" label="ClickToCallDetectionV2:disabled"/>
   <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
+  <int value="1105182444"
+      label="ChromeCleanupScanCompletedNotification:disabled"/>
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1106307305" label="AutofillPrimaryInfoStyleExperiment:enabled"/>
   <int value="1106579567" label="ProfilesUIRevamp:enabled"/>
@@ -45179,6 +45184,7 @@ from previous Chrome versions.
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
   <int value="1418054870" label="SpecialLocale:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
+  <int value="1424775876" label="ToolbarIphAndroid:enabled"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1428221397" label="QueryTilesInNTP:enabled"/>

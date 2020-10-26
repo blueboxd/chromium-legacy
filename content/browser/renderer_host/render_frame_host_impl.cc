@@ -2213,10 +2213,17 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   // clear the frame name. This below informs the renderer at frame creation.
   NavigationRequest* navigation_request =
       frame_tree_node()->navigation_request();
-  if (navigation_request &&
-      navigation_request->coop_status().require_browsing_instance_swap()) {
+
+  bool should_clear_browsing_instance_name =
+      navigation_request &&
+      (navigation_request->coop_status().require_browsing_instance_swap() ||
+       (navigation_request->commit_params().is_cross_browsing_instance &&
+        base::FeatureList::IsEnabled(
+            features::kClearCrossBrowsingContextGroupMainFrameName)));
+
+  if (should_clear_browsing_instance_name) {
     params->replication_state.name = "";
-    // "COOP swaps" only affect main frames, that have an empty unique name.
+    // The "swaps" only affect main frames, that have an empty unique name.
     DCHECK(params->replication_state.unique_name.empty());
   }
 
@@ -3510,6 +3517,22 @@ void RenderFrameHostImpl::RequestClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   render_view_host_->ClosePageIgnoringUnloadEvents();
+}
+
+void RenderFrameHostImpl::ShowCreatedWindow(
+    const base::UnguessableToken& opener_frame_token,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture,
+    ShowCreatedWindowCallback callback) {
+  // This needs to be sent to the opener frame's delegate since it stores
+  // the handle to this class's associated RenderWidgetHostView.
+  RenderFrameHostImpl* opener_frame_host =
+      FromFrameToken(GetProcess()->GetID(), opener_frame_token);
+  opener_frame_host->delegate()->ShowCreatedWindow(
+      opener_frame_host, GetRenderWidgetHost()->GetRoutingID(), disposition,
+      initial_rect, user_gesture);
+  std::move(callback).Run();
 }
 
 void RenderFrameHostImpl::UpdateFaviconURL(
@@ -4861,14 +4884,6 @@ void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
   keep_alive_timeout_ = timeout;
   if (keep_alive_handle_factory_)
     keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
-}
-
-void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
-                                            WindowOpenDisposition disposition,
-                                            const gfx::Rect& initial_rect,
-                                            bool user_gesture) {
-  delegate_->ShowCreatedWindow(this, pending_widget_routing_id, disposition,
-                               initial_rect, user_gesture);
 }
 
 void RenderFrameHostImpl::UpdateState(const blink::PageState& state) {

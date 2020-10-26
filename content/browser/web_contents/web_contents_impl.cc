@@ -3743,7 +3743,8 @@ void WebContentsImpl::ShowCreatedWindow(RenderFrameHost* opener,
       opener->GetProcess()->GetID(), main_frame_widget_route_id);
 
   // The browser may have rejected the request to make a new window, or the
-  // renderer could be sending an invalid route id. Ignore the request then.
+  // renderer could be requesting to show a previously shown window (occurs when
+  // mojom::CreateNewWindowStatus::kReuse is used). Ignore the request then.
   if (!owned_created || !owned_created->contents)
     return;
 
@@ -3777,19 +3778,10 @@ void WebContentsImpl::ShowCreatedWindow(RenderFrameHost* opener,
     if (delegate->ShouldResumeRequestsForCreatedWindow())
       created->ResumeLoadingCreatedWebContents();
 
-    base::WeakPtr<WebContentsImpl> weak_created =
-        created->weak_factory_.GetWeakPtr();
     delegate->AddNewContents(this, std::move(owned_created->contents),
                              std::move(owned_created->target_url), disposition,
                              adjusted_rect, user_gesture, nullptr);
-    // The delegate may delete |created| during AddNewContents().
-    if (!weak_created)
-      return;
   }
-
-  RenderWidgetHostImpl* rwh = created->GetMainFrame()->GetRenderWidgetHost();
-  DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
-  rwh->Send(new WidgetMsg_SetBounds_ACK(rwh->GetRoutingID()));
 }
 
 void WebContentsImpl::ShowCreatedWidget(int process_id,
@@ -6245,14 +6237,14 @@ void WebContentsImpl::LoadingStateChanged(bool to_different_document,
 
   std::string url = (details ? details->url.possibly_invalid_spec() : "NULL");
   if (is_loading) {
-    TRACE_EVENT_ASYNC_BEGIN2("browser,navigation", "WebContentsImpl Loading",
-                             this, "URL", url, "Main FrameTreeNode id",
-                             GetFrameTree()->root()->frame_tree_node_id());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
+        "browser,navigation", "WebContentsImpl Loading", this, "URL", url,
+        "Main FrameTreeNode id", GetFrameTree()->root()->frame_tree_node_id());
     observers_.ForEachObserver(
         [&](WebContentsObserver* observer) { observer->DidStartLoading(); });
   } else {
-    TRACE_EVENT_ASYNC_END1("browser,navigation", "WebContentsImpl Loading",
-                           this, "URL", url);
+    TRACE_EVENT_NESTABLE_ASYNC_END1(
+        "browser,navigation", "WebContentsImpl Loading", this, "URL", url);
     observers_.ForEachObserver(
         [&](WebContentsObserver* observer) { observer->DidStopLoading(); });
   }

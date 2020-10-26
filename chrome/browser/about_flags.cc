@@ -3424,6 +3424,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReengagementNotificationName,
      flag_descriptions::kReengagementNotificationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReengagementNotification)},
+    {"toolbar-iph-android", flag_descriptions::kToolbarIphAndroidName,
+     flag_descriptions::kToolbarIphAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kToolbarIphAndroid)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -6378,6 +6381,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafetyCheckChromeCleanerChildName,
      flag_descriptions::kSafetyCheckChromeCleanerChildDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kSafetyCheckChromeCleanerChild)},
+#endif  // !defined(OS_WIN)
+
+#if defined(OS_WIN)
+    {"chrome-cleanup-scan-completed-notification",
+     flag_descriptions::kChromeCleanupScanCompletedNotificationName,
+     flag_descriptions::kChromeCleanupScanCompletedNotificationDescription,
+     kOsWin,
+     FEATURE_VALUE_TYPE(features::kChromeCleanupScanCompletedNotification)},
 #endif  // !defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)

@@ -144,6 +144,12 @@ const base::Feature kCanvas2DImageChromium {
 const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Clear the frame name for the top-level cross-browsing-context-group
+// navigation.
+const base::Feature kClearCrossBrowsingContextGroupMainFrameName{
+    "ClearCrossBrowsingContextGroupMainFrameName",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kClickPointerEvent{"ClickPointerEvent",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -830,7 +836,6 @@ const base::Feature kWebOtpBackend{"kWebOtpBackend",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The JavaScript API for payments on the web.
-// TODO(rouslan): Remove this.
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 

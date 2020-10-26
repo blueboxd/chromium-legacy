@@ -1211,7 +1211,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-004.htm
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/attribute-mapping-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
@@ -5963,6 +5962,7 @@ crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.work
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
+crbug.com/1093791 http/tests/devtools/copy-network-request.js [ Pass Failure ]
 
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Pass Failure ]

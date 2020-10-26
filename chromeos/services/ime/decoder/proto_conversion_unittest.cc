@@ -11,11 +11,21 @@ namespace chromeos {
 namespace ime {
 
 TEST(ProtoConversionTest, OnFocusToProto) {
+  auto info = mojom::InputFieldInfo::New(mojom::InputFieldType::kNumber,
+                                         mojom::AutocorrectMode::kEnabled,
+                                         mojom::PersonalizationMode::kEnabled);
+
   ime::PublicMessage expected_message;
   expected_message.set_seq_id(42);
-  *expected_message.mutable_on_focus() = ime::OnFocus();
+  ime::OnFocus& args = *expected_message.mutable_on_focus();
+  args.mutable_info()->set_type(ime::InputFieldInfo::INPUT_FIELD_TYPE_NUMBER);
+  args.mutable_info()->set_autocorrect(
+      ime::InputFieldInfo::AUTOCORRECT_MODE_ENABLED);
+  args.mutable_info()->set_personalization(
+      ime::InputFieldInfo::PERSONALIZATION_MODE_ENABLED);
 
-  ime::PublicMessage actual_message = OnFocusToProto(/*seq_id=*/42);
+  ime::PublicMessage actual_message =
+      OnFocusToProto(/*seq_id=*/42, info.Clone());
 
   EXPECT_EQ(actual_message.SerializeAsString(),
             expected_message.SerializeAsString());
@@ -75,6 +85,19 @@ TEST(ProtoConversionTest, OnSurroundingTextChangedToProto) {
 
   ime::PublicMessage actual_message = OnSurroundingTextChangedToProto(
       /*seq_id=*/42, "hello", /*offset=*/1, selection->Clone());
+
+  EXPECT_EQ(actual_message.SerializeAsString(),
+            expected_message.SerializeAsString());
+}
+
+TEST(ProtoConversionTest, OnCompositionCanceledToProto) {
+  ime::PublicMessage expected_message;
+  expected_message.set_seq_id(42);
+  *expected_message.mutable_on_composition_canceled() =
+      ime::OnCompositionCanceled();
+
+  ime::PublicMessage actual_message =
+      OnCompositionCanceledToProto(/*seq_id=*/42);
 
   EXPECT_EQ(actual_message.SerializeAsString(),
             expected_message.SerializeAsString());

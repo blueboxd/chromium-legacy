@@ -138,11 +138,12 @@ bool DecoderEngine::IsImeSupportedByDecoder(const std::string& ime_spec) {
          engine_main_entry_->IsImeSupported(ime_spec.c_str());
 }
 
-void DecoderEngine::OnFocus() {
+void DecoderEngine::OnFocus(mojom::InputFieldInfoPtr input_field_info) {
   const uint64_t seq_id = current_seq_id_;
   ++current_seq_id_;
 
-  ProcessMessage(WrapAndSerializeMessage(OnFocusToProto(seq_id)),
+  ProcessMessage(WrapAndSerializeMessage(
+                     OnFocusToProto(seq_id, std::move(input_field_info))),
                  base::DoNothing());
 }
 
@@ -174,6 +175,14 @@ void DecoderEngine::OnSurroundingTextChanged(
 
   ProcessMessage(WrapAndSerializeMessage(OnSurroundingTextChangedToProto(
                      seq_id, text, offset, std::move(selection_range))),
+                 base::DoNothing());
+}
+
+void DecoderEngine::OnCompositionCanceled() {
+  const uint64_t seq_id = current_seq_id_;
+  ++current_seq_id_;
+
+  ProcessMessage(WrapAndSerializeMessage(OnCompositionCanceledToProto(seq_id)),
                  base::DoNothing());
 }
 

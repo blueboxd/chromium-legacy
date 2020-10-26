@@ -92,12 +92,13 @@ class NativeInputMethodEngine : public InputMethodEngine {
     // mojom::InputChannel:
     void ProcessMessage(const std::vector<uint8_t>& message,
                         ProcessMessageCallback callback) override;
-    void OnFocus() override {}
+    void OnFocus(ime::mojom::InputFieldInfoPtr input_field_info) override {}
     void OnBlur() override {}
     void OnSurroundingTextChanged(
         const std::string& text,
         uint32_t offset,
         ime::mojom::SelectionRangePtr selection_range) override {}
+    void OnCompositionCanceled() override {}
     void ProcessKeypressForRulebased(
         ime::mojom::PhysicalKeyEventPtr event,
         ProcessKeypressForRulebasedCallback callback) override {}

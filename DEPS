@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7a0263547cda936b320d80c650b69d7522ee1a9f',
+  'angle_revision': '258f17d68700647257de01141abcef15c8b6f02e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ea39f9199c12e43501cd3e274d9cfce6ce71e9b2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9202244553e7a50f2bf5e69a0bd223b0271a1296',
     'condition': 'checkout_src_internal',
   },
 

@@ -55,7 +55,7 @@ class TestClientChannel : mojom::InputChannel {
   MOCK_METHOD2(ProcessMessage,
                void(const std::vector<uint8_t>& message,
                     ProcessMessageCallback));
-  MOCK_METHOD0(OnFocus, void());
+  MOCK_METHOD1(OnFocus, void(mojom::InputFieldInfoPtr input_field_info));
   MOCK_METHOD0(OnBlur, void());
   MOCK_METHOD2(ProcessKeypressForRulebased,
                void(const mojom::PhysicalKeyEventPtr event,
@@ -67,6 +67,7 @@ class TestClientChannel : mojom::InputChannel {
                void(const std::string& text,
                     uint32_t offset,
                     mojom::SelectionRangePtr selection_range));
+  MOCK_METHOD0(OnCompositionCanceled, void());
   MOCK_METHOD0(ResetForRulebased, void());
   MOCK_METHOD1(GetRulebasedKeypressCountForTesting,
                void(GetRulebasedKeypressCountForTestingCallback));

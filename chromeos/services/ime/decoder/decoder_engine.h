@@ -32,7 +32,7 @@ class DecoderEngine : public InputEngine {
 
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
-  void OnFocus() override;
+  void OnFocus(mojom::InputFieldInfoPtr input_field_info) override;
   void OnBlur() override;
   void OnKeyEvent(mojom::PhysicalKeyEventPtr event,
                   OnKeyEventCallback callback) override;
@@ -40,6 +40,7 @@ class DecoderEngine : public InputEngine {
       const std::string& text,
       uint32_t offset,
       mojom::SelectionRangePtr selection_range) override;
+  void OnCompositionCanceled() override;
 
  private:
   // Try to load the decoding functions from some decoder shared library.

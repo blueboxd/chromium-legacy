@@ -65,6 +65,37 @@ ime::mojom::ModifierStatePtr ModifierStateFromEvent(
   return modifier_state;
 }
 
+ime::mojom::InputFieldType TextInputTypeToMojoType(ui::TextInputType type) {
+  using ime::mojom::InputFieldType;
+  switch (type) {
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
+      return InputFieldType::kPassword;
+    case ui::TEXT_INPUT_TYPE_SEARCH:
+      return InputFieldType::kSearch;
+    case ui::TEXT_INPUT_TYPE_EMAIL:
+      return InputFieldType::kEmail;
+    case ui::TEXT_INPUT_TYPE_TELEPHONE:
+      return InputFieldType::kTelephone;
+    case ui::TEXT_INPUT_TYPE_URL:
+      return InputFieldType::kURL;
+    case ui::TEXT_INPUT_TYPE_NUMBER:
+      return InputFieldType::kNumber;
+    case ui::TEXT_INPUT_TYPE_NULL:
+      return InputFieldType::kNoIME;
+    case ui::TEXT_INPUT_TYPE_TEXT:
+      return InputFieldType::kText;
+    default:
+      return InputFieldType::kText;
+  }
+}
+
+ime::mojom::AutocorrectMode AutocorrectFlagsToMojoType(int flags) {
+  if (flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_ON) {
+    return ime::mojom::AutocorrectMode::kEnabled;
+  }
+  return ime::mojom::AutocorrectMode::kDisabled;
+}
+
 enum class ImeServiceEvent {
   kUnknown = 0,
   kInitSuccess = 1,
@@ -177,7 +208,12 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
 
   if (active_engine_id_ && ShouldUseFstMojoEngine(*active_engine_id_) &&
       remote_to_engine_.is_bound()) {
-    remote_to_engine_->OnFocus();
+    remote_to_engine_->OnFocus(ime::mojom::InputFieldInfo::New(
+        TextInputTypeToMojoType(context.type),
+        AutocorrectFlagsToMojoType(context.flags),
+        context.should_do_learning
+            ? ime::mojom::PersonalizationMode::kEnabled
+            : ime::mojom::PersonalizationMode::kDisabled));
   }
 
   base_observer_->OnFocus(context);
@@ -227,8 +263,12 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
 
 void NativeInputMethodEngine::ImeObserver::OnReset(
     const std::string& engine_id) {
-  if (ShouldUseRuleBasedMojoEngine(engine_id) && remote_to_engine_.is_bound()) {
-    remote_to_engine_->ResetForRulebased();
+  if (remote_to_engine_.is_bound()) {
+    if (ShouldUseRuleBasedMojoEngine(engine_id)) {
+      remote_to_engine_->ResetForRulebased();
+    } else if (ShouldUseFstMojoEngine(engine_id)) {
+      remote_to_engine_->OnCompositionCanceled();
+    }
   }
   base_observer_->OnReset(engine_id);
 }

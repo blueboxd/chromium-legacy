@@ -8,9 +8,11 @@
 
 #include "chrome/browser/chromeos/borealis/borealis_context.h"
 #include "chrome/browser/chromeos/borealis/borealis_context_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
+#include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,9 +51,11 @@ class BorealisTasksTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
+        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
     CreateProfile();
-    context_ = BorealisContext::CreateBorealisContextForTesting();
-    context_->set_profile(profile_.get());
+    context_ = BorealisContext::CreateBorealisContextForTesting(profile_.get());
+    context_->set_vm_name("borealis");
 
     chromeos::DlcserviceClient::InitializeFake();
     fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
@@ -66,10 +70,11 @@ class BorealisTasksTest : public testing::Test {
   }
 
   std::unique_ptr<TestingProfile> profile_;
-  BorealisContext* context_;
+  std::unique_ptr<BorealisContext> context_;
   content::BrowserTaskEnvironment task_environment_;
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
 
  private:
@@ -89,7 +94,7 @@ TEST_F(BorealisTasksTest, MountDlcSucceedsAndCallbackRanWithResults) {
   EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
 
   MountDlc task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(context_->root_path(), "test/path");
@@ -107,7 +112,7 @@ TEST_F(BorealisTasksTest, CreateDiskSucceedsAndCallbackRanWithResults) {
   EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
 
   CreateDiskImage task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
@@ -127,7 +132,7 @@ TEST_F(BorealisTasksTest,
   EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
 
   CreateDiskImage task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
@@ -143,7 +148,7 @@ TEST_F(BorealisTasksTest, StartBorealisVmSucceedsAndCallbackRanWithResults) {
   EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
 
   StartBorealisVm task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
@@ -159,10 +164,59 @@ TEST_F(BorealisTasksTest,
   EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
 
   StartBorealisVm task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+}
+
+TEST_F(BorealisTasksTest,
+       AwaitBorealisStartupSucceedsAndCallbackRanWithResults) {
+  vm_tools::cicerone::ContainerStartedSignal signal;
+  signal.set_owner_id(
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(context_->profile()));
+  signal.set_vm_name(context_->vm_name());
+  signal.set_container_name("penguin");
+
+  testing::StrictMock<CallbackForTesting> callback;
+  EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
+
+  AwaitBorealisStartup task(context_->profile(), context_->vm_name());
+  task.Run(context_.get(), callback.GetCallback());
+  fake_cicerone_client_->NotifyContainerStarted(std::move(signal));
+
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(BorealisTasksTest,
+       AwaitBorealisStartupContainerAlreadyStartedAndCallbackRanWithResults) {
+  vm_tools::cicerone::ContainerStartedSignal signal;
+  signal.set_owner_id(
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(context_->profile()));
+  signal.set_vm_name(context_->vm_name());
+  signal.set_container_name("penguin");
+
+  testing::StrictMock<CallbackForTesting> callback;
+  EXPECT_CALL(callback, Callback(BorealisContextManager::kSuccess, _));
+
+  AwaitBorealisStartup task(context_->profile(), context_->vm_name());
+  fake_cicerone_client_->NotifyContainerStarted(std::move(signal));
+  task.Run(context_.get(), callback.GetCallback());
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(BorealisTasksTest,
+       AwaitBorealisStartupTimesOutAndCallbackRanWithResults) {
+  testing::StrictMock<CallbackForTesting> callback;
+  EXPECT_CALL(
+      callback,
+      Callback(BorealisContextManager::kAwaitBorealisStartupFailed, StrNe("")));
+
+  AwaitBorealisStartup task(context_->profile(), context_->vm_name());
+  task.GetWatcherForTesting().SetTimeoutForTesting(
+      base::TimeDelta::FromMilliseconds(0));
+  task.Run(context_.get(), callback.GetCallback());
+  task_environment_.RunUntilIdle();
 }
 
 class BorealisTasksTestDlc : public BorealisTasksTest,
@@ -175,7 +229,7 @@ TEST_P(BorealisTasksTestDlc, MountDlcFailsAndCallbackRanWithResults) {
               Callback(BorealisContextManager::kMountFailed, StrNe("")));
 
   MountDlc task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 }
 
@@ -204,7 +258,7 @@ TEST_P(BorealisTasksTestDiskImage, CreateDiskFailsAndCallbackRanWithResults) {
               Callback(BorealisContextManager::kDiskImageFailed, StrNe("")));
 
   CreateDiskImage task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
@@ -236,7 +290,7 @@ TEST_P(BorealisTasksTestsStartBorealisVm,
               Callback(BorealisContextManager::kStartVmFailed, StrNe("")));
 
   StartBorealisVm task;
-  task.Run(context_, callback.GetCallback());
+  task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());

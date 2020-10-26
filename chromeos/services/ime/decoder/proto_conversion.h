@@ -14,7 +14,8 @@ namespace chromeos {
 namespace ime {
 
 // Converts arguments of a Mojo call to InputChannel::OnFocus into a proto.
-ime::PublicMessage OnFocusToProto(uint64_t seq_id);
+ime::PublicMessage OnFocusToProto(uint64_t seq_id,
+                                  mojom::InputFieldInfoPtr input_field_info);
 
 // Converts arguments of a Mojo call to InputChannel::OnBlur into a proto.
 ime::PublicMessage OnBlurToProto(uint64_t seq_id);
@@ -30,6 +31,10 @@ ime::PublicMessage OnSurroundingTextChangedToProto(
     const std::string& text,
     uint32_t focus,
     mojom::SelectionRangePtr selection_range);
+
+// Converts arguments of a Mojo call to InputChannel::OnCompositionCanceled into
+// a proto.
+ime::PublicMessage OnCompositionCanceledToProto(uint64_t seq_id);
 
 }  // namespace ime
 }  // namespace chromeos

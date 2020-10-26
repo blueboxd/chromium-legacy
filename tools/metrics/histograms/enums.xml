@@ -9085,6 +9085,15 @@ Called by update_bad_message_reasons.py.-->
   <int value="8" label="BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL_IP_ADDRESS"/>
 </enum>
 
+<enum name="CaptivePortalNetworkState">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="ONLINE"/>
+  <int value="2" label="PORTAL_SUSPECTED"/>
+  <int value="3" label="PORTAL"/>
+  <int value="4" label="PROXY_AUTH_REQUIRED"/>
+  <int value="5" label="NO_INTERNET"/>
+</enum>
+
 <enum name="CaptivePortalNotificationStatus">
   <int value="0" label="DISPLAYED"/>
   <int value="1" label="ERROR"/>
@@ -28194,9 +28203,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1988" label="CredentialManagerCustomFetch (obsolete as of M64)"/>
   <int value="1989" label="NetInfoRtt"/>
   <int value="1990" label="NetInfoDownlink"/>
-  <int value="1991" label="ShapeDetection_BarcodeDetectorConstructor"/>
-  <int value="1992" label="ShapeDetection_FaceDetectorConstructor"/>
-  <int value="1993" label="ShapeDetection_TextDetectorConstructor"/>
+  <int value="1991" label="OBSOLETE_ShapeDetection_BarcodeDetectorConstructor"/>
+  <int value="1992" label="OBSOLETE_ShapeDetection_FaceDetectorConstructor"/>
+  <int value="1993" label="OBSOLETE_ShapeDetection_TextDetectorConstructor"/>
   <int value="1994"
       label="CredentialManagerCredentialRequestOptionsOnlyUnmediated
              (obsolete as of M64)"/>
@@ -28751,7 +28760,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2520" label="AddDocumentLevelPassiveDefaultWheelEventListener"/>
   <int value="2521"
       label="DocumentLevelPassiveDefaultEventListenerPreventedWheel"/>
-  <int value="2522" label="ShapeDetectionAPI"/>
+  <int value="2522" label="OBSOLETE_ShapeDetectionAPI"/>
   <int value="2523" label="V8SourceBuffer_ChangeType_Method"/>
   <int value="2524" label="PPAPIWebSocket"/>
   <int value="2525" label="V8MediaStreamTrack_ContentHint_AttributeGetter"/>
@@ -30006,6 +30015,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3708" label="WebBluetoothGetAvailability"/>
   <int value="3709" label="DigitalGoodsListPurchases"/>
   <int value="3710" label="CompositedSVG"/>
+  <int value="3711" label="BarcodeDetectorDetect"/>
+  <int value="3712" label="FaceDetectorDetect"/>
+  <int value="3713" label="TextDetectorDetect"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40843,6 +40855,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Tab hidden"/>
   <int value="7" label="Omnibox navigation"/>
   <int value="8" label="Tab crash"/>
+  <int value="9" label="Unknown"/>
 </enum>
 
 <enum name="LinkMonitorFailureType">
@@ -61335,6 +61348,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="kLocalForInteropRunner"/>
   <int value="4" label="kLocalAeadConfidentialityLimit"/>
   <int value="5" label="kLocalKeyUpdateLimitOverride"/>
+</enum>
+
+<enum name="QuicKeyUpdateSuccess">
+  <int value="0" label="kInvalid"/>
+  <int value="1" label="kSuccess"/>
+  <int value="2" label="kFailedInitial"/>
+  <int value="3" label="kFailedNonInitial"/>
 </enum>
 
 <enum name="QuickofficeErrorTypes">

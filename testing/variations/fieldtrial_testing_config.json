@@ -2303,24 +2303,6 @@
             ]
         }
     ],
-    "DialMediaRouteProvider": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DialMediaRouteProvider"
-                    ]
-                }
-            ]
-        }
-    ],
     "DirectActions": [
         {
             "platforms": [
@@ -3782,6 +3764,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InterestFeedV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "InvalidateBookmarkSyncMetadataIfClientTagMissing": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InvalidateBookmarkSyncMetadataIfClientTagMissing"
                     ]
                 }
             ]
@@ -6302,6 +6305,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafetyCheckChromeCleanerChild"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafetyCheckIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafetyCheckIOS"
                     ]
                 }
             ]

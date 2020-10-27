@@ -33,10 +33,12 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-shared.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
@@ -434,6 +436,16 @@ class WebView {
   // be modified and should be saved before calling this method and restored
   // after.
   virtual void PaintContent(cc::PaintCanvas*, const gfx::Rect& viewport) = 0;
+
+  // Renderer preferences ---------------------------------------------------
+
+  virtual void RegisterRendererPreferenceWatcher(
+      CrossVariantMojoRemote<mojom::RendererPreferenceWatcherInterfaceBase>
+          watcher) = 0;
+
+  virtual void SetRendererPreferences(
+      const RendererPreferences& preferences) = 0;
+  virtual const RendererPreferences& GetRendererPreferences() = 0;
 
   // Web preferences ---------------------------------------------------
 

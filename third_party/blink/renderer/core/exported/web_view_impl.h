@@ -37,6 +37,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -206,6 +208,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetDeviceColorSpaceForTesting(
       const gfx::ColorSpace& color_space) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
+  void RegisterRendererPreferenceWatcher(
+      CrossVariantMojoRemote<mojom::RendererPreferenceWatcherInterfaceBase>
+          watcher) override;
+  void SetRendererPreferences(const RendererPreferences& preferences) override;
+  const RendererPreferences& GetRendererPreferences() override;
   void SetWebPreferences(const web_pref::WebPreferences& preferences) override;
   const web_pref::WebPreferences& GetWebPreferences() override;
 
@@ -232,7 +239,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void UpdateWebPreferences(
       const blink::web_pref::WebPreferences& preferences) override;
   void UpdateRendererPreferences(
-      const blink::RendererPreferences& preferences) override;
+      const RendererPreferences& preferences) override;
 
   void DispatchPageshow(base::TimeTicks navigation_start);
   void DispatchPagehide(mojom::blink::PagehideDispatch pagehide_dispatch);
@@ -578,6 +585,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                const IntSize& visible_viewport_size);
 
   void UpdateBaseBackgroundColor();
+  void UpdateFontRenderingFromRendererPrefs();
 
   // Request the window to close from the renderer by sending the request to the
   // browser.
@@ -824,6 +832,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   web_pref::WebPreferences web_preferences_;
 
+  blink::RendererPreferences renderer_preferences_;
+
   // The local root whose document has |popup_mouse_wheel_event_listener_|
   // registered.
   WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
@@ -860,6 +870,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   mojom::blink::PageLifecycleStatePtr lifecycle_state_;
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
+
+  // These are observing changes in |renderer_preferences_|. This is used for
+  // keeping WorkerFetchContext in sync.
+  mojo::RemoteSet<mojom::blink::RendererPreferenceWatcher>
+      renderer_preference_watchers_;
 
   base::WeakPtrFactory<WebViewImpl> weak_ptr_factory_{this};
 };

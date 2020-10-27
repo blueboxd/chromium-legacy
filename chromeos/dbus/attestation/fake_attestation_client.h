@@ -8,6 +8,7 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 
 #include <deque>
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
@@ -106,6 +107,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_ATTESTATION) FakeAttestationClient
       ::attestation::KeyType key_type) override;
   ::attestation::CreateCertificateRequestReply*
   mutable_certificate_request_reply() override;
+  const std::vector<::attestation::DeleteKeysRequest>& delete_keys_history()
+      const override;
+  void ClearDeleteKeysHistory() override;
+  void set_enrollment_id_ignore_cache(const std::string& id) override;
+  void set_cached_enrollment_id(const std::string& id) override;
+  void set_enrollment_id_dbus_error_count(int count) override;
 
   AttestationClient::TestInterface* GetTestInterface() override;
 
@@ -130,6 +137,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_ATTESTATION) FakeAttestationClient
   std::vector<int> certificate_indices_;
   // The count of certificates that has been issued.
   int certificate_count_ = 0;
+
+  // Maintains the input request history of `DeleteKeys()`.
+  std::vector<::attestation::DeleteKeysRequest> delete_keys_history_;
+
+  // Maintains building components reply to `GetEnrollmentId()`.
+  std::string enrollment_id_;
+  std::string enrollment_id_ignore_cache_;
+  int enrollment_id_dbus_error_count_ = 0;
 };
 
 }  // namespace chromeos

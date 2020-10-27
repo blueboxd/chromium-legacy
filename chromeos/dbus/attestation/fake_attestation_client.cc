@@ -234,7 +234,10 @@ void FakeAttestationClient::SetKeyPayload(
 void FakeAttestationClient::DeleteKeys(
     const ::attestation::DeleteKeysRequest& request,
     DeleteKeysCallback callback) {
-  NOTIMPLEMENTED();
+  delete_keys_history_.push_back(request);
+  ::attestation::DeleteKeysReply reply;
+  reply.set_status(::attestation::STATUS_SUCCESS);
+  PostProtoResponse(std::move(callback), reply);
 }
 
 void FakeAttestationClient::ResetIdentity(
@@ -246,7 +249,16 @@ void FakeAttestationClient::ResetIdentity(
 void FakeAttestationClient::GetEnrollmentId(
     const ::attestation::GetEnrollmentIdRequest& request,
     GetEnrollmentIdCallback callback) {
-  NOTIMPLEMENTED();
+  ::attestation::GetEnrollmentIdReply reply;
+  if (enrollment_id_dbus_error_count_ != 0) {
+    reply.set_status(::attestation::STATUS_DBUS_ERROR);
+    enrollment_id_dbus_error_count_--;
+  } else {
+    reply.set_status(::attestation::STATUS_SUCCESS);
+    reply.set_enrollment_id(request.ignore_cache() ? enrollment_id_ignore_cache_
+                                                   : enrollment_id_);
+  }
+  PostProtoResponse(std::move(callback), reply);
 }
 
 void FakeAttestationClient::GetCertifiedNvIndex(
@@ -294,6 +306,28 @@ void FakeAttestationClient::AllowlistLegacyCreateCertificateRequest(
   request.set_certificate_profile(profile);
   request.set_key_type(key_type);
   allowlisted_create_requests_.push_back(request);
+}
+
+const std::vector<::attestation::DeleteKeysRequest>&
+FakeAttestationClient::delete_keys_history() const {
+  return delete_keys_history_;
+}
+
+void FakeAttestationClient::ClearDeleteKeysHistory() {
+  delete_keys_history_.clear();
+}
+
+void FakeAttestationClient::set_enrollment_id_ignore_cache(
+    const std::string& id) {
+  enrollment_id_ignore_cache_ = id;
+}
+
+void FakeAttestationClient::set_cached_enrollment_id(const std::string& id) {
+  enrollment_id_ = id;
+}
+
+void FakeAttestationClient::set_enrollment_id_dbus_error_count(int count) {
+  enrollment_id_dbus_error_count_ = count;
 }
 
 AttestationClient::TestInterface* FakeAttestationClient::GetTestInterface() {

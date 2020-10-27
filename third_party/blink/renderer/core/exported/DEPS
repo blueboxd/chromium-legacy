@@ -4,7 +4,6 @@ include_rules = [
   "+third_party/blink/renderer/core/exported",
   "+third_party/blink/public/web",
   "+ui/base/mojom/ui_base_types.mojom-shared.h",
-  "+ui/gfx/transform.h",
 ]
 
 specific_include_rules = {
@@ -13,5 +12,6 @@ specific_include_rules = {
     "+components/viz/common/features.h",
     "+media/base/media_switches.h",
     "+third_party/icu/source/common/unicode/uscript.h",
+    "+ui/gfx/font_render_params.h",
   ],
 }

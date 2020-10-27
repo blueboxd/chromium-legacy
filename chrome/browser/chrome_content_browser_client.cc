@@ -2277,11 +2277,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       MaybeAppendSecureOriginsAllowlistSwitch(command_line);
 
-      if (prefs->HasPrefPath(prefs::kAllowPopupsDuringPageUnload) &&
-          prefs->GetBoolean(prefs::kAllowPopupsDuringPageUnload)) {
-        command_line->AppendSwitch(switches::kAllowPopupsDuringPageUnload);
-      }
-
       if (prefs->HasPrefPath(prefs::kAllowSyncXHRInPageDismissal) &&
           prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal)) {
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
@@ -2508,49 +2503,7 @@ bool ChromeContentBrowserClient::AllowAppCache(
 }
 
 content::AllowServiceWorkerResult
-ChromeContentBrowserClient::AllowServiceWorkerOnIO(
-    const GURL& scope,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& top_frame_origin,
-    const GURL& script_url,
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Check if this is an extension-related service worker, and, if so, if it's
-  // allowed (this can return false if, e.g., the extension is disabled).
-  // If it's not allowed, return immediately. We deliberately do *not* report
-  // to the PageSpecificContentSettings, since the service worker is blocked
-  // because of the extension, rather than because of the user's content
-  // settings.
-  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
-          scope, first_party_url, script_url, context)) {
-    return content::AllowServiceWorkerResult::No();
-  }
-#endif
-
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-
-  // Check if JavaScript is allowed.
-  content_settings::SettingInfo info;
-  std::unique_ptr<base::Value> value =
-      io_data->GetHostContentSettingsMap()->GetWebsiteSetting(
-          first_party_url, first_party_url, ContentSettingsType::JAVASCRIPT,
-          std::string(), &info);
-  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
-  bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
-
-  // Check if cookies are allowed.
-  bool allow_cookies = io_data->GetCookieSettings()->IsCookieAccessAllowed(
-      scope, site_for_cookies, top_frame_origin);
-
-  return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
-                                                       !allow_cookies);
-}
-
-content::AllowServiceWorkerResult
-ChromeContentBrowserClient::AllowServiceWorkerOnUI(
+ChromeContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
@@ -2566,7 +2519,7 @@ ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   // to the PageSpecificContentSettings, since the service worker is blocked
   // because of the extension, rather than because of the user's content
   // settings.
-  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
           scope, first_party_url, script_url, context)) {
     return content::AllowServiceWorkerResult::No();
   }

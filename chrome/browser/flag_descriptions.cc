@@ -46,12 +46,6 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
-const char kAllowPopupsDuringPageUnloadName[] =
-    "Allows a page to show popups during its unloading";
-const char kAllowPopupsDuringPageUnloadDescription[] =
-    "When the flag is set to enabled, pages are allowed to show popups while "
-    "they are being unloaded.";
-
 const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[] =
     "Allow Signed HTTP Exchange certificates without extension";
 const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
@@ -714,7 +708,13 @@ const char kPostQuantumCECPQ2Description[] =
 const char kMacCoreLocationImplementationName[] =
     "Core Location Implementation";
 const char kMacCoreLocationImplementationDescription[] =
-    "Enables usage of the Core Location APIs on macOS for geolocation";
+    "Enables usage of the Core Location APIs to get location permission on "
+    "macOS";
+
+const char kMacCoreLocationBackendName[] = "Core Location Backend";
+const char kMacCoreLocationBackendDescription[] =
+    "Enables usage of the Core Location APIs as the backend for Geolocation "
+    "API";
 
 const char kNewMacNotificationAPIName[] =
     "Determines which notification API to use on macOS devices";
@@ -4208,10 +4208,6 @@ const char kFsNosymfollowDescription[] =
     "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
-
-const char kHelpAppReleaseNotesName[] = "Help App Release Notes";
-const char kHelpAppReleaseNotesDescription[] =
-    "Enables release notes in the help app";
 
 const char kHelpAppSearchServiceIntegrationName[] =
     "Help App search service integration";

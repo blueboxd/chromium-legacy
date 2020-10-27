@@ -5465,12 +5465,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 
-    {"allow-popups-during-page-unload",
-     flag_descriptions::kAllowPopupsDuringPageUnloadName,
-     flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
-     kOsAll | kDeprecated,
-     FEATURE_VALUE_TYPE(features::kAllowPopupsDuringPageUnload)},
-
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
      flag_descriptions::kEnableAdvancedPpdAttributesName,
@@ -5929,6 +5923,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_MAC)
+    {"enable-core-location-backend",
+     flag_descriptions::kMacCoreLocationBackendName,
+     flag_descriptions::kMacCoreLocationBackendDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacCoreLocationBackend)},
+#endif
+
+#if defined(OS_MAC)
     {"enable-core-location-implementation",
      flag_descriptions::kMacCoreLocationImplementationName,
      flag_descriptions::kMacCoreLocationImplementationDescription, kOsMac,
@@ -6025,9 +6026,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
-    {"help-app-release-notes", flag_descriptions::kHelpAppReleaseNotesName,
-     flag_descriptions::kHelpAppReleaseNotesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppReleaseNotes)},
     {"help-app-search-service-integration",
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,

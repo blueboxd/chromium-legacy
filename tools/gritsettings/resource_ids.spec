@@ -351,7 +351,8 @@
     "includes": [2600],
     "structures": [2620],
   },
-  "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/sample_system_web_app_ui/chromeos_sample_system_web_app_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
     "includes": [2640],
   },
   "chromeos/components/scanning/resources/scanning_app_resources.grd": {
@@ -643,6 +644,10 @@
   "ui/webui/resources/webui_resources.grd": {
     "includes": [3800],
     "structures": [3820],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_generated_resources.grd": {
+    "META": {"sizes": {"includes": [200]}},
+    "includes": [3830],
   },
   "weblayer/weblayer_resources.grd": {
     "includes": [3840],

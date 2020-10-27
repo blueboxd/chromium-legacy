@@ -66,9 +66,6 @@ extern const char kAlignFontDisplayAutoTimeoutWithLCPGoalDescription[];
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
-extern const char kAllowPopupsDuringPageUnloadName[];
-extern const char kAllowPopupsDuringPageUnloadDescription[];
-
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 
@@ -427,6 +424,9 @@ extern const char kPostQuantumCECPQ2Description[];
 
 extern const char kMacCoreLocationImplementationName[];
 extern const char kMacCoreLocationImplementationDescription[];
+
+extern const char kMacCoreLocationBackendName[];
+extern const char kMacCoreLocationBackendDescription[];
 
 extern const char kNewMacNotificationAPIName[];
 extern const char kNewMacNotificationAPIDescription[];
@@ -2452,9 +2452,6 @@ extern const char kFrameThrottleFps30[];
 
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
-
-extern const char kHelpAppReleaseNotesName[];
-extern const char kHelpAppReleaseNotesDescription[];
 
 extern const char kHelpAppSearchServiceIntegrationName[];
 extern const char kHelpAppSearchServiceIntegrationDescription[];

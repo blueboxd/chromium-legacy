@@ -13,7 +13,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/devtools_listener.h"
@@ -78,6 +77,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test needs the files-ng feature.
     bool files_ng = true;
 
+    // Whether test needs the media-swa apps.
+    bool media_swa = false;
+
     // Whether test needs a native SMB file system provider.
     bool native_smb = true;
 
@@ -97,7 +99,7 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     bool observe_file_tasks = true;
 
     // Whether test should enable sharesheet.
-    bool enable_sharesheet = true;
+    bool enable_sharesheet = false;
 
     // Whether test needs the single partition format feature.
     bool single_partition_format = false;

@@ -206,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '36af02d2efd711204543946dfbd9a4c783550741',
+  'skia_revision': '9d474b8943c9c91753e88373e9d00aa952b3a5ae',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'af722073314e07138cd3ef04751dc7ce1035219c',
+  'v8_revision': 'e641c3d83999fdc41495556cebe96c7fbe114fc3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -226,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'f6b755916fcf9c927881cc7667a89f09f857ac31',
+  'pdfium_revision': 'c7ea56a3ebb345659c1876c66f1cfff4002f42bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6b0ecd8197ffc409f5a0153288ffe76a790ee33d',
+  'devtools_frontend_revision': 'e353801f6411d8930c8980158b1be7b26fce4dbc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1343,7 +1343,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'q6rFFTDSZ6MexUJ2yo5-IHfI0g1sohftVPqHt-TwJtYC'
+              'version': 'MYrQFosuTdyW-BJfbOLYfhyRiC0b2PzdjJgwaeEHizAC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6dce2946f57c7b76c75e536c4a611001ef8a5738',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@50d43b33bba6280abbbaedfd899ddb472ab1af71',
     'condition': 'checkout_src_internal',
   },
 

@@ -173,12 +173,6 @@ class CORE_EXPORT NGInlineCursorPosition {
   // other than line.
   bool HasSoftWrapToNextLine() const;
 
-  // Returns a point at the visual start/end of the line. (0, 0) is left-top of
-  // the line.
-  // Encapsulates the handling of text direction and writing mode.
-  PhysicalOffset LineStartPoint() const;
-  PhysicalOffset LineEndPoint() const;
-
   // LogicalRect/PhysicalRect conversions
   // |logical_rect| and |physical_rect| are converted with |Size()| as
   // "outer size".
@@ -253,6 +247,10 @@ class CORE_EXPORT NGInlineCursor {
 
   // Returns the |LayoutBlockFlow| containing this cursor.
   const LayoutBlockFlow* GetLayoutBlockFlow() const;
+
+  // Return the index of the current physical box fragment of the containing
+  // block. An inline formatting context may be block fragmented.
+  wtf_size_t CurrentContainerFragmentIndex() const { return fragment_index_; }
 
   //
   // Functions to query the current position.

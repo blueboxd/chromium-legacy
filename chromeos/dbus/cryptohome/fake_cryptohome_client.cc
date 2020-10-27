@@ -332,19 +332,6 @@ bool FakeCryptohomeClient::InstallAttributesIsFirstInstall(
   return true;
 }
 
-void FakeCryptohomeClient::TpmAttestationGetEnrollmentId(
-    bool ignore_cache,
-    DBusMethodCallback<TpmAttestationDataResult> callback) {
-  auto result =
-      service_is_available_
-          ? base::make_optional(TpmAttestationDataResult{
-                true, ignore_cache ? tpm_attestation_enrollment_id_ignore_cache_
-                                   : tpm_attestation_enrollment_id_})
-          : base::nullopt;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), result));
-}
-
 void FakeCryptohomeClient::TpmAttestationIsEnrolled(
     DBusMethodCallback<bool> callback) {
   auto result = service_is_available_
@@ -517,24 +504,6 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
-}
-
-void FakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
-    attestation::AttestationKeyType key_type,
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    const std::string& key_prefix,
-    DBusMethodCallback<bool> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
-void FakeCryptohomeClient::TpmAttestationDeleteKey(
-    attestation::AttestationKeyType key_type,
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    const std::string& key_name,
-    DBusMethodCallback<bool> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeCryptohomeClient::TpmGetVersion(

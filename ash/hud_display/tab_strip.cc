@@ -79,7 +79,7 @@ END_METADATA
 HUDTabButton::HUDTabButton(Style style,
                            const DisplayMode display_mode,
                            const base::string16& text)
-    : views::LabelButton(nullptr, text),
+    : views::LabelButton(views::Button::PressedCallback(), text),
       style_(style),
       display_mode_(display_mode) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -89,7 +89,6 @@ HUDTabButton::HUDTabButton(Style style,
       kSettingsIconBorder, kTabOverlayWidth + kTabTitleBorder,
       kSettingsIconBorder, kTabOverlayWidth + kTabTitleBorder));
 
-  DCHECK_EQ(views::View::FocusBehavior::ACCESSIBLE_ONLY, GetFocusBehavior());
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 }
 

@@ -160,15 +160,6 @@ Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
 
 Button::~Button() = default;
 
-void Button::SetFocusForPlatform() {
-#if defined(OS_APPLE)
-  // On Mac, buttons are focusable only in full keyboard access mode.
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-#else
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-#endif
-}
-
 void Button::SetTooltipText(const base::string16& tooltip_text) {
   if (tooltip_text == tooltip_text_)
     return;
@@ -612,7 +603,7 @@ Button::Button(PressedCallback callback)
     : AnimationDelegateViews(this),
       callback_(std::move(callback)),
       ink_drop_base_color_(gfx::kPlaceholderColor) {
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  SetFocusBehavior(PlatformStyle::DefaultFocusBehavior());
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);

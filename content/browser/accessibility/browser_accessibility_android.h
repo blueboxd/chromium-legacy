@@ -26,6 +26,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   // Overrides from BrowserAccessibility.
   void OnDataChanged() override;
   void OnLocationChanged() override;
+  base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const override;
 
   bool IsCheckable() const;
   bool IsChecked() const;
@@ -73,6 +75,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   bool CanOpenPopup() const;
 
+  bool HasAriaCurrent() const;
+
   bool HasFocusableNonOptionChild() const;
   bool HasNonEmptyValue() const;
 
@@ -96,6 +100,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   base::string16 GetCheckboxStateDescription() const;
   base::string16 GetListBoxStateDescription() const;
   base::string16 GetListBoxItemStateDescription() const;
+  base::string16 GetAriaCurrentStateDescription() const;
 
   base::string16 GetRoleDescription() const;
 
@@ -191,6 +196,9 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
                                    const base::string16 b);
   static size_t CommonEndLengths(const base::string16 a,
                                  const base::string16 b);
+
+  void AppendTextToString(base::string16 extra_text,
+                          base::string16* string) const;
 
   base::string16 cached_text_;
   base::string16 old_value_;

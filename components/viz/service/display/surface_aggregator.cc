@@ -442,8 +442,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
         target_transform,
         surface_quad->shared_quad_state->quad_to_target_transform);
     transform.ConcatTransform(dest_pass->transform_to_root_target);
-    AddSurfaceDamageToDamageList(surface_quad->rect, target_transform,
-                                 clip_rect);
+    AddSurfaceDamageToDamageList(surface_quad->rect, transform, clip_rect);
   }
 
   // If there's no fallback surface ID available, then simply emit a
@@ -1401,8 +1400,13 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
           rect_in_target_space.Intersects(damage_rect);
       bool intersects_damage_from_parent =
           rect_in_target_space.Intersects(damage_from_parent);
+      // The |can_use_backdrop_filter_cache| flag hints if the current quad
+      // intersects any damage from any quads below in the same surface. If the
+      // flag is false, it means the intersecting damage is from quads above it
+      // or from itself.
       bool intersects_damage_from_surface =
-          rect_in_target_space.Intersects(surface_root_rp_damage);
+          rect_in_target_space.Intersects(surface_root_rp_damage) &&
+          !render_pass_quad->can_use_backdrop_filter_cache;
       if (intersects_current_damage || intersects_damage_from_parent ||
           intersects_damage_from_surface) {
         render_pass_quad->can_use_backdrop_filter_cache = false;

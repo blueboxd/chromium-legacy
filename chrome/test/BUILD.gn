@@ -2690,6 +2690,7 @@ if (!is_android) {
         "../browser/extensions/api/settings_private/settings_private_browsertest_chromeos.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/extensions/chromeos_component_extensions_browsertest.cc",
+        "../browser/metrics/family_link_user_metrics_provider_browsertest.cc",
         "../browser/metrics/family_user_metrics_provider_browsertest.cc",
         "../browser/notifications/notification_platform_bridge_chromeos_browsertest.cc",
         "../browser/resources/chromeos/zip_archiver/test/zip_archiver_jstest.cc",
@@ -3600,6 +3601,7 @@ test("unit_tests") {
     "../browser/prefs/profile_pref_store_manager_unittest.cc",
     "../browser/prefs/proxy_policy_unittest.cc",
     "../browser/prefs/session_startup_pref_unittest.cc",
+    "../browser/prerender/isolated/isolated_prerender_params_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_prefetch_metrics_collector_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_proxy_configurator_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_tab_helper_unittest.cc",
@@ -4828,7 +4830,10 @@ test("unit_tests") {
   # TODO(crbug.com/1052397): Rename chromeos_is_browser_only to is_lacros.
   if (chromeos_is_browser_only) {
     assert(enable_native_notifications)
-    sources += [ "../browser/notifications/notification_platform_bridge_lacros_unittest.cc" ]
+    sources += [
+      "../browser/notifications/notification_platform_bridge_lacros_unittest.cc",
+      "../common/chrome_paths_lacros_unittest.cc",
+    ]
   }
 
   if (is_chromeos) {

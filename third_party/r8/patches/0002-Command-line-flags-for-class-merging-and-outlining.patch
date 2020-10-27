@@ -1,0 +1,38 @@
+From febbe4508395a83f64e6f5e3cd55052fc8e16e8c Mon Sep 17 00:00:00 2001
+From: Andrew Grieve <agrieve@chromium.org>
+Date: Mon, 28 Sep 2020 15:51:32 -0400
+Subject: [PATCH 2/3] Command-line flags for class merging and outlining
+
+---
+ .../java/com/android/tools/r8/utils/InternalOptions.java  | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+index ea902d508..708961316 100644
+--- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
++++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+@@ -234,9 +234,9 @@ public class InternalOptions implements GlobalKeepInfoConfiguration {
+   public boolean enableFieldAssignmentTracker = true;
+   public boolean enableFieldBitAccessAnalysis =
+       System.getProperty("com.android.tools.r8.fieldBitAccessAnalysis") != null;
+-  public boolean enableStaticClassMerging = true;
+-  public boolean enableHorizontalClassMerging = true;
+-  public boolean enableVerticalClassMerging = true;
++  public boolean enableStaticClassMerging = System.getProperty("com.android.tools.r8.staticClassMerging") != null;
++  public boolean enableHorizontalClassMerging = System.getProperty("com.android.tools.r8.horizontalClassMerging") != null;
++  public boolean enableVerticalClassMerging = System.getProperty("com.android.tools.r8.verticalClassMerging") != null;
+   public boolean enableArgumentRemoval = true;
+   public boolean enableUnusedInterfaceRemoval = true;
+   public boolean enableDevirtualization = true;
+@@ -1146,7 +1146,7 @@ public class InternalOptions implements GlobalKeepInfoConfiguration {
+     public static final String CLASS_NAME = "com.android.tools.r8.GeneratedOutlineSupport";
+     public static final String METHOD_PREFIX = "outline";
+ 
+-    public boolean enabled = true;
++    public boolean enabled = System.getProperty("com.android.tools.r8.disableOutlining") == null;
+     public int minSize = 3;
+     public int maxSize = 99;
+     public int threshold = 20;
+-- 
+2.29.0.rc1.297.gfa9743e501-goog
+

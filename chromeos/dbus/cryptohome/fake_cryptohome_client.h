@@ -99,9 +99,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   void InstallAttributesIsReady(DBusMethodCallback<bool> callback) override;
   bool InstallAttributesIsInvalid(bool* is_invalid) override;
   bool InstallAttributesIsFirstInstall(bool* is_first_install) override;
-  void TpmAttestationGetEnrollmentId(
-      bool ignore_cache,
-      DBusMethodCallback<TpmAttestationDataResult> callback) override;
   void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override;
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
@@ -167,16 +164,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
       const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& key_name,
       const std::string& payload,
-      DBusMethodCallback<bool> callback) override;
-  void TpmAttestationDeleteKeysByPrefix(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_prefix,
-      DBusMethodCallback<bool> callback) override;
-  void TpmAttestationDeleteKey(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& key_name,
       DBusMethodCallback<bool> callback) override;
   void TpmGetVersion(DBusMethodCallback<TpmVersionInfo> callback) override;
   void GetKeyDataEx(
@@ -311,15 +298,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // Sets the CryptohomeError value to return.
   void set_cryptohome_error(cryptohome::CryptohomeErrorCode error) {
     cryptohome_error_ = error;
-  }
-
-  void set_tpm_attestation_enrollment_id(bool ignore_cache,
-                                         const std::string& eid) {
-    if (ignore_cache) {
-      tpm_attestation_enrollment_id_ignore_cache_ = eid;
-    } else {
-      tpm_attestation_enrollment_id_ = eid;
-    }
   }
 
   void set_tpm_attestation_is_enrolled(bool enrolled) {
@@ -492,10 +470,6 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
 
   bool needs_dircrypto_migration_ = false;
   bool run_default_dircrypto_migration_ = true;
-  std::string tpm_attestation_enrollment_id_ignore_cache_ =
-      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
-  std::string tpm_attestation_enrollment_id_ =
-      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
   bool tpm_attestation_is_enrolled_ = true;
   bool tpm_attestation_does_key_exist_should_succeed_ = true;
   bool supports_low_entropy_credentials_ = false;

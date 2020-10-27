@@ -26002,6 +26002,15 @@ Called by update_extension_permission.py.-->
   <int value="3" label="Service error"/>
 </enum>
 
+<enum name="FamilyLinkUserLogSegment">
+  <summary>
+    Filters family link user metrics into categories of interest.
+  </summary>
+  <int value="0" label="Other Not Family Link"/>
+  <int value="1" label="Under Age of Consent"/>
+  <int value="2" label="Over Age of Consent"/>
+</enum>
+
 <enum name="FamilyUserLogSegment">
   <summary>Filters family user metrics into categories of interest.</summary>
   <int value="0" label="Other"/>
@@ -39261,6 +39270,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     and the origin probe failed and the prefetch was not used.
   </int>
   <int value="25" label="Subresource throttled"/>
+  <int value="26" label="Prediction position not eligible"/>
 </enum>
 
 <enum name="IsPinnedToTaskbarResult">
@@ -57780,6 +57790,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="Show notification access setup response"/>
 </enum>
 
+<enum name="PhoneHubQuickAction">
+  <int value="0" label="Toggle Hotspot On"/>
+  <int value="1" label="Toggle Hotspot Off"/>
+  <int value="2" label="Toggle Quiet Mode On"/>
+  <int value="3" label="Toggle Quiet Mode Off"/>
+  <int value="4" label="Toggle Locate Phone On"/>
+  <int value="5" label="Toggle Locate Phone Off"/>
+</enum>
+
 <enum name="PhoneNumberRegexVariantResult">
   <obsolete>
     Removed in M82 as the experiment has been stopped.
@@ -63413,6 +63432,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
   <int value="2" label="kTriggerUpdate">An update was detected</int>
   <int value="3" label="kTriggerNewVersion">A new version is running</int>
+  <int value="4" label="kTriggerExtensionRequest">
+    A new extension request is added
+  </int>
 </enum>
 
 <enum name="RequestAction">

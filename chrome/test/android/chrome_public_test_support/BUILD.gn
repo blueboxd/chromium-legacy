@@ -13,10 +13,7 @@ android_apk("chrome_public_test_support_apk") {
   # just disable it.
   enable_multidex = false
 
-  deps = [
-    "//chrome/test/android/cast_emulator:cast_emulator_java",
-    "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
-  ]
+  deps = [ "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java" ]
 
   apk_name = "ChromePublicTestSupport"
   android_manifest = "AndroidManifest.xml"

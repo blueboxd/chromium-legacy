@@ -16,7 +16,6 @@
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/share/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/video_tutorials/switches.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -38,6 +37,7 @@
 #include "components/permissions/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/query_tiles/switches.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -66,7 +66,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillCreditCardAuthentication,
     &autofill::features::kAutofillDownstreamCvcPromptUseGooglePayLogo,
-    &autofill::features::kAutofillEnableInfoBarAccountIndicationFooter,
+    &autofill::features::kAutofillEnablePasswordInfoBarAccountIndicationFooter,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
@@ -99,6 +99,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebNfc,
     &feature_engagement::kIPHHomepagePromoCardFeature,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
+    &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
     &feed::kInterestFeedContentSuggestions,
     &feed::kInterestFeedV2,
@@ -222,7 +223,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kWebApkAdaptiveIcon,
     &kPrefetchNotificationSchedulingIntegration,
     &features::kDnsOverHttps,
-    &features::kReadLater,
     &net::features::kSameSiteByDefaultCookies,
     &net::features::kCookiesWithoutSameSiteMustBeSecure,
     &paint_preview::kPaintPreviewDemo,
@@ -261,6 +261,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesInOmnibox,
     &query_tiles::features::kQueryTilesEnableQueryEditing,
     &query_tiles::features::kQueryTilesLocalOrdering,
+    &reading_list::switches::kReadLater,
     &safe_browsing::kEnhancedProtection,
     &safe_browsing::kSafeBrowsingSectionUIAndroid,
     &security_state::features::kMarkHttpAsFeature,

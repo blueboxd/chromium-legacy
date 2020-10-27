@@ -401,6 +401,7 @@ android_library("chrome_java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
+    "//components/favicon/android:java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/feed/core/proto:proto_java",
     "//components/feed/core/proto:proto_java_v2",
@@ -868,6 +869,7 @@ junit_binary("chrome_junit_tests") {
     "//components/embedder_support/android:context_menu_java",
     "//components/embedder_support/android:junit_test_support",
     "//components/embedder_support/android:util_java",
+    "//components/favicon/android:java",
     "//components/feature_engagement/public:public_java",
     "//components/feed/core/proto:proto_java",
     "//components/feed/core/proto:proto_java_v2",
@@ -1021,6 +1023,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/contextmenu:java",
     "//chrome/browser/device:java",
     "//chrome/browser/download/android:java",
+    "//chrome/browser/endpoint_fetcher:java",
     "//chrome/browser/engagement/android:java",
     "//chrome/browser/enterprise/util:java",
     "//chrome/browser/flags:java",
@@ -1112,6 +1115,7 @@ android_library("chrome_test_java") {
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
     "//components/external_intents/android:javatests",
+    "//components/favicon/android:java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -1221,6 +1225,8 @@ android_library("chrome_test_java") {
   ]
 
   deps += feed_test_deps
+
+  srcjar_deps = [ "//chrome/browser:tos_dialog_behavior_generated_enum" ]
 
   data = [
     "//chrome/test/data/android/",
@@ -2539,6 +2545,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/shell_apk:javatests_webapk",
     "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
+    "//components/media_router/test/android/media_router_test_support:media_router_test_support_apk",
   ]
 }
 

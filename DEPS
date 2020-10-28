@@ -210,7 +210,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '11223a394966eb9fcfe52a77e2e5003c4242c055',
+  'v8_revision': '3f40a48d0c0ed7603d23b0f2502ddc94ea98a3c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -556,7 +556,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '0c6adf0080fd7acba535ec667576855a90c386c9',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a60852c53ffd138f6b1bfcde8beb8a15e0811252',
       'condition': 'checkout_ios',
   },
 
@@ -907,7 +907,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'acf8878dcf8370b9d4e18b14e3d1b56a6e91b575',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '763dc305cc96327f4db2e3a9cd52a5520f31caaf',
       'condition': 'checkout_linux',
   },
 
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e6112e17b371d3910af31763bdb40a64ca16aaab',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@84b39fecd0eca13cf5f9ce59f570f9d9a77a6507',
     'condition': 'checkout_src_internal',
   },
 

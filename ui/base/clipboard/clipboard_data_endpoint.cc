@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard_data_endpoint.h"
+#include "ui/base/clipboard/data_transfer_endpoint.h"
 
 #include "base/check_op.h"
 #include "base/optional.h"
@@ -10,25 +10,31 @@
 
 namespace ui {
 
-ClipboardDataEndpoint::ClipboardDataEndpoint(const url::Origin& origin)
-    : type_(EndpointType::kUrl), origin_(origin) {}
+DataTransferEndpoint::DataTransferEndpoint(const url::Origin& origin,
+                                           bool notify_if_restricted)
+    : type_(EndpointType::kUrl),
+      origin_(origin),
+      notify_if_restricted_(notify_if_restricted) {}
 
-ClipboardDataEndpoint::ClipboardDataEndpoint(EndpointType type)
-    : type_(type), origin_(base::nullopt) {
+DataTransferEndpoint::DataTransferEndpoint(EndpointType type,
+                                           bool notify_if_restricted)
+    : type_(type),
+      origin_(base::nullopt),
+      notify_if_restricted_(notify_if_restricted) {
   DCHECK_NE(type, EndpointType::kUrl);
 }
 
-ClipboardDataEndpoint::ClipboardDataEndpoint(
-    const ClipboardDataEndpoint& other) = default;
-
-ClipboardDataEndpoint::ClipboardDataEndpoint(ClipboardDataEndpoint&& other) =
+DataTransferEndpoint::DataTransferEndpoint(const DataTransferEndpoint& other) =
     default;
 
-bool ClipboardDataEndpoint::operator==(
-    const ClipboardDataEndpoint& other) const {
-  return origin_ == other.origin_ && type_ == other.type_;
+DataTransferEndpoint::DataTransferEndpoint(DataTransferEndpoint&& other) =
+    default;
+
+bool DataTransferEndpoint::operator==(const DataTransferEndpoint& other) const {
+  return origin_ == other.origin_ && type_ == other.type_ &&
+         notify_if_restricted_ == other.notify_if_restricted_;
 }
 
-ClipboardDataEndpoint::~ClipboardDataEndpoint() = default;
+DataTransferEndpoint::~DataTransferEndpoint() = default;
 
 }  // namespace ui

@@ -51,6 +51,7 @@
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/cpu_affinity.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -298,10 +299,6 @@ void AwMainDelegate::PreSandboxStartup() {
 
   if (process_type == switches::kRendererProcess) {
     InitResourceBundleRendererSide();
-    if (command_line.HasSwitch(switches::kWebViewForceLittleCores)) {
-      base::SetProcessCpuAffinityMode(base::GetCurrentProcessHandle(),
-                                      base::CpuAffinityMode::kLittleCoresOnly);
-    }
   }
 
   EnableCrashReporter(process_type);
@@ -371,6 +368,15 @@ void AwMainDelegate::PostFieldTrialInitialization() {
 
   ALLOW_UNUSED_LOCAL(is_canary_dev);
   ALLOW_UNUSED_LOCAL(is_browser_process);
+
+  // Enable LITTLE-cores only mode if the feature is enabled, but only for child
+  // processes, as the browser process is shared with the hosting app.
+  if (!is_browser_process &&
+      base::FeatureList::IsEnabled(
+          android_webview::features::
+              kWebViewCpuAffinityRestrictToLittleCores)) {
+    content::EnforceProcessCpuAffinity(base::CpuAffinityMode::kLittleCoresOnly);
+  }
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,

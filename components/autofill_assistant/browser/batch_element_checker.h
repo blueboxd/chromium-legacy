@@ -29,10 +29,13 @@ class BatchElementChecker {
   explicit BatchElementChecker();
   virtual ~BatchElementChecker();
 
-  // Callback for AddElementCheck. Argument is true if the check passed.
+  // Callback for AddElementCheck. Arguments are an ok client status if the
+  // check passed and an |ElementFinder::Result|.
   //
   // An ElementCheckCallback must not delete its calling BatchElementChecker.
-  using ElementCheckCallback = base::OnceCallback<void(const ClientStatus&)>;
+  using ElementCheckCallback =
+      base::OnceCallback<void(const ClientStatus&,
+                              const ElementFinder::Result&)>;
 
   // Callback for AddFieldValueCheck. Argument is true is the element exists.
   // The string contains the field value, or an empty string if accessing the
@@ -73,8 +76,12 @@ class BatchElementChecker {
       const ElementFinder::Result&,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>)>;
 
+  // Gets called for each ElementCheck.
   void OnElementChecked(std::vector<ElementCheckCallback>* callbacks,
-                        const ClientStatus& element_status);
+                        const ClientStatus& element_status,
+                        std::unique_ptr<ElementFinder::Result> element_result);
+
+  // Gets called for each FieldValueCheck.
   void OnFindElementForGetFieldValue(
       FindGetFieldValueCallback perform,
       GetFieldValueCallback done,

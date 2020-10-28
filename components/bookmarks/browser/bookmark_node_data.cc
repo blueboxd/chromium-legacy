@@ -138,9 +138,11 @@ BookmarkNodeData::~BookmarkNodeData() {
 #if !defined(OS_APPLE)
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
+  ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
+      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetType(kClipboardFormatString),
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
+      ui::ClipboardBuffer::kCopyPaste, &data_dst);
 }
 #endif
 

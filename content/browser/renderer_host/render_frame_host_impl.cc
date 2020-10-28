@@ -3539,6 +3539,12 @@ void RenderFrameHostImpl::ShowCreatedWindow(
   std::move(callback).Run();
 }
 
+void RenderFrameHostImpl::SetWindowRect(const gfx::Rect& bounds,
+                                        SetWindowRectCallback callback) {
+  delegate_->SetWindowRect(bounds);
+  std::move(callback).Run();
+}
+
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
   delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
@@ -8916,7 +8922,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   // Send the crash report to the Reporting API.
   GetProcess()->GetStoragePartition()->GetNetworkContext()->QueueReport(
       "crash" /* type */, "default" /* group */, last_committed_url_,
-      base::nullopt, std::move(body));
+      isolation_info_.network_isolation_key(), base::nullopt, std::move(body));
 }
 
 void RenderFrameHostImpl::SendCommitNavigation(
